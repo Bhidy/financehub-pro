@@ -7,10 +7,13 @@ import re
 
 # Initialize Groq Client (OpenAI-compatible API)
 # Groq uses llama-3.3-70b-versatile or mixtral-8x7b-32768
-client = AsyncOpenAI(
-    api_key=settings.GROQ_API_KEY,
-    base_url="https://api.groq.com/openai/v1"
-)
+# Initialize Groq Client (OpenAI-compatible API)
+client = None
+if settings.GROQ_API_KEY:
+    client = AsyncOpenAI(
+        api_key=settings.GROQ_API_KEY,
+        base_url="https://api.groq.com/openai/v1"
+    )
 
 # Model to use (OpenAI OSS model with better tool calling)
 GROQ_MODEL = "openai/gpt-oss-120b"
@@ -426,12 +429,12 @@ async def chat_with_analyst(message: str, history: List[Dict], max_retries: int 
     Uses Groq API with FORCED tool calling based on intent detection.
     """
     # Validate API Key
-    api_key = settings.GROQ_API_KEY
-    if not api_key or "YOUR_KEY" in api_key or len(api_key) < 20:
+    # Validate API Key & Client
+    if not client or not settings.GROQ_API_KEY:
         return {
-            "reply": "⚠️ AI Analyst requires a valid Groq API key. Please configure GROQ_API_KEY in backend/.env file.",
+            "reply": "⚠️ AI Analyst service is not configured. Please set GROQ_API_KEY.",
             "data": None,
-            "error": "GROQ_API_KEY_MISSING"
+            "error": "AI_SERVICE_UNAVAILABLE"
         }
     
     # Prepare messages

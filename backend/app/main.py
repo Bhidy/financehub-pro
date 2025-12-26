@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import threading
+import os
 
 # Imports from our new structure
 from app.core.config import settings
 from app.db.session import db
 from app.api.v1.router import api_router
-from engine.scheduler import start_scheduler
 
 import asyncio
 
@@ -22,9 +22,14 @@ async def lifespan(app: FastAPI):
     
     await db.connect()
     
-    # Phase 9: Start Automation Engine
-    scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
-    scheduler_thread.start()
+    # Only start scheduler in LOCAL/development mode (not on Railway/production)
+    if os.environ.get("RAILWAY_ENVIRONMENT") is None and os.environ.get("RAILWAY_SERVICE_NAME") is None:
+        from engine.scheduler import start_scheduler
+        scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
+        scheduler_thread.start()
+        print("DEV MODE: Scheduler started.")
+    else:
+        print("PRODUCTION MODE: Scheduler disabled. Data extraction via GitHub Actions.")
     
     yield
     # Shutdown

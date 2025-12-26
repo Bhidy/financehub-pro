@@ -1,0 +1,77 @@
+2025-12-25 00:38:19,783 - ================================================================================
+2025-12-25 00:38:19,783 - 🌍 EXTRACTING REAL DATA FROM YAHOO FINANCE
+2025-12-25 00:38:19,783 - ================================================================================
+2025-12-25 00:38:19,783 - Yahoo Finance: Public, reliable, NO WAF protection
+
+2025-12-25 00:38:19,824 - 📊 2222 (Saudi Aramco) - Fetching from Yahoo Finance...
+2025-12-25 00:38:20,715 - ✅ Got 1249 days of REAL data
+2025-12-25 00:38:21,426 -    Stored 1249 bars in database
+2025-12-25 00:38:22,428 - 📊 1120 (Al Rajhi Bank) - Fetching from Yahoo Finance...
+2025-12-25 00:38:22,703 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:23,252 -    Stored 1248 bars in database
+2025-12-25 00:38:24,252 - 📊 2010 (SABIC) - Fetching from Yahoo Finance...
+2025-12-25 00:38:24,560 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:25,125 -    Stored 1248 bars in database
+2025-12-25 00:38:26,126 - 📊 1010 (Riyad Bank) - Fetching from Yahoo Finance...
+2025-12-25 00:38:26,374 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:26,905 -    Stored 1248 bars in database
+2025-12-25 00:38:27,906 - 📊 7010 (STC) - Fetching from Yahoo Finance...
+2025-12-25 00:38:28,162 - ✅ Got 1249 days of REAL data
+2025-12-25 00:38:28,972 -    Stored 1249 bars in database
+2025-12-25 00:38:29,973 - 📊 4190 (Jarir) - Fetching from Yahoo Finance...
+2025-12-25 00:38:30,231 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:30,760 -    Stored 1248 bars in database
+2025-12-25 00:38:31,763 - 📊 2030 (Saudi Kayan) - Fetching from Yahoo Finance...
+2025-12-25 00:38:32,040 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:32,858 -    Stored 1248 bars in database
+2025-12-25 00:38:33,859 - 📊 1150 (Alinma Bank) - Fetching from Yahoo Finance...
+2025-12-25 00:38:34,095 - ✅ Got 1249 days of REAL data
+2025-12-25 00:38:34,639 -    Stored 1249 bars in database
+2025-12-25 00:38:35,640 - 📊 1180 (SNB) - Fetching from Yahoo Finance...
+2025-12-25 00:38:35,899 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:36,474 -    Stored 1248 bars in database
+2025-12-25 00:38:37,475 - 📊 1050 (Bank AlBilad) - Fetching from Yahoo Finance...
+2025-12-25 00:38:37,742 - ✅ Got 1249 days of REAL data
+2025-12-25 00:38:38,276 -    Stored 1249 bars in database
+2025-12-25 00:38:39,277 - 📊 1111 (SABB) - Fetching from Yahoo Finance...
+2025-12-25 00:38:39,511 - ✅ Got 1007 days of REAL data
+2025-12-25 00:38:39,966 -    Stored 1007 bars in database
+2025-12-25 00:38:40,968 - 📊 4002 (Mouwasat) - Fetching from Yahoo Finance...
+2025-12-25 00:38:41,246 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:41,793 -    Stored 1248 bars in database
+2025-12-25 00:38:42,794 - 📊 4001 (Alhokair) - Fetching from Yahoo Finance...
+2025-12-25 00:38:43,058 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:43,573 -    Stored 1248 bars in database
+2025-12-25 00:38:44,573 - 📊 2290 (Yanbu Cement) - Fetching from Yahoo Finance...
+2025-12-25 00:38:44,830 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:45,431 -    Stored 1248 bars in database
+2025-12-25 00:38:46,433 - 📊 7200 (Al Moammar) - Fetching from Yahoo Finance...
+2025-12-25 00:38:46,683 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:47,246 -    Stored 1248 bars in database
+2025-12-25 00:38:48,247 - 📊 2050 (Savola) - Fetching from Yahoo Finance...
+2025-12-25 00:38:48,509 - ✅ Got 1249 days of REAL data
+2025-12-25 00:38:49,074 -    Stored 1249 bars in database
+2025-12-25 00:38:50,075 - 📊 2080 (Safco) - Fetching from Yahoo Finance...
+2025-12-25 00:38:50,344 - ✅ Got 1249 days of REAL data
+2025-12-25 00:38:50,910 -    Stored 1249 bars in database
+2025-12-25 00:38:51,912 - 📊 1211 (Maaden) - Fetching from Yahoo Finance...
+2025-12-25 00:38:52,138 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:52,664 -    Stored 1248 bars in database
+2025-12-25 00:38:53,665 - 📊 2020 (SABIC Agri) - Fetching from Yahoo Finance...
+2025-12-25 00:38:53,914 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:54,479 -    Stored 1248 bars in database
+2025-12-25 00:38:55,480 - 📊 2060 (SIPCHEM) - Fetching from Yahoo Finance...
+2025-12-25 00:38:55,715 - ✅ Got 1248 days of REAL data
+2025-12-25 00:38:56,276 -    Stored 1248 bars in database
+2025-12-25 00:38:57,281 - 
+================================================================================
+2025-12-25 00:38:57,281 - 📊 EXTRACTION COMPLETE - REAL DATA!
+2025-12-25 00:38:57,281 - ================================================================================
+2025-12-25 00:38:57,281 - Stocks Processed: 20
+2025-12-25 00:38:57,281 - Total OHLC Bars:  24,725
+2025-12-25 00:38:57,281 - Source:           Yahoo Finance (100% REAL)
+2025-12-25 00:38:57,281 - ================================================================================
+2025-12-25 00:38:57,281 - 
+✅ REAL DATA SUCCESSFULLY EXTRACTED!
+
+Connected to Database: localhost:5432/mubasher_db

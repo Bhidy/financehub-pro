@@ -1,0 +1,1366 @@
+2025-12-25 13:52:50,762 - [DIVIDENDS] - INFO - 🎯 Extracting dividends for 453 stocks
+2025-12-25 13:52:56,389 - [DIVIDENDS] - INFO - ✅ 1010: Found 20 corporate actions
+2025-12-25 13:52:56,427 - [DIVIDENDS] - INFO - 💾 [1/453] 1010: Saved 0 actions
+2025-12-25 13:53:02,584 - [DIVIDENDS] - INFO - ✅ 1020: Found 20 corporate actions
+2025-12-25 13:53:02,608 - [DIVIDENDS] - INFO - 💾 [2/453] 1020: Saved 0 actions
+2025-12-25 13:53:06,935 - [DIVIDENDS] - INFO - ✅ 1030: Found 20 corporate actions
+2025-12-25 13:53:06,951 - [DIVIDENDS] - INFO - 💾 [3/453] 1030: Saved 0 actions
+2025-12-25 13:53:11,366 - [DIVIDENDS] - INFO - ✅ 1050: Found 20 corporate actions
+2025-12-25 13:53:11,394 - [DIVIDENDS] - INFO - 💾 [4/453] 1050: Saved 0 actions
+2025-12-25 13:53:16,091 - [DIVIDENDS] - INFO - ✅ 1060: Found 20 corporate actions
+2025-12-25 13:53:16,098 - [DIVIDENDS] - INFO - 💾 [5/453] 1060: Saved 0 actions
+2025-12-25 13:53:20,437 - [DIVIDENDS] - INFO - ✅ 1080: Found 20 corporate actions
+2025-12-25 13:53:20,447 - [DIVIDENDS] - INFO - 💾 [6/453] 1080: Saved 0 actions
+2025-12-25 13:53:24,824 - [DIVIDENDS] - INFO - ✅ 1111: Found 4 corporate actions
+2025-12-25 13:53:24,828 - [DIVIDENDS] - INFO - 💾 [7/453] 1111: Saved 0 actions
+2025-12-25 13:53:29,234 - [DIVIDENDS] - INFO - ⚠️ [8/453] 1113: No actions
+2025-12-25 13:53:34,181 - [DIVIDENDS] - INFO - ✅ 1120: Found 20 corporate actions
+2025-12-25 13:53:34,189 - [DIVIDENDS] - INFO - 💾 [9/453] 1120: Saved 0 actions
+2025-12-25 13:53:38,526 - [DIVIDENDS] - INFO - ✅ 1140: Found 20 corporate actions
+2025-12-25 13:53:38,537 - [DIVIDENDS] - INFO - 💾 [10/453] 1140: Saved 0 actions
+2025-12-25 13:53:43,029 - [DIVIDENDS] - INFO - ✅ 1150: Found 20 corporate actions
+2025-12-25 13:53:43,037 - [DIVIDENDS] - INFO - 💾 [11/453] 1150: Saved 0 actions
+2025-12-25 13:53:47,557 - [DIVIDENDS] - INFO - ✅ 1180: Found 20 corporate actions
+2025-12-25 13:53:47,565 - [DIVIDENDS] - INFO - 💾 [12/453] 1180: Saved 0 actions
+2025-12-25 13:53:51,991 - [DIVIDENDS] - INFO - ✅ 1182: Found 7 corporate actions
+2025-12-25 13:53:51,993 - [DIVIDENDS] - INFO - 💾 [13/453] 1182: Saved 0 actions
+2025-12-25 13:53:56,650 - [DIVIDENDS] - INFO - ✅ 1183: Found 3 corporate actions
+2025-12-25 13:53:56,655 - [DIVIDENDS] - INFO - 💾 [14/453] 1183: Saved 0 actions
+2025-12-25 13:54:01,058 - [DIVIDENDS] - INFO - ✅ 1201: Found 14 corporate actions
+2025-12-25 13:54:01,075 - [DIVIDENDS] - INFO - 💾 [15/453] 1201: Saved 0 actions
+2025-12-25 13:54:05,452 - [DIVIDENDS] - INFO - ✅ 1202: Found 16 corporate actions
+2025-12-25 13:54:05,461 - [DIVIDENDS] - INFO - 💾 [16/453] 1202: Saved 0 actions
+2025-12-25 13:54:09,829 - [DIVIDENDS] - INFO - ✅ 1210: Found 19 corporate actions
+2025-12-25 13:54:09,838 - [DIVIDENDS] - INFO - 💾 [17/453] 1210: Saved 0 actions
+2025-12-25 13:54:14,812 - [DIVIDENDS] - INFO - ✅ 1211: Found 11 corporate actions
+2025-12-25 13:54:14,817 - [DIVIDENDS] - INFO - 💾 [18/453] 1211: Saved 0 actions
+2025-12-25 13:54:19,286 - [DIVIDENDS] - INFO - ✅ 1212: Found 19 corporate actions
+2025-12-25 13:54:19,291 - [DIVIDENDS] - INFO - 💾 [19/453] 1212: Saved 0 actions
+2025-12-25 13:54:23,604 - [DIVIDENDS] - INFO - ✅ 1213: Found 20 corporate actions
+2025-12-25 13:54:23,611 - [DIVIDENDS] - INFO - 💾 [20/453] 1213: Saved 0 actions
+2025-12-25 13:54:27,929 - [DIVIDENDS] - INFO - ✅ 1214: Found 18 corporate actions
+2025-12-25 13:54:27,934 - [DIVIDENDS] - INFO - 💾 [21/453] 1214: Saved 0 actions
+2025-12-25 13:54:32,270 - [DIVIDENDS] - INFO - ✅ 1301: Found 20 corporate actions
+2025-12-25 13:54:32,278 - [DIVIDENDS] - INFO - 💾 [22/453] 1301: Saved 0 actions
+2025-12-25 13:54:36,903 - [DIVIDENDS] - INFO - ✅ 1302: Found 20 corporate actions
+2025-12-25 13:54:36,908 - [DIVIDENDS] - INFO - 💾 [23/453] 1302: Saved 0 actions
+2025-12-25 13:54:41,274 - [DIVIDENDS] - INFO - ✅ 1303: Found 19 corporate actions
+2025-12-25 13:54:41,282 - [DIVIDENDS] - INFO - 💾 [24/453] 1303: Saved 0 actions
+2025-12-25 13:54:45,656 - [DIVIDENDS] - INFO - ✅ 1304: Found 11 corporate actions
+2025-12-25 13:54:45,660 - [DIVIDENDS] - INFO - 💾 [25/453] 1304: Saved 0 actions
+2025-12-25 13:54:50,146 - [DIVIDENDS] - INFO - ✅ 1320: Found 20 corporate actions
+2025-12-25 13:54:50,153 - [DIVIDENDS] - INFO - 💾 [26/453] 1320: Saved 0 actions
+2025-12-25 13:54:54,656 - [DIVIDENDS] - INFO - ✅ 1321: Found 7 corporate actions
+2025-12-25 13:54:54,661 - [DIVIDENDS] - INFO - 💾 [27/453] 1321: Saved 0 actions
+2025-12-25 13:54:59,275 - [DIVIDENDS] - INFO - ✅ 1322: Found 12 corporate actions
+2025-12-25 13:54:59,281 - [DIVIDENDS] - INFO - 💾 [28/453] 1322: Saved 0 actions
+2025-12-25 13:55:04,503 - [DIVIDENDS] - INFO - ✅ 1323: Found 1 corporate actions
+2025-12-25 13:55:04,505 - [DIVIDENDS] - INFO - 💾 [29/453] 1323: Saved 0 actions
+2025-12-25 13:55:09,605 - [DIVIDENDS] - INFO - ✅ 1810: Found 20 corporate actions
+2025-12-25 13:55:09,613 - [DIVIDENDS] - INFO - 💾 [30/453] 1810: Saved 0 actions
+2025-12-25 13:55:14,148 - [DIVIDENDS] - INFO - ✅ 1820: Found 17 corporate actions
+2025-12-25 13:55:14,154 - [DIVIDENDS] - INFO - 💾 [31/453] 1820: Saved 0 actions
+2025-12-25 13:55:18,778 - [DIVIDENDS] - INFO - ✅ 1830: Found 20 corporate actions
+2025-12-25 13:55:18,784 - [DIVIDENDS] - INFO - 💾 [32/453] 1830: Saved 0 actions
+2025-12-25 13:55:23,331 - [DIVIDENDS] - INFO - ✅ 1831: Found 15 corporate actions
+2025-12-25 13:55:23,337 - [DIVIDENDS] - INFO - 💾 [33/453] 1831: Saved 0 actions
+2025-12-25 13:55:31,362 - [DIVIDENDS] - INFO - ⚠️ [34/453] 1832: No actions
+2025-12-25 13:55:48,740 - [DIVIDENDS] - INFO - ✅ 1833: Found 5 corporate actions
+2025-12-25 13:55:48,745 - [DIVIDENDS] - INFO - 💾 [35/453] 1833: Saved 0 actions
+2025-12-25 13:55:54,751 - [DIVIDENDS] - INFO - ✅ 1834: Found 3 corporate actions
+2025-12-25 13:55:54,755 - [DIVIDENDS] - INFO - 💾 [36/453] 1834: Saved 0 actions
+2025-12-25 13:55:59,383 - [DIVIDENDS] - INFO - ✅ 1835: Found 2 corporate actions
+2025-12-25 13:55:59,385 - [DIVIDENDS] - INFO - 💾 [37/453] 1835: Saved 0 actions
+2025-12-25 13:56:03,948 - [DIVIDENDS] - INFO - ✅ 2001: Found 8 corporate actions
+2025-12-25 13:56:03,953 - [DIVIDENDS] - INFO - 💾 [38/453] 2001: Saved 0 actions
+2025-12-25 13:56:08,606 - [DIVIDENDS] - INFO - ✅ 2010: Found 20 corporate actions
+2025-12-25 13:56:08,616 - [DIVIDENDS] - INFO - 💾 [39/453] 2010: Saved 0 actions
+2025-12-25 13:56:12,975 - [DIVIDENDS] - INFO - ✅ 2020: Found 20 corporate actions
+2025-12-25 13:56:12,982 - [DIVIDENDS] - INFO - 💾 [40/453] 2020: Saved 0 actions
+2025-12-25 13:56:17,312 - [DIVIDENDS] - INFO - ✅ 2030: Found 20 corporate actions
+2025-12-25 13:56:17,321 - [DIVIDENDS] - INFO - 💾 [41/453] 2030: Saved 0 actions
+2025-12-25 13:56:21,604 - [DIVIDENDS] - INFO - ✅ 2040: Found 20 corporate actions
+2025-12-25 13:56:21,611 - [DIVIDENDS] - INFO - 💾 [42/453] 2040: Saved 0 actions
+2025-12-25 13:56:26,259 - [DIVIDENDS] - INFO - ✅ 2050: Found 20 corporate actions
+2025-12-25 13:56:26,265 - [DIVIDENDS] - INFO - 💾 [43/453] 2050: Saved 0 actions
+2025-12-25 13:56:30,756 - [DIVIDENDS] - INFO - ✅ 2060: Found 20 corporate actions
+2025-12-25 13:56:30,769 - [DIVIDENDS] - INFO - 💾 [44/453] 2060: Saved 0 actions
+2025-12-25 13:56:35,216 - [DIVIDENDS] - INFO - ✅ 2070: Found 20 corporate actions
+2025-12-25 13:56:35,222 - [DIVIDENDS] - INFO - 💾 [45/453] 2070: Saved 0 actions
+2025-12-25 13:56:39,747 - [DIVIDENDS] - INFO - ✅ 2080: Found 20 corporate actions
+2025-12-25 13:56:39,752 - [DIVIDENDS] - INFO - 💾 [46/453] 2080: Saved 0 actions
+2025-12-25 13:56:44,069 - [DIVIDENDS] - INFO - ✅ 2081: Found 6 corporate actions
+2025-12-25 13:56:44,071 - [DIVIDENDS] - INFO - 💾 [47/453] 2081: Saved 0 actions
+2025-12-25 13:56:48,476 - [DIVIDENDS] - INFO - ✅ 2082: Found 7 corporate actions
+2025-12-25 13:56:48,490 - [DIVIDENDS] - INFO - 💾 [48/453] 2082: Saved 0 actions
+2025-12-25 13:56:52,889 - [DIVIDENDS] - INFO - ✅ 2083: Found 4 corporate actions
+2025-12-25 13:56:52,892 - [DIVIDENDS] - INFO - 💾 [49/453] 2083: Saved 0 actions
+2025-12-25 13:56:57,298 - [DIVIDENDS] - INFO - ✅ 2084: Found 1 corporate actions
+2025-12-25 13:56:57,299 - [DIVIDENDS] - INFO - 💾 [50/453] 2084: Saved 0 actions
+2025-12-25 13:57:01,595 - [DIVIDENDS] - INFO - ✅ 2090: Found 20 corporate actions
+2025-12-25 13:57:01,605 - [DIVIDENDS] - INFO - 💾 [51/453] 2090: Saved 0 actions
+2025-12-25 13:57:05,938 - [DIVIDENDS] - INFO - ✅ 2100: Found 10 corporate actions
+2025-12-25 13:57:05,941 - [DIVIDENDS] - INFO - 💾 [52/453] 2100: Saved 0 actions
+2025-12-25 13:57:10,217 - [DIVIDENDS] - INFO - ✅ 2110: Found 20 corporate actions
+2025-12-25 13:57:10,225 - [DIVIDENDS] - INFO - 💾 [53/453] 2110: Saved 0 actions
+2025-12-25 13:57:14,513 - [DIVIDENDS] - INFO - ✅ 2120: Found 20 corporate actions
+2025-12-25 13:57:14,520 - [DIVIDENDS] - INFO - 💾 [54/453] 2120: Saved 0 actions
+2025-12-25 13:57:18,801 - [DIVIDENDS] - INFO - ✅ 2130: Found 11 corporate actions
+2025-12-25 13:57:18,805 - [DIVIDENDS] - INFO - 💾 [55/453] 2130: Saved 0 actions
+2025-12-25 13:57:23,126 - [DIVIDENDS] - INFO - ✅ 2140: Found 20 corporate actions
+2025-12-25 13:57:23,133 - [DIVIDENDS] - INFO - 💾 [56/453] 2140: Saved 0 actions
+2025-12-25 13:57:27,432 - [DIVIDENDS] - INFO - ✅ 2150: Found 20 corporate actions
+2025-12-25 13:57:27,439 - [DIVIDENDS] - INFO - 💾 [57/453] 2150: Saved 0 actions
+2025-12-25 13:57:31,780 - [DIVIDENDS] - INFO - ✅ 2160: Found 20 corporate actions
+2025-12-25 13:57:31,789 - [DIVIDENDS] - INFO - 💾 [58/453] 2160: Saved 0 actions
+2025-12-25 13:57:36,128 - [DIVIDENDS] - INFO - ✅ 2170: Found 18 corporate actions
+2025-12-25 13:57:36,135 - [DIVIDENDS] - INFO - 💾 [59/453] 2170: Saved 0 actions
+2025-12-25 13:57:43,051 - [DIVIDENDS] - INFO - ✅ 2180: Found 20 corporate actions
+2025-12-25 13:57:43,060 - [DIVIDENDS] - INFO - 💾 [60/453] 2180: Saved 0 actions
+2025-12-25 13:57:47,391 - [DIVIDENDS] - INFO - ✅ 2190: Found 20 corporate actions
+2025-12-25 13:57:47,397 - [DIVIDENDS] - INFO - 💾 [61/453] 2190: Saved 0 actions
+2025-12-25 13:57:51,680 - [DIVIDENDS] - INFO - ✅ 2200: Found 20 corporate actions
+2025-12-25 13:57:51,687 - [DIVIDENDS] - INFO - 💾 [62/453] 2200: Saved 0 actions
+2025-12-25 13:57:56,012 - [DIVIDENDS] - INFO - ✅ 2210: Found 17 corporate actions
+2025-12-25 13:57:56,018 - [DIVIDENDS] - INFO - 💾 [63/453] 2210: Saved 0 actions
+2025-12-25 13:58:00,558 - [DIVIDENDS] - INFO - ✅ 2220: Found 20 corporate actions
+2025-12-25 13:58:00,564 - [DIVIDENDS] - INFO - 💾 [64/453] 2220: Saved 0 actions
+2025-12-25 13:58:04,856 - [DIVIDENDS] - INFO - ✅ 2222: Found 20 corporate actions
+2025-12-25 13:58:04,867 - [DIVIDENDS] - INFO - 💾 [65/453] 2222: Saved 0 actions
+2025-12-25 13:58:09,177 - [DIVIDENDS] - INFO - ✅ 2223: Found 7 corporate actions
+2025-12-25 13:58:09,181 - [DIVIDENDS] - INFO - 💾 [66/453] 2223: Saved 0 actions
+2025-12-25 13:58:13,490 - [DIVIDENDS] - INFO - ✅ 2230: Found 20 corporate actions
+2025-12-25 13:58:13,504 - [DIVIDENDS] - INFO - 💾 [67/453] 2230: Saved 0 actions
+2025-12-25 13:58:18,716 - [DIVIDENDS] - INFO - ✅ 2240: Found 20 corporate actions
+2025-12-25 13:58:18,723 - [DIVIDENDS] - INFO - 💾 [68/453] 2240: Saved 0 actions
+2025-12-25 13:58:23,022 - [DIVIDENDS] - INFO - ✅ 2250: Found 20 corporate actions
+2025-12-25 13:58:23,027 - [DIVIDENDS] - INFO - 💾 [69/453] 2250: Saved 0 actions
+2025-12-25 13:58:27,348 - [DIVIDENDS] - INFO - ✅ 2270: Found 20 corporate actions
+2025-12-25 13:58:27,363 - [DIVIDENDS] - INFO - 💾 [70/453] 2270: Saved 0 actions
+2025-12-25 13:58:31,676 - [DIVIDENDS] - INFO - ✅ 2280: Found 20 corporate actions
+2025-12-25 13:58:31,684 - [DIVIDENDS] - INFO - 💾 [71/453] 2280: Saved 0 actions
+2025-12-25 13:58:36,681 - [DIVIDENDS] - INFO - ✅ 2281: Found 4 corporate actions
+2025-12-25 13:58:36,684 - [DIVIDENDS] - INFO - 💾 [72/453] 2281: Saved 0 actions
+2025-12-25 13:58:42,463 - [DIVIDENDS] - INFO - ✅ 2282: Found 3 corporate actions
+2025-12-25 13:58:42,465 - [DIVIDENDS] - INFO - 💾 [73/453] 2282: Saved 0 actions
+2025-12-25 13:58:48,291 - [DIVIDENDS] - INFO - ✅ 2283: Found 6 corporate actions
+2025-12-25 13:58:48,295 - [DIVIDENDS] - INFO - 💾 [74/453] 2283: Saved 0 actions
+2025-12-25 13:58:52,717 - [DIVIDENDS] - INFO - ✅ 2284: Found 4 corporate actions
+2025-12-25 13:58:52,719 - [DIVIDENDS] - INFO - 💾 [75/453] 2284: Saved 0 actions
+2025-12-25 13:58:57,057 - [DIVIDENDS] - INFO - ✅ 2285: Found 1 corporate actions
+2025-12-25 13:58:57,059 - [DIVIDENDS] - INFO - 💾 [76/453] 2285: Saved 0 actions
+2025-12-25 13:59:01,617 - [DIVIDENDS] - INFO - ✅ 2286: Found 3 corporate actions
+2025-12-25 13:59:01,622 - [DIVIDENDS] - INFO - 💾 [77/453] 2286: Saved 0 actions
+2025-12-25 13:59:05,943 - [DIVIDENDS] - INFO - ✅ 2287: Found 1 corporate actions
+2025-12-25 13:59:05,949 - [DIVIDENDS] - INFO - 💾 [78/453] 2287: Saved 0 actions
+2025-12-25 13:59:10,566 - [DIVIDENDS] - INFO - ✅ 2290: Found 20 corporate actions
+2025-12-25 13:59:10,576 - [DIVIDENDS] - INFO - 💾 [79/453] 2290: Saved 0 actions
+2025-12-25 13:59:14,921 - [DIVIDENDS] - INFO - ✅ 2300: Found 20 corporate actions
+2025-12-25 13:59:14,934 - [DIVIDENDS] - INFO - 💾 [80/453] 2300: Saved 0 actions
+2025-12-25 13:59:19,271 - [DIVIDENDS] - INFO - ✅ 2310: Found 20 corporate actions
+2025-12-25 13:59:19,284 - [DIVIDENDS] - INFO - 💾 [81/453] 2310: Saved 0 actions
+2025-12-25 13:59:23,626 - [DIVIDENDS] - INFO - ✅ 2320: Found 20 corporate actions
+2025-12-25 13:59:23,634 - [DIVIDENDS] - INFO - 💾 [82/453] 2320: Saved 0 actions
+2025-12-25 13:59:27,965 - [DIVIDENDS] - INFO - ✅ 2330: Found 20 corporate actions
+2025-12-25 13:59:27,973 - [DIVIDENDS] - INFO - 💾 [83/453] 2330: Saved 0 actions
+2025-12-25 13:59:32,269 - [DIVIDENDS] - INFO - ✅ 2340: Found 20 corporate actions
+2025-12-25 13:59:32,275 - [DIVIDENDS] - INFO - 💾 [84/453] 2340: Saved 0 actions
+2025-12-25 13:59:36,563 - [DIVIDENDS] - INFO - ✅ 2350: Found 1 corporate actions
+2025-12-25 13:59:36,565 - [DIVIDENDS] - INFO - 💾 [85/453] 2350: Saved 0 actions
+2025-12-25 13:59:40,879 - [DIVIDENDS] - INFO - ✅ 2360: Found 20 corporate actions
+2025-12-25 13:59:40,888 - [DIVIDENDS] - INFO - 💾 [86/453] 2360: Saved 0 actions
+2025-12-25 13:59:45,271 - [DIVIDENDS] - INFO - ✅ 2370: Found 12 corporate actions
+2025-12-25 13:59:45,275 - [DIVIDENDS] - INFO - 💾 [87/453] 2370: Saved 0 actions
+2025-12-25 13:59:50,748 - [DIVIDENDS] - INFO - ✅ 2380: Found 17 corporate actions
+2025-12-25 13:59:50,754 - [DIVIDENDS] - INFO - 💾 [88/453] 2380: Saved 0 actions
+2025-12-25 13:59:55,079 - [DIVIDENDS] - INFO - ✅ 2381: Found 4 corporate actions
+2025-12-25 13:59:55,081 - [DIVIDENDS] - INFO - 💾 [89/453] 2381: Saved 0 actions
+2025-12-25 13:59:59,467 - [DIVIDENDS] - INFO - ✅ 2382: Found 3 corporate actions
+2025-12-25 13:59:59,471 - [DIVIDENDS] - INFO - 💾 [90/453] 2382: Saved 0 actions
+2025-12-25 14:00:04,359 - [DIVIDENDS] - INFO - ⚠️ [91/453] 3002: No actions
+2025-12-25 14:00:11,941 - [DIVIDENDS] - INFO - ⚠️ [92/453] 3003: No actions
+2025-12-25 14:00:20,171 - [DIVIDENDS] - INFO - ✅ 3004: Found 15 corporate actions
+2025-12-25 14:00:20,206 - [DIVIDENDS] - INFO - 💾 [93/453] 3004: Saved 0 actions
+2025-12-25 14:00:31,308 - [DIVIDENDS] - INFO - ✅ 3005: Found 7 corporate actions
+2025-12-25 14:00:31,312 - [DIVIDENDS] - INFO - 💾 [94/453] 3005: Saved 0 actions
+2025-12-25 14:00:35,613 - [DIVIDENDS] - INFO - ✅ 3007: Found 16 corporate actions
+2025-12-25 14:00:35,620 - [DIVIDENDS] - INFO - 💾 [95/453] 3007: Saved 0 actions
+2025-12-25 14:00:39,997 - [DIVIDENDS] - INFO - ✅ 3008: Found 14 corporate actions
+2025-12-25 14:00:40,003 - [DIVIDENDS] - INFO - 💾 [96/453] 3008: Saved 0 actions
+2025-12-25 14:00:44,344 - [DIVIDENDS] - INFO - ✅ 3010: Found 20 corporate actions
+2025-12-25 14:00:44,350 - [DIVIDENDS] - INFO - 💾 [97/453] 3010: Saved 0 actions
+2025-12-25 14:00:50,278 - [DIVIDENDS] - INFO - ✅ 3020: Found 20 corporate actions
+2025-12-25 14:00:50,289 - [DIVIDENDS] - INFO - 💾 [98/453] 3020: Saved 0 actions
+2025-12-25 14:00:54,651 - [DIVIDENDS] - INFO - ✅ 3030: Found 20 corporate actions
+2025-12-25 14:00:54,657 - [DIVIDENDS] - INFO - 💾 [99/453] 3030: Saved 0 actions
+2025-12-25 14:00:58,979 - [DIVIDENDS] - INFO - ✅ 3040: Found 20 corporate actions
+2025-12-25 14:00:58,991 - [DIVIDENDS] - INFO - 💾 [100/453] 3040: Saved 0 actions
+2025-12-25 14:01:03,682 - [DIVIDENDS] - INFO - ✅ 3050: Found 20 corporate actions
+2025-12-25 14:01:03,689 - [DIVIDENDS] - INFO - 💾 [101/453] 3050: Saved 0 actions
+2025-12-25 14:01:07,972 - [DIVIDENDS] - INFO - ✅ 3060: Found 20 corporate actions
+2025-12-25 14:01:07,980 - [DIVIDENDS] - INFO - 💾 [102/453] 3060: Saved 0 actions
+2025-12-25 14:01:12,451 - [DIVIDENDS] - INFO - ✅ 3080: Found 20 corporate actions
+2025-12-25 14:01:12,460 - [DIVIDENDS] - INFO - 💾 [103/453] 3080: Saved 0 actions
+2025-12-25 14:01:16,955 - [DIVIDENDS] - INFO - ✅ 3090: Found 20 corporate actions
+2025-12-25 14:01:16,961 - [DIVIDENDS] - INFO - 💾 [104/453] 3090: Saved 0 actions
+2025-12-25 14:01:25,790 - [DIVIDENDS] - INFO - ⚠️ [105/453] 3091: No actions
+2025-12-25 14:01:31,571 - [DIVIDENDS] - INFO - ⚠️ [106/453] 3092: No actions
+2025-12-25 14:01:38,049 - [DIVIDENDS] - INFO - ✅ 4001: Found 20 corporate actions
+2025-12-25 14:01:38,058 - [DIVIDENDS] - INFO - 💾 [107/453] 4001: Saved 0 actions
+2025-12-25 14:01:43,216 - [DIVIDENDS] - INFO - ✅ 4002: Found 20 corporate actions
+2025-12-25 14:01:43,223 - [DIVIDENDS] - INFO - 💾 [108/453] 4002: Saved 0 actions
+2025-12-25 14:01:49,488 - [DIVIDENDS] - INFO - ✅ 4003: Found 20 corporate actions
+2025-12-25 14:01:49,493 - [DIVIDENDS] - INFO - 💾 [109/453] 4003: Saved 0 actions
+2025-12-25 14:01:54,860 - [DIVIDENDS] - INFO - ⚠️ [110/453] 4004: No actions
+2025-12-25 14:02:06,725 - [DIVIDENDS] - INFO - ⚠️ [111/453] 4005: No actions
+2025-12-25 14:02:11,530 - [DIVIDENDS] - INFO - ✅ 4006: Found 8 corporate actions
+2025-12-25 14:02:11,533 - [DIVIDENDS] - INFO - 💾 [112/453] 4006: Saved 0 actions
+2025-12-25 14:02:20,259 - [DIVIDENDS] - INFO - ⚠️ [113/453] 4007: No actions
+2025-12-25 14:02:26,230 - [DIVIDENDS] - INFO - ⚠️ [114/453] 4008: No actions
+2025-12-25 14:02:32,730 - [DIVIDENDS] - INFO - ✅ 4009: Found 5 corporate actions
+2025-12-25 14:02:32,736 - [DIVIDENDS] - INFO - 💾 [115/453] 4009: Saved 0 actions
+2025-12-25 14:02:39,363 - [DIVIDENDS] - INFO - ⚠️ [116/453] 4011: No actions
+2025-12-25 14:02:46,729 - [DIVIDENDS] - INFO - ✅ 4012: Found 20 corporate actions
+2025-12-25 14:02:46,737 - [DIVIDENDS] - INFO - 💾 [117/453] 4012: Saved 0 actions
+2025-12-25 14:02:54,530 - [DIVIDENDS] - INFO - ✅ 4013: Found 20 corporate actions
+2025-12-25 14:02:54,537 - [DIVIDENDS] - INFO - 💾 [118/453] 4013: Saved 0 actions
+2025-12-25 14:03:01,679 - [DIVIDENDS] - INFO - ✅ 4014: Found 4 corporate actions
+2025-12-25 14:03:01,682 - [DIVIDENDS] - INFO - 💾 [119/453] 4014: Saved 0 actions
+2025-12-25 14:03:10,062 - [DIVIDENDS] - INFO - ⚠️ [120/453] 4015: No actions
+2025-12-25 14:03:22,652 - [DIVIDENDS] - INFO - ⚠️ [121/453] 4016: No actions
+2025-12-25 14:03:29,926 - [DIVIDENDS] - INFO - ✅ 4017: Found 1 corporate actions
+2025-12-25 14:03:29,928 - [DIVIDENDS] - INFO - 💾 [122/453] 4017: Saved 0 actions
+2025-12-25 14:03:36,377 - [DIVIDENDS] - INFO - ✅ 4018: Found 3 corporate actions
+2025-12-25 14:03:36,379 - [DIVIDENDS] - INFO - 💾 [123/453] 4018: Saved 0 actions
+2025-12-25 14:03:42,458 - [DIVIDENDS] - INFO - ⚠️ [124/453] 4019: No actions
+2025-12-25 14:03:48,793 - [DIVIDENDS] - INFO - ⚠️ [125/453] 4020: No actions
+2025-12-25 14:03:57,036 - [DIVIDENDS] - INFO - ⚠️ [126/453] 4021: No actions
+2025-12-25 14:04:04,654 - [DIVIDENDS] - INFO - ✅ 4030: Found 20 corporate actions
+2025-12-25 14:04:04,660 - [DIVIDENDS] - INFO - 💾 [127/453] 4030: Saved 0 actions
+2025-12-25 14:04:11,919 - [DIVIDENDS] - INFO - ✅ 4031: Found 20 corporate actions
+2025-12-25 14:04:11,927 - [DIVIDENDS] - INFO - 💾 [128/453] 4031: Saved 0 actions
+2025-12-25 14:04:17,769 - [DIVIDENDS] - INFO - ⚠️ [129/453] 4040: No actions
+2025-12-25 14:04:26,002 - [DIVIDENDS] - INFO - ⚠️ [130/453] 4050: No actions
+2025-12-25 14:04:30,565 - [DIVIDENDS] - INFO - ✅ 4051: Found 18 corporate actions
+2025-12-25 14:04:30,571 - [DIVIDENDS] - INFO - 💾 [131/453] 4051: Saved 0 actions
+2025-12-25 14:04:35,092 - [DIVIDENDS] - INFO - ✅ 4061: Found 20 corporate actions
+2025-12-25 14:04:35,097 - [DIVIDENDS] - INFO - 💾 [132/453] 4061: Saved 0 actions
+2025-12-25 14:04:41,044 - [DIVIDENDS] - INFO - ✅ 4070: Found 20 corporate actions
+2025-12-25 14:04:41,051 - [DIVIDENDS] - INFO - 💾 [133/453] 4070: Saved 0 actions
+2025-12-25 14:04:46,045 - [DIVIDENDS] - INFO - ⚠️ [134/453] 4071: No actions
+2025-12-25 14:04:52,277 - [DIVIDENDS] - INFO - ⚠️ [135/453] 4072: No actions
+2025-12-25 14:04:57,651 - [DIVIDENDS] - INFO - ✅ 4080: Found 20 corporate actions
+2025-12-25 14:04:57,660 - [DIVIDENDS] - INFO - 💾 [136/453] 4080: Saved 0 actions
+2025-12-25 14:05:03,567 - [DIVIDENDS] - INFO - ⚠️ [137/453] 4081: No actions
+2025-12-25 14:05:11,703 - [DIVIDENDS] - INFO - ✅ 4082: Found 2 corporate actions
+2025-12-25 14:05:11,708 - [DIVIDENDS] - INFO - 💾 [138/453] 4082: Saved 0 actions
+2025-12-25 14:05:22,091 - [DIVIDENDS] - INFO - ✅ 4083: Found 2 corporate actions
+2025-12-25 14:05:22,096 - [DIVIDENDS] - INFO - 💾 [139/453] 4083: Saved 0 actions
+2025-12-25 14:05:26,789 - [DIVIDENDS] - INFO - ✅ 4084: Found 3 corporate actions
+2025-12-25 14:05:26,791 - [DIVIDENDS] - INFO - 💾 [140/453] 4084: Saved 0 actions
+2025-12-25 14:05:31,680 - [DIVIDENDS] - INFO - ✅ 4090: Found 20 corporate actions
+2025-12-25 14:05:31,687 - [DIVIDENDS] - INFO - 💾 [141/453] 4090: Saved 0 actions
+2025-12-25 14:05:36,557 - [DIVIDENDS] - INFO - ✅ 4100: Found 20 corporate actions
+2025-12-25 14:05:36,567 - [DIVIDENDS] - INFO - 💾 [142/453] 4100: Saved 0 actions
+2025-12-25 14:05:41,314 - [DIVIDENDS] - INFO - ✅ 4110: Found 20 corporate actions
+2025-12-25 14:05:41,324 - [DIVIDENDS] - INFO - 💾 [143/453] 4110: Saved 0 actions
+2025-12-25 14:05:46,216 - [DIVIDENDS] - INFO - ✅ 4130: Found 18 corporate actions
+2025-12-25 14:05:46,225 - [DIVIDENDS] - INFO - 💾 [144/453] 4130: Saved 0 actions
+2025-12-25 14:05:51,158 - [DIVIDENDS] - INFO - ✅ 4140: Found 20 corporate actions
+2025-12-25 14:05:51,166 - [DIVIDENDS] - INFO - 💾 [145/453] 4140: Saved 0 actions
+2025-12-25 14:05:55,759 - [DIVIDENDS] - INFO - ✅ 4141: Found 5 corporate actions
+2025-12-25 14:05:55,762 - [DIVIDENDS] - INFO - 💾 [146/453] 4141: Saved 0 actions
+2025-12-25 14:06:00,871 - [DIVIDENDS] - INFO - ✅ 4142: Found 8 corporate actions
+2025-12-25 14:06:00,894 - [DIVIDENDS] - INFO - 💾 [147/453] 4142: Saved 0 actions
+2025-12-25 14:06:05,449 - [DIVIDENDS] - INFO - ✅ 4143: Found 2 corporate actions
+2025-12-25 14:06:05,450 - [DIVIDENDS] - INFO - 💾 [148/453] 4143: Saved 0 actions
+2025-12-25 14:06:11,069 - [DIVIDENDS] - INFO - ✅ 4144: Found 18 corporate actions
+2025-12-25 14:06:11,096 - [DIVIDENDS] - INFO - 💾 [149/453] 4144: Saved 0 actions
+2025-12-25 14:06:15,780 - [DIVIDENDS] - INFO - ✅ 4145: Found 7 corporate actions
+2025-12-25 14:06:15,786 - [DIVIDENDS] - INFO - 💾 [150/453] 4145: Saved 0 actions
+2025-12-25 14:06:20,268 - [DIVIDENDS] - INFO - ✅ 4146: Found 10 corporate actions
+2025-12-25 14:06:20,283 - [DIVIDENDS] - INFO - 💾 [151/453] 4146: Saved 0 actions
+2025-12-25 14:06:26,353 - [DIVIDENDS] - INFO - ✅ 4150: Found 20 corporate actions
+2025-12-25 14:06:26,361 - [DIVIDENDS] - INFO - 💾 [152/453] 4150: Saved 0 actions
+2025-12-25 14:06:31,642 - [DIVIDENDS] - INFO - ✅ 4160: Found 7 corporate actions
+2025-12-25 14:06:31,645 - [DIVIDENDS] - INFO - 💾 [153/453] 4160: Saved 0 actions
+2025-12-25 14:06:36,528 - [DIVIDENDS] - INFO - ✅ 4161: Found 13 corporate actions
+2025-12-25 14:06:36,534 - [DIVIDENDS] - INFO - 💾 [154/453] 4161: Saved 0 actions
+2025-12-25 14:06:41,121 - [DIVIDENDS] - INFO - ✅ 4162: Found 8 corporate actions
+2025-12-25 14:06:41,125 - [DIVIDENDS] - INFO - 💾 [155/453] 4162: Saved 0 actions
+2025-12-25 14:06:46,361 - [DIVIDENDS] - INFO - ✅ 4163: Found 9 corporate actions
+2025-12-25 14:06:46,386 - [DIVIDENDS] - INFO - 💾 [156/453] 4163: Saved 0 actions
+2025-12-25 14:06:51,681 - [DIVIDENDS] - INFO - ✅ 4164: Found 7 corporate actions
+2025-12-25 14:06:51,686 - [DIVIDENDS] - INFO - 💾 [157/453] 4164: Saved 0 actions
+2025-12-25 14:06:57,080 - [DIVIDENDS] - INFO - ✅ 4165: Found 1 corporate actions
+2025-12-25 14:06:57,084 - [DIVIDENDS] - INFO - 💾 [158/453] 4165: Saved 0 actions
+2025-12-25 14:07:02,142 - [DIVIDENDS] - INFO - ✅ 4170: Found 12 corporate actions
+2025-12-25 14:07:02,168 - [DIVIDENDS] - INFO - 💾 [159/453] 4170: Saved 0 actions
+2025-12-25 14:07:06,957 - [DIVIDENDS] - INFO - ✅ 4180: Found 20 corporate actions
+2025-12-25 14:07:06,966 - [DIVIDENDS] - INFO - 💾 [160/453] 4180: Saved 0 actions
+2025-12-25 14:07:11,539 - [DIVIDENDS] - INFO - ✅ 4190: Found 20 corporate actions
+2025-12-25 14:07:11,547 - [DIVIDENDS] - INFO - 💾 [161/453] 4190: Saved 0 actions
+2025-12-25 14:07:16,404 - [DIVIDENDS] - INFO - ✅ 4191: Found 19 corporate actions
+2025-12-25 14:07:17,079 - [DIVIDENDS] - INFO - 💾 [162/453] 4191: Saved 0 actions
+2025-12-25 14:07:22,217 - [DIVIDENDS] - INFO - ✅ 4192: Found 5 corporate actions
+2025-12-25 14:07:22,340 - [DIVIDENDS] - INFO - 💾 [163/453] 4192: Saved 0 actions
+2025-12-25 14:07:27,501 - [DIVIDENDS] - INFO - ⚠️ [164/453] 4193: No actions
+2025-12-25 14:07:32,095 - [DIVIDENDS] - INFO - ✅ 4194: Found 2 corporate actions
+2025-12-25 14:07:32,390 - [DIVIDENDS] - INFO - 💾 [165/453] 4194: Saved 0 actions
+2025-12-25 14:07:37,971 - [DIVIDENDS] - INFO - ✅ 4200: Found 20 corporate actions
+2025-12-25 14:07:38,044 - [DIVIDENDS] - INFO - 💾 [166/453] 4200: Saved 0 actions
+2025-12-25 14:07:42,800 - [DIVIDENDS] - INFO - ✅ 4210: Found 20 corporate actions
+2025-12-25 14:07:42,812 - [DIVIDENDS] - INFO - 💾 [167/453] 4210: Saved 0 actions
+2025-12-25 14:07:47,432 - [DIVIDENDS] - INFO - ✅ 4220: Found 8 corporate actions
+2025-12-25 14:07:47,438 - [DIVIDENDS] - INFO - 💾 [168/453] 4220: Saved 0 actions
+2025-12-25 14:07:52,195 - [DIVIDENDS] - INFO - ✅ 4230: Found 20 corporate actions
+2025-12-25 14:07:52,206 - [DIVIDENDS] - INFO - 💾 [169/453] 4230: Saved 0 actions
+2025-12-25 14:07:57,183 - [DIVIDENDS] - INFO - ✅ 4240: Found 20 corporate actions
+2025-12-25 14:07:57,194 - [DIVIDENDS] - INFO - 💾 [170/453] 4240: Saved 0 actions
+2025-12-25 14:08:02,794 - [DIVIDENDS] - INFO - ✅ 4250: Found 8 corporate actions
+2025-12-25 14:08:02,798 - [DIVIDENDS] - INFO - 💾 [171/453] 4250: Saved 0 actions
+2025-12-25 14:08:08,640 - [DIVIDENDS] - INFO - ✅ 4260: Found 20 corporate actions
+2025-12-25 14:08:08,658 - [DIVIDENDS] - INFO - 💾 [172/453] 4260: Saved 0 actions
+2025-12-25 14:08:14,198 - [DIVIDENDS] - INFO - ✅ 4261: Found 19 corporate actions
+2025-12-25 14:08:14,208 - [DIVIDENDS] - INFO - 💾 [173/453] 4261: Saved 0 actions
+2025-12-25 14:08:19,257 - [DIVIDENDS] - INFO - ⚠️ [174/453] 4262: No actions
+2025-12-25 14:08:24,572 - [DIVIDENDS] - INFO - ✅ 4263: Found 8 corporate actions
+2025-12-25 14:08:24,638 - [DIVIDENDS] - INFO - 💾 [175/453] 4263: Saved 0 actions
+2025-12-25 14:08:29,826 - [DIVIDENDS] - INFO - ⚠️ [176/453] 4264: No actions
+2025-12-25 14:08:35,493 - [DIVIDENDS] - INFO - ⚠️ [177/453] 4265: No actions
+2025-12-25 14:08:40,336 - [DIVIDENDS] - INFO - ✅ 4270: Found 12 corporate actions
+2025-12-25 14:08:40,499 - [DIVIDENDS] - INFO - 💾 [178/453] 4270: Saved 0 actions
+2025-12-25 14:08:45,694 - [DIVIDENDS] - INFO - ✅ 4280: Found 20 corporate actions
+2025-12-25 14:08:45,702 - [DIVIDENDS] - INFO - 💾 [179/453] 4280: Saved 0 actions
+2025-12-25 14:08:51,377 - [DIVIDENDS] - INFO - ✅ 4290: Found 20 corporate actions
+2025-12-25 14:08:51,386 - [DIVIDENDS] - INFO - 💾 [180/453] 4290: Saved 0 actions
+2025-12-25 14:08:57,140 - [DIVIDENDS] - INFO - ⚠️ [181/453] 4291: No actions
+2025-12-25 14:09:03,944 - [DIVIDENDS] - INFO - ✅ 4292: Found 9 corporate actions
+2025-12-25 14:09:03,951 - [DIVIDENDS] - INFO - 💾 [182/453] 4292: Saved 0 actions
+2025-12-25 14:09:14,118 - [DIVIDENDS] - INFO - ✅ 4300: Found 19 corporate actions
+2025-12-25 14:09:14,127 - [DIVIDENDS] - INFO - 💾 [183/453] 4300: Saved 0 actions
+2025-12-25 14:09:23,137 - [DIVIDENDS] - INFO - ✅ 4310: Found 3 corporate actions
+2025-12-25 14:09:23,142 - [DIVIDENDS] - INFO - 💾 [184/453] 4310: Saved 0 actions
+2025-12-25 14:09:28,025 - [DIVIDENDS] - INFO - ✅ 4320: Found 18 corporate actions
+2025-12-25 14:09:28,042 - [DIVIDENDS] - INFO - 💾 [185/453] 4320: Saved 0 actions
+2025-12-25 14:09:33,061 - [DIVIDENDS] - INFO - ✅ 4321: Found 17 corporate actions
+2025-12-25 14:09:33,067 - [DIVIDENDS] - INFO - 💾 [186/453] 4321: Saved 0 actions
+2025-12-25 14:09:38,239 - [DIVIDENDS] - INFO - ✅ 4322: Found 10 corporate actions
+2025-12-25 14:09:38,247 - [DIVIDENDS] - INFO - 💾 [187/453] 4322: Saved 0 actions
+2025-12-25 14:09:54,626 - [DIVIDENDS] - INFO - ⚠️ [188/453] 4323: No actions
+2025-12-25 14:09:59,356 - [DIVIDENDS] - INFO - ✅ 4324: Found 12 corporate actions
+2025-12-25 14:09:59,360 - [DIVIDENDS] - INFO - 💾 [189/453] 4324: Saved 0 actions
+2025-12-25 14:10:04,113 - [DIVIDENDS] - INFO - ⚠️ [190/453] 4325: No actions
+2025-12-25 14:10:10,073 - [DIVIDENDS] - INFO - ⚠️ [191/453] 4326: No actions
+2025-12-25 14:10:16,316 - [DIVIDENDS] - INFO - ⚠️ [192/453] 4327: No actions
+2025-12-25 14:10:28,408 - [DIVIDENDS] - INFO - ✅ 4330: Found 19 corporate actions
+2025-12-25 14:10:28,418 - [DIVIDENDS] - INFO - 💾 [193/453] 4330: Saved 0 actions
+2025-12-25 14:10:32,809 - [DIVIDENDS] - INFO - ✅ 4331: Found 11 corporate actions
+2025-12-25 14:10:32,814 - [DIVIDENDS] - INFO - 💾 [194/453] 4331: Saved 0 actions
+2025-12-25 14:10:37,575 - [DIVIDENDS] - INFO - ✅ 4332: Found 11 corporate actions
+2025-12-25 14:10:37,581 - [DIVIDENDS] - INFO - 💾 [195/453] 4332: Saved 0 actions
+2025-12-25 14:10:42,055 - [DIVIDENDS] - INFO - ✅ 4333: Found 20 corporate actions
+2025-12-25 14:10:42,063 - [DIVIDENDS] - INFO - 💾 [196/453] 4333: Saved 0 actions
+2025-12-25 14:10:46,698 - [DIVIDENDS] - INFO - ✅ 4334: Found 12 corporate actions
+2025-12-25 14:10:46,708 - [DIVIDENDS] - INFO - 💾 [197/453] 4334: Saved 0 actions
+2025-12-25 14:10:51,303 - [DIVIDENDS] - INFO - ✅ 4335: Found 16 corporate actions
+2025-12-25 14:10:51,338 - [DIVIDENDS] - INFO - 💾 [198/453] 4335: Saved 0 actions
+2025-12-25 14:10:56,026 - [DIVIDENDS] - INFO - ✅ 4336: Found 20 corporate actions
+2025-12-25 14:10:56,034 - [DIVIDENDS] - INFO - 💾 [199/453] 4336: Saved 0 actions
+2025-12-25 14:11:00,680 - [DIVIDENDS] - INFO - ✅ 4337: Found 8 corporate actions
+2025-12-25 14:11:00,691 - [DIVIDENDS] - INFO - 💾 [200/453] 4337: Saved 0 actions
+2025-12-25 14:11:05,071 - [DIVIDENDS] - INFO - ✅ 4338: Found 15 corporate actions
+2025-12-25 14:11:05,076 - [DIVIDENDS] - INFO - 💾 [201/453] 4338: Saved 0 actions
+2025-12-25 14:11:09,437 - [DIVIDENDS] - INFO - ✅ 4339: Found 20 corporate actions
+2025-12-25 14:11:09,443 - [DIVIDENDS] - INFO - 💾 [202/453] 4339: Saved 0 actions
+2025-12-25 14:11:16,168 - [DIVIDENDS] - INFO - ✅ 4340: Found 20 corporate actions
+2025-12-25 14:11:16,179 - [DIVIDENDS] - INFO - 💾 [203/453] 4340: Saved 0 actions
+2025-12-25 14:11:20,870 - [DIVIDENDS] - INFO - ✅ 4342: Found 20 corporate actions
+2025-12-25 14:11:20,876 - [DIVIDENDS] - INFO - 💾 [204/453] 4342: Saved 0 actions
+2025-12-25 14:11:25,302 - [DIVIDENDS] - INFO - ✅ 4344: Found 20 corporate actions
+2025-12-25 14:11:25,309 - [DIVIDENDS] - INFO - 💾 [205/453] 4344: Saved 0 actions
+2025-12-25 14:11:29,844 - [DIVIDENDS] - INFO - ✅ 4345: Found 11 corporate actions
+2025-12-25 14:11:29,869 - [DIVIDENDS] - INFO - 💾 [206/453] 4345: Saved 0 actions
+2025-12-25 14:11:34,575 - [DIVIDENDS] - INFO - ✅ 4346: Found 7 corporate actions
+2025-12-25 14:11:34,580 - [DIVIDENDS] - INFO - 💾 [207/453] 4346: Saved 0 actions
+2025-12-25 14:11:38,974 - [DIVIDENDS] - INFO - ✅ 4347: Found 15 corporate actions
+2025-12-25 14:11:38,979 - [DIVIDENDS] - INFO - 💾 [208/453] 4347: Saved 0 actions
+2025-12-25 14:11:43,288 - [DIVIDENDS] - INFO - ✅ 4348: Found 20 corporate actions
+2025-12-25 14:11:43,296 - [DIVIDENDS] - INFO - 💾 [209/453] 4348: Saved 0 actions
+2025-12-25 14:11:47,926 - [DIVIDENDS] - INFO - ⚠️ [210/453] 4349: No actions
+2025-12-25 14:11:53,684 - [DIVIDENDS] - INFO - ⚠️ [211/453] 4350: No actions
+2025-12-25 14:11:58,485 - [DIVIDENDS] - INFO - ⚠️ [212/453] 4700: No actions
+2025-12-25 14:12:03,160 - [DIVIDENDS] - INFO - ⚠️ [213/453] 4701: No actions
+2025-12-25 14:12:07,755 - [DIVIDENDS] - INFO - ⚠️ [214/453] 4702: No actions
+2025-12-25 14:12:12,446 - [DIVIDENDS] - INFO - ⚠️ [215/453] 4703: No actions
+2025-12-25 14:12:18,226 - [DIVIDENDS] - INFO - ⚠️ [216/453] 5015: No actions
+2025-12-25 14:12:23,134 - [DIVIDENDS] - INFO - ⚠️ [217/453] 5019: No actions
+2025-12-25 14:12:27,661 - [DIVIDENDS] - INFO - ⚠️ [218/453] 5021: No actions
+2025-12-25 14:12:35,332 - [DIVIDENDS] - INFO - ⚠️ [219/453] 5022: No actions
+2025-12-25 14:12:40,211 - [DIVIDENDS] - INFO - ⚠️ [220/453] 5023: No actions
+2025-12-25 14:12:46,386 - [DIVIDENDS] - INFO - ✅ 5110: Found 20 corporate actions
+2025-12-25 14:12:46,651 - [DIVIDENDS] - INFO - 💾 [221/453] 5110: Saved 0 actions
+2025-12-25 14:12:51,563 - [DIVIDENDS] - INFO - ⚠️ [222/453] 5214: No actions
+2025-12-25 14:12:57,010 - [DIVIDENDS] - INFO - ⚠️ [223/453] 5216: No actions
+2025-12-25 14:13:02,101 - [DIVIDENDS] - INFO - ⚠️ [224/453] 5221: No actions
+2025-12-25 14:13:06,724 - [DIVIDENDS] - INFO - ⚠️ [225/453] 5227: No actions
+2025-12-25 14:13:11,933 - [DIVIDENDS] - INFO - ⚠️ [226/453] 5243: No actions
+2025-12-25 14:13:21,271 - [DIVIDENDS] - INFO - ⚠️ [227/453] 5245: No actions
+2025-12-25 14:13:25,973 - [DIVIDENDS] - INFO - ⚠️ [228/453] 5246: No actions
+2025-12-25 14:13:30,542 - [DIVIDENDS] - INFO - ⚠️ [229/453] 5247: No actions
+2025-12-25 14:13:35,231 - [DIVIDENDS] - INFO - ⚠️ [230/453] 5249: No actions
+2025-12-25 14:13:40,016 - [DIVIDENDS] - INFO - ⚠️ [231/453] 5250: No actions
+2025-12-25 14:13:45,688 - [DIVIDENDS] - INFO - ⚠️ [232/453] 5251: No actions
+2025-12-25 14:13:51,218 - [DIVIDENDS] - INFO - ⚠️ [233/453] 5252: No actions
+2025-12-25 14:13:56,405 - [DIVIDENDS] - INFO - ⚠️ [234/453] 5253: No actions
+2025-12-25 14:14:01,088 - [DIVIDENDS] - INFO - ⚠️ [235/453] 5254: No actions
+2025-12-25 14:14:06,245 - [DIVIDENDS] - INFO - ⚠️ [236/453] 5267: No actions
+2025-12-25 14:14:11,183 - [DIVIDENDS] - INFO - ⚠️ [237/453] 5272: No actions
+2025-12-25 14:14:15,879 - [DIVIDENDS] - INFO - ⚠️ [238/453] 5273: No actions
+2025-12-25 14:14:21,400 - [DIVIDENDS] - INFO - ⚠️ [239/453] 5274: No actions
+2025-12-25 14:14:27,960 - [DIVIDENDS] - INFO - ⚠️ [240/453] 5280: No actions
+2025-12-25 14:14:34,248 - [DIVIDENDS] - INFO - ⚠️ [241/453] 5282: No actions
+2025-12-25 14:14:39,515 - [DIVIDENDS] - INFO - ⚠️ [242/453] 5283: No actions
+2025-12-25 14:14:43,970 - [DIVIDENDS] - INFO - ⚠️ [243/453] 5284: No actions
+2025-12-25 14:14:48,901 - [DIVIDENDS] - INFO - ⚠️ [244/453] 5285: No actions
+2025-12-25 14:14:53,693 - [DIVIDENDS] - INFO - ⚠️ [245/453] 5301: No actions
+2025-12-25 14:14:59,215 - [DIVIDENDS] - INFO - ⚠️ [246/453] 5303: No actions
+2025-12-25 14:15:03,666 - [DIVIDENDS] - INFO - ⚠️ [247/453] 5306: No actions
+2025-12-25 14:15:08,607 - [DIVIDENDS] - INFO - ⚠️ [248/453] 5308: No actions
+2025-12-25 14:15:13,263 - [DIVIDENDS] - INFO - ⚠️ [249/453] 5311: No actions
+2025-12-25 14:15:18,673 - [DIVIDENDS] - INFO - ⚠️ [250/453] 5312: No actions
+2025-12-25 14:15:23,375 - [DIVIDENDS] - INFO - ⚠️ [251/453] 5313: No actions
+2025-12-25 14:15:27,959 - [DIVIDENDS] - INFO - ⚠️ [252/453] 5318: No actions
+2025-12-25 14:15:33,654 - [DIVIDENDS] - INFO - ⚠️ [253/453] 5320: No actions
+2025-12-25 14:15:34,694 - [DIVIDENDS] - ERROR - ❌ 5321: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/5321/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5321/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:15:34,695 - [DIVIDENDS] - INFO - ⚠️ [254/453] 5321: No actions
+2025-12-25 14:15:35,747 - [DIVIDENDS] - ERROR - ❌ 5323: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/5323/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5323/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:15:35,748 - [DIVIDENDS] - INFO - ⚠️ [255/453] 5323: No actions
+2025-12-25 14:15:41,470 - [DIVIDENDS] - INFO - ⚠️ [256/453] 5332: No actions
+2025-12-25 14:15:46,266 - [DIVIDENDS] - INFO - ⚠️ [257/453] 5333: No actions
+2025-12-25 14:15:51,071 - [DIVIDENDS] - INFO - ⚠️ [258/453] 5334: No actions
+2025-12-25 14:15:55,421 - [DIVIDENDS] - INFO - ⚠️ [259/453] 5336: No actions
+2025-12-25 14:15:59,905 - [DIVIDENDS] - INFO - ⚠️ [260/453] 5338: No actions
+2025-12-25 14:16:04,254 - [DIVIDENDS] - INFO - ⚠️ [261/453] 5339: No actions
+2025-12-25 14:16:08,575 - [DIVIDENDS] - INFO - ⚠️ [262/453] 5343: No actions
+2025-12-25 14:16:13,019 - [DIVIDENDS] - INFO - ⚠️ [263/453] 5344: No actions
+2025-12-25 14:16:17,476 - [DIVIDENDS] - INFO - ✅ 6001: Found 20 corporate actions
+2025-12-25 14:16:17,504 - [DIVIDENDS] - INFO - 💾 [264/453] 6001: Saved 0 actions
+2025-12-25 14:16:23,203 - [DIVIDENDS] - INFO - ✅ 6002: Found 20 corporate actions
+2025-12-25 14:16:23,213 - [DIVIDENDS] - INFO - 💾 [265/453] 6002: Saved 0 actions
+2025-12-25 14:16:32,893 - [DIVIDENDS] - INFO - ✅ 6004: Found 20 corporate actions
+2025-12-25 14:16:32,900 - [DIVIDENDS] - INFO - 💾 [266/453] 6004: Saved 0 actions
+2025-12-25 14:16:39,990 - [DIVIDENDS] - INFO - ✅ 6010: Found 20 corporate actions
+2025-12-25 14:16:40,016 - [DIVIDENDS] - INFO - 💾 [267/453] 6010: Saved 0 actions
+2025-12-25 14:16:44,660 - [DIVIDENDS] - INFO - ✅ 6012: Found 15 corporate actions
+2025-12-25 14:16:44,668 - [DIVIDENDS] - INFO - 💾 [268/453] 6012: Saved 0 actions
+2025-12-25 14:16:49,049 - [DIVIDENDS] - INFO - ✅ 6013: Found 10 corporate actions
+2025-12-25 14:16:49,055 - [DIVIDENDS] - INFO - 💾 [269/453] 6013: Saved 0 actions
+2025-12-25 14:16:53,527 - [DIVIDENDS] - INFO - ✅ 6014: Found 14 corporate actions
+2025-12-25 14:16:53,533 - [DIVIDENDS] - INFO - 💾 [270/453] 6014: Saved 0 actions
+2025-12-25 14:16:57,969 - [DIVIDENDS] - INFO - ✅ 6015: Found 1 corporate actions
+2025-12-25 14:16:57,971 - [DIVIDENDS] - INFO - 💾 [271/453] 6015: Saved 0 actions
+2025-12-25 14:17:02,504 - [DIVIDENDS] - INFO - ✅ 6016: Found 7 corporate actions
+2025-12-25 14:17:02,509 - [DIVIDENDS] - INFO - 💾 [272/453] 6016: Saved 0 actions
+2025-12-25 14:17:06,984 - [DIVIDENDS] - INFO - ✅ 6017: Found 7 corporate actions
+2025-12-25 14:17:06,988 - [DIVIDENDS] - INFO - 💾 [273/453] 6017: Saved 0 actions
+2025-12-25 14:17:11,479 - [DIVIDENDS] - INFO - ⚠️ [274/453] 6018: No actions
+2025-12-25 14:17:15,926 - [DIVIDENDS] - INFO - ⚠️ [275/453] 6019: No actions
+2025-12-25 14:17:20,217 - [DIVIDENDS] - INFO - ✅ 6020: Found 11 corporate actions
+2025-12-25 14:17:20,222 - [DIVIDENDS] - INFO - 💾 [276/453] 6020: Saved 0 actions
+2025-12-25 14:17:24,580 - [DIVIDENDS] - INFO - ✅ 6040: Found 20 corporate actions
+2025-12-25 14:17:24,588 - [DIVIDENDS] - INFO - 💾 [277/453] 6040: Saved 0 actions
+2025-12-25 14:17:29,364 - [DIVIDENDS] - INFO - ✅ 6050: Found 20 corporate actions
+2025-12-25 14:17:29,379 - [DIVIDENDS] - INFO - 💾 [278/453] 6050: Saved 0 actions
+2025-12-25 14:17:33,735 - [DIVIDENDS] - INFO - ✅ 6060: Found 11 corporate actions
+2025-12-25 14:17:33,743 - [DIVIDENDS] - INFO - 💾 [279/453] 6060: Saved 0 actions
+2025-12-25 14:17:38,191 - [DIVIDENDS] - INFO - ✅ 6070: Found 20 corporate actions
+2025-12-25 14:17:38,199 - [DIVIDENDS] - INFO - 💾 [280/453] 6070: Saved 0 actions
+2025-12-25 14:17:49,013 - [DIVIDENDS] - ERROR - ❌ 6090: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/6090/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/6090/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:17:49,013 - [DIVIDENDS] - INFO - ⚠️ [281/453] 6090: No actions
+2025-12-25 14:17:53,732 - [DIVIDENDS] - INFO - ✅ 7010: Found 20 corporate actions
+2025-12-25 14:17:53,740 - [DIVIDENDS] - INFO - 💾 [282/453] 7010: Saved 0 actions
+2025-12-25 14:17:59,081 - [DIVIDENDS] - INFO - ✅ 7020: Found 20 corporate actions
+2025-12-25 14:17:59,091 - [DIVIDENDS] - INFO - 💾 [283/453] 7020: Saved 0 actions
+2025-12-25 14:18:03,517 - [DIVIDENDS] - INFO - ✅ 7030: Found 14 corporate actions
+2025-12-25 14:18:03,522 - [DIVIDENDS] - INFO - 💾 [284/453] 7030: Saved 0 actions
+2025-12-25 14:18:07,960 - [DIVIDENDS] - INFO - ✅ 7040: Found 20 corporate actions
+2025-12-25 14:18:07,969 - [DIVIDENDS] - INFO - 💾 [285/453] 7040: Saved 0 actions
+2025-12-25 14:18:12,255 - [DIVIDENDS] - INFO - ✅ 7200: Found 18 corporate actions
+2025-12-25 14:18:12,262 - [DIVIDENDS] - INFO - 💾 [286/453] 7200: Saved 0 actions
+2025-12-25 14:18:16,725 - [DIVIDENDS] - INFO - ✅ 7201: Found 8 corporate actions
+2025-12-25 14:18:16,729 - [DIVIDENDS] - INFO - 💾 [287/453] 7201: Saved 0 actions
+2025-12-25 14:18:21,012 - [DIVIDENDS] - INFO - ✅ 7202: Found 9 corporate actions
+2025-12-25 14:18:21,017 - [DIVIDENDS] - INFO - 💾 [288/453] 7202: Saved 0 actions
+2025-12-25 14:18:27,448 - [DIVIDENDS] - INFO - ✅ 7203: Found 8 corporate actions
+2025-12-25 14:18:27,453 - [DIVIDENDS] - INFO - 💾 [289/453] 7203: Saved 0 actions
+2025-12-25 14:18:32,663 - [DIVIDENDS] - INFO - ✅ 7204: Found 4 corporate actions
+2025-12-25 14:18:32,664 - [DIVIDENDS] - INFO - 💾 [290/453] 7204: Saved 0 actions
+2025-12-25 14:18:37,713 - [DIVIDENDS] - INFO - ✅ 7211: Found 5 corporate actions
+2025-12-25 14:18:37,730 - [DIVIDENDS] - INFO - 💾 [291/453] 7211: Saved 0 actions
+2025-12-25 14:18:42,083 - [DIVIDENDS] - INFO - ✅ 8010: Found 20 corporate actions
+2025-12-25 14:18:42,093 - [DIVIDENDS] - INFO - 💾 [292/453] 8010: Saved 0 actions
+2025-12-25 14:18:46,661 - [DIVIDENDS] - INFO - ✅ 8012: Found 12 corporate actions
+2025-12-25 14:18:46,667 - [DIVIDENDS] - INFO - 💾 [293/453] 8012: Saved 0 actions
+2025-12-25 14:18:50,958 - [DIVIDENDS] - INFO - ✅ 8020: Found 6 corporate actions
+2025-12-25 14:18:50,963 - [DIVIDENDS] - INFO - 💾 [294/453] 8020: Saved 0 actions
+2025-12-25 14:18:56,105 - [DIVIDENDS] - INFO - ✅ 8030: Found 20 corporate actions
+2025-12-25 14:18:56,253 - [DIVIDENDS] - INFO - 💾 [295/453] 8030: Saved 0 actions
+2025-12-25 14:19:01,041 - [DIVIDENDS] - INFO - ✅ 8040: Found 8 corporate actions
+2025-12-25 14:19:01,066 - [DIVIDENDS] - INFO - 💾 [296/453] 8040: Saved 0 actions
+2025-12-25 14:21:38,444 - [DIVIDENDS] - INFO - 🎯 Extracting dividends for 453 stocks
+2025-12-25 14:21:43,669 - [DIVIDENDS] - INFO - ✅ 1010: Found 20 corporate actions
+2025-12-25 14:21:43,693 - [DIVIDENDS] - INFO - 💾 [1/453] 1010: Saved 0 actions
+2025-12-25 14:21:49,575 - [DIVIDENDS] - INFO - ✅ 1020: Found 20 corporate actions
+2025-12-25 14:21:49,580 - [DIVIDENDS] - INFO - 💾 [2/453] 1020: Saved 0 actions
+2025-12-25 14:21:53,902 - [DIVIDENDS] - INFO - ✅ 1030: Found 20 corporate actions
+2025-12-25 14:21:53,908 - [DIVIDENDS] - INFO - 💾 [3/453] 1030: Saved 0 actions
+2025-12-25 14:21:58,248 - [DIVIDENDS] - INFO - ✅ 1050: Found 20 corporate actions
+2025-12-25 14:21:58,258 - [DIVIDENDS] - INFO - 💾 [4/453] 1050: Saved 0 actions
+2025-12-25 14:22:02,598 - [DIVIDENDS] - INFO - ✅ 1060: Found 20 corporate actions
+2025-12-25 14:22:02,604 - [DIVIDENDS] - INFO - 💾 [5/453] 1060: Saved 0 actions
+2025-12-25 14:22:06,898 - [DIVIDENDS] - INFO - ✅ 1080: Found 20 corporate actions
+2025-12-25 14:22:06,908 - [DIVIDENDS] - INFO - 💾 [6/453] 1080: Saved 0 actions
+2025-12-25 14:22:11,188 - [DIVIDENDS] - INFO - ✅ 1111: Found 4 corporate actions
+2025-12-25 14:22:11,192 - [DIVIDENDS] - INFO - 💾 [7/453] 1111: Saved 0 actions
+2025-12-25 14:22:15,490 - [DIVIDENDS] - INFO - ⚠️ [8/453] 1113: No actions
+2025-12-25 14:22:19,817 - [DIVIDENDS] - INFO - ✅ 1120: Found 20 corporate actions
+2025-12-25 14:22:19,824 - [DIVIDENDS] - INFO - 💾 [9/453] 1120: Saved 0 actions
+2025-12-25 14:22:24,128 - [DIVIDENDS] - INFO - ✅ 1140: Found 20 corporate actions
+2025-12-25 14:22:24,136 - [DIVIDENDS] - INFO - 💾 [10/453] 1140: Saved 0 actions
+2025-12-25 14:22:28,460 - [DIVIDENDS] - INFO - ✅ 1150: Found 20 corporate actions
+2025-12-25 14:22:28,466 - [DIVIDENDS] - INFO - 💾 [11/453] 1150: Saved 0 actions
+2025-12-25 14:22:32,807 - [DIVIDENDS] - INFO - ✅ 1180: Found 20 corporate actions
+2025-12-25 14:22:32,817 - [DIVIDENDS] - INFO - 💾 [12/453] 1180: Saved 0 actions
+2025-12-25 14:22:37,308 - [DIVIDENDS] - INFO - ✅ 1182: Found 7 corporate actions
+2025-12-25 14:22:37,310 - [DIVIDENDS] - INFO - 💾 [13/453] 1182: Saved 0 actions
+2025-12-25 14:22:41,678 - [DIVIDENDS] - INFO - ✅ 1183: Found 3 corporate actions
+2025-12-25 14:22:41,680 - [DIVIDENDS] - INFO - 💾 [14/453] 1183: Saved 0 actions
+2025-12-25 14:22:46,029 - [DIVIDENDS] - INFO - ✅ 1201: Found 14 corporate actions
+2025-12-25 14:22:46,044 - [DIVIDENDS] - INFO - 💾 [15/453] 1201: Saved 0 actions
+2025-12-25 14:22:50,371 - [DIVIDENDS] - INFO - ✅ 1202: Found 16 corporate actions
+2025-12-25 14:22:50,375 - [DIVIDENDS] - INFO - 💾 [16/453] 1202: Saved 0 actions
+2025-12-25 14:22:54,790 - [DIVIDENDS] - INFO - ✅ 1210: Found 19 corporate actions
+2025-12-25 14:22:54,799 - [DIVIDENDS] - INFO - 💾 [17/453] 1210: Saved 0 actions
+2025-12-25 14:22:59,116 - [DIVIDENDS] - INFO - ✅ 1211: Found 11 corporate actions
+2025-12-25 14:22:59,121 - [DIVIDENDS] - INFO - 💾 [18/453] 1211: Saved 0 actions
+2025-12-25 14:23:03,530 - [DIVIDENDS] - INFO - ✅ 1212: Found 19 corporate actions
+2025-12-25 14:23:03,539 - [DIVIDENDS] - INFO - 💾 [19/453] 1212: Saved 0 actions
+2025-12-25 14:23:07,810 - [DIVIDENDS] - INFO - ✅ 1213: Found 20 corporate actions
+2025-12-25 14:23:07,818 - [DIVIDENDS] - INFO - 💾 [20/453] 1213: Saved 0 actions
+2025-12-25 14:23:12,097 - [DIVIDENDS] - INFO - ✅ 1214: Found 18 corporate actions
+2025-12-25 14:23:12,104 - [DIVIDENDS] - INFO - 💾 [21/453] 1214: Saved 0 actions
+2025-12-25 14:23:16,456 - [DIVIDENDS] - INFO - ✅ 1301: Found 20 corporate actions
+2025-12-25 14:23:16,562 - [DIVIDENDS] - INFO - 💾 [22/453] 1301: Saved 0 actions
+2025-12-25 14:23:21,133 - [DIVIDENDS] - INFO - ✅ 1302: Found 20 corporate actions
+2025-12-25 14:23:21,417 - [DIVIDENDS] - INFO - 💾 [23/453] 1302: Saved 0 actions
+2025-12-25 14:23:25,930 - [DIVIDENDS] - INFO - ✅ 1303: Found 19 corporate actions
+2025-12-25 14:23:25,944 - [DIVIDENDS] - INFO - 💾 [24/453] 1303: Saved 0 actions
+2025-12-25 14:23:30,280 - [DIVIDENDS] - INFO - ✅ 1304: Found 11 corporate actions
+2025-12-25 14:23:30,285 - [DIVIDENDS] - INFO - 💾 [25/453] 1304: Saved 0 actions
+2025-12-25 14:23:35,047 - [DIVIDENDS] - INFO - ✅ 1320: Found 20 corporate actions
+2025-12-25 14:23:35,055 - [DIVIDENDS] - INFO - 💾 [26/453] 1320: Saved 0 actions
+2025-12-25 14:23:40,718 - [DIVIDENDS] - INFO - ✅ 1321: Found 7 corporate actions
+2025-12-25 14:23:40,725 - [DIVIDENDS] - INFO - 💾 [27/453] 1321: Saved 0 actions
+2025-12-25 14:23:45,433 - [DIVIDENDS] - INFO - ✅ 1322: Found 12 corporate actions
+2025-12-25 14:23:45,437 - [DIVIDENDS] - INFO - 💾 [28/453] 1322: Saved 0 actions
+2025-12-25 14:23:50,236 - [DIVIDENDS] - INFO - ✅ 1323: Found 1 corporate actions
+2025-12-25 14:23:50,237 - [DIVIDENDS] - INFO - 💾 [29/453] 1323: Saved 0 actions
+2025-12-25 14:23:55,298 - [DIVIDENDS] - INFO - ✅ 1810: Found 20 corporate actions
+2025-12-25 14:23:55,314 - [DIVIDENDS] - INFO - 💾 [30/453] 1810: Saved 0 actions
+2025-12-25 14:23:59,694 - [DIVIDENDS] - INFO - ✅ 1820: Found 17 corporate actions
+2025-12-25 14:23:59,744 - [DIVIDENDS] - INFO - 💾 [31/453] 1820: Saved 0 actions
+2025-12-25 14:24:04,154 - [DIVIDENDS] - INFO - ✅ 1830: Found 20 corporate actions
+2025-12-25 14:24:04,160 - [DIVIDENDS] - INFO - 💾 [32/453] 1830: Saved 0 actions
+2025-12-25 14:24:08,499 - [DIVIDENDS] - INFO - ✅ 1831: Found 15 corporate actions
+2025-12-25 14:24:08,507 - [DIVIDENDS] - INFO - 💾 [33/453] 1831: Saved 0 actions
+2025-12-25 14:24:12,795 - [DIVIDENDS] - INFO - ✅ 1832: Found 16 corporate actions
+2025-12-25 14:24:12,799 - [DIVIDENDS] - INFO - 💾 [34/453] 1832: Saved 0 actions
+2025-12-25 14:24:17,105 - [DIVIDENDS] - INFO - ✅ 1833: Found 5 corporate actions
+2025-12-25 14:24:17,112 - [DIVIDENDS] - INFO - 💾 [35/453] 1833: Saved 0 actions
+2025-12-25 14:24:21,467 - [DIVIDENDS] - INFO - ✅ 1834: Found 3 corporate actions
+2025-12-25 14:24:21,469 - [DIVIDENDS] - INFO - 💾 [36/453] 1834: Saved 0 actions
+2025-12-25 14:24:25,778 - [DIVIDENDS] - INFO - ✅ 1835: Found 2 corporate actions
+2025-12-25 14:24:25,785 - [DIVIDENDS] - INFO - 💾 [37/453] 1835: Saved 0 actions
+2025-12-25 14:24:30,109 - [DIVIDENDS] - INFO - ✅ 2001: Found 8 corporate actions
+2025-12-25 14:24:30,114 - [DIVIDENDS] - INFO - 💾 [38/453] 2001: Saved 0 actions
+2025-12-25 14:24:34,503 - [DIVIDENDS] - INFO - ✅ 2010: Found 20 corporate actions
+2025-12-25 14:24:34,511 - [DIVIDENDS] - INFO - 💾 [39/453] 2010: Saved 0 actions
+2025-12-25 14:24:38,838 - [DIVIDENDS] - INFO - ✅ 2020: Found 20 corporate actions
+2025-12-25 14:24:38,846 - [DIVIDENDS] - INFO - 💾 [40/453] 2020: Saved 0 actions
+2025-12-25 14:24:43,216 - [DIVIDENDS] - INFO - ✅ 2030: Found 20 corporate actions
+2025-12-25 14:24:43,232 - [DIVIDENDS] - INFO - 💾 [41/453] 2030: Saved 0 actions
+2025-12-25 14:24:47,514 - [DIVIDENDS] - INFO - ✅ 2040: Found 20 corporate actions
+2025-12-25 14:24:47,519 - [DIVIDENDS] - INFO - 💾 [42/453] 2040: Saved 0 actions
+2025-12-25 14:24:51,871 - [DIVIDENDS] - INFO - ✅ 2050: Found 20 corporate actions
+2025-12-25 14:24:51,877 - [DIVIDENDS] - INFO - 💾 [43/453] 2050: Saved 0 actions
+2025-12-25 14:24:56,170 - [DIVIDENDS] - INFO - ✅ 2060: Found 20 corporate actions
+2025-12-25 14:24:56,174 - [DIVIDENDS] - INFO - 💾 [44/453] 2060: Saved 0 actions
+2025-12-25 14:25:00,502 - [DIVIDENDS] - INFO - ✅ 2070: Found 20 corporate actions
+2025-12-25 14:25:00,509 - [DIVIDENDS] - INFO - 💾 [45/453] 2070: Saved 0 actions
+2025-12-25 14:25:06,438 - [DIVIDENDS] - INFO - ✅ 2080: Found 20 corporate actions
+2025-12-25 14:25:06,464 - [DIVIDENDS] - INFO - 💾 [46/453] 2080: Saved 0 actions
+2025-12-25 14:25:10,785 - [DIVIDENDS] - INFO - ✅ 2081: Found 6 corporate actions
+2025-12-25 14:25:10,788 - [DIVIDENDS] - INFO - 💾 [47/453] 2081: Saved 0 actions
+2025-12-25 14:25:15,108 - [DIVIDENDS] - INFO - ✅ 2082: Found 7 corporate actions
+2025-12-25 14:25:15,117 - [DIVIDENDS] - INFO - 💾 [48/453] 2082: Saved 0 actions
+2025-12-25 14:25:19,448 - [DIVIDENDS] - INFO - ✅ 2083: Found 4 corporate actions
+2025-12-25 14:25:19,454 - [DIVIDENDS] - INFO - 💾 [49/453] 2083: Saved 0 actions
+2025-12-25 14:25:23,975 - [DIVIDENDS] - INFO - ✅ 2084: Found 1 corporate actions
+2025-12-25 14:25:23,977 - [DIVIDENDS] - INFO - 💾 [50/453] 2084: Saved 0 actions
+2025-12-25 14:25:28,320 - [DIVIDENDS] - INFO - ✅ 2090: Found 20 corporate actions
+2025-12-25 14:25:28,330 - [DIVIDENDS] - INFO - 💾 [51/453] 2090: Saved 0 actions
+2025-12-25 14:25:32,661 - [DIVIDENDS] - INFO - ✅ 2100: Found 10 corporate actions
+2025-12-25 14:25:32,671 - [DIVIDENDS] - INFO - 💾 [52/453] 2100: Saved 0 actions
+2025-12-25 14:25:37,002 - [DIVIDENDS] - INFO - ✅ 2110: Found 20 corporate actions
+2025-12-25 14:25:37,014 - [DIVIDENDS] - INFO - 💾 [53/453] 2110: Saved 0 actions
+2025-12-25 14:25:42,118 - [DIVIDENDS] - INFO - ✅ 2120: Found 20 corporate actions
+2025-12-25 14:25:42,165 - [DIVIDENDS] - INFO - 💾 [54/453] 2120: Saved 0 actions
+2025-12-25 14:25:46,639 - [DIVIDENDS] - INFO - ✅ 2130: Found 11 corporate actions
+2025-12-25 14:25:46,646 - [DIVIDENDS] - INFO - 💾 [55/453] 2130: Saved 0 actions
+2025-12-25 14:25:50,969 - [DIVIDENDS] - INFO - ✅ 2140: Found 20 corporate actions
+2025-12-25 14:25:50,989 - [DIVIDENDS] - INFO - 💾 [56/453] 2140: Saved 0 actions
+2025-12-25 14:25:55,287 - [DIVIDENDS] - INFO - ✅ 2150: Found 20 corporate actions
+2025-12-25 14:25:55,296 - [DIVIDENDS] - INFO - 💾 [57/453] 2150: Saved 0 actions
+2025-12-25 14:25:59,663 - [DIVIDENDS] - INFO - ✅ 2160: Found 20 corporate actions
+2025-12-25 14:25:59,670 - [DIVIDENDS] - INFO - 💾 [58/453] 2160: Saved 0 actions
+2025-12-25 14:26:04,015 - [DIVIDENDS] - INFO - ✅ 2170: Found 18 corporate actions
+2025-12-25 14:26:04,026 - [DIVIDENDS] - INFO - 💾 [59/453] 2170: Saved 0 actions
+2025-12-25 14:26:08,339 - [DIVIDENDS] - INFO - ✅ 2180: Found 20 corporate actions
+2025-12-25 14:26:08,350 - [DIVIDENDS] - INFO - 💾 [60/453] 2180: Saved 0 actions
+2025-12-25 14:26:12,674 - [DIVIDENDS] - INFO - ✅ 2190: Found 20 corporate actions
+2025-12-25 14:26:12,683 - [DIVIDENDS] - INFO - 💾 [61/453] 2190: Saved 0 actions
+2025-12-25 14:26:17,051 - [DIVIDENDS] - INFO - ✅ 2200: Found 20 corporate actions
+2025-12-25 14:26:17,062 - [DIVIDENDS] - INFO - 💾 [62/453] 2200: Saved 0 actions
+2025-12-25 14:26:21,407 - [DIVIDENDS] - INFO - ✅ 2210: Found 17 corporate actions
+2025-12-25 14:26:21,420 - [DIVIDENDS] - INFO - 💾 [63/453] 2210: Saved 0 actions
+2025-12-25 14:26:25,749 - [DIVIDENDS] - INFO - ✅ 2220: Found 20 corporate actions
+2025-12-25 14:26:25,754 - [DIVIDENDS] - INFO - 💾 [64/453] 2220: Saved 0 actions
+2025-12-25 14:26:30,104 - [DIVIDENDS] - INFO - ✅ 2222: Found 20 corporate actions
+2025-12-25 14:26:30,119 - [DIVIDENDS] - INFO - 💾 [65/453] 2222: Saved 0 actions
+2025-12-25 14:26:34,447 - [DIVIDENDS] - INFO - ✅ 2223: Found 7 corporate actions
+2025-12-25 14:26:34,451 - [DIVIDENDS] - INFO - 💾 [66/453] 2223: Saved 0 actions
+2025-12-25 14:26:39,054 - [DIVIDENDS] - INFO - ✅ 2230: Found 20 corporate actions
+2025-12-25 14:26:39,059 - [DIVIDENDS] - INFO - 💾 [67/453] 2230: Saved 0 actions
+2025-12-25 14:26:43,383 - [DIVIDENDS] - INFO - ✅ 2240: Found 20 corporate actions
+2025-12-25 14:26:43,395 - [DIVIDENDS] - INFO - 💾 [68/453] 2240: Saved 0 actions
+2025-12-25 14:26:47,744 - [DIVIDENDS] - INFO - ✅ 2250: Found 20 corporate actions
+2025-12-25 14:26:47,753 - [DIVIDENDS] - INFO - 💾 [69/453] 2250: Saved 0 actions
+2025-12-25 14:26:52,073 - [DIVIDENDS] - INFO - ✅ 2270: Found 20 corporate actions
+2025-12-25 14:26:52,081 - [DIVIDENDS] - INFO - 💾 [70/453] 2270: Saved 0 actions
+2025-12-25 14:26:56,380 - [DIVIDENDS] - INFO - ✅ 2280: Found 20 corporate actions
+2025-12-25 14:26:56,392 - [DIVIDENDS] - INFO - 💾 [71/453] 2280: Saved 0 actions
+2025-12-25 14:27:00,702 - [DIVIDENDS] - INFO - ✅ 2281: Found 4 corporate actions
+2025-12-25 14:27:00,706 - [DIVIDENDS] - INFO - 💾 [72/453] 2281: Saved 0 actions
+2025-12-25 14:27:05,225 - [DIVIDENDS] - INFO - ✅ 2282: Found 3 corporate actions
+2025-12-25 14:27:05,227 - [DIVIDENDS] - INFO - 💾 [73/453] 2282: Saved 0 actions
+2025-12-25 14:27:09,589 - [DIVIDENDS] - INFO - ✅ 2283: Found 6 corporate actions
+2025-12-25 14:27:09,592 - [DIVIDENDS] - INFO - 💾 [74/453] 2283: Saved 0 actions
+2025-12-25 14:27:13,926 - [DIVIDENDS] - INFO - ✅ 2284: Found 4 corporate actions
+2025-12-25 14:27:13,932 - [DIVIDENDS] - INFO - 💾 [75/453] 2284: Saved 0 actions
+2025-12-25 14:27:18,225 - [DIVIDENDS] - INFO - ✅ 2285: Found 1 corporate actions
+2025-12-25 14:27:18,227 - [DIVIDENDS] - INFO - 💾 [76/453] 2285: Saved 0 actions
+2025-12-25 14:27:22,541 - [DIVIDENDS] - INFO - ✅ 2286: Found 3 corporate actions
+2025-12-25 14:27:22,543 - [DIVIDENDS] - INFO - 💾 [77/453] 2286: Saved 0 actions
+2025-12-25 14:27:26,901 - [DIVIDENDS] - INFO - ✅ 2287: Found 1 corporate actions
+2025-12-25 14:27:26,904 - [DIVIDENDS] - INFO - 💾 [78/453] 2287: Saved 0 actions
+2025-12-25 14:27:31,800 - [DIVIDENDS] - INFO - ✅ 2290: Found 20 corporate actions
+2025-12-25 14:27:31,835 - [DIVIDENDS] - INFO - 💾 [79/453] 2290: Saved 0 actions
+2025-12-25 14:27:36,998 - [DIVIDENDS] - INFO - ✅ 2300: Found 20 corporate actions
+2025-12-25 14:27:37,006 - [DIVIDENDS] - INFO - 💾 [80/453] 2300: Saved 0 actions
+2025-12-25 14:27:41,390 - [DIVIDENDS] - INFO - ✅ 2310: Found 20 corporate actions
+2025-12-25 14:27:41,401 - [DIVIDENDS] - INFO - 💾 [81/453] 2310: Saved 0 actions
+2025-12-25 14:27:45,745 - [DIVIDENDS] - INFO - ✅ 2320: Found 20 corporate actions
+2025-12-25 14:27:45,758 - [DIVIDENDS] - INFO - 💾 [82/453] 2320: Saved 0 actions
+2025-12-25 14:27:53,083 - [DIVIDENDS] - INFO - ✅ 2330: Found 20 corporate actions
+2025-12-25 14:27:53,094 - [DIVIDENDS] - INFO - 💾 [83/453] 2330: Saved 0 actions
+2025-12-25 14:27:57,487 - [DIVIDENDS] - INFO - ✅ 2340: Found 20 corporate actions
+2025-12-25 14:27:57,494 - [DIVIDENDS] - INFO - 💾 [84/453] 2340: Saved 0 actions
+2025-12-25 14:28:03,760 - [DIVIDENDS] - INFO - ✅ 2350: Found 1 corporate actions
+2025-12-25 14:28:03,762 - [DIVIDENDS] - INFO - 💾 [85/453] 2350: Saved 0 actions
+2025-12-25 14:28:08,090 - [DIVIDENDS] - INFO - ✅ 2360: Found 20 corporate actions
+2025-12-25 14:28:08,098 - [DIVIDENDS] - INFO - 💾 [86/453] 2360: Saved 0 actions
+2025-12-25 14:28:12,476 - [DIVIDENDS] - INFO - ✅ 2370: Found 12 corporate actions
+2025-12-25 14:28:12,482 - [DIVIDENDS] - INFO - 💾 [87/453] 2370: Saved 0 actions
+2025-12-25 14:28:16,827 - [DIVIDENDS] - INFO - ✅ 2380: Found 17 corporate actions
+2025-12-25 14:28:16,832 - [DIVIDENDS] - INFO - 💾 [88/453] 2380: Saved 0 actions
+2025-12-25 14:28:21,174 - [DIVIDENDS] - INFO - ✅ 2381: Found 4 corporate actions
+2025-12-25 14:28:21,177 - [DIVIDENDS] - INFO - 💾 [89/453] 2381: Saved 0 actions
+2025-12-25 14:28:25,519 - [DIVIDENDS] - INFO - ✅ 2382: Found 3 corporate actions
+2025-12-25 14:28:25,521 - [DIVIDENDS] - INFO - 💾 [90/453] 2382: Saved 0 actions
+2025-12-25 14:28:29,838 - [DIVIDENDS] - INFO - ✅ 3002: Found 17 corporate actions
+2025-12-25 14:28:29,844 - [DIVIDENDS] - INFO - 💾 [91/453] 3002: Saved 0 actions
+2025-12-25 14:28:39,898 - [DIVIDENDS] - INFO - ✅ 3003: Found 20 corporate actions
+2025-12-25 14:28:39,906 - [DIVIDENDS] - INFO - 💾 [92/453] 3003: Saved 0 actions
+2025-12-25 14:28:44,227 - [DIVIDENDS] - INFO - ✅ 3004: Found 15 corporate actions
+2025-12-25 14:28:44,234 - [DIVIDENDS] - INFO - 💾 [93/453] 3004: Saved 0 actions
+2025-12-25 14:28:50,622 - [DIVIDENDS] - INFO - ✅ 3005: Found 7 corporate actions
+2025-12-25 14:28:50,626 - [DIVIDENDS] - INFO - 💾 [94/453] 3005: Saved 0 actions
+2025-12-25 14:28:55,064 - [DIVIDENDS] - INFO - ✅ 3007: Found 16 corporate actions
+2025-12-25 14:28:55,073 - [DIVIDENDS] - INFO - 💾 [95/453] 3007: Saved 0 actions
+2025-12-25 14:28:59,393 - [DIVIDENDS] - INFO - ✅ 3008: Found 14 corporate actions
+2025-12-25 14:28:59,398 - [DIVIDENDS] - INFO - 💾 [96/453] 3008: Saved 0 actions
+2025-12-25 14:29:03,867 - [DIVIDENDS] - INFO - ✅ 3010: Found 20 corporate actions
+2025-12-25 14:29:03,873 - [DIVIDENDS] - INFO - 💾 [97/453] 3010: Saved 0 actions
+2025-12-25 14:29:08,177 - [DIVIDENDS] - INFO - ✅ 3020: Found 20 corporate actions
+2025-12-25 14:29:08,183 - [DIVIDENDS] - INFO - 💾 [98/453] 3020: Saved 0 actions
+2025-12-25 14:29:12,469 - [DIVIDENDS] - INFO - ✅ 3030: Found 20 corporate actions
+2025-12-25 14:29:12,476 - [DIVIDENDS] - INFO - 💾 [99/453] 3030: Saved 0 actions
+2025-12-25 14:29:16,765 - [DIVIDENDS] - INFO - ✅ 3040: Found 20 corporate actions
+2025-12-25 14:29:16,775 - [DIVIDENDS] - INFO - 💾 [100/453] 3040: Saved 0 actions
+2025-12-25 14:29:21,052 - [DIVIDENDS] - INFO - ✅ 3050: Found 20 corporate actions
+2025-12-25 14:29:21,058 - [DIVIDENDS] - INFO - 💾 [101/453] 3050: Saved 0 actions
+2025-12-25 14:29:25,451 - [DIVIDENDS] - INFO - ✅ 3060: Found 20 corporate actions
+2025-12-25 14:29:25,457 - [DIVIDENDS] - INFO - 💾 [102/453] 3060: Saved 0 actions
+2025-12-25 14:29:29,768 - [DIVIDENDS] - INFO - ✅ 3080: Found 20 corporate actions
+2025-12-25 14:29:29,774 - [DIVIDENDS] - INFO - 💾 [103/453] 3080: Saved 0 actions
+2025-12-25 14:29:37,456 - [DIVIDENDS] - INFO - ✅ 3090: Found 20 corporate actions
+2025-12-25 14:29:37,469 - [DIVIDENDS] - INFO - 💾 [104/453] 3090: Saved 0 actions
+2025-12-25 14:29:41,863 - [DIVIDENDS] - INFO - ✅ 3091: Found 10 corporate actions
+2025-12-25 14:29:41,886 - [DIVIDENDS] - INFO - 💾 [105/453] 3091: Saved 0 actions
+2025-12-25 14:29:46,238 - [DIVIDENDS] - INFO - ✅ 3092: Found 13 corporate actions
+2025-12-25 14:29:46,248 - [DIVIDENDS] - INFO - 💾 [106/453] 3092: Saved 0 actions
+2025-12-25 14:29:52,083 - [DIVIDENDS] - INFO - ✅ 4001: Found 20 corporate actions
+2025-12-25 14:29:52,092 - [DIVIDENDS] - INFO - 💾 [107/453] 4001: Saved 0 actions
+2025-12-25 14:29:56,461 - [DIVIDENDS] - INFO - ✅ 4002: Found 20 corporate actions
+2025-12-25 14:29:56,470 - [DIVIDENDS] - INFO - 💾 [108/453] 4002: Saved 0 actions
+2025-12-25 14:30:00,844 - [DIVIDENDS] - INFO - ✅ 4003: Found 20 corporate actions
+2025-12-25 14:30:00,864 - [DIVIDENDS] - INFO - 💾 [109/453] 4003: Saved 0 actions
+2025-12-25 14:30:06,236 - [DIVIDENDS] - INFO - ✅ 4004: Found 20 corporate actions
+2025-12-25 14:30:06,243 - [DIVIDENDS] - INFO - 💾 [110/453] 4004: Saved 0 actions
+2025-12-25 14:30:10,577 - [DIVIDENDS] - INFO - ✅ 4005: Found 12 corporate actions
+2025-12-25 14:30:10,582 - [DIVIDENDS] - INFO - 💾 [111/453] 4005: Saved 0 actions
+2025-12-25 14:30:14,916 - [DIVIDENDS] - INFO - ✅ 4006: Found 8 corporate actions
+2025-12-25 14:30:14,924 - [DIVIDENDS] - INFO - 💾 [112/453] 4006: Saved 0 actions
+2025-12-25 14:30:19,254 - [DIVIDENDS] - INFO - ✅ 4007: Found 20 corporate actions
+2025-12-25 14:30:19,264 - [DIVIDENDS] - INFO - 💾 [113/453] 4007: Saved 0 actions
+2025-12-25 14:30:23,629 - [DIVIDENDS] - INFO - ✅ 4008: Found 16 corporate actions
+2025-12-25 14:30:23,649 - [DIVIDENDS] - INFO - 💾 [114/453] 4008: Saved 0 actions
+2025-12-25 14:30:28,009 - [DIVIDENDS] - INFO - ✅ 4009: Found 5 corporate actions
+2025-12-25 14:30:28,013 - [DIVIDENDS] - INFO - 💾 [115/453] 4009: Saved 0 actions
+2025-12-25 14:30:32,670 - [DIVIDENDS] - INFO - ✅ 4011: Found 10 corporate actions
+2025-12-25 14:30:32,674 - [DIVIDENDS] - INFO - 💾 [116/453] 4011: Saved 0 actions
+2025-12-25 14:30:36,968 - [DIVIDENDS] - INFO - ✅ 4012: Found 20 corporate actions
+2025-12-25 14:30:36,977 - [DIVIDENDS] - INFO - 💾 [117/453] 4012: Saved 0 actions
+2025-12-25 14:30:41,299 - [DIVIDENDS] - INFO - ✅ 4013: Found 20 corporate actions
+2025-12-25 14:30:41,307 - [DIVIDENDS] - INFO - 💾 [118/453] 4013: Saved 0 actions
+2025-12-25 14:30:45,616 - [DIVIDENDS] - INFO - ✅ 4014: Found 4 corporate actions
+2025-12-25 14:30:45,618 - [DIVIDENDS] - INFO - 💾 [119/453] 4014: Saved 0 actions
+2025-12-25 14:30:50,005 - [DIVIDENDS] - INFO - ✅ 4015: Found 5 corporate actions
+2025-12-25 14:30:50,008 - [DIVIDENDS] - INFO - 💾 [120/453] 4015: Saved 0 actions
+2025-12-25 14:30:54,552 - [DIVIDENDS] - INFO - ✅ 4016: Found 3 corporate actions
+2025-12-25 14:30:54,554 - [DIVIDENDS] - INFO - 💾 [121/453] 4016: Saved 0 actions
+2025-12-25 14:30:58,976 - [DIVIDENDS] - INFO - ✅ 4017: Found 1 corporate actions
+2025-12-25 14:30:58,978 - [DIVIDENDS] - INFO - 💾 [122/453] 4017: Saved 0 actions
+2025-12-25 14:31:03,274 - [DIVIDENDS] - INFO - ✅ 4018: Found 3 corporate actions
+2025-12-25 14:31:03,278 - [DIVIDENDS] - INFO - 💾 [123/453] 4018: Saved 0 actions
+2025-12-25 14:31:07,603 - [DIVIDENDS] - INFO - ⚠️ [124/453] 4019: No actions
+2025-12-25 14:31:12,035 - [DIVIDENDS] - INFO - ✅ 4020: Found 20 corporate actions
+2025-12-25 14:31:12,279 - [DIVIDENDS] - INFO - 💾 [125/453] 4020: Saved 0 actions
+2025-12-25 14:31:16,805 - [DIVIDENDS] - INFO - ✅ 4021: Found 11 corporate actions
+2025-12-25 14:31:16,887 - [DIVIDENDS] - INFO - 💾 [126/453] 4021: Saved 0 actions
+2025-12-25 14:31:21,518 - [DIVIDENDS] - INFO - ✅ 4030: Found 20 corporate actions
+2025-12-25 14:31:21,634 - [DIVIDENDS] - INFO - 💾 [127/453] 4030: Saved 0 actions
+2025-12-25 14:31:26,266 - [DIVIDENDS] - INFO - ✅ 4031: Found 20 corporate actions
+2025-12-25 14:31:26,277 - [DIVIDENDS] - INFO - 💾 [128/453] 4031: Saved 0 actions
+2025-12-25 14:31:30,836 - [DIVIDENDS] - INFO - ✅ 4040: Found 20 corporate actions
+2025-12-25 14:31:30,848 - [DIVIDENDS] - INFO - 💾 [129/453] 4040: Saved 0 actions
+2025-12-25 14:31:35,353 - [DIVIDENDS] - INFO - ✅ 4050: Found 20 corporate actions
+2025-12-25 14:31:35,359 - [DIVIDENDS] - INFO - 💾 [130/453] 4050: Saved 0 actions
+2025-12-25 14:31:40,086 - [DIVIDENDS] - INFO - ✅ 4051: Found 18 corporate actions
+2025-12-25 14:31:40,091 - [DIVIDENDS] - INFO - 💾 [131/453] 4051: Saved 0 actions
+2025-12-25 14:31:44,602 - [DIVIDENDS] - INFO - ✅ 4061: Found 20 corporate actions
+2025-12-25 14:31:44,610 - [DIVIDENDS] - INFO - 💾 [132/453] 4061: Saved 0 actions
+2025-12-25 14:31:48,946 - [DIVIDENDS] - INFO - ✅ 4070: Found 20 corporate actions
+2025-12-25 14:31:48,953 - [DIVIDENDS] - INFO - 💾 [133/453] 4070: Saved 0 actions
+2025-12-25 14:31:53,264 - [DIVIDENDS] - INFO - ✅ 4071: Found 4 corporate actions
+2025-12-25 14:31:53,267 - [DIVIDENDS] - INFO - 💾 [134/453] 4071: Saved 0 actions
+2025-12-25 14:31:57,566 - [DIVIDENDS] - INFO - ⚠️ [135/453] 4072: No actions
+2025-12-25 14:32:02,268 - [DIVIDENDS] - INFO - ✅ 4080: Found 20 corporate actions
+2025-12-25 14:32:02,277 - [DIVIDENDS] - INFO - 💾 [136/453] 4080: Saved 0 actions
+2025-12-25 14:32:07,060 - [DIVIDENDS] - INFO - ✅ 4081: Found 6 corporate actions
+2025-12-25 14:32:07,071 - [DIVIDENDS] - INFO - 💾 [137/453] 4081: Saved 0 actions
+2025-12-25 14:32:12,008 - [DIVIDENDS] - INFO - ✅ 4082: Found 2 corporate actions
+2025-12-25 14:32:12,009 - [DIVIDENDS] - INFO - 💾 [138/453] 4082: Saved 0 actions
+2025-12-25 14:32:16,527 - [DIVIDENDS] - INFO - ✅ 4083: Found 2 corporate actions
+2025-12-25 14:32:16,532 - [DIVIDENDS] - INFO - 💾 [139/453] 4083: Saved 0 actions
+2025-12-25 14:32:21,199 - [DIVIDENDS] - INFO - ✅ 4084: Found 3 corporate actions
+2025-12-25 14:32:21,202 - [DIVIDENDS] - INFO - 💾 [140/453] 4084: Saved 0 actions
+2025-12-25 14:32:25,690 - [DIVIDENDS] - INFO - ✅ 4090: Found 20 corporate actions
+2025-12-25 14:32:25,717 - [DIVIDENDS] - INFO - 💾 [141/453] 4090: Saved 0 actions
+2025-12-25 14:32:30,196 - [DIVIDENDS] - INFO - ✅ 4100: Found 20 corporate actions
+2025-12-25 14:32:30,213 - [DIVIDENDS] - INFO - 💾 [142/453] 4100: Saved 0 actions
+2025-12-25 14:32:34,724 - [DIVIDENDS] - INFO - ✅ 4110: Found 20 corporate actions
+2025-12-25 14:32:34,755 - [DIVIDENDS] - INFO - 💾 [143/453] 4110: Saved 0 actions
+2025-12-25 14:32:39,568 - [DIVIDENDS] - INFO - ✅ 4130: Found 18 corporate actions
+2025-12-25 14:32:39,648 - [DIVIDENDS] - INFO - 💾 [144/453] 4130: Saved 0 actions
+2025-12-25 14:32:44,118 - [DIVIDENDS] - INFO - ✅ 4140: Found 20 corporate actions
+2025-12-25 14:32:44,127 - [DIVIDENDS] - INFO - 💾 [145/453] 4140: Saved 0 actions
+2025-12-25 14:32:48,833 - [DIVIDENDS] - INFO - ✅ 4141: Found 5 corporate actions
+2025-12-25 14:32:48,839 - [DIVIDENDS] - INFO - 💾 [146/453] 4141: Saved 0 actions
+2025-12-25 14:32:53,752 - [DIVIDENDS] - INFO - ✅ 4142: Found 8 corporate actions
+2025-12-25 14:32:53,756 - [DIVIDENDS] - INFO - 💾 [147/453] 4142: Saved 0 actions
+2025-12-25 14:33:05,518 - [DIVIDENDS] - INFO - ✅ 4143: Found 2 corporate actions
+2025-12-25 14:33:05,522 - [DIVIDENDS] - INFO - 💾 [148/453] 4143: Saved 0 actions
+2025-12-25 14:33:29,753 - [DIVIDENDS] - INFO - ⚠️ [149/453] 4144: No actions
+2025-12-25 14:33:40,739 - [DIVIDENDS] - INFO - ✅ 4145: Found 7 corporate actions
+2025-12-25 14:33:40,773 - [DIVIDENDS] - INFO - 💾 [150/453] 4145: Saved 0 actions
+2025-12-25 14:33:47,231 - [DIVIDENDS] - INFO - ✅ 4146: Found 10 corporate actions
+2025-12-25 14:33:47,235 - [DIVIDENDS] - INFO - 💾 [151/453] 4146: Saved 0 actions
+2025-12-25 14:33:51,724 - [DIVIDENDS] - INFO - ✅ 4150: Found 20 corporate actions
+2025-12-25 14:33:51,731 - [DIVIDENDS] - INFO - 💾 [152/453] 4150: Saved 0 actions
+2025-12-25 14:33:56,227 - [DIVIDENDS] - INFO - ✅ 4160: Found 7 corporate actions
+2025-12-25 14:33:56,234 - [DIVIDENDS] - INFO - 💾 [153/453] 4160: Saved 0 actions
+2025-12-25 14:34:12,000 - [DIVIDENDS] - INFO - ✅ 4161: Found 13 corporate actions
+2025-12-25 14:34:12,009 - [DIVIDENDS] - INFO - 💾 [154/453] 4161: Saved 0 actions
+2025-12-25 14:34:18,683 - [DIVIDENDS] - INFO - ✅ 4162: Found 8 corporate actions
+2025-12-25 14:34:18,686 - [DIVIDENDS] - INFO - 💾 [155/453] 4162: Saved 0 actions
+2025-12-25 14:34:23,282 - [DIVIDENDS] - INFO - ✅ 4163: Found 9 corporate actions
+2025-12-25 14:34:23,289 - [DIVIDENDS] - INFO - 💾 [156/453] 4163: Saved 0 actions
+2025-12-25 14:34:27,649 - [DIVIDENDS] - INFO - ✅ 4164: Found 7 corporate actions
+2025-12-25 14:34:27,654 - [DIVIDENDS] - INFO - 💾 [157/453] 4164: Saved 0 actions
+2025-12-25 14:34:32,893 - [DIVIDENDS] - INFO - ✅ 4165: Found 1 corporate actions
+2025-12-25 14:34:32,896 - [DIVIDENDS] - INFO - 💾 [158/453] 4165: Saved 0 actions
+2025-12-25 14:34:37,228 - [DIVIDENDS] - INFO - ✅ 4170: Found 12 corporate actions
+2025-12-25 14:34:37,233 - [DIVIDENDS] - INFO - 💾 [159/453] 4170: Saved 0 actions
+2025-12-25 14:34:41,941 - [DIVIDENDS] - INFO - ✅ 4180: Found 20 corporate actions
+2025-12-25 14:34:41,951 - [DIVIDENDS] - INFO - 💾 [160/453] 4180: Saved 0 actions
+2025-12-25 14:34:46,440 - [DIVIDENDS] - INFO - ✅ 4190: Found 20 corporate actions
+2025-12-25 14:34:46,445 - [DIVIDENDS] - INFO - 💾 [161/453] 4190: Saved 0 actions
+2025-12-25 14:34:50,967 - [DIVIDENDS] - INFO - ✅ 4191: Found 19 corporate actions
+2025-12-25 14:34:50,975 - [DIVIDENDS] - INFO - 💾 [162/453] 4191: Saved 0 actions
+2025-12-25 14:35:09,299 - [DIVIDENDS] - INFO - ✅ 4192: Found 5 corporate actions
+2025-12-25 14:35:09,303 - [DIVIDENDS] - INFO - 💾 [163/453] 4192: Saved 0 actions
+2025-12-25 14:35:15,035 - [DIVIDENDS] - INFO - ⚠️ [164/453] 4193: No actions
+2025-12-25 14:35:19,548 - [DIVIDENDS] - INFO - ✅ 4194: Found 2 corporate actions
+2025-12-25 14:35:19,572 - [DIVIDENDS] - INFO - 💾 [165/453] 4194: Saved 0 actions
+2025-12-25 14:35:24,010 - [DIVIDENDS] - INFO - ✅ 4200: Found 20 corporate actions
+2025-12-25 14:35:24,026 - [DIVIDENDS] - INFO - 💾 [166/453] 4200: Saved 0 actions
+2025-12-25 14:35:29,950 - [DIVIDENDS] - INFO - ✅ 4210: Found 20 corporate actions
+2025-12-25 14:35:29,959 - [DIVIDENDS] - INFO - 💾 [167/453] 4210: Saved 0 actions
+2025-12-25 14:35:34,459 - [DIVIDENDS] - INFO - ✅ 4220: Found 8 corporate actions
+2025-12-25 14:35:34,465 - [DIVIDENDS] - INFO - 💾 [168/453] 4220: Saved 0 actions
+2025-12-25 14:35:38,850 - [DIVIDENDS] - INFO - ✅ 4230: Found 20 corporate actions
+2025-12-25 14:35:38,858 - [DIVIDENDS] - INFO - 💾 [169/453] 4230: Saved 0 actions
+2025-12-25 14:35:43,218 - [DIVIDENDS] - INFO - ✅ 4240: Found 20 corporate actions
+2025-12-25 14:35:43,228 - [DIVIDENDS] - INFO - 💾 [170/453] 4240: Saved 0 actions
+2025-12-25 14:35:47,610 - [DIVIDENDS] - INFO - ✅ 4250: Found 8 corporate actions
+2025-12-25 14:35:47,613 - [DIVIDENDS] - INFO - 💾 [171/453] 4250: Saved 0 actions
+2025-12-25 14:35:52,183 - [DIVIDENDS] - INFO - ✅ 4260: Found 20 corporate actions
+2025-12-25 14:35:52,188 - [DIVIDENDS] - INFO - 💾 [172/453] 4260: Saved 0 actions
+2025-12-25 14:35:56,679 - [DIVIDENDS] - INFO - ⚠️ [173/453] 4261: No actions
+2025-12-25 14:36:21,296 - [DIVIDENDS] - INFO - ⚠️ [174/453] 4262: No actions
+2025-12-25 14:36:30,588 - [DIVIDENDS] - INFO - ⚠️ [175/453] 4263: No actions
+2025-12-25 14:36:37,524 - [DIVIDENDS] - INFO - ⚠️ [176/453] 4264: No actions
+2025-12-25 14:36:42,894 - [DIVIDENDS] - INFO - ⚠️ [177/453] 4265: No actions
+2025-12-25 14:36:52,105 - [DIVIDENDS] - INFO - ✅ 4270: Found 12 corporate actions
+2025-12-25 14:36:52,121 - [DIVIDENDS] - INFO - 💾 [178/453] 4270: Saved 0 actions
+2025-12-25 14:37:22,749 - [DIVIDENDS] - INFO - ⚠️ [179/453] 4280: No actions
+2025-12-25 14:37:53,774 - [DIVIDENDS] - ERROR - ❌ 4290: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4290/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:37:53,775 - [DIVIDENDS] - INFO - ⚠️ [180/453] 4290: No actions
+2025-12-25 14:38:24,794 - [DIVIDENDS] - ERROR - ❌ 4291: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4291/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:38:24,795 - [DIVIDENDS] - INFO - ⚠️ [181/453] 4291: No actions
+2025-12-25 14:38:55,809 - [DIVIDENDS] - ERROR - ❌ 4292: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4292/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:38:55,810 - [DIVIDENDS] - INFO - ⚠️ [182/453] 4292: No actions
+2025-12-25 14:39:26,824 - [DIVIDENDS] - ERROR - ❌ 4300: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4300/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:39:26,824 - [DIVIDENDS] - INFO - ⚠️ [183/453] 4300: No actions
+2025-12-25 14:39:57,840 - [DIVIDENDS] - ERROR - ❌ 4310: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4310/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:39:57,842 - [DIVIDENDS] - INFO - ⚠️ [184/453] 4310: No actions
+2025-12-25 14:40:28,856 - [DIVIDENDS] - ERROR - ❌ 4320: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4320/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:40:28,857 - [DIVIDENDS] - INFO - ⚠️ [185/453] 4320: No actions
+2025-12-25 14:40:59,873 - [DIVIDENDS] - ERROR - ❌ 4321: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4321/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:40:59,875 - [DIVIDENDS] - INFO - ⚠️ [186/453] 4321: No actions
+2025-12-25 14:41:30,893 - [DIVIDENDS] - ERROR - ❌ 4322: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4322/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:41:30,894 - [DIVIDENDS] - INFO - ⚠️ [187/453] 4322: No actions
+2025-12-25 14:42:01,913 - [DIVIDENDS] - ERROR - ❌ 4323: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4323/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 14:42:01,914 - [DIVIDENDS] - INFO - ⚠️ [188/453] 4323: No actions
+2025-12-25 14:42:35,715 - [DIVIDENDS] - INFO - ⚠️ [189/453] 4324: No actions
+2025-12-25 14:42:45,157 - [DIVIDENDS] - INFO - ⚠️ [190/453] 4325: No actions
+2025-12-25 14:43:01,237 - [DIVIDENDS] - INFO - ⚠️ [191/453] 4326: No actions
+2025-12-25 14:43:17,441 - [DIVIDENDS] - INFO - ⚠️ [192/453] 4327: No actions
+2025-12-25 14:43:29,488 - [DIVIDENDS] - INFO - ⚠️ [193/453] 4330: No actions
+2025-12-25 14:43:52,344 - [DIVIDENDS] - INFO - ⚠️ [194/453] 4331: No actions
+2025-12-25 14:44:10,181 - [DIVIDENDS] - INFO - ⚠️ [195/453] 4332: No actions
+2025-12-25 14:44:17,203 - [DIVIDENDS] - INFO - ✅ 4333: Found 20 corporate actions
+2025-12-25 14:44:17,217 - [DIVIDENDS] - INFO - 💾 [196/453] 4333: Saved 0 actions
+2025-12-25 14:44:23,294 - [DIVIDENDS] - INFO - ✅ 4334: Found 12 corporate actions
+2025-12-25 14:44:23,300 - [DIVIDENDS] - INFO - 💾 [197/453] 4334: Saved 0 actions
+2025-12-25 14:44:31,289 - [DIVIDENDS] - INFO - ⚠️ [198/453] 4335: No actions
+2025-12-25 14:44:46,623 - [DIVIDENDS] - INFO - ✅ 4336: Found 20 corporate actions
+2025-12-25 14:44:46,630 - [DIVIDENDS] - INFO - 💾 [199/453] 4336: Saved 0 actions
+2025-12-25 14:44:56,124 - [DIVIDENDS] - INFO - ✅ 4337: Found 8 corporate actions
+2025-12-25 14:44:56,129 - [DIVIDENDS] - INFO - 💾 [200/453] 4337: Saved 0 actions
+2025-12-25 14:45:04,152 - [DIVIDENDS] - INFO - ✅ 4338: Found 15 corporate actions
+2025-12-25 14:45:04,160 - [DIVIDENDS] - INFO - 💾 [201/453] 4338: Saved 0 actions
+2025-12-25 14:45:15,820 - [DIVIDENDS] - INFO - ✅ 4339: Found 20 corporate actions
+2025-12-25 14:45:15,845 - [DIVIDENDS] - INFO - 💾 [202/453] 4339: Saved 0 actions
+2025-12-25 14:45:38,616 - [DIVIDENDS] - INFO - ⚠️ [203/453] 4340: No actions
+2025-12-25 14:45:51,767 - [DIVIDENDS] - INFO - ⚠️ [204/453] 4342: No actions
+2025-12-25 14:46:14,964 - [DIVIDENDS] - INFO - ✅ 4344: Found 20 corporate actions
+2025-12-25 14:46:15,012 - [DIVIDENDS] - INFO - 💾 [205/453] 4344: Saved 0 actions
+2025-12-25 14:46:22,768 - [DIVIDENDS] - INFO - ✅ 4345: Found 11 corporate actions
+2025-12-25 14:46:22,773 - [DIVIDENDS] - INFO - 💾 [206/453] 4345: Saved 0 actions
+2025-12-25 14:46:32,631 - [DIVIDENDS] - INFO - ⚠️ [207/453] 4346: No actions
+2025-12-25 14:46:43,645 - [DIVIDENDS] - INFO - ⚠️ [208/453] 4347: No actions
+2025-12-25 14:46:57,093 - [DIVIDENDS] - INFO - ✅ 4348: Found 20 corporate actions
+2025-12-25 14:46:57,103 - [DIVIDENDS] - INFO - 💾 [209/453] 4348: Saved 0 actions
+2025-12-25 14:47:03,817 - [DIVIDENDS] - INFO - ⚠️ [210/453] 4349: No actions
+2025-12-25 14:47:08,520 - [DIVIDENDS] - INFO - ⚠️ [211/453] 4350: No actions
+2025-12-25 14:47:12,870 - [DIVIDENDS] - INFO - ⚠️ [212/453] 4700: No actions
+2025-12-25 14:47:17,924 - [DIVIDENDS] - INFO - ⚠️ [213/453] 4701: No actions
+2025-12-25 14:47:23,165 - [DIVIDENDS] - INFO - ⚠️ [214/453] 4702: No actions
+2025-12-25 14:47:29,203 - [DIVIDENDS] - INFO - ⚠️ [215/453] 4703: No actions
+2025-12-25 14:47:34,491 - [DIVIDENDS] - INFO - ⚠️ [216/453] 5015: No actions
+2025-12-25 14:47:40,578 - [DIVIDENDS] - INFO - ⚠️ [217/453] 5019: No actions
+2025-12-25 14:47:46,341 - [DIVIDENDS] - INFO - ⚠️ [218/453] 5021: No actions
+2025-12-25 14:47:52,411 - [DIVIDENDS] - INFO - ⚠️ [219/453] 5022: No actions
+2025-12-25 14:47:58,486 - [DIVIDENDS] - INFO - ⚠️ [220/453] 5023: No actions
+2025-12-25 14:48:03,190 - [DIVIDENDS] - INFO - ✅ 5110: Found 20 corporate actions
+2025-12-25 14:48:03,200 - [DIVIDENDS] - INFO - 💾 [221/453] 5110: Saved 0 actions
+2025-12-25 14:48:07,898 - [DIVIDENDS] - INFO - ⚠️ [222/453] 5214: No actions
+2025-12-25 14:48:13,085 - [DIVIDENDS] - INFO - ⚠️ [223/453] 5216: No actions
+2025-12-25 14:48:17,606 - [DIVIDENDS] - INFO - ⚠️ [224/453] 5221: No actions
+2025-12-25 14:48:22,218 - [DIVIDENDS] - INFO - ⚠️ [225/453] 5227: No actions
+2025-12-25 14:48:26,561 - [DIVIDENDS] - INFO - ⚠️ [226/453] 5243: No actions
+2025-12-25 14:48:41,245 - [DIVIDENDS] - INFO - ⚠️ [227/453] 5245: No actions
+2025-12-25 14:48:49,374 - [DIVIDENDS] - INFO - ⚠️ [228/453] 5246: No actions
+2025-12-25 14:49:01,100 - [DIVIDENDS] - INFO - ⚠️ [229/453] 5247: No actions
+2025-12-25 14:49:05,642 - [DIVIDENDS] - INFO - ⚠️ [230/453] 5249: No actions
+2025-12-25 14:49:10,231 - [DIVIDENDS] - INFO - ⚠️ [231/453] 5250: No actions
+2025-12-25 14:49:14,747 - [DIVIDENDS] - INFO - ⚠️ [232/453] 5251: No actions
+2025-12-25 14:49:19,729 - [DIVIDENDS] - INFO - ⚠️ [233/453] 5252: No actions
+2025-12-25 14:49:34,618 - [DIVIDENDS] - INFO - ⚠️ [234/453] 5253: No actions
+2025-12-25 14:49:45,916 - [DIVIDENDS] - INFO - ⚠️ [235/453] 5254: No actions
+2025-12-25 14:50:00,578 - [DIVIDENDS] - INFO - ⚠️ [236/453] 5267: No actions
+2025-12-25 14:50:14,163 - [DIVIDENDS] - INFO - ⚠️ [237/453] 5272: No actions
+2025-12-25 14:50:24,245 - [DIVIDENDS] - INFO - ⚠️ [238/453] 5273: No actions
+2025-12-25 14:50:29,321 - [DIVIDENDS] - INFO - ⚠️ [239/453] 5274: No actions
+2025-12-25 14:50:33,737 - [DIVIDENDS] - INFO - ⚠️ [240/453] 5280: No actions
+2025-12-25 14:50:38,628 - [DIVIDENDS] - INFO - ⚠️ [241/453] 5282: No actions
+2025-12-25 14:50:48,689 - [DIVIDENDS] - INFO - ⚠️ [242/453] 5283: No actions
+2025-12-25 14:50:58,158 - [DIVIDENDS] - INFO - ⚠️ [243/453] 5284: No actions
+2025-12-25 14:51:03,754 - [DIVIDENDS] - INFO - ⚠️ [244/453] 5285: No actions
+2025-12-25 14:51:10,585 - [DIVIDENDS] - INFO - ⚠️ [245/453] 5301: No actions
+2025-12-25 14:51:16,458 - [DIVIDENDS] - INFO - ⚠️ [246/453] 5303: No actions
+2025-12-25 14:51:22,037 - [DIVIDENDS] - INFO - ⚠️ [247/453] 5306: No actions
+2025-12-25 14:51:26,784 - [DIVIDENDS] - INFO - ⚠️ [248/453] 5308: No actions
+2025-12-25 14:51:32,516 - [DIVIDENDS] - INFO - ⚠️ [249/453] 5311: No actions
+2025-12-25 14:51:37,455 - [DIVIDENDS] - INFO - ⚠️ [250/453] 5312: No actions
+2025-12-25 14:51:42,368 - [DIVIDENDS] - INFO - ⚠️ [251/453] 5313: No actions
+2025-12-25 14:51:48,344 - [DIVIDENDS] - INFO - ⚠️ [252/453] 5318: No actions
+2025-12-25 14:51:54,614 - [DIVIDENDS] - INFO - ⚠️ [253/453] 5320: No actions
+2025-12-25 14:51:59,352 - [DIVIDENDS] - INFO - ⚠️ [254/453] 5321: No actions
+2025-12-25 14:52:03,718 - [DIVIDENDS] - INFO - ⚠️ [255/453] 5323: No actions
+2025-12-25 14:52:08,094 - [DIVIDENDS] - INFO - ⚠️ [256/453] 5332: No actions
+2025-12-25 14:52:12,428 - [DIVIDENDS] - INFO - ⚠️ [257/453] 5333: No actions
+2025-12-25 14:52:16,769 - [DIVIDENDS] - INFO - ⚠️ [258/453] 5334: No actions
+2025-12-25 14:52:21,280 - [DIVIDENDS] - INFO - ⚠️ [259/453] 5336: No actions
+2025-12-25 14:52:25,957 - [DIVIDENDS] - INFO - ⚠️ [260/453] 5338: No actions
+2025-12-25 14:52:30,444 - [DIVIDENDS] - INFO - ⚠️ [261/453] 5339: No actions
+2025-12-25 14:52:34,959 - [DIVIDENDS] - INFO - ⚠️ [262/453] 5343: No actions
+2025-12-25 14:52:39,514 - [DIVIDENDS] - INFO - ⚠️ [263/453] 5344: No actions
+2025-12-25 14:52:48,884 - [DIVIDENDS] - INFO - ✅ 6001: Found 20 corporate actions
+2025-12-25 14:52:48,902 - [DIVIDENDS] - INFO - 💾 [264/453] 6001: Saved 0 actions
+2025-12-25 14:52:53,303 - [DIVIDENDS] - INFO - ✅ 6002: Found 20 corporate actions
+2025-12-25 14:52:53,309 - [DIVIDENDS] - INFO - 💾 [265/453] 6002: Saved 0 actions
+2025-12-25 14:52:57,717 - [DIVIDENDS] - INFO - ✅ 6004: Found 20 corporate actions
+2025-12-25 14:52:57,728 - [DIVIDENDS] - INFO - 💾 [266/453] 6004: Saved 0 actions
+2025-12-25 14:53:04,116 - [DIVIDENDS] - INFO - ✅ 6010: Found 20 corporate actions
+2025-12-25 14:53:04,126 - [DIVIDENDS] - INFO - 💾 [267/453] 6010: Saved 0 actions
+2025-12-25 14:53:08,469 - [DIVIDENDS] - INFO - ✅ 6012: Found 15 corporate actions
+2025-12-25 14:53:08,478 - [DIVIDENDS] - INFO - 💾 [268/453] 6012: Saved 0 actions
+2025-12-25 14:53:12,852 - [DIVIDENDS] - INFO - ✅ 6013: Found 10 corporate actions
+2025-12-25 14:53:12,857 - [DIVIDENDS] - INFO - 💾 [269/453] 6013: Saved 0 actions
+2025-12-25 14:53:17,426 - [DIVIDENDS] - INFO - ✅ 6014: Found 14 corporate actions
+2025-12-25 14:53:17,455 - [DIVIDENDS] - INFO - 💾 [270/453] 6014: Saved 0 actions
+2025-12-25 14:53:21,984 - [DIVIDENDS] - INFO - ✅ 6015: Found 1 corporate actions
+2025-12-25 14:53:21,985 - [DIVIDENDS] - INFO - 💾 [271/453] 6015: Saved 0 actions
+2025-12-25 14:53:27,509 - [DIVIDENDS] - INFO - ✅ 6016: Found 7 corporate actions
+2025-12-25 14:53:27,513 - [DIVIDENDS] - INFO - 💾 [272/453] 6016: Saved 0 actions
+2025-12-25 14:53:33,602 - [DIVIDENDS] - INFO - ✅ 6017: Found 7 corporate actions
+2025-12-25 14:53:33,609 - [DIVIDENDS] - INFO - 💾 [273/453] 6017: Saved 0 actions
+2025-12-25 14:53:37,981 - [DIVIDENDS] - INFO - ⚠️ [274/453] 6018: No actions
+2025-12-25 14:53:43,688 - [DIVIDENDS] - INFO - ⚠️ [275/453] 6019: No actions
+2025-12-25 14:53:55,613 - [DIVIDENDS] - INFO - ✅ 6020: Found 11 corporate actions
+2025-12-25 14:53:55,618 - [DIVIDENDS] - INFO - 💾 [276/453] 6020: Saved 0 actions
+2025-12-25 14:54:04,681 - [DIVIDENDS] - INFO - ✅ 6040: Found 20 corporate actions
+2025-12-25 14:54:04,692 - [DIVIDENDS] - INFO - 💾 [277/453] 6040: Saved 0 actions
+2025-12-25 14:54:09,253 - [DIVIDENDS] - INFO - ✅ 6050: Found 20 corporate actions
+2025-12-25 14:54:09,262 - [DIVIDENDS] - INFO - 💾 [278/453] 6050: Saved 0 actions
+2025-12-25 14:54:13,570 - [DIVIDENDS] - INFO - ✅ 6060: Found 11 corporate actions
+2025-12-25 14:54:13,576 - [DIVIDENDS] - INFO - 💾 [279/453] 6060: Saved 0 actions
+2025-12-25 14:54:17,950 - [DIVIDENDS] - INFO - ✅ 6070: Found 20 corporate actions
+2025-12-25 14:54:17,958 - [DIVIDENDS] - INFO - 💾 [280/453] 6070: Saved 0 actions
+2025-12-25 14:54:22,291 - [DIVIDENDS] - INFO - ✅ 6090: Found 20 corporate actions
+2025-12-25 14:54:22,300 - [DIVIDENDS] - INFO - 💾 [281/453] 6090: Saved 0 actions
+2025-12-25 14:54:26,809 - [DIVIDENDS] - INFO - ✅ 7010: Found 20 corporate actions
+2025-12-25 14:54:26,817 - [DIVIDENDS] - INFO - 💾 [282/453] 7010: Saved 0 actions
+2025-12-25 14:54:31,330 - [DIVIDENDS] - INFO - ✅ 7020: Found 20 corporate actions
+2025-12-25 14:54:31,338 - [DIVIDENDS] - INFO - 💾 [283/453] 7020: Saved 0 actions
+2025-12-25 14:54:36,072 - [DIVIDENDS] - INFO - ✅ 7030: Found 14 corporate actions
+2025-12-25 14:54:36,077 - [DIVIDENDS] - INFO - 💾 [284/453] 7030: Saved 0 actions
+2025-12-25 14:54:40,536 - [DIVIDENDS] - INFO - ✅ 7040: Found 20 corporate actions
+2025-12-25 14:54:40,552 - [DIVIDENDS] - INFO - 💾 [285/453] 7040: Saved 0 actions
+2025-12-25 14:54:45,215 - [DIVIDENDS] - INFO - ✅ 7200: Found 18 corporate actions
+2025-12-25 14:54:45,221 - [DIVIDENDS] - INFO - 💾 [286/453] 7200: Saved 0 actions
+2025-12-25 14:54:49,731 - [DIVIDENDS] - INFO - ✅ 7201: Found 8 corporate actions
+2025-12-25 14:54:49,736 - [DIVIDENDS] - INFO - 💾 [287/453] 7201: Saved 0 actions
+2025-12-25 14:54:54,887 - [DIVIDENDS] - INFO - ✅ 7202: Found 9 corporate actions
+2025-12-25 14:54:54,893 - [DIVIDENDS] - INFO - 💾 [288/453] 7202: Saved 0 actions
+2025-12-25 14:55:00,236 - [DIVIDENDS] - INFO - ✅ 7203: Found 8 corporate actions
+2025-12-25 14:55:00,241 - [DIVIDENDS] - INFO - 💾 [289/453] 7203: Saved 0 actions
+2025-12-25 14:55:06,862 - [DIVIDENDS] - INFO - ✅ 7204: Found 4 corporate actions
+2025-12-25 14:55:06,866 - [DIVIDENDS] - INFO - 💾 [290/453] 7204: Saved 0 actions
+2025-12-25 14:55:11,428 - [DIVIDENDS] - INFO - ✅ 7211: Found 5 corporate actions
+2025-12-25 14:55:11,432 - [DIVIDENDS] - INFO - 💾 [291/453] 7211: Saved 0 actions
+2025-12-25 14:55:15,972 - [DIVIDENDS] - INFO - ✅ 8010: Found 20 corporate actions
+2025-12-25 14:55:15,988 - [DIVIDENDS] - INFO - 💾 [292/453] 8010: Saved 0 actions
+2025-12-25 14:55:20,540 - [DIVIDENDS] - INFO - ✅ 8012: Found 12 corporate actions
+2025-12-25 14:55:20,558 - [DIVIDENDS] - INFO - 💾 [293/453] 8012: Saved 0 actions
+2025-12-25 14:55:25,292 - [DIVIDENDS] - INFO - ✅ 8020: Found 6 corporate actions
+2025-12-25 14:55:25,296 - [DIVIDENDS] - INFO - 💾 [294/453] 8020: Saved 0 actions
+2025-12-25 14:55:29,757 - [DIVIDENDS] - INFO - ✅ 8030: Found 20 corporate actions
+2025-12-25 14:55:29,764 - [DIVIDENDS] - INFO - 💾 [295/453] 8030: Saved 0 actions
+2025-12-25 14:55:34,239 - [DIVIDENDS] - INFO - ✅ 8040: Found 8 corporate actions
+2025-12-25 14:55:34,245 - [DIVIDENDS] - INFO - 💾 [296/453] 8040: Saved 0 actions
+2025-12-25 14:55:38,584 - [DIVIDENDS] - INFO - ✅ 8050: Found 7 corporate actions
+2025-12-25 14:55:38,589 - [DIVIDENDS] - INFO - 💾 [297/453] 8050: Saved 0 actions
+2025-12-25 14:55:44,268 - [DIVIDENDS] - INFO - ✅ 8060: Found 13 corporate actions
+2025-12-25 14:55:44,278 - [DIVIDENDS] - INFO - 💾 [298/453] 8060: Saved 0 actions
+2025-12-25 14:55:49,770 - [DIVIDENDS] - INFO - ✅ 8070: Found 8 corporate actions
+2025-12-25 14:55:49,775 - [DIVIDENDS] - INFO - 💾 [299/453] 8070: Saved 0 actions
+2025-12-25 14:55:58,297 - [DIVIDENDS] - INFO - ✅ 8100: Found 6 corporate actions
+2025-12-25 14:55:58,303 - [DIVIDENDS] - INFO - 💾 [300/453] 8100: Saved 0 actions
+2025-12-25 14:56:05,783 - [DIVIDENDS] - INFO - ✅ 8120: Found 10 corporate actions
+2025-12-25 14:56:05,788 - [DIVIDENDS] - INFO - 💾 [301/453] 8120: Saved 0 actions
+2025-12-25 14:56:11,446 - [DIVIDENDS] - INFO - ✅ 8150: Found 6 corporate actions
+2025-12-25 14:56:11,451 - [DIVIDENDS] - INFO - 💾 [302/453] 8150: Saved 0 actions
+2025-12-25 14:56:15,986 - [DIVIDENDS] - INFO - ✅ 8160: Found 6 corporate actions
+2025-12-25 14:56:15,989 - [DIVIDENDS] - INFO - 💾 [303/453] 8160: Saved 0 actions
+2025-12-25 14:56:20,547 - [DIVIDENDS] - INFO - ✅ 8170: Found 10 corporate actions
+2025-12-25 14:56:20,553 - [DIVIDENDS] - INFO - 💾 [304/453] 8170: Saved 0 actions
+2025-12-25 14:56:25,051 - [DIVIDENDS] - INFO - ✅ 8180: Found 13 corporate actions
+2025-12-25 14:56:25,059 - [DIVIDENDS] - INFO - 💾 [305/453] 8180: Saved 0 actions
+2025-12-25 14:56:29,426 - [DIVIDENDS] - INFO - ✅ 8190: Found 10 corporate actions
+2025-12-25 14:56:29,433 - [DIVIDENDS] - INFO - 💾 [306/453] 8190: Saved 0 actions
+2025-12-25 14:56:34,232 - [DIVIDENDS] - INFO - ✅ 8200: Found 12 corporate actions
+2025-12-25 14:56:34,238 - [DIVIDENDS] - INFO - 💾 [307/453] 8200: Saved 0 actions
+2025-12-25 14:56:39,485 - [DIVIDENDS] - INFO - ✅ 8210: Found 20 corporate actions
+2025-12-25 14:56:39,513 - [DIVIDENDS] - INFO - 💾 [308/453] 8210: Saved 0 actions
+2025-12-25 14:56:43,891 - [DIVIDENDS] - INFO - ✅ 8230: Found 4 corporate actions
+2025-12-25 14:56:43,894 - [DIVIDENDS] - INFO - 💾 [309/453] 8230: Saved 0 actions
+2025-12-25 14:56:48,373 - [DIVIDENDS] - INFO - ✅ 8240: Found 11 corporate actions
+2025-12-25 14:56:48,386 - [DIVIDENDS] - INFO - 💾 [310/453] 8240: Saved 0 actions
+2025-12-25 14:56:54,188 - [DIVIDENDS] - INFO - ✅ 8250: Found 14 corporate actions
+2025-12-25 14:56:54,202 - [DIVIDENDS] - INFO - 💾 [311/453] 8250: Saved 0 actions
+2025-12-25 14:56:59,198 - [DIVIDENDS] - INFO - ✅ 8260: Found 6 corporate actions
+2025-12-25 14:56:59,201 - [DIVIDENDS] - INFO - 💾 [312/453] 8260: Saved 0 actions
+2025-12-25 14:57:03,634 - [DIVIDENDS] - INFO - ✅ 8280: Found 4 corporate actions
+2025-12-25 14:57:03,636 - [DIVIDENDS] - INFO - 💾 [313/453] 8280: Saved 0 actions
+2025-12-25 14:57:08,147 - [DIVIDENDS] - INFO - ✅ 8300: Found 9 corporate actions
+2025-12-25 14:57:08,151 - [DIVIDENDS] - INFO - 💾 [314/453] 8300: Saved 0 actions
+2025-12-25 14:57:12,622 - [DIVIDENDS] - INFO - ✅ 8310: Found 14 corporate actions
+2025-12-25 14:57:12,631 - [DIVIDENDS] - INFO - 💾 [315/453] 8310: Saved 0 actions
+2025-12-25 14:57:17,053 - [DIVIDENDS] - INFO - ✅ 8311: Found 20 corporate actions
+2025-12-25 14:57:17,103 - [DIVIDENDS] - INFO - 💾 [316/453] 8311: Saved 0 actions
+2025-12-25 14:57:22,302 - [DIVIDENDS] - INFO - ✅ 8313: Found 1 corporate actions
+2025-12-25 14:57:22,305 - [DIVIDENDS] - INFO - 💾 [317/453] 8313: Saved 0 actions
+2025-12-25 14:57:26,684 - [DIVIDENDS] - INFO - ✅ 9300: Found 6 corporate actions
+2025-12-25 14:57:26,709 - [DIVIDENDS] - INFO - 💾 [318/453] 9300: Saved 0 actions
+2025-12-25 14:57:32,652 - [DIVIDENDS] - INFO - ⚠️ [319/453] 9403: No actions
+2025-12-25 14:57:37,014 - [DIVIDENDS] - INFO - ⚠️ [320/453] 9404: No actions
+2025-12-25 14:57:43,254 - [DIVIDENDS] - INFO - ⚠️ [321/453] 9405: No actions
+2025-12-25 14:57:49,769 - [DIVIDENDS] - INFO - ⚠️ [322/453] 9406: No actions
+2025-12-25 14:57:55,646 - [DIVIDENDS] - INFO - ⚠️ [323/453] 9407: No actions
+2025-12-25 14:58:05,183 - [DIVIDENDS] - INFO - ⚠️ [324/453] 9408: No actions
+2025-12-25 14:58:11,425 - [DIVIDENDS] - INFO - ⚠️ [325/453] 9409: No actions
+2025-12-25 14:58:16,248 - [DIVIDENDS] - INFO - ⚠️ [326/453] 9410: No actions
+2025-12-25 14:58:20,680 - [DIVIDENDS] - INFO - ⚠️ [327/453] 9411: No actions
+2025-12-25 14:58:27,731 - [DIVIDENDS] - INFO - ⚠️ [328/453] 9412: No actions
+2025-12-25 14:58:31,996 - [DIVIDENDS] - INFO - ✅ 9510: Found 5 corporate actions
+2025-12-25 14:58:32,027 - [DIVIDENDS] - INFO - 💾 [329/453] 9510: Saved 0 actions
+2025-12-25 14:58:36,400 - [DIVIDENDS] - INFO - ✅ 9513: Found 2 corporate actions
+2025-12-25 14:58:36,619 - [DIVIDENDS] - INFO - 💾 [330/453] 9513: Saved 0 actions
+2025-12-25 14:58:40,996 - [DIVIDENDS] - INFO - ✅ 9514: Found 1 corporate actions
+2025-12-25 14:58:41,005 - [DIVIDENDS] - INFO - 💾 [331/453] 9514: Saved 0 actions
+2025-12-25 14:58:46,053 - [DIVIDENDS] - INFO - ✅ 9515: Found 4 corporate actions
+2025-12-25 14:58:46,058 - [DIVIDENDS] - INFO - 💾 [332/453] 9515: Saved 0 actions
+2025-12-25 14:58:50,632 - [DIVIDENDS] - INFO - ✅ 9516: Found 4 corporate actions
+2025-12-25 14:58:50,638 - [DIVIDENDS] - INFO - 💾 [333/453] 9516: Saved 0 actions
+2025-12-25 14:58:55,175 - [DIVIDENDS] - INFO - ✅ 9517: Found 13 corporate actions
+2025-12-25 14:58:55,182 - [DIVIDENDS] - INFO - 💾 [334/453] 9517: Saved 0 actions
+2025-12-25 14:59:05,195 - [DIVIDENDS] - INFO - ✅ 9521: Found 7 corporate actions
+2025-12-25 14:59:05,219 - [DIVIDENDS] - INFO - 💾 [335/453] 9521: Saved 0 actions
+2025-12-25 14:59:15,086 - [DIVIDENDS] - INFO - ✅ 9522: Found 1 corporate actions
+2025-12-25 14:59:15,087 - [DIVIDENDS] - INFO - 💾 [336/453] 9522: Saved 0 actions
+2025-12-25 14:59:21,056 - [DIVIDENDS] - INFO - ✅ 9523: Found 1 corporate actions
+2025-12-25 14:59:21,061 - [DIVIDENDS] - INFO - 💾 [337/453] 9523: Saved 0 actions
+2025-12-25 14:59:26,462 - [DIVIDENDS] - INFO - ✅ 9524: Found 3 corporate actions
+2025-12-25 14:59:26,464 - [DIVIDENDS] - INFO - 💾 [338/453] 9524: Saved 0 actions
+2025-12-25 14:59:30,773 - [DIVIDENDS] - INFO - ✅ 9525: Found 6 corporate actions
+2025-12-25 14:59:30,778 - [DIVIDENDS] - INFO - 💾 [339/453] 9525: Saved 0 actions
+2025-12-25 14:59:35,101 - [DIVIDENDS] - INFO - ✅ 9527: Found 4 corporate actions
+2025-12-25 14:59:35,107 - [DIVIDENDS] - INFO - 💾 [340/453] 9527: Saved 0 actions
+2025-12-25 14:59:39,440 - [DIVIDENDS] - INFO - ✅ 9530: Found 3 corporate actions
+2025-12-25 14:59:39,443 - [DIVIDENDS] - INFO - 💾 [341/453] 9530: Saved 0 actions
+2025-12-25 14:59:43,783 - [DIVIDENDS] - INFO - ✅ 9532: Found 3 corporate actions
+2025-12-25 14:59:43,786 - [DIVIDENDS] - INFO - 💾 [342/453] 9532: Saved 0 actions
+2025-12-25 15:00:04,171 - [DIVIDENDS] - INFO - ⚠️ [343/453] 9533: No actions
+2025-12-25 15:00:17,584 - [DIVIDENDS] - INFO - ✅ 9535: Found 6 corporate actions
+2025-12-25 15:00:17,589 - [DIVIDENDS] - INFO - 💾 [344/453] 9535: Saved 0 actions
+2025-12-25 15:00:22,711 - [DIVIDENDS] - INFO - ✅ 9536: Found 5 corporate actions
+2025-12-25 15:00:22,714 - [DIVIDENDS] - INFO - 💾 [345/453] 9536: Saved 0 actions
+2025-12-25 15:00:27,030 - [DIVIDENDS] - INFO - ✅ 9537: Found 3 corporate actions
+2025-12-25 15:00:27,032 - [DIVIDENDS] - INFO - 💾 [346/453] 9537: Saved 0 actions
+2025-12-25 15:00:31,408 - [DIVIDENDS] - INFO - ⚠️ [347/453] 9538: No actions
+2025-12-25 15:00:35,771 - [DIVIDENDS] - INFO - ✅ 9539: Found 4 corporate actions
+2025-12-25 15:00:35,775 - [DIVIDENDS] - INFO - 💾 [348/453] 9539: Saved 0 actions
+2025-12-25 15:00:40,096 - [DIVIDENDS] - INFO - ✅ 9540: Found 3 corporate actions
+2025-12-25 15:00:40,098 - [DIVIDENDS] - INFO - 💾 [349/453] 9540: Saved 0 actions
+2025-12-25 15:00:44,406 - [DIVIDENDS] - INFO - ✅ 9541: Found 7 corporate actions
+2025-12-25 15:00:44,409 - [DIVIDENDS] - INFO - 💾 [350/453] 9541: Saved 0 actions
+2025-12-25 15:00:48,727 - [DIVIDENDS] - INFO - ✅ 9542: Found 3 corporate actions
+2025-12-25 15:00:48,729 - [DIVIDENDS] - INFO - 💾 [351/453] 9542: Saved 0 actions
+2025-12-25 15:00:53,879 - [DIVIDENDS] - INFO - ✅ 9543: Found 7 corporate actions
+2025-12-25 15:00:53,883 - [DIVIDENDS] - INFO - 💾 [352/453] 9543: Saved 0 actions
+2025-12-25 15:00:58,231 - [DIVIDENDS] - INFO - ✅ 9544: Found 1 corporate actions
+2025-12-25 15:00:58,232 - [DIVIDENDS] - INFO - 💾 [353/453] 9544: Saved 0 actions
+2025-12-25 15:01:09,506 - [DIVIDENDS] - INFO - ⚠️ [354/453] 9545: No actions
+2025-12-25 15:01:22,929 - [DIVIDENDS] - INFO - ⚠️ [355/453] 9546: No actions
+2025-12-25 15:01:33,880 - [DIVIDENDS] - INFO - ✅ 9547: Found 1 corporate actions
+2025-12-25 15:01:33,883 - [DIVIDENDS] - INFO - 💾 [356/453] 9547: Saved 0 actions
+2025-12-25 15:01:38,260 - [DIVIDENDS] - INFO - ✅ 9548: Found 2 corporate actions
+2025-12-25 15:01:38,262 - [DIVIDENDS] - INFO - 💾 [357/453] 9548: Saved 0 actions
+2025-12-25 15:01:42,601 - [DIVIDENDS] - INFO - ✅ 9549: Found 3 corporate actions
+2025-12-25 15:01:42,604 - [DIVIDENDS] - INFO - 💾 [358/453] 9549: Saved 0 actions
+2025-12-25 15:01:46,912 - [DIVIDENDS] - INFO - ✅ 9550: Found 4 corporate actions
+2025-12-25 15:01:46,916 - [DIVIDENDS] - INFO - 💾 [359/453] 9550: Saved 0 actions
+2025-12-25 15:01:51,230 - [DIVIDENDS] - INFO - ✅ 9551: Found 5 corporate actions
+2025-12-25 15:01:51,232 - [DIVIDENDS] - INFO - 💾 [360/453] 9551: Saved 0 actions
+2025-12-25 15:01:55,556 - [DIVIDENDS] - INFO - ✅ 9552: Found 5 corporate actions
+2025-12-25 15:01:55,558 - [DIVIDENDS] - INFO - 💾 [361/453] 9552: Saved 0 actions
+2025-12-25 15:02:00,657 - [DIVIDENDS] - INFO - ✅ 9553: Found 2 corporate actions
+2025-12-25 15:02:00,660 - [DIVIDENDS] - INFO - 💾 [362/453] 9553: Saved 0 actions
+2025-12-25 15:02:05,037 - [DIVIDENDS] - INFO - ✅ 9555: Found 1 corporate actions
+2025-12-25 15:02:05,038 - [DIVIDENDS] - INFO - 💾 [363/453] 9555: Saved 0 actions
+2025-12-25 15:02:10,018 - [DIVIDENDS] - INFO - ✅ 9556: Found 7 corporate actions
+2025-12-25 15:02:10,023 - [DIVIDENDS] - INFO - 💾 [364/453] 9556: Saved 0 actions
+2025-12-25 15:02:17,726 - [DIVIDENDS] - INFO - ✅ 9557: Found 5 corporate actions
+2025-12-25 15:02:17,731 - [DIVIDENDS] - INFO - 💾 [365/453] 9557: Saved 0 actions
+2025-12-25 15:02:34,857 - [DIVIDENDS] - INFO - ⚠️ [366/453] 9558: No actions
+2025-12-25 15:02:40,015 - [DIVIDENDS] - INFO - ✅ 9559: Found 6 corporate actions
+2025-12-25 15:02:40,020 - [DIVIDENDS] - INFO - 💾 [367/453] 9559: Saved 0 actions
+2025-12-25 15:02:44,763 - [DIVIDENDS] - INFO - ✅ 9560: Found 1 corporate actions
+2025-12-25 15:02:44,765 - [DIVIDENDS] - INFO - 💾 [368/453] 9560: Saved 0 actions
+2025-12-25 15:02:49,106 - [DIVIDENDS] - INFO - ✅ 9561: Found 2 corporate actions
+2025-12-25 15:02:49,108 - [DIVIDENDS] - INFO - 💾 [369/453] 9561: Saved 0 actions
+2025-12-25 15:02:53,573 - [DIVIDENDS] - INFO - ✅ 9562: Found 3 corporate actions
+2025-12-25 15:02:53,576 - [DIVIDENDS] - INFO - 💾 [370/453] 9562: Saved 0 actions
+2025-12-25 15:02:57,907 - [DIVIDENDS] - INFO - ✅ 9563: Found 3 corporate actions
+2025-12-25 15:02:57,910 - [DIVIDENDS] - INFO - 💾 [371/453] 9563: Saved 0 actions
+2025-12-25 15:03:02,218 - [DIVIDENDS] - INFO - ⚠️ [372/453] 9564: No actions
+2025-12-25 15:03:06,885 - [DIVIDENDS] - INFO - ⚠️ [373/453] 9565: No actions
+2025-12-25 15:03:11,698 - [DIVIDENDS] - INFO - ✅ 9566: Found 1 corporate actions
+2025-12-25 15:03:11,701 - [DIVIDENDS] - INFO - 💾 [374/453] 9566: Saved 0 actions
+2025-12-25 15:03:18,867 - [DIVIDENDS] - INFO - ⚠️ [375/453] 9567: No actions
+2025-12-25 15:03:23,222 - [DIVIDENDS] - INFO - ✅ 9568: Found 1 corporate actions
+2025-12-25 15:03:23,225 - [DIVIDENDS] - INFO - 💾 [376/453] 9568: Saved 0 actions
+2025-12-25 15:03:27,671 - [DIVIDENDS] - INFO - ✅ 9569: Found 3 corporate actions
+2025-12-25 15:03:27,673 - [DIVIDENDS] - INFO - 💾 [377/453] 9569: Saved 0 actions
+2025-12-25 15:03:32,177 - [DIVIDENDS] - INFO - ✅ 9570: Found 3 corporate actions
+2025-12-25 15:03:32,208 - [DIVIDENDS] - INFO - 💾 [378/453] 9570: Saved 0 actions
+2025-12-25 15:03:37,808 - [DIVIDENDS] - INFO - ✅ 9571: Found 4 corporate actions
+2025-12-25 15:03:38,367 - [DIVIDENDS] - INFO - 💾 [379/453] 9571: Saved 0 actions
+2025-12-25 15:19:05,700 - [DIVIDENDS] - ERROR - ❌ 9572: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/9572/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9572/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:19:05,701 - [DIVIDENDS] - INFO - ⚠️ [380/453] 9572: No actions
+2025-12-25 15:19:06,725 - [DIVIDENDS] - ERROR - ❌ 9574: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9574/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9574/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:19:06,726 - [DIVIDENDS] - INFO - ⚠️ [381/453] 9574: No actions
+2025-12-25 15:19:07,735 - [DIVIDENDS] - ERROR - ❌ 9575: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9575/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9575/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:19:07,736 - [DIVIDENDS] - INFO - ⚠️ [382/453] 9575: No actions
+2025-12-25 15:19:08,746 - [DIVIDENDS] - ERROR - ❌ 9576: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9576/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9576/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:19:08,747 - [DIVIDENDS] - INFO - ⚠️ [383/453] 9576: No actions
+2025-12-25 15:19:09,762 - [DIVIDENDS] - ERROR - ❌ 9577: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9577/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9577/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:19:09,763 - [DIVIDENDS] - INFO - ⚠️ [384/453] 9577: No actions
+2025-12-25 15:20:02,032 - [DIVIDENDS] - ERROR - ❌ 9578: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9578/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9578/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:20:02,033 - [DIVIDENDS] - INFO - ⚠️ [385/453] 9578: No actions
+2025-12-25 15:20:03,048 - [DIVIDENDS] - ERROR - ❌ 9579: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9579/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9579/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:20:03,049 - [DIVIDENDS] - INFO - ⚠️ [386/453] 9579: No actions
+2025-12-25 15:20:04,065 - [DIVIDENDS] - ERROR - ❌ 9580: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9580/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9580/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:20:04,065 - [DIVIDENDS] - INFO - ⚠️ [387/453] 9580: No actions
+2025-12-25 15:20:05,073 - [DIVIDENDS] - ERROR - ❌ 9581: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9581/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9581/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:20:05,073 - [DIVIDENDS] - INFO - ⚠️ [388/453] 9581: No actions
+2025-12-25 15:20:10,394 - [DIVIDENDS] - INFO - ✅ 9583: Found 4 corporate actions
+2025-12-25 15:20:10,440 - [DIVIDENDS] - INFO - 💾 [389/453] 9583: Saved 0 actions
+2025-12-25 15:20:15,386 - [DIVIDENDS] - INFO - ✅ 9584: Found 1 corporate actions
+2025-12-25 15:20:15,400 - [DIVIDENDS] - INFO - 💾 [390/453] 9584: Saved 0 actions
+2025-12-25 15:20:17,962 - [DIVIDENDS] - ERROR - ❌ 9585: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/9585/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9585/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:20:17,964 - [DIVIDENDS] - INFO - ⚠️ [391/453] 9585: No actions
+2025-12-25 15:20:22,533 - [DIVIDENDS] - INFO - ✅ 9586: Found 2 corporate actions
+2025-12-25 15:20:22,759 - [DIVIDENDS] - INFO - 💾 [392/453] 9586: Saved 0 actions
+2025-12-25 15:20:27,241 - [DIVIDENDS] - INFO - ⚠️ [393/453] 9587: No actions
+2025-12-25 15:20:29,709 - [DIVIDENDS] - ERROR - ❌ 9588: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/9588/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9588/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:20:29,710 - [DIVIDENDS] - INFO - ⚠️ [394/453] 9588: No actions
+2025-12-25 15:20:34,470 - [DIVIDENDS] - INFO - ✅ 9589: Found 1 corporate actions
+2025-12-25 15:20:34,497 - [DIVIDENDS] - INFO - 💾 [395/453] 9589: Saved 0 actions
+2025-12-25 15:20:39,971 - [DIVIDENDS] - INFO - ⚠️ [396/453] 9590: No actions
+2025-12-25 15:20:44,491 - [DIVIDENDS] - INFO - ✅ 9591: Found 4 corporate actions
+2025-12-25 15:20:44,547 - [DIVIDENDS] - INFO - 💾 [397/453] 9591: Saved 0 actions
+2025-12-25 15:20:50,932 - [DIVIDENDS] - INFO - ⚠️ [398/453] 9592: No actions
+2025-12-25 15:20:57,325 - [DIVIDENDS] - INFO - ✅ 9593: Found 2 corporate actions
+2025-12-25 15:20:57,329 - [DIVIDENDS] - INFO - 💾 [399/453] 9593: Saved 0 actions
+2025-12-25 15:21:02,175 - [DIVIDENDS] - INFO - ✅ 9594: Found 9 corporate actions
+2025-12-25 15:21:02,179 - [DIVIDENDS] - INFO - 💾 [400/453] 9594: Saved 0 actions
+2025-12-25 15:21:04,934 - [DIVIDENDS] - ERROR - ❌ 9595: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/9595/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9595/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:21:04,934 - [DIVIDENDS] - INFO - ⚠️ [401/453] 9595: No actions
+2025-12-25 15:21:09,580 - [DIVIDENDS] - INFO - ⚠️ [402/453] 9596: No actions
+2025-12-25 15:21:13,899 - [DIVIDENDS] - INFO - ✅ 9597: Found 1 corporate actions
+2025-12-25 15:21:13,902 - [DIVIDENDS] - INFO - 💾 [403/453] 9597: Saved 0 actions
+2025-12-25 15:21:16,027 - [DIVIDENDS] - ERROR - ❌ 9598: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/9598/corporate-action
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9598/corporate-action", waiting until "domcontentloaded"
+
+2025-12-25 15:21:16,027 - [DIVIDENDS] - INFO - ⚠️ [404/453] 9598: No actions
+2025-12-25 15:21:21,060 - [DIVIDENDS] - INFO - ⚠️ [405/453] 9599: No actions
+2025-12-25 15:21:25,442 - [DIVIDENDS] - INFO - ⚠️ [406/453] 9600: No actions
+2025-12-25 15:21:30,056 - [DIVIDENDS] - INFO - ✅ 9601: Found 3 corporate actions
+2025-12-25 15:21:30,060 - [DIVIDENDS] - INFO - 💾 [407/453] 9601: Saved 0 actions
+2025-12-25 15:22:28,672 - [DIVIDENDS] - INFO - ⚠️ [408/453] 9602: No actions
+2025-12-25 15:22:33,078 - [DIVIDENDS] - INFO - ✅ 9603: Found 2 corporate actions
+2025-12-25 15:22:33,080 - [DIVIDENDS] - INFO - 💾 [409/453] 9603: Saved 0 actions
+2025-12-25 15:22:37,677 - [DIVIDENDS] - INFO - ⚠️ [410/453] 9604: No actions
+2025-12-25 15:22:42,004 - [DIVIDENDS] - INFO - ⚠️ [411/453] 9605: No actions
+2025-12-25 15:22:46,613 - [DIVIDENDS] - INFO - ✅ 9606: Found 3 corporate actions
+2025-12-25 15:22:46,701 - [DIVIDENDS] - INFO - 💾 [412/453] 9606: Saved 0 actions
+2025-12-25 15:22:57,243 - [DIVIDENDS] - INFO - ✅ 9607: Found 3 corporate actions
+2025-12-25 15:22:57,247 - [DIVIDENDS] - INFO - 💾 [413/453] 9607: Saved 0 actions
+2025-12-25 15:23:04,310 - [DIVIDENDS] - INFO - ✅ 9608: Found 1 corporate actions
+2025-12-25 15:23:04,312 - [DIVIDENDS] - INFO - 💾 [414/453] 9608: Saved 0 actions
+2025-12-25 15:23:10,635 - [DIVIDENDS] - INFO - ⚠️ [415/453] 9609: No actions
+2025-12-25 15:23:14,934 - [DIVIDENDS] - INFO - ✅ 9610: Found 1 corporate actions
+2025-12-25 15:23:14,936 - [DIVIDENDS] - INFO - 💾 [416/453] 9610: Saved 0 actions
+2025-12-25 15:23:19,262 - [DIVIDENDS] - INFO - ✅ 9611: Found 1 corporate actions
+2025-12-25 15:23:19,263 - [DIVIDENDS] - INFO - 💾 [417/453] 9611: Saved 0 actions
+2025-12-25 15:23:23,553 - [DIVIDENDS] - INFO - ✅ 9612: Found 1 corporate actions
+2025-12-25 15:23:23,555 - [DIVIDENDS] - INFO - 💾 [418/453] 9612: Saved 0 actions
+2025-12-25 15:23:27,827 - [DIVIDENDS] - INFO - ⚠️ [419/453] 9613: No actions
+2025-12-25 15:23:32,128 - [DIVIDENDS] - INFO - ⚠️ [420/453] 9614: No actions
+2025-12-25 15:23:36,393 - [DIVIDENDS] - INFO - ✅ 9615: Found 1 corporate actions
+2025-12-25 15:23:36,396 - [DIVIDENDS] - INFO - 💾 [421/453] 9615: Saved 0 actions
+2025-12-25 15:23:40,686 - [DIVIDENDS] - INFO - ⚠️ [422/453] 9616: No actions
+2025-12-25 15:23:44,986 - [DIVIDENDS] - INFO - ⚠️ [423/453] 9617: No actions
+2025-12-25 15:23:49,301 - [DIVIDENDS] - INFO - ✅ 9618: Found 1 corporate actions
+2025-12-25 15:23:49,305 - [DIVIDENDS] - INFO - 💾 [424/453] 9618: Saved 0 actions
+2025-12-25 15:23:53,608 - [DIVIDENDS] - INFO - ✅ 9619: Found 2 corporate actions
+2025-12-25 15:23:53,609 - [DIVIDENDS] - INFO - 💾 [425/453] 9619: Saved 0 actions
+2025-12-25 15:23:58,009 - [DIVIDENDS] - INFO - ✅ 9620: Found 1 corporate actions
+2025-12-25 15:23:58,011 - [DIVIDENDS] - INFO - 💾 [426/453] 9620: Saved 0 actions
+2025-12-25 15:24:02,546 - [DIVIDENDS] - INFO - ⚠️ [427/453] 9621: No actions
+2025-12-25 15:24:06,837 - [DIVIDENDS] - INFO - ⚠️ [428/453] 9622: No actions
+2025-12-25 15:24:11,206 - [DIVIDENDS] - INFO - ✅ 9623: Found 1 corporate actions
+2025-12-25 15:24:11,210 - [DIVIDENDS] - INFO - 💾 [429/453] 9623: Saved 0 actions
+2025-12-25 15:24:15,525 - [DIVIDENDS] - INFO - ✅ 9624: Found 1 corporate actions
+2025-12-25 15:24:15,527 - [DIVIDENDS] - INFO - 💾 [430/453] 9624: Saved 0 actions
+2025-12-25 15:24:19,950 - [DIVIDENDS] - INFO - ⚠️ [431/453] 9625: No actions
+2025-12-25 15:24:24,251 - [DIVIDENDS] - INFO - ⚠️ [432/453] 9626: No actions
+2025-12-25 15:24:28,543 - [DIVIDENDS] - INFO - ✅ 9627: Found 1 corporate actions
+2025-12-25 15:24:28,546 - [DIVIDENDS] - INFO - 💾 [433/453] 9627: Saved 0 actions
+2025-12-25 15:24:32,891 - [DIVIDENDS] - INFO - ✅ 9628: Found 2 corporate actions
+2025-12-25 15:24:32,893 - [DIVIDENDS] - INFO - 💾 [434/453] 9628: Saved 0 actions
+2025-12-25 15:24:37,192 - [DIVIDENDS] - INFO - ⚠️ [435/453] 9630: No actions
+2025-12-25 15:24:41,482 - [DIVIDENDS] - INFO - ✅ 9631: Found 2 corporate actions
+2025-12-25 15:24:41,486 - [DIVIDENDS] - INFO - 💾 [436/453] 9631: Saved 0 actions
+2025-12-25 15:24:45,827 - [DIVIDENDS] - INFO - ✅ 9632: Found 1 corporate actions
+2025-12-25 15:24:45,828 - [DIVIDENDS] - INFO - 💾 [437/453] 9632: Saved 0 actions
+2025-12-25 15:24:50,109 - [DIVIDENDS] - INFO - ✅ 9633: Found 1 corporate actions
+2025-12-25 15:24:50,111 - [DIVIDENDS] - INFO - 💾 [438/453] 9633: Saved 0 actions
+2025-12-25 15:24:54,422 - [DIVIDENDS] - INFO - ✅ 9634: Found 2 corporate actions
+2025-12-25 15:24:54,424 - [DIVIDENDS] - INFO - 💾 [439/453] 9634: Saved 0 actions
+2025-12-25 15:24:59,205 - [DIVIDENDS] - INFO - ⚠️ [440/453] 9635: No actions
+2025-12-25 15:25:04,693 - [DIVIDENDS] - INFO - ⚠️ [441/453] 9636: No actions
+2025-12-25 15:25:12,113 - [DIVIDENDS] - INFO - ✅ 9637: Found 1 corporate actions
+2025-12-25 15:25:12,116 - [DIVIDENDS] - INFO - 💾 [442/453] 9637: Saved 0 actions
+2025-12-25 15:25:18,967 - [DIVIDENDS] - INFO - ⚠️ [443/453] 9639: No actions
+2025-12-25 15:25:23,225 - [DIVIDENDS] - INFO - ⚠️ [444/453] 9640: No actions
+2025-12-25 15:25:27,527 - [DIVIDENDS] - INFO - ⚠️ [445/453] 9641: No actions
+2025-12-25 15:25:31,818 - [DIVIDENDS] - INFO - ⚠️ [446/453] 9642: No actions
+2025-12-25 15:25:36,099 - [DIVIDENDS] - INFO - ⚠️ [447/453] 9644: No actions
+2025-12-25 15:25:40,380 - [DIVIDENDS] - INFO - ⚠️ [448/453] 9645: No actions
+2025-12-25 15:25:44,664 - [DIVIDENDS] - INFO - ⚠️ [449/453] 9647: No actions
+2025-12-25 15:25:48,979 - [DIVIDENDS] - INFO - ✅ 9648: Found 1 corporate actions
+2025-12-25 15:25:48,982 - [DIVIDENDS] - INFO - 💾 [450/453] 9648: Saved 0 actions
+2025-12-25 15:25:53,577 - [DIVIDENDS] - INFO - ⚠️ [451/453] 9649: No actions
+2025-12-25 15:25:58,081 - [DIVIDENDS] - INFO - ⚠️ [452/453] 9650: No actions
+2025-12-25 15:26:02,901 - [DIVIDENDS] - INFO - ⚠️ [453/453] 9651: No actions
+2025-12-25 15:26:05,494 - [DIVIDENDS] - INFO - 🎉 Complete! Total corporate actions: 0

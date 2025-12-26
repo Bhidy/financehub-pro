@@ -11,5 +11,8 @@ asyncpg==0.29.0
 python-dotenv==1.0.0
 schedule==1.2.1
 openai
+groq
 pydantic-settings
 python-multipart
+passlib[bcrypt]
+python-jose[cryptography]

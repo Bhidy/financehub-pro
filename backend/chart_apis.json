@@ -1,0 +1,105 @@
+[
+  {
+    "url": "https://static.mubasher.info/File.MubasherCharts/File.Mutual_Fund_Charts_Dir/priceChartFund_2049.csv",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://www.mubasher.info/portlet/most-read/sa?limit=7&relativeURI=/countries/sa/funds/2049",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/countries/sa/funds/2049",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://www.mubasher.info/portlet/most-shared/sa?limit=7&relativeURI=/countries/sa/funds/2049",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/countries/sa/funds/2049",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://securepubads.g.doubleclick.net/gampad/ads?pvsid=4048889827780942&correlator=3202846476888416&eid=31093611%2C31095253%2C31095910%2C95379660%2C83321073&output=ldjh&gdfp_req=1&vrg=202512040101&ptt=17&impl=fifs&gdpr=0&iu_parts=53930451%2Cinterstitial_mubasher&enc_prev_ius=%2F0%2F1&prev_iu_szs=1x1&ifi=2&didk=1951695844&dids=gpt_unit_%2F53930451%2Finterstitia&sfv=1-0-45&ists=1&fas=8&fsapi=1&sc=1&cookie_enabled=1&abxe=1&dt=1766617336773&lmt=1766617336&adxs=-9&adys=-9&biw=1280&bih=720&scr_x=0&scr_y=0&btvi=-1&ucis=1&oid=2&u_his=2&u_h=720&u_w=1280&u_ah=720&u_aw=1280&u_cd=24&u_sd=1&u_tz=180&dmc=8&bc=31&nvt=1&uach=WyJtYWNPUyIsIjEwXzE1XzciLCJ4ODYiLCIiLCIxNDMuMC43NDk5LjQiLG51bGwsMCxudWxsLCI2NCIsW1siSGVhZGxlc3NDaHJvbWUiLCIxNDMuMC43NDk5LjQiXSxbIkNocm9taXVtIiwiMTQzLjAuNzQ5OS40Il0sWyJOb3QgQShCcmFuZCIsIjI0LjAuMC4wIl1dLDBd&url=https%3A%2F%2Fwww.mubasher.info%2Fcountries%2Fsa%2Ffunds%2F2049&vis=1&psz=0x-1&msz=0x-1&fws=2&ohw=0&psd=WzMxLFtdXQ..&dlt=1766617335375&idt=925&adks=1607436715&frm=20&eoidce=1",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://securepubads.g.doubleclick.net/gampad/ads?pvsid=4048889827780942&correlator=3202846476888416&eid=31093611%2C31095253%2C31095910%2C95379660%2C83321073&output=ldjh&gdfp_req=1&vrg=202512040101&ptt=17&impl=fifs&gdpr=0&iu_parts=53930451%2CMubasher-1x1&enc_prev_ius=%2F0%2F1&prev_iu_szs=1x1&ifi=3&didk=1369081495&dids=div-gpt-ad-1695552165185-0&adfs=1355574031&sfv=1-0-45&sc=1&cookie_enabled=1&abxe=1&dt=1766617336776&lmt=1766617336&adxs=0&adys=0&biw=1280&bih=720&scr_x=0&scr_y=0&btvi=0&ucis=2&oid=2&u_his=2&u_h=720&u_w=1280&u_ah=720&u_aw=1280&u_cd=24&u_sd=1&u_tz=180&dmc=8&bc=31&nvt=1&uach=WyJtYWNPUyIsIjEwXzE1XzciLCJ4ODYiLCIiLCIxNDMuMC43NDk5LjQiLG51bGwsMCxudWxsLCI2NCIsW1siSGVhZGxlc3NDaHJvbWUiLCIxNDMuMC43NDk5LjQiXSxbIkNocm9taXVtIiwiMTQzLjAuNzQ5OS40Il0sWyJOb3QgQShCcmFuZCIsIjI0LjAuMC4wIl1dLDBd&url=https%3A%2F%2Fwww.mubasher.info%2Fcountries%2Fsa%2Ffunds%2F2049&vis=1&psz=1280x0&msz=1280x0&fws=4&ohw=1280&psd=WzMxLFtdXQ..&dlt=1766617335375&idt=925&adks=491798691&frm=20&eoidce=1",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://securepubads.g.doubleclick.net/gampad/ads?pvsid=4048889827780942&correlator=3202846476888416&eid=31093611%2C31095253%2C31095910%2C95379660%2C83321073&output=ldjh&gdfp_req=1&vrg=202512040101&ptt=17&impl=fifs&gdpr=0&iu_parts=53930451%2CMubasher-Leaderboard-Desktop&enc_prev_ius=%2F0%2F1&prev_iu_szs=728x90&ifi=4&didk=2472179394&dids=div-gpt-ad-1695550548342-0&adfs=600773339&sfv=1-0-45&sc=1&cookie_enabled=1&abxe=1&dt=1766617336779&lmt=1766617336&adxs=59&adys=50&biw=1280&bih=720&scr_x=0&scr_y=0&btvi=0&ucis=3&oid=2&u_his=2&u_h=720&u_w=1280&u_ah=720&u_aw=1280&u_cd=24&u_sd=1&u_tz=180&dmc=8&bc=31&nvt=1&uach=WyJtYWNPUyIsIjEwXzE1XzciLCJ4ODYiLCIiLCIxNDMuMC43NDk5LjQiLG51bGwsMCxudWxsLCI2NCIsW1siSGVhZGxlc3NDaHJvbWUiLCIxNDMuMC43NDk5LjQiXSxbIkNocm9taXVtIiwiMTQzLjAuNzQ5OS40Il0sWyJOb3QgQShCcmFuZCIsIjI0LjAuMC4wIl1dLDBd&url=https%3A%2F%2Fwww.mubasher.info%2Fcountries%2Fsa%2Ffunds%2F2049&vis=1&psz=728x90&msz=728x90&fws=4&ohw=1280&psd=WzMxLFtdXQ..&dlt=1766617335375&idt=925&adks=1002378122&frm=20&eoidce=1",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://securepubads.g.doubleclick.net/gampad/ads?pvsid=4048889827780942&correlator=3202846476888416&eid=31093611%2C31095253%2C31095910%2C95379660%2C83321073&output=ldjh&gdfp_req=1&vrg=202512040101&ptt=17&impl=fifs&gdpr=0&iu_parts=53930451%2CMubasher-MPU-Desktop&enc_prev_ius=%2F0%2F1&prev_iu_szs=336x280%7C300x250&ifi=5&didk=2829382466&dids=div-gpt-ad-1695550214528-0&adfs=4255098170&sfv=1-0-45&sc=1&cookie_enabled=1&abxe=1&dt=1766617336781&lmt=1766617336&adxs=36&adys=231&biw=1280&bih=720&scr_x=0&scr_y=0&btvi=0&ucis=4&oid=2&u_his=2&u_h=720&u_w=1280&u_ah=720&u_aw=1280&u_cd=24&u_sd=1&u_tz=180&dmc=8&bc=31&nvt=1&uach=WyJtYWNPUyIsIjEwXzE1XzciLCJ4ODYiLCIiLCIxNDMuMC43NDk5LjQiLG51bGwsMCxudWxsLCI2NCIsW1siSGVhZGxlc3NDaHJvbWUiLCIxNDMuMC43NDk5LjQiXSxbIkNocm9taXVtIiwiMTQzLjAuNzQ5OS40Il0sWyJOb3QgQShCcmFuZCIsIjI0LjAuMC4wIl1dLDBd&url=https%3A%2F%2Fwww.mubasher.info%2Fcountries%2Fsa%2Ffunds%2F2049&vis=1&psz=345x250&msz=345x250&fws=4&ohw=1280&psd=WzMxLFtdXQ..&dlt=1766617335375&idt=925&adks=2474743710&frm=20&eoidce=1",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://securepubads.g.doubleclick.net/gampad/ads?pvsid=4048889827780942&correlator=3202846476888416&eid=31093611%2C31095253%2C31095910%2C95379660%2C83321073&output=ldjh&gdfp_req=1&vrg=202512040101&ptt=17&impl=fifs&gdpr=0&iu_parts=53930451%2CMubasher-sec-MPU-Desktop&enc_prev_ius=%2F0%2F1&prev_iu_szs=300x250%7C336x280&ifi=6&didk=3318871152&dids=div-gpt-ad-1695550452500-0&adfs=2505997933&sfv=1-0-45&sc=1&cookie_enabled=1&abxe=1&dt=1766617336782&lmt=1766617336&adxs=72&adys=617&biw=1280&bih=720&scr_x=0&scr_y=0&btvi=0&ucis=5&oid=2&u_his=2&u_h=720&u_w=1280&u_ah=720&u_aw=1280&u_cd=24&u_sd=1&u_tz=180&dmc=8&bc=31&nvt=1&uach=WyJtYWNPUyIsIjEwXzE1XzciLCJ4ODYiLCIiLCIxNDMuMC43NDk5LjQiLG51bGwsMCxudWxsLCI2NCIsW1siSGVhZGxlc3NDaHJvbWUiLCIxNDMuMC43NDk5LjQiXSxbIkNocm9taXVtIiwiMTQzLjAuNzQ5OS40Il0sWyJOb3QgQShCcmFuZCIsIjI0LjAuMC4wIl1dLDBd&url=https%3A%2F%2Fwww.mubasher.info%2Fcountries%2Fsa%2Ffunds%2F2049&vis=1&psz=345x250&msz=345x250&fws=4&ohw=1280&psd=WzMxLFtdXQ..&dlt=1766617335375&idt=925&adks=3363968826&frm=20&eoidce=1",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "url": "https://s.seedtag.com/c/pv?token=3444-9424-01&device=desktop&fullUrl=https%3A%2F%2Fwww.mubasher.info%2Fcountries%2Fsa%2Ffunds%2F2049&cmp=true&cv=2&cache=1766617336908&v=3386&ft=true",
+    "method": "GET",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "referer": "https://www.mubasher.info/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    }
+  }
+]

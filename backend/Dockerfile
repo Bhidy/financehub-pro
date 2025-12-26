@@ -21,8 +21,9 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-# Set python path explicitly
-ENV PYTHONPATH=/app
+# Copy startup script
+COPY start_prod.sh .
+RUN chmod +x start_prod.sh
 
-# Run the application (Direct Python execution)
-CMD ["python", "app/main_minimal.py"]
+# Run the application via script
+CMD ["./start_prod.sh"]

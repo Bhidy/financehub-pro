@@ -2141,3 +2141,9 @@ asyncpg.exceptions.ConnectionDoesNotExistError: connection was closed in the mid
 2025-12-26 20:33:39,095 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
 2025-12-26 20:33:57,447 - [ENGINE] - INFO - Extractor completed successfully.
 2025-12-26 20:33:57,449 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-26 20:34:39,646 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-26 20:34:57,163 - [ENGINE] - INFO - Extractor completed successfully.
+2025-12-26 20:34:57,173 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-26 20:35:57,385 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-26 20:36:14,648 - [ENGINE] - INFO - Extractor completed successfully.
+2025-12-26 20:36:14,649 - [ENGINE] - INFO - Fast Loop Complete.

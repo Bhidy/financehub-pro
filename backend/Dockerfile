@@ -21,9 +21,8 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-# Copy startup script
-COPY start_prod.sh .
-RUN chmod +x start_prod.sh
+# Set python path explicitly
+ENV PYTHONPATH=/app
 
-# Run the application via script
-CMD ["./start_prod.sh"]
+# Run the application (Hardcoded port 8000 for reliability)
+CMD ["uvicorn", "app.main_minimal:app", "--host", "0.0.0.0", "--port", "8000"]

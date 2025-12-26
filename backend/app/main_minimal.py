@@ -10,3 +10,11 @@ def health_check():
 @app.get("/")
 def root():
     return {"message": "Minimal Deployment working"}
+
+if __name__ == "__main__":
+    import uvicorn
+    import sys
+    
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting minimal app on port {port}...", file=sys.stderr)
+    uvicorn.run("app.main_minimal:app", host="0.0.0.0", port=port, reload=False)

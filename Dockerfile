@@ -1,5 +1,5 @@
-# FinanceHub Pro Backend Dockerfile
-# Build context is repo root, so paths are relative to /
+# FinanceHub Pro Backend - Hugging Face Spaces Dockerfile
+# HF Spaces uses port 7860 by default
 
 FROM python:3.11-slim
 
@@ -24,8 +24,8 @@ COPY backend/engine ./engine
 # Set python path
 ENV PYTHONPATH=/app
 
-# Expose port
-EXPOSE 8000
+# HF Spaces uses port 7860
+EXPOSE 7860
 
-# Run uvicorn with proxy headers for Railway load balancer
-CMD sh -c "uvicorn app.main:app --host 0.0.0.0 --port \${PORT:-8000} --proxy-headers --forwarded-allow-ips '*'"
+# Run uvicorn on port 7860 (HF Spaces default)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]

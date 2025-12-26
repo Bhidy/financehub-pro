@@ -18,7 +18,7 @@ if settings.GROQ_API_KEY:
 # Model to use (OpenAI OSS model with better tool calling)
 GROQ_MODEL = "openai/gpt-oss-120b"
 
-from app.services.technical_analysis import TechnicalAnalysis
+
 
 # SYSTEM PROMPT: Enhanced with STRICT Tool Usage Rules
 SYSTEM_PROMPT = """
@@ -229,8 +229,14 @@ async def get_technical_analysis(symbol: str):
     # Convert asyncpg records to dicts
     history = [dict(r) for r in rows]
     
-    ta = TechnicalAnalysis(history)
-    return ta.get_summary()
+    # Lazy import to prevent startup crash if pandas is missing
+    try:
+        from app.services.technical_analysis import TechnicalAnalysis
+        ta = TechnicalAnalysis(history)
+        return ta.get_summary()
+    except ImportError as e:
+        print(f"Error importing TechnicalAnalysis: {e}")
+        return None
 
 async def get_peer_comparison(symbol: str):
     """Get peers in the same sector and their basic stats."""

@@ -20,20 +20,30 @@ async def lifespan(app: FastAPI):
     global main_event_loop
     main_event_loop = asyncio.get_running_loop()
     
-    await db.connect()
+    # Non-blocking startup - catch ALL errors to ensure app starts
+    try:
+        await db.connect()
+    except Exception as e:
+        print(f"DATABASE STARTUP ERROR (non-fatal): {e}")
     
     # Only start scheduler in LOCAL/development mode (not on Railway/production)
-    if os.environ.get("RAILWAY_ENVIRONMENT") is None and os.environ.get("RAILWAY_SERVICE_NAME") is None:
-        from engine.scheduler import start_scheduler
-        scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
-        scheduler_thread.start()
-        print("DEV MODE: Scheduler started.")
-    else:
-        print("PRODUCTION MODE: Scheduler disabled. Data extraction via GitHub Actions.")
+    try:
+        if os.environ.get("RAILWAY_ENVIRONMENT") is None and os.environ.get("RAILWAY_SERVICE_NAME") is None:
+            from engine.scheduler import start_scheduler
+            scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
+            scheduler_thread.start()
+            print("DEV MODE: Scheduler started.")
+        else:
+            print("PRODUCTION MODE: Scheduler disabled. Data extraction via GitHub Actions.")
+    except Exception as e:
+        print(f"SCHEDULER STARTUP ERROR (non-fatal): {e}")
     
     yield
     # Shutdown
-    await db.close()
+    try:
+        await db.close()
+    except Exception as e:
+        print(f"DATABASE SHUTDOWN ERROR (non-fatal): {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

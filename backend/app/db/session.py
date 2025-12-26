@@ -13,11 +13,25 @@ class Database:
                 return
                 
             try:
-                self._pool = await asyncpg.create_pool(dsn=settings.DATABASE_URL)
+                # Railway/Supabase requires SSL for external connections
+                # We try with ssl='require' first, which is standard for cloud Postgres
+                self._pool = await asyncpg.create_pool(
+                    dsn=settings.DATABASE_URL,
+                    min_size=1,
+                    max_size=10,
+                    ssl='require'
+                )
                 print(f"Connected to Database: {settings.DATABASE_URL.split('@')[-1]}")
             except Exception as e:
                 print(f"CRITICAL DATABASE ERROR: {e}")
-                print(f"Failed DSN: {settings.DATABASE_URL}")
+                print(f"Failed DSN: {settings.DATABASE_URL.split('@')[-1]}")
+                # Fallback without SSL if local or specific config (optional, but 'require' is safest for prod)
+                try:
+                     print("Retrying without SSL...")
+                     self._pool = await asyncpg.create_pool(dsn=settings.DATABASE_URL, min_size=1, max_size=10)
+                     print("Connected to Database (No SSL)")
+                except Exception as e2:
+                    print(f"FINAL DATABASE CONNECTION FAILURE: {e2}")
 
     async def close(self):
         if self._pool:

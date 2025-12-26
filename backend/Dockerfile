@@ -24,5 +24,5 @@ EXPOSE 8000
 # Set python path
 ENV PYTHONPATH=/app
 
-# Run uvicorn directly with shell form for PORT expansion
-CMD sh -c "uvicorn app.ultra_minimal:app --host 0.0.0.0 --port \${PORT:-8000}"
+# Run uvicorn with proxy headers for Railway load balancer
+CMD sh -c "uvicorn app.main:app --host 0.0.0.0 --port \${PORT:-8000} --proxy-headers --forwarded-allow-ips '*'"

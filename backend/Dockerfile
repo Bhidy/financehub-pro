@@ -21,9 +21,8 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-# Copy startup script
-COPY start_prod.sh .
-RUN chmod +x start_prod.sh
+# Set python path
+ENV PYTHONPATH=/app
 
-# Run via shell form to ensure $PORT is expanded correctly
-CMD /bin/sh ./start_prod.sh
+# Run uvicorn directly with shell form for PORT expansion
+CMD sh -c "uvicorn app.ultra_minimal:app --host 0.0.0.0 --port \${PORT:-8000}"

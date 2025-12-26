@@ -22,28 +22,47 @@ import asyncio
 from app.services.market_broadcaster import broadcaster
 from app.db.session import db
 
+import os
+
+# Define Paths dynamically
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_ROOT = os.path.dirname(CURRENT_DIR) # /app or .../backend
+
+def get_path(relative_path):
+    """Resolve absolute path compatible with Docker and Local"""
+    return os.path.join(BACKEND_ROOT, relative_path)
+
 def run_fast_loop():
     """Fast Loop (1m): Snapshots for Ticker Tape - REAL DATA ONLY"""
     logger.info("⚡ Executing Fast Loop (Market Snapshot)...")
     try:
-        # Step 1: Run the real extractor to fetch latest prices from source
-        # This updates the database with fresh data
+        script_path = get_path("browser_extract.js")
+        
+        # Check if node is available
         try:
-            subprocess.run(["node", "browser_extract.js", "snapshot"], check=True, timeout=30)
+            subprocess.run(["node", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            logger.warning("Node.js not found in environment - Skipping JS extractor.")
+            return
+
+        # Step 1: Run the real extractor
+        try:
+            subprocess.run(["node", script_path, "snapshot"], check=True, timeout=30)
             logger.info("Extractor completed successfully.")
         except FileNotFoundError:
-            logger.warning("browser_extract.js not found - using existing DB data.")
+            logger.warning(f"Script not found: {script_path}")
         except subprocess.TimeoutExpired:
             logger.warning("Extractor timed out - using existing DB data.")
         except Exception as e:
             logger.warning(f"Extractor failed: {e} - using existing DB data.")
         
-        # Step 2: Broadcast real prices from database
+        # Step 2: Broadcast real prices
         async def broadcast_real_updates():
-            # Connect if not connected (DB)
-            if not db._pool: await db.connect()
+            if not db._pool: 
+                # Silent return if DB not ready
+                return 
             
-            # Fetch REAL prices from database (no simulation)
+            # Fetch REAL prices
             tickers = await db.fetch_all("""
                 SELECT symbol, last_price, change_value, change_percent 
                 FROM market_tickers 
@@ -60,7 +79,6 @@ def run_fast_loop():
                     "change_percent": float(t['change_percent'] or 0)
                 })
                 
-            # Broadcast real data
             if updates:
                 await broadcaster.broadcast({
                     "type": "MARKET_UPDATE",
@@ -68,7 +86,6 @@ def run_fast_loop():
                 })
                 logger.info(f"Broadcasted {len(updates)} REAL ticker updates.")
 
-        # Run async function in main event loop (Thread Safe)
         from app.main import main_event_loop
         if main_event_loop:
             future = asyncio.run_coroutine_threadsafe(broadcast_real_updates(), main_event_loop)
@@ -83,8 +100,8 @@ def run_medium_loop():
     """Medium Loop (15m): News & Screener Update"""
     logger.info("📰 Executing Medium Loop (News & Scan)...")
     try:
-        # Run the news extractor script as a subprocess to ensure clean state
-        subprocess.run(["python3", "backend/extractors/news_extractor.py"], check=True)
+        script_path = get_path("extractors/news_extractor.py")
+        subprocess.run([sys.executable, script_path], check=True)
         logger.info("News Job Completed Successfully.")
     except Exception as e:
         logger.error(f"News Job Failed: {e}")
@@ -94,12 +111,15 @@ def run_slow_loop():
     """Slow Loop (24h): Deep Financials & Profile Crawl"""
     logger.info("🐢 Executing Slow Loop (Daily Updates)...")
     try:
-        # Run Real Fund Extractor (Daily NAV)
-        subprocess.run([sys.executable, "backend/extractors/real_fund_extractor.py"], check=True)
-        # Run Real Insider/Corporate Extractor
-        subprocess.run([sys.executable, "backend/extractors/real_insider_extractor.py"], check=True)
-        # Run Real Analyst Ratings Extractor
-        subprocess.run([sys.executable, "backend/extractors/real_analyst_extractor.py"], check=True)
+        scripts = [
+            "extractors/real_fund_extractor.py",
+            "extractors/real_insider_extractor.py",
+            "extractors/real_analyst_extractor.py"
+        ]
+        
+        for script in scripts:
+            script_path = get_path(script)
+            subprocess.run([sys.executable, script_path], check=True)
         
         logger.info("All Daily Syncs Complete.")
     except Exception as e:

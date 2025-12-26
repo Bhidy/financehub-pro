@@ -1,0 +1,17 @@
+# Render Blueprint - One-click deployment for FinanceHub Pro Backend
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: financehub-pro-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Set manually in dashboard
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false  # Set manually in dashboard
+    healthCheckPath: /health
+    autoDeploy: true

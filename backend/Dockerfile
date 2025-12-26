@@ -25,5 +25,5 @@ EXPOSE 8000
 COPY start_prod.sh .
 RUN chmod +x start_prod.sh
 
-# Run the application via script
-CMD ["./start_prod.sh"]
+# Run via shell form to ensure $PORT is expanded correctly
+CMD /bin/sh ./start_prod.sh

@@ -14,5 +14,5 @@ echo "Using PORT: $PORT"
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 echo "Starting Uvicorn..."
-# Run with proxy headers for Railway load balancer
-exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+# DIAGNOSTIC: Run ultra-minimal ASGI app
+exec uvicorn app.ultra_minimal:app --host 0.0.0.0 --port $PORT

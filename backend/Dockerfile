@@ -21,4 +21,9 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
+# Copy startup script
+COPY start_prod.sh .
+RUN chmod +x start_prod.sh
+
+# Run the application via script
+CMD ["./start_prod.sh"]

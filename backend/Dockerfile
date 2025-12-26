@@ -24,5 +24,5 @@ EXPOSE 8000
 # Set python path explicitly
 ENV PYTHONPATH=/app
 
-# Run the application (Hardcoded port 8000 for reliability)
-CMD ["uvicorn", "app.main_minimal:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (Direct Python execution)
+CMD ["python", "app/main_minimal.py"]

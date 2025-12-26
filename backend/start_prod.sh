@@ -14,4 +14,4 @@ echo "Using PORT: $PORT"
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 echo "Starting Uvicorn..."
-exec uvicorn app.main:app --host 0.0.0.0 --port $PORT
+exec uvicorn app.main_minimal:app --host 0.0.0.0 --port $PORT

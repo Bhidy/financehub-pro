@@ -1,0 +1,1544 @@
+2025-12-25 13:52:53,763 - [SHAREHOLDERS] - INFO - 🎯 Extracting shareholders for 453 stocks
+2025-12-25 13:52:57,223 - [SHAREHOLDERS] - INFO - ✅ 1010: Found 15 shareholders
+2025-12-25 13:52:57,825 - [SHAREHOLDERS] - INFO - 💾 [1/453] 1010: Saved 15 shareholders
+2025-12-25 13:53:02,619 - [SHAREHOLDERS] - INFO - ✅ 1020: Found 9 shareholders
+2025-12-25 13:53:02,625 - [SHAREHOLDERS] - INFO - 💾 [2/453] 1020: Saved 9 shareholders
+2025-12-25 13:53:05,542 - [SHAREHOLDERS] - INFO - ✅ 1030: Found 18 shareholders
+2025-12-25 13:53:05,549 - [SHAREHOLDERS] - INFO - 💾 [3/453] 1030: Saved 18 shareholders
+2025-12-25 13:53:08,533 - [SHAREHOLDERS] - INFO - ✅ 1050: Found 12 shareholders
+2025-12-25 13:53:08,537 - [SHAREHOLDERS] - INFO - 💾 [4/453] 1050: Saved 12 shareholders
+2025-12-25 13:53:11,399 - [SHAREHOLDERS] - INFO - ✅ 1060: Found 20 shareholders
+2025-12-25 13:53:11,412 - [SHAREHOLDERS] - INFO - 💾 [5/453] 1060: Saved 20 shareholders
+2025-12-25 13:53:15,095 - [SHAREHOLDERS] - INFO - ✅ 1080: Found 5 shareholders
+2025-12-25 13:53:15,106 - [SHAREHOLDERS] - INFO - 💾 [6/453] 1080: Saved 5 shareholders
+2025-12-25 13:53:17,971 - [SHAREHOLDERS] - INFO - ✅ 1111: Found 4 shareholders
+2025-12-25 13:53:17,978 - [SHAREHOLDERS] - INFO - 💾 [7/453] 1111: Saved 4 shareholders
+2025-12-25 13:53:20,886 - [SHAREHOLDERS] - INFO - ⚠️ [8/453] 1113: No shareholders
+2025-12-25 13:53:23,806 - [SHAREHOLDERS] - INFO - ✅ 1120: Found 7 shareholders
+2025-12-25 13:53:23,810 - [SHAREHOLDERS] - INFO - 💾 [9/453] 1120: Saved 7 shareholders
+2025-12-25 13:53:26,672 - [SHAREHOLDERS] - INFO - ✅ 1140: Found 20 shareholders
+2025-12-25 13:53:26,687 - [SHAREHOLDERS] - INFO - 💾 [10/453] 1140: Saved 20 shareholders
+2025-12-25 13:53:30,297 - [SHAREHOLDERS] - INFO - ✅ 1150: Found 1 shareholders
+2025-12-25 13:53:30,298 - [SHAREHOLDERS] - INFO - 💾 [11/453] 1150: Saved 1 shareholders
+2025-12-25 13:53:33,662 - [SHAREHOLDERS] - INFO - ✅ 1180: Found 9 shareholders
+2025-12-25 13:53:33,674 - [SHAREHOLDERS] - INFO - 💾 [12/453] 1180: Saved 9 shareholders
+2025-12-25 13:53:36,646 - [SHAREHOLDERS] - INFO - ✅ 1182: Found 20 shareholders
+2025-12-25 13:53:36,658 - [SHAREHOLDERS] - INFO - 💾 [13/453] 1182: Saved 20 shareholders
+2025-12-25 13:53:39,541 - [SHAREHOLDERS] - INFO - ✅ 1183: Found 12 shareholders
+2025-12-25 13:53:39,553 - [SHAREHOLDERS] - INFO - 💾 [14/453] 1183: Saved 12 shareholders
+2025-12-25 13:53:43,744 - [SHAREHOLDERS] - INFO - ✅ 1201: Found 8 shareholders
+2025-12-25 13:53:43,751 - [SHAREHOLDERS] - INFO - 💾 [15/453] 1201: Saved 8 shareholders
+2025-12-25 13:53:46,803 - [SHAREHOLDERS] - INFO - ✅ 1202: Found 19 shareholders
+2025-12-25 13:53:46,810 - [SHAREHOLDERS] - INFO - 💾 [16/453] 1202: Saved 19 shareholders
+2025-12-25 13:53:49,700 - [SHAREHOLDERS] - INFO - ✅ 1210: Found 20 shareholders
+2025-12-25 13:53:49,784 - [SHAREHOLDERS] - INFO - 💾 [17/453] 1210: Saved 20 shareholders
+2025-12-25 13:53:53,169 - [SHAREHOLDERS] - INFO - ✅ 1211: Found 5 shareholders
+2025-12-25 13:53:53,176 - [SHAREHOLDERS] - INFO - 💾 [18/453] 1211: Saved 5 shareholders
+2025-12-25 13:53:56,006 - [SHAREHOLDERS] - INFO - ✅ 1212: Found 20 shareholders
+2025-12-25 13:53:56,021 - [SHAREHOLDERS] - INFO - 💾 [19/453] 1212: Saved 20 shareholders
+2025-12-25 13:53:59,123 - [SHAREHOLDERS] - INFO - ✅ 1213: Found 20 shareholders
+2025-12-25 13:53:59,134 - [SHAREHOLDERS] - INFO - 💾 [20/453] 1213: Saved 20 shareholders
+2025-12-25 13:54:03,116 - [SHAREHOLDERS] - INFO - ✅ 1214: Found 20 shareholders
+2025-12-25 13:54:03,129 - [SHAREHOLDERS] - INFO - 💾 [21/453] 1214: Saved 20 shareholders
+2025-12-25 13:54:06,425 - [SHAREHOLDERS] - INFO - ✅ 1301: Found 3 shareholders
+2025-12-25 13:54:06,427 - [SHAREHOLDERS] - INFO - 💾 [22/453] 1301: Saved 3 shareholders
+2025-12-25 13:54:09,320 - [SHAREHOLDERS] - INFO - ✅ 1302: Found 19 shareholders
+2025-12-25 13:54:09,328 - [SHAREHOLDERS] - INFO - 💾 [23/453] 1302: Saved 19 shareholders
+2025-12-25 13:54:12,333 - [SHAREHOLDERS] - INFO - ✅ 1303: Found 12 shareholders
+2025-12-25 13:54:12,343 - [SHAREHOLDERS] - INFO - 💾 [24/453] 1303: Saved 12 shareholders
+2025-12-25 13:54:15,210 - [SHAREHOLDERS] - INFO - ✅ 1304: Found 11 shareholders
+2025-12-25 13:54:15,217 - [SHAREHOLDERS] - INFO - 💾 [25/453] 1304: Saved 11 shareholders
+2025-12-25 13:54:18,185 - [SHAREHOLDERS] - INFO - ✅ 1320: Found 20 shareholders
+2025-12-25 13:54:18,193 - [SHAREHOLDERS] - INFO - 💾 [26/453] 1320: Saved 20 shareholders
+2025-12-25 13:54:21,041 - [SHAREHOLDERS] - INFO - ✅ 1321: Found 11 shareholders
+2025-12-25 13:54:21,045 - [SHAREHOLDERS] - INFO - 💾 [27/453] 1321: Saved 11 shareholders
+2025-12-25 13:54:23,862 - [SHAREHOLDERS] - INFO - ✅ 1322: Found 20 shareholders
+2025-12-25 13:54:23,872 - [SHAREHOLDERS] - INFO - 💾 [28/453] 1322: Saved 20 shareholders
+2025-12-25 13:54:26,687 - [SHAREHOLDERS] - INFO - ⚠️ [29/453] 1323: No shareholders
+2025-12-25 13:54:29,511 - [SHAREHOLDERS] - INFO - ✅ 1810: Found 20 shareholders
+2025-12-25 13:54:29,518 - [SHAREHOLDERS] - INFO - 💾 [30/453] 1810: Saved 20 shareholders
+2025-12-25 13:54:32,372 - [SHAREHOLDERS] - INFO - ✅ 1820: Found 4 shareholders
+2025-12-25 13:54:32,376 - [SHAREHOLDERS] - INFO - 💾 [31/453] 1820: Saved 4 shareholders
+2025-12-25 13:54:35,212 - [SHAREHOLDERS] - INFO - ✅ 1830: Found 17 shareholders
+2025-12-25 13:54:35,221 - [SHAREHOLDERS] - INFO - 💾 [32/453] 1830: Saved 17 shareholders
+2025-12-25 13:54:38,175 - [SHAREHOLDERS] - INFO - ✅ 1831: Found 16 shareholders
+2025-12-25 13:54:38,203 - [SHAREHOLDERS] - INFO - 💾 [33/453] 1831: Saved 16 shareholders
+2025-12-25 13:54:41,209 - [SHAREHOLDERS] - INFO - ✅ 1832: Found 20 shareholders
+2025-12-25 13:54:41,219 - [SHAREHOLDERS] - INFO - 💾 [34/453] 1832: Saved 20 shareholders
+2025-12-25 13:54:44,032 - [SHAREHOLDERS] - INFO - ✅ 1833: Found 20 shareholders
+2025-12-25 13:54:44,038 - [SHAREHOLDERS] - INFO - 💾 [35/453] 1833: Saved 20 shareholders
+2025-12-25 13:54:47,019 - [SHAREHOLDERS] - INFO - ✅ 1834: Found 4 shareholders
+2025-12-25 13:54:47,022 - [SHAREHOLDERS] - INFO - 💾 [36/453] 1834: Saved 4 shareholders
+2025-12-25 13:54:49,896 - [SHAREHOLDERS] - INFO - ✅ 1835: Found 5 shareholders
+2025-12-25 13:54:49,905 - [SHAREHOLDERS] - INFO - 💾 [37/453] 1835: Saved 5 shareholders
+2025-12-25 13:54:53,009 - [SHAREHOLDERS] - INFO - ✅ 2001: Found 19 shareholders
+2025-12-25 13:54:53,018 - [SHAREHOLDERS] - INFO - 💾 [38/453] 2001: Saved 19 shareholders
+2025-12-25 13:54:56,086 - [SHAREHOLDERS] - INFO - ✅ 2010: Found 2 shareholders
+2025-12-25 13:54:56,088 - [SHAREHOLDERS] - INFO - 💾 [39/453] 2010: Saved 2 shareholders
+2025-12-25 13:54:58,909 - [SHAREHOLDERS] - INFO - ✅ 2020: Found 10 shareholders
+2025-12-25 13:54:58,916 - [SHAREHOLDERS] - INFO - 💾 [40/453] 2020: Saved 10 shareholders
+2025-12-25 13:55:02,273 - [SHAREHOLDERS] - INFO - ✅ 2030: Found 3 shareholders
+2025-12-25 13:55:02,276 - [SHAREHOLDERS] - INFO - 💾 [41/453] 2030: Saved 3 shareholders
+2025-12-25 13:55:07,076 - [SHAREHOLDERS] - INFO - ✅ 2040: Found 5 shareholders
+2025-12-25 13:55:07,080 - [SHAREHOLDERS] - INFO - 💾 [42/453] 2040: Saved 5 shareholders
+2025-12-25 13:55:09,981 - [SHAREHOLDERS] - INFO - ✅ 2050: Found 12 shareholders
+2025-12-25 13:55:09,989 - [SHAREHOLDERS] - INFO - 💾 [43/453] 2050: Saved 12 shareholders
+2025-12-25 13:55:13,106 - [SHAREHOLDERS] - INFO - ✅ 2060: Found 20 shareholders
+2025-12-25 13:55:13,116 - [SHAREHOLDERS] - INFO - 💾 [44/453] 2060: Saved 20 shareholders
+2025-12-25 13:55:16,001 - [SHAREHOLDERS] - INFO - ✅ 2070: Found 20 shareholders
+2025-12-25 13:55:16,010 - [SHAREHOLDERS] - INFO - 💾 [45/453] 2070: Saved 20 shareholders
+2025-12-25 13:55:18,889 - [SHAREHOLDERS] - INFO - ✅ 2080: Found 20 shareholders
+2025-12-25 13:55:18,897 - [SHAREHOLDERS] - INFO - 💾 [46/453] 2080: Saved 20 shareholders
+2025-12-25 13:55:22,287 - [SHAREHOLDERS] - INFO - ⚠️ [47/453] 2081: No shareholders
+2025-12-25 13:55:29,595 - [SHAREHOLDERS] - INFO - ⚠️ [48/453] 2082: No shareholders
+2025-12-25 13:55:38,497 - [SHAREHOLDERS] - INFO - ⚠️ [49/453] 2083: No shareholders
+2025-12-25 13:55:42,932 - [SHAREHOLDERS] - INFO - ⚠️ [50/453] 2084: No shareholders
+2025-12-25 13:55:47,417 - [SHAREHOLDERS] - INFO - ✅ 2090: Found 20 shareholders
+2025-12-25 13:55:47,427 - [SHAREHOLDERS] - INFO - 💾 [51/453] 2090: Saved 20 shareholders
+2025-12-25 13:55:51,320 - [SHAREHOLDERS] - INFO - ⚠️ [52/453] 2100: No shareholders
+2025-12-25 13:55:54,733 - [SHAREHOLDERS] - INFO - ✅ 2110: Found 20 shareholders
+2025-12-25 13:55:54,741 - [SHAREHOLDERS] - INFO - 💾 [53/453] 2110: Saved 20 shareholders
+2025-12-25 13:55:58,174 - [SHAREHOLDERS] - INFO - ✅ 2120: Found 20 shareholders
+2025-12-25 13:55:58,184 - [SHAREHOLDERS] - INFO - 💾 [54/453] 2120: Saved 20 shareholders
+2025-12-25 13:56:01,032 - [SHAREHOLDERS] - INFO - ✅ 2130: Found 1 shareholders
+2025-12-25 13:56:01,037 - [SHAREHOLDERS] - INFO - 💾 [55/453] 2130: Saved 1 shareholders
+2025-12-25 13:56:03,879 - [SHAREHOLDERS] - INFO - ✅ 2140: Found 6 shareholders
+2025-12-25 13:56:03,886 - [SHAREHOLDERS] - INFO - 💾 [56/453] 2140: Saved 6 shareholders
+2025-12-25 13:56:06,776 - [SHAREHOLDERS] - INFO - ✅ 2150: Found 20 shareholders
+2025-12-25 13:56:06,786 - [SHAREHOLDERS] - INFO - 💾 [57/453] 2150: Saved 20 shareholders
+2025-12-25 13:56:09,643 - [SHAREHOLDERS] - INFO - ✅ 2160: Found 13 shareholders
+2025-12-25 13:56:09,647 - [SHAREHOLDERS] - INFO - 💾 [58/453] 2160: Saved 13 shareholders
+2025-12-25 13:56:12,796 - [SHAREHOLDERS] - INFO - ✅ 2170: Found 12 shareholders
+2025-12-25 13:56:12,802 - [SHAREHOLDERS] - INFO - 💾 [59/453] 2170: Saved 12 shareholders
+2025-12-25 13:56:15,662 - [SHAREHOLDERS] - INFO - ⚠️ [60/453] 2180: No shareholders
+2025-12-25 13:56:18,463 - [SHAREHOLDERS] - INFO - ✅ 2190: Found 7 shareholders
+2025-12-25 13:56:18,469 - [SHAREHOLDERS] - INFO - 💾 [61/453] 2190: Saved 7 shareholders
+2025-12-25 13:56:21,277 - [SHAREHOLDERS] - INFO - ✅ 2200: Found 20 shareholders
+2025-12-25 13:56:21,293 - [SHAREHOLDERS] - INFO - 💾 [62/453] 2200: Saved 20 shareholders
+2025-12-25 13:56:24,385 - [SHAREHOLDERS] - INFO - ✅ 2210: Found 5 shareholders
+2025-12-25 13:56:24,387 - [SHAREHOLDERS] - INFO - 💾 [63/453] 2210: Saved 5 shareholders
+2025-12-25 13:56:29,117 - [SHAREHOLDERS] - INFO - ✅ 2220: Found 2 shareholders
+2025-12-25 13:56:29,118 - [SHAREHOLDERS] - INFO - 💾 [64/453] 2220: Saved 2 shareholders
+2025-12-25 13:56:32,110 - [SHAREHOLDERS] - INFO - ✅ 2222: Found 9 shareholders
+2025-12-25 13:56:32,121 - [SHAREHOLDERS] - INFO - 💾 [65/453] 2222: Saved 9 shareholders
+2025-12-25 13:56:35,024 - [SHAREHOLDERS] - INFO - ✅ 2223: Found 1 shareholders
+2025-12-25 13:56:35,025 - [SHAREHOLDERS] - INFO - 💾 [66/453] 2223: Saved 1 shareholders
+2025-12-25 13:56:38,023 - [SHAREHOLDERS] - INFO - ✅ 2230: Found 20 shareholders
+2025-12-25 13:56:38,032 - [SHAREHOLDERS] - INFO - 💾 [67/453] 2230: Saved 20 shareholders
+2025-12-25 13:56:41,022 - [SHAREHOLDERS] - INFO - ✅ 2240: Found 10 shareholders
+2025-12-25 13:56:41,026 - [SHAREHOLDERS] - INFO - 💾 [68/453] 2240: Saved 10 shareholders
+2025-12-25 13:56:43,851 - [SHAREHOLDERS] - INFO - ✅ 2250: Found 14 shareholders
+2025-12-25 13:56:43,858 - [SHAREHOLDERS] - INFO - 💾 [69/453] 2250: Saved 14 shareholders
+2025-12-25 13:56:46,708 - [SHAREHOLDERS] - INFO - ✅ 2270: Found 2 shareholders
+2025-12-25 13:56:46,712 - [SHAREHOLDERS] - INFO - 💾 [70/453] 2270: Saved 2 shareholders
+2025-12-25 13:56:49,604 - [SHAREHOLDERS] - INFO - ✅ 2280: Found 12 shareholders
+2025-12-25 13:56:49,610 - [SHAREHOLDERS] - INFO - 💾 [71/453] 2280: Saved 12 shareholders
+2025-12-25 13:56:52,438 - [SHAREHOLDERS] - INFO - ✅ 2281: Found 3 shareholders
+2025-12-25 13:56:52,440 - [SHAREHOLDERS] - INFO - 💾 [72/453] 2281: Saved 3 shareholders
+2025-12-25 13:56:55,368 - [SHAREHOLDERS] - INFO - ✅ 2282: Found 3 shareholders
+2025-12-25 13:56:55,370 - [SHAREHOLDERS] - INFO - 💾 [73/453] 2282: Saved 3 shareholders
+2025-12-25 13:56:58,195 - [SHAREHOLDERS] - INFO - ⚠️ [74/453] 2283: No shareholders
+2025-12-25 13:57:01,046 - [SHAREHOLDERS] - INFO - ⚠️ [75/453] 2284: No shareholders
+2025-12-25 13:57:03,867 - [SHAREHOLDERS] - INFO - ✅ 2285: Found 8 shareholders
+2025-12-25 13:57:03,870 - [SHAREHOLDERS] - INFO - 💾 [76/453] 2285: Saved 8 shareholders
+2025-12-25 13:57:06,762 - [SHAREHOLDERS] - INFO - ⚠️ [77/453] 2286: No shareholders
+2025-12-25 13:57:09,676 - [SHAREHOLDERS] - INFO - ✅ 2287: Found 1 shareholders
+2025-12-25 13:57:09,680 - [SHAREHOLDERS] - INFO - 💾 [78/453] 2287: Saved 1 shareholders
+2025-12-25 13:57:12,566 - [SHAREHOLDERS] - INFO - ✅ 2290: Found 4 shareholders
+2025-12-25 13:57:12,569 - [SHAREHOLDERS] - INFO - 💾 [79/453] 2290: Saved 4 shareholders
+2025-12-25 13:57:15,394 - [SHAREHOLDERS] - INFO - ✅ 2300: Found 20 shareholders
+2025-12-25 13:57:15,401 - [SHAREHOLDERS] - INFO - 💾 [80/453] 2300: Saved 20 shareholders
+2025-12-25 13:57:18,587 - [SHAREHOLDERS] - INFO - ✅ 2310: Found 13 shareholders
+2025-12-25 13:57:18,593 - [SHAREHOLDERS] - INFO - 💾 [81/453] 2310: Saved 13 shareholders
+2025-12-25 13:57:21,418 - [SHAREHOLDERS] - INFO - ⚠️ [82/453] 2320: No shareholders
+2025-12-25 13:57:24,237 - [SHAREHOLDERS] - INFO - ✅ 2330: Found 12 shareholders
+2025-12-25 13:57:24,243 - [SHAREHOLDERS] - INFO - 💾 [83/453] 2330: Saved 12 shareholders
+2025-12-25 13:57:27,057 - [SHAREHOLDERS] - INFO - ⚠️ [84/453] 2340: No shareholders
+2025-12-25 13:57:29,900 - [SHAREHOLDERS] - INFO - ⚠️ [85/453] 2350: No shareholders
+2025-12-25 13:57:32,737 - [SHAREHOLDERS] - INFO - ✅ 2360: Found 20 shareholders
+2025-12-25 13:57:32,745 - [SHAREHOLDERS] - INFO - 💾 [86/453] 2360: Saved 20 shareholders
+2025-12-25 13:57:35,642 - [SHAREHOLDERS] - INFO - ✅ 2370: Found 1 shareholders
+2025-12-25 13:57:35,650 - [SHAREHOLDERS] - INFO - 💾 [87/453] 2370: Saved 1 shareholders
+2025-12-25 13:57:38,688 - [SHAREHOLDERS] - INFO - ⚠️ [88/453] 2380: No shareholders
+2025-12-25 13:57:43,453 - [SHAREHOLDERS] - INFO - ✅ 2381: Found 9 shareholders
+2025-12-25 13:57:43,456 - [SHAREHOLDERS] - INFO - 💾 [89/453] 2381: Saved 9 shareholders
+2025-12-25 13:57:46,307 - [SHAREHOLDERS] - INFO - ⚠️ [90/453] 2382: No shareholders
+2025-12-25 13:57:49,873 - [SHAREHOLDERS] - INFO - ✅ 3002: Found 19 shareholders
+2025-12-25 13:57:49,883 - [SHAREHOLDERS] - INFO - 💾 [91/453] 3002: Saved 19 shareholders
+2025-12-25 13:57:52,767 - [SHAREHOLDERS] - INFO - ✅ 3003: Found 10 shareholders
+2025-12-25 13:57:52,769 - [SHAREHOLDERS] - INFO - 💾 [92/453] 3003: Saved 10 shareholders
+2025-12-25 13:57:55,618 - [SHAREHOLDERS] - INFO - ✅ 3004: Found 12 shareholders
+2025-12-25 13:57:55,623 - [SHAREHOLDERS] - INFO - 💾 [93/453] 3004: Saved 12 shareholders
+2025-12-25 13:57:58,466 - [SHAREHOLDERS] - INFO - ✅ 3005: Found 2 shareholders
+2025-12-25 13:57:58,470 - [SHAREHOLDERS] - INFO - 💾 [94/453] 3005: Saved 2 shareholders
+2025-12-25 13:58:01,370 - [SHAREHOLDERS] - INFO - ✅ 3007: Found 7 shareholders
+2025-12-25 13:58:01,372 - [SHAREHOLDERS] - INFO - 💾 [95/453] 3007: Saved 7 shareholders
+2025-12-25 13:58:04,213 - [SHAREHOLDERS] - INFO - ✅ 3008: Found 20 shareholders
+2025-12-25 13:58:04,221 - [SHAREHOLDERS] - INFO - 💾 [96/453] 3008: Saved 20 shareholders
+2025-12-25 13:58:07,094 - [SHAREHOLDERS] - INFO - ✅ 3010: Found 10 shareholders
+2025-12-25 13:58:07,099 - [SHAREHOLDERS] - INFO - 💾 [97/453] 3010: Saved 10 shareholders
+2025-12-25 13:58:09,954 - [SHAREHOLDERS] - INFO - ✅ 3020: Found 15 shareholders
+2025-12-25 13:58:09,959 - [SHAREHOLDERS] - INFO - 💾 [98/453] 3020: Saved 15 shareholders
+2025-12-25 13:58:12,917 - [SHAREHOLDERS] - INFO - ✅ 3030: Found 20 shareholders
+2025-12-25 13:58:12,925 - [SHAREHOLDERS] - INFO - 💾 [99/453] 3030: Saved 20 shareholders
+2025-12-25 13:58:16,779 - [SHAREHOLDERS] - INFO - ✅ 3040: Found 10 shareholders
+2025-12-25 13:58:16,785 - [SHAREHOLDERS] - INFO - 💾 [100/453] 3040: Saved 10 shareholders
+2025-12-25 13:58:19,790 - [SHAREHOLDERS] - INFO - ✅ 3050: Found 11 shareholders
+2025-12-25 13:58:19,793 - [SHAREHOLDERS] - INFO - 💾 [101/453] 3050: Saved 11 shareholders
+2025-12-25 13:58:22,734 - [SHAREHOLDERS] - INFO - ✅ 3060: Found 3 shareholders
+2025-12-25 13:58:22,744 - [SHAREHOLDERS] - INFO - 💾 [102/453] 3060: Saved 3 shareholders
+2025-12-25 13:58:25,613 - [SHAREHOLDERS] - INFO - ✅ 3080: Found 8 shareholders
+2025-12-25 13:58:25,618 - [SHAREHOLDERS] - INFO - 💾 [103/453] 3080: Saved 8 shareholders
+2025-12-25 13:58:28,418 - [SHAREHOLDERS] - INFO - ✅ 3090: Found 20 shareholders
+2025-12-25 13:58:28,426 - [SHAREHOLDERS] - INFO - 💾 [104/453] 3090: Saved 20 shareholders
+2025-12-25 13:58:31,424 - [SHAREHOLDERS] - INFO - ✅ 3091: Found 20 shareholders
+2025-12-25 13:58:31,433 - [SHAREHOLDERS] - INFO - 💾 [105/453] 3091: Saved 20 shareholders
+2025-12-25 13:58:34,281 - [SHAREHOLDERS] - INFO - ✅ 3092: Found 12 shareholders
+2025-12-25 13:58:34,286 - [SHAREHOLDERS] - INFO - 💾 [106/453] 3092: Saved 12 shareholders
+2025-12-25 13:58:37,121 - [SHAREHOLDERS] - INFO - ✅ 4001: Found 12 shareholders
+2025-12-25 13:58:37,127 - [SHAREHOLDERS] - INFO - 💾 [107/453] 4001: Saved 12 shareholders
+2025-12-25 13:58:41,696 - [SHAREHOLDERS] - INFO - ✅ 4002: Found 20 shareholders
+2025-12-25 13:58:41,712 - [SHAREHOLDERS] - INFO - 💾 [108/453] 4002: Saved 20 shareholders
+2025-12-25 13:58:45,044 - [SHAREHOLDERS] - INFO - ✅ 4003: Found 20 shareholders
+2025-12-25 13:58:45,051 - [SHAREHOLDERS] - INFO - 💾 [109/453] 4003: Saved 20 shareholders
+2025-12-25 13:58:48,644 - [SHAREHOLDERS] - INFO - ✅ 4004: Found 15 shareholders
+2025-12-25 13:58:48,649 - [SHAREHOLDERS] - INFO - 💾 [110/453] 4004: Saved 15 shareholders
+2025-12-25 13:58:51,504 - [SHAREHOLDERS] - INFO - ✅ 4005: Found 3 shareholders
+2025-12-25 13:58:51,508 - [SHAREHOLDERS] - INFO - 💾 [111/453] 4005: Saved 3 shareholders
+2025-12-25 13:58:54,641 - [SHAREHOLDERS] - INFO - ✅ 4006: Found 8 shareholders
+2025-12-25 13:58:54,668 - [SHAREHOLDERS] - INFO - 💾 [112/453] 4006: Saved 8 shareholders
+2025-12-25 13:58:57,584 - [SHAREHOLDERS] - INFO - ✅ 4007: Found 6 shareholders
+2025-12-25 13:58:57,594 - [SHAREHOLDERS] - INFO - 💾 [113/453] 4007: Saved 6 shareholders
+2025-12-25 13:59:00,751 - [SHAREHOLDERS] - INFO - ✅ 4008: Found 12 shareholders
+2025-12-25 13:59:00,765 - [SHAREHOLDERS] - INFO - 💾 [114/453] 4008: Saved 12 shareholders
+2025-12-25 13:59:03,738 - [SHAREHOLDERS] - INFO - ✅ 4009: Found 20 shareholders
+2025-12-25 13:59:03,747 - [SHAREHOLDERS] - INFO - 💾 [115/453] 4009: Saved 20 shareholders
+2025-12-25 13:59:06,586 - [SHAREHOLDERS] - INFO - ✅ 4011: Found 15 shareholders
+2025-12-25 13:59:06,594 - [SHAREHOLDERS] - INFO - 💾 [116/453] 4011: Saved 15 shareholders
+2025-12-25 13:59:09,614 - [SHAREHOLDERS] - INFO - ✅ 4012: Found 16 shareholders
+2025-12-25 13:59:09,625 - [SHAREHOLDERS] - INFO - 💾 [117/453] 4012: Saved 16 shareholders
+2025-12-25 13:59:12,529 - [SHAREHOLDERS] - INFO - ✅ 4013: Found 4 shareholders
+2025-12-25 13:59:12,533 - [SHAREHOLDERS] - INFO - 💾 [118/453] 4013: Saved 4 shareholders
+2025-12-25 13:59:15,369 - [SHAREHOLDERS] - INFO - ✅ 4014: Found 20 shareholders
+2025-12-25 13:59:15,378 - [SHAREHOLDERS] - INFO - 💾 [119/453] 4014: Saved 20 shareholders
+2025-12-25 13:59:18,239 - [SHAREHOLDERS] - INFO - ✅ 4015: Found 8 shareholders
+2025-12-25 13:59:18,256 - [SHAREHOLDERS] - INFO - 💾 [120/453] 4015: Saved 8 shareholders
+2025-12-25 13:59:21,127 - [SHAREHOLDERS] - INFO - ✅ 4016: Found 5 shareholders
+2025-12-25 13:59:21,131 - [SHAREHOLDERS] - INFO - 💾 [121/453] 4016: Saved 5 shareholders
+2025-12-25 13:59:24,009 - [SHAREHOLDERS] - INFO - ✅ 4017: Found 16 shareholders
+2025-12-25 13:59:24,017 - [SHAREHOLDERS] - INFO - 💾 [122/453] 4017: Saved 16 shareholders
+2025-12-25 13:59:26,817 - [SHAREHOLDERS] - INFO - ✅ 4018: Found 1 shareholders
+2025-12-25 13:59:26,818 - [SHAREHOLDERS] - INFO - 💾 [123/453] 4018: Saved 1 shareholders
+2025-12-25 13:59:29,770 - [SHAREHOLDERS] - INFO - ✅ 4019: Found 14 shareholders
+2025-12-25 13:59:29,778 - [SHAREHOLDERS] - INFO - 💾 [124/453] 4019: Saved 14 shareholders
+2025-12-25 13:59:32,629 - [SHAREHOLDERS] - INFO - ✅ 4020: Found 5 shareholders
+2025-12-25 13:59:32,632 - [SHAREHOLDERS] - INFO - 💾 [125/453] 4020: Saved 5 shareholders
+2025-12-25 13:59:35,437 - [SHAREHOLDERS] - INFO - ✅ 4021: Found 20 shareholders
+2025-12-25 13:59:35,448 - [SHAREHOLDERS] - INFO - 💾 [126/453] 4021: Saved 20 shareholders
+2025-12-25 13:59:38,299 - [SHAREHOLDERS] - INFO - ✅ 4030: Found 2 shareholders
+2025-12-25 13:59:38,320 - [SHAREHOLDERS] - INFO - 💾 [127/453] 4030: Saved 2 shareholders
+2025-12-25 13:59:41,423 - [SHAREHOLDERS] - INFO - ✅ 4031: Found 20 shareholders
+2025-12-25 13:59:41,429 - [SHAREHOLDERS] - INFO - 💾 [128/453] 4031: Saved 20 shareholders
+2025-12-25 13:59:44,311 - [SHAREHOLDERS] - INFO - ✅ 4040: Found 1 shareholders
+2025-12-25 13:59:44,314 - [SHAREHOLDERS] - INFO - 💾 [129/453] 4040: Saved 1 shareholders
+2025-12-25 13:59:47,158 - [SHAREHOLDERS] - INFO - ✅ 4050: Found 5 shareholders
+2025-12-25 13:59:47,163 - [SHAREHOLDERS] - INFO - 💾 [130/453] 4050: Saved 5 shareholders
+2025-12-25 13:59:52,022 - [SHAREHOLDERS] - INFO - ✅ 4051: Found 20 shareholders
+2025-12-25 13:59:52,034 - [SHAREHOLDERS] - INFO - 💾 [131/453] 4051: Saved 20 shareholders
+2025-12-25 13:59:54,951 - [SHAREHOLDERS] - INFO - ✅ 4061: Found 2 shareholders
+2025-12-25 13:59:54,952 - [SHAREHOLDERS] - INFO - 💾 [132/453] 4061: Saved 2 shareholders
+2025-12-25 13:59:58,225 - [SHAREHOLDERS] - INFO - ✅ 4070: Found 20 shareholders
+2025-12-25 13:59:58,238 - [SHAREHOLDERS] - INFO - 💾 [133/453] 4070: Saved 20 shareholders
+2025-12-25 14:00:01,256 - [SHAREHOLDERS] - INFO - ✅ 4071: Found 8 shareholders
+2025-12-25 14:00:01,265 - [SHAREHOLDERS] - INFO - 💾 [134/453] 4071: Saved 8 shareholders
+2025-12-25 14:00:08,821 - [SHAREHOLDERS] - INFO - ⚠️ [135/453] 4072: No shareholders
+2025-12-25 14:00:17,540 - [SHAREHOLDERS] - INFO - ✅ 4080: Found 8 shareholders
+2025-12-25 14:00:17,738 - [SHAREHOLDERS] - INFO - 💾 [136/453] 4080: Saved 8 shareholders
+2025-12-25 14:00:20,682 - [SHAREHOLDERS] - INFO - ✅ 4081: Found 20 shareholders
+2025-12-25 14:00:20,752 - [SHAREHOLDERS] - INFO - 💾 [137/453] 4081: Saved 20 shareholders
+2025-12-25 14:00:29,964 - [SHAREHOLDERS] - INFO - ✅ 4082: Found 20 shareholders
+2025-12-25 14:00:29,976 - [SHAREHOLDERS] - INFO - 💾 [138/453] 4082: Saved 20 shareholders
+2025-12-25 14:00:32,990 - [SHAREHOLDERS] - INFO - ✅ 4083: Found 2 shareholders
+2025-12-25 14:00:32,992 - [SHAREHOLDERS] - INFO - 💾 [139/453] 4083: Saved 2 shareholders
+2025-12-25 14:00:36,026 - [SHAREHOLDERS] - INFO - ✅ 4084: Found 20 shareholders
+2025-12-25 14:00:36,054 - [SHAREHOLDERS] - INFO - 💾 [140/453] 4084: Saved 20 shareholders
+2025-12-25 14:00:39,007 - [SHAREHOLDERS] - INFO - ✅ 4090: Found 20 shareholders
+2025-12-25 14:00:39,021 - [SHAREHOLDERS] - INFO - 💾 [141/453] 4090: Saved 20 shareholders
+2025-12-25 14:00:41,867 - [SHAREHOLDERS] - INFO - ✅ 4100: Found 20 shareholders
+2025-12-25 14:00:41,887 - [SHAREHOLDERS] - INFO - 💾 [142/453] 4100: Saved 20 shareholders
+2025-12-25 14:00:44,873 - [SHAREHOLDERS] - INFO - ✅ 4110: Found 20 shareholders
+2025-12-25 14:00:44,883 - [SHAREHOLDERS] - INFO - 💾 [143/453] 4110: Saved 20 shareholders
+2025-12-25 14:00:48,902 - [SHAREHOLDERS] - INFO - ⚠️ [144/453] 4130: No shareholders
+2025-12-25 14:00:51,767 - [SHAREHOLDERS] - INFO - ⚠️ [145/453] 4140: No shareholders
+2025-12-25 14:00:54,692 - [SHAREHOLDERS] - INFO - ✅ 4141: Found 20 shareholders
+2025-12-25 14:00:54,699 - [SHAREHOLDERS] - INFO - 💾 [146/453] 4141: Saved 20 shareholders
+2025-12-25 14:00:57,712 - [SHAREHOLDERS] - INFO - ✅ 4142: Found 10 shareholders
+2025-12-25 14:00:57,716 - [SHAREHOLDERS] - INFO - 💾 [147/453] 4142: Saved 10 shareholders
+2025-12-25 14:01:00,754 - [SHAREHOLDERS] - INFO - ✅ 4143: Found 17 shareholders
+2025-12-25 14:01:00,761 - [SHAREHOLDERS] - INFO - 💾 [148/453] 4143: Saved 17 shareholders
+2025-12-25 14:01:04,636 - [SHAREHOLDERS] - INFO - ✅ 4144: Found 20 shareholders
+2025-12-25 14:01:04,647 - [SHAREHOLDERS] - INFO - 💾 [149/453] 4144: Saved 20 shareholders
+2025-12-25 14:01:07,503 - [SHAREHOLDERS] - INFO - ✅ 4145: Found 7 shareholders
+2025-12-25 14:01:07,507 - [SHAREHOLDERS] - INFO - 💾 [150/453] 4145: Saved 7 shareholders
+2025-12-25 14:01:11,106 - [SHAREHOLDERS] - INFO - ✅ 4146: Found 20 shareholders
+2025-12-25 14:01:11,116 - [SHAREHOLDERS] - INFO - 💾 [151/453] 4146: Saved 20 shareholders
+2025-12-25 14:01:13,937 - [SHAREHOLDERS] - INFO - ⚠️ [152/453] 4150: No shareholders
+2025-12-25 14:01:16,844 - [SHAREHOLDERS] - INFO - ⚠️ [153/453] 4160: No shareholders
+2025-12-25 14:01:21,216 - [SHAREHOLDERS] - INFO - ⚠️ [154/453] 4161: No shareholders
+2025-12-25 14:01:29,288 - [SHAREHOLDERS] - INFO - ⚠️ [155/453] 4162: No shareholders
+2025-12-25 14:01:34,086 - [SHAREHOLDERS] - INFO - ⚠️ [156/453] 4163: No shareholders
+2025-12-25 14:01:45,624 - [SHAREHOLDERS] - INFO - ⚠️ [157/453] 4164: No shareholders
+2025-12-25 14:01:49,861 - [SHAREHOLDERS] - INFO - ⚠️ [158/453] 4165: No shareholders
+2025-12-25 14:01:53,610 - [SHAREHOLDERS] - INFO - ⚠️ [159/453] 4170: No shareholders
+2025-12-25 14:02:01,876 - [SHAREHOLDERS] - INFO - ⚠️ [160/453] 4180: No shareholders
+2025-12-25 14:02:05,909 - [SHAREHOLDERS] - INFO - ⚠️ [161/453] 4190: No shareholders
+2025-12-25 14:02:10,010 - [SHAREHOLDERS] - INFO - ✅ 4191: Found 20 shareholders
+2025-12-25 14:02:10,023 - [SHAREHOLDERS] - INFO - 💾 [162/453] 4191: Saved 20 shareholders
+2025-12-25 14:02:14,732 - [SHAREHOLDERS] - INFO - ⚠️ [163/453] 4192: No shareholders
+2025-12-25 14:02:20,683 - [SHAREHOLDERS] - INFO - ⚠️ [164/453] 4193: No shareholders
+2025-12-25 14:02:25,126 - [SHAREHOLDERS] - INFO - ⚠️ [165/453] 4194: No shareholders
+2025-12-25 14:02:29,934 - [SHAREHOLDERS] - INFO - ⚠️ [166/453] 4200: No shareholders
+2025-12-25 14:02:34,756 - [SHAREHOLDERS] - INFO - ⚠️ [167/453] 4210: No shareholders
+2025-12-25 14:02:39,115 - [SHAREHOLDERS] - INFO - ✅ 4220: Found 13 shareholders
+2025-12-25 14:02:39,122 - [SHAREHOLDERS] - INFO - 💾 [168/453] 4220: Saved 13 shareholders
+2025-12-25 14:02:49,380 - [SHAREHOLDERS] - INFO - ✅ 4230: Found 6 shareholders
+2025-12-25 14:02:49,385 - [SHAREHOLDERS] - INFO - 💾 [169/453] 4230: Saved 6 shareholders
+2025-12-25 14:02:58,243 - [SHAREHOLDERS] - INFO - ✅ 4240: Found 20 shareholders
+2025-12-25 14:02:58,252 - [SHAREHOLDERS] - INFO - 💾 [170/453] 4240: Saved 20 shareholders
+2025-12-25 14:03:03,071 - [SHAREHOLDERS] - INFO - ⚠️ [171/453] 4250: No shareholders
+2025-12-25 14:03:09,181 - [SHAREHOLDERS] - INFO - ⚠️ [172/453] 4260: No shareholders
+2025-12-25 14:03:16,371 - [SHAREHOLDERS] - INFO - ⚠️ [173/453] 4261: No shareholders
+2025-12-25 14:03:22,442 - [SHAREHOLDERS] - INFO - ⚠️ [174/453] 4262: No shareholders
+2025-12-25 14:03:29,441 - [SHAREHOLDERS] - INFO - ⚠️ [175/453] 4263: No shareholders
+2025-12-25 14:03:35,913 - [SHAREHOLDERS] - INFO - ✅ 4264: Found 9 shareholders
+2025-12-25 14:03:35,924 - [SHAREHOLDERS] - INFO - 💾 [176/453] 4264: Saved 9 shareholders
+2025-12-25 14:03:39,541 - [SHAREHOLDERS] - INFO - ⚠️ [177/453] 4265: No shareholders
+2025-12-25 14:03:45,003 - [SHAREHOLDERS] - INFO - ⚠️ [178/453] 4270: No shareholders
+2025-12-25 14:03:50,884 - [SHAREHOLDERS] - INFO - ⚠️ [179/453] 4280: No shareholders
+2025-12-25 14:03:56,324 - [SHAREHOLDERS] - INFO - ✅ 4290: Found 20 shareholders
+2025-12-25 14:03:56,335 - [SHAREHOLDERS] - INFO - 💾 [180/453] 4290: Saved 20 shareholders
+2025-12-25 14:04:03,402 - [SHAREHOLDERS] - INFO - ✅ 4291: Found 20 shareholders
+2025-12-25 14:04:03,412 - [SHAREHOLDERS] - INFO - 💾 [181/453] 4291: Saved 20 shareholders
+2025-12-25 14:04:10,028 - [SHAREHOLDERS] - INFO - ✅ 4292: Found 20 shareholders
+2025-12-25 14:04:10,035 - [SHAREHOLDERS] - INFO - 💾 [182/453] 4292: Saved 20 shareholders
+2025-12-25 14:04:14,614 - [SHAREHOLDERS] - INFO - ✅ 4300: Found 1 shareholders
+2025-12-25 14:04:14,615 - [SHAREHOLDERS] - INFO - 💾 [183/453] 4300: Saved 1 shareholders
+2025-12-25 14:04:19,925 - [SHAREHOLDERS] - INFO - ⚠️ [184/453] 4310: No shareholders
+2025-12-25 14:04:35,179 - [SHAREHOLDERS] - INFO - ⚠️ [185/453] 4320: No shareholders
+2025-12-25 14:04:39,456 - [SHAREHOLDERS] - INFO - ✅ 4321: Found 20 shareholders
+2025-12-25 14:04:39,472 - [SHAREHOLDERS] - INFO - 💾 [186/453] 4321: Saved 20 shareholders
+2025-12-25 14:04:42,579 - [SHAREHOLDERS] - INFO - ⚠️ [187/453] 4322: No shareholders
+2025-12-25 14:04:48,536 - [SHAREHOLDERS] - INFO - ⚠️ [188/453] 4323: No shareholders
+2025-12-25 14:04:52,652 - [SHAREHOLDERS] - INFO - ✅ 4324: Found 20 shareholders
+2025-12-25 14:04:52,662 - [SHAREHOLDERS] - INFO - 💾 [189/453] 4324: Saved 20 shareholders
+2025-12-25 14:04:56,639 - [SHAREHOLDERS] - INFO - ✅ 4325: Found 17 shareholders
+2025-12-25 14:04:56,652 - [SHAREHOLDERS] - INFO - 💾 [190/453] 4325: Saved 17 shareholders
+2025-12-25 14:04:59,872 - [SHAREHOLDERS] - INFO - ⚠️ [191/453] 4326: No shareholders
+2025-12-25 14:05:03,637 - [SHAREHOLDERS] - INFO - ⚠️ [192/453] 4327: No shareholders
+2025-12-25 14:05:08,682 - [SHAREHOLDERS] - INFO - ⚠️ [193/453] 4330: No shareholders
+2025-12-25 14:05:13,272 - [SHAREHOLDERS] - INFO - ⚠️ [194/453] 4331: No shareholders
+2025-12-25 14:05:25,184 - [SHAREHOLDERS] - INFO - ✅ 4332: Found 20 shareholders
+2025-12-25 14:05:25,193 - [SHAREHOLDERS] - INFO - 💾 [195/453] 4332: Saved 20 shareholders
+2025-12-25 14:05:28,200 - [SHAREHOLDERS] - INFO - ✅ 4333: Found 20 shareholders
+2025-12-25 14:05:28,209 - [SHAREHOLDERS] - INFO - 💾 [196/453] 4333: Saved 20 shareholders
+2025-12-25 14:05:31,392 - [SHAREHOLDERS] - INFO - ✅ 4334: Found 20 shareholders
+2025-12-25 14:05:31,401 - [SHAREHOLDERS] - INFO - 💾 [197/453] 4334: Saved 20 shareholders
+2025-12-25 14:05:34,602 - [SHAREHOLDERS] - INFO - ✅ 4335: Found 20 shareholders
+2025-12-25 14:05:34,611 - [SHAREHOLDERS] - INFO - 💾 [198/453] 4335: Saved 20 shareholders
+2025-12-25 14:05:38,265 - [SHAREHOLDERS] - INFO - ✅ 4336: Found 20 shareholders
+2025-12-25 14:05:38,376 - [SHAREHOLDERS] - INFO - 💾 [199/453] 4336: Saved 20 shareholders
+2025-12-25 14:05:41,586 - [SHAREHOLDERS] - INFO - ✅ 4337: Found 11 shareholders
+2025-12-25 14:05:41,593 - [SHAREHOLDERS] - INFO - 💾 [200/453] 4337: Saved 11 shareholders
+2025-12-25 14:05:44,920 - [SHAREHOLDERS] - INFO - ✅ 4338: Found 3 shareholders
+2025-12-25 14:05:44,922 - [SHAREHOLDERS] - INFO - 💾 [201/453] 4338: Saved 3 shareholders
+2025-12-25 14:05:48,394 - [SHAREHOLDERS] - INFO - ⚠️ [202/453] 4339: No shareholders
+2025-12-25 14:05:51,814 - [SHAREHOLDERS] - INFO - ✅ 4340: Found 13 shareholders
+2025-12-25 14:05:51,819 - [SHAREHOLDERS] - INFO - 💾 [203/453] 4340: Saved 13 shareholders
+2025-12-25 14:05:55,366 - [SHAREHOLDERS] - INFO - ✅ 4342: Found 20 shareholders
+2025-12-25 14:05:55,375 - [SHAREHOLDERS] - INFO - 💾 [204/453] 4342: Saved 20 shareholders
+2025-12-25 14:05:58,484 - [SHAREHOLDERS] - INFO - ✅ 4344: Found 20 shareholders
+2025-12-25 14:05:58,513 - [SHAREHOLDERS] - INFO - 💾 [205/453] 4344: Saved 20 shareholders
+2025-12-25 14:06:04,333 - [SHAREHOLDERS] - INFO - ⚠️ [206/453] 4345: No shareholders
+2025-12-25 14:06:07,635 - [SHAREHOLDERS] - INFO - ✅ 4346: Found 12 shareholders
+2025-12-25 14:06:07,656 - [SHAREHOLDERS] - INFO - 💾 [207/453] 4346: Saved 12 shareholders
+2025-12-25 14:06:11,709 - [SHAREHOLDERS] - INFO - ⚠️ [208/453] 4347: No shareholders
+2025-12-25 14:06:14,929 - [SHAREHOLDERS] - INFO - ✅ 4348: Found 20 shareholders
+2025-12-25 14:06:14,939 - [SHAREHOLDERS] - INFO - 💾 [209/453] 4348: Saved 20 shareholders
+2025-12-25 14:06:17,953 - [SHAREHOLDERS] - INFO - ⚠️ [210/453] 4349: No shareholders
+2025-12-25 14:06:21,061 - [SHAREHOLDERS] - INFO - ⚠️ [211/453] 4350: No shareholders
+2025-12-25 14:06:24,492 - [SHAREHOLDERS] - INFO - ⚠️ [212/453] 4700: No shareholders
+2025-12-25 14:06:28,131 - [SHAREHOLDERS] - INFO - ⚠️ [213/453] 4701: No shareholders
+2025-12-25 14:06:31,351 - [SHAREHOLDERS] - INFO - ⚠️ [214/453] 4702: No shareholders
+2025-12-25 14:06:34,336 - [SHAREHOLDERS] - INFO - ⚠️ [215/453] 4703: No shareholders
+2025-12-25 14:06:37,855 - [SHAREHOLDERS] - INFO - ⚠️ [216/453] 5015: No shareholders
+2025-12-25 14:06:41,007 - [SHAREHOLDERS] - INFO - ⚠️ [217/453] 5019: No shareholders
+2025-12-25 14:06:45,544 - [SHAREHOLDERS] - INFO - ⚠️ [218/453] 5021: No shareholders
+2025-12-25 14:06:50,081 - [SHAREHOLDERS] - INFO - ⚠️ [219/453] 5022: No shareholders
+2025-12-25 14:06:55,597 - [SHAREHOLDERS] - INFO - ⚠️ [220/453] 5023: No shareholders
+2025-12-25 14:06:58,808 - [SHAREHOLDERS] - INFO - ✅ 5110: Found 2 shareholders
+2025-12-25 14:06:58,819 - [SHAREHOLDERS] - INFO - 💾 [221/453] 5110: Saved 2 shareholders
+2025-12-25 14:07:02,197 - [SHAREHOLDERS] - INFO - ⚠️ [222/453] 5214: No shareholders
+2025-12-25 14:07:05,250 - [SHAREHOLDERS] - INFO - ⚠️ [223/453] 5216: No shareholders
+2025-12-25 14:07:08,485 - [SHAREHOLDERS] - INFO - ⚠️ [224/453] 5221: No shareholders
+2025-12-25 14:07:11,799 - [SHAREHOLDERS] - INFO - ⚠️ [225/453] 5227: No shareholders
+2025-12-25 14:07:15,273 - [SHAREHOLDERS] - INFO - ⚠️ [226/453] 5243: No shareholders
+2025-12-25 14:07:18,577 - [SHAREHOLDERS] - INFO - ⚠️ [227/453] 5245: No shareholders
+2025-12-25 14:07:22,965 - [SHAREHOLDERS] - INFO - ⚠️ [228/453] 5246: No shareholders
+2025-12-25 14:07:29,168 - [SHAREHOLDERS] - INFO - ⚠️ [229/453] 5247: No shareholders
+2025-12-25 14:07:32,546 - [SHAREHOLDERS] - INFO - ⚠️ [230/453] 5249: No shareholders
+2025-12-25 14:07:35,694 - [SHAREHOLDERS] - INFO - ⚠️ [231/453] 5250: No shareholders
+2025-12-25 14:07:39,947 - [SHAREHOLDERS] - INFO - ⚠️ [232/453] 5251: No shareholders
+2025-12-25 14:07:43,681 - [SHAREHOLDERS] - INFO - ⚠️ [233/453] 5252: No shareholders
+2025-12-25 14:07:47,233 - [SHAREHOLDERS] - INFO - ⚠️ [234/453] 5253: No shareholders
+2025-12-25 14:07:50,303 - [SHAREHOLDERS] - INFO - ⚠️ [235/453] 5254: No shareholders
+2025-12-25 14:07:53,289 - [SHAREHOLDERS] - INFO - ⚠️ [236/453] 5267: No shareholders
+2025-12-25 14:07:56,950 - [SHAREHOLDERS] - INFO - ⚠️ [237/453] 5272: No shareholders
+2025-12-25 14:08:01,025 - [SHAREHOLDERS] - INFO - ⚠️ [238/453] 5273: No shareholders
+2025-12-25 14:08:07,246 - [SHAREHOLDERS] - INFO - ⚠️ [239/453] 5274: No shareholders
+2025-12-25 14:08:11,645 - [SHAREHOLDERS] - INFO - ⚠️ [240/453] 5280: No shareholders
+2025-12-25 14:08:14,989 - [SHAREHOLDERS] - INFO - ⚠️ [241/453] 5282: No shareholders
+2025-12-25 14:08:19,711 - [SHAREHOLDERS] - INFO - ⚠️ [242/453] 5283: No shareholders
+2025-12-25 14:08:23,248 - [SHAREHOLDERS] - INFO - ⚠️ [243/453] 5284: No shareholders
+2025-12-25 14:08:26,684 - [SHAREHOLDERS] - INFO - ⚠️ [244/453] 5285: No shareholders
+2025-12-25 14:08:32,150 - [SHAREHOLDERS] - INFO - ⚠️ [245/453] 5301: No shareholders
+2025-12-25 14:08:35,932 - [SHAREHOLDERS] - INFO - ⚠️ [246/453] 5303: No shareholders
+2025-12-25 14:08:39,489 - [SHAREHOLDERS] - INFO - ⚠️ [247/453] 5306: No shareholders
+2025-12-25 14:08:42,475 - [SHAREHOLDERS] - INFO - ⚠️ [248/453] 5308: No shareholders
+2025-12-25 14:08:45,732 - [SHAREHOLDERS] - INFO - ⚠️ [249/453] 5311: No shareholders
+2025-12-25 14:08:48,762 - [SHAREHOLDERS] - INFO - ⚠️ [250/453] 5312: No shareholders
+2025-12-25 14:08:52,590 - [SHAREHOLDERS] - INFO - ⚠️ [251/453] 5313: No shareholders
+2025-12-25 14:08:56,816 - [SHAREHOLDERS] - INFO - ⚠️ [252/453] 5318: No shareholders
+2025-12-25 14:09:04,820 - [SHAREHOLDERS] - INFO - ⚠️ [253/453] 5320: No shareholders
+2025-12-25 14:09:12,306 - [SHAREHOLDERS] - INFO - ⚠️ [254/453] 5321: No shareholders
+2025-12-25 14:09:17,708 - [SHAREHOLDERS] - INFO - ⚠️ [255/453] 5323: No shareholders
+2025-12-25 14:09:30,428 - [SHAREHOLDERS] - INFO - ⚠️ [256/453] 5332: No shareholders
+2025-12-25 14:09:33,779 - [SHAREHOLDERS] - INFO - ⚠️ [257/453] 5333: No shareholders
+2025-12-25 14:09:37,341 - [SHAREHOLDERS] - INFO - ⚠️ [258/453] 5334: No shareholders
+2025-12-25 14:09:40,850 - [SHAREHOLDERS] - INFO - ⚠️ [259/453] 5336: No shareholders
+2025-12-25 14:09:44,540 - [SHAREHOLDERS] - INFO - ⚠️ [260/453] 5338: No shareholders
+2025-12-25 14:09:49,768 - [SHAREHOLDERS] - INFO - ⚠️ [261/453] 5339: No shareholders
+2025-12-25 14:09:53,599 - [SHAREHOLDERS] - INFO - ⚠️ [262/453] 5343: No shareholders
+2025-12-25 14:09:56,667 - [SHAREHOLDERS] - INFO - ⚠️ [263/453] 5344: No shareholders
+2025-12-25 14:10:00,556 - [SHAREHOLDERS] - INFO - ✅ 6001: Found 8 shareholders
+2025-12-25 14:10:01,583 - [SHAREHOLDERS] - INFO - 💾 [264/453] 6001: Saved 8 shareholders
+2025-12-25 14:10:06,673 - [SHAREHOLDERS] - INFO - ⚠️ [265/453] 6002: No shareholders
+2025-12-25 14:10:10,493 - [SHAREHOLDERS] - INFO - ✅ 6004: Found 20 shareholders
+2025-12-25 14:10:10,564 - [SHAREHOLDERS] - INFO - 💾 [266/453] 6004: Saved 20 shareholders
+2025-12-25 14:10:15,296 - [SHAREHOLDERS] - INFO - ✅ 6010: Found 20 shareholders
+2025-12-25 14:10:15,428 - [SHAREHOLDERS] - INFO - 💾 [267/453] 6010: Saved 20 shareholders
+2025-12-25 14:10:24,524 - [SHAREHOLDERS] - INFO - ⚠️ [268/453] 6012: No shareholders
+2025-12-25 14:10:28,406 - [SHAREHOLDERS] - INFO - ✅ 6013: Found 18 shareholders
+2025-12-25 14:10:28,424 - [SHAREHOLDERS] - INFO - 💾 [269/453] 6013: Saved 18 shareholders
+2025-12-25 14:10:31,297 - [SHAREHOLDERS] - INFO - ✅ 6014: Found 3 shareholders
+2025-12-25 14:10:31,300 - [SHAREHOLDERS] - INFO - 💾 [270/453] 6014: Saved 3 shareholders
+2025-12-25 14:10:34,808 - [SHAREHOLDERS] - INFO - ⚠️ [271/453] 6015: No shareholders
+2025-12-25 14:10:37,736 - [SHAREHOLDERS] - INFO - ✅ 6016: Found 20 shareholders
+2025-12-25 14:10:37,742 - [SHAREHOLDERS] - INFO - 💾 [272/453] 6016: Saved 20 shareholders
+2025-12-25 14:10:40,591 - [SHAREHOLDERS] - INFO - ✅ 6017: Found 10 shareholders
+2025-12-25 14:10:40,613 - [SHAREHOLDERS] - INFO - 💾 [273/453] 6017: Saved 10 shareholders
+2025-12-25 14:10:43,520 - [SHAREHOLDERS] - INFO - ⚠️ [274/453] 6018: No shareholders
+2025-12-25 14:10:46,711 - [SHAREHOLDERS] - INFO - ⚠️ [275/453] 6019: No shareholders
+2025-12-25 14:10:50,027 - [SHAREHOLDERS] - INFO - ✅ 6020: Found 19 shareholders
+2025-12-25 14:10:50,034 - [SHAREHOLDERS] - INFO - 💾 [276/453] 6020: Saved 19 shareholders
+2025-12-25 14:10:53,141 - [SHAREHOLDERS] - INFO - ✅ 6040: Found 20 shareholders
+2025-12-25 14:10:53,160 - [SHAREHOLDERS] - INFO - 💾 [277/453] 6040: Saved 20 shareholders
+2025-12-25 14:10:56,071 - [SHAREHOLDERS] - INFO - ✅ 6050: Found 7 shareholders
+2025-12-25 14:10:56,079 - [SHAREHOLDERS] - INFO - 💾 [278/453] 6050: Saved 7 shareholders
+2025-12-25 14:10:59,076 - [SHAREHOLDERS] - INFO - ✅ 6060: Found 3 shareholders
+2025-12-25 14:10:59,109 - [SHAREHOLDERS] - INFO - 💾 [279/453] 6060: Saved 3 shareholders
+2025-12-25 14:11:01,987 - [SHAREHOLDERS] - INFO - ✅ 6070: Found 20 shareholders
+2025-12-25 14:11:01,998 - [SHAREHOLDERS] - INFO - 💾 [280/453] 6070: Saved 20 shareholders
+2025-12-25 14:11:06,032 - [SHAREHOLDERS] - INFO - ✅ 6090: Found 20 shareholders
+2025-12-25 14:11:06,119 - [SHAREHOLDERS] - INFO - 💾 [281/453] 6090: Saved 20 shareholders
+2025-12-25 14:11:09,019 - [SHAREHOLDERS] - INFO - ✅ 7010: Found 3 shareholders
+2025-12-25 14:11:09,023 - [SHAREHOLDERS] - INFO - 💾 [282/453] 7010: Saved 3 shareholders
+2025-12-25 14:11:14,819 - [SHAREHOLDERS] - INFO - ✅ 7020: Found 18 shareholders
+2025-12-25 14:11:14,853 - [SHAREHOLDERS] - INFO - 💾 [283/453] 7020: Saved 18 shareholders
+2025-12-25 14:11:17,913 - [SHAREHOLDERS] - INFO - ✅ 7030: Found 1 shareholders
+2025-12-25 14:11:17,949 - [SHAREHOLDERS] - INFO - 💾 [284/453] 7030: Saved 1 shareholders
+2025-12-25 14:11:21,095 - [SHAREHOLDERS] - INFO - ✅ 7040: Found 20 shareholders
+2025-12-25 14:11:21,106 - [SHAREHOLDERS] - INFO - 💾 [285/453] 7040: Saved 20 shareholders
+2025-12-25 14:11:23,992 - [SHAREHOLDERS] - INFO - ✅ 7200: Found 20 shareholders
+2025-12-25 14:11:23,999 - [SHAREHOLDERS] - INFO - 💾 [286/453] 7200: Saved 20 shareholders
+2025-12-25 14:11:28,605 - [SHAREHOLDERS] - INFO - ✅ 7201: Found 20 shareholders
+2025-12-25 14:11:28,651 - [SHAREHOLDERS] - INFO - 💾 [287/453] 7201: Saved 20 shareholders
+2025-12-25 14:11:31,862 - [SHAREHOLDERS] - INFO - ✅ 7202: Found 2 shareholders
+2025-12-25 14:11:31,876 - [SHAREHOLDERS] - INFO - 💾 [288/453] 7202: Saved 2 shareholders
+2025-12-25 14:11:35,566 - [SHAREHOLDERS] - INFO - ✅ 7203: Found 1 shareholders
+2025-12-25 14:11:35,568 - [SHAREHOLDERS] - INFO - 💾 [289/453] 7203: Saved 1 shareholders
+2025-12-25 14:11:38,719 - [SHAREHOLDERS] - INFO - ✅ 7204: Found 13 shareholders
+2025-12-25 14:11:38,727 - [SHAREHOLDERS] - INFO - 💾 [290/453] 7204: Saved 13 shareholders
+2025-12-25 14:11:41,571 - [SHAREHOLDERS] - INFO - ✅ 7211: Found 2 shareholders
+2025-12-25 14:11:41,574 - [SHAREHOLDERS] - INFO - 💾 [291/453] 7211: Saved 2 shareholders
+2025-12-25 14:11:44,616 - [SHAREHOLDERS] - INFO - ✅ 8010: Found 12 shareholders
+2025-12-25 14:11:44,668 - [SHAREHOLDERS] - INFO - 💾 [292/453] 8010: Saved 12 shareholders
+2025-12-25 14:11:47,771 - [SHAREHOLDERS] - INFO - ✅ 8012: Found 20 shareholders
+2025-12-25 14:11:47,871 - [SHAREHOLDERS] - INFO - 💾 [293/453] 8012: Saved 20 shareholders
+2025-12-25 14:11:50,747 - [SHAREHOLDERS] - INFO - ⚠️ [294/453] 8020: No shareholders
+2025-12-25 14:11:53,662 - [SHAREHOLDERS] - INFO - ✅ 8030: Found 19 shareholders
+2025-12-25 14:11:53,687 - [SHAREHOLDERS] - INFO - 💾 [295/453] 8030: Saved 19 shareholders
+2025-12-25 14:11:56,598 - [SHAREHOLDERS] - INFO - ✅ 8040: Found 3 shareholders
+2025-12-25 14:11:56,612 - [SHAREHOLDERS] - INFO - 💾 [296/453] 8040: Saved 3 shareholders
+2025-12-25 14:11:59,668 - [SHAREHOLDERS] - INFO - ✅ 8050: Found 7 shareholders
+2025-12-25 14:11:59,672 - [SHAREHOLDERS] - INFO - 💾 [297/453] 8050: Saved 7 shareholders
+2025-12-25 14:12:02,574 - [SHAREHOLDERS] - INFO - ✅ 8060: Found 6 shareholders
+2025-12-25 14:12:02,586 - [SHAREHOLDERS] - INFO - 💾 [298/453] 8060: Saved 6 shareholders
+2025-12-25 14:12:05,534 - [SHAREHOLDERS] - INFO - ✅ 8070: Found 5 shareholders
+2025-12-25 14:12:05,542 - [SHAREHOLDERS] - INFO - 💾 [299/453] 8070: Saved 5 shareholders
+2025-12-25 14:12:09,422 - [SHAREHOLDERS] - INFO - ⚠️ [300/453] 8100: No shareholders
+2025-12-25 14:12:12,574 - [SHAREHOLDERS] - INFO - ✅ 8120: Found 20 shareholders
+2025-12-25 14:12:12,692 - [SHAREHOLDERS] - INFO - 💾 [301/453] 8120: Saved 20 shareholders
+2025-12-25 14:12:15,710 - [SHAREHOLDERS] - INFO - ✅ 8150: Found 17 shareholders
+2025-12-25 14:12:15,746 - [SHAREHOLDERS] - INFO - 💾 [302/453] 8150: Saved 17 shareholders
+2025-12-25 14:12:18,696 - [SHAREHOLDERS] - INFO - ✅ 8160: Found 20 shareholders
+2025-12-25 14:12:18,780 - [SHAREHOLDERS] - INFO - 💾 [303/453] 8160: Saved 20 shareholders
+2025-12-25 14:12:21,728 - [SHAREHOLDERS] - INFO - ✅ 8170: Found 4 shareholders
+2025-12-25 14:12:21,821 - [SHAREHOLDERS] - INFO - 💾 [304/453] 8170: Saved 4 shareholders
+2025-12-25 14:12:24,895 - [SHAREHOLDERS] - INFO - ✅ 8180: Found 2 shareholders
+2025-12-25 14:12:24,909 - [SHAREHOLDERS] - INFO - 💾 [305/453] 8180: Saved 2 shareholders
+2025-12-25 14:12:27,779 - [SHAREHOLDERS] - INFO - ✅ 8190: Found 6 shareholders
+2025-12-25 14:12:27,783 - [SHAREHOLDERS] - INFO - 💾 [306/453] 8190: Saved 6 shareholders
+2025-12-25 14:12:31,501 - [SHAREHOLDERS] - INFO - ⚠️ [307/453] 8200: No shareholders
+2025-12-25 14:12:35,159 - [SHAREHOLDERS] - INFO - ✅ 8210: Found 7 shareholders
+2025-12-25 14:12:35,435 - [SHAREHOLDERS] - INFO - 💾 [308/453] 8210: Saved 7 shareholders
+2025-12-25 14:12:38,751 - [SHAREHOLDERS] - INFO - ✅ 8230: Found 2 shareholders
+2025-12-25 14:12:38,804 - [SHAREHOLDERS] - INFO - 💾 [309/453] 8230: Saved 2 shareholders
+2025-12-25 14:12:45,091 - [SHAREHOLDERS] - INFO - ✅ 8240: Found 5 shareholders
+2025-12-25 14:12:45,175 - [SHAREHOLDERS] - INFO - 💾 [310/453] 8240: Saved 5 shareholders
+2025-12-25 14:12:48,723 - [SHAREHOLDERS] - INFO - ✅ 8250: Found 6 shareholders
+2025-12-25 14:12:48,797 - [SHAREHOLDERS] - INFO - 💾 [311/453] 8250: Saved 6 shareholders
+2025-12-25 14:12:52,027 - [SHAREHOLDERS] - INFO - ✅ 8260: Found 7 shareholders
+2025-12-25 14:12:52,066 - [SHAREHOLDERS] - INFO - 💾 [312/453] 8260: Saved 7 shareholders
+2025-12-25 14:12:55,806 - [SHAREHOLDERS] - INFO - ✅ 8280: Found 9 shareholders
+2025-12-25 14:12:55,871 - [SHAREHOLDERS] - INFO - 💾 [313/453] 8280: Saved 9 shareholders
+2025-12-25 14:12:59,018 - [SHAREHOLDERS] - INFO - ✅ 8300: Found 9 shareholders
+2025-12-25 14:12:59,071 - [SHAREHOLDERS] - INFO - 💾 [314/453] 8300: Saved 9 shareholders
+2025-12-25 14:13:02,443 - [SHAREHOLDERS] - INFO - ✅ 8310: Found 7 shareholders
+2025-12-25 14:13:02,452 - [SHAREHOLDERS] - INFO - 💾 [315/453] 8310: Saved 7 shareholders
+2025-12-25 14:13:05,499 - [SHAREHOLDERS] - INFO - ✅ 8311: Found 20 shareholders
+2025-12-25 14:13:05,640 - [SHAREHOLDERS] - INFO - 💾 [316/453] 8311: Saved 20 shareholders
+2025-12-25 14:13:08,862 - [SHAREHOLDERS] - INFO - ⚠️ [317/453] 8313: No shareholders
+2025-12-25 14:13:12,197 - [SHAREHOLDERS] - INFO - ✅ 9300: Found 14 shareholders
+2025-12-25 14:13:12,243 - [SHAREHOLDERS] - INFO - 💾 [318/453] 9300: Saved 14 shareholders
+2025-12-25 14:13:17,717 - [SHAREHOLDERS] - INFO - ⚠️ [319/453] 9403: No shareholders
+2025-12-25 14:13:21,596 - [SHAREHOLDERS] - INFO - ⚠️ [320/453] 9404: No shareholders
+2025-12-25 14:13:24,733 - [SHAREHOLDERS] - INFO - ⚠️ [321/453] 9405: No shareholders
+2025-12-25 14:13:28,195 - [SHAREHOLDERS] - INFO - ⚠️ [322/453] 9406: No shareholders
+2025-12-25 14:13:31,449 - [SHAREHOLDERS] - INFO - ⚠️ [323/453] 9407: No shareholders
+2025-12-25 14:13:35,089 - [SHAREHOLDERS] - INFO - ⚠️ [324/453] 9408: No shareholders
+2025-12-25 14:13:38,298 - [SHAREHOLDERS] - INFO - ⚠️ [325/453] 9409: No shareholders
+2025-12-25 14:13:41,724 - [SHAREHOLDERS] - INFO - ⚠️ [326/453] 9410: No shareholders
+2025-12-25 14:13:46,056 - [SHAREHOLDERS] - INFO - ⚠️ [327/453] 9411: No shareholders
+2025-12-25 14:13:50,377 - [SHAREHOLDERS] - INFO - ⚠️ [328/453] 9412: No shareholders
+2025-12-25 14:13:54,112 - [SHAREHOLDERS] - INFO - ✅ 9510: Found 20 shareholders
+2025-12-25 14:13:57,367 - [SHAREHOLDERS] - INFO - 💾 [329/453] 9510: Saved 20 shareholders
+2025-12-25 14:14:00,976 - [SHAREHOLDERS] - INFO - ✅ 9513: Found 20 shareholders
+2025-12-25 14:14:01,933 - [SHAREHOLDERS] - INFO - 💾 [330/453] 9513: Saved 20 shareholders
+2025-12-25 14:14:06,143 - [SHAREHOLDERS] - INFO - ✅ 9514: Found 20 shareholders
+2025-12-25 14:14:06,486 - [SHAREHOLDERS] - INFO - 💾 [331/453] 9514: Saved 20 shareholders
+2025-12-25 14:14:09,804 - [SHAREHOLDERS] - INFO - ✅ 9515: Found 20 shareholders
+2025-12-25 14:14:09,846 - [SHAREHOLDERS] - INFO - 💾 [332/453] 9515: Saved 20 shareholders
+2025-12-25 14:14:12,885 - [SHAREHOLDERS] - INFO - ✅ 9516: Found 16 shareholders
+2025-12-25 14:14:12,953 - [SHAREHOLDERS] - INFO - 💾 [333/453] 9516: Saved 16 shareholders
+2025-12-25 14:14:15,974 - [SHAREHOLDERS] - INFO - ✅ 9517: Found 20 shareholders
+2025-12-25 14:14:16,134 - [SHAREHOLDERS] - INFO - 💾 [334/453] 9517: Saved 20 shareholders
+2025-12-25 14:14:21,048 - [SHAREHOLDERS] - INFO - ✅ 9521: Found 20 shareholders
+2025-12-25 14:14:21,807 - [SHAREHOLDERS] - INFO - 💾 [335/453] 9521: Saved 20 shareholders
+2025-12-25 14:14:26,489 - [SHAREHOLDERS] - INFO - ✅ 9522: Found 3 shareholders
+2025-12-25 14:14:26,675 - [SHAREHOLDERS] - INFO - 💾 [336/453] 9522: Saved 3 shareholders
+2025-12-25 14:14:30,739 - [SHAREHOLDERS] - INFO - ✅ 9523: Found 13 shareholders
+2025-12-25 14:14:31,196 - [SHAREHOLDERS] - INFO - 💾 [337/453] 9523: Saved 13 shareholders
+2025-12-25 14:14:34,485 - [SHAREHOLDERS] - INFO - ✅ 9524: Found 5 shareholders
+2025-12-25 14:14:34,491 - [SHAREHOLDERS] - INFO - 💾 [338/453] 9524: Saved 5 shareholders
+2025-12-25 14:14:37,574 - [SHAREHOLDERS] - INFO - ✅ 9525: Found 20 shareholders
+2025-12-25 14:14:37,876 - [SHAREHOLDERS] - INFO - 💾 [339/453] 9525: Saved 20 shareholders
+2025-12-25 14:14:40,918 - [SHAREHOLDERS] - INFO - ✅ 9527: Found 17 shareholders
+2025-12-25 14:14:40,942 - [SHAREHOLDERS] - INFO - 💾 [340/453] 9527: Saved 17 shareholders
+2025-12-25 14:14:44,043 - [SHAREHOLDERS] - INFO - ✅ 9530: Found 1 shareholders
+2025-12-25 14:14:44,081 - [SHAREHOLDERS] - INFO - 💾 [341/453] 9530: Saved 1 shareholders
+2025-12-25 14:14:46,974 - [SHAREHOLDERS] - INFO - ✅ 9532: Found 16 shareholders
+2025-12-25 14:14:47,026 - [SHAREHOLDERS] - INFO - 💾 [342/453] 9532: Saved 16 shareholders
+2025-12-25 14:14:50,104 - [SHAREHOLDERS] - INFO - ⚠️ [343/453] 9533: No shareholders
+2025-12-25 14:14:53,155 - [SHAREHOLDERS] - INFO - ✅ 9535: Found 20 shareholders
+2025-12-25 14:14:53,352 - [SHAREHOLDERS] - INFO - 💾 [344/453] 9535: Saved 20 shareholders
+2025-12-25 14:14:56,410 - [SHAREHOLDERS] - INFO - ✅ 9536: Found 3 shareholders
+2025-12-25 14:14:56,497 - [SHAREHOLDERS] - INFO - 💾 [345/453] 9536: Saved 3 shareholders
+2025-12-25 14:15:00,390 - [SHAREHOLDERS] - INFO - ✅ 9537: Found 4 shareholders
+2025-12-25 14:15:00,399 - [SHAREHOLDERS] - INFO - 💾 [346/453] 9537: Saved 4 shareholders
+2025-12-25 14:15:03,469 - [SHAREHOLDERS] - INFO - ✅ 9538: Found 20 shareholders
+2025-12-25 14:15:03,671 - [SHAREHOLDERS] - INFO - 💾 [347/453] 9538: Saved 20 shareholders
+2025-12-25 14:15:06,783 - [SHAREHOLDERS] - INFO - ✅ 9539: Found 20 shareholders
+2025-12-25 14:15:06,868 - [SHAREHOLDERS] - INFO - 💾 [348/453] 9539: Saved 20 shareholders
+2025-12-25 14:15:10,067 - [SHAREHOLDERS] - INFO - ✅ 9540: Found 13 shareholders
+2025-12-25 14:15:10,242 - [SHAREHOLDERS] - INFO - 💾 [349/453] 9540: Saved 13 shareholders
+2025-12-25 14:15:13,610 - [SHAREHOLDERS] - INFO - ✅ 9541: Found 8 shareholders
+2025-12-25 14:15:13,625 - [SHAREHOLDERS] - INFO - 💾 [350/453] 9541: Saved 8 shareholders
+2025-12-25 14:15:17,350 - [SHAREHOLDERS] - INFO - ✅ 9542: Found 1 shareholders
+2025-12-25 14:15:17,595 - [SHAREHOLDERS] - INFO - 💾 [351/453] 9542: Saved 1 shareholders
+2025-12-25 14:15:21,247 - [SHAREHOLDERS] - INFO - ✅ 9543: Found 3 shareholders
+2025-12-25 14:15:21,250 - [SHAREHOLDERS] - INFO - 💾 [352/453] 9543: Saved 3 shareholders
+2025-12-25 14:15:24,640 - [SHAREHOLDERS] - INFO - ✅ 9544: Found 4 shareholders
+2025-12-25 14:15:24,646 - [SHAREHOLDERS] - INFO - 💾 [353/453] 9544: Saved 4 shareholders
+2025-12-25 14:15:27,631 - [SHAREHOLDERS] - INFO - ✅ 9545: Found 20 shareholders
+2025-12-25 14:15:27,660 - [SHAREHOLDERS] - INFO - 💾 [354/453] 9545: Saved 20 shareholders
+2025-12-25 14:15:31,095 - [SHAREHOLDERS] - INFO - ✅ 9546: Found 20 shareholders
+2025-12-25 14:15:31,151 - [SHAREHOLDERS] - INFO - 💾 [355/453] 9546: Saved 20 shareholders
+2025-12-25 14:15:34,277 - [SHAREHOLDERS] - INFO - ⚠️ [356/453] 9547: No shareholders
+2025-12-25 14:15:34,817 - [SHAREHOLDERS] - ERROR - ❌ 9548: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9548/major-shareholders
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9548/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:15:34,820 - [SHAREHOLDERS] - INFO - ⚠️ [357/453] 9548: No shareholders
+2025-12-25 14:15:35,353 - [SHAREHOLDERS] - ERROR - ❌ 9549: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9549/major-shareholders
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9549/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:15:35,353 - [SHAREHOLDERS] - INFO - ⚠️ [358/453] 9549: No shareholders
+2025-12-25 14:15:35,878 - [SHAREHOLDERS] - ERROR - ❌ 9550: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://www.mubasher.info/markets/TDWL/stocks/9550/major-shareholders
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9550/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:15:35,878 - [SHAREHOLDERS] - INFO - ⚠️ [359/453] 9550: No shareholders
+2025-12-25 14:15:40,552 - [SHAREHOLDERS] - INFO - ✅ 9551: Found 20 shareholders
+2025-12-25 14:15:40,812 - [SHAREHOLDERS] - INFO - 💾 [360/453] 9551: Saved 20 shareholders
+2025-12-25 14:15:43,947 - [SHAREHOLDERS] - INFO - ✅ 9552: Found 1 shareholders
+2025-12-25 14:15:43,949 - [SHAREHOLDERS] - INFO - 💾 [361/453] 9552: Saved 1 shareholders
+2025-12-25 14:15:46,846 - [SHAREHOLDERS] - INFO - ✅ 9553: Found 20 shareholders
+2025-12-25 14:15:46,856 - [SHAREHOLDERS] - INFO - 💾 [362/453] 9553: Saved 20 shareholders
+2025-12-25 14:15:50,331 - [SHAREHOLDERS] - INFO - ✅ 9555: Found 9 shareholders
+2025-12-25 14:15:50,345 - [SHAREHOLDERS] - INFO - 💾 [363/453] 9555: Saved 9 shareholders
+2025-12-25 14:15:53,204 - [SHAREHOLDERS] - INFO - ✅ 9556: Found 8 shareholders
+2025-12-25 14:15:53,208 - [SHAREHOLDERS] - INFO - 💾 [364/453] 9556: Saved 8 shareholders
+2025-12-25 14:15:56,790 - [SHAREHOLDERS] - INFO - ✅ 9557: Found 20 shareholders
+2025-12-25 14:15:56,800 - [SHAREHOLDERS] - INFO - 💾 [365/453] 9557: Saved 20 shareholders
+2025-12-25 14:16:00,080 - [SHAREHOLDERS] - INFO - ✅ 9558: Found 6 shareholders
+2025-12-25 14:16:00,084 - [SHAREHOLDERS] - INFO - 💾 [366/453] 9558: Saved 6 shareholders
+2025-12-25 14:16:02,929 - [SHAREHOLDERS] - INFO - ✅ 9559: Found 20 shareholders
+2025-12-25 14:16:02,939 - [SHAREHOLDERS] - INFO - 💾 [367/453] 9559: Saved 20 shareholders
+2025-12-25 14:16:05,801 - [SHAREHOLDERS] - INFO - ✅ 9560: Found 20 shareholders
+2025-12-25 14:16:05,823 - [SHAREHOLDERS] - INFO - 💾 [368/453] 9560: Saved 20 shareholders
+2025-12-25 14:16:08,997 - [SHAREHOLDERS] - INFO - ✅ 9561: Found 12 shareholders
+2025-12-25 14:16:09,004 - [SHAREHOLDERS] - INFO - 💾 [369/453] 9561: Saved 12 shareholders
+2025-12-25 14:16:11,841 - [SHAREHOLDERS] - INFO - ✅ 9562: Found 18 shareholders
+2025-12-25 14:16:11,848 - [SHAREHOLDERS] - INFO - 💾 [370/453] 9562: Saved 18 shareholders
+2025-12-25 14:16:14,884 - [SHAREHOLDERS] - INFO - ⚠️ [371/453] 9563: No shareholders
+2025-12-25 14:16:17,817 - [SHAREHOLDERS] - INFO - ✅ 9564: Found 12 shareholders
+2025-12-25 14:16:17,825 - [SHAREHOLDERS] - INFO - 💾 [372/453] 9564: Saved 12 shareholders
+2025-12-25 14:16:21,084 - [SHAREHOLDERS] - INFO - ✅ 9565: Found 15 shareholders
+2025-12-25 14:16:21,092 - [SHAREHOLDERS] - INFO - 💾 [373/453] 9565: Saved 15 shareholders
+2025-12-25 14:16:26,353 - [SHAREHOLDERS] - INFO - ✅ 9566: Found 8 shareholders
+2025-12-25 14:16:26,356 - [SHAREHOLDERS] - INFO - 💾 [374/453] 9566: Saved 8 shareholders
+2025-12-25 14:16:31,232 - [SHAREHOLDERS] - INFO - ✅ 9567: Found 1 shareholders
+2025-12-25 14:16:31,262 - [SHAREHOLDERS] - INFO - 💾 [375/453] 9567: Saved 1 shareholders
+2025-12-25 14:16:36,988 - [SHAREHOLDERS] - INFO - ✅ 9568: Found 5 shareholders
+2025-12-25 14:16:37,002 - [SHAREHOLDERS] - INFO - 💾 [376/453] 9568: Saved 5 shareholders
+2025-12-25 14:16:40,877 - [SHAREHOLDERS] - INFO - ✅ 9569: Found 9 shareholders
+2025-12-25 14:16:40,883 - [SHAREHOLDERS] - INFO - 💾 [377/453] 9569: Saved 9 shareholders
+2025-12-25 14:16:43,978 - [SHAREHOLDERS] - INFO - ✅ 9570: Found 15 shareholders
+2025-12-25 14:16:43,993 - [SHAREHOLDERS] - INFO - 💾 [378/453] 9570: Saved 15 shareholders
+2025-12-25 14:16:46,834 - [SHAREHOLDERS] - INFO - ✅ 9571: Found 3 shareholders
+2025-12-25 14:16:46,847 - [SHAREHOLDERS] - INFO - 💾 [379/453] 9571: Saved 3 shareholders
+2025-12-25 14:16:49,822 - [SHAREHOLDERS] - INFO - ✅ 9572: Found 11 shareholders
+2025-12-25 14:16:49,827 - [SHAREHOLDERS] - INFO - 💾 [380/453] 9572: Saved 11 shareholders
+2025-12-25 14:16:52,702 - [SHAREHOLDERS] - INFO - ✅ 9574: Found 15 shareholders
+2025-12-25 14:16:52,708 - [SHAREHOLDERS] - INFO - 💾 [381/453] 9574: Saved 15 shareholders
+2025-12-25 14:16:55,717 - [SHAREHOLDERS] - INFO - ✅ 9575: Found 16 shareholders
+2025-12-25 14:16:55,727 - [SHAREHOLDERS] - INFO - 💾 [382/453] 9575: Saved 16 shareholders
+2025-12-25 14:16:58,528 - [SHAREHOLDERS] - INFO - ✅ 9576: Found 13 shareholders
+2025-12-25 14:16:58,533 - [SHAREHOLDERS] - INFO - 💾 [383/453] 9576: Saved 13 shareholders
+2025-12-25 14:17:01,490 - [SHAREHOLDERS] - INFO - ⚠️ [384/453] 9577: No shareholders
+2025-12-25 14:17:04,499 - [SHAREHOLDERS] - INFO - ✅ 9578: Found 15 shareholders
+2025-12-25 14:17:04,516 - [SHAREHOLDERS] - INFO - 💾 [385/453] 9578: Saved 15 shareholders
+2025-12-25 14:17:07,335 - [SHAREHOLDERS] - INFO - ✅ 9579: Found 20 shareholders
+2025-12-25 14:17:07,344 - [SHAREHOLDERS] - INFO - 💾 [386/453] 9579: Saved 20 shareholders
+2025-12-25 14:17:10,332 - [SHAREHOLDERS] - INFO - ⚠️ [387/453] 9580: No shareholders
+2025-12-25 14:17:13,156 - [SHAREHOLDERS] - INFO - ✅ 9581: Found 4 shareholders
+2025-12-25 14:17:13,170 - [SHAREHOLDERS] - INFO - 💾 [388/453] 9581: Saved 4 shareholders
+2025-12-25 14:17:16,050 - [SHAREHOLDERS] - INFO - ✅ 9583: Found 2 shareholders
+2025-12-25 14:17:16,054 - [SHAREHOLDERS] - INFO - 💾 [389/453] 9583: Saved 2 shareholders
+2025-12-25 14:17:18,939 - [SHAREHOLDERS] - INFO - ✅ 9584: Found 15 shareholders
+2025-12-25 14:17:18,947 - [SHAREHOLDERS] - INFO - 💾 [390/453] 9584: Saved 15 shareholders
+2025-12-25 14:17:21,773 - [SHAREHOLDERS] - INFO - ✅ 9585: Found 20 shareholders
+2025-12-25 14:17:21,784 - [SHAREHOLDERS] - INFO - 💾 [391/453] 9585: Saved 20 shareholders
+2025-12-25 14:17:24,932 - [SHAREHOLDERS] - INFO - ✅ 9586: Found 20 shareholders
+2025-12-25 14:17:24,940 - [SHAREHOLDERS] - INFO - 💾 [392/453] 9586: Saved 20 shareholders
+2025-12-25 14:17:28,445 - [SHAREHOLDERS] - INFO - ⚠️ [393/453] 9587: No shareholders
+2025-12-25 14:17:31,473 - [SHAREHOLDERS] - INFO - ✅ 9588: Found 20 shareholders
+2025-12-25 14:17:31,485 - [SHAREHOLDERS] - INFO - 💾 [394/453] 9588: Saved 20 shareholders
+2025-12-25 14:17:34,592 - [SHAREHOLDERS] - INFO - ✅ 9589: Found 4 shareholders
+2025-12-25 14:17:34,597 - [SHAREHOLDERS] - INFO - 💾 [395/453] 9589: Saved 4 shareholders
+2025-12-25 14:17:37,455 - [SHAREHOLDERS] - INFO - ✅ 9590: Found 20 shareholders
+2025-12-25 14:17:37,491 - [SHAREHOLDERS] - INFO - 💾 [396/453] 9590: Saved 20 shareholders
+2025-12-25 14:17:49,014 - [SHAREHOLDERS] - ERROR - ❌ 9591: Page.goto: net::ERR_NETWORK_CHANGED at https://www.mubasher.info/markets/TDWL/stocks/9591/major-shareholders
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9591/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:17:49,015 - [SHAREHOLDERS] - INFO - ⚠️ [397/453] 9591: No shareholders
+2025-12-25 14:17:53,031 - [SHAREHOLDERS] - INFO - ✅ 9592: Found 20 shareholders
+2025-12-25 14:17:53,039 - [SHAREHOLDERS] - INFO - 💾 [398/453] 9592: Saved 20 shareholders
+2025-12-25 14:17:58,103 - [SHAREHOLDERS] - INFO - ⚠️ [399/453] 9593: No shareholders
+2025-12-25 14:18:00,943 - [SHAREHOLDERS] - INFO - ✅ 9594: Found 10 shareholders
+2025-12-25 14:18:00,948 - [SHAREHOLDERS] - INFO - 💾 [400/453] 9594: Saved 10 shareholders
+2025-12-25 14:18:03,954 - [SHAREHOLDERS] - INFO - ✅ 9595: Found 10 shareholders
+2025-12-25 14:18:03,959 - [SHAREHOLDERS] - INFO - 💾 [401/453] 9595: Saved 10 shareholders
+2025-12-25 14:18:06,772 - [SHAREHOLDERS] - INFO - ⚠️ [402/453] 9596: No shareholders
+2025-12-25 14:18:09,567 - [SHAREHOLDERS] - INFO - ⚠️ [403/453] 9597: No shareholders
+2025-12-25 14:18:12,549 - [SHAREHOLDERS] - INFO - ⚠️ [404/453] 9598: No shareholders
+2025-12-25 14:18:15,408 - [SHAREHOLDERS] - INFO - ✅ 9599: Found 2 shareholders
+2025-12-25 14:18:15,412 - [SHAREHOLDERS] - INFO - 💾 [405/453] 9599: Saved 2 shareholders
+2025-12-25 14:18:18,211 - [SHAREHOLDERS] - INFO - ✅ 9600: Found 15 shareholders
+2025-12-25 14:18:18,218 - [SHAREHOLDERS] - INFO - 💾 [406/453] 9600: Saved 15 shareholders
+2025-12-25 14:18:21,720 - [SHAREHOLDERS] - INFO - ✅ 9601: Found 8 shareholders
+2025-12-25 14:18:21,724 - [SHAREHOLDERS] - INFO - 💾 [407/453] 9601: Saved 8 shareholders
+2025-12-25 14:18:26,350 - [SHAREHOLDERS] - INFO - ✅ 9602: Found 13 shareholders
+2025-12-25 14:18:26,359 - [SHAREHOLDERS] - INFO - 💾 [408/453] 9602: Saved 13 shareholders
+2025-12-25 14:18:29,414 - [SHAREHOLDERS] - INFO - ✅ 9603: Found 1 shareholders
+2025-12-25 14:18:29,416 - [SHAREHOLDERS] - INFO - 💾 [409/453] 9603: Saved 1 shareholders
+2025-12-25 14:18:33,646 - [SHAREHOLDERS] - INFO - ✅ 9604: Found 20 shareholders
+2025-12-25 14:18:33,653 - [SHAREHOLDERS] - INFO - 💾 [410/453] 9604: Saved 20 shareholders
+2025-12-25 14:18:36,957 - [SHAREHOLDERS] - INFO - ✅ 9605: Found 8 shareholders
+2025-12-25 14:18:36,960 - [SHAREHOLDERS] - INFO - 💾 [411/453] 9605: Saved 8 shareholders
+2025-12-25 14:18:39,782 - [SHAREHOLDERS] - INFO - ✅ 9606: Found 4 shareholders
+2025-12-25 14:18:39,787 - [SHAREHOLDERS] - INFO - 💾 [412/453] 9606: Saved 4 shareholders
+2025-12-25 14:18:42,638 - [SHAREHOLDERS] - INFO - ✅ 9607: Found 20 shareholders
+2025-12-25 14:18:42,649 - [SHAREHOLDERS] - INFO - 💾 [413/453] 9607: Saved 20 shareholders
+2025-12-25 14:18:45,661 - [SHAREHOLDERS] - INFO - ✅ 9608: Found 1 shareholders
+2025-12-25 14:18:45,665 - [SHAREHOLDERS] - INFO - 💾 [414/453] 9608: Saved 1 shareholders
+2025-12-25 14:18:48,728 - [SHAREHOLDERS] - INFO - ✅ 9609: Found 3 shareholders
+2025-12-25 14:18:48,732 - [SHAREHOLDERS] - INFO - 💾 [415/453] 9609: Saved 3 shareholders
+2025-12-25 14:18:51,636 - [SHAREHOLDERS] - INFO - ✅ 9610: Found 17 shareholders
+2025-12-25 14:18:51,658 - [SHAREHOLDERS] - INFO - 💾 [416/453] 9610: Saved 17 shareholders
+2025-12-25 14:18:54,987 - [SHAREHOLDERS] - INFO - ✅ 9611: Found 15 shareholders
+2025-12-25 14:18:55,101 - [SHAREHOLDERS] - INFO - 💾 [417/453] 9611: Saved 15 shareholders
+2025-12-25 14:18:58,142 - [SHAREHOLDERS] - INFO - ✅ 9612: Found 2 shareholders
+2025-12-25 14:18:58,145 - [SHAREHOLDERS] - INFO - 💾 [418/453] 9612: Saved 2 shareholders
+2025-12-25 14:19:01,013 - [SHAREHOLDERS] - INFO - ✅ 9613: Found 20 shareholders
+2025-12-25 14:19:01,038 - [SHAREHOLDERS] - INFO - 💾 [419/453] 9613: Saved 20 shareholders
+2025-12-25 14:21:41,596 - [SHAREHOLDERS] - INFO - 🎯 Extracting shareholders for 453 stocks
+2025-12-25 14:21:44,887 - [SHAREHOLDERS] - INFO - ✅ 1010: Found 15 shareholders
+2025-12-25 14:21:45,105 - [SHAREHOLDERS] - INFO - 💾 [1/453] 1010: Saved 15 shareholders
+2025-12-25 14:21:49,591 - [SHAREHOLDERS] - INFO - ✅ 1020: Found 9 shareholders
+2025-12-25 14:21:49,599 - [SHAREHOLDERS] - INFO - 💾 [2/453] 1020: Saved 9 shareholders
+2025-12-25 14:21:52,519 - [SHAREHOLDERS] - INFO - ✅ 1030: Found 18 shareholders
+2025-12-25 14:21:52,527 - [SHAREHOLDERS] - INFO - 💾 [3/453] 1030: Saved 18 shareholders
+2025-12-25 14:21:55,422 - [SHAREHOLDERS] - INFO - ✅ 1050: Found 12 shareholders
+2025-12-25 14:21:55,437 - [SHAREHOLDERS] - INFO - 💾 [4/453] 1050: Saved 12 shareholders
+2025-12-25 14:21:58,337 - [SHAREHOLDERS] - INFO - ✅ 1060: Found 20 shareholders
+2025-12-25 14:21:58,354 - [SHAREHOLDERS] - INFO - 💾 [5/453] 1060: Saved 20 shareholders
+2025-12-25 14:22:01,190 - [SHAREHOLDERS] - INFO - ✅ 1080: Found 5 shareholders
+2025-12-25 14:22:01,194 - [SHAREHOLDERS] - INFO - 💾 [6/453] 1080: Saved 5 shareholders
+2025-12-25 14:22:04,050 - [SHAREHOLDERS] - INFO - ✅ 1111: Found 4 shareholders
+2025-12-25 14:22:04,054 - [SHAREHOLDERS] - INFO - 💾 [7/453] 1111: Saved 4 shareholders
+2025-12-25 14:22:06,915 - [SHAREHOLDERS] - INFO - ⚠️ [8/453] 1113: No shareholders
+2025-12-25 14:22:09,900 - [SHAREHOLDERS] - INFO - ✅ 1120: Found 7 shareholders
+2025-12-25 14:22:09,907 - [SHAREHOLDERS] - INFO - 💾 [9/453] 1120: Saved 7 shareholders
+2025-12-25 14:22:12,778 - [SHAREHOLDERS] - INFO - ✅ 1140: Found 20 shareholders
+2025-12-25 14:22:12,785 - [SHAREHOLDERS] - INFO - 💾 [10/453] 1140: Saved 20 shareholders
+2025-12-25 14:22:15,649 - [SHAREHOLDERS] - INFO - ✅ 1150: Found 1 shareholders
+2025-12-25 14:22:15,652 - [SHAREHOLDERS] - INFO - 💾 [11/453] 1150: Saved 1 shareholders
+2025-12-25 14:22:18,507 - [SHAREHOLDERS] - INFO - ✅ 1180: Found 9 shareholders
+2025-12-25 14:22:18,514 - [SHAREHOLDERS] - INFO - 💾 [12/453] 1180: Saved 9 shareholders
+2025-12-25 14:22:21,318 - [SHAREHOLDERS] - INFO - ✅ 1182: Found 20 shareholders
+2025-12-25 14:22:21,332 - [SHAREHOLDERS] - INFO - 💾 [13/453] 1182: Saved 20 shareholders
+2025-12-25 14:22:24,174 - [SHAREHOLDERS] - INFO - ✅ 1183: Found 12 shareholders
+2025-12-25 14:22:24,181 - [SHAREHOLDERS] - INFO - 💾 [14/453] 1183: Saved 12 shareholders
+2025-12-25 14:22:27,010 - [SHAREHOLDERS] - INFO - ✅ 1201: Found 8 shareholders
+2025-12-25 14:22:27,016 - [SHAREHOLDERS] - INFO - 💾 [15/453] 1201: Saved 8 shareholders
+2025-12-25 14:22:29,896 - [SHAREHOLDERS] - INFO - ✅ 1202: Found 19 shareholders
+2025-12-25 14:22:29,971 - [SHAREHOLDERS] - INFO - 💾 [16/453] 1202: Saved 19 shareholders
+2025-12-25 14:22:32,934 - [SHAREHOLDERS] - INFO - ✅ 1210: Found 20 shareholders
+2025-12-25 14:22:32,972 - [SHAREHOLDERS] - INFO - 💾 [17/453] 1210: Saved 20 shareholders
+2025-12-25 14:22:35,846 - [SHAREHOLDERS] - INFO - ✅ 1211: Found 5 shareholders
+2025-12-25 14:22:35,850 - [SHAREHOLDERS] - INFO - 💾 [18/453] 1211: Saved 5 shareholders
+2025-12-25 14:22:39,217 - [SHAREHOLDERS] - INFO - ✅ 1212: Found 20 shareholders
+2025-12-25 14:22:39,222 - [SHAREHOLDERS] - INFO - 💾 [19/453] 1212: Saved 20 shareholders
+2025-12-25 14:22:42,294 - [SHAREHOLDERS] - INFO - ✅ 1213: Found 20 shareholders
+2025-12-25 14:22:42,326 - [SHAREHOLDERS] - INFO - 💾 [20/453] 1213: Saved 20 shareholders
+2025-12-25 14:22:45,220 - [SHAREHOLDERS] - INFO - ✅ 1214: Found 20 shareholders
+2025-12-25 14:22:45,230 - [SHAREHOLDERS] - INFO - 💾 [21/453] 1214: Saved 20 shareholders
+2025-12-25 14:22:48,724 - [SHAREHOLDERS] - INFO - ✅ 1301: Found 3 shareholders
+2025-12-25 14:22:48,727 - [SHAREHOLDERS] - INFO - 💾 [22/453] 1301: Saved 3 shareholders
+2025-12-25 14:22:52,729 - [SHAREHOLDERS] - INFO - ✅ 1302: Found 19 shareholders
+2025-12-25 14:22:52,737 - [SHAREHOLDERS] - INFO - 💾 [23/453] 1302: Saved 19 shareholders
+2025-12-25 14:22:55,535 - [SHAREHOLDERS] - INFO - ✅ 1303: Found 12 shareholders
+2025-12-25 14:22:55,547 - [SHAREHOLDERS] - INFO - 💾 [24/453] 1303: Saved 12 shareholders
+2025-12-25 14:22:58,430 - [SHAREHOLDERS] - INFO - ✅ 1304: Found 11 shareholders
+2025-12-25 14:22:58,437 - [SHAREHOLDERS] - INFO - 💾 [25/453] 1304: Saved 11 shareholders
+2025-12-25 14:23:01,298 - [SHAREHOLDERS] - INFO - ✅ 1320: Found 20 shareholders
+2025-12-25 14:23:01,304 - [SHAREHOLDERS] - INFO - 💾 [26/453] 1320: Saved 20 shareholders
+2025-12-25 14:23:04,139 - [SHAREHOLDERS] - INFO - ✅ 1321: Found 11 shareholders
+2025-12-25 14:23:04,144 - [SHAREHOLDERS] - INFO - 💾 [27/453] 1321: Saved 11 shareholders
+2025-12-25 14:23:06,959 - [SHAREHOLDERS] - INFO - ✅ 1322: Found 20 shareholders
+2025-12-25 14:23:06,970 - [SHAREHOLDERS] - INFO - 💾 [28/453] 1322: Saved 20 shareholders
+2025-12-25 14:23:10,260 - [SHAREHOLDERS] - INFO - ⚠️ [29/453] 1323: No shareholders
+2025-12-25 14:23:13,078 - [SHAREHOLDERS] - INFO - ✅ 1810: Found 20 shareholders
+2025-12-25 14:23:13,089 - [SHAREHOLDERS] - INFO - 💾 [30/453] 1810: Saved 20 shareholders
+2025-12-25 14:23:15,935 - [SHAREHOLDERS] - INFO - ✅ 1820: Found 4 shareholders
+2025-12-25 14:23:15,961 - [SHAREHOLDERS] - INFO - 💾 [31/453] 1820: Saved 4 shareholders
+2025-12-25 14:23:18,883 - [SHAREHOLDERS] - INFO - ✅ 1830: Found 17 shareholders
+2025-12-25 14:23:18,894 - [SHAREHOLDERS] - INFO - 💾 [32/453] 1830: Saved 17 shareholders
+2025-12-25 14:23:21,884 - [SHAREHOLDERS] - INFO - ✅ 1831: Found 16 shareholders
+2025-12-25 14:23:21,914 - [SHAREHOLDERS] - INFO - 💾 [33/453] 1831: Saved 16 shareholders
+2025-12-25 14:23:24,951 - [SHAREHOLDERS] - INFO - ✅ 1832: Found 20 shareholders
+2025-12-25 14:23:24,960 - [SHAREHOLDERS] - INFO - 💾 [34/453] 1832: Saved 20 shareholders
+2025-12-25 14:23:27,797 - [SHAREHOLDERS] - INFO - ✅ 1833: Found 20 shareholders
+2025-12-25 14:23:27,821 - [SHAREHOLDERS] - INFO - 💾 [35/453] 1833: Saved 20 shareholders
+2025-12-25 14:23:30,716 - [SHAREHOLDERS] - INFO - ✅ 1834: Found 4 shareholders
+2025-12-25 14:23:30,718 - [SHAREHOLDERS] - INFO - 💾 [36/453] 1834: Saved 4 shareholders
+2025-12-25 14:23:34,002 - [SHAREHOLDERS] - INFO - ✅ 1835: Found 5 shareholders
+2025-12-25 14:23:34,009 - [SHAREHOLDERS] - INFO - 💾 [37/453] 1835: Saved 5 shareholders
+2025-12-25 14:23:36,885 - [SHAREHOLDERS] - INFO - ✅ 2001: Found 19 shareholders
+2025-12-25 14:23:36,896 - [SHAREHOLDERS] - INFO - 💾 [38/453] 2001: Saved 19 shareholders
+2025-12-25 14:23:41,789 - [SHAREHOLDERS] - INFO - ✅ 2010: Found 2 shareholders
+2025-12-25 14:23:41,795 - [SHAREHOLDERS] - INFO - 💾 [39/453] 2010: Saved 2 shareholders
+2025-12-25 14:23:44,654 - [SHAREHOLDERS] - INFO - ✅ 2020: Found 10 shareholders
+2025-12-25 14:23:44,662 - [SHAREHOLDERS] - INFO - 💾 [40/453] 2020: Saved 10 shareholders
+2025-12-25 14:23:47,488 - [SHAREHOLDERS] - INFO - ✅ 2030: Found 3 shareholders
+2025-12-25 14:23:47,492 - [SHAREHOLDERS] - INFO - 💾 [41/453] 2030: Saved 3 shareholders
+2025-12-25 14:23:50,343 - [SHAREHOLDERS] - INFO - ✅ 2040: Found 5 shareholders
+2025-12-25 14:23:50,346 - [SHAREHOLDERS] - INFO - 💾 [42/453] 2040: Saved 5 shareholders
+2025-12-25 14:23:54,060 - [SHAREHOLDERS] - INFO - ✅ 2050: Found 12 shareholders
+2025-12-25 14:23:54,075 - [SHAREHOLDERS] - INFO - 💾 [43/453] 2050: Saved 12 shareholders
+2025-12-25 14:23:56,945 - [SHAREHOLDERS] - INFO - ✅ 2060: Found 20 shareholders
+2025-12-25 14:23:56,985 - [SHAREHOLDERS] - INFO - 💾 [44/453] 2060: Saved 20 shareholders
+2025-12-25 14:23:59,882 - [SHAREHOLDERS] - INFO - ✅ 2070: Found 20 shareholders
+2025-12-25 14:23:59,899 - [SHAREHOLDERS] - INFO - 💾 [45/453] 2070: Saved 20 shareholders
+2025-12-25 14:24:02,768 - [SHAREHOLDERS] - INFO - ✅ 2080: Found 20 shareholders
+2025-12-25 14:24:02,818 - [SHAREHOLDERS] - INFO - 💾 [46/453] 2080: Saved 20 shareholders
+2025-12-25 14:24:05,661 - [SHAREHOLDERS] - INFO - ✅ 2081: Found 3 shareholders
+2025-12-25 14:24:05,691 - [SHAREHOLDERS] - INFO - 💾 [47/453] 2081: Saved 3 shareholders
+2025-12-25 14:24:08,556 - [SHAREHOLDERS] - INFO - ✅ 2082: Found 14 shareholders
+2025-12-25 14:24:08,561 - [SHAREHOLDERS] - INFO - 💾 [48/453] 2082: Saved 14 shareholders
+2025-12-25 14:24:11,386 - [SHAREHOLDERS] - INFO - ✅ 2083: Found 7 shareholders
+2025-12-25 14:24:11,393 - [SHAREHOLDERS] - INFO - 💾 [49/453] 2083: Saved 7 shareholders
+2025-12-25 14:24:14,228 - [SHAREHOLDERS] - INFO - ✅ 2084: Found 2 shareholders
+2025-12-25 14:24:14,231 - [SHAREHOLDERS] - INFO - 💾 [50/453] 2084: Saved 2 shareholders
+2025-12-25 14:24:17,122 - [SHAREHOLDERS] - INFO - ✅ 2090: Found 20 shareholders
+2025-12-25 14:24:17,130 - [SHAREHOLDERS] - INFO - 💾 [51/453] 2090: Saved 20 shareholders
+2025-12-25 14:24:20,219 - [SHAREHOLDERS] - INFO - ✅ 2100: Found 10 shareholders
+2025-12-25 14:24:20,224 - [SHAREHOLDERS] - INFO - 💾 [52/453] 2100: Saved 10 shareholders
+2025-12-25 14:24:23,274 - [SHAREHOLDERS] - INFO - ✅ 2110: Found 20 shareholders
+2025-12-25 14:24:23,281 - [SHAREHOLDERS] - INFO - 💾 [53/453] 2110: Saved 20 shareholders
+2025-12-25 14:24:26,175 - [SHAREHOLDERS] - INFO - ✅ 2120: Found 20 shareholders
+2025-12-25 14:24:26,193 - [SHAREHOLDERS] - INFO - 💾 [54/453] 2120: Saved 20 shareholders
+2025-12-25 14:24:29,028 - [SHAREHOLDERS] - INFO - ✅ 2130: Found 1 shareholders
+2025-12-25 14:24:29,030 - [SHAREHOLDERS] - INFO - 💾 [55/453] 2130: Saved 1 shareholders
+2025-12-25 14:24:31,854 - [SHAREHOLDERS] - INFO - ✅ 2140: Found 6 shareholders
+2025-12-25 14:24:31,893 - [SHAREHOLDERS] - INFO - 💾 [56/453] 2140: Saved 6 shareholders
+2025-12-25 14:24:34,757 - [SHAREHOLDERS] - INFO - ✅ 2150: Found 20 shareholders
+2025-12-25 14:24:34,766 - [SHAREHOLDERS] - INFO - 💾 [57/453] 2150: Saved 20 shareholders
+2025-12-25 14:24:37,604 - [SHAREHOLDERS] - INFO - ✅ 2160: Found 13 shareholders
+2025-12-25 14:24:37,624 - [SHAREHOLDERS] - INFO - 💾 [58/453] 2160: Saved 13 shareholders
+2025-12-25 14:24:40,465 - [SHAREHOLDERS] - INFO - ✅ 2170: Found 12 shareholders
+2025-12-25 14:24:40,472 - [SHAREHOLDERS] - INFO - 💾 [59/453] 2170: Saved 12 shareholders
+2025-12-25 14:24:43,290 - [SHAREHOLDERS] - INFO - ⚠️ [60/453] 2180: No shareholders
+2025-12-25 14:24:46,194 - [SHAREHOLDERS] - INFO - ✅ 2190: Found 7 shareholders
+2025-12-25 14:24:46,200 - [SHAREHOLDERS] - INFO - 💾 [61/453] 2190: Saved 7 shareholders
+2025-12-25 14:24:49,028 - [SHAREHOLDERS] - INFO - ✅ 2200: Found 20 shareholders
+2025-12-25 14:24:49,038 - [SHAREHOLDERS] - INFO - 💾 [62/453] 2200: Saved 20 shareholders
+2025-12-25 14:24:51,889 - [SHAREHOLDERS] - INFO - ✅ 2210: Found 5 shareholders
+2025-12-25 14:24:51,898 - [SHAREHOLDERS] - INFO - 💾 [63/453] 2210: Saved 5 shareholders
+2025-12-25 14:24:54,728 - [SHAREHOLDERS] - INFO - ✅ 2220: Found 2 shareholders
+2025-12-25 14:24:54,731 - [SHAREHOLDERS] - INFO - 💾 [64/453] 2220: Saved 2 shareholders
+2025-12-25 14:24:57,565 - [SHAREHOLDERS] - INFO - ✅ 2222: Found 9 shareholders
+2025-12-25 14:24:57,568 - [SHAREHOLDERS] - INFO - 💾 [65/453] 2222: Saved 9 shareholders
+2025-12-25 14:25:00,367 - [SHAREHOLDERS] - INFO - ✅ 2223: Found 1 shareholders
+2025-12-25 14:25:00,369 - [SHAREHOLDERS] - INFO - 💾 [66/453] 2223: Saved 1 shareholders
+2025-12-25 14:25:05,094 - [SHAREHOLDERS] - INFO - ✅ 2230: Found 20 shareholders
+2025-12-25 14:25:05,103 - [SHAREHOLDERS] - INFO - 💾 [67/453] 2230: Saved 20 shareholders
+2025-12-25 14:25:07,928 - [SHAREHOLDERS] - INFO - ✅ 2240: Found 10 shareholders
+2025-12-25 14:25:07,935 - [SHAREHOLDERS] - INFO - 💾 [68/453] 2240: Saved 10 shareholders
+2025-12-25 14:25:10,800 - [SHAREHOLDERS] - INFO - ✅ 2250: Found 14 shareholders
+2025-12-25 14:25:10,807 - [SHAREHOLDERS] - INFO - 💾 [69/453] 2250: Saved 14 shareholders
+2025-12-25 14:25:13,636 - [SHAREHOLDERS] - INFO - ✅ 2270: Found 2 shareholders
+2025-12-25 14:25:13,643 - [SHAREHOLDERS] - INFO - 💾 [70/453] 2270: Saved 2 shareholders
+2025-12-25 14:25:16,504 - [SHAREHOLDERS] - INFO - ✅ 2280: Found 12 shareholders
+2025-12-25 14:25:16,509 - [SHAREHOLDERS] - INFO - 💾 [71/453] 2280: Saved 12 shareholders
+2025-12-25 14:25:19,344 - [SHAREHOLDERS] - INFO - ✅ 2281: Found 3 shareholders
+2025-12-25 14:25:19,346 - [SHAREHOLDERS] - INFO - 💾 [72/453] 2281: Saved 3 shareholders
+2025-12-25 14:25:22,198 - [SHAREHOLDERS] - INFO - ✅ 2282: Found 3 shareholders
+2025-12-25 14:25:22,200 - [SHAREHOLDERS] - INFO - 💾 [73/453] 2282: Saved 3 shareholders
+2025-12-25 14:25:25,050 - [SHAREHOLDERS] - INFO - ⚠️ [74/453] 2283: No shareholders
+2025-12-25 14:25:27,886 - [SHAREHOLDERS] - INFO - ⚠️ [75/453] 2284: No shareholders
+2025-12-25 14:25:30,728 - [SHAREHOLDERS] - INFO - ✅ 2285: Found 8 shareholders
+2025-12-25 14:25:30,732 - [SHAREHOLDERS] - INFO - 💾 [76/453] 2285: Saved 8 shareholders
+2025-12-25 14:25:33,568 - [SHAREHOLDERS] - INFO - ⚠️ [77/453] 2286: No shareholders
+2025-12-25 14:25:36,458 - [SHAREHOLDERS] - INFO - ✅ 2287: Found 1 shareholders
+2025-12-25 14:25:36,461 - [SHAREHOLDERS] - INFO - 💾 [78/453] 2287: Saved 1 shareholders
+2025-12-25 14:25:40,946 - [SHAREHOLDERS] - INFO - ✅ 2290: Found 4 shareholders
+2025-12-25 14:25:40,952 - [SHAREHOLDERS] - INFO - 💾 [79/453] 2290: Saved 4 shareholders
+2025-12-25 14:25:44,061 - [SHAREHOLDERS] - INFO - ✅ 2300: Found 20 shareholders
+2025-12-25 14:25:44,096 - [SHAREHOLDERS] - INFO - 💾 [80/453] 2300: Saved 20 shareholders
+2025-12-25 14:25:47,411 - [SHAREHOLDERS] - INFO - ✅ 2310: Found 13 shareholders
+2025-12-25 14:25:47,420 - [SHAREHOLDERS] - INFO - 💾 [81/453] 2310: Saved 13 shareholders
+2025-12-25 14:25:50,253 - [SHAREHOLDERS] - INFO - ⚠️ [82/453] 2320: No shareholders
+2025-12-25 14:25:53,063 - [SHAREHOLDERS] - INFO - ✅ 2330: Found 12 shareholders
+2025-12-25 14:25:53,070 - [SHAREHOLDERS] - INFO - 💾 [83/453] 2330: Saved 12 shareholders
+2025-12-25 14:25:55,900 - [SHAREHOLDERS] - INFO - ⚠️ [84/453] 2340: No shareholders
+2025-12-25 14:25:58,757 - [SHAREHOLDERS] - INFO - ⚠️ [85/453] 2350: No shareholders
+2025-12-25 14:26:01,598 - [SHAREHOLDERS] - INFO - ✅ 2360: Found 20 shareholders
+2025-12-25 14:26:01,611 - [SHAREHOLDERS] - INFO - 💾 [86/453] 2360: Saved 20 shareholders
+2025-12-25 14:26:04,404 - [SHAREHOLDERS] - INFO - ✅ 2370: Found 1 shareholders
+2025-12-25 14:26:04,408 - [SHAREHOLDERS] - INFO - 💾 [87/453] 2370: Saved 1 shareholders
+2025-12-25 14:26:07,300 - [SHAREHOLDERS] - INFO - ✅ 2380: Found 1 shareholders
+2025-12-25 14:26:07,304 - [SHAREHOLDERS] - INFO - 💾 [88/453] 2380: Saved 1 shareholders
+2025-12-25 14:26:10,201 - [SHAREHOLDERS] - INFO - ✅ 2381: Found 9 shareholders
+2025-12-25 14:26:10,206 - [SHAREHOLDERS] - INFO - 💾 [89/453] 2381: Saved 9 shareholders
+2025-12-25 14:26:13,022 - [SHAREHOLDERS] - INFO - ⚠️ [90/453] 2382: No shareholders
+2025-12-25 14:26:15,839 - [SHAREHOLDERS] - INFO - ✅ 3002: Found 19 shareholders
+2025-12-25 14:26:15,849 - [SHAREHOLDERS] - INFO - 💾 [91/453] 3002: Saved 19 shareholders
+2025-12-25 14:26:18,742 - [SHAREHOLDERS] - INFO - ✅ 3003: Found 10 shareholders
+2025-12-25 14:26:18,748 - [SHAREHOLDERS] - INFO - 💾 [92/453] 3003: Saved 10 shareholders
+2025-12-25 14:26:21,619 - [SHAREHOLDERS] - INFO - ✅ 3004: Found 12 shareholders
+2025-12-25 14:26:21,625 - [SHAREHOLDERS] - INFO - 💾 [93/453] 3004: Saved 12 shareholders
+2025-12-25 14:26:24,454 - [SHAREHOLDERS] - INFO - ✅ 3005: Found 2 shareholders
+2025-12-25 14:26:24,457 - [SHAREHOLDERS] - INFO - 💾 [94/453] 3005: Saved 2 shareholders
+2025-12-25 14:26:27,284 - [SHAREHOLDERS] - INFO - ✅ 3007: Found 7 shareholders
+2025-12-25 14:26:27,288 - [SHAREHOLDERS] - INFO - 💾 [95/453] 3007: Saved 7 shareholders
+2025-12-25 14:26:30,167 - [SHAREHOLDERS] - INFO - ✅ 3008: Found 20 shareholders
+2025-12-25 14:26:30,177 - [SHAREHOLDERS] - INFO - 💾 [96/453] 3008: Saved 20 shareholders
+2025-12-25 14:26:33,064 - [SHAREHOLDERS] - INFO - ✅ 3010: Found 10 shareholders
+2025-12-25 14:26:33,072 - [SHAREHOLDERS] - INFO - 💾 [97/453] 3010: Saved 10 shareholders
+2025-12-25 14:26:35,972 - [SHAREHOLDERS] - INFO - ✅ 3020: Found 15 shareholders
+2025-12-25 14:26:35,977 - [SHAREHOLDERS] - INFO - 💾 [98/453] 3020: Saved 15 shareholders
+2025-12-25 14:26:38,816 - [SHAREHOLDERS] - INFO - ✅ 3030: Found 20 shareholders
+2025-12-25 14:26:38,827 - [SHAREHOLDERS] - INFO - 💾 [99/453] 3030: Saved 20 shareholders
+2025-12-25 14:26:41,631 - [SHAREHOLDERS] - INFO - ✅ 3040: Found 10 shareholders
+2025-12-25 14:26:41,637 - [SHAREHOLDERS] - INFO - 💾 [100/453] 3040: Saved 10 shareholders
+2025-12-25 14:26:44,488 - [SHAREHOLDERS] - INFO - ✅ 3050: Found 11 shareholders
+2025-12-25 14:26:44,496 - [SHAREHOLDERS] - INFO - 💾 [101/453] 3050: Saved 11 shareholders
+2025-12-25 14:26:49,011 - [SHAREHOLDERS] - INFO - ✅ 3060: Found 3 shareholders
+2025-12-25 14:26:49,023 - [SHAREHOLDERS] - INFO - 💾 [102/453] 3060: Saved 3 shareholders
+2025-12-25 14:26:51,893 - [SHAREHOLDERS] - INFO - ✅ 3080: Found 8 shareholders
+2025-12-25 14:26:51,897 - [SHAREHOLDERS] - INFO - 💾 [103/453] 3080: Saved 8 shareholders
+2025-12-25 14:26:54,928 - [SHAREHOLDERS] - INFO - ✅ 3090: Found 20 shareholders
+2025-12-25 14:26:54,935 - [SHAREHOLDERS] - INFO - 💾 [104/453] 3090: Saved 20 shareholders
+2025-12-25 14:26:57,924 - [SHAREHOLDERS] - INFO - ✅ 3091: Found 20 shareholders
+2025-12-25 14:26:57,932 - [SHAREHOLDERS] - INFO - 💾 [105/453] 3091: Saved 20 shareholders
+2025-12-25 14:27:01,023 - [SHAREHOLDERS] - INFO - ✅ 3092: Found 12 shareholders
+2025-12-25 14:27:01,029 - [SHAREHOLDERS] - INFO - 💾 [106/453] 3092: Saved 12 shareholders
+2025-12-25 14:27:04,116 - [SHAREHOLDERS] - INFO - ✅ 4001: Found 12 shareholders
+2025-12-25 14:27:04,126 - [SHAREHOLDERS] - INFO - 💾 [107/453] 4001: Saved 12 shareholders
+2025-12-25 14:27:07,087 - [SHAREHOLDERS] - INFO - ✅ 4002: Found 20 shareholders
+2025-12-25 14:27:07,107 - [SHAREHOLDERS] - INFO - 💾 [108/453] 4002: Saved 20 shareholders
+2025-12-25 14:27:09,959 - [SHAREHOLDERS] - INFO - ✅ 4003: Found 20 shareholders
+2025-12-25 14:27:09,966 - [SHAREHOLDERS] - INFO - 💾 [109/453] 4003: Saved 20 shareholders
+2025-12-25 14:27:12,803 - [SHAREHOLDERS] - INFO - ✅ 4004: Found 15 shareholders
+2025-12-25 14:27:12,813 - [SHAREHOLDERS] - INFO - 💾 [110/453] 4004: Saved 15 shareholders
+2025-12-25 14:27:15,655 - [SHAREHOLDERS] - INFO - ✅ 4005: Found 3 shareholders
+2025-12-25 14:27:15,658 - [SHAREHOLDERS] - INFO - 💾 [111/453] 4005: Saved 3 shareholders
+2025-12-25 14:27:18,491 - [SHAREHOLDERS] - INFO - ✅ 4006: Found 8 shareholders
+2025-12-25 14:27:18,497 - [SHAREHOLDERS] - INFO - 💾 [112/453] 4006: Saved 8 shareholders
+2025-12-25 14:27:21,364 - [SHAREHOLDERS] - INFO - ✅ 4007: Found 6 shareholders
+2025-12-25 14:27:21,374 - [SHAREHOLDERS] - INFO - 💾 [113/453] 4007: Saved 6 shareholders
+2025-12-25 14:27:24,416 - [SHAREHOLDERS] - INFO - ✅ 4008: Found 12 shareholders
+2025-12-25 14:27:24,452 - [SHAREHOLDERS] - INFO - 💾 [114/453] 4008: Saved 12 shareholders
+2025-12-25 14:27:27,375 - [SHAREHOLDERS] - INFO - ✅ 4009: Found 20 shareholders
+2025-12-25 14:27:27,382 - [SHAREHOLDERS] - INFO - 💾 [115/453] 4009: Saved 20 shareholders
+2025-12-25 14:27:30,822 - [SHAREHOLDERS] - INFO - ✅ 4011: Found 15 shareholders
+2025-12-25 14:27:30,847 - [SHAREHOLDERS] - INFO - 💾 [116/453] 4011: Saved 15 shareholders
+2025-12-25 14:27:33,725 - [SHAREHOLDERS] - INFO - ✅ 4012: Found 16 shareholders
+2025-12-25 14:27:33,733 - [SHAREHOLDERS] - INFO - 💾 [117/453] 4012: Saved 16 shareholders
+2025-12-25 14:27:36,544 - [SHAREHOLDERS] - INFO - ✅ 4013: Found 4 shareholders
+2025-12-25 14:27:36,546 - [SHAREHOLDERS] - INFO - 💾 [118/453] 4013: Saved 4 shareholders
+2025-12-25 14:27:40,056 - [SHAREHOLDERS] - INFO - ✅ 4014: Found 20 shareholders
+2025-12-25 14:27:40,064 - [SHAREHOLDERS] - INFO - 💾 [119/453] 4014: Saved 20 shareholders
+2025-12-25 14:27:43,738 - [SHAREHOLDERS] - INFO - ✅ 4015: Found 8 shareholders
+2025-12-25 14:27:43,745 - [SHAREHOLDERS] - INFO - 💾 [120/453] 4015: Saved 8 shareholders
+2025-12-25 14:27:47,325 - [SHAREHOLDERS] - INFO - ✅ 4016: Found 5 shareholders
+2025-12-25 14:27:47,329 - [SHAREHOLDERS] - INFO - 💾 [121/453] 4016: Saved 5 shareholders
+2025-12-25 14:27:52,168 - [SHAREHOLDERS] - INFO - ✅ 4017: Found 16 shareholders
+2025-12-25 14:27:52,173 - [SHAREHOLDERS] - INFO - 💾 [122/453] 4017: Saved 16 shareholders
+2025-12-25 14:27:55,730 - [SHAREHOLDERS] - INFO - ✅ 4018: Found 1 shareholders
+2025-12-25 14:27:55,733 - [SHAREHOLDERS] - INFO - 💾 [123/453] 4018: Saved 1 shareholders
+2025-12-25 14:27:59,059 - [SHAREHOLDERS] - INFO - ✅ 4019: Found 14 shareholders
+2025-12-25 14:27:59,068 - [SHAREHOLDERS] - INFO - 💾 [124/453] 4019: Saved 14 shareholders
+2025-12-25 14:28:02,782 - [SHAREHOLDERS] - INFO - ✅ 4020: Found 5 shareholders
+2025-12-25 14:28:02,787 - [SHAREHOLDERS] - INFO - 💾 [125/453] 4020: Saved 5 shareholders
+2025-12-25 14:28:06,277 - [SHAREHOLDERS] - INFO - ✅ 4021: Found 20 shareholders
+2025-12-25 14:28:06,286 - [SHAREHOLDERS] - INFO - 💾 [126/453] 4021: Saved 20 shareholders
+2025-12-25 14:28:09,449 - [SHAREHOLDERS] - INFO - ✅ 4030: Found 2 shareholders
+2025-12-25 14:28:09,454 - [SHAREHOLDERS] - INFO - 💾 [127/453] 4030: Saved 2 shareholders
+2025-12-25 14:28:12,333 - [SHAREHOLDERS] - INFO - ✅ 4031: Found 20 shareholders
+2025-12-25 14:28:12,348 - [SHAREHOLDERS] - INFO - 💾 [128/453] 4031: Saved 20 shareholders
+2025-12-25 14:28:15,315 - [SHAREHOLDERS] - INFO - ✅ 4040: Found 1 shareholders
+2025-12-25 14:28:15,322 - [SHAREHOLDERS] - INFO - 💾 [129/453] 4040: Saved 1 shareholders
+2025-12-25 14:28:18,203 - [SHAREHOLDERS] - INFO - ✅ 4050: Found 5 shareholders
+2025-12-25 14:28:18,206 - [SHAREHOLDERS] - INFO - 💾 [130/453] 4050: Saved 5 shareholders
+2025-12-25 14:28:21,116 - [SHAREHOLDERS] - INFO - ✅ 4051: Found 20 shareholders
+2025-12-25 14:28:21,126 - [SHAREHOLDERS] - INFO - 💾 [131/453] 4051: Saved 20 shareholders
+2025-12-25 14:28:23,997 - [SHAREHOLDERS] - INFO - ✅ 4061: Found 2 shareholders
+2025-12-25 14:28:24,000 - [SHAREHOLDERS] - INFO - 💾 [132/453] 4061: Saved 2 shareholders
+2025-12-25 14:28:26,905 - [SHAREHOLDERS] - INFO - ✅ 4070: Found 20 shareholders
+2025-12-25 14:28:26,914 - [SHAREHOLDERS] - INFO - 💾 [133/453] 4070: Saved 20 shareholders
+2025-12-25 14:28:29,779 - [SHAREHOLDERS] - INFO - ⚠️ [134/453] 4071: No shareholders
+2025-12-25 14:28:38,438 - [SHAREHOLDERS] - INFO - ⚠️ [135/453] 4072: No shareholders
+2025-12-25 14:28:41,273 - [SHAREHOLDERS] - INFO - ✅ 4080: Found 8 shareholders
+2025-12-25 14:28:41,276 - [SHAREHOLDERS] - INFO - 💾 [136/453] 4080: Saved 8 shareholders
+2025-12-25 14:28:44,338 - [SHAREHOLDERS] - INFO - ✅ 4081: Found 20 shareholders
+2025-12-25 14:28:44,353 - [SHAREHOLDERS] - INFO - 💾 [137/453] 4081: Saved 20 shareholders
+2025-12-25 14:28:48,930 - [SHAREHOLDERS] - INFO - ✅ 4082: Found 20 shareholders
+2025-12-25 14:28:48,948 - [SHAREHOLDERS] - INFO - 💾 [138/453] 4082: Saved 20 shareholders
+2025-12-25 14:28:51,791 - [SHAREHOLDERS] - INFO - ✅ 4083: Found 2 shareholders
+2025-12-25 14:28:51,792 - [SHAREHOLDERS] - INFO - 💾 [139/453] 4083: Saved 2 shareholders
+2025-12-25 14:28:54,620 - [SHAREHOLDERS] - INFO - ✅ 4084: Found 20 shareholders
+2025-12-25 14:28:54,627 - [SHAREHOLDERS] - INFO - 💾 [140/453] 4084: Saved 20 shareholders
+2025-12-25 14:28:57,507 - [SHAREHOLDERS] - INFO - ✅ 4090: Found 20 shareholders
+2025-12-25 14:28:57,518 - [SHAREHOLDERS] - INFO - 💾 [141/453] 4090: Saved 20 shareholders
+2025-12-25 14:29:00,525 - [SHAREHOLDERS] - INFO - ✅ 4100: Found 20 shareholders
+2025-12-25 14:29:00,540 - [SHAREHOLDERS] - INFO - 💾 [142/453] 4100: Saved 20 shareholders
+2025-12-25 14:29:03,817 - [SHAREHOLDERS] - INFO - ✅ 4110: Found 20 shareholders
+2025-12-25 14:29:03,828 - [SHAREHOLDERS] - INFO - 💾 [143/453] 4110: Saved 20 shareholders
+2025-12-25 14:29:06,649 - [SHAREHOLDERS] - INFO - ⚠️ [144/453] 4130: No shareholders
+2025-12-25 14:29:09,499 - [SHAREHOLDERS] - INFO - ⚠️ [145/453] 4140: No shareholders
+2025-12-25 14:29:12,330 - [SHAREHOLDERS] - INFO - ✅ 4141: Found 20 shareholders
+2025-12-25 14:29:12,339 - [SHAREHOLDERS] - INFO - 💾 [146/453] 4141: Saved 20 shareholders
+2025-12-25 14:29:15,180 - [SHAREHOLDERS] - INFO - ✅ 4142: Found 10 shareholders
+2025-12-25 14:29:15,190 - [SHAREHOLDERS] - INFO - 💾 [147/453] 4142: Saved 10 shareholders
+2025-12-25 14:29:18,031 - [SHAREHOLDERS] - INFO - ✅ 4143: Found 17 shareholders
+2025-12-25 14:29:18,036 - [SHAREHOLDERS] - INFO - 💾 [148/453] 4143: Saved 17 shareholders
+2025-12-25 14:29:20,849 - [SHAREHOLDERS] - INFO - ✅ 4144: Found 20 shareholders
+2025-12-25 14:29:20,858 - [SHAREHOLDERS] - INFO - 💾 [149/453] 4144: Saved 20 shareholders
+2025-12-25 14:29:23,702 - [SHAREHOLDERS] - INFO - ✅ 4145: Found 7 shareholders
+2025-12-25 14:29:23,706 - [SHAREHOLDERS] - INFO - 💾 [150/453] 4145: Saved 7 shareholders
+2025-12-25 14:29:26,570 - [SHAREHOLDERS] - INFO - ✅ 4146: Found 20 shareholders
+2025-12-25 14:29:26,583 - [SHAREHOLDERS] - INFO - 💾 [151/453] 4146: Saved 20 shareholders
+2025-12-25 14:29:29,467 - [SHAREHOLDERS] - INFO - ⚠️ [152/453] 4150: No shareholders
+2025-12-25 14:29:37,980 - [SHAREHOLDERS] - INFO - ✅ 4160: Found 8 shareholders
+2025-12-25 14:29:37,984 - [SHAREHOLDERS] - INFO - 💾 [153/453] 4160: Saved 8 shareholders
+2025-12-25 14:29:40,794 - [SHAREHOLDERS] - INFO - ✅ 4161: Found 17 shareholders
+2025-12-25 14:29:40,805 - [SHAREHOLDERS] - INFO - 💾 [154/453] 4161: Saved 17 shareholders
+2025-12-25 14:29:43,650 - [SHAREHOLDERS] - INFO - ✅ 4162: Found 1 shareholders
+2025-12-25 14:29:43,653 - [SHAREHOLDERS] - INFO - 💾 [155/453] 4162: Saved 1 shareholders
+2025-12-25 14:29:47,133 - [SHAREHOLDERS] - INFO - ✅ 4163: Found 11 shareholders
+2025-12-25 14:29:47,147 - [SHAREHOLDERS] - INFO - 💾 [156/453] 4163: Saved 11 shareholders
+2025-12-25 14:29:51,522 - [SHAREHOLDERS] - INFO - ✅ 4164: Found 4 shareholders
+2025-12-25 14:29:51,526 - [SHAREHOLDERS] - INFO - 💾 [157/453] 4164: Saved 4 shareholders
+2025-12-25 14:29:54,673 - [SHAREHOLDERS] - INFO - ✅ 4165: Found 13 shareholders
+2025-12-25 14:29:54,693 - [SHAREHOLDERS] - INFO - 💾 [158/453] 4165: Saved 13 shareholders
+2025-12-25 14:29:57,977 - [SHAREHOLDERS] - INFO - ✅ 4170: Found 20 shareholders
+2025-12-25 14:29:57,983 - [SHAREHOLDERS] - INFO - 💾 [159/453] 4170: Saved 20 shareholders
+2025-12-25 14:30:00,814 - [SHAREHOLDERS] - INFO - ✅ 4180: Found 20 shareholders
+2025-12-25 14:30:00,861 - [SHAREHOLDERS] - INFO - 💾 [160/453] 4180: Saved 20 shareholders
+2025-12-25 14:30:04,823 - [SHAREHOLDERS] - INFO - ✅ 4190: Found 13 shareholders
+2025-12-25 14:30:04,831 - [SHAREHOLDERS] - INFO - 💾 [161/453] 4190: Saved 13 shareholders
+2025-12-25 14:30:07,671 - [SHAREHOLDERS] - INFO - ✅ 4191: Found 20 shareholders
+2025-12-25 14:30:07,678 - [SHAREHOLDERS] - INFO - 💾 [162/453] 4191: Saved 20 shareholders
+2025-12-25 14:30:10,507 - [SHAREHOLDERS] - INFO - ✅ 4192: Found 2 shareholders
+2025-12-25 14:30:10,509 - [SHAREHOLDERS] - INFO - 💾 [163/453] 4192: Saved 2 shareholders
+2025-12-25 14:30:13,399 - [SHAREHOLDERS] - INFO - ✅ 4193: Found 6 shareholders
+2025-12-25 14:30:13,405 - [SHAREHOLDERS] - INFO - 💾 [164/453] 4193: Saved 6 shareholders
+2025-12-25 14:30:16,379 - [SHAREHOLDERS] - INFO - ✅ 4194: Found 3 shareholders
+2025-12-25 14:30:16,385 - [SHAREHOLDERS] - INFO - 💾 [165/453] 4194: Saved 3 shareholders
+2025-12-25 14:30:19,989 - [SHAREHOLDERS] - INFO - ⚠️ [166/453] 4200: No shareholders
+2025-12-25 14:30:22,893 - [SHAREHOLDERS] - INFO - ✅ 4210: Found 2 shareholders
+2025-12-25 14:30:22,897 - [SHAREHOLDERS] - INFO - 💾 [167/453] 4210: Saved 2 shareholders
+2025-12-25 14:30:25,756 - [SHAREHOLDERS] - INFO - ✅ 4220: Found 13 shareholders
+2025-12-25 14:30:25,765 - [SHAREHOLDERS] - INFO - 💾 [168/453] 4220: Saved 13 shareholders
+2025-12-25 14:30:28,608 - [SHAREHOLDERS] - INFO - ✅ 4230: Found 6 shareholders
+2025-12-25 14:30:28,614 - [SHAREHOLDERS] - INFO - 💾 [169/453] 4230: Saved 6 shareholders
+2025-12-25 14:30:31,880 - [SHAREHOLDERS] - INFO - ✅ 4240: Found 20 shareholders
+2025-12-25 14:30:31,889 - [SHAREHOLDERS] - INFO - 💾 [170/453] 4240: Saved 20 shareholders
+2025-12-25 14:30:35,516 - [SHAREHOLDERS] - INFO - ✅ 4250: Found 20 shareholders
+2025-12-25 14:30:35,525 - [SHAREHOLDERS] - INFO - 💾 [171/453] 4250: Saved 20 shareholders
+2025-12-25 14:30:38,388 - [SHAREHOLDERS] - INFO - ✅ 4260: Found 20 shareholders
+2025-12-25 14:30:38,401 - [SHAREHOLDERS] - INFO - 💾 [172/453] 4260: Saved 20 shareholders
+2025-12-25 14:30:41,246 - [SHAREHOLDERS] - INFO - ✅ 4261: Found 20 shareholders
+2025-12-25 14:30:41,254 - [SHAREHOLDERS] - INFO - 💾 [173/453] 4261: Saved 20 shareholders
+2025-12-25 14:30:44,113 - [SHAREHOLDERS] - INFO - ✅ 4262: Found 4 shareholders
+2025-12-25 14:30:44,119 - [SHAREHOLDERS] - INFO - 💾 [174/453] 4262: Saved 4 shareholders
+2025-12-25 14:30:46,986 - [SHAREHOLDERS] - INFO - ✅ 4263: Found 1 shareholders
+2025-12-25 14:30:46,989 - [SHAREHOLDERS] - INFO - 💾 [175/453] 4263: Saved 1 shareholders
+2025-12-25 14:30:49,845 - [SHAREHOLDERS] - INFO - ✅ 4264: Found 9 shareholders
+2025-12-25 14:30:49,851 - [SHAREHOLDERS] - INFO - 💾 [176/453] 4264: Saved 9 shareholders
+2025-12-25 14:30:53,128 - [SHAREHOLDERS] - INFO - ⚠️ [177/453] 4265: No shareholders
+2025-12-25 14:30:56,252 - [SHAREHOLDERS] - INFO - ⚠️ [178/453] 4270: No shareholders
+2025-12-25 14:30:59,181 - [SHAREHOLDERS] - INFO - ✅ 4280: Found 2 shareholders
+2025-12-25 14:30:59,183 - [SHAREHOLDERS] - INFO - 💾 [179/453] 4280: Saved 2 shareholders
+2025-12-25 14:31:02,017 - [SHAREHOLDERS] - INFO - ✅ 4290: Found 20 shareholders
+2025-12-25 14:31:02,026 - [SHAREHOLDERS] - INFO - 💾 [180/453] 4290: Saved 20 shareholders
+2025-12-25 14:31:04,852 - [SHAREHOLDERS] - INFO - ✅ 4291: Found 20 shareholders
+2025-12-25 14:31:04,860 - [SHAREHOLDERS] - INFO - 💾 [181/453] 4291: Saved 20 shareholders
+2025-12-25 14:31:07,738 - [SHAREHOLDERS] - INFO - ✅ 4292: Found 20 shareholders
+2025-12-25 14:31:07,756 - [SHAREHOLDERS] - INFO - 💾 [182/453] 4292: Saved 20 shareholders
+2025-12-25 14:31:10,885 - [SHAREHOLDERS] - INFO - ✅ 4300: Found 1 shareholders
+2025-12-25 14:31:10,908 - [SHAREHOLDERS] - INFO - 💾 [183/453] 4300: Saved 1 shareholders
+2025-12-25 14:31:14,092 - [SHAREHOLDERS] - INFO - ✅ 4310: Found 16 shareholders
+2025-12-25 14:31:14,881 - [SHAREHOLDERS] - INFO - 💾 [184/453] 4310: Saved 16 shareholders
+2025-12-25 14:31:17,969 - [SHAREHOLDERS] - INFO - ✅ 4320: Found 20 shareholders
+2025-12-25 14:31:18,061 - [SHAREHOLDERS] - INFO - 💾 [185/453] 4320: Saved 20 shareholders
+2025-12-25 14:31:21,098 - [SHAREHOLDERS] - INFO - ✅ 4321: Found 20 shareholders
+2025-12-25 14:31:21,224 - [SHAREHOLDERS] - INFO - 💾 [186/453] 4321: Saved 20 shareholders
+2025-12-25 14:31:24,175 - [SHAREHOLDERS] - INFO - ✅ 4322: Found 3 shareholders
+2025-12-25 14:31:24,200 - [SHAREHOLDERS] - INFO - 💾 [187/453] 4322: Saved 3 shareholders
+2025-12-25 14:31:27,118 - [SHAREHOLDERS] - INFO - ⚠️ [188/453] 4323: No shareholders
+2025-12-25 14:31:30,031 - [SHAREHOLDERS] - INFO - ✅ 4324: Found 20 shareholders
+2025-12-25 14:31:30,045 - [SHAREHOLDERS] - INFO - 💾 [189/453] 4324: Saved 20 shareholders
+2025-12-25 14:31:33,067 - [SHAREHOLDERS] - INFO - ✅ 4325: Found 17 shareholders
+2025-12-25 14:31:33,077 - [SHAREHOLDERS] - INFO - 💾 [190/453] 4325: Saved 17 shareholders
+2025-12-25 14:31:35,935 - [SHAREHOLDERS] - INFO - ✅ 4326: Found 3 shareholders
+2025-12-25 14:31:35,968 - [SHAREHOLDERS] - INFO - 💾 [191/453] 4326: Saved 3 shareholders
+2025-12-25 14:31:39,270 - [SHAREHOLDERS] - INFO - ⚠️ [192/453] 4327: No shareholders
+2025-12-25 14:31:42,158 - [SHAREHOLDERS] - INFO - ✅ 4330: Found 20 shareholders
+2025-12-25 14:31:42,169 - [SHAREHOLDERS] - INFO - 💾 [193/453] 4330: Saved 20 shareholders
+2025-12-25 14:31:45,439 - [SHAREHOLDERS] - INFO - ✅ 4331: Found 16 shareholders
+2025-12-25 14:31:45,453 - [SHAREHOLDERS] - INFO - 💾 [194/453] 4331: Saved 16 shareholders
+2025-12-25 14:31:48,470 - [SHAREHOLDERS] - INFO - ✅ 4332: Found 20 shareholders
+2025-12-25 14:31:48,478 - [SHAREHOLDERS] - INFO - 💾 [195/453] 4332: Saved 20 shareholders
+2025-12-25 14:31:51,342 - [SHAREHOLDERS] - INFO - ✅ 4333: Found 20 shareholders
+2025-12-25 14:31:51,366 - [SHAREHOLDERS] - INFO - 💾 [196/453] 4333: Saved 20 shareholders
+2025-12-25 14:31:54,284 - [SHAREHOLDERS] - INFO - ✅ 4334: Found 20 shareholders
+2025-12-25 14:31:54,294 - [SHAREHOLDERS] - INFO - 💾 [197/453] 4334: Saved 20 shareholders
+2025-12-25 14:31:57,322 - [SHAREHOLDERS] - INFO - ✅ 4335: Found 20 shareholders
+2025-12-25 14:31:57,333 - [SHAREHOLDERS] - INFO - 💾 [198/453] 4335: Saved 20 shareholders
+2025-12-25 14:32:00,320 - [SHAREHOLDERS] - INFO - ✅ 4336: Found 20 shareholders
+2025-12-25 14:32:00,329 - [SHAREHOLDERS] - INFO - 💾 [199/453] 4336: Saved 20 shareholders
+2025-12-25 14:32:03,389 - [SHAREHOLDERS] - INFO - ✅ 4337: Found 11 shareholders
+2025-12-25 14:32:03,541 - [SHAREHOLDERS] - INFO - 💾 [200/453] 4337: Saved 11 shareholders
+2025-12-25 14:32:06,515 - [SHAREHOLDERS] - INFO - ✅ 4338: Found 3 shareholders
+2025-12-25 14:32:06,519 - [SHAREHOLDERS] - INFO - 💾 [201/453] 4338: Saved 3 shareholders
+2025-12-25 14:32:09,461 - [SHAREHOLDERS] - INFO - ✅ 4339: Found 20 shareholders
+2025-12-25 14:32:09,493 - [SHAREHOLDERS] - INFO - 💾 [202/453] 4339: Saved 20 shareholders
+2025-12-25 14:32:12,529 - [SHAREHOLDERS] - INFO - ✅ 4340: Found 13 shareholders
+2025-12-25 14:32:12,535 - [SHAREHOLDERS] - INFO - 💾 [203/453] 4340: Saved 13 shareholders
+2025-12-25 14:32:15,430 - [SHAREHOLDERS] - INFO - ✅ 4342: Found 20 shareholders
+2025-12-25 14:32:15,447 - [SHAREHOLDERS] - INFO - 💾 [204/453] 4342: Saved 20 shareholders
+2025-12-25 14:32:18,652 - [SHAREHOLDERS] - INFO - ✅ 4344: Found 20 shareholders
+2025-12-25 14:32:18,669 - [SHAREHOLDERS] - INFO - 💾 [205/453] 4344: Saved 20 shareholders
+2025-12-25 14:32:21,555 - [SHAREHOLDERS] - INFO - ✅ 4345: Found 20 shareholders
+2025-12-25 14:32:21,566 - [SHAREHOLDERS] - INFO - 💾 [206/453] 4345: Saved 20 shareholders
+2025-12-25 14:32:24,404 - [SHAREHOLDERS] - INFO - ✅ 4346: Found 12 shareholders
+2025-12-25 14:32:24,411 - [SHAREHOLDERS] - INFO - 💾 [207/453] 4346: Saved 12 shareholders
+2025-12-25 14:32:27,791 - [SHAREHOLDERS] - INFO - ⚠️ [208/453] 4347: No shareholders
+2025-12-25 14:32:30,659 - [SHAREHOLDERS] - INFO - ✅ 4348: Found 20 shareholders
+2025-12-25 14:32:30,674 - [SHAREHOLDERS] - INFO - 💾 [209/453] 4348: Saved 20 shareholders
+2025-12-25 14:32:33,690 - [SHAREHOLDERS] - INFO - ⚠️ [210/453] 4349: No shareholders
+2025-12-25 14:32:36,561 - [SHAREHOLDERS] - INFO - ⚠️ [211/453] 4350: No shareholders
+2025-12-25 14:32:39,648 - [SHAREHOLDERS] - INFO - ⚠️ [212/453] 4700: No shareholders
+2025-12-25 14:32:42,674 - [SHAREHOLDERS] - INFO - ⚠️ [213/453] 4701: No shareholders
+2025-12-25 14:32:45,556 - [SHAREHOLDERS] - INFO - ⚠️ [214/453] 4702: No shareholders
+2025-12-25 14:32:48,570 - [SHAREHOLDERS] - INFO - ⚠️ [215/453] 4703: No shareholders
+2025-12-25 14:32:51,404 - [SHAREHOLDERS] - INFO - ⚠️ [216/453] 5015: No shareholders
+2025-12-25 14:32:55,084 - [SHAREHOLDERS] - INFO - ⚠️ [217/453] 5019: No shareholders
+2025-12-25 14:33:01,767 - [SHAREHOLDERS] - INFO - ⚠️ [218/453] 5021: No shareholders
+2025-12-25 14:33:22,273 - [SHAREHOLDERS] - INFO - ⚠️ [219/453] 5022: No shareholders
+2025-12-25 14:33:34,561 - [SHAREHOLDERS] - INFO - ⚠️ [220/453] 5023: No shareholders
+2025-12-25 14:33:41,126 - [SHAREHOLDERS] - INFO - ✅ 5110: Found 2 shareholders
+2025-12-25 14:33:41,139 - [SHAREHOLDERS] - INFO - 💾 [221/453] 5110: Saved 2 shareholders
+2025-12-25 14:33:46,320 - [SHAREHOLDERS] - INFO - ⚠️ [222/453] 5214: No shareholders
+2025-12-25 14:33:49,784 - [SHAREHOLDERS] - INFO - ⚠️ [223/453] 5216: No shareholders
+2025-12-25 14:33:52,783 - [SHAREHOLDERS] - INFO - ⚠️ [224/453] 5221: No shareholders
+2025-12-25 14:33:55,662 - [SHAREHOLDERS] - INFO - ⚠️ [225/453] 5227: No shareholders
+2025-12-25 14:34:08,435 - [SHAREHOLDERS] - INFO - ⚠️ [226/453] 5243: No shareholders
+2025-12-25 14:34:16,204 - [SHAREHOLDERS] - INFO - ⚠️ [227/453] 5245: No shareholders
+2025-12-25 14:34:20,320 - [SHAREHOLDERS] - INFO - ⚠️ [228/453] 5246: No shareholders
+2025-12-25 14:34:23,549 - [SHAREHOLDERS] - INFO - ⚠️ [229/453] 5247: No shareholders
+2025-12-25 14:34:26,384 - [SHAREHOLDERS] - INFO - ⚠️ [230/453] 5249: No shareholders
+2025-12-25 14:34:32,336 - [SHAREHOLDERS] - INFO - ⚠️ [231/453] 5250: No shareholders
+2025-12-25 14:34:35,188 - [SHAREHOLDERS] - INFO - ⚠️ [232/453] 5251: No shareholders
+2025-12-25 14:34:38,223 - [SHAREHOLDERS] - INFO - ⚠️ [233/453] 5252: No shareholders
+2025-12-25 14:34:41,110 - [SHAREHOLDERS] - INFO - ⚠️ [234/453] 5253: No shareholders
+2025-12-25 14:34:44,311 - [SHAREHOLDERS] - INFO - ⚠️ [235/453] 5254: No shareholders
+2025-12-25 14:34:47,595 - [SHAREHOLDERS] - INFO - ⚠️ [236/453] 5267: No shareholders
+2025-12-25 14:34:50,454 - [SHAREHOLDERS] - INFO - ⚠️ [237/453] 5272: No shareholders
+2025-12-25 14:34:59,920 - [SHAREHOLDERS] - INFO - ⚠️ [238/453] 5273: No shareholders
+2025-12-25 14:35:09,080 - [SHAREHOLDERS] - INFO - ⚠️ [239/453] 5274: No shareholders
+2025-12-25 14:35:13,108 - [SHAREHOLDERS] - INFO - ⚠️ [240/453] 5280: No shareholders
+2025-12-25 14:35:16,614 - [SHAREHOLDERS] - INFO - ⚠️ [241/453] 5282: No shareholders
+2025-12-25 14:35:20,986 - [SHAREHOLDERS] - INFO - ⚠️ [242/453] 5283: No shareholders
+2025-12-25 14:35:25,313 - [SHAREHOLDERS] - INFO - ⚠️ [243/453] 5284: No shareholders
+2025-12-25 14:35:29,099 - [SHAREHOLDERS] - INFO - ⚠️ [244/453] 5285: No shareholders
+2025-12-25 14:35:32,714 - [SHAREHOLDERS] - INFO - ⚠️ [245/453] 5301: No shareholders
+2025-12-25 14:35:36,912 - [SHAREHOLDERS] - INFO - ⚠️ [246/453] 5303: No shareholders
+2025-12-25 14:35:41,158 - [SHAREHOLDERS] - INFO - ⚠️ [247/453] 5306: No shareholders
+2025-12-25 14:35:45,146 - [SHAREHOLDERS] - INFO - ⚠️ [248/453] 5308: No shareholders
+2025-12-25 14:35:49,533 - [SHAREHOLDERS] - INFO - ⚠️ [249/453] 5311: No shareholders
+2025-12-25 14:35:53,500 - [SHAREHOLDERS] - INFO - ⚠️ [250/453] 5312: No shareholders
+2025-12-25 14:36:22,319 - [SHAREHOLDERS] - INFO - ⚠️ [251/453] 5313: No shareholders
+2025-12-25 14:36:28,092 - [SHAREHOLDERS] - INFO - ⚠️ [252/453] 5318: No shareholders
+2025-12-25 14:36:36,764 - [SHAREHOLDERS] - INFO - ⚠️ [253/453] 5320: No shareholders
+2025-12-25 14:36:40,063 - [SHAREHOLDERS] - INFO - ⚠️ [254/453] 5321: No shareholders
+2025-12-25 14:36:43,163 - [SHAREHOLDERS] - INFO - ⚠️ [255/453] 5323: No shareholders
+2025-12-25 14:37:12,501 - [SHAREHOLDERS] - INFO - ⚠️ [256/453] 5332: No shareholders
+2025-12-25 14:37:43,042 - [SHAREHOLDERS] - ERROR - ❌ 5333: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5333/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:37:43,043 - [SHAREHOLDERS] - INFO - ⚠️ [257/453] 5333: No shareholders
+2025-12-25 14:38:13,564 - [SHAREHOLDERS] - ERROR - ❌ 5334: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5334/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:38:13,565 - [SHAREHOLDERS] - INFO - ⚠️ [258/453] 5334: No shareholders
+2025-12-25 14:38:44,085 - [SHAREHOLDERS] - ERROR - ❌ 5336: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5336/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:38:44,086 - [SHAREHOLDERS] - INFO - ⚠️ [259/453] 5336: No shareholders
+2025-12-25 14:39:14,599 - [SHAREHOLDERS] - ERROR - ❌ 5338: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5338/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:39:14,600 - [SHAREHOLDERS] - INFO - ⚠️ [260/453] 5338: No shareholders
+2025-12-25 14:39:45,109 - [SHAREHOLDERS] - ERROR - ❌ 5339: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5339/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:39:45,111 - [SHAREHOLDERS] - INFO - ⚠️ [261/453] 5339: No shareholders
+2025-12-25 14:40:15,627 - [SHAREHOLDERS] - ERROR - ❌ 5343: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5343/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:40:15,629 - [SHAREHOLDERS] - INFO - ⚠️ [262/453] 5343: No shareholders
+2025-12-25 14:40:46,141 - [SHAREHOLDERS] - ERROR - ❌ 5344: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5344/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:40:46,142 - [SHAREHOLDERS] - INFO - ⚠️ [263/453] 5344: No shareholders
+2025-12-25 14:41:16,655 - [SHAREHOLDERS] - ERROR - ❌ 6001: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/6001/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:41:16,656 - [SHAREHOLDERS] - INFO - ⚠️ [264/453] 6001: No shareholders
+2025-12-25 14:41:47,170 - [SHAREHOLDERS] - ERROR - ❌ 6002: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/6002/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:41:47,171 - [SHAREHOLDERS] - INFO - ⚠️ [265/453] 6002: No shareholders
+2025-12-25 14:42:17,686 - [SHAREHOLDERS] - ERROR - ❌ 6004: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/6004/major-shareholders", waiting until "domcontentloaded"
+
+2025-12-25 14:42:17,687 - [SHAREHOLDERS] - INFO - ⚠️ [266/453] 6004: No shareholders
+2025-12-25 14:42:36,837 - [SHAREHOLDERS] - INFO - ⚠️ [267/453] 6010: No shareholders
+2025-12-25 14:42:46,949 - [SHAREHOLDERS] - INFO - ✅ 6012: Found 20 shareholders
+2025-12-25 14:42:47,083 - [SHAREHOLDERS] - INFO - 💾 [268/453] 6012: Saved 20 shareholders
+2025-12-25 14:42:58,175 - [SHAREHOLDERS] - INFO - ⚠️ [269/453] 6013: No shareholders
+2025-12-25 14:43:10,245 - [SHAREHOLDERS] - INFO - ⚠️ [270/453] 6014: No shareholders
+2025-12-25 14:43:24,694 - [SHAREHOLDERS] - INFO - ⚠️ [271/453] 6015: No shareholders
+2025-12-25 14:43:49,493 - [SHAREHOLDERS] - INFO - ⚠️ [272/453] 6016: No shareholders
+2025-12-25 14:44:06,272 - [SHAREHOLDERS] - INFO - ⚠️ [273/453] 6017: No shareholders
+2025-12-25 14:44:16,134 - [SHAREHOLDERS] - INFO - ⚠️ [274/453] 6018: No shareholders
+2025-12-25 14:44:20,263 - [SHAREHOLDERS] - INFO - ⚠️ [275/453] 6019: No shareholders
+2025-12-25 14:44:25,663 - [SHAREHOLDERS] - INFO - ✅ 6020: Found 19 shareholders
+2025-12-25 14:44:25,676 - [SHAREHOLDERS] - INFO - 💾 [276/453] 6020: Saved 19 shareholders
+2025-12-25 14:44:37,264 - [SHAREHOLDERS] - INFO - ✅ 6040: Found 20 shareholders
+2025-12-25 14:44:37,276 - [SHAREHOLDERS] - INFO - 💾 [277/453] 6040: Saved 20 shareholders
+2025-12-25 14:44:44,811 - [SHAREHOLDERS] - INFO - ✅ 6050: Found 7 shareholders
+2025-12-25 14:44:44,819 - [SHAREHOLDERS] - INFO - 💾 [278/453] 6050: Saved 7 shareholders
+2025-12-25 14:44:55,734 - [SHAREHOLDERS] - INFO - ✅ 6060: Found 3 shareholders
+2025-12-25 14:44:55,739 - [SHAREHOLDERS] - INFO - 💾 [279/453] 6060: Saved 3 shareholders
+2025-12-25 14:45:01,529 - [SHAREHOLDERS] - INFO - ✅ 6070: Found 20 shareholders
+2025-12-25 14:45:01,538 - [SHAREHOLDERS] - INFO - 💾 [280/453] 6070: Saved 20 shareholders
+2025-12-25 14:45:12,384 - [SHAREHOLDERS] - INFO - ✅ 6090: Found 20 shareholders
+2025-12-25 14:45:12,397 - [SHAREHOLDERS] - INFO - 💾 [281/453] 6090: Saved 20 shareholders
+2025-12-25 14:45:37,329 - [SHAREHOLDERS] - INFO - ⚠️ [282/453] 7010: No shareholders
+2025-12-25 14:45:56,762 - [SHAREHOLDERS] - INFO - ⚠️ [283/453] 7020: No shareholders
+2025-12-25 14:46:16,973 - [SHAREHOLDERS] - INFO - ✅ 7030: Found 1 shareholders
+2025-12-25 14:46:16,998 - [SHAREHOLDERS] - INFO - 💾 [284/453] 7030: Saved 1 shareholders
+2025-12-25 14:46:24,016 - [SHAREHOLDERS] - INFO - ✅ 7040: Found 20 shareholders
+2025-12-25 14:46:24,033 - [SHAREHOLDERS] - INFO - 💾 [285/453] 7040: Saved 20 shareholders
+2025-12-25 14:46:34,376 - [SHAREHOLDERS] - INFO - ✅ 7200: Found 20 shareholders
+2025-12-25 14:46:34,393 - [SHAREHOLDERS] - INFO - 💾 [286/453] 7200: Saved 20 shareholders
+2025-12-25 14:46:48,494 - [SHAREHOLDERS] - INFO - ⚠️ [287/453] 7201: No shareholders
+2025-12-25 14:47:00,116 - [SHAREHOLDERS] - INFO - ✅ 7202: Found 2 shareholders
+2025-12-25 14:47:00,121 - [SHAREHOLDERS] - INFO - 💾 [288/453] 7202: Saved 2 shareholders
+2025-12-25 14:47:03,997 - [SHAREHOLDERS] - INFO - ✅ 7203: Found 1 shareholders
+2025-12-25 14:47:03,998 - [SHAREHOLDERS] - INFO - 💾 [289/453] 7203: Saved 1 shareholders
+2025-12-25 14:47:07,415 - [SHAREHOLDERS] - INFO - ✅ 7204: Found 13 shareholders
+2025-12-25 14:47:07,426 - [SHAREHOLDERS] - INFO - 💾 [290/453] 7204: Saved 13 shareholders
+2025-12-25 14:47:10,309 - [SHAREHOLDERS] - INFO - ✅ 7211: Found 2 shareholders
+2025-12-25 14:47:10,319 - [SHAREHOLDERS] - INFO - 💾 [291/453] 7211: Saved 2 shareholders
+2025-12-25 14:47:14,363 - [SHAREHOLDERS] - INFO - ✅ 8010: Found 12 shareholders
+2025-12-25 14:47:14,444 - [SHAREHOLDERS] - INFO - 💾 [292/453] 8010: Saved 12 shareholders
+2025-12-25 14:47:17,555 - [SHAREHOLDERS] - INFO - ✅ 8012: Found 20 shareholders
+2025-12-25 14:47:17,932 - [SHAREHOLDERS] - INFO - 💾 [293/453] 8012: Saved 20 shareholders
+2025-12-25 14:47:22,471 - [SHAREHOLDERS] - INFO - ⚠️ [294/453] 8020: No shareholders
+2025-12-25 14:47:29,011 - [SHAREHOLDERS] - INFO - ✅ 8030: Found 19 shareholders
+2025-12-25 14:47:29,315 - [SHAREHOLDERS] - INFO - 💾 [295/453] 8030: Saved 19 shareholders
+2025-12-25 14:47:34,085 - [SHAREHOLDERS] - INFO - ✅ 8040: Found 3 shareholders
+2025-12-25 14:47:34,090 - [SHAREHOLDERS] - INFO - 💾 [296/453] 8040: Saved 3 shareholders
+2025-12-25 14:47:37,585 - [SHAREHOLDERS] - INFO - ✅ 8050: Found 7 shareholders
+2025-12-25 14:47:37,594 - [SHAREHOLDERS] - INFO - 💾 [297/453] 8050: Saved 7 shareholders
+2025-12-25 14:47:42,921 - [SHAREHOLDERS] - INFO - ✅ 8060: Found 6 shareholders
+2025-12-25 14:47:42,924 - [SHAREHOLDERS] - INFO - 💾 [298/453] 8060: Saved 6 shareholders
+2025-12-25 14:47:48,354 - [SHAREHOLDERS] - INFO - ✅ 8070: Found 5 shareholders
+2025-12-25 14:47:48,388 - [SHAREHOLDERS] - INFO - 💾 [299/453] 8070: Saved 5 shareholders
+2025-12-25 14:47:54,783 - [SHAREHOLDERS] - INFO - ⚠️ [300/453] 8100: No shareholders
+2025-12-25 14:48:00,763 - [SHAREHOLDERS] - INFO - ✅ 8120: Found 20 shareholders
+2025-12-25 14:48:00,775 - [SHAREHOLDERS] - INFO - 💾 [301/453] 8120: Saved 20 shareholders
+2025-12-25 14:48:04,127 - [SHAREHOLDERS] - INFO - ✅ 8150: Found 17 shareholders
+2025-12-25 14:48:04,140 - [SHAREHOLDERS] - INFO - 💾 [302/453] 8150: Saved 17 shareholders
+2025-12-25 14:48:07,593 - [SHAREHOLDERS] - INFO - ✅ 8160: Found 20 shareholders
+2025-12-25 14:48:07,700 - [SHAREHOLDERS] - INFO - 💾 [303/453] 8160: Saved 20 shareholders
+2025-12-25 14:48:11,993 - [SHAREHOLDERS] - INFO - ✅ 8170: Found 4 shareholders
+2025-12-25 14:48:12,002 - [SHAREHOLDERS] - INFO - 💾 [304/453] 8170: Saved 4 shareholders
+2025-12-25 14:48:16,378 - [SHAREHOLDERS] - INFO - ✅ 8180: Found 2 shareholders
+2025-12-25 14:48:16,382 - [SHAREHOLDERS] - INFO - 💾 [305/453] 8180: Saved 2 shareholders
+2025-12-25 14:48:19,531 - [SHAREHOLDERS] - INFO - ✅ 8190: Found 6 shareholders
+2025-12-25 14:48:19,536 - [SHAREHOLDERS] - INFO - 💾 [306/453] 8190: Saved 6 shareholders
+2025-12-25 14:48:23,829 - [SHAREHOLDERS] - INFO - ✅ 8200: Found 2 shareholders
+2025-12-25 14:48:23,835 - [SHAREHOLDERS] - INFO - 💾 [307/453] 8200: Saved 2 shareholders
+2025-12-25 14:48:27,841 - [SHAREHOLDERS] - INFO - ✅ 8210: Found 7 shareholders
+2025-12-25 14:48:27,859 - [SHAREHOLDERS] - INFO - 💾 [308/453] 8210: Saved 7 shareholders
+2025-12-25 14:48:35,564 - [SHAREHOLDERS] - INFO - ✅ 8230: Found 2 shareholders
+2025-12-25 14:48:35,567 - [SHAREHOLDERS] - INFO - 💾 [309/453] 8230: Saved 2 shareholders
+2025-12-25 14:48:43,837 - [SHAREHOLDERS] - INFO - ✅ 8240: Found 5 shareholders
+2025-12-25 14:48:43,843 - [SHAREHOLDERS] - INFO - 💾 [310/453] 8240: Saved 5 shareholders
+2025-12-25 14:48:57,184 - [SHAREHOLDERS] - INFO - ✅ 8250: Found 6 shareholders
+2025-12-25 14:48:57,188 - [SHAREHOLDERS] - INFO - 💾 [311/453] 8250: Saved 6 shareholders
+2025-12-25 14:49:01,927 - [SHAREHOLDERS] - INFO - ✅ 8260: Found 7 shareholders
+2025-12-25 14:49:01,933 - [SHAREHOLDERS] - INFO - 💾 [312/453] 8260: Saved 7 shareholders
+2025-12-25 14:49:05,048 - [SHAREHOLDERS] - INFO - ✅ 8280: Found 9 shareholders
+2025-12-25 14:49:05,052 - [SHAREHOLDERS] - INFO - 💾 [313/453] 8280: Saved 9 shareholders
+2025-12-25 14:49:07,923 - [SHAREHOLDERS] - INFO - ✅ 8300: Found 9 shareholders
+2025-12-25 14:49:07,928 - [SHAREHOLDERS] - INFO - 💾 [314/453] 8300: Saved 9 shareholders
+2025-12-25 14:49:11,131 - [SHAREHOLDERS] - INFO - ✅ 8310: Found 7 shareholders
+2025-12-25 14:49:11,145 - [SHAREHOLDERS] - INFO - 💾 [315/453] 8310: Saved 7 shareholders
+2025-12-25 14:49:14,066 - [SHAREHOLDERS] - INFO - ✅ 8311: Found 20 shareholders
+2025-12-25 14:49:14,078 - [SHAREHOLDERS] - INFO - 💾 [316/453] 8311: Saved 20 shareholders
+2025-12-25 14:49:17,085 - [SHAREHOLDERS] - INFO - ✅ 8313: Found 8 shareholders
+2025-12-25 14:49:17,093 - [SHAREHOLDERS] - INFO - 💾 [317/453] 8313: Saved 8 shareholders
+2025-12-25 14:49:32,856 - [SHAREHOLDERS] - INFO - ✅ 9300: Found 14 shareholders
+2025-12-25 14:49:32,865 - [SHAREHOLDERS] - INFO - 💾 [318/453] 9300: Saved 14 shareholders
+2025-12-25 14:49:41,582 - [SHAREHOLDERS] - INFO - ⚠️ [319/453] 9403: No shareholders
+2025-12-25 14:49:56,766 - [SHAREHOLDERS] - INFO - ⚠️ [320/453] 9404: No shareholders
+2025-12-25 14:50:14,593 - [SHAREHOLDERS] - INFO - ⚠️ [321/453] 9405: No shareholders
+2025-12-25 14:50:22,985 - [SHAREHOLDERS] - INFO - ⚠️ [322/453] 9406: No shareholders
+2025-12-25 14:50:27,895 - [SHAREHOLDERS] - INFO - ⚠️ [323/453] 9407: No shareholders
+2025-12-25 14:50:31,033 - [SHAREHOLDERS] - INFO - ⚠️ [324/453] 9408: No shareholders
+2025-12-25 14:50:34,364 - [SHAREHOLDERS] - INFO - ⚠️ [325/453] 9409: No shareholders
+2025-12-25 14:50:37,969 - [SHAREHOLDERS] - INFO - ⚠️ [326/453] 9410: No shareholders
+2025-12-25 14:50:48,144 - [SHAREHOLDERS] - INFO - ⚠️ [327/453] 9411: No shareholders
+2025-12-25 14:50:56,814 - [SHAREHOLDERS] - INFO - ⚠️ [328/453] 9412: No shareholders
+2025-12-25 14:51:00,897 - [SHAREHOLDERS] - INFO - ✅ 9510: Found 20 shareholders
+2025-12-25 14:51:01,375 - [SHAREHOLDERS] - INFO - 💾 [329/453] 9510: Saved 20 shareholders
+2025-12-25 14:51:05,457 - [SHAREHOLDERS] - INFO - ✅ 9513: Found 20 shareholders
+2025-12-25 14:51:05,779 - [SHAREHOLDERS] - INFO - 💾 [330/453] 9513: Saved 20 shareholders
+2025-12-25 14:51:09,423 - [SHAREHOLDERS] - INFO - ✅ 9514: Found 20 shareholders
+2025-12-25 14:51:09,520 - [SHAREHOLDERS] - INFO - 💾 [331/453] 9514: Saved 20 shareholders
+2025-12-25 14:51:13,707 - [SHAREHOLDERS] - INFO - ✅ 9515: Found 20 shareholders
+2025-12-25 14:51:14,135 - [SHAREHOLDERS] - INFO - 💾 [332/453] 9515: Saved 20 shareholders
+2025-12-25 14:51:17,790 - [SHAREHOLDERS] - INFO - ✅ 9516: Found 16 shareholders
+2025-12-25 14:51:17,812 - [SHAREHOLDERS] - INFO - 💾 [333/453] 9516: Saved 16 shareholders
+2025-12-25 14:51:21,339 - [SHAREHOLDERS] - INFO - ✅ 9517: Found 20 shareholders
+2025-12-25 14:51:21,357 - [SHAREHOLDERS] - INFO - 💾 [334/453] 9517: Saved 20 shareholders
+2025-12-25 14:51:24,248 - [SHAREHOLDERS] - INFO - ✅ 9521: Found 20 shareholders
+2025-12-25 14:51:24,261 - [SHAREHOLDERS] - INFO - 💾 [335/453] 9521: Saved 20 shareholders
+2025-12-25 14:51:27,524 - [SHAREHOLDERS] - INFO - ✅ 9522: Found 3 shareholders
+2025-12-25 14:51:27,528 - [SHAREHOLDERS] - INFO - 💾 [336/453] 9522: Saved 3 shareholders
+2025-12-25 14:51:31,512 - [SHAREHOLDERS] - INFO - ✅ 9523: Found 13 shareholders
+2025-12-25 14:51:31,761 - [SHAREHOLDERS] - INFO - 💾 [337/453] 9523: Saved 13 shareholders
+2025-12-25 14:51:36,270 - [SHAREHOLDERS] - INFO - ✅ 9524: Found 5 shareholders
+2025-12-25 14:51:36,524 - [SHAREHOLDERS] - INFO - 💾 [338/453] 9524: Saved 5 shareholders
+2025-12-25 14:51:39,564 - [SHAREHOLDERS] - INFO - ✅ 9525: Found 20 shareholders
+2025-12-25 14:51:39,588 - [SHAREHOLDERS] - INFO - 💾 [339/453] 9525: Saved 20 shareholders
+2025-12-25 14:51:42,481 - [SHAREHOLDERS] - INFO - ✅ 9527: Found 17 shareholders
+2025-12-25 14:51:42,583 - [SHAREHOLDERS] - INFO - 💾 [340/453] 9527: Saved 17 shareholders
+2025-12-25 14:51:46,470 - [SHAREHOLDERS] - INFO - ✅ 9530: Found 1 shareholders
+2025-12-25 14:51:46,473 - [SHAREHOLDERS] - INFO - 💾 [341/453] 9530: Saved 1 shareholders
+2025-12-25 14:51:50,388 - [SHAREHOLDERS] - INFO - ✅ 9532: Found 16 shareholders
+2025-12-25 14:51:50,395 - [SHAREHOLDERS] - INFO - 💾 [342/453] 9532: Saved 16 shareholders
+2025-12-25 14:51:54,033 - [SHAREHOLDERS] - INFO - ⚠️ [343/453] 9533: No shareholders
+2025-12-25 14:51:57,138 - [SHAREHOLDERS] - INFO - ✅ 9535: Found 20 shareholders
+2025-12-25 14:51:57,147 - [SHAREHOLDERS] - INFO - 💾 [344/453] 9535: Saved 20 shareholders
+2025-12-25 14:52:01,283 - [SHAREHOLDERS] - INFO - ✅ 9536: Found 3 shareholders
+2025-12-25 14:52:01,314 - [SHAREHOLDERS] - INFO - 💾 [345/453] 9536: Saved 3 shareholders
+2025-12-25 14:52:04,645 - [SHAREHOLDERS] - INFO - ✅ 9537: Found 4 shareholders
+2025-12-25 14:52:04,651 - [SHAREHOLDERS] - INFO - 💾 [346/453] 9537: Saved 4 shareholders
+2025-12-25 14:52:08,603 - [SHAREHOLDERS] - INFO - ✅ 9538: Found 20 shareholders
+2025-12-25 14:52:08,615 - [SHAREHOLDERS] - INFO - 💾 [347/453] 9538: Saved 20 shareholders
+2025-12-25 14:52:11,742 - [SHAREHOLDERS] - INFO - ✅ 9539: Found 20 shareholders
+2025-12-25 14:52:11,749 - [SHAREHOLDERS] - INFO - 💾 [348/453] 9539: Saved 20 shareholders
+2025-12-25 14:52:14,585 - [SHAREHOLDERS] - INFO - ✅ 9540: Found 13 shareholders
+2025-12-25 14:52:14,599 - [SHAREHOLDERS] - INFO - 💾 [349/453] 9540: Saved 13 shareholders
+2025-12-25 14:52:17,451 - [SHAREHOLDERS] - INFO - ✅ 9541: Found 8 shareholders
+2025-12-25 14:52:17,457 - [SHAREHOLDERS] - INFO - 💾 [350/453] 9541: Saved 8 shareholders
+2025-12-25 14:52:20,392 - [SHAREHOLDERS] - INFO - ✅ 9542: Found 1 shareholders
+2025-12-25 14:52:20,394 - [SHAREHOLDERS] - INFO - 💾 [351/453] 9542: Saved 1 shareholders
+2025-12-25 14:52:23,254 - [SHAREHOLDERS] - INFO - ✅ 9543: Found 3 shareholders
+2025-12-25 14:52:23,257 - [SHAREHOLDERS] - INFO - 💾 [352/453] 9543: Saved 3 shareholders
+2025-12-25 14:52:26,258 - [SHAREHOLDERS] - INFO - ✅ 9544: Found 4 shareholders
+2025-12-25 14:52:26,271 - [SHAREHOLDERS] - INFO - 💾 [353/453] 9544: Saved 4 shareholders
+2025-12-25 14:52:29,207 - [SHAREHOLDERS] - INFO - ✅ 9545: Found 20 shareholders
+2025-12-25 14:52:29,216 - [SHAREHOLDERS] - INFO - 💾 [354/453] 9545: Saved 20 shareholders
+2025-12-25 14:52:32,480 - [SHAREHOLDERS] - INFO - ✅ 9546: Found 20 shareholders
+2025-12-25 14:52:32,499 - [SHAREHOLDERS] - INFO - 💾 [355/453] 9546: Saved 20 shareholders
+2025-12-25 14:52:35,347 - [SHAREHOLDERS] - INFO - ✅ 9547: Found 17 shareholders
+2025-12-25 14:52:35,359 - [SHAREHOLDERS] - INFO - 💾 [356/453] 9547: Saved 17 shareholders
+2025-12-25 14:52:38,543 - [SHAREHOLDERS] - INFO - ✅ 9548: Found 20 shareholders
+2025-12-25 14:52:38,551 - [SHAREHOLDERS] - INFO - 💾 [357/453] 9548: Saved 20 shareholders
+2025-12-25 14:52:44,411 - [SHAREHOLDERS] - INFO - ✅ 9549: Found 13 shareholders
+2025-12-25 14:52:44,493 - [SHAREHOLDERS] - INFO - 💾 [358/453] 9549: Saved 13 shareholders
+2025-12-25 14:52:50,096 - [SHAREHOLDERS] - INFO - ✅ 9550: Found 20 shareholders
+2025-12-25 14:52:50,132 - [SHAREHOLDERS] - INFO - 💾 [359/453] 9550: Saved 20 shareholders
+2025-12-25 14:52:54,483 - [SHAREHOLDERS] - INFO - ✅ 9551: Found 20 shareholders
+2025-12-25 14:52:54,494 - [SHAREHOLDERS] - INFO - 💾 [360/453] 9551: Saved 20 shareholders
+2025-12-25 14:52:58,755 - [SHAREHOLDERS] - INFO - ✅ 9552: Found 1 shareholders
+2025-12-25 14:52:58,757 - [SHAREHOLDERS] - INFO - 💾 [361/453] 9552: Saved 1 shareholders
+2025-12-25 14:53:03,030 - [SHAREHOLDERS] - INFO - ✅ 9553: Found 20 shareholders
+2025-12-25 14:53:03,038 - [SHAREHOLDERS] - INFO - 💾 [362/453] 9553: Saved 20 shareholders
+2025-12-25 14:53:07,077 - [SHAREHOLDERS] - INFO - ✅ 9555: Found 9 shareholders
+2025-12-25 14:53:07,102 - [SHAREHOLDERS] - INFO - 💾 [363/453] 9555: Saved 9 shareholders
+2025-12-25 14:53:10,794 - [SHAREHOLDERS] - INFO - ✅ 9556: Found 8 shareholders
+2025-12-25 14:53:10,838 - [SHAREHOLDERS] - INFO - 💾 [364/453] 9556: Saved 8 shareholders
+2025-12-25 14:53:13,746 - [SHAREHOLDERS] - INFO - ✅ 9557: Found 20 shareholders
+2025-12-25 14:53:13,759 - [SHAREHOLDERS] - INFO - 💾 [365/453] 9557: Saved 20 shareholders
+2025-12-25 14:53:16,787 - [SHAREHOLDERS] - INFO - ✅ 9558: Found 6 shareholders
+2025-12-25 14:53:16,824 - [SHAREHOLDERS] - INFO - 💾 [366/453] 9558: Saved 6 shareholders
+2025-12-25 14:53:20,168 - [SHAREHOLDERS] - INFO - ✅ 9559: Found 20 shareholders
+2025-12-25 14:53:20,182 - [SHAREHOLDERS] - INFO - 💾 [367/453] 9559: Saved 20 shareholders
+2025-12-25 14:53:23,784 - [SHAREHOLDERS] - INFO - ✅ 9560: Found 20 shareholders
+2025-12-25 14:53:23,792 - [SHAREHOLDERS] - INFO - 💾 [368/453] 9560: Saved 20 shareholders
+2025-12-25 14:53:26,782 - [SHAREHOLDERS] - INFO - ✅ 9561: Found 12 shareholders
+2025-12-25 14:53:26,792 - [SHAREHOLDERS] - INFO - 💾 [369/453] 9561: Saved 12 shareholders
+2025-12-25 14:53:29,669 - [SHAREHOLDERS] - INFO - ✅ 9562: Found 18 shareholders
+2025-12-25 14:53:29,680 - [SHAREHOLDERS] - INFO - 💾 [370/453] 9562: Saved 18 shareholders
+2025-12-25 14:53:32,831 - [SHAREHOLDERS] - INFO - ⚠️ [371/453] 9563: No shareholders
+2025-12-25 14:53:36,014 - [SHAREHOLDERS] - INFO - ✅ 9564: Found 12 shareholders
+2025-12-25 14:53:36,021 - [SHAREHOLDERS] - INFO - 💾 [372/453] 9564: Saved 12 shareholders
+2025-12-25 14:53:39,317 - [SHAREHOLDERS] - INFO - ✅ 9565: Found 15 shareholders
+2025-12-25 14:53:39,332 - [SHAREHOLDERS] - INFO - 💾 [373/453] 9565: Saved 15 shareholders
+2025-12-25 14:53:43,249 - [SHAREHOLDERS] - INFO - ✅ 9566: Found 8 shareholders
+2025-12-25 14:53:43,253 - [SHAREHOLDERS] - INFO - 💾 [374/453] 9566: Saved 8 shareholders
+2025-12-25 14:53:51,790 - [SHAREHOLDERS] - INFO - ⚠️ [375/453] 9567: No shareholders
+2025-12-25 14:54:00,949 - [SHAREHOLDERS] - INFO - ✅ 9568: Found 5 shareholders
+2025-12-25 14:54:00,955 - [SHAREHOLDERS] - INFO - 💾 [376/453] 9568: Saved 5 shareholders
+2025-12-25 14:54:06,265 - [SHAREHOLDERS] - INFO - ✅ 9569: Found 9 shareholders
+2025-12-25 14:54:06,269 - [SHAREHOLDERS] - INFO - 💾 [377/453] 9569: Saved 9 shareholders
+2025-12-25 14:54:09,478 - [SHAREHOLDERS] - INFO - ✅ 9570: Found 15 shareholders
+2025-12-25 14:54:09,490 - [SHAREHOLDERS] - INFO - 💾 [378/453] 9570: Saved 15 shareholders
+2025-12-25 14:54:12,321 - [SHAREHOLDERS] - INFO - ✅ 9571: Found 3 shareholders
+2025-12-25 14:54:12,324 - [SHAREHOLDERS] - INFO - 💾 [379/453] 9571: Saved 3 shareholders
+2025-12-25 14:54:15,238 - [SHAREHOLDERS] - INFO - ✅ 9572: Found 11 shareholders
+2025-12-25 14:54:15,243 - [SHAREHOLDERS] - INFO - 💾 [380/453] 9572: Saved 11 shareholders
+2025-12-25 14:54:18,531 - [SHAREHOLDERS] - INFO - ✅ 9574: Found 15 shareholders
+2025-12-25 14:54:18,538 - [SHAREHOLDERS] - INFO - 💾 [381/453] 9574: Saved 15 shareholders
+2025-12-25 14:54:21,519 - [SHAREHOLDERS] - INFO - ✅ 9575: Found 16 shareholders
+2025-12-25 14:54:21,525 - [SHAREHOLDERS] - INFO - 💾 [382/453] 9575: Saved 16 shareholders
+2025-12-25 14:54:24,374 - [SHAREHOLDERS] - INFO - ✅ 9576: Found 13 shareholders
+2025-12-25 14:54:24,382 - [SHAREHOLDERS] - INFO - 💾 [383/453] 9576: Saved 13 shareholders
+2025-12-25 14:54:27,248 - [SHAREHOLDERS] - INFO - ⚠️ [384/453] 9577: No shareholders
+2025-12-25 14:54:30,060 - [SHAREHOLDERS] - INFO - ✅ 9578: Found 15 shareholders
+2025-12-25 14:54:30,070 - [SHAREHOLDERS] - INFO - 💾 [385/453] 9578: Saved 15 shareholders
+2025-12-25 14:54:32,889 - [SHAREHOLDERS] - INFO - ✅ 9579: Found 20 shareholders
+2025-12-25 14:54:32,901 - [SHAREHOLDERS] - INFO - 💾 [386/453] 9579: Saved 20 shareholders
+2025-12-25 14:54:35,914 - [SHAREHOLDERS] - INFO - ⚠️ [387/453] 9580: No shareholders
+2025-12-25 14:54:39,425 - [SHAREHOLDERS] - INFO - ✅ 9581: Found 4 shareholders
+2025-12-25 14:54:39,429 - [SHAREHOLDERS] - INFO - 💾 [388/453] 9581: Saved 4 shareholders
+2025-12-25 14:54:42,283 - [SHAREHOLDERS] - INFO - ✅ 9583: Found 2 shareholders
+2025-12-25 14:54:42,286 - [SHAREHOLDERS] - INFO - 💾 [389/453] 9583: Saved 2 shareholders
+2025-12-25 14:54:45,186 - [SHAREHOLDERS] - INFO - ✅ 9584: Found 15 shareholders
+2025-12-25 14:54:45,202 - [SHAREHOLDERS] - INFO - 💾 [390/453] 9584: Saved 15 shareholders
+2025-12-25 14:54:48,417 - [SHAREHOLDERS] - INFO - ✅ 9585: Found 20 shareholders
+2025-12-25 14:54:48,432 - [SHAREHOLDERS] - INFO - 💾 [391/453] 9585: Saved 20 shareholders
+2025-12-25 14:54:51,445 - [SHAREHOLDERS] - INFO - ✅ 9586: Found 20 shareholders
+2025-12-25 14:54:51,460 - [SHAREHOLDERS] - INFO - 💾 [392/453] 9586: Saved 20 shareholders
+2025-12-25 14:54:54,444 - [SHAREHOLDERS] - INFO - ⚠️ [393/453] 9587: No shareholders
+2025-12-25 14:54:57,390 - [SHAREHOLDERS] - INFO - ✅ 9588: Found 20 shareholders
+2025-12-25 14:54:57,455 - [SHAREHOLDERS] - INFO - 💾 [394/453] 9588: Saved 20 shareholders
+2025-12-25 14:55:00,442 - [SHAREHOLDERS] - INFO - ✅ 9589: Found 4 shareholders
+2025-12-25 14:55:00,472 - [SHAREHOLDERS] - INFO - 💾 [395/453] 9589: Saved 4 shareholders
+2025-12-25 14:55:05,370 - [SHAREHOLDERS] - INFO - ✅ 9590: Found 20 shareholders
+2025-12-25 14:55:05,439 - [SHAREHOLDERS] - INFO - 💾 [396/453] 9590: Saved 20 shareholders
+2025-12-25 14:55:09,161 - [SHAREHOLDERS] - INFO - ✅ 9591: Found 2 shareholders
+2025-12-25 14:55:09,176 - [SHAREHOLDERS] - INFO - 💾 [397/453] 9591: Saved 2 shareholders
+2025-12-25 14:55:12,884 - [SHAREHOLDERS] - INFO - ✅ 9592: Found 20 shareholders
+2025-12-25 14:55:12,961 - [SHAREHOLDERS] - INFO - 💾 [398/453] 9592: Saved 20 shareholders
+2025-12-25 14:55:16,744 - [SHAREHOLDERS] - INFO - ⚠️ [399/453] 9593: No shareholders
+2025-12-25 14:55:19,723 - [SHAREHOLDERS] - INFO - ✅ 9594: Found 10 shareholders
+2025-12-25 14:55:19,909 - [SHAREHOLDERS] - INFO - 💾 [400/453] 9594: Saved 10 shareholders
+2025-12-25 14:55:23,037 - [SHAREHOLDERS] - INFO - ✅ 9595: Found 10 shareholders
+2025-12-25 14:55:23,043 - [SHAREHOLDERS] - INFO - 💾 [401/453] 9595: Saved 10 shareholders
+2025-12-25 14:55:26,099 - [SHAREHOLDERS] - INFO - ⚠️ [402/453] 9596: No shareholders
+2025-12-25 14:55:28,945 - [SHAREHOLDERS] - INFO - ⚠️ [403/453] 9597: No shareholders
+2025-12-25 14:55:31,978 - [SHAREHOLDERS] - INFO - ⚠️ [404/453] 9598: No shareholders
+2025-12-25 14:55:34,861 - [SHAREHOLDERS] - INFO - ✅ 9599: Found 2 shareholders
+2025-12-25 14:55:34,888 - [SHAREHOLDERS] - INFO - 💾 [405/453] 9599: Saved 2 shareholders
+2025-12-25 14:55:37,781 - [SHAREHOLDERS] - INFO - ✅ 9600: Found 15 shareholders
+2025-12-25 14:55:37,791 - [SHAREHOLDERS] - INFO - 💾 [406/453] 9600: Saved 15 shareholders
+2025-12-25 14:55:43,411 - [SHAREHOLDERS] - INFO - ✅ 9601: Found 8 shareholders
+2025-12-25 14:55:43,417 - [SHAREHOLDERS] - INFO - 💾 [407/453] 9601: Saved 8 shareholders
+2025-12-25 14:55:47,947 - [SHAREHOLDERS] - INFO - ✅ 9602: Found 13 shareholders
+2025-12-25 14:55:47,955 - [SHAREHOLDERS] - INFO - 💾 [408/453] 9602: Saved 13 shareholders
+2025-12-25 14:55:57,326 - [SHAREHOLDERS] - INFO - ✅ 9603: Found 1 shareholders
+2025-12-25 14:55:57,329 - [SHAREHOLDERS] - INFO - 💾 [409/453] 9603: Saved 1 shareholders
+2025-12-25 14:56:02,969 - [SHAREHOLDERS] - INFO - ✅ 9604: Found 20 shareholders
+2025-12-25 14:56:02,983 - [SHAREHOLDERS] - INFO - 💾 [410/453] 9604: Saved 20 shareholders
+2025-12-25 14:56:07,597 - [SHAREHOLDERS] - INFO - ✅ 9605: Found 8 shareholders
+2025-12-25 14:56:07,603 - [SHAREHOLDERS] - INFO - 💾 [411/453] 9605: Saved 8 shareholders
+2025-12-25 14:56:10,906 - [SHAREHOLDERS] - INFO - ✅ 9606: Found 4 shareholders
+2025-12-25 14:56:10,910 - [SHAREHOLDERS] - INFO - 💾 [412/453] 9606: Saved 4 shareholders
+2025-12-25 14:56:13,805 - [SHAREHOLDERS] - INFO - ✅ 9607: Found 20 shareholders
+2025-12-25 14:56:13,822 - [SHAREHOLDERS] - INFO - 💾 [413/453] 9607: Saved 20 shareholders
+2025-12-25 14:56:16,851 - [SHAREHOLDERS] - INFO - ✅ 9608: Found 1 shareholders
+2025-12-25 14:56:16,854 - [SHAREHOLDERS] - INFO - 💾 [414/453] 9608: Saved 1 shareholders
+2025-12-25 14:56:19,722 - [SHAREHOLDERS] - INFO - ✅ 9609: Found 3 shareholders
+2025-12-25 14:56:19,728 - [SHAREHOLDERS] - INFO - 💾 [415/453] 9609: Saved 3 shareholders
+2025-12-25 14:56:22,600 - [SHAREHOLDERS] - INFO - ✅ 9610: Found 17 shareholders
+2025-12-25 14:56:22,610 - [SHAREHOLDERS] - INFO - 💾 [416/453] 9610: Saved 17 shareholders
+2025-12-25 14:56:25,442 - [SHAREHOLDERS] - INFO - ✅ 9611: Found 15 shareholders
+2025-12-25 14:56:25,451 - [SHAREHOLDERS] - INFO - 💾 [417/453] 9611: Saved 15 shareholders
+2025-12-25 14:56:28,358 - [SHAREHOLDERS] - INFO - ✅ 9612: Found 2 shareholders
+2025-12-25 14:56:28,363 - [SHAREHOLDERS] - INFO - 💾 [418/453] 9612: Saved 2 shareholders
+2025-12-25 14:56:31,368 - [SHAREHOLDERS] - INFO - ✅ 9613: Found 20 shareholders
+2025-12-25 14:56:31,381 - [SHAREHOLDERS] - INFO - 💾 [419/453] 9613: Saved 20 shareholders
+2025-12-25 14:56:34,268 - [SHAREHOLDERS] - INFO - ✅ 9614: Found 20 shareholders
+2025-12-25 14:56:34,286 - [SHAREHOLDERS] - INFO - 💾 [420/453] 9614: Saved 20 shareholders
+2025-12-25 14:56:37,642 - [SHAREHOLDERS] - INFO - ✅ 9615: Found 4 shareholders
+2025-12-25 14:56:37,646 - [SHAREHOLDERS] - INFO - 💾 [421/453] 9615: Saved 4 shareholders
+2025-12-25 14:56:40,523 - [SHAREHOLDERS] - INFO - ✅ 9616: Found 2 shareholders
+2025-12-25 14:56:40,533 - [SHAREHOLDERS] - INFO - 💾 [422/453] 9616: Saved 2 shareholders
+2025-12-25 14:56:44,011 - [SHAREHOLDERS] - INFO - ✅ 9617: Found 2 shareholders
+2025-12-25 14:56:44,014 - [SHAREHOLDERS] - INFO - 💾 [423/453] 9617: Saved 2 shareholders
+2025-12-25 14:56:47,381 - [SHAREHOLDERS] - INFO - ✅ 9618: Found 2 shareholders
+2025-12-25 14:56:47,384 - [SHAREHOLDERS] - INFO - 💾 [424/453] 9618: Saved 2 shareholders
+2025-12-25 14:56:52,104 - [SHAREHOLDERS] - INFO - ✅ 9619: Found 5 shareholders
+2025-12-25 14:56:52,112 - [SHAREHOLDERS] - INFO - 💾 [425/453] 9619: Saved 5 shareholders
+2025-12-25 14:56:56,024 - [SHAREHOLDERS] - INFO - ✅ 9620: Found 14 shareholders
+2025-12-25 14:56:56,030 - [SHAREHOLDERS] - INFO - 💾 [426/453] 9620: Saved 14 shareholders
+2025-12-25 14:56:59,344 - [SHAREHOLDERS] - INFO - ✅ 9621: Found 20 shareholders
+2025-12-25 14:56:59,354 - [SHAREHOLDERS] - INFO - 💾 [427/453] 9621: Saved 20 shareholders
+2025-12-25 14:57:02,577 - [SHAREHOLDERS] - INFO - ✅ 9622: Found 17 shareholders
+2025-12-25 14:57:02,584 - [SHAREHOLDERS] - INFO - 💾 [428/453] 9622: Saved 17 shareholders
+2025-12-25 14:57:05,845 - [SHAREHOLDERS] - INFO - ⚠️ [429/453] 9623: No shareholders
+2025-12-25 14:57:08,767 - [SHAREHOLDERS] - INFO - ✅ 9624: Found 1 shareholders
+2025-12-25 14:57:08,769 - [SHAREHOLDERS] - INFO - 💾 [430/453] 9624: Saved 1 shareholders
+2025-12-25 14:57:11,803 - [SHAREHOLDERS] - INFO - ✅ 9625: Found 20 shareholders
+2025-12-25 14:57:11,813 - [SHAREHOLDERS] - INFO - 💾 [431/453] 9625: Saved 20 shareholders
+2025-12-25 14:57:14,707 - [SHAREHOLDERS] - INFO - ✅ 9626: Found 13 shareholders
+2025-12-25 14:57:14,723 - [SHAREHOLDERS] - INFO - 💾 [432/453] 9626: Saved 13 shareholders
+2025-12-25 14:57:18,450 - [SHAREHOLDERS] - INFO - ✅ 9627: Found 6 shareholders
+2025-12-25 14:57:18,455 - [SHAREHOLDERS] - INFO - 💾 [433/453] 9627: Saved 6 shareholders
+2025-12-25 14:57:21,505 - [SHAREHOLDERS] - INFO - ✅ 9628: Found 10 shareholders
+2025-12-25 14:57:21,514 - [SHAREHOLDERS] - INFO - 💾 [434/453] 9628: Saved 10 shareholders
+2025-12-25 14:57:25,026 - [SHAREHOLDERS] - INFO - ✅ 9630: Found 17 shareholders
+2025-12-25 14:57:25,041 - [SHAREHOLDERS] - INFO - 💾 [435/453] 9630: Saved 17 shareholders
+2025-12-25 14:57:28,000 - [SHAREHOLDERS] - INFO - ✅ 9631: Found 10 shareholders
+2025-12-25 14:57:28,019 - [SHAREHOLDERS] - INFO - 💾 [436/453] 9631: Saved 10 shareholders
+2025-12-25 14:57:31,810 - [SHAREHOLDERS] - INFO - ✅ 9632: Found 2 shareholders
+2025-12-25 14:57:31,813 - [SHAREHOLDERS] - INFO - 💾 [437/453] 9632: Saved 2 shareholders
+2025-12-25 14:57:35,278 - [SHAREHOLDERS] - INFO - ⚠️ [438/453] 9633: No shareholders
+2025-12-25 14:57:38,865 - [SHAREHOLDERS] - INFO - ⚠️ [439/453] 9634: No shareholders
+2025-12-25 14:57:42,552 - [SHAREHOLDERS] - INFO - ⚠️ [440/453] 9635: No shareholders
+2025-12-25 14:57:45,723 - [SHAREHOLDERS] - INFO - ⚠️ [441/453] 9636: No shareholders
+2025-12-25 14:57:49,406 - [SHAREHOLDERS] - INFO - ✅ 9637: Found 4 shareholders
+2025-12-25 14:57:49,409 - [SHAREHOLDERS] - INFO - 💾 [442/453] 9637: Saved 4 shareholders
+2025-12-25 14:57:53,200 - [SHAREHOLDERS] - INFO - ✅ 9639: Found 8 shareholders
+2025-12-25 14:57:53,242 - [SHAREHOLDERS] - INFO - 💾 [443/453] 9639: Saved 8 shareholders
+2025-12-25 14:58:02,177 - [SHAREHOLDERS] - INFO - ⚠️ [444/453] 9640: No shareholders
+2025-12-25 14:58:09,281 - [SHAREHOLDERS] - INFO - ✅ 9641: Found 6 shareholders
+2025-12-25 14:58:09,293 - [SHAREHOLDERS] - INFO - 💾 [445/453] 9641: Saved 6 shareholders
+2025-12-25 14:58:13,234 - [SHAREHOLDERS] - INFO - ⚠️ [446/453] 9642: No shareholders
+2025-12-25 14:58:16,661 - [SHAREHOLDERS] - INFO - ⚠️ [447/453] 9644: No shareholders
+2025-12-25 14:58:19,515 - [SHAREHOLDERS] - INFO - ✅ 9645: Found 1 shareholders
+2025-12-25 14:58:19,525 - [SHAREHOLDERS] - INFO - 💾 [448/453] 9645: Saved 1 shareholders
+2025-12-25 14:58:22,435 - [SHAREHOLDERS] - INFO - ⚠️ [449/453] 9647: No shareholders
+2025-12-25 14:58:27,684 - [SHAREHOLDERS] - INFO - ✅ 9648: Found 3 shareholders
+2025-12-25 14:58:27,689 - [SHAREHOLDERS] - INFO - 💾 [450/453] 9648: Saved 3 shareholders
+2025-12-25 14:58:30,790 - [SHAREHOLDERS] - INFO - ✅ 9649: Found 1 shareholders
+2025-12-25 14:58:30,793 - [SHAREHOLDERS] - INFO - 💾 [451/453] 9649: Saved 1 shareholders
+2025-12-25 14:58:33,811 - [SHAREHOLDERS] - INFO - ✅ 9650: Found 5 shareholders
+2025-12-25 14:58:33,816 - [SHAREHOLDERS] - INFO - 💾 [452/453] 9650: Saved 5 shareholders
+2025-12-25 14:58:36,863 - [SHAREHOLDERS] - INFO - ⚠️ [453/453] 9651: No shareholders
+2025-12-25 14:58:38,018 - [SHAREHOLDERS] - INFO - 🎉 Complete! Total shareholders: 3969

@@ -1,0 +1,1851 @@
+2025-12-25 13:08:11,475 - [PROD_STOCK] - INFO - 🎯 Targeting 453 stocks with 5 parallel workers
+2025-12-25 13:08:12,531 - [PROD_STOCK] - INFO - Processing 9651...
+2025-12-25 13:08:12,536 - [PROD_STOCK] - INFO - Processing 4021...
+2025-12-25 13:08:12,537 - [PROD_STOCK] - INFO - Processing 8250...
+2025-12-25 13:08:12,539 - [PROD_STOCK] - INFO - Processing 1183...
+2025-12-25 13:08:12,539 - [PROD_STOCK] - INFO - Processing 2010...
+2025-12-25 13:08:35,086 - [PROD_STOCK] - INFO - ✅ 9651: 58 intraday points
+2025-12-25 13:08:35,127 - [PROD_STOCK] - INFO - 💾 9651: Saved 58 intraday rows
+2025-12-25 13:08:36,590 - [PROD_STOCK] - INFO - ✅ 4021: 301 intraday points
+2025-12-25 13:08:36,605 - [PROD_STOCK] - INFO - 💾 4021: Saved 301 intraday rows
+2025-12-25 13:08:36,660 - [PROD_STOCK] - INFO - ✅ 8250: 72 intraday points
+2025-12-25 13:08:36,673 - [PROD_STOCK] - INFO - 💾 8250: Saved 72 intraday rows
+2025-12-25 13:08:37,513 - [PROD_STOCK] - INFO - Processing 9583...
+2025-12-25 13:08:39,158 - [PROD_STOCK] - INFO - Processing 1303...
+2025-12-25 13:08:39,499 - [PROD_STOCK] - INFO - Processing 9576...
+2025-12-25 13:08:39,774 - [PROD_STOCK] - INFO - ✅ 1183: 100 intraday points
+2025-12-25 13:08:39,774 - [PROD_STOCK] - INFO - ✅ 1183: 0 historical points
+2025-12-25 13:08:39,783 - [PROD_STOCK] - INFO - 💾 1183: Saved 100 intraday rows
+2025-12-25 13:08:40,182 - [PROD_STOCK] - INFO - ✅ 2010: 309 intraday points
+2025-12-25 13:08:40,214 - [PROD_STOCK] - ERROR - DB Error (intraday) 2010: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2010, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:08:41,952 - [PROD_STOCK] - INFO - Processing 9542...
+2025-12-25 13:08:42,887 - [PROD_STOCK] - INFO - Processing 9551...
+2025-12-25 13:08:57,434 - [PROD_STOCK] - INFO - ✅ 9583: 1 intraday points
+2025-12-25 13:08:57,434 - [PROD_STOCK] - INFO - ✅ 9583: 0 historical points
+2025-12-25 13:08:57,446 - [PROD_STOCK] - INFO - 💾 9583: Saved 1 intraday rows
+2025-12-25 13:08:58,684 - [PROD_STOCK] - INFO - ✅ 9576: 2 intraday points
+2025-12-25 13:08:58,684 - [PROD_STOCK] - INFO - ✅ 9576: 0 historical points
+2025-12-25 13:08:58,694 - [PROD_STOCK] - INFO - 💾 9576: Saved 2 intraday rows
+2025-12-25 13:08:58,917 - [PROD_STOCK] - INFO - ✅ 1303: 299 intraday points
+2025-12-25 13:08:58,917 - [PROD_STOCK] - INFO - ✅ 1303: 0 historical points
+2025-12-25 13:08:58,939 - [PROD_STOCK] - ERROR - DB Error (intraday) 1303: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1303, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:08:59,711 - [PROD_STOCK] - INFO - Processing 1810...
+2025-12-25 13:09:00,211 - [PROD_STOCK] - INFO - ✅ 9542: 10 intraday points
+2025-12-25 13:09:00,222 - [PROD_STOCK] - INFO - 💾 9542: Saved 10 intraday rows
+2025-12-25 13:09:00,638 - [PROD_STOCK] - INFO - ✅ 9551: 14 intraday points
+2025-12-25 13:09:00,638 - [PROD_STOCK] - INFO - ✅ 9551: 0 historical points
+2025-12-25 13:09:00,646 - [PROD_STOCK] - INFO - 💾 9551: Saved 14 intraday rows
+2025-12-25 13:09:01,390 - [PROD_STOCK] - INFO - Processing 8300...
+2025-12-25 13:09:01,486 - [PROD_STOCK] - INFO - Processing 9538...
+2025-12-25 13:09:02,062 - [PROD_STOCK] - INFO - Processing 9612...
+2025-12-25 13:09:03,278 - [PROD_STOCK] - INFO - Processing 9404...
+2025-12-25 13:09:05,431 - [PROD_STOCK] - INFO - ✅ 1810: 185 intraday points
+2025-12-25 13:09:05,431 - [PROD_STOCK] - INFO - ✅ 1810: 0 historical points
+2025-12-25 13:09:05,444 - [PROD_STOCK] - ERROR - DB Error (intraday) 1810: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1810, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:09:06,946 - [PROD_STOCK] - INFO - Processing 4230...
+2025-12-25 13:09:09,803 - [PROD_STOCK] - INFO - ✅ 8300: 117 intraday points
+2025-12-25 13:09:09,804 - [PROD_STOCK] - INFO - ✅ 8300: 0 historical points
+2025-12-25 13:09:09,817 - [PROD_STOCK] - INFO - 💾 8300: Saved 117 intraday rows
+2025-12-25 13:09:09,988 - [PROD_STOCK] - INFO - ✅ 9538: 4 intraday points
+2025-12-25 13:09:09,988 - [PROD_STOCK] - INFO - ✅ 9538: 0 historical points
+2025-12-25 13:09:10,022 - [PROD_STOCK] - INFO - 💾 9538: Saved 4 intraday rows
+2025-12-25 13:09:11,117 - [PROD_STOCK] - INFO - ✅ 9612: 5 intraday points
+2025-12-25 13:09:11,117 - [PROD_STOCK] - INFO - ✅ 9612: 0 historical points
+2025-12-25 13:09:11,128 - [PROD_STOCK] - INFO - 💾 9612: Saved 5 intraday rows
+2025-12-25 13:09:11,802 - [PROD_STOCK] - INFO - ✅ 9404: 9 intraday points
+2025-12-25 13:09:11,803 - [PROD_STOCK] - INFO - ✅ 9404: 0 historical points
+2025-12-25 13:09:11,822 - [PROD_STOCK] - INFO - 💾 9404: Saved 9 intraday rows
+2025-12-25 13:09:11,956 - [PROD_STOCK] - INFO - Processing 6050...
+2025-12-25 13:09:12,728 - [PROD_STOCK] - INFO - Processing 4084...
+2025-12-25 13:09:12,801 - [PROD_STOCK] - INFO - Processing 4061...
+2025-12-25 13:09:13,006 - [PROD_STOCK] - INFO - Processing 4142...
+2025-12-25 13:09:14,863 - [PROD_STOCK] - INFO - ✅ 4230: 173 intraday points
+2025-12-25 13:09:14,863 - [PROD_STOCK] - INFO - ✅ 4230: 0 historical points
+2025-12-25 13:09:14,936 - [PROD_STOCK] - ERROR - DB Error (intraday) 4230: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4230, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:09:16,797 - [PROD_STOCK] - INFO - Processing 9596...
+2025-12-25 13:09:18,001 - [PROD_STOCK] - INFO - ✅ 6050: 145 intraday points
+2025-12-25 13:09:18,001 - [PROD_STOCK] - INFO - ✅ 6050: 0 historical points
+2025-12-25 13:09:18,018 - [PROD_STOCK] - INFO - 💾 6050: Saved 145 intraday rows
+2025-12-25 13:09:19,110 - [PROD_STOCK] - INFO - ✅ 4084: 193 intraday points
+2025-12-25 13:09:19,110 - [PROD_STOCK] - INFO - ✅ 4084: 0 historical points
+2025-12-25 13:09:19,173 - [PROD_STOCK] - INFO - 💾 4084: Saved 193 intraday rows
+2025-12-25 13:09:19,321 - [PROD_STOCK] - INFO - ✅ 4142: 240 intraday points
+2025-12-25 13:09:19,321 - [PROD_STOCK] - INFO - ✅ 4142: 0 historical points
+2025-12-25 13:09:19,342 - [PROD_STOCK] - INFO - 💾 4142: Saved 240 intraday rows
+2025-12-25 13:09:19,618 - [PROD_STOCK] - INFO - ✅ 4061: 178 intraday points
+2025-12-25 13:09:19,619 - [PROD_STOCK] - INFO - ✅ 4061: 0 historical points
+2025-12-25 13:09:19,642 - [PROD_STOCK] - INFO - 💾 4061: Saved 178 intraday rows
+2025-12-25 13:09:20,819 - [PROD_STOCK] - INFO - Processing 2060...
+2025-12-25 13:09:20,897 - [PROD_STOCK] - INFO - Processing 4260...
+2025-12-25 13:09:20,942 - [PROD_STOCK] - INFO - Processing 2190...
+2025-12-25 13:09:21,380 - [PROD_STOCK] - INFO - Processing 4018...
+2025-12-25 13:09:23,281 - [PROD_STOCK] - INFO - ✅ 9596: 4 intraday points
+2025-12-25 13:09:23,282 - [PROD_STOCK] - INFO - ✅ 9596: 0 historical points
+2025-12-25 13:09:23,310 - [PROD_STOCK] - INFO - 💾 9596: Saved 4 intraday rows
+2025-12-25 13:09:26,036 - [PROD_STOCK] - INFO - Processing 4335...
+2025-12-25 13:09:26,623 - [PROD_STOCK] - INFO - ✅ 2060: 227 intraday points
+2025-12-25 13:09:26,624 - [PROD_STOCK] - INFO - ✅ 2060: 0 historical points
+2025-12-25 13:09:26,640 - [PROD_STOCK] - INFO - 💾 2060: Saved 227 intraday rows
+2025-12-25 13:09:27,264 - [PROD_STOCK] - INFO - ✅ 4260: 173 intraday points
+2025-12-25 13:09:27,265 - [PROD_STOCK] - INFO - ✅ 4260: 0 historical points
+2025-12-25 13:09:27,290 - [PROD_STOCK] - INFO - ✅ 2190: 176 intraday points
+2025-12-25 13:09:27,291 - [PROD_STOCK] - INFO - ✅ 2190: 0 historical points
+2025-12-25 13:09:27,304 - [PROD_STOCK] - INFO - 💾 4260: Saved 173 intraday rows
+2025-12-25 13:09:27,309 - [PROD_STOCK] - INFO - 💾 2190: Saved 176 intraday rows
+2025-12-25 13:09:28,338 - [PROD_STOCK] - INFO - Processing 4192...
+2025-12-25 13:09:28,496 - [PROD_STOCK] - INFO - Processing 2240...
+2025-12-25 13:09:28,614 - [PROD_STOCK] - INFO - ✅ 4018: 127 intraday points
+2025-12-25 13:09:28,615 - [PROD_STOCK] - INFO - ✅ 4018: 0 historical points
+2025-12-25 13:09:28,647 - [PROD_STOCK] - INFO - 💾 4018: Saved 127 intraday rows
+2025-12-25 13:09:29,642 - [PROD_STOCK] - INFO - Processing 4190...
+2025-12-25 13:09:31,250 - [PROD_STOCK] - INFO - Processing 4337...
+2025-12-25 13:09:32,322 - [PROD_STOCK] - INFO - ✅ 4335: 35 intraday points
+2025-12-25 13:09:32,322 - [PROD_STOCK] - INFO - ✅ 4335: 0 historical points
+2025-12-25 13:09:32,331 - [PROD_STOCK] - INFO - 💾 4335: Saved 35 intraday rows
+2025-12-25 13:09:35,303 - [PROD_STOCK] - INFO - Processing 5308...
+2025-12-25 13:09:38,212 - [PROD_STOCK] - INFO - ✅ 4192: 98 intraday points
+2025-12-25 13:09:38,212 - [PROD_STOCK] - INFO - ✅ 4192: 0 historical points
+2025-12-25 13:09:38,246 - [PROD_STOCK] - INFO - 💾 4192: Saved 98 intraday rows
+2025-12-25 13:09:38,707 - [PROD_STOCK] - INFO - ✅ 4190: 282 intraday points
+2025-12-25 13:09:38,707 - [PROD_STOCK] - INFO - ✅ 4190: 0 historical points
+2025-12-25 13:09:38,723 - [PROD_STOCK] - ERROR - DB Error (intraday) 4190: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4190, 2025-12-22 09:25:00+02) already exists.
+2025-12-25 13:09:39,168 - [PROD_STOCK] - INFO - ✅ 4337: 54 intraday points
+2025-12-25 13:09:39,168 - [PROD_STOCK] - INFO - ✅ 4337: 0 historical points
+2025-12-25 13:09:39,177 - [PROD_STOCK] - INFO - 💾 4337: Saved 54 intraday rows
+2025-12-25 13:09:40,836 - [PROD_STOCK] - INFO - Processing 2130...
+2025-12-25 13:09:40,851 - [PROD_STOCK] - INFO - Processing 9609...
+2025-12-25 13:09:41,309 - [PROD_STOCK] - INFO - Processing 4310...
+2025-12-25 13:09:41,800 - [PROD_STOCK] - INFO - ✅ 2240: 271 intraday points
+2025-12-25 13:09:41,814 - [PROD_STOCK] - ERROR - DB Error (intraday) 2240: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2240, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:09:44,035 - [PROD_STOCK] - INFO - Processing 5254...
+2025-12-25 13:09:58,344 - [PROD_STOCK] - INFO - ✅ 9609: 9 intraday points
+2025-12-25 13:09:58,348 - [PROD_STOCK] - INFO - ✅ 4310: 159 intraday points
+2025-12-25 13:09:58,360 - [PROD_STOCK] - INFO - 💾 9609: Saved 9 intraday rows
+2025-12-25 13:09:58,361 - [PROD_STOCK] - ERROR - DB Error (intraday) 4310: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4310, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:09:58,697 - [PROD_STOCK] - INFO - ✅ 2130: 209 intraday points
+2025-12-25 13:09:58,708 - [PROD_STOCK] - INFO - 💾 2130: Saved 209 intraday rows
+2025-12-25 13:10:00,432 - [PROD_STOCK] - WARNING - ⚠️ 5308: No charts found (might be invalid ticker)
+2025-12-25 13:10:00,446 - [PROD_STOCK] - WARNING - Attempt 1: 5308 returned no data
+2025-12-25 13:10:00,705 - [PROD_STOCK] - INFO - Processing 4339...
+2025-12-25 13:10:00,868 - [PROD_STOCK] - INFO - Processing 4300...
+2025-12-25 13:10:01,599 - [PROD_STOCK] - INFO - Processing 4014...
+2025-12-25 13:10:03,315 - [PROD_STOCK] - INFO - Processing 5308...
+2025-12-25 13:10:15,226 - [PROD_STOCK] - INFO - ✅ 5254: 1 intraday points
+2025-12-25 13:10:15,242 - [PROD_STOCK] - INFO - 💾 5254: Saved 1 intraday rows
+2025-12-25 13:10:16,695 - [PROD_STOCK] - INFO - Processing 5303...
+2025-12-25 13:10:37,246 - [PROD_STOCK] - ERROR - ❌ 4300: Page.goto: net::ERR_TIMED_OUT at https://www.mubasher.info/markets/TDWL/stocks/4300
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4300", waiting until "domcontentloaded"
+
+2025-12-25 13:10:37,253 - [PROD_STOCK] - WARNING - Attempt 1: 4300 returned no data
+2025-12-25 13:10:40,017 - [PROD_STOCK] - INFO - Processing 4300...
+2025-12-25 13:10:57,026 - [PROD_STOCK] - WARNING - ⚠️ 5303: No charts found (might be invalid ticker)
+2025-12-25 13:10:57,054 - [PROD_STOCK] - WARNING - Attempt 1: 5303 returned no data
+2025-12-25 13:11:00,199 - [PROD_STOCK] - INFO - Processing 5303...
+2025-12-25 13:11:00,709 - [PROD_STOCK] - ERROR - ❌ 4339: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/4339", waiting until "domcontentloaded"
+
+2025-12-25 13:11:00,718 - [PROD_STOCK] - WARNING - Attempt 1: 4339 returned no data
+2025-12-25 13:11:03,386 - [PROD_STOCK] - ERROR - ❌ 5308: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/5308", waiting until "domcontentloaded"
+
+2025-12-25 13:11:03,404 - [PROD_STOCK] - WARNING - Attempt 2: 5308 returned no data
+2025-12-25 13:11:04,214 - [PROD_STOCK] - INFO - Processing 4339...
+2025-12-25 13:11:06,570 - [PROD_STOCK] - INFO - ✅ 4014: 88 intraday points
+2025-12-25 13:11:06,571 - [PROD_STOCK] - INFO - ✅ 4014: 0 historical points
+2025-12-25 13:11:06,620 - [PROD_STOCK] - INFO - 💾 4014: Saved 88 intraday rows
+2025-12-25 13:11:06,744 - [PROD_STOCK] - ERROR - ❌ Failed 5308 after retries
+2025-12-25 13:11:08,519 - [PROD_STOCK] - INFO - Processing 9514...
+2025-12-25 13:11:08,904 - [PROD_STOCK] - INFO - Processing 2220...
+2025-12-25 13:11:33,796 - [PROD_STOCK] - INFO - ✅ 4339: 82 intraday points
+2025-12-25 13:11:33,814 - [PROD_STOCK] - INFO - 💾 4339: Saved 82 intraday rows
+2025-12-25 13:11:36,534 - [PROD_STOCK] - INFO - Processing 9633...
+2025-12-25 13:11:46,271 - [PROD_STOCK] - INFO - ✅ 9514: 24 intraday points
+2025-12-25 13:11:46,273 - [PROD_STOCK] - INFO - ✅ 9514: 0 historical points
+2025-12-25 13:11:46,351 - [PROD_STOCK] - INFO - 💾 9514: Saved 24 intraday rows
+2025-12-25 13:11:47,076 - [PROD_STOCK] - INFO - ✅ 2220: 134 intraday points
+2025-12-25 13:11:47,122 - [PROD_STOCK] - INFO - 💾 2220: Saved 134 intraday rows
+2025-12-25 13:11:47,267 - [PROD_STOCK] - WARNING - ⚠️ 4300: No charts found (might be invalid ticker)
+2025-12-25 13:11:47,284 - [PROD_STOCK] - WARNING - Attempt 2: 4300 returned no data
+2025-12-25 13:11:48,673 - [PROD_STOCK] - INFO - Processing 5343...
+2025-12-25 13:11:49,454 - [PROD_STOCK] - INFO - Processing 4004...
+2025-12-25 13:11:51,095 - [PROD_STOCK] - ERROR - ❌ Failed 4300 after retries
+2025-12-25 13:11:51,706 - [PROD_STOCK] - INFO - ✅ 9633: 4 intraday points
+2025-12-25 13:11:51,706 - [PROD_STOCK] - INFO - ✅ 9633: 0 historical points
+2025-12-25 13:11:51,819 - [PROD_STOCK] - INFO - 💾 9633: Saved 4 intraday rows
+2025-12-25 13:11:52,188 - [PROD_STOCK] - INFO - Processing 9597...
+2025-12-25 13:11:54,612 - [PROD_STOCK] - INFO - Processing 9544...
+2025-12-25 13:11:57,264 - [PROD_STOCK] - WARNING - ⚠️ 5303: No charts found (might be invalid ticker)
+2025-12-25 13:11:57,471 - [PROD_STOCK] - INFO - ✅ 5343: 1 intraday points
+2025-12-25 13:11:57,471 - [PROD_STOCK] - INFO - ✅ 5343: 0 historical points
+2025-12-25 13:11:57,479 - [PROD_STOCK] - WARNING - Attempt 2: 5303 returned no data
+2025-12-25 13:11:57,540 - [PROD_STOCK] - INFO - 💾 5343: Saved 1 intraday rows
+2025-12-25 13:11:59,645 - [PROD_STOCK] - INFO - Processing 9628...
+2025-12-25 13:11:59,998 - [PROD_STOCK] - INFO - ✅ 4004: 265 intraday points
+2025-12-25 13:11:59,999 - [PROD_STOCK] - INFO - ✅ 4004: 0 historical points
+2025-12-25 13:12:00,047 - [PROD_STOCK] - INFO - 💾 4004: Saved 265 intraday rows
+2025-12-25 13:12:01,412 - [PROD_STOCK] - ERROR - ❌ Failed 5303 after retries
+2025-12-25 13:12:01,584 - [PROD_STOCK] - INFO - ✅ 9597: 3 intraday points
+2025-12-25 13:12:01,585 - [PROD_STOCK] - INFO - ✅ 9597: 0 historical points
+2025-12-25 13:12:01,644 - [PROD_STOCK] - INFO - 💾 9597: Saved 3 intraday rows
+2025-12-25 13:12:01,926 - [PROD_STOCK] - INFO - Processing 2090...
+2025-12-25 13:12:03,092 - [PROD_STOCK] - INFO - ✅ 9544: 113 intraday points
+2025-12-25 13:12:03,092 - [PROD_STOCK] - INFO - ✅ 9544: 0 historical points
+2025-12-25 13:12:03,194 - [PROD_STOCK] - INFO - 💾 9544: Saved 113 intraday rows
+2025-12-25 13:12:04,078 - [PROD_STOCK] - INFO - Processing 6012...
+2025-12-25 13:12:05,000 - [PROD_STOCK] - INFO - Processing 4702...
+2025-12-25 13:12:05,800 - [PROD_STOCK] - INFO - Processing 2200...
+2025-12-25 13:12:07,641 - [PROD_STOCK] - INFO - ✅ 9628: 5 intraday points
+2025-12-25 13:12:07,651 - [PROD_STOCK] - INFO - ✅ 9628: 0 historical points
+2025-12-25 13:12:08,979 - [PROD_STOCK] - INFO - 💾 9628: Saved 5 intraday rows
+2025-12-25 13:12:10,113 - [PROD_STOCK] - INFO - ✅ 2090: 126 intraday points
+2025-12-25 13:12:10,115 - [PROD_STOCK] - INFO - ✅ 2090: 0 historical points
+2025-12-25 13:12:10,144 - [PROD_STOCK] - INFO - 💾 2090: Saved 126 intraday rows
+2025-12-25 13:12:11,013 - [PROD_STOCK] - INFO - Processing 6018...
+2025-12-25 13:12:11,801 - [PROD_STOCK] - INFO - Processing 2140...
+2025-12-25 13:12:13,952 - [PROD_STOCK] - INFO - ✅ 6012: 114 intraday points
+2025-12-25 13:12:13,953 - [PROD_STOCK] - INFO - ✅ 6012: 0 historical points
+2025-12-25 13:12:14,134 - [PROD_STOCK] - INFO - 💾 6012: Saved 114 intraday rows
+2025-12-25 13:12:15,536 - [PROD_STOCK] - INFO - ✅ 4702: 34 intraday points
+2025-12-25 13:12:15,538 - [PROD_STOCK] - INFO - ✅ 4702: 0 historical points
+2025-12-25 13:12:15,632 - [PROD_STOCK] - INFO - 💾 4702: Saved 34 intraday rows
+2025-12-25 13:12:16,026 - [PROD_STOCK] - INFO - Processing 9516...
+2025-12-25 13:12:17,026 - [PROD_STOCK] - INFO - ✅ 2200: 222 intraday points
+2025-12-25 13:12:17,028 - [PROD_STOCK] - INFO - ✅ 2200: 0 historical points
+2025-12-25 13:12:17,074 - [PROD_STOCK] - INFO - 💾 2200: Saved 222 intraday rows
+2025-12-25 13:12:18,623 - [PROD_STOCK] - INFO - Processing 9407...
+2025-12-25 13:12:18,691 - [PROD_STOCK] - INFO - Processing 2300...
+2025-12-25 13:12:20,125 - [PROD_STOCK] - INFO - ✅ 6018: 257 intraday points
+2025-12-25 13:12:20,126 - [PROD_STOCK] - INFO - ✅ 6018: 0 historical points
+2025-12-25 13:12:20,146 - [PROD_STOCK] - INFO - 💾 6018: Saved 257 intraday rows
+2025-12-25 13:12:22,144 - [PROD_STOCK] - INFO - Processing 2284...
+2025-12-25 13:12:22,346 - [PROD_STOCK] - INFO - ✅ 2140: 136 intraday points
+2025-12-25 13:12:22,347 - [PROD_STOCK] - INFO - ✅ 2140: 0 historical points
+2025-12-25 13:12:22,372 - [PROD_STOCK] - INFO - 💾 2140: Saved 136 intraday rows
+2025-12-25 13:12:23,579 - [PROD_STOCK] - INFO - Processing 2270...
+2025-12-25 13:12:27,895 - [PROD_STOCK] - INFO - ✅ 9516: 1 intraday points
+2025-12-25 13:12:27,899 - [PROD_STOCK] - INFO - ✅ 9516: 0 historical points
+2025-12-25 13:12:27,952 - [PROD_STOCK] - INFO - 💾 9516: Saved 1 intraday rows
+2025-12-25 13:12:30,012 - [PROD_STOCK] - INFO - ✅ 9407: 23 intraday points
+2025-12-25 13:12:30,013 - [PROD_STOCK] - INFO - ✅ 9407: 0 historical points
+2025-12-25 13:12:30,052 - [PROD_STOCK] - INFO - 💾 9407: Saved 23 intraday rows
+2025-12-25 13:12:30,284 - [PROD_STOCK] - INFO - Processing 4100...
+2025-12-25 13:12:31,631 - [PROD_STOCK] - INFO - ✅ 2300: 234 intraday points
+2025-12-25 13:12:31,633 - [PROD_STOCK] - INFO - ✅ 2300: 0 historical points
+2025-12-25 13:12:32,038 - [PROD_STOCK] - INFO - ✅ 2284: 125 intraday points
+2025-12-25 13:12:32,038 - [PROD_STOCK] - INFO - ✅ 2284: 0 historical points
+2025-12-25 13:12:32,131 - [PROD_STOCK] - INFO - 💾 2300: Saved 234 intraday rows
+2025-12-25 13:12:32,165 - [PROD_STOCK] - INFO - Processing 7200...
+2025-12-25 13:12:32,192 - [PROD_STOCK] - INFO - 💾 2284: Saved 125 intraday rows
+2025-12-25 13:12:32,858 - [PROD_STOCK] - INFO - ✅ 2270: 194 intraday points
+2025-12-25 13:12:32,859 - [PROD_STOCK] - INFO - ✅ 2270: 0 historical points
+2025-12-25 13:12:33,095 - [PROD_STOCK] - ERROR - DB Error (intraday) 2270: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2270, 2025-12-22 10:12:00+02) already exists.
+2025-12-25 13:12:34,371 - [PROD_STOCK] - INFO - Processing 9610...
+2025-12-25 13:12:34,728 - [PROD_STOCK] - INFO - Processing 4344...
+2025-12-25 13:12:34,999 - [PROD_STOCK] - INFO - Processing 9577...
+2025-12-25 13:12:36,298 - [PROD_STOCK] - INFO - ✅ 4100: 121 intraday points
+2025-12-25 13:12:36,299 - [PROD_STOCK] - INFO - ✅ 4100: 0 historical points
+2025-12-25 13:12:36,452 - [PROD_STOCK] - INFO - 💾 4100: Saved 121 intraday rows
+2025-12-25 13:12:37,900 - [PROD_STOCK] - INFO - ✅ 7200: 85 intraday points
+2025-12-25 13:12:37,900 - [PROD_STOCK] - INFO - ✅ 7200: 0 historical points
+2025-12-25 13:12:38,031 - [PROD_STOCK] - INFO - 💾 7200: Saved 85 intraday rows
+2025-12-25 13:12:39,302 - [PROD_STOCK] - INFO - Processing 9618...
+2025-12-25 13:12:39,317 - [PROD_STOCK] - INFO - Processing 3002...
+2025-12-25 13:12:39,867 - [PROD_STOCK] - INFO - ✅ 9610: 19 intraday points
+2025-12-25 13:12:39,868 - [PROD_STOCK] - INFO - ✅ 9610: 0 historical points
+2025-12-25 13:12:39,928 - [PROD_STOCK] - INFO - 💾 9610: Saved 19 intraday rows
+2025-12-25 13:12:41,167 - [PROD_STOCK] - INFO - ✅ 9577: 1 intraday points
+2025-12-25 13:12:41,167 - [PROD_STOCK] - INFO - ✅ 9577: 0 historical points
+2025-12-25 13:12:41,200 - [PROD_STOCK] - INFO - 💾 9577: Saved 1 intraday rows
+2025-12-25 13:12:41,205 - [PROD_STOCK] - INFO - ✅ 4344: 119 intraday points
+2025-12-25 13:12:41,206 - [PROD_STOCK] - INFO - ✅ 4344: 0 historical points
+2025-12-25 13:12:41,254 - [PROD_STOCK] - INFO - 💾 4344: Saved 119 intraday rows
+2025-12-25 13:12:42,957 - [PROD_STOCK] - INFO - Processing 1832...
+2025-12-25 13:12:43,421 - [PROD_STOCK] - INFO - Processing 2281...
+2025-12-25 13:12:43,581 - [PROD_STOCK] - INFO - Processing 9562...
+2025-12-25 13:12:45,117 - [PROD_STOCK] - INFO - ✅ 9618: 40 intraday points
+2025-12-25 13:12:45,118 - [PROD_STOCK] - INFO - ✅ 9618: 0 historical points
+2025-12-25 13:12:45,247 - [PROD_STOCK] - INFO - 💾 9618: Saved 40 intraday rows
+2025-12-25 13:12:45,349 - [PROD_STOCK] - INFO - ✅ 3002: 148 intraday points
+2025-12-25 13:12:45,350 - [PROD_STOCK] - INFO - ✅ 3002: 0 historical points
+2025-12-25 13:12:45,424 - [PROD_STOCK] - ERROR - DB Error (intraday) 3002: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(3002, 2025-12-22 13:58:00+02) already exists.
+2025-12-25 13:12:46,696 - [PROD_STOCK] - INFO - Processing 8030...
+2025-12-25 13:12:49,329 - [PROD_STOCK] - INFO - ✅ 1832: 155 intraday points
+2025-12-25 13:12:49,331 - [PROD_STOCK] - INFO - ✅ 1832: 0 historical points
+2025-12-25 13:12:49,686 - [PROD_STOCK] - INFO - ✅ 2281: 140 intraday points
+2025-12-25 13:12:49,687 - [PROD_STOCK] - INFO - ✅ 2281: 0 historical points
+2025-12-25 13:12:49,811 - [PROD_STOCK] - INFO - ✅ 9562: 1 intraday points
+2025-12-25 13:12:49,812 - [PROD_STOCK] - INFO - ✅ 9562: 0 historical points
+2025-12-25 13:12:49,840 - [PROD_STOCK] - INFO - Processing 4330...
+2025-12-25 13:12:50,200 - [PROD_STOCK] - INFO - 💾 2281: Saved 140 intraday rows
+2025-12-25 13:12:50,202 - [PROD_STOCK] - INFO - 💾 1832: Saved 155 intraday rows
+2025-12-25 13:12:50,303 - [PROD_STOCK] - INFO - 💾 9562: Saved 1 intraday rows
+2025-12-25 13:12:52,076 - [PROD_STOCK] - INFO - Processing 8313...
+2025-12-25 13:12:52,081 - [PROD_STOCK] - INFO - Processing 5251...
+2025-12-25 13:12:52,343 - [PROD_STOCK] - INFO - Processing 4051...
+2025-12-25 13:12:53,743 - [PROD_STOCK] - INFO - ✅ 8030: 262 intraday points
+2025-12-25 13:12:53,744 - [PROD_STOCK] - INFO - ✅ 8030: 0 historical points
+2025-12-25 13:12:53,776 - [PROD_STOCK] - INFO - 💾 8030: Saved 262 intraday rows
+2025-12-25 13:12:56,048 - [PROD_STOCK] - INFO - ✅ 4330: 99 intraday points
+2025-12-25 13:12:56,048 - [PROD_STOCK] - INFO - ✅ 4330: 0 historical points
+2025-12-25 13:12:56,089 - [PROD_STOCK] - INFO - 💾 4330: Saved 99 intraday rows
+2025-12-25 13:12:56,176 - [PROD_STOCK] - INFO - Processing 4332...
+2025-12-25 13:12:58,145 - [PROD_STOCK] - INFO - Processing 6040...
+2025-12-25 13:13:15,138 - [PROD_STOCK] - INFO - ✅ 5251: 1 intraday points
+2025-12-25 13:13:15,151 - [PROD_STOCK] - INFO - 💾 5251: Saved 1 intraday rows
+2025-12-25 13:13:17,008 - [PROD_STOCK] - INFO - Processing 9556...
+2025-12-25 13:13:19,650 - [PROD_STOCK] - INFO - ✅ 4051: 262 intraday points
+2025-12-25 13:13:19,673 - [PROD_STOCK] - ERROR - DB Error (intraday) 4051: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4051, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:13:22,293 - [PROD_STOCK] - INFO - Processing 9405...
+2025-12-25 13:13:24,621 - [PROD_STOCK] - INFO - ✅ 8313: 282 intraday points
+2025-12-25 13:13:24,633 - [PROD_STOCK] - ERROR - DB Error (intraday) 8313: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(8313, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:13:27,204 - [PROD_STOCK] - INFO - Processing 9545...
+2025-12-25 13:13:34,203 - [PROD_STOCK] - INFO - ✅ 4332: 44 intraday points
+2025-12-25 13:13:34,203 - [PROD_STOCK] - INFO - ✅ 4332: 0 historical points
+2025-12-25 13:13:34,220 - [PROD_STOCK] - INFO - 💾 4332: Saved 44 intraday rows
+2025-12-25 13:13:34,534 - [PROD_STOCK] - INFO - ✅ 6040: 89 intraday points
+2025-12-25 13:13:34,544 - [PROD_STOCK] - INFO - 💾 6040: Saved 89 intraday rows
+2025-12-25 13:13:35,775 - [PROD_STOCK] - INFO - Processing 9586...
+2025-12-25 13:13:36,782 - [PROD_STOCK] - INFO - Processing 9611...
+2025-12-25 13:13:37,219 - [PROD_STOCK] - INFO - ✅ 9556: 38 intraday points
+2025-12-25 13:13:37,219 - [PROD_STOCK] - INFO - ✅ 9556: 0 historical points
+2025-12-25 13:13:37,236 - [PROD_STOCK] - INFO - 💾 9556: Saved 38 intraday rows
+2025-12-25 13:13:37,325 - [PROD_STOCK] - INFO - ✅ 9405: 228 intraday points
+2025-12-25 13:13:37,325 - [PROD_STOCK] - INFO - ✅ 9405: 0 historical points
+2025-12-25 13:13:37,344 - [PROD_STOCK] - INFO - 💾 9405: Saved 228 intraday rows
+2025-12-25 13:13:38,335 - [PROD_STOCK] - INFO - ✅ 9545: 7 intraday points
+2025-12-25 13:13:38,335 - [PROD_STOCK] - INFO - ✅ 9545: 0 historical points
+2025-12-25 13:13:38,344 - [PROD_STOCK] - INFO - 💾 9545: Saved 7 intraday rows
+2025-12-25 13:13:39,713 - [PROD_STOCK] - INFO - Processing 9300...
+2025-12-25 13:13:39,901 - [PROD_STOCK] - INFO - Processing 8040...
+2025-12-25 13:13:39,933 - [PROD_STOCK] - INFO - Processing 3010...
+2025-12-25 13:13:43,846 - [PROD_STOCK] - INFO - ✅ 9586: 1 intraday points
+2025-12-25 13:13:43,847 - [PROD_STOCK] - INFO - ✅ 9586: 0 historical points
+2025-12-25 13:13:43,864 - [PROD_STOCK] - INFO - 💾 9586: Saved 1 intraday rows
+2025-12-25 13:13:46,283 - [PROD_STOCK] - INFO - Processing 4703...
+2025-12-25 13:13:47,782 - [PROD_STOCK] - INFO - ✅ 9300: 3 intraday points
+2025-12-25 13:13:47,782 - [PROD_STOCK] - INFO - ✅ 9300: 0 historical points
+2025-12-25 13:13:47,791 - [PROD_STOCK] - INFO - 💾 9300: Saved 3 intraday rows
+2025-12-25 13:13:49,454 - [PROD_STOCK] - INFO - ✅ 3010: 100 intraday points
+2025-12-25 13:13:49,463 - [PROD_STOCK] - INFO - 💾 3010: Saved 100 intraday rows
+2025-12-25 13:13:49,676 - [PROD_STOCK] - INFO - ✅ 8040: 77 intraday points
+2025-12-25 13:13:49,695 - [PROD_STOCK] - INFO - 💾 8040: Saved 77 intraday rows
+2025-12-25 13:13:49,779 - [PROD_STOCK] - INFO - Processing 2100...
+2025-12-25 13:13:52,217 - [PROD_STOCK] - INFO - Processing 4013...
+2025-12-25 13:13:52,480 - [PROD_STOCK] - INFO - Processing 4110...
+2025-12-25 13:13:52,719 - [PROD_STOCK] - INFO - ✅ 9611: 6 intraday points
+2025-12-25 13:13:52,720 - [PROD_STOCK] - INFO - ✅ 9611: 0 historical points
+2025-12-25 13:13:52,738 - [PROD_STOCK] - INFO - 💾 9611: Saved 6 intraday rows
+2025-12-25 13:13:54,218 - [PROD_STOCK] - INFO - Processing 5253...
+2025-12-25 13:13:54,611 - [PROD_STOCK] - INFO - ✅ 4703: 113 intraday points
+2025-12-25 13:13:54,611 - [PROD_STOCK] - INFO - ✅ 4703: 0 historical points
+2025-12-25 13:13:54,630 - [PROD_STOCK] - INFO - 💾 4703: Saved 113 intraday rows
+2025-12-25 13:13:57,214 - [PROD_STOCK] - INFO - ✅ 2100: 101 intraday points
+2025-12-25 13:13:57,215 - [PROD_STOCK] - INFO - ✅ 2100: 0 historical points
+2025-12-25 13:13:57,216 - [PROD_STOCK] - INFO - Processing 9548...
+2025-12-25 13:13:57,233 - [PROD_STOCK] - INFO - 💾 2100: Saved 101 intraday rows
+2025-12-25 13:13:58,545 - [PROD_STOCK] - INFO - Processing 9599...
+2025-12-25 13:13:59,421 - [PROD_STOCK] - INFO - ✅ 4013: 224 intraday points
+2025-12-25 13:13:59,421 - [PROD_STOCK] - INFO - ✅ 4013: 0 historical points
+2025-12-25 13:13:59,434 - [PROD_STOCK] - INFO - 💾 4013: Saved 224 intraday rows
+2025-12-25 13:14:00,374 - [PROD_STOCK] - INFO - ✅ 4110: 276 intraday points
+2025-12-25 13:14:00,374 - [PROD_STOCK] - INFO - ✅ 4110: 0 historical points
+2025-12-25 13:14:00,390 - [PROD_STOCK] - INFO - 💾 4110: Saved 276 intraday rows
+2025-12-25 13:14:00,617 - [PROD_STOCK] - INFO - Processing 2340...
+2025-12-25 13:14:02,910 - [PROD_STOCK] - INFO - Processing 4220...
+2025-12-25 13:14:04,783 - [PROD_STOCK] - INFO - ✅ 5253: 1 intraday points
+2025-12-25 13:14:04,784 - [PROD_STOCK] - INFO - ✅ 5253: 0 historical points
+2025-12-25 13:14:04,794 - [PROD_STOCK] - INFO - 💾 5253: Saved 1 intraday rows
+2025-12-25 13:14:06,510 - [PROD_STOCK] - INFO - Processing 5285...
+2025-12-25 13:14:11,326 - [PROD_STOCK] - INFO - ✅ 9548: 12 intraday points
+2025-12-25 13:14:11,327 - [PROD_STOCK] - INFO - ✅ 9548: 0 historical points
+2025-12-25 13:14:11,362 - [PROD_STOCK] - INFO - 💾 9548: Saved 12 intraday rows
+2025-12-25 13:14:12,580 - [PROD_STOCK] - INFO - ✅ 9599: 9 intraday points
+2025-12-25 13:14:12,581 - [PROD_STOCK] - INFO - ✅ 9599: 0 historical points
+2025-12-25 13:14:12,615 - [PROD_STOCK] - INFO - 💾 9599: Saved 9 intraday rows
+2025-12-25 13:14:13,663 - [PROD_STOCK] - INFO - Processing 9600...
+2025-12-25 13:14:14,541 - [PROD_STOCK] - INFO - ✅ 2340: 102 intraday points
+2025-12-25 13:14:14,542 - [PROD_STOCK] - INFO - ✅ 2340: 0 historical points
+2025-12-25 13:14:14,608 - [PROD_STOCK] - INFO - 💾 2340: Saved 102 intraday rows
+2025-12-25 13:14:14,677 - [PROD_STOCK] - INFO - Processing 9627...
+2025-12-25 13:14:16,093 - [PROD_STOCK] - INFO - ✅ 4220: 186 intraday points
+2025-12-25 13:14:16,095 - [PROD_STOCK] - INFO - ✅ 4220: 0 historical points
+2025-12-25 13:14:16,123 - [PROD_STOCK] - INFO - 💾 4220: Saved 186 intraday rows
+2025-12-25 13:14:16,644 - [PROD_STOCK] - INFO - Processing 9647...
+2025-12-25 13:14:17,995 - [PROD_STOCK] - INFO - Processing 4263...
+2025-12-25 13:14:24,129 - [PROD_STOCK] - INFO - ✅ 9627: 2 intraday points
+2025-12-25 13:14:24,130 - [PROD_STOCK] - INFO - ✅ 9627: 0 historical points
+2025-12-25 13:14:24,141 - [PROD_STOCK] - INFO - 💾 9627: Saved 2 intraday rows
+2025-12-25 13:14:24,572 - [PROD_STOCK] - INFO - ✅ 9600: 1 intraday points
+2025-12-25 13:14:24,572 - [PROD_STOCK] - INFO - ✅ 9600: 0 historical points
+2025-12-25 13:14:24,590 - [PROD_STOCK] - INFO - 💾 9600: Saved 1 intraday rows
+2025-12-25 13:14:26,365 - [PROD_STOCK] - INFO - Processing 2350...
+2025-12-25 13:14:26,916 - [PROD_STOCK] - INFO - Processing 1301...
+2025-12-25 13:14:26,937 - [PROD_STOCK] - INFO - ✅ 9647: 14 intraday points
+2025-12-25 13:14:26,937 - [PROD_STOCK] - INFO - ✅ 9647: 0 historical points
+2025-12-25 13:14:26,954 - [PROD_STOCK] - INFO - 💾 9647: Saved 14 intraday rows
+2025-12-25 13:14:28,874 - [PROD_STOCK] - INFO - ✅ 4263: 264 intraday points
+2025-12-25 13:14:28,874 - [PROD_STOCK] - INFO - ✅ 4263: 0 historical points
+2025-12-25 13:14:28,901 - [PROD_STOCK] - INFO - 💾 4263: Saved 264 intraday rows
+2025-12-25 13:14:29,808 - [PROD_STOCK] - INFO - Processing 2150...
+2025-12-25 13:14:30,516 - [PROD_STOCK] - INFO - Processing 4071...
+2025-12-25 13:14:33,153 - [PROD_STOCK] - WARNING - ⚠️ 5285: No charts found (might be invalid ticker)
+2025-12-25 13:14:33,181 - [PROD_STOCK] - WARNING - Attempt 1: 5285 returned no data
+2025-12-25 13:14:34,723 - [PROD_STOCK] - INFO - ✅ 2350: 273 intraday points
+2025-12-25 13:14:34,724 - [PROD_STOCK] - INFO - ✅ 2350: 0 historical points
+2025-12-25 13:14:34,747 - [PROD_STOCK] - INFO - 💾 2350: Saved 273 intraday rows
+2025-12-25 13:14:35,714 - [PROD_STOCK] - INFO - ✅ 1301: 110 intraday points
+2025-12-25 13:14:35,714 - [PROD_STOCK] - INFO - ✅ 1301: 0 historical points
+2025-12-25 13:14:35,730 - [PROD_STOCK] - INFO - 💾 1301: Saved 110 intraday rows
+2025-12-25 13:14:36,784 - [PROD_STOCK] - INFO - Processing 5285...
+2025-12-25 13:14:37,484 - [PROD_STOCK] - INFO - Processing 5333...
+2025-12-25 13:14:37,545 - [PROD_STOCK] - INFO - Processing 4005...
+2025-12-25 13:14:38,601 - [PROD_STOCK] - INFO - ✅ 2150: 94 intraday points
+2025-12-25 13:14:38,602 - [PROD_STOCK] - INFO - ✅ 2150: 0 historical points
+2025-12-25 13:14:38,629 - [PROD_STOCK] - INFO - 💾 2150: Saved 94 intraday rows
+2025-12-25 13:14:39,677 - [PROD_STOCK] - INFO - ✅ 4071: 199 intraday points
+2025-12-25 13:14:39,677 - [PROD_STOCK] - INFO - ✅ 4071: 0 historical points
+2025-12-25 13:14:39,714 - [PROD_STOCK] - INFO - 💾 4071: Saved 199 intraday rows
+2025-12-25 13:14:40,446 - [PROD_STOCK] - INFO - Processing 4141...
+2025-12-25 13:14:41,792 - [PROD_STOCK] - INFO - Processing 9598...
+2025-12-25 13:14:43,940 - [PROD_STOCK] - INFO - ✅ 5333: 1 intraday points
+2025-12-25 13:14:43,941 - [PROD_STOCK] - INFO - ✅ 5333: 0 historical points
+2025-12-25 13:14:43,979 - [PROD_STOCK] - INFO - 💾 5333: Saved 1 intraday rows
+2025-12-25 13:14:45,637 - [PROD_STOCK] - INFO - ✅ 4005: 230 intraday points
+2025-12-25 13:14:45,637 - [PROD_STOCK] - INFO - ✅ 4005: 0 historical points
+2025-12-25 13:14:45,659 - [PROD_STOCK] - INFO - 💾 4005: Saved 230 intraday rows
+2025-12-25 13:14:45,710 - [PROD_STOCK] - INFO - Processing 2381...
+2025-12-25 13:14:47,453 - [PROD_STOCK] - INFO - Processing 1050...
+2025-12-25 13:14:53,237 - [PROD_STOCK] - INFO - ✅ 4141: 87 intraday points
+2025-12-25 13:14:53,239 - [PROD_STOCK] - INFO - ✅ 4141: 0 historical points
+2025-12-25 13:14:53,258 - [PROD_STOCK] - ERROR - DB Error (intraday) 4141: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4141, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:14:56,057 - [PROD_STOCK] - INFO - ✅ 9598: 2 intraday points
+2025-12-25 13:14:56,057 - [PROD_STOCK] - INFO - ✅ 9598: 0 historical points
+2025-12-25 13:14:56,063 - [PROD_STOCK] - INFO - 💾 9598: Saved 2 intraday rows
+2025-12-25 13:14:56,323 - [PROD_STOCK] - INFO - Processing 9522...
+2025-12-25 13:14:58,581 - [PROD_STOCK] - INFO - Processing 4180...
+2025-12-25 13:14:59,950 - [PROD_STOCK] - WARNING - ⚠️ 5285: No charts found (might be invalid ticker)
+2025-12-25 13:14:59,973 - [PROD_STOCK] - WARNING - Attempt 2: 5285 returned no data
+2025-12-25 13:15:00,027 - [PROD_STOCK] - INFO - ✅ 2381: 291 intraday points
+2025-12-25 13:15:00,027 - [PROD_STOCK] - INFO - ✅ 2381: 0 historical points
+2025-12-25 13:15:00,248 - [PROD_STOCK] - INFO - 💾 2381: Saved 291 intraday rows
+2025-12-25 13:15:01,038 - [PROD_STOCK] - INFO - ✅ 1050: 226 intraday points
+2025-12-25 13:15:01,043 - [PROD_STOCK] - INFO - ✅ 1050: 0 historical points
+2025-12-25 13:15:01,184 - [PROD_STOCK] - INFO - 💾 1050: Saved 226 intraday rows
+2025-12-25 13:15:02,323 - [PROD_STOCK] - INFO - Processing 4083...
+2025-12-25 13:15:02,754 - [PROD_STOCK] - ERROR - ❌ Failed 5285 after retries
+2025-12-25 13:15:03,156 - [PROD_STOCK] - INFO - Processing 8060...
+2025-12-25 13:15:04,245 - [PROD_STOCK] - INFO - ✅ 9522: 6 intraday points
+2025-12-25 13:15:04,249 - [PROD_STOCK] - INFO - ✅ 9522: 0 historical points
+2025-12-25 13:15:04,339 - [PROD_STOCK] - INFO - 💾 9522: Saved 6 intraday rows
+2025-12-25 13:15:04,410 - [PROD_STOCK] - INFO - Processing 2283...
+2025-12-25 13:15:05,911 - [PROD_STOCK] - INFO - ✅ 4180: 189 intraday points
+2025-12-25 13:15:05,912 - [PROD_STOCK] - INFO - ✅ 4180: 0 historical points
+2025-12-25 13:15:06,025 - [PROD_STOCK] - INFO - 💾 4180: Saved 189 intraday rows
+2025-12-25 13:15:06,378 - [PROD_STOCK] - INFO - Processing 3030...
+2025-12-25 13:15:07,469 - [PROD_STOCK] - INFO - Processing 4012...
+2025-12-25 13:15:11,548 - [PROD_STOCK] - INFO - ✅ 8060: 202 intraday points
+2025-12-25 13:15:11,549 - [PROD_STOCK] - INFO - ✅ 8060: 0 historical points
+2025-12-25 13:15:11,569 - [PROD_STOCK] - ERROR - DB Error (intraday) 8060: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(8060, 2025-12-22 13:58:00+02) already exists.
+2025-12-25 13:15:11,693 - [PROD_STOCK] - INFO - ✅ 2283: 133 intraday points
+2025-12-25 13:15:11,693 - [PROD_STOCK] - INFO - ✅ 2283: 0 historical points
+2025-12-25 13:15:11,708 - [PROD_STOCK] - INFO - 💾 2283: Saved 133 intraday rows
+2025-12-25 13:15:12,341 - [PROD_STOCK] - INFO - ✅ 4083: 128 intraday points
+2025-12-25 13:15:12,341 - [PROD_STOCK] - INFO - ✅ 4083: 0 historical points
+2025-12-25 13:15:12,389 - [PROD_STOCK] - ERROR - DB Error (intraday) 4083: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4083, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:15:13,532 - [PROD_STOCK] - INFO - Processing 4345...
+2025-12-25 13:15:13,579 - [PROD_STOCK] - INFO - Processing 5221...
+2025-12-25 13:15:13,712 - [PROD_STOCK] - INFO - Processing 2001...
+2025-12-25 13:15:14,827 - [PROD_STOCK] - INFO - ✅ 4012: 181 intraday points
+2025-12-25 13:15:14,827 - [PROD_STOCK] - INFO - ✅ 4012: 0 historical points
+2025-12-25 13:15:14,851 - [PROD_STOCK] - INFO - 💾 4012: Saved 181 intraday rows
+2025-12-25 13:15:15,296 - [PROD_STOCK] - INFO - ✅ 3030: 127 intraday points
+2025-12-25 13:15:15,296 - [PROD_STOCK] - INFO - ✅ 3030: 0 historical points
+2025-12-25 13:15:15,327 - [PROD_STOCK] - INFO - 💾 3030: Saved 127 intraday rows
+2025-12-25 13:15:16,483 - [PROD_STOCK] - INFO - Processing 8310...
+2025-12-25 13:15:17,673 - [PROD_STOCK] - INFO - Processing 2382...
+2025-12-25 13:15:19,851 - [PROD_STOCK] - INFO - ✅ 4345: 69 intraday points
+2025-12-25 13:15:19,852 - [PROD_STOCK] - INFO - ✅ 4345: 0 historical points
+2025-12-25 13:15:19,862 - [PROD_STOCK] - INFO - 💾 4345: Saved 69 intraday rows
+2025-12-25 13:15:20,475 - [PROD_STOCK] - INFO - ✅ 2001: 233 intraday points
+2025-12-25 13:15:20,475 - [PROD_STOCK] - INFO - ✅ 2001: 0 historical points
+2025-12-25 13:15:20,498 - [PROD_STOCK] - INFO - 💾 2001: Saved 233 intraday rows
+2025-12-25 13:15:22,238 - [PROD_STOCK] - INFO - Processing 9409...
+2025-12-25 13:15:22,780 - [PROD_STOCK] - INFO - Processing 5344...
+2025-12-25 13:15:27,488 - [PROD_STOCK] - INFO - ✅ 8310: 83 intraday points
+2025-12-25 13:15:27,489 - [PROD_STOCK] - INFO - ✅ 8310: 0 historical points
+2025-12-25 13:15:27,505 - [PROD_STOCK] - INFO - 💾 8310: Saved 83 intraday rows
+2025-12-25 13:15:29,158 - [PROD_STOCK] - INFO - Processing 2360...
+2025-12-25 13:15:29,552 - [PROD_STOCK] - INFO - ✅ 2382: 288 intraday points
+2025-12-25 13:15:29,552 - [PROD_STOCK] - INFO - ✅ 2382: 0 historical points
+2025-12-25 13:15:29,614 - [PROD_STOCK] - INFO - 💾 2382: Saved 288 intraday rows
+2025-12-25 13:15:31,457 - [PROD_STOCK] - INFO - Processing 9588...
+2025-12-25 13:15:31,503 - [PROD_STOCK] - INFO - ✅ 5344: 1 intraday points
+2025-12-25 13:15:31,503 - [PROD_STOCK] - INFO - ✅ 5344: 0 historical points
+2025-12-25 13:15:31,513 - [PROD_STOCK] - INFO - 💾 5344: Saved 1 intraday rows
+2025-12-25 13:15:33,546 - [PROD_STOCK] - INFO - ✅ 9409: 15 intraday points
+2025-12-25 13:15:33,546 - [PROD_STOCK] - INFO - ✅ 9409: 0 historical points
+2025-12-25 13:15:33,554 - [PROD_STOCK] - INFO - 💾 9409: Saved 15 intraday rows
+2025-12-25 13:15:33,655 - [PROD_STOCK] - INFO - Processing 8280...
+2025-12-25 13:15:36,422 - [PROD_STOCK] - INFO - Processing 5321...
+2025-12-25 13:15:36,563 - [PROD_STOCK] - WARNING - ⚠️ 5221: No charts found (might be invalid ticker)
+2025-12-25 13:15:36,583 - [PROD_STOCK] - WARNING - Attempt 1: 5221 returned no data
+2025-12-25 13:15:38,764 - [PROD_STOCK] - INFO - Processing 5221...
+2025-12-25 13:15:43,764 - [PROD_STOCK] - INFO - ✅ 2360: 84 intraday points
+2025-12-25 13:15:43,777 - [PROD_STOCK] - INFO - 💾 2360: Saved 84 intraday rows
+2025-12-25 13:15:46,678 - [PROD_STOCK] - INFO - ✅ 9588: 12 intraday points
+2025-12-25 13:15:46,685 - [PROD_STOCK] - INFO - 💾 9588: Saved 12 intraday rows
+2025-12-25 13:15:46,753 - [PROD_STOCK] - INFO - Processing 9525...
+2025-12-25 13:15:49,090 - [PROD_STOCK] - INFO - Processing 4334...
+2025-12-25 13:15:49,705 - [PROD_STOCK] - INFO - ✅ 8280: 79 intraday points
+2025-12-25 13:15:49,706 - [PROD_STOCK] - INFO - ✅ 8280: 0 historical points
+2025-12-25 13:15:49,715 - [PROD_STOCK] - INFO - 💾 8280: Saved 79 intraday rows
+2025-12-25 13:15:50,958 - [PROD_STOCK] - INFO - Processing 5214...
+2025-12-25 13:16:02,536 - [PROD_STOCK] - INFO - ✅ 9525: 52 intraday points
+2025-12-25 13:16:02,536 - [PROD_STOCK] - INFO - ✅ 9525: 0 historical points
+2025-12-25 13:16:02,549 - [PROD_STOCK] - INFO - 💾 9525: Saved 52 intraday rows
+2025-12-25 13:16:03,692 - [PROD_STOCK] - INFO - Processing 9640...
+2025-12-25 13:16:05,316 - [PROD_STOCK] - INFO - ✅ 4334: 94 intraday points
+2025-12-25 13:16:05,316 - [PROD_STOCK] - INFO - ✅ 4334: 0 historical points
+2025-12-25 13:16:05,328 - [PROD_STOCK] - INFO - 💾 4334: Saved 94 intraday rows
+2025-12-25 13:16:05,766 - [PROD_STOCK] - INFO - ✅ 5214: 1 intraday points
+2025-12-25 13:16:05,766 - [PROD_STOCK] - INFO - ✅ 5214: 0 historical points
+2025-12-25 13:16:05,774 - [PROD_STOCK] - INFO - 💾 5214: Saved 1 intraday rows
+2025-12-25 13:16:06,748 - [PROD_STOCK] - INFO - Processing 9537...
+2025-12-25 13:16:07,347 - [PROD_STOCK] - WARNING - ⚠️ 5321: No charts found (might be invalid ticker)
+2025-12-25 13:16:07,359 - [PROD_STOCK] - WARNING - Attempt 1: 5321 returned no data
+2025-12-25 13:16:07,903 - [PROD_STOCK] - WARNING - ⚠️ 5221: No charts found (might be invalid ticker)
+2025-12-25 13:16:07,915 - [PROD_STOCK] - WARNING - Attempt 2: 5221 returned no data
+2025-12-25 13:16:08,631 - [PROD_STOCK] - INFO - Processing 4200...
+2025-12-25 13:16:11,215 - [PROD_STOCK] - INFO - Processing 5321...
+2025-12-25 13:16:12,305 - [PROD_STOCK] - ERROR - ❌ Failed 5221 after retries
+2025-12-25 13:16:13,314 - [PROD_STOCK] - INFO - ✅ 9640: 2 intraday points
+2025-12-25 13:16:13,314 - [PROD_STOCK] - INFO - ✅ 9640: 0 historical points
+2025-12-25 13:16:13,324 - [PROD_STOCK] - INFO - 💾 9640: Saved 2 intraday rows
+2025-12-25 13:16:15,177 - [PROD_STOCK] - INFO - Processing 9641...
+2025-12-25 13:16:15,297 - [PROD_STOCK] - INFO - Processing 5320...
+2025-12-25 13:16:17,279 - [PROD_STOCK] - INFO - ✅ 9537: 5 intraday points
+2025-12-25 13:16:17,287 - [PROD_STOCK] - INFO - 💾 9537: Saved 5 intraday rows
+2025-12-25 13:16:19,828 - [PROD_STOCK] - INFO - Processing 4165...
+2025-12-25 13:16:21,979 - [PROD_STOCK] - INFO - ✅ 4200: 253 intraday points
+2025-12-25 13:16:22,006 - [PROD_STOCK] - INFO - 💾 4200: Saved 253 intraday rows
+2025-12-25 13:16:23,853 - [PROD_STOCK] - INFO - Processing 4320...
+2025-12-25 13:16:30,068 - [PROD_STOCK] - INFO - ✅ 9641: 1 intraday points
+2025-12-25 13:16:30,068 - [PROD_STOCK] - INFO - ✅ 9641: 0 historical points
+2025-12-25 13:16:30,078 - [PROD_STOCK] - INFO - 💾 9641: Saved 1 intraday rows
+2025-12-25 13:16:32,678 - [PROD_STOCK] - INFO - ✅ 4165: 248 intraday points
+2025-12-25 13:16:32,698 - [PROD_STOCK] - INFO - 💾 4165: Saved 248 intraday rows
+2025-12-25 13:16:33,127 - [PROD_STOCK] - INFO - Processing 6001...
+2025-12-25 13:16:34,787 - [PROD_STOCK] - INFO - Processing 1304...
+2025-12-25 13:16:40,553 - [PROD_STOCK] - WARNING - ⚠️ 5321: No charts found (might be invalid ticker)
+2025-12-25 13:16:40,577 - [PROD_STOCK] - WARNING - Attempt 2: 5321 returned no data
+2025-12-25 13:16:41,332 - [PROD_STOCK] - INFO - ✅ 4320: 125 intraday points
+2025-12-25 13:16:41,342 - [PROD_STOCK] - INFO - 💾 4320: Saved 125 intraday rows
+2025-12-25 13:16:43,013 - [PROD_STOCK] - INFO - Processing 9406...
+2025-12-25 13:16:43,401 - [PROD_STOCK] - ERROR - ❌ Failed 5321 after retries
+2025-12-25 13:16:44,125 - [PROD_STOCK] - WARNING - ⚠️ 5320: No charts found (might be invalid ticker)
+2025-12-25 13:16:44,143 - [PROD_STOCK] - WARNING - Attempt 1: 5320 returned no data
+2025-12-25 13:16:46,340 - [PROD_STOCK] - INFO - Processing 8240...
+2025-12-25 13:16:47,999 - [PROD_STOCK] - INFO - Processing 5320...
+2025-12-25 13:16:57,565 - [PROD_STOCK] - INFO - ✅ 1304: 214 intraday points
+2025-12-25 13:16:57,579 - [PROD_STOCK] - INFO - 💾 1304: Saved 214 intraday rows
+2025-12-25 13:16:58,886 - [PROD_STOCK] - INFO - Processing 4072...
+2025-12-25 13:16:59,665 - [PROD_STOCK] - INFO - ✅ 6001: 103 intraday points
+2025-12-25 13:16:59,675 - [PROD_STOCK] - INFO - 💾 6001: Saved 103 intraday rows
+2025-12-25 13:17:01,802 - [PROD_STOCK] - INFO - Processing 7020...
+2025-12-25 13:17:06,336 - [PROD_STOCK] - INFO - ✅ 9406: 24 intraday points
+2025-12-25 13:17:06,337 - [PROD_STOCK] - INFO - ✅ 9406: 0 historical points
+2025-12-25 13:17:06,347 - [PROD_STOCK] - INFO - 💾 9406: Saved 24 intraday rows
+2025-12-25 13:17:08,275 - [PROD_STOCK] - INFO - Processing 4140...
+2025-12-25 13:17:08,926 - [PROD_STOCK] - INFO - ✅ 8240: 212 intraday points
+2025-12-25 13:17:08,927 - [PROD_STOCK] - INFO - ✅ 8240: 0 historical points
+2025-12-25 13:17:09,009 - [PROD_STOCK] - INFO - 💾 8240: Saved 212 intraday rows
+2025-12-25 13:17:10,749 - [PROD_STOCK] - INFO - Processing 3090...
+2025-12-25 13:17:11,638 - [PROD_STOCK] - INFO - ✅ 4072: 171 intraday points
+2025-12-25 13:17:11,638 - [PROD_STOCK] - INFO - ✅ 4072: 0 historical points
+2025-12-25 13:17:11,648 - [PROD_STOCK] - INFO - 💾 4072: Saved 171 intraday rows
+2025-12-25 13:17:12,904 - [PROD_STOCK] - INFO - Processing 4002...
+2025-12-25 13:17:13,100 - [PROD_STOCK] - INFO - ✅ 7020: 237 intraday points
+2025-12-25 13:17:13,101 - [PROD_STOCK] - INFO - ✅ 7020: 0 historical points
+2025-12-25 13:17:13,114 - [PROD_STOCK] - INFO - 💾 7020: Saved 237 intraday rows
+2025-12-25 13:17:14,623 - [PROD_STOCK] - INFO - Processing 5247...
+2025-12-25 13:17:21,011 - [PROD_STOCK] - INFO - ✅ 4140: 148 intraday points
+2025-12-25 13:17:21,025 - [PROD_STOCK] - ERROR - DB Error (intraday) 4140: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4140, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:17:23,134 - [PROD_STOCK] - INFO - Processing 9553...
+2025-12-25 13:17:24,826 - [PROD_STOCK] - WARNING - ⚠️ 5320: No charts found (might be invalid ticker)
+2025-12-25 13:17:24,841 - [PROD_STOCK] - WARNING - Attempt 2: 5320 returned no data
+2025-12-25 13:17:29,345 - [PROD_STOCK] - ERROR - ❌ Failed 5320 after retries
+2025-12-25 13:17:30,850 - [PROD_STOCK] - INFO - Processing 6060...
+2025-12-25 13:17:33,059 - [PROD_STOCK] - INFO - ✅ 5247: 1 intraday points
+2025-12-25 13:17:33,067 - [PROD_STOCK] - INFO - 💾 5247: Saved 1 intraday rows
+2025-12-25 13:17:34,511 - [PROD_STOCK] - INFO - ✅ 3090: 111 intraday points
+2025-12-25 13:17:34,523 - [PROD_STOCK] - INFO - 💾 3090: Saved 111 intraday rows
+2025-12-25 13:17:35,448 - [PROD_STOCK] - INFO - Processing 9574...
+2025-12-25 13:17:36,381 - [PROD_STOCK] - INFO - Processing 4340...
+2025-12-25 13:17:37,255 - [PROD_STOCK] - INFO - ✅ 4002: 216 intraday points
+2025-12-25 13:17:37,255 - [PROD_STOCK] - INFO - ✅ 4002: 0 historical points
+2025-12-25 13:17:37,268 - [PROD_STOCK] - INFO - 💾 4002: Saved 216 intraday rows
+2025-12-25 13:17:38,510 - [PROD_STOCK] - INFO - Processing 6020...
+2025-12-25 13:17:39,204 - [PROD_STOCK] - INFO - ✅ 9553: 6 intraday points
+2025-12-25 13:17:39,204 - [PROD_STOCK] - INFO - ✅ 9553: 0 historical points
+2025-12-25 13:17:39,213 - [PROD_STOCK] - INFO - 💾 9553: Saved 6 intraday rows
+2025-12-25 13:17:40,723 - [PROD_STOCK] - INFO - Processing 4191...
+2025-12-25 13:17:41,619 - [PROD_STOCK] - INFO - ✅ 6060: 91 intraday points
+2025-12-25 13:17:41,619 - [PROD_STOCK] - INFO - ✅ 6060: 0 historical points
+2025-12-25 13:17:41,638 - [PROD_STOCK] - INFO - 💾 6060: Saved 91 intraday rows
+2025-12-25 13:17:43,465 - [PROD_STOCK] - INFO - ✅ 4340: 204 intraday points
+2025-12-25 13:17:43,465 - [PROD_STOCK] - INFO - ✅ 4340: 0 historical points
+2025-12-25 13:17:43,481 - [PROD_STOCK] - INFO - 💾 4340: Saved 204 intraday rows
+2025-12-25 13:17:43,596 - [PROD_STOCK] - INFO - ✅ 9574: 16 intraday points
+2025-12-25 13:17:43,596 - [PROD_STOCK] - INFO - ✅ 9574: 0 historical points
+2025-12-25 13:17:43,629 - [PROD_STOCK] - INFO - 💾 9574: Saved 16 intraday rows
+2025-12-25 13:17:44,252 - [PROD_STOCK] - INFO - Processing 2084...
+2025-12-25 13:17:44,916 - [PROD_STOCK] - INFO - ✅ 6020: 46 intraday points
+2025-12-25 13:17:44,916 - [PROD_STOCK] - INFO - ✅ 6020: 0 historical points
+2025-12-25 13:17:44,925 - [PROD_STOCK] - INFO - 💾 6020: Saved 46 intraday rows
+2025-12-25 13:17:45,455 - [PROD_STOCK] - INFO - Processing 9623...
+2025-12-25 13:17:46,321 - [PROD_STOCK] - INFO - Processing 4210...
+2025-12-25 13:17:47,378 - [PROD_STOCK] - INFO - Processing 4700...
+2025-12-25 13:17:47,630 - [PROD_STOCK] - INFO - ✅ 4191: 304 intraday points
+2025-12-25 13:17:47,630 - [PROD_STOCK] - INFO - ✅ 4191: 0 historical points
+2025-12-25 13:17:47,656 - [PROD_STOCK] - INFO - 💾 4191: Saved 304 intraday rows
+2025-12-25 13:17:48,994 - [PROD_STOCK] - INFO - Processing 1214...
+2025-12-25 13:17:49,789 - [PROD_STOCK] - INFO - ✅ 2084: 203 intraday points
+2025-12-25 13:17:49,789 - [PROD_STOCK] - INFO - ✅ 2084: 0 historical points
+2025-12-25 13:17:49,808 - [PROD_STOCK] - INFO - 💾 2084: Saved 203 intraday rows
+2025-12-25 13:17:52,018 - [PROD_STOCK] - INFO - Processing 5301...
+2025-12-25 13:17:52,263 - [PROD_STOCK] - INFO - ✅ 9623: 3 intraday points
+2025-12-25 13:17:52,263 - [PROD_STOCK] - INFO - ✅ 9623: 0 historical points
+2025-12-25 13:17:52,274 - [PROD_STOCK] - INFO - 💾 9623: Saved 3 intraday rows
+2025-12-25 13:17:53,720 - [PROD_STOCK] - INFO - Processing 4003...
+2025-12-25 13:17:54,596 - [PROD_STOCK] - INFO - ✅ 4700: 35 intraday points
+2025-12-25 13:17:54,597 - [PROD_STOCK] - INFO - ✅ 4700: 0 historical points
+2025-12-25 13:17:54,619 - [PROD_STOCK] - INFO - 💾 4700: Saved 35 intraday rows
+2025-12-25 13:17:54,959 - [PROD_STOCK] - INFO - ✅ 4210: 173 intraday points
+2025-12-25 13:17:54,960 - [PROD_STOCK] - INFO - ✅ 4210: 0 historical points
+2025-12-25 13:17:54,974 - [PROD_STOCK] - INFO - 💾 4210: Saved 173 intraday rows
+2025-12-25 13:17:56,450 - [PROD_STOCK] - INFO - Processing 9630...
+2025-12-25 13:17:56,583 - [PROD_STOCK] - INFO - ✅ 1214: 245 intraday points
+2025-12-25 13:17:56,584 - [PROD_STOCK] - INFO - ✅ 1214: 0 historical points
+2025-12-25 13:17:56,598 - [PROD_STOCK] - INFO - 💾 1214: Saved 245 intraday rows
+2025-12-25 13:17:56,849 - [PROD_STOCK] - INFO - Processing 2280...
+2025-12-25 13:17:57,668 - [PROD_STOCK] - INFO - Processing 6090...
+2025-12-25 13:18:00,974 - [PROD_STOCK] - INFO - ✅ 4003: 237 intraday points
+2025-12-25 13:18:00,975 - [PROD_STOCK] - INFO - ✅ 4003: 0 historical points
+2025-12-25 13:18:00,991 - [PROD_STOCK] - INFO - 💾 4003: Saved 237 intraday rows
+2025-12-25 13:18:03,618 - [PROD_STOCK] - INFO - Processing 4333...
+2025-12-25 13:18:10,967 - [PROD_STOCK] - INFO - ✅ 9630: 2 intraday points
+2025-12-25 13:18:10,968 - [PROD_STOCK] - INFO - ✅ 9630: 0 historical points
+2025-12-25 13:18:10,984 - [PROD_STOCK] - INFO - 💾 9630: Saved 2 intraday rows
+2025-12-25 13:18:12,714 - [PROD_STOCK] - INFO - ✅ 6090: 121 intraday points
+2025-12-25 13:18:12,715 - [PROD_STOCK] - INFO - ✅ 6090: 0 historical points
+2025-12-25 13:18:12,727 - [PROD_STOCK] - INFO - 💾 6090: Saved 121 intraday rows
+2025-12-25 13:18:12,835 - [PROD_STOCK] - INFO - Processing 9515...
+2025-12-25 13:18:13,015 - [PROD_STOCK] - INFO - ✅ 2280: 238 intraday points
+2025-12-25 13:18:13,016 - [PROD_STOCK] - INFO - ✅ 2280: 0 historical points
+2025-12-25 13:18:13,035 - [PROD_STOCK] - INFO - 💾 2280: Saved 238 intraday rows
+2025-12-25 13:18:15,443 - [PROD_STOCK] - WARNING - ⚠️ 5301: No charts found (might be invalid ticker)
+2025-12-25 13:18:15,461 - [PROD_STOCK] - WARNING - Attempt 1: 5301 returned no data
+2025-12-25 13:18:15,488 - [PROD_STOCK] - INFO - Processing 5283...
+2025-12-25 13:18:15,775 - [PROD_STOCK] - INFO - Processing 8170...
+2025-12-25 13:18:19,177 - [PROD_STOCK] - INFO - ✅ 4333: 49 intraday points
+2025-12-25 13:18:19,206 - [PROD_STOCK] - INFO - Processing 5301...
+2025-12-25 13:18:19,211 - [PROD_STOCK] - INFO - 💾 4333: Saved 49 intraday rows
+2025-12-25 13:18:21,276 - [PROD_STOCK] - INFO - Processing 9581...
+2025-12-25 13:18:28,745 - [PROD_STOCK] - INFO - ✅ 8170: 150 intraday points
+2025-12-25 13:18:28,762 - [PROD_STOCK] - INFO - 💾 8170: Saved 150 intraday rows
+2025-12-25 13:18:30,798 - [PROD_STOCK] - INFO - Processing 7211...
+2025-12-25 13:18:40,641 - [PROD_STOCK] - INFO - ✅ 9515: 13 intraday points
+2025-12-25 13:18:40,648 - [PROD_STOCK] - INFO - 💾 9515: Saved 13 intraday rows
+2025-12-25 13:18:43,631 - [PROD_STOCK] - INFO - Processing 8180...
+2025-12-25 13:18:43,875 - [PROD_STOCK] - INFO - ✅ 9581: 2 intraday points
+2025-12-25 13:18:43,875 - [PROD_STOCK] - INFO - ✅ 9581: 0 historical points
+2025-12-25 13:18:43,884 - [PROD_STOCK] - INFO - 💾 9581: Saved 2 intraday rows
+2025-12-25 13:18:43,914 - [PROD_STOCK] - WARNING - ⚠️ 5283: No charts found (might be invalid ticker)
+2025-12-25 13:18:43,924 - [PROD_STOCK] - WARNING - Attempt 1: 5283 returned no data
+2025-12-25 13:18:45,352 - [PROD_STOCK] - INFO - Processing 8120...
+2025-12-25 13:18:48,209 - [PROD_STOCK] - INFO - ✅ 7211: 124 intraday points
+2025-12-25 13:18:48,210 - [PROD_STOCK] - INFO - ✅ 7211: 0 historical points
+2025-12-25 13:18:48,222 - [PROD_STOCK] - INFO - 💾 7211: Saved 124 intraday rows
+2025-12-25 13:18:48,409 - [PROD_STOCK] - INFO - Processing 5283...
+2025-12-25 13:18:49,500 - [PROD_STOCK] - INFO - Processing 9564...
+2025-12-25 13:18:52,066 - [PROD_STOCK] - WARNING - ⚠️ 5301: No charts found (might be invalid ticker)
+2025-12-25 13:18:52,086 - [PROD_STOCK] - WARNING - Attempt 2: 5301 returned no data
+2025-12-25 13:18:54,384 - [PROD_STOCK] - ERROR - ❌ Failed 5301 after retries
+2025-12-25 13:18:56,894 - [PROD_STOCK] - INFO - Processing 9549...
+2025-12-25 13:18:59,365 - [PROD_STOCK] - INFO - ✅ 8180: 125 intraday points
+2025-12-25 13:18:59,365 - [PROD_STOCK] - INFO - ✅ 8180: 0 historical points
+2025-12-25 13:18:59,380 - [PROD_STOCK] - INFO - 💾 8180: Saved 125 intraday rows
+2025-12-25 13:18:59,423 - [PROD_STOCK] - INFO - ✅ 8120: 74 intraday points
+2025-12-25 13:18:59,423 - [PROD_STOCK] - INFO - ✅ 8120: 0 historical points
+2025-12-25 13:18:59,435 - [PROD_STOCK] - INFO - 💾 8120: Saved 74 intraday rows
+2025-12-25 13:19:00,218 - [PROD_STOCK] - INFO - ✅ 9564: 1 intraday points
+2025-12-25 13:19:00,218 - [PROD_STOCK] - INFO - ✅ 9564: 0 historical points
+2025-12-25 13:19:00,225 - [PROD_STOCK] - INFO - 💾 9564: Saved 1 intraday rows
+2025-12-25 13:19:00,665 - [PROD_STOCK] - INFO - Processing 6014...
+2025-12-25 13:19:01,796 - [PROD_STOCK] - INFO - Processing 4030...
+2025-12-25 13:19:01,984 - [PROD_STOCK] - INFO - Processing 4194...
+2025-12-25 13:19:07,432 - [PROD_STOCK] - INFO - ✅ 9549: 1 intraday points
+2025-12-25 13:19:07,433 - [PROD_STOCK] - INFO - ✅ 9549: 0 historical points
+2025-12-25 13:19:07,439 - [PROD_STOCK] - INFO - 💾 9549: Saved 1 intraday rows
+2025-12-25 13:19:09,216 - [PROD_STOCK] - INFO - Processing 9584...
+2025-12-25 13:19:09,881 - [PROD_STOCK] - INFO - ✅ 6014: 151 intraday points
+2025-12-25 13:19:09,882 - [PROD_STOCK] - INFO - ✅ 6014: 0 historical points
+2025-12-25 13:19:09,894 - [PROD_STOCK] - INFO - 💾 6014: Saved 151 intraday rows
+2025-12-25 13:19:12,222 - [PROD_STOCK] - INFO - Processing 9591...
+2025-12-25 13:19:13,446 - [PROD_STOCK] - INFO - ✅ 4194: 183 intraday points
+2025-12-25 13:19:13,447 - [PROD_STOCK] - INFO - ✅ 4194: 0 historical points
+2025-12-25 13:19:13,458 - [PROD_STOCK] - INFO - 💾 4194: Saved 183 intraday rows
+2025-12-25 13:19:14,539 - [PROD_STOCK] - INFO - ✅ 4030: 239 intraday points
+2025-12-25 13:19:14,540 - [PROD_STOCK] - INFO - ✅ 4030: 0 historical points
+2025-12-25 13:19:14,553 - [PROD_STOCK] - INFO - 💾 4030: Saved 239 intraday rows
+2025-12-25 13:19:15,643 - [PROD_STOCK] - INFO - Processing 9594...
+2025-12-25 13:19:15,669 - [PROD_STOCK] - INFO - Processing 8020...
+2025-12-25 13:19:16,478 - [PROD_STOCK] - WARNING - ⚠️ 5283: No charts found (might be invalid ticker)
+2025-12-25 13:19:16,499 - [PROD_STOCK] - WARNING - Attempt 2: 5283 returned no data
+2025-12-25 13:19:18,577 - [PROD_STOCK] - INFO - ✅ 9584: 1 intraday points
+2025-12-25 13:19:18,577 - [PROD_STOCK] - INFO - ✅ 9584: 0 historical points
+2025-12-25 13:19:18,591 - [PROD_STOCK] - INFO - 💾 9584: Saved 1 intraday rows
+2025-12-25 13:19:20,085 - [PROD_STOCK] - ERROR - ❌ Failed 5283 after retries
+2025-12-25 13:19:20,585 - [PROD_STOCK] - INFO - ✅ 9591: 1 intraday points
+2025-12-25 13:19:20,585 - [PROD_STOCK] - INFO - ✅ 9591: 0 historical points
+2025-12-25 13:19:20,610 - [PROD_STOCK] - INFO - 💾 9591: Saved 1 intraday rows
+2025-12-25 13:19:21,295 - [PROD_STOCK] - INFO - Processing 3003...
+2025-12-25 13:19:21,368 - [PROD_STOCK] - INFO - Processing 6015...
+2025-12-25 13:19:21,800 - [PROD_STOCK] - INFO - Processing 5227...
+2025-12-25 13:19:23,058 - [PROD_STOCK] - INFO - ✅ 8020: 126 intraday points
+2025-12-25 13:19:23,059 - [PROD_STOCK] - INFO - ✅ 8020: 0 historical points
+2025-12-25 13:19:23,081 - [PROD_STOCK] - INFO - 💾 8020: Saved 126 intraday rows
+2025-12-25 13:19:23,365 - [PROD_STOCK] - INFO - ✅ 9594: 37 intraday points
+2025-12-25 13:19:23,365 - [PROD_STOCK] - INFO - ✅ 9594: 0 historical points
+2025-12-25 13:19:23,380 - [PROD_STOCK] - INFO - 💾 9594: Saved 37 intraday rows
+2025-12-25 13:19:25,374 - [PROD_STOCK] - INFO - Processing 8100...
+2025-12-25 13:19:25,441 - [PROD_STOCK] - INFO - Processing 1820...
+2025-12-25 13:19:26,320 - [PROD_STOCK] - INFO - ✅ 3003: 147 intraday points
+2025-12-25 13:19:26,320 - [PROD_STOCK] - INFO - ✅ 3003: 0 historical points
+2025-12-25 13:19:26,363 - [PROD_STOCK] - INFO - 💾 3003: Saved 147 intraday rows
+2025-12-25 13:19:27,212 - [PROD_STOCK] - INFO - ✅ 6015: 311 intraday points
+2025-12-25 13:19:27,212 - [PROD_STOCK] - INFO - ✅ 6015: 0 historical points
+2025-12-25 13:19:27,241 - [PROD_STOCK] - ERROR - DB Error (intraday) 6015: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(6015, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:19:29,351 - [PROD_STOCK] - INFO - Processing 1833...
+2025-12-25 13:19:29,575 - [PROD_STOCK] - INFO - Processing 7201...
+2025-12-25 13:19:31,425 - [PROD_STOCK] - INFO - ✅ 8100: 61 intraday points
+2025-12-25 13:19:31,425 - [PROD_STOCK] - INFO - ✅ 8100: 0 historical points
+2025-12-25 13:19:31,437 - [PROD_STOCK] - INFO - 💾 8100: Saved 61 intraday rows
+2025-12-25 13:19:32,926 - [PROD_STOCK] - INFO - ✅ 1820: 200 intraday points
+2025-12-25 13:19:32,926 - [PROD_STOCK] - INFO - ✅ 1820: 0 historical points
+2025-12-25 13:19:32,943 - [PROD_STOCK] - INFO - 💾 1820: Saved 200 intraday rows
+2025-12-25 13:19:34,264 - [PROD_STOCK] - INFO - Processing 5245...
+2025-12-25 13:19:35,418 - [PROD_STOCK] - INFO - Processing 5332...
+2025-12-25 13:19:40,256 - [PROD_STOCK] - INFO - ✅ 7201: 180 intraday points
+2025-12-25 13:19:40,256 - [PROD_STOCK] - INFO - ✅ 7201: 0 historical points
+2025-12-25 13:19:40,286 - [PROD_STOCK] - INFO - 💾 7201: Saved 180 intraday rows
+2025-12-25 13:19:40,464 - [PROD_STOCK] - INFO - ✅ 5245: 1 intraday points
+2025-12-25 13:19:40,464 - [PROD_STOCK] - INFO - ✅ 5245: 0 historical points
+2025-12-25 13:19:40,478 - [PROD_STOCK] - INFO - 💾 5245: Saved 1 intraday rows
+2025-12-25 13:19:42,325 - [PROD_STOCK] - INFO - Processing 5216...
+2025-12-25 13:19:43,016 - [PROD_STOCK] - INFO - Processing 1323...
+2025-12-25 13:19:43,321 - [PROD_STOCK] - INFO - ✅ 1833: 146 intraday points
+2025-12-25 13:19:43,322 - [PROD_STOCK] - INFO - ✅ 1833: 0 historical points
+2025-12-25 13:19:43,350 - [PROD_STOCK] - INFO - 💾 1833: Saved 146 intraday rows
+2025-12-25 13:19:43,923 - [PROD_STOCK] - WARNING - ⚠️ 5227: No charts found (might be invalid ticker)
+2025-12-25 13:19:43,958 - [PROD_STOCK] - WARNING - Attempt 1: 5227 returned no data
+2025-12-25 13:19:46,352 - [PROD_STOCK] - INFO - Processing 5250...
+2025-12-25 13:19:48,910 - [PROD_STOCK] - INFO - Processing 5227...
+2025-12-25 13:19:50,051 - [PROD_STOCK] - INFO - ✅ 1323: 234 intraday points
+2025-12-25 13:19:50,051 - [PROD_STOCK] - INFO - ✅ 1323: 0 historical points
+2025-12-25 13:19:50,066 - [PROD_STOCK] - INFO - 💾 1323: Saved 234 intraday rows
+2025-12-25 13:19:53,041 - [PROD_STOCK] - INFO - Processing 2282...
+2025-12-25 13:19:57,558 - [PROD_STOCK] - WARNING - ⚠️ 5332: No charts found (might be invalid ticker)
+2025-12-25 13:19:57,582 - [PROD_STOCK] - WARNING - Attempt 1: 5332 returned no data
+2025-12-25 13:20:02,589 - [PROD_STOCK] - INFO - Processing 5332...
+2025-12-25 13:20:04,339 - [PROD_STOCK] - WARNING - ⚠️ 5216: No charts found (might be invalid ticker)
+2025-12-25 13:20:04,358 - [PROD_STOCK] - WARNING - Attempt 1: 5216 returned no data
+2025-12-25 13:20:07,780 - [PROD_STOCK] - INFO - Processing 5216...
+2025-12-25 13:20:09,295 - [PROD_STOCK] - INFO - ✅ 5250: 1 intraday points
+2025-12-25 13:20:09,295 - [PROD_STOCK] - INFO - ✅ 5250: 0 historical points
+2025-12-25 13:20:09,305 - [PROD_STOCK] - INFO - 💾 5250: Saved 1 intraday rows
+2025-12-25 13:20:12,060 - [PROD_STOCK] - INFO - Processing 2170...
+2025-12-25 13:20:17,857 - [PROD_STOCK] - INFO - ✅ 2282: 178 intraday points
+2025-12-25 13:20:17,857 - [PROD_STOCK] - INFO - ✅ 2282: 0 historical points
+2025-12-25 13:20:17,880 - [PROD_STOCK] - INFO - 💾 2282: Saved 178 intraday rows
+2025-12-25 13:20:20,821 - [PROD_STOCK] - INFO - Processing 5280...
+2025-12-25 13:20:29,088 - [PROD_STOCK] - WARNING - ⚠️ 5227: No charts found (might be invalid ticker)
+2025-12-25 13:20:29,100 - [PROD_STOCK] - WARNING - Attempt 2: 5227 returned no data
+2025-12-25 13:20:31,442 - [PROD_STOCK] - INFO - ✅ 2170: 216 intraday points
+2025-12-25 13:20:31,461 - [PROD_STOCK] - ERROR - DB Error (intraday) 2170: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2170, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:20:32,060 - [PROD_STOCK] - ERROR - ❌ Failed 5227 after retries
+2025-12-25 13:20:33,353 - [PROD_STOCK] - INFO - Processing 9578...
+2025-12-25 13:20:34,313 - [PROD_STOCK] - WARNING - ⚠️ 5332: No charts found (might be invalid ticker)
+2025-12-25 13:20:34,321 - [PROD_STOCK] - WARNING - Attempt 2: 5332 returned no data
+2025-12-25 13:20:34,390 - [PROD_STOCK] - INFO - Processing 4324...
+2025-12-25 13:20:37,043 - [PROD_STOCK] - WARNING - ⚠️ 5216: No charts found (might be invalid ticker)
+2025-12-25 13:20:37,052 - [PROD_STOCK] - WARNING - Attempt 2: 5216 returned no data
+2025-12-25 13:20:38,026 - [PROD_STOCK] - ERROR - ❌ Failed 5332 after retries
+2025-12-25 13:20:39,803 - [PROD_STOCK] - INFO - Processing 9603...
+2025-12-25 13:20:40,476 - [PROD_STOCK] - ERROR - ❌ Failed 5216 after retries
+2025-12-25 13:20:41,820 - [PROD_STOCK] - INFO - Processing 4145...
+2025-12-25 13:20:44,642 - [PROD_STOCK] - INFO - ✅ 4324: 112 intraday points
+2025-12-25 13:20:44,642 - [PROD_STOCK] - INFO - ✅ 4324: 0 historical points
+2025-12-25 13:20:44,661 - [PROD_STOCK] - INFO - 💾 4324: Saved 112 intraday rows
+2025-12-25 13:20:45,428 - [PROD_STOCK] - INFO - ✅ 9578: 2 intraday points
+2025-12-25 13:20:45,428 - [PROD_STOCK] - INFO - ✅ 9578: 0 historical points
+2025-12-25 13:20:45,437 - [PROD_STOCK] - INFO - 💾 9578: Saved 2 intraday rows
+2025-12-25 13:20:47,046 - [PROD_STOCK] - INFO - Processing 5110...
+2025-12-25 13:20:48,482 - [PROD_STOCK] - INFO - Processing 5311...
+2025-12-25 13:20:49,107 - [PROD_STOCK] - INFO - ✅ 9603: 1 intraday points
+2025-12-25 13:20:49,107 - [PROD_STOCK] - INFO - ✅ 9603: 0 historical points
+2025-12-25 13:20:49,118 - [PROD_STOCK] - INFO - 💾 9603: Saved 1 intraday rows
+2025-12-25 13:20:50,734 - [PROD_STOCK] - INFO - Processing 2083...
+2025-12-25 13:20:51,675 - [PROD_STOCK] - INFO - ✅ 4145: 168 intraday points
+2025-12-25 13:20:51,675 - [PROD_STOCK] - INFO - ✅ 4145: 0 historical points
+2025-12-25 13:20:51,693 - [PROD_STOCK] - INFO - 💾 4145: Saved 168 intraday rows
+2025-12-25 13:20:52,750 - [PROD_STOCK] - INFO - Processing 9540...
+2025-12-25 13:20:55,571 - [PROD_STOCK] - INFO - ✅ 5110: 289 intraday points
+2025-12-25 13:20:55,572 - [PROD_STOCK] - INFO - ✅ 5110: 0 historical points
+2025-12-25 13:20:55,598 - [PROD_STOCK] - ERROR - DB Error (intraday) 5110: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(5110, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:20:56,476 - [PROD_STOCK] - WARNING - ⚠️ 5280: No charts found (might be invalid ticker)
+2025-12-25 13:20:56,510 - [PROD_STOCK] - WARNING - Attempt 1: 5280 returned no data
+2025-12-25 13:20:57,500 - [PROD_STOCK] - INFO - Processing 7010...
+2025-12-25 13:20:58,135 - [PROD_STOCK] - INFO - ✅ 2083: 229 intraday points
+2025-12-25 13:20:58,135 - [PROD_STOCK] - INFO - ✅ 2083: 0 historical points
+2025-12-25 13:20:58,150 - [PROD_STOCK] - INFO - 💾 2083: Saved 229 intraday rows
+2025-12-25 13:20:59,448 - [PROD_STOCK] - INFO - ✅ 9540: 39 intraday points
+2025-12-25 13:20:59,448 - [PROD_STOCK] - INFO - ✅ 9540: 0 historical points
+2025-12-25 13:20:59,461 - [PROD_STOCK] - INFO - 💾 9540: Saved 39 intraday rows
+2025-12-25 13:20:59,810 - [PROD_STOCK] - INFO - Processing 9513...
+2025-12-25 13:21:00,468 - [PROD_STOCK] - INFO - Processing 5280...
+2025-12-25 13:21:01,197 - [PROD_STOCK] - INFO - Processing 5267...
+2025-12-25 13:21:05,784 - [PROD_STOCK] - INFO - ✅ 7010: 311 intraday points
+2025-12-25 13:21:05,786 - [PROD_STOCK] - INFO - ✅ 7010: 0 historical points
+2025-12-25 13:21:05,799 - [PROD_STOCK] - ERROR - DB Error (intraday) 7010: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(7010, 2025-12-22 11:52:00+02) already exists.
+2025-12-25 13:21:07,986 - [PROD_STOCK] - INFO - Processing 2050...
+2025-12-25 13:21:09,674 - [PROD_STOCK] - INFO - ✅ 9513: 8 intraday points
+2025-12-25 13:21:09,674 - [PROD_STOCK] - INFO - ✅ 9513: 0 historical points
+2025-12-25 13:21:09,685 - [PROD_STOCK] - INFO - 💾 9513: Saved 8 intraday rows
+2025-12-25 13:21:11,111 - [PROD_STOCK] - INFO - Processing 4250...
+2025-12-25 13:21:13,293 - [PROD_STOCK] - WARNING - ⚠️ 5311: No charts found (might be invalid ticker)
+2025-12-25 13:21:13,320 - [PROD_STOCK] - WARNING - Attempt 1: 5311 returned no data
+2025-12-25 13:21:15,567 - [PROD_STOCK] - INFO - Processing 5311...
+2025-12-25 13:21:24,808 - [PROD_STOCK] - WARNING - ⚠️ 5280: No charts found (might be invalid ticker)
+2025-12-25 13:21:24,838 - [PROD_STOCK] - WARNING - Attempt 2: 5280 returned no data
+2025-12-25 13:21:27,101 - [PROD_STOCK] - WARNING - ⚠️ 5267: No charts found (might be invalid ticker)
+2025-12-25 13:21:27,127 - [PROD_STOCK] - WARNING - Attempt 1: 5267 returned no data
+2025-12-25 13:21:27,450 - [PROD_STOCK] - ERROR - ❌ Failed 5280 after retries
+2025-12-25 13:21:28,574 - [PROD_STOCK] - INFO - Processing 2020...
+2025-12-25 13:21:31,420 - [PROD_STOCK] - INFO - ✅ 2050: 288 intraday points
+2025-12-25 13:21:31,421 - [PROD_STOCK] - INFO - ✅ 2050: 0 historical points
+2025-12-25 13:21:31,447 - [PROD_STOCK] - ERROR - DB Error (intraday) 2050: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2050, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:21:32,093 - [PROD_STOCK] - INFO - Processing 5267...
+2025-12-25 13:21:33,126 - [PROD_STOCK] - INFO - Processing 9568...
+2025-12-25 13:21:34,981 - [PROD_STOCK] - INFO - ✅ 4250: 286 intraday points
+2025-12-25 13:21:34,981 - [PROD_STOCK] - INFO - ✅ 4250: 0 historical points
+2025-12-25 13:21:34,999 - [PROD_STOCK] - ERROR - DB Error (intraday) 4250: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4250, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:21:37,438 - [PROD_STOCK] - INFO - Processing 1321...
+2025-12-25 13:21:44,199 - [PROD_STOCK] - INFO - ✅ 2020: 255 intraday points
+2025-12-25 13:21:44,200 - [PROD_STOCK] - INFO - ✅ 2020: 0 historical points
+2025-12-25 13:21:44,212 - [PROD_STOCK] - INFO - 💾 2020: Saved 255 intraday rows
+2025-12-25 13:21:45,501 - [PROD_STOCK] - INFO - ✅ 9568: 5 intraday points
+2025-12-25 13:21:45,502 - [PROD_STOCK] - INFO - ✅ 9568: 0 historical points
+2025-12-25 13:21:45,539 - [PROD_STOCK] - INFO - 💾 9568: Saved 5 intraday rows
+2025-12-25 13:21:45,970 - [PROD_STOCK] - INFO - Processing 4080...
+2025-12-25 13:21:46,351 - [PROD_STOCK] - WARNING - ⚠️ 5311: No charts found (might be invalid ticker)
+2025-12-25 13:21:46,379 - [PROD_STOCK] - WARNING - Attempt 2: 5311 returned no data
+2025-12-25 13:21:47,346 - [PROD_STOCK] - INFO - Processing 5272...
+2025-12-25 13:21:47,642 - [PROD_STOCK] - INFO - ✅ 1321: 244 intraday points
+2025-12-25 13:21:47,643 - [PROD_STOCK] - INFO - ✅ 1321: 0 historical points
+2025-12-25 13:21:47,726 - [PROD_STOCK] - INFO - 💾 1321: Saved 244 intraday rows
+2025-12-25 13:21:49,214 - [PROD_STOCK] - ERROR - ❌ Failed 5311 after retries
+2025-12-25 13:21:49,464 - [PROD_STOCK] - INFO - Processing 9579...
+2025-12-25 13:21:50,742 - [PROD_STOCK] - INFO - Processing 4017...
+2025-12-25 13:21:51,365 - [PROD_STOCK] - INFO - ✅ 4080: 117 intraday points
+2025-12-25 13:21:51,365 - [PROD_STOCK] - INFO - ✅ 4080: 0 historical points
+2025-12-25 13:21:51,380 - [PROD_STOCK] - INFO - 💾 4080: Saved 117 intraday rows
+2025-12-25 13:21:53,008 - [PROD_STOCK] - INFO - Processing 4262...
+2025-12-25 13:21:54,011 - [PROD_STOCK] - INFO - ✅ 5272: 1 intraday points
+2025-12-25 13:21:54,012 - [PROD_STOCK] - INFO - ✅ 5272: 0 historical points
+2025-12-25 13:21:54,032 - [PROD_STOCK] - INFO - 💾 5272: Saved 1 intraday rows
+2025-12-25 13:21:55,252 - [PROD_STOCK] - INFO - ✅ 9579: 13 intraday points
+2025-12-25 13:21:55,253 - [PROD_STOCK] - INFO - ✅ 9579: 0 historical points
+2025-12-25 13:21:55,274 - [PROD_STOCK] - INFO - 💾 9579: Saved 13 intraday rows
+2025-12-25 13:21:56,329 - [PROD_STOCK] - INFO - Processing 9589...
+2025-12-25 13:21:57,280 - [PROD_STOCK] - INFO - Processing 2081...
+2025-12-25 13:21:57,947 - [PROD_STOCK] - WARNING - ⚠️ 5267: No charts found (might be invalid ticker)
+2025-12-25 13:21:57,975 - [PROD_STOCK] - WARNING - Attempt 2: 5267 returned no data
+2025-12-25 13:21:58,162 - [PROD_STOCK] - INFO - ✅ 4017: 262 intraday points
+2025-12-25 13:21:58,162 - [PROD_STOCK] - INFO - ✅ 4017: 0 historical points
+2025-12-25 13:21:58,186 - [PROD_STOCK] - INFO - 💾 4017: Saved 262 intraday rows
+2025-12-25 13:21:58,812 - [PROD_STOCK] - INFO - ✅ 4262: 100 intraday points
+2025-12-25 13:21:58,812 - [PROD_STOCK] - INFO - ✅ 4262: 0 historical points
+2025-12-25 13:21:58,829 - [PROD_STOCK] - INFO - 💾 4262: Saved 100 intraday rows
+2025-12-25 13:22:00,116 - [PROD_STOCK] - ERROR - ❌ Failed 5267 after retries
+2025-12-25 13:22:00,146 - [PROD_STOCK] - INFO - Processing 9523...
+2025-12-25 13:22:01,589 - [PROD_STOCK] - INFO - Processing 6019...
+2025-12-25 13:22:02,248 - [PROD_STOCK] - INFO - ✅ 9589: 1 intraday points
+2025-12-25 13:22:02,248 - [PROD_STOCK] - INFO - ✅ 9589: 0 historical points
+2025-12-25 13:22:02,269 - [PROD_STOCK] - INFO - 💾 9589: Saved 1 intraday rows
+2025-12-25 13:22:02,306 - [PROD_STOCK] - INFO - ✅ 2081: 143 intraday points
+2025-12-25 13:22:02,306 - [PROD_STOCK] - INFO - ✅ 2081: 0 historical points
+2025-12-25 13:22:02,327 - [PROD_STOCK] - INFO - 💾 2081: Saved 143 intraday rows
+2025-12-25 13:22:02,951 - [PROD_STOCK] - INFO - Processing 9632...
+2025-12-25 13:22:03,544 - [PROD_STOCK] - INFO - Processing 9570...
+2025-12-25 13:22:04,728 - [PROD_STOCK] - INFO - Processing 5334...
+2025-12-25 13:22:15,370 - [PROD_STOCK] - INFO - ✅ 9570: 12 intraday points
+2025-12-25 13:22:15,370 - [PROD_STOCK] - INFO - ✅ 9570: 0 historical points
+2025-12-25 13:22:15,382 - [PROD_STOCK] - INFO - 💾 9570: Saved 12 intraday rows
+2025-12-25 13:22:16,725 - [PROD_STOCK] - INFO - ✅ 6019: 305 intraday points
+2025-12-25 13:22:16,725 - [PROD_STOCK] - INFO - ✅ 6019: 0 historical points
+2025-12-25 13:22:16,743 - [PROD_STOCK] - ERROR - DB Error (intraday) 6019: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(6019, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:22:18,053 - [PROD_STOCK] - INFO - ✅ 9632: 33 intraday points
+2025-12-25 13:22:18,053 - [PROD_STOCK] - INFO - ✅ 9632: 0 historical points
+2025-12-25 13:22:18,079 - [PROD_STOCK] - INFO - 💾 9632: Saved 33 intraday rows
+2025-12-25 13:22:18,279 - [PROD_STOCK] - INFO - Processing 9642...
+2025-12-25 13:22:18,510 - [PROD_STOCK] - INFO - Processing 4007...
+2025-12-25 13:22:19,761 - [PROD_STOCK] - INFO - Processing 5323...
+2025-12-25 13:22:20,602 - [PROD_STOCK] - INFO - ✅ 9523: 20 intraday points
+2025-12-25 13:22:20,602 - [PROD_STOCK] - INFO - ✅ 9523: 0 historical points
+2025-12-25 13:22:20,620 - [PROD_STOCK] - INFO - 💾 9523: Saved 20 intraday rows
+2025-12-25 13:22:22,862 - [PROD_STOCK] - INFO - Processing 8150...
+2025-12-25 13:22:30,186 - [PROD_STOCK] - WARNING - ⚠️ 5334: No charts found (might be invalid ticker)
+2025-12-25 13:22:30,224 - [PROD_STOCK] - WARNING - Attempt 1: 5334 returned no data
+2025-12-25 13:22:31,906 - [PROD_STOCK] - INFO - ✅ 4007: 262 intraday points
+2025-12-25 13:22:31,906 - [PROD_STOCK] - INFO - ✅ 4007: 0 historical points
+2025-12-25 13:22:31,933 - [PROD_STOCK] - INFO - 💾 4007: Saved 262 intraday rows
+2025-12-25 13:22:34,557 - [PROD_STOCK] - INFO - ✅ 9642: 2 intraday points
+2025-12-25 13:22:34,557 - [PROD_STOCK] - INFO - ✅ 9642: 0 historical points
+2025-12-25 13:22:34,576 - [PROD_STOCK] - INFO - 💾 9642: Saved 2 intraday rows
+2025-12-25 13:22:34,824 - [PROD_STOCK] - INFO - Processing 4348...
+2025-12-25 13:22:35,099 - [PROD_STOCK] - INFO - Processing 5334...
+2025-12-25 13:22:36,117 - [PROD_STOCK] - INFO - ✅ 8150: 168 intraday points
+2025-12-25 13:22:36,117 - [PROD_STOCK] - INFO - ✅ 8150: 0 historical points
+2025-12-25 13:22:36,134 - [PROD_STOCK] - INFO - 💾 8150: Saved 168 intraday rows
+2025-12-25 13:22:37,231 - [PROD_STOCK] - INFO - Processing 4338...
+2025-12-25 13:22:37,337 - [PROD_STOCK] - INFO - Processing 1201...
+2025-12-25 13:22:52,252 - [PROD_STOCK] - WARNING - ⚠️ 5323: No charts found (might be invalid ticker)
+2025-12-25 13:22:52,336 - [PROD_STOCK] - WARNING - Attempt 1: 5323 returned no data
+2025-12-25 13:22:55,864 - [PROD_STOCK] - INFO - Processing 5323...
+2025-12-25 13:22:58,506 - [PROD_STOCK] - INFO - ✅ 4348: 85 intraday points
+2025-12-25 13:22:58,507 - [PROD_STOCK] - INFO - ✅ 4348: 0 historical points
+2025-12-25 13:22:58,599 - [PROD_STOCK] - INFO - 💾 4348: Saved 85 intraday rows
+2025-12-25 13:22:58,991 - [PROD_STOCK] - INFO - ✅ 1201: 99 intraday points
+2025-12-25 13:22:58,991 - [PROD_STOCK] - INFO - ✅ 1201: 0 historical points
+2025-12-25 13:22:59,005 - [PROD_STOCK] - INFO - 💾 1201: Saved 99 intraday rows
+2025-12-25 13:22:59,675 - [PROD_STOCK] - INFO - ✅ 4338: 77 intraday points
+2025-12-25 13:22:59,676 - [PROD_STOCK] - INFO - ✅ 4338: 0 historical points
+2025-12-25 13:22:59,687 - [PROD_STOCK] - INFO - 💾 4338: Saved 77 intraday rows
+2025-12-25 13:23:00,123 - [PROD_STOCK] - INFO - Processing 4020...
+2025-12-25 13:23:01,053 - [PROD_STOCK] - INFO - Processing 1211...
+2025-12-25 13:23:01,063 - [PROD_STOCK] - INFO - Processing 3005...
+2025-12-25 13:23:09,360 - [PROD_STOCK] - INFO - ✅ 1211: 309 intraday points
+2025-12-25 13:23:09,365 - [PROD_STOCK] - INFO - ✅ 1211: 0 historical points
+2025-12-25 13:23:09,400 - [PROD_STOCK] - INFO - 💾 1211: Saved 309 intraday rows
+2025-12-25 13:23:09,751 - [PROD_STOCK] - INFO - ✅ 4020: 213 intraday points
+2025-12-25 13:23:09,752 - [PROD_STOCK] - INFO - ✅ 4020: 0 historical points
+2025-12-25 13:23:09,770 - [PROD_STOCK] - INFO - ✅ 3005: 75 intraday points
+2025-12-25 13:23:09,771 - [PROD_STOCK] - INFO - ✅ 3005: 0 historical points
+2025-12-25 13:23:09,800 - [PROD_STOCK] - INFO - 💾 4020: Saved 213 intraday rows
+2025-12-25 13:23:09,813 - [PROD_STOCK] - INFO - 💾 3005: Saved 75 intraday rows
+2025-12-25 13:23:11,325 - [PROD_STOCK] - WARNING - ⚠️ 5334: No charts found (might be invalid ticker)
+2025-12-25 13:23:11,369 - [PROD_STOCK] - WARNING - Attempt 2: 5334 returned no data
+2025-12-25 13:23:11,427 - [PROD_STOCK] - INFO - Processing 1831...
+2025-12-25 13:23:11,457 - [PROD_STOCK] - INFO - Processing 4011...
+2025-12-25 13:23:12,131 - [PROD_STOCK] - INFO - Processing 5284...
+2025-12-25 13:23:14,425 - [PROD_STOCK] - ERROR - ❌ Failed 5334 after retries
+2025-12-25 13:23:15,736 - [PROD_STOCK] - INFO - Processing 4240...
+2025-12-25 13:23:24,963 - [PROD_STOCK] - WARNING - ⚠️ 5323: No charts found (might be invalid ticker)
+2025-12-25 13:23:25,051 - [PROD_STOCK] - WARNING - Attempt 2: 5323 returned no data
+2025-12-25 13:23:28,635 - [PROD_STOCK] - ERROR - ❌ Failed 5323 after retries
+2025-12-25 13:23:30,891 - [PROD_STOCK] - INFO - Processing 3050...
+2025-12-25 13:23:35,464 - [PROD_STOCK] - INFO - ✅ 4240: 311 intraday points
+2025-12-25 13:23:35,465 - [PROD_STOCK] - INFO - ✅ 4240: 0 historical points
+2025-12-25 13:23:35,587 - [PROD_STOCK] - ERROR - DB Error (intraday) 4240: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4240, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:23:36,887 - [PROD_STOCK] - INFO - Processing 9625...
+2025-12-25 13:23:55,564 - [PROD_STOCK] - INFO - ✅ 1831: 298 intraday points
+2025-12-25 13:23:55,565 - [PROD_STOCK] - INFO - ✅ 1831: 0 historical points
+2025-12-25 13:23:55,613 - [PROD_STOCK] - ERROR - DB Error (intraday) 1831: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1831, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:23:57,576 - [PROD_STOCK] - INFO - Processing 4280...
+2025-12-25 13:24:01,379 - [PROD_STOCK] - INFO - ✅ 4011: 93 intraday points
+2025-12-25 13:24:01,396 - [PROD_STOCK] - INFO - 💾 4011: Saved 93 intraday rows
+2025-12-25 13:24:02,201 - [PROD_STOCK] - INFO - ✅ 5284: 1 intraday points
+2025-12-25 13:24:02,209 - [PROD_STOCK] - INFO - 💾 5284: Saved 1 intraday rows
+2025-12-25 13:24:03,903 - [PROD_STOCK] - INFO - Processing 8210...
+2025-12-25 13:24:04,720 - [PROD_STOCK] - INFO - Processing 5252...
+2025-12-25 13:24:07,509 - [PROD_STOCK] - INFO - ✅ 3050: 121 intraday points
+2025-12-25 13:24:07,538 - [PROD_STOCK] - INFO - 💾 3050: Saved 121 intraday rows
+2025-12-25 13:24:10,661 - [PROD_STOCK] - INFO - Processing 9650...
+2025-12-25 13:24:10,694 - [PROD_STOCK] - INFO - ✅ 9625: 1 intraday points
+2025-12-25 13:24:10,694 - [PROD_STOCK] - INFO - ✅ 9625: 0 historical points
+2025-12-25 13:24:10,728 - [PROD_STOCK] - INFO - 💾 9625: Saved 1 intraday rows
+2025-12-25 13:24:12,093 - [PROD_STOCK] - INFO - Processing 9517...
+2025-12-25 13:24:25,587 - [PROD_STOCK] - INFO - ✅ 5252: 1 intraday points
+2025-12-25 13:24:25,588 - [PROD_STOCK] - INFO - ✅ 5252: 0 historical points
+2025-12-25 13:24:25,599 - [PROD_STOCK] - INFO - 💾 5252: Saved 1 intraday rows
+2025-12-25 13:24:27,104 - [PROD_STOCK] - INFO - Processing 4292...
+2025-12-25 13:24:29,417 - [PROD_STOCK] - INFO - ✅ 8210: 262 intraday points
+2025-12-25 13:24:29,436 - [PROD_STOCK] - INFO - 💾 8210: Saved 262 intraday rows
+2025-12-25 13:24:29,511 - [PROD_STOCK] - INFO - ✅ 4280: 224 intraday points
+2025-12-25 13:24:29,523 - [PROD_STOCK] - INFO - 💾 4280: Saved 224 intraday rows
+2025-12-25 13:24:31,859 - [PROD_STOCK] - INFO - Processing 2180...
+2025-12-25 13:24:32,325 - [PROD_STOCK] - INFO - Processing 4193...
+2025-12-25 13:24:35,875 - [PROD_STOCK] - INFO - ✅ 9650: 3 intraday points
+2025-12-25 13:24:35,880 - [PROD_STOCK] - INFO - ✅ 9650: 0 historical points
+2025-12-25 13:24:36,278 - [PROD_STOCK] - INFO - 💾 9650: Saved 3 intraday rows
+2025-12-25 13:24:36,532 - [PROD_STOCK] - INFO - ✅ 9517: 6 intraday points
+2025-12-25 13:24:36,532 - [PROD_STOCK] - INFO - ✅ 9517: 0 historical points
+2025-12-25 13:24:36,552 - [PROD_STOCK] - INFO - 💾 9517: Saved 6 intraday rows
+2025-12-25 13:24:39,159 - [PROD_STOCK] - INFO - Processing 9604...
+2025-12-25 13:24:39,393 - [PROD_STOCK] - INFO - Processing 9533...
+2025-12-25 13:24:50,255 - [PROD_STOCK] - INFO - ✅ 4292: 174 intraday points
+2025-12-25 13:24:50,255 - [PROD_STOCK] - INFO - ✅ 4292: 0 historical points
+2025-12-25 13:24:50,271 - [PROD_STOCK] - INFO - 💾 4292: Saved 174 intraday rows
+2025-12-25 13:24:52,568 - [PROD_STOCK] - INFO - Processing 2310...
+2025-12-25 13:24:53,918 - [PROD_STOCK] - INFO - ✅ 2180: 73 intraday points
+2025-12-25 13:24:53,929 - [PROD_STOCK] - INFO - 💾 2180: Saved 73 intraday rows
+2025-12-25 13:24:55,674 - [PROD_STOCK] - INFO - Processing 9617...
+2025-12-25 13:24:57,614 - [PROD_STOCK] - INFO - ✅ 4193: 245 intraday points
+2025-12-25 13:24:57,628 - [PROD_STOCK] - INFO - 💾 4193: Saved 245 intraday rows
+2025-12-25 13:25:00,423 - [PROD_STOCK] - INFO - Processing 5249...
+2025-12-25 13:25:01,278 - [PROD_STOCK] - INFO - ✅ 9604: 2 intraday points
+2025-12-25 13:25:01,278 - [PROD_STOCK] - INFO - ✅ 9604: 0 historical points
+2025-12-25 13:25:01,288 - [PROD_STOCK] - INFO - 💾 9604: Saved 2 intraday rows
+2025-12-25 13:25:03,691 - [PROD_STOCK] - INFO - ✅ 9533: 1 intraday points
+2025-12-25 13:25:03,692 - [PROD_STOCK] - INFO - ✅ 9533: 0 historical points
+2025-12-25 13:25:03,707 - [PROD_STOCK] - INFO - 💾 9533: Saved 1 intraday rows
+2025-12-25 13:25:04,240 - [PROD_STOCK] - INFO - Processing 5313...
+2025-12-25 13:25:04,774 - [PROD_STOCK] - INFO - ✅ 9617: 12 intraday points
+2025-12-25 13:25:04,774 - [PROD_STOCK] - INFO - ✅ 9617: 0 historical points
+2025-12-25 13:25:04,791 - [PROD_STOCK] - INFO - 💾 9617: Saved 12 intraday rows
+2025-12-25 13:25:05,041 - [PROD_STOCK] - INFO - ✅ 2310: 304 intraday points
+2025-12-25 13:25:05,041 - [PROD_STOCK] - INFO - ✅ 2310: 0 historical points
+2025-12-25 13:25:05,064 - [PROD_STOCK] - INFO - 💾 2310: Saved 304 intraday rows
+2025-12-25 13:25:05,993 - [PROD_STOCK] - INFO - Processing 9532...
+2025-12-25 13:25:06,400 - [PROD_STOCK] - INFO - Processing 6070...
+2025-12-25 13:25:06,998 - [PROD_STOCK] - INFO - ✅ 5249: 1 intraday points
+2025-12-25 13:25:06,999 - [PROD_STOCK] - INFO - ✅ 5249: 0 historical points
+2025-12-25 13:25:07,031 - [PROD_STOCK] - INFO - 💾 5249: Saved 1 intraday rows
+2025-12-25 13:25:07,778 - [PROD_STOCK] - INFO - Processing 8190...
+2025-12-25 13:25:08,786 - [PROD_STOCK] - INFO - Processing 5021...
+2025-12-25 13:25:11,304 - [PROD_STOCK] - INFO - ✅ 9532: 38 intraday points
+2025-12-25 13:25:11,304 - [PROD_STOCK] - INFO - ✅ 9532: 0 historical points
+2025-12-25 13:25:11,327 - [PROD_STOCK] - INFO - 💾 9532: Saved 38 intraday rows
+2025-12-25 13:25:12,898 - [PROD_STOCK] - INFO - ✅ 6070: 126 intraday points
+2025-12-25 13:25:12,899 - [PROD_STOCK] - INFO - ✅ 6070: 0 historical points
+2025-12-25 13:25:12,917 - [PROD_STOCK] - INFO - 💾 6070: Saved 126 intraday rows
+2025-12-25 13:25:12,982 - [PROD_STOCK] - INFO - Processing 4082...
+2025-12-25 13:25:14,452 - [PROD_STOCK] - INFO - ✅ 8190: 110 intraday points
+2025-12-25 13:25:14,453 - [PROD_STOCK] - INFO - ✅ 8190: 0 historical points
+2025-12-25 13:25:14,487 - [PROD_STOCK] - INFO - 💾 8190: Saved 110 intraday rows
+2025-12-25 13:25:15,592 - [PROD_STOCK] - INFO - Processing 2287...
+2025-12-25 13:25:16,071 - [PROD_STOCK] - INFO - Processing 4323...
+2025-12-25 13:25:16,350 - [PROD_STOCK] - INFO - ✅ 5021: 6 intraday points
+2025-12-25 13:25:16,351 - [PROD_STOCK] - INFO - ✅ 5021: 0 historical points
+2025-12-25 13:25:16,382 - [PROD_STOCK] - INFO - 💾 5021: Saved 6 intraday rows
+2025-12-25 13:25:17,493 - [PROD_STOCK] - INFO - Processing 2110...
+2025-12-25 13:25:18,171 - [PROD_STOCK] - INFO - ✅ 4082: 63 intraday points
+2025-12-25 13:25:18,171 - [PROD_STOCK] - INFO - ✅ 4082: 0 historical points
+2025-12-25 13:25:18,216 - [PROD_STOCK] - INFO - 💾 4082: Saved 63 intraday rows
+2025-12-25 13:25:20,490 - [PROD_STOCK] - INFO - Processing 2320...
+2025-12-25 13:25:22,001 - [PROD_STOCK] - INFO - ✅ 2287: 148 intraday points
+2025-12-25 13:25:22,002 - [PROD_STOCK] - INFO - ✅ 2287: 0 historical points
+2025-12-25 13:25:22,027 - [PROD_STOCK] - INFO - 💾 2287: Saved 148 intraday rows
+2025-12-25 13:25:22,112 - [PROD_STOCK] - INFO - ✅ 4323: 96 intraday points
+2025-12-25 13:25:22,112 - [PROD_STOCK] - INFO - ✅ 4323: 0 historical points
+2025-12-25 13:25:22,150 - [PROD_STOCK] - INFO - 💾 4323: Saved 96 intraday rows
+2025-12-25 13:25:23,275 - [PROD_STOCK] - INFO - Processing 9572...
+2025-12-25 13:25:23,669 - [PROD_STOCK] - INFO - Processing 9567...
+2025-12-25 13:25:25,388 - [PROD_STOCK] - INFO - ✅ 2110: 137 intraday points
+2025-12-25 13:25:25,388 - [PROD_STOCK] - INFO - ✅ 2110: 0 historical points
+2025-12-25 13:25:25,410 - [PROD_STOCK] - INFO - 💾 2110: Saved 137 intraday rows
+2025-12-25 13:25:27,228 - [PROD_STOCK] - INFO - Processing 9403...
+2025-12-25 13:25:27,462 - [PROD_STOCK] - INFO - ✅ 2320: 249 intraday points
+2025-12-25 13:25:27,463 - [PROD_STOCK] - INFO - ✅ 2320: 0 historical points
+2025-12-25 13:25:27,486 - [PROD_STOCK] - ERROR - DB Error (intraday) 2320: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2320, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:25:27,689 - [PROD_STOCK] - WARNING - ⚠️ 5313: No charts found (might be invalid ticker)
+2025-12-25 13:25:27,720 - [PROD_STOCK] - WARNING - Attempt 1: 5313 returned no data
+2025-12-25 13:25:29,464 - [PROD_STOCK] - INFO - Processing 1060...
+2025-12-25 13:25:30,020 - [PROD_STOCK] - INFO - Processing 5313...
+2025-12-25 13:25:34,635 - [PROD_STOCK] - INFO - ✅ 9572: 6 intraday points
+2025-12-25 13:25:34,645 - [PROD_STOCK] - INFO - 💾 9572: Saved 6 intraday rows
+2025-12-25 13:25:35,003 - [PROD_STOCK] - INFO - ✅ 9567: 1 intraday points
+2025-12-25 13:25:35,017 - [PROD_STOCK] - INFO - 💾 9567: Saved 1 intraday rows
+2025-12-25 13:25:36,361 - [PROD_STOCK] - INFO - Processing 1150...
+2025-12-25 13:25:36,362 - [PROD_STOCK] - INFO - Processing 9626...
+2025-12-25 13:26:16,287 - [PROD_STOCK] - INFO - ✅ 1060: 179 intraday points
+2025-12-25 13:26:16,310 - [PROD_STOCK] - INFO - 💾 1060: Saved 179 intraday rows
+2025-12-25 13:26:17,048 - [PROD_STOCK] - INFO - ✅ 9403: 29 intraday points
+2025-12-25 13:26:17,057 - [PROD_STOCK] - INFO - 💾 9403: Saved 29 intraday rows
+2025-12-25 13:26:18,154 - [PROD_STOCK] - WARNING - ⚠️ 5313: No charts found (might be invalid ticker)
+2025-12-25 13:26:18,164 - [PROD_STOCK] - WARNING - Attempt 2: 5313 returned no data
+2025-12-25 13:26:19,193 - [PROD_STOCK] - INFO - Processing 4009...
+2025-12-25 13:26:19,878 - [PROD_STOCK] - INFO - Processing 4325...
+2025-12-25 13:26:20,048 - [PROD_STOCK] - INFO - ✅ 9626: 2 intraday points
+2025-12-25 13:26:20,077 - [PROD_STOCK] - INFO - 💾 9626: Saved 2 intraday rows
+2025-12-25 13:26:21,563 - [PROD_STOCK] - INFO - Processing 5274...
+2025-12-25 13:26:22,696 - [PROD_STOCK] - ERROR - ❌ Failed 5313 after retries
+2025-12-25 13:26:23,519 - [PROD_STOCK] - INFO - ✅ 1150: 309 intraday points
+2025-12-25 13:26:23,519 - [PROD_STOCK] - INFO - ✅ 1150: 0 historical points
+2025-12-25 13:26:23,540 - [PROD_STOCK] - ERROR - DB Error (intraday) 1150: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1150, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:26:24,645 - [PROD_STOCK] - INFO - Processing 4322...
+2025-12-25 13:26:25,395 - [PROD_STOCK] - INFO - Processing 9566...
+2025-12-25 13:26:50,853 - [PROD_STOCK] - INFO - ✅ 4009: 296 intraday points
+2025-12-25 13:26:50,872 - [PROD_STOCK] - INFO - 💾 4009: Saved 296 intraday rows
+2025-12-25 13:26:51,082 - [PROD_STOCK] - INFO - ✅ 5274: 8 intraday points
+2025-12-25 13:26:51,090 - [PROD_STOCK] - INFO - 💾 5274: Saved 8 intraday rows
+2025-12-25 13:26:52,494 - [PROD_STOCK] - INFO - Processing 4160...
+2025-12-25 13:26:53,438 - [PROD_STOCK] - INFO - Processing 6016...
+2025-12-25 13:26:57,285 - [PROD_STOCK] - INFO - ✅ 4325: 289 intraday points
+2025-12-25 13:26:57,298 - [PROD_STOCK] - ERROR - DB Error (intraday) 4325: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4325, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:26:57,997 - [PROD_STOCK] - INFO - ✅ 9566: 2 intraday points
+2025-12-25 13:26:58,004 - [PROD_STOCK] - INFO - 💾 9566: Saved 2 intraday rows
+2025-12-25 13:26:59,219 - [PROD_STOCK] - INFO - ✅ 4322: 257 intraday points
+2025-12-25 13:26:59,231 - [PROD_STOCK] - INFO - 💾 4322: Saved 257 intraday rows
+2025-12-25 13:26:59,576 - [PROD_STOCK] - INFO - Processing 9622...
+2025-12-25 13:27:00,561 - [PROD_STOCK] - INFO - Processing 7202...
+2025-12-25 13:27:01,727 - [PROD_STOCK] - INFO - Processing 9616...
+2025-12-25 13:27:28,268 - [PROD_STOCK] - INFO - ✅ 6016: 214 intraday points
+2025-12-25 13:27:28,284 - [PROD_STOCK] - INFO - 💾 6016: Saved 214 intraday rows
+2025-12-25 13:27:29,370 - [PROD_STOCK] - INFO - Processing 4090...
+2025-12-25 13:27:29,472 - [PROD_STOCK] - INFO - ✅ 4160: 150 intraday points
+2025-12-25 13:27:29,495 - [PROD_STOCK] - INFO - 💾 4160: Saved 150 intraday rows
+2025-12-25 13:27:29,981 - [PROD_STOCK] - INFO - ✅ 9616: 102 intraday points
+2025-12-25 13:27:29,991 - [PROD_STOCK] - INFO - 💾 9616: Saved 102 intraday rows
+2025-12-25 13:27:30,672 - [PROD_STOCK] - INFO - Processing 8010...
+2025-12-25 13:27:32,695 - [PROD_STOCK] - INFO - Processing 9590...
+2025-12-25 13:27:35,500 - [PROD_STOCK] - INFO - ✅ 9622: 1 intraday points
+2025-12-25 13:27:35,500 - [PROD_STOCK] - INFO - ✅ 9622: 0 historical points
+2025-12-25 13:27:35,509 - [PROD_STOCK] - INFO - 💾 9622: Saved 1 intraday rows
+2025-12-25 13:27:37,797 - [PROD_STOCK] - INFO - Processing 9547...
+2025-12-25 13:27:49,187 - [PROD_STOCK] - INFO - ✅ 8010: 245 intraday points
+2025-12-25 13:27:49,199 - [PROD_STOCK] - ERROR - DB Error (intraday) 8010: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(8010, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:27:49,268 - [PROD_STOCK] - INFO - ✅ 4090: 234 intraday points
+2025-12-25 13:27:49,282 - [PROD_STOCK] - ERROR - DB Error (intraday) 4090: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4090, 2025-12-22 13:55:00+02) already exists.
+2025-12-25 13:27:50,574 - [PROD_STOCK] - INFO - Processing 1830...
+2025-12-25 13:27:52,060 - [PROD_STOCK] - INFO - Processing 8160...
+2025-12-25 13:27:56,769 - [PROD_STOCK] - INFO - ✅ 7202: 192 intraday points
+2025-12-25 13:27:56,782 - [PROD_STOCK] - INFO - 💾 7202: Saved 192 intraday rows
+2025-12-25 13:27:59,135 - [PROD_STOCK] - INFO - ✅ 9590: 32 intraday points
+2025-12-25 13:27:59,145 - [PROD_STOCK] - INFO - 💾 9590: Saved 32 intraday rows
+2025-12-25 13:27:59,314 - [PROD_STOCK] - INFO - Processing 9408...
+2025-12-25 13:28:01,438 - [PROD_STOCK] - INFO - Processing 5338...
+2025-12-25 13:28:04,414 - [PROD_STOCK] - INFO - ✅ 9547: 1 intraday points
+2025-12-25 13:28:04,421 - [PROD_STOCK] - INFO - 💾 9547: Saved 1 intraday rows
+2025-12-25 13:28:06,764 - [PROD_STOCK] - INFO - Processing 9557...
+2025-12-25 13:28:18,300 - [PROD_STOCK] - INFO - ✅ 8160: 54 intraday points
+2025-12-25 13:28:18,311 - [PROD_STOCK] - INFO - 💾 8160: Saved 54 intraday rows
+2025-12-25 13:28:18,317 - [PROD_STOCK] - INFO - ✅ 1830: 199 intraday points
+2025-12-25 13:28:18,329 - [PROD_STOCK] - INFO - 💾 1830: Saved 199 intraday rows
+2025-12-25 13:28:19,648 - [PROD_STOCK] - INFO - Processing 4161...
+2025-12-25 13:28:21,070 - [PROD_STOCK] - INFO - Processing 1010...
+2025-12-25 13:28:27,717 - [PROD_STOCK] - INFO - ✅ 9408: 29 intraday points
+2025-12-25 13:28:27,718 - [PROD_STOCK] - INFO - ✅ 9408: 0 historical points
+2025-12-25 13:28:27,733 - [PROD_STOCK] - INFO - 💾 9408: Saved 29 intraday rows
+2025-12-25 13:28:29,070 - [PROD_STOCK] - INFO - Processing 3091...
+2025-12-25 13:28:30,433 - [PROD_STOCK] - INFO - ✅ 5338: 1 intraday points
+2025-12-25 13:28:30,434 - [PROD_STOCK] - INFO - ✅ 5338: 0 historical points
+2025-12-25 13:28:30,442 - [PROD_STOCK] - INFO - 💾 5338: Saved 1 intraday rows
+2025-12-25 13:28:33,441 - [PROD_STOCK] - INFO - Processing 3040...
+2025-12-25 13:28:36,910 - [PROD_STOCK] - INFO - ✅ 9557: 8 intraday points
+2025-12-25 13:28:36,910 - [PROD_STOCK] - INFO - ✅ 9557: 0 historical points
+2025-12-25 13:28:36,920 - [PROD_STOCK] - INFO - 💾 9557: Saved 8 intraday rows
+2025-12-25 13:28:38,322 - [PROD_STOCK] - INFO - Processing 1202...
+2025-12-25 13:28:44,988 - [PROD_STOCK] - INFO - ✅ 1010: 234 intraday points
+2025-12-25 13:28:45,001 - [PROD_STOCK] - INFO - 💾 1010: Saved 234 intraday rows
+2025-12-25 13:28:45,049 - [PROD_STOCK] - INFO - ✅ 4161: 205 intraday points
+2025-12-25 13:28:45,061 - [PROD_STOCK] - INFO - 💾 4161: Saved 205 intraday rows
+2025-12-25 13:28:47,482 - [PROD_STOCK] - INFO - Processing 2082...
+2025-12-25 13:28:48,020 - [PROD_STOCK] - INFO - Processing 9608...
+2025-12-25 13:28:55,818 - [PROD_STOCK] - INFO - ✅ 3040: 187 intraday points
+2025-12-25 13:28:55,834 - [PROD_STOCK] - ERROR - DB Error (intraday) 3040: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(3040, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:28:55,898 - [PROD_STOCK] - INFO - ✅ 3091: 94 intraday points
+2025-12-25 13:28:55,911 - [PROD_STOCK] - INFO - 💾 3091: Saved 94 intraday rows
+2025-12-25 13:28:57,075 - [PROD_STOCK] - INFO - Processing 1180...
+2025-12-25 13:28:58,788 - [PROD_STOCK] - INFO - Processing 7040...
+2025-12-25 13:29:03,921 - [PROD_STOCK] - INFO - ✅ 1202: 190 intraday points
+2025-12-25 13:29:03,939 - [PROD_STOCK] - INFO - 💾 1202: Saved 190 intraday rows
+2025-12-25 13:29:05,020 - [PROD_STOCK] - INFO - Processing 9521...
+2025-12-25 13:29:11,187 - [PROD_STOCK] - INFO - ✅ 9608: 5 intraday points
+2025-12-25 13:29:11,187 - [PROD_STOCK] - INFO - ✅ 9608: 0 historical points
+2025-12-25 13:29:11,194 - [PROD_STOCK] - INFO - 💾 9608: Saved 5 intraday rows
+2025-12-25 13:29:12,217 - [PROD_STOCK] - INFO - ✅ 2082: 290 intraday points
+2025-12-25 13:29:12,230 - [PROD_STOCK] - ERROR - DB Error (intraday) 2082: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2082, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:29:13,387 - [PROD_STOCK] - INFO - Processing 4170...
+2025-12-25 13:29:14,670 - [PROD_STOCK] - INFO - Processing 2222...
+2025-12-25 13:29:23,787 - [PROD_STOCK] - INFO - ✅ 1180: 266 intraday points
+2025-12-25 13:29:23,803 - [PROD_STOCK] - INFO - 💾 1180: Saved 266 intraday rows
+2025-12-25 13:29:25,354 - [PROD_STOCK] - INFO - Processing 5019...
+2025-12-25 13:29:29,669 - [PROD_STOCK] - INFO - ✅ 7040: 239 intraday points
+2025-12-25 13:29:29,682 - [PROD_STOCK] - INFO - 💾 7040: Saved 239 intraday rows
+2025-12-25 13:29:31,345 - [PROD_STOCK] - INFO - Processing 9635...
+2025-12-25 13:29:34,838 - [PROD_STOCK] - INFO - ✅ 9521: 60 intraday points
+2025-12-25 13:29:34,838 - [PROD_STOCK] - INFO - ✅ 9521: 0 historical points
+2025-12-25 13:29:34,848 - [PROD_STOCK] - INFO - 💾 9521: Saved 60 intraday rows
+2025-12-25 13:29:37,799 - [PROD_STOCK] - INFO - Processing 9592...
+2025-12-25 13:29:39,034 - [PROD_STOCK] - INFO - ✅ 4170: 251 intraday points
+2025-12-25 13:29:39,047 - [PROD_STOCK] - ERROR - DB Error (intraday) 4170: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4170, 2025-12-22 11:30:00+02) already exists.
+2025-12-25 13:29:40,013 - [PROD_STOCK] - INFO - ✅ 2222: 311 intraday points
+2025-12-25 13:29:40,014 - [PROD_STOCK] - INFO - ✅ 2222: 0 historical points
+2025-12-25 13:29:40,030 - [PROD_STOCK] - ERROR - DB Error (intraday) 2222: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2222, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:29:41,465 - [PROD_STOCK] - INFO - Processing 9649...
+2025-12-25 13:29:41,866 - [PROD_STOCK] - INFO - Processing 9637...
+2025-12-25 13:29:48,322 - [PROD_STOCK] - INFO - ✅ 5019: 2 intraday points
+2025-12-25 13:29:48,325 - [PROD_STOCK] - INFO - ✅ 5019: 0 historical points
+2025-12-25 13:29:48,344 - [PROD_STOCK] - INFO - 💾 5019: Saved 2 intraday rows
+2025-12-25 13:29:50,764 - [PROD_STOCK] - INFO - Processing 5246...
+2025-12-25 13:29:56,117 - [PROD_STOCK] - INFO - ✅ 9635: 6 intraday points
+2025-12-25 13:29:56,118 - [PROD_STOCK] - INFO - ✅ 9635: 0 historical points
+2025-12-25 13:29:56,147 - [PROD_STOCK] - INFO - 💾 9635: Saved 6 intraday rows
+2025-12-25 13:29:57,444 - [PROD_STOCK] - INFO - Processing 9527...
+2025-12-25 13:30:03,952 - [PROD_STOCK] - INFO - ✅ 9592: 8 intraday points
+2025-12-25 13:30:03,954 - [PROD_STOCK] - INFO - ✅ 9592: 0 historical points
+2025-12-25 13:30:03,967 - [PROD_STOCK] - INFO - 💾 9592: Saved 8 intraday rows
+2025-12-25 13:30:04,601 - [PROD_STOCK] - INFO - ✅ 9649: 1 intraday points
+2025-12-25 13:30:04,601 - [PROD_STOCK] - INFO - ✅ 9649: 0 historical points
+2025-12-25 13:30:04,613 - [PROD_STOCK] - INFO - 💾 9649: Saved 1 intraday rows
+2025-12-25 13:30:05,470 - [PROD_STOCK] - INFO - Processing 9560...
+2025-12-25 13:30:06,565 - [PROD_STOCK] - INFO - Processing 1322...
+2025-12-25 13:30:09,834 - [PROD_STOCK] - INFO - ✅ 9637: 10 intraday points
+2025-12-25 13:30:09,834 - [PROD_STOCK] - INFO - ✅ 9637: 0 historical points
+2025-12-25 13:30:09,846 - [PROD_STOCK] - INFO - 💾 9637: Saved 10 intraday rows
+2025-12-25 13:30:11,548 - [PROD_STOCK] - INFO - Processing 9575...
+2025-12-25 13:30:12,801 - [PROD_STOCK] - INFO - ✅ 5246: 1 intraday points
+2025-12-25 13:30:12,801 - [PROD_STOCK] - INFO - ✅ 5246: 0 historical points
+2025-12-25 13:30:12,814 - [PROD_STOCK] - INFO - 💾 5246: Saved 1 intraday rows
+2025-12-25 13:30:14,991 - [PROD_STOCK] - INFO - Processing 9412...
+2025-12-25 13:30:21,817 - [PROD_STOCK] - INFO - ✅ 9527: 14 intraday points
+2025-12-25 13:30:21,829 - [PROD_STOCK] - INFO - 💾 9527: Saved 14 intraday rows
+2025-12-25 13:30:23,862 - [PROD_STOCK] - INFO - Processing 5022...
+2025-12-25 13:30:30,120 - [PROD_STOCK] - INFO - ✅ 1322: 289 intraday points
+2025-12-25 13:30:30,121 - [PROD_STOCK] - INFO - ✅ 1322: 0 historical points
+2025-12-25 13:30:30,136 - [PROD_STOCK] - INFO - 💾 1322: Saved 289 intraday rows
+2025-12-25 13:30:30,179 - [PROD_STOCK] - INFO - ✅ 9560: 7 intraday points
+2025-12-25 13:30:30,185 - [PROD_STOCK] - INFO - 💾 9560: Saved 7 intraday rows
+2025-12-25 13:30:31,888 - [PROD_STOCK] - INFO - Processing 3007...
+2025-12-25 13:30:32,160 - [PROD_STOCK] - INFO - Processing 4040...
+2025-12-25 13:30:36,746 - [PROD_STOCK] - INFO - ✅ 9575: 4 intraday points
+2025-12-25 13:30:36,747 - [PROD_STOCK] - INFO - ✅ 9575: 0 historical points
+2025-12-25 13:30:36,759 - [PROD_STOCK] - INFO - 💾 9575: Saved 4 intraday rows
+2025-12-25 13:30:39,214 - [PROD_STOCK] - INFO - ✅ 9412: 19 intraday points
+2025-12-25 13:30:39,214 - [PROD_STOCK] - INFO - ✅ 9412: 0 historical points
+2025-12-25 13:30:39,221 - [PROD_STOCK] - INFO - 💾 9412: Saved 19 intraday rows
+2025-12-25 13:30:39,811 - [PROD_STOCK] - INFO - Processing 1213...
+2025-12-25 13:30:41,945 - [PROD_STOCK] - INFO - Processing 4261...
+2025-12-25 13:30:44,570 - [PROD_STOCK] - INFO - ✅ 5022: 6 intraday points
+2025-12-25 13:30:44,570 - [PROD_STOCK] - INFO - ✅ 5022: 0 historical points
+2025-12-25 13:30:44,579 - [PROD_STOCK] - INFO - 💾 5022: Saved 6 intraday rows
+2025-12-25 13:30:46,510 - [PROD_STOCK] - INFO - Processing 9605...
+2025-12-25 13:31:00,916 - [PROD_STOCK] - INFO - ✅ 1213: 194 intraday points
+2025-12-25 13:31:00,931 - [PROD_STOCK] - INFO - 💾 1213: Saved 194 intraday rows
+2025-12-25 13:31:02,972 - [PROD_STOCK] - INFO - Processing 3020...
+2025-12-25 13:31:03,550 - [PROD_STOCK] - INFO - ✅ 3007: 109 intraday points
+2025-12-25 13:31:03,550 - [PROD_STOCK] - INFO - ✅ 3007: 0 historical points
+2025-12-25 13:31:03,561 - [PROD_STOCK] - INFO - 💾 3007: Saved 109 intraday rows
+2025-12-25 13:31:04,590 - [PROD_STOCK] - INFO - ✅ 4040: 175 intraday points
+2025-12-25 13:31:04,601 - [PROD_STOCK] - INFO - 💾 4040: Saved 175 intraday rows
+2025-12-25 13:31:05,846 - [PROD_STOCK] - INFO - Processing 6002...
+2025-12-25 13:31:06,017 - [PROD_STOCK] - INFO - Processing 5318...
+2025-12-25 13:31:12,623 - [PROD_STOCK] - INFO - ✅ 4261: 217 intraday points
+2025-12-25 13:31:12,623 - [PROD_STOCK] - INFO - ✅ 4261: 0 historical points
+2025-12-25 13:31:12,637 - [PROD_STOCK] - INFO - 💾 4261: Saved 217 intraday rows
+2025-12-25 13:31:13,301 - [PROD_STOCK] - INFO - ✅ 9605: 4 intraday points
+2025-12-25 13:31:13,301 - [PROD_STOCK] - INFO - ✅ 9605: 0 historical points
+2025-12-25 13:31:13,310 - [PROD_STOCK] - INFO - 💾 9605: Saved 4 intraday rows
+2025-12-25 13:31:15,067 - [PROD_STOCK] - INFO - Processing 4350...
+2025-12-25 13:31:15,217 - [PROD_STOCK] - INFO - Processing 4164...
+2025-12-25 13:31:29,697 - [PROD_STOCK] - INFO - ✅ 5318: 1 intraday points
+2025-12-25 13:31:29,698 - [PROD_STOCK] - INFO - ✅ 5318: 0 historical points
+2025-12-25 13:31:29,708 - [PROD_STOCK] - INFO - 💾 5318: Saved 1 intraday rows
+2025-12-25 13:31:30,734 - [PROD_STOCK] - INFO - ✅ 3020: 177 intraday points
+2025-12-25 13:31:30,744 - [PROD_STOCK] - INFO - 💾 3020: Saved 177 intraday rows
+2025-12-25 13:31:30,933 - [PROD_STOCK] - INFO - Processing 1835...
+2025-12-25 13:31:32,215 - [PROD_STOCK] - INFO - ✅ 6002: 138 intraday points
+2025-12-25 13:31:32,247 - [PROD_STOCK] - INFO - 💾 6002: Saved 138 intraday rows
+2025-12-25 13:31:33,637 - [PROD_STOCK] - INFO - Processing 1140...
+2025-12-25 13:31:34,834 - [PROD_STOCK] - INFO - Processing 9636...
+2025-12-25 13:31:41,237 - [PROD_STOCK] - INFO - ✅ 4350: 125 intraday points
+2025-12-25 13:31:41,252 - [PROD_STOCK] - INFO - 💾 4350: Saved 125 intraday rows
+2025-12-25 13:31:41,416 - [PROD_STOCK] - INFO - ✅ 4164: 252 intraday points
+2025-12-25 13:31:41,432 - [PROD_STOCK] - ERROR - DB Error (intraday) 4164: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4164, 2025-12-22 12:33:00+02) already exists.
+2025-12-25 13:31:42,593 - [PROD_STOCK] - INFO - Processing 3004...
+2025-12-25 13:31:44,225 - [PROD_STOCK] - INFO - Processing 1020...
+2025-12-25 13:31:55,233 - [PROD_STOCK] - INFO - ✅ 1835: 134 intraday points
+2025-12-25 13:31:55,251 - [PROD_STOCK] - ERROR - DB Error (intraday) 1835: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1835, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:31:57,350 - [PROD_STOCK] - INFO - Processing 9614...
+2025-12-25 13:32:00,252 - [PROD_STOCK] - INFO - ✅ 1140: 279 intraday points
+2025-12-25 13:32:00,266 - [PROD_STOCK] - ERROR - DB Error (intraday) 1140: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1140, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:32:01,500 - [PROD_STOCK] - INFO - Processing 8260...
+2025-12-25 13:32:06,947 - [PROD_STOCK] - INFO - ✅ 9636: 1 intraday points
+2025-12-25 13:32:06,959 - [PROD_STOCK] - INFO - 💾 9636: Saved 1 intraday rows
+2025-12-25 13:32:08,782 - [PROD_STOCK] - INFO - Processing 9580...
+2025-12-25 13:32:10,438 - [PROD_STOCK] - INFO - ✅ 3004: 177 intraday points
+2025-12-25 13:32:10,450 - [PROD_STOCK] - INFO - 💾 3004: Saved 177 intraday rows
+2025-12-25 13:32:13,145 - [PROD_STOCK] - INFO - Processing 2120...
+2025-12-25 13:32:22,141 - [PROD_STOCK] - INFO - ✅ 1020: 307 intraday points
+2025-12-25 13:32:22,159 - [PROD_STOCK] - ERROR - DB Error (intraday) 1020: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1020, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:32:23,589 - [PROD_STOCK] - INFO - Processing 9601...
+2025-12-25 13:32:41,743 - [PROD_STOCK] - ERROR - ❌ 9601: Page.goto: net::ERR_CONNECTION_RESET at https://www.mubasher.info/markets/TDWL/stocks/9601
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9601", waiting until "domcontentloaded"
+
+2025-12-25 13:32:41,752 - [PROD_STOCK] - WARNING - Attempt 1: 9601 returned no data
+2025-12-25 13:32:46,207 - [PROD_STOCK] - INFO - Processing 9601...
+2025-12-25 13:32:58,114 - [PROD_STOCK] - INFO - ✅ 8260: 123 intraday points
+2025-12-25 13:32:58,129 - [PROD_STOCK] - INFO - 💾 8260: Saved 123 intraday rows
+2025-12-25 13:33:00,142 - [PROD_STOCK] - INFO - Processing 4346...
+2025-12-25 13:33:01,613 - [PROD_STOCK] - INFO - ✅ 9580: 5 intraday points
+2025-12-25 13:33:01,619 - [PROD_STOCK] - INFO - 💾 9580: Saved 5 intraday rows
+2025-12-25 13:33:02,180 - [PROD_STOCK] - INFO - ✅ 9614: 6 intraday points
+2025-12-25 13:33:02,189 - [PROD_STOCK] - INFO - 💾 9614: Saved 6 intraday rows
+2025-12-25 13:33:03,326 - [PROD_STOCK] - INFO - Processing 4150...
+2025-12-25 13:33:04,424 - [PROD_STOCK] - INFO - Processing 9569...
+2025-12-25 13:33:07,264 - [PROD_STOCK] - INFO - ✅ 2120: 146 intraday points
+2025-12-25 13:33:07,273 - [PROD_STOCK] - INFO - 💾 2120: Saved 146 intraday rows
+2025-12-25 13:33:09,550 - [PROD_STOCK] - INFO - Processing 5339...
+2025-12-25 13:33:13,266 - [PROD_STOCK] - INFO - ✅ 9601: 13 intraday points
+2025-12-25 13:33:13,276 - [PROD_STOCK] - INFO - 💾 9601: Saved 13 intraday rows
+2025-12-25 13:33:14,996 - [PROD_STOCK] - INFO - Processing 9644...
+2025-12-25 13:33:25,329 - [PROD_STOCK] - ERROR - ❌ 9644: Page.goto: net::ERR_CONNECTION_RESET at https://www.mubasher.info/markets/TDWL/stocks/9644
+Call log:
+  - navigating to "https://www.mubasher.info/markets/TDWL/stocks/9644", waiting until "domcontentloaded"
+
+2025-12-25 13:33:25,336 - [PROD_STOCK] - WARNING - Attempt 1: 9644 returned no data
+2025-12-25 13:33:29,803 - [PROD_STOCK] - INFO - Processing 9644...
+2025-12-25 13:33:34,649 - [PROD_STOCK] - INFO - ✅ 4150: 152 intraday points
+2025-12-25 13:33:34,665 - [PROD_STOCK] - INFO - 💾 4150: Saved 152 intraday rows
+2025-12-25 13:33:35,970 - [PROD_STOCK] - INFO - ✅ 9569: 5 intraday points
+2025-12-25 13:33:35,970 - [PROD_STOCK] - INFO - ✅ 9569: 0 historical points
+2025-12-25 13:33:35,976 - [PROD_STOCK] - INFO - 💾 9569: Saved 5 intraday rows
+2025-12-25 13:33:37,477 - [PROD_STOCK] - INFO - Processing 9550...
+2025-12-25 13:33:37,480 - [PROD_STOCK] - INFO - ✅ 4346: 62 intraday points
+2025-12-25 13:33:37,489 - [PROD_STOCK] - INFO - 💾 4346: Saved 62 intraday rows
+2025-12-25 13:33:37,711 - [PROD_STOCK] - INFO - Processing 9621...
+2025-12-25 13:33:39,549 - [PROD_STOCK] - INFO - ✅ 5339: 1 intraday points
+2025-12-25 13:33:39,549 - [PROD_STOCK] - INFO - ✅ 5339: 0 historical points
+2025-12-25 13:33:39,558 - [PROD_STOCK] - INFO - 💾 5339: Saved 1 intraday rows
+2025-12-25 13:33:39,735 - [PROD_STOCK] - INFO - Processing 4144...
+2025-12-25 13:33:42,536 - [PROD_STOCK] - INFO - Processing 3080...
+2025-12-25 13:33:52,049 - [PROD_STOCK] - INFO - ✅ 9644: 1 intraday points
+2025-12-25 13:33:52,050 - [PROD_STOCK] - INFO - ✅ 9644: 0 historical points
+2025-12-25 13:33:52,063 - [PROD_STOCK] - INFO - 💾 9644: Saved 1 intraday rows
+2025-12-25 13:33:53,655 - [PROD_STOCK] - INFO - Processing 6010...
+2025-12-25 13:33:58,297 - [PROD_STOCK] - INFO - ✅ 9550: 34 intraday points
+2025-12-25 13:33:58,305 - [PROD_STOCK] - INFO - 💾 9550: Saved 34 intraday rows
+2025-12-25 13:33:59,701 - [PROD_STOCK] - INFO - ✅ 4144: 115 intraday points
+2025-12-25 13:33:59,714 - [PROD_STOCK] - INFO - 💾 4144: Saved 115 intraday rows
+2025-12-25 13:34:00,833 - [PROD_STOCK] - INFO - Processing 2330...
+2025-12-25 13:34:01,210 - [PROD_STOCK] - INFO - Processing 9411...
+2025-12-25 13:34:02,165 - [PROD_STOCK] - INFO - ✅ 9621: 2 intraday points
+2025-12-25 13:34:02,165 - [PROD_STOCK] - INFO - ✅ 9621: 0 historical points
+2025-12-25 13:34:02,172 - [PROD_STOCK] - INFO - 💾 9621: Saved 2 intraday rows
+2025-12-25 13:34:05,211 - [PROD_STOCK] - INFO - Processing 9536...
+2025-12-25 13:34:06,785 - [PROD_STOCK] - INFO - ✅ 3080: 117 intraday points
+2025-12-25 13:34:06,785 - [PROD_STOCK] - INFO - ✅ 3080: 0 historical points
+2025-12-25 13:34:06,798 - [PROD_STOCK] - INFO - 💾 3080: Saved 117 intraday rows
+2025-12-25 13:34:07,957 - [PROD_STOCK] - INFO - Processing 3060...
+2025-12-25 13:34:14,865 - [PROD_STOCK] - INFO - ✅ 6010: 200 intraday points
+2025-12-25 13:34:14,877 - [PROD_STOCK] - INFO - 💾 6010: Saved 200 intraday rows
+2025-12-25 13:34:17,303 - [PROD_STOCK] - INFO - Processing 8050...
+2025-12-25 13:34:30,867 - [PROD_STOCK] - INFO - ✅ 9411: 16 intraday points
+2025-12-25 13:34:30,868 - [PROD_STOCK] - INFO - ✅ 9411: 0 historical points
+2025-12-25 13:34:30,881 - [PROD_STOCK] - INFO - 💾 9411: Saved 16 intraday rows
+2025-12-25 13:34:31,608 - [PROD_STOCK] - INFO - ✅ 9536: 3 intraday points
+2025-12-25 13:34:31,608 - [PROD_STOCK] - INFO - ✅ 9536: 0 historical points
+2025-12-25 13:34:31,615 - [PROD_STOCK] - INFO - 💾 9536: Saved 3 intraday rows
+2025-12-25 13:34:33,119 - [PROD_STOCK] - INFO - ✅ 2330: 234 intraday points
+2025-12-25 13:34:33,133 - [PROD_STOCK] - INFO - 💾 2330: Saved 234 intraday rows
+2025-12-25 13:34:33,231 - [PROD_STOCK] - INFO - Processing 9602...
+2025-12-25 13:34:33,512 - [PROD_STOCK] - INFO - Processing 9619...
+2025-12-25 13:34:35,424 - [PROD_STOCK] - INFO - Processing 5306...
+2025-12-25 13:34:36,889 - [PROD_STOCK] - INFO - ✅ 3060: 244 intraday points
+2025-12-25 13:34:36,889 - [PROD_STOCK] - INFO - ✅ 3060: 0 historical points
+2025-12-25 13:34:36,902 - [PROD_STOCK] - ERROR - DB Error (intraday) 3060: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(3060, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:34:39,055 - [PROD_STOCK] - INFO - Processing 9561...
+2025-12-25 13:34:41,178 - [PROD_STOCK] - INFO - ✅ 8050: 130 intraday points
+2025-12-25 13:34:41,179 - [PROD_STOCK] - INFO - ✅ 8050: 0 historical points
+2025-12-25 13:34:41,190 - [PROD_STOCK] - INFO - 💾 8050: Saved 130 intraday rows
+2025-12-25 13:34:42,855 - [PROD_STOCK] - INFO - Processing 8200...
+2025-12-25 13:34:54,134 - [PROD_STOCK] - INFO - ✅ 9619: 11 intraday points
+2025-12-25 13:34:54,135 - [PROD_STOCK] - INFO - ✅ 9619: 0 historical points
+2025-12-25 13:34:54,141 - [PROD_STOCK] - INFO - ✅ 9602: 5 intraday points
+2025-12-25 13:34:54,141 - [PROD_STOCK] - INFO - ✅ 9602: 0 historical points
+2025-12-25 13:34:54,165 - [PROD_STOCK] - INFO - 💾 9619: Saved 11 intraday rows
+2025-12-25 13:34:54,174 - [PROD_STOCK] - INFO - 💾 9602: Saved 5 intraday rows
+2025-12-25 13:34:55,642 - [PROD_STOCK] - INFO - Processing 2286...
+2025-12-25 13:34:55,909 - [PROD_STOCK] - INFO - Processing 3092...
+2025-12-25 13:35:01,508 - [PROD_STOCK] - INFO - ✅ 9561: 24 intraday points
+2025-12-25 13:35:01,509 - [PROD_STOCK] - INFO - ✅ 9561: 0 historical points
+2025-12-25 13:35:01,520 - [PROD_STOCK] - INFO - 💾 9561: Saved 24 intraday rows
+2025-12-25 13:35:03,727 - [PROD_STOCK] - INFO - Processing 6004...
+2025-12-25 13:35:06,384 - [PROD_STOCK] - INFO - ✅ 8200: 259 intraday points
+2025-12-25 13:35:06,396 - [PROD_STOCK] - ERROR - DB Error (intraday) 8200: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(8200, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:35:07,523 - [PROD_STOCK] - INFO - Processing 7203...
+2025-12-25 13:35:12,179 - [PROD_STOCK] - WARNING - ⚠️ 5306: No charts found (might be invalid ticker)
+2025-12-25 13:35:12,199 - [PROD_STOCK] - WARNING - Attempt 1: 5306 returned no data
+2025-12-25 13:35:14,951 - [PROD_STOCK] - INFO - ✅ 2286: 190 intraday points
+2025-12-25 13:35:14,951 - [PROD_STOCK] - INFO - ✅ 2286: 0 historical points
+2025-12-25 13:35:14,967 - [PROD_STOCK] - ERROR - DB Error (intraday) 2286: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2286, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:35:15,975 - [PROD_STOCK] - INFO - Processing 5306...
+2025-12-25 13:35:17,458 - [PROD_STOCK] - INFO - Processing 4019...
+2025-12-25 13:35:20,494 - [PROD_STOCK] - INFO - ✅ 3092: 139 intraday points
+2025-12-25 13:35:20,495 - [PROD_STOCK] - INFO - ✅ 3092: 0 historical points
+2025-12-25 13:35:20,505 - [PROD_STOCK] - INFO - 💾 3092: Saved 139 intraday rows
+2025-12-25 13:35:23,285 - [PROD_STOCK] - INFO - Processing 9541...
+2025-12-25 13:35:25,341 - [PROD_STOCK] - INFO - ✅ 6004: 233 intraday points
+2025-12-25 13:35:25,354 - [PROD_STOCK] - INFO - 💾 6004: Saved 233 intraday rows
+2025-12-25 13:35:27,836 - [PROD_STOCK] - INFO - Processing 4016...
+2025-12-25 13:35:29,299 - [PROD_STOCK] - INFO - ✅ 7203: 297 intraday points
+2025-12-25 13:35:29,299 - [PROD_STOCK] - INFO - ✅ 7203: 0 historical points
+2025-12-25 13:35:29,311 - [PROD_STOCK] - ERROR - DB Error (intraday) 7203: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(7203, 2025-12-22 12:22:00+02) already exists.
+2025-12-25 13:35:32,164 - [PROD_STOCK] - INFO - Processing 4031...
+2025-12-25 13:35:38,685 - [PROD_STOCK] - INFO - ✅ 4019: 223 intraday points
+2025-12-25 13:35:38,686 - [PROD_STOCK] - INFO - ✅ 4019: 0 historical points
+2025-12-25 13:35:38,698 - [PROD_STOCK] - INFO - 💾 4019: Saved 223 intraday rows
+2025-12-25 13:35:39,951 - [PROD_STOCK] - INFO - Processing 9624...
+2025-12-25 13:35:43,008 - [PROD_STOCK] - INFO - ✅ 9541: 19 intraday points
+2025-12-25 13:35:43,008 - [PROD_STOCK] - INFO - ✅ 9541: 0 historical points
+2025-12-25 13:35:43,016 - [PROD_STOCK] - INFO - 💾 9541: Saved 19 intraday rows
+2025-12-25 13:35:45,270 - [PROD_STOCK] - INFO - Processing 4326...
+2025-12-25 13:35:48,737 - [PROD_STOCK] - INFO - ✅ 4016: 156 intraday points
+2025-12-25 13:35:48,737 - [PROD_STOCK] - INFO - ✅ 4016: 0 historical points
+2025-12-25 13:35:48,748 - [PROD_STOCK] - INFO - 💾 4016: Saved 156 intraday rows
+2025-12-25 13:35:51,695 - [PROD_STOCK] - INFO - Processing 9559...
+2025-12-25 13:35:52,121 - [PROD_STOCK] - WARNING - ⚠️ 5306: No charts found (might be invalid ticker)
+2025-12-25 13:35:52,139 - [PROD_STOCK] - WARNING - Attempt 2: 5306 returned no data
+2025-12-25 13:35:55,056 - [PROD_STOCK] - ERROR - ❌ Failed 5306 after retries
+2025-12-25 13:35:56,216 - [PROD_STOCK] - INFO - Processing 9631...
+2025-12-25 13:35:58,006 - [PROD_STOCK] - INFO - ✅ 4031: 304 intraday points
+2025-12-25 13:35:58,006 - [PROD_STOCK] - INFO - ✅ 4031: 0 historical points
+2025-12-25 13:35:58,019 - [PROD_STOCK] - INFO - 💾 4031: Saved 304 intraday rows
+2025-12-25 13:36:00,918 - [PROD_STOCK] - INFO - Processing 4146...
+2025-12-25 13:36:10,618 - [PROD_STOCK] - INFO - ✅ 4326: 240 intraday points
+2025-12-25 13:36:10,619 - [PROD_STOCK] - INFO - ✅ 4326: 0 historical points
+2025-12-25 13:36:10,632 - [PROD_STOCK] - INFO - 💾 4326: Saved 240 intraday rows
+2025-12-25 13:36:13,057 - [PROD_STOCK] - INFO - Processing 1302...
+2025-12-25 13:36:13,117 - [PROD_STOCK] - INFO - ✅ 9624: 1 intraday points
+2025-12-25 13:36:13,117 - [PROD_STOCK] - INFO - ✅ 9624: 0 historical points
+2025-12-25 13:36:13,125 - [PROD_STOCK] - INFO - 💾 9624: Saved 1 intraday rows
+2025-12-25 13:36:15,626 - [PROD_STOCK] - INFO - Processing 4265...
+2025-12-25 13:36:16,788 - [PROD_STOCK] - INFO - ✅ 9559: 13 intraday points
+2025-12-25 13:36:16,789 - [PROD_STOCK] - INFO - ✅ 9559: 0 historical points
+2025-12-25 13:36:16,796 - [PROD_STOCK] - INFO - 💾 9559: Saved 13 intraday rows
+2025-12-25 13:36:18,587 - [PROD_STOCK] - INFO - Processing 8311...
+2025-12-25 13:36:24,599 - [PROD_STOCK] - INFO - ✅ 4146: 145 intraday points
+2025-12-25 13:36:24,612 - [PROD_STOCK] - INFO - 💾 4146: Saved 145 intraday rows
+2025-12-25 13:36:24,616 - [PROD_STOCK] - INFO - ✅ 9631: 6 intraday points
+2025-12-25 13:36:24,616 - [PROD_STOCK] - INFO - ✅ 9631: 0 historical points
+2025-12-25 13:36:24,623 - [PROD_STOCK] - INFO - 💾 9631: Saved 6 intraday rows
+2025-12-25 13:36:27,073 - [PROD_STOCK] - INFO - Processing 5336...
+2025-12-25 13:36:27,367 - [PROD_STOCK] - INFO - Processing 9552...
+2025-12-25 13:36:37,715 - [PROD_STOCK] - INFO - ✅ 1302: 175 intraday points
+2025-12-25 13:36:37,726 - [PROD_STOCK] - INFO - 💾 1302: Saved 175 intraday rows
+2025-12-25 13:36:39,426 - [PROD_STOCK] - INFO - ✅ 4265: 302 intraday points
+2025-12-25 13:36:39,426 - [PROD_STOCK] - INFO - ✅ 4265: 0 historical points
+2025-12-25 13:36:39,449 - [PROD_STOCK] - ERROR - DB Error (intraday) 4265: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4265, 2025-12-22 10:26:00+02) already exists.
+2025-12-25 13:36:39,783 - [PROD_STOCK] - INFO - Processing 6017...
+2025-12-25 13:36:41,635 - [PROD_STOCK] - INFO - Processing 9546...
+2025-12-25 13:36:49,727 - [PROD_STOCK] - INFO - ✅ 8311: 82 intraday points
+2025-12-25 13:36:49,728 - [PROD_STOCK] - INFO - ✅ 8311: 0 historical points
+2025-12-25 13:36:49,736 - [PROD_STOCK] - INFO - 💾 8311: Saved 82 intraday rows
+2025-12-25 13:36:52,532 - [PROD_STOCK] - INFO - Processing 4001...
+2025-12-25 13:36:53,726 - [PROD_STOCK] - INFO - ✅ 9552: 2 intraday points
+2025-12-25 13:36:53,726 - [PROD_STOCK] - INFO - ✅ 9552: 0 historical points
+2025-12-25 13:36:53,734 - [PROD_STOCK] - INFO - 💾 9552: Saved 2 intraday rows
+2025-12-25 13:36:56,367 - [PROD_STOCK] - INFO - Processing 2080...
+2025-12-25 13:37:08,231 - [PROD_STOCK] - WARNING - ⚠️ 5336: No charts found (might be invalid ticker)
+2025-12-25 13:37:08,243 - [PROD_STOCK] - WARNING - Attempt 1: 5336 returned no data
+2025-12-25 13:37:08,810 - [PROD_STOCK] - INFO - ✅ 9546: 5 intraday points
+2025-12-25 13:37:08,810 - [PROD_STOCK] - INFO - ✅ 9546: 0 historical points
+2025-12-25 13:37:08,821 - [PROD_STOCK] - INFO - ✅ 6017: 293 intraday points
+2025-12-25 13:37:08,821 - [PROD_STOCK] - INFO - ✅ 6017: 0 historical points
+2025-12-25 13:37:08,834 - [PROD_STOCK] - INFO - 💾 9546: Saved 5 intraday rows
+2025-12-25 13:37:08,838 - [PROD_STOCK] - ERROR - DB Error (intraday) 6017: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(6017, 2025-12-22 13:14:00+02) already exists.
+2025-12-25 13:37:10,890 - [PROD_STOCK] - INFO - Processing 1111...
+2025-12-25 13:37:11,700 - [PROD_STOCK] - INFO - Processing 9587...
+2025-12-25 13:37:13,000 - [PROD_STOCK] - INFO - Processing 5336...
+2025-12-25 13:37:14,069 - [PROD_STOCK] - INFO - ✅ 4001: 299 intraday points
+2025-12-25 13:37:14,083 - [PROD_STOCK] - ERROR - DB Error (intraday) 4001: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4001, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:37:15,273 - [PROD_STOCK] - INFO - Processing 2210...
+2025-12-25 13:37:16,941 - [PROD_STOCK] - INFO - ✅ 2080: 259 intraday points
+2025-12-25 13:37:16,960 - [PROD_STOCK] - INFO - 💾 2080: Saved 259 intraday rows
+2025-12-25 13:37:19,663 - [PROD_STOCK] - INFO - Processing 1080...
+2025-12-25 13:37:35,533 - [PROD_STOCK] - INFO - ✅ 1111: 251 intraday points
+2025-12-25 13:37:35,533 - [PROD_STOCK] - INFO - ✅ 1111: 0 historical points
+2025-12-25 13:37:35,548 - [PROD_STOCK] - INFO - 💾 1111: Saved 251 intraday rows
+2025-12-25 13:37:37,187 - [PROD_STOCK] - INFO - ✅ 9587: 21 intraday points
+2025-12-25 13:37:37,188 - [PROD_STOCK] - INFO - ✅ 9587: 0 historical points
+2025-12-25 13:37:37,196 - [PROD_STOCK] - INFO - 💾 9587: Saved 21 intraday rows
+2025-12-25 13:37:37,723 - [PROD_STOCK] - INFO - Processing 4290...
+2025-12-25 13:37:38,949 - [PROD_STOCK] - INFO - Processing 9585...
+2025-12-25 13:37:45,262 - [PROD_STOCK] - INFO - ✅ 2210: 292 intraday points
+2025-12-25 13:37:45,300 - [PROD_STOCK] - INFO - 💾 2210: Saved 292 intraday rows
+2025-12-25 13:37:46,416 - [PROD_STOCK] - INFO - ✅ 1080: 163 intraday points
+2025-12-25 13:37:46,429 - [PROD_STOCK] - INFO - 💾 1080: Saved 163 intraday rows
+2025-12-25 13:37:47,255 - [PROD_STOCK] - INFO - Processing 9639...
+2025-12-25 13:37:48,032 - [PROD_STOCK] - INFO - Processing 1182...
+2025-12-25 13:37:59,261 - [PROD_STOCK] - WARNING - ⚠️ 5336: No charts found (might be invalid ticker)
+2025-12-25 13:37:59,275 - [PROD_STOCK] - WARNING - Attempt 2: 5336 returned no data
+2025-12-25 13:38:01,484 - [PROD_STOCK] - ERROR - ❌ Failed 5336 after retries
+2025-12-25 13:38:03,380 - [PROD_STOCK] - INFO - ✅ 9585: 4 intraday points
+2025-12-25 13:38:03,390 - [PROD_STOCK] - INFO - 💾 9585: Saved 4 intraday rows
+2025-12-25 13:38:03,582 - [PROD_STOCK] - INFO - Processing 9595...
+2025-12-25 13:38:04,951 - [PROD_STOCK] - INFO - ✅ 4290: 97 intraday points
+2025-12-25 13:38:04,960 - [PROD_STOCK] - INFO - 💾 4290: Saved 97 intraday rows
+2025-12-25 13:38:05,412 - [PROD_STOCK] - INFO - Processing 5312...
+2025-12-25 13:38:06,157 - [PROD_STOCK] - INFO - Processing 5243...
+2025-12-25 13:38:11,375 - [PROD_STOCK] - INFO - ✅ 1182: 105 intraday points
+2025-12-25 13:38:11,376 - [PROD_STOCK] - INFO - ✅ 1182: 0 historical points
+2025-12-25 13:38:11,385 - [PROD_STOCK] - INFO - 💾 1182: Saved 105 intraday rows
+2025-12-25 13:38:12,528 - [PROD_STOCK] - INFO - Processing 9645...
+2025-12-25 13:38:12,648 - [PROD_STOCK] - INFO - ✅ 9639: 10 intraday points
+2025-12-25 13:38:12,648 - [PROD_STOCK] - INFO - ✅ 9639: 0 historical points
+2025-12-25 13:38:12,656 - [PROD_STOCK] - INFO - 💾 9639: Saved 10 intraday rows
+2025-12-25 13:38:14,163 - [PROD_STOCK] - INFO - Processing 4336...
+2025-12-25 13:38:26,728 - [PROD_STOCK] - INFO - ✅ 9595: 5 intraday points
+2025-12-25 13:38:26,730 - [PROD_STOCK] - INFO - ✅ 9595: 0 historical points
+2025-12-25 13:38:26,748 - [PROD_STOCK] - INFO - 💾 9595: Saved 5 intraday rows
+2025-12-25 13:38:28,855 - [PROD_STOCK] - INFO - Processing 9648...
+2025-12-25 13:38:30,864 - [PROD_STOCK] - INFO - ✅ 5243: 1 intraday points
+2025-12-25 13:38:30,864 - [PROD_STOCK] - INFO - ✅ 5243: 0 historical points
+2025-12-25 13:38:30,871 - [PROD_STOCK] - INFO - 💾 5243: Saved 1 intraday rows
+2025-12-25 13:38:32,594 - [PROD_STOCK] - INFO - Processing 9615...
+2025-12-25 13:38:36,366 - [PROD_STOCK] - INFO - ✅ 9645: 19 intraday points
+2025-12-25 13:38:36,366 - [PROD_STOCK] - INFO - ✅ 9645: 0 historical points
+2025-12-25 13:38:36,374 - [PROD_STOCK] - INFO - 💾 9645: Saved 19 intraday rows
+2025-12-25 13:38:37,867 - [PROD_STOCK] - INFO - Processing 1030...
+2025-12-25 13:38:38,147 - [PROD_STOCK] - WARNING - ⚠️ 5312: No charts found (might be invalid ticker)
+2025-12-25 13:38:38,155 - [PROD_STOCK] - WARNING - Attempt 1: 5312 returned no data
+2025-12-25 13:38:40,848 - [PROD_STOCK] - INFO - Processing 5312...
+2025-12-25 13:38:44,300 - [PROD_STOCK] - INFO - ✅ 4336: 104 intraday points
+2025-12-25 13:38:44,300 - [PROD_STOCK] - INFO - ✅ 4336: 0 historical points
+2025-12-25 13:38:44,316 - [PROD_STOCK] - ERROR - DB Error (intraday) 4336: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4336, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:38:45,964 - [PROD_STOCK] - INFO - Processing 2285...
+2025-12-25 13:39:03,224 - [PROD_STOCK] - INFO - ✅ 9615: 2 intraday points
+2025-12-25 13:39:03,225 - [PROD_STOCK] - INFO - ✅ 9615: 0 historical points
+2025-12-25 13:39:03,239 - [PROD_STOCK] - INFO - 💾 9615: Saved 2 intraday rows
+2025-12-25 13:39:03,320 - [PROD_STOCK] - INFO - ✅ 9648: 11 intraday points
+2025-12-25 13:39:03,321 - [PROD_STOCK] - INFO - ✅ 9648: 0 historical points
+2025-12-25 13:39:03,344 - [PROD_STOCK] - INFO - 💾 9648: Saved 11 intraday rows
+2025-12-25 13:39:05,467 - [PROD_STOCK] - INFO - Processing 9410...
+2025-12-25 13:39:05,878 - [PROD_STOCK] - INFO - Processing 1212...
+2025-12-25 13:39:10,768 - [PROD_STOCK] - INFO - ✅ 1030: 168 intraday points
+2025-12-25 13:39:10,786 - [PROD_STOCK] - INFO - 💾 1030: Saved 168 intraday rows
+2025-12-25 13:39:12,622 - [PROD_STOCK] - INFO - Processing 4143...
+2025-12-25 13:39:17,460 - [PROD_STOCK] - INFO - ✅ 2285: 184 intraday points
+2025-12-25 13:39:17,461 - [PROD_STOCK] - INFO - ✅ 2285: 0 historical points
+2025-12-25 13:39:17,488 - [PROD_STOCK] - ERROR - DB Error (intraday) 2285: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2285, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:39:19,440 - [PROD_STOCK] - INFO - Processing 9571...
+2025-12-25 13:39:25,540 - [PROD_STOCK] - WARNING - ⚠️ 5312: No charts found (might be invalid ticker)
+2025-12-25 13:39:25,600 - [PROD_STOCK] - WARNING - Attempt 2: 5312 returned no data
+2025-12-25 13:39:30,553 - [PROD_STOCK] - ERROR - ❌ Failed 5312 after retries
+2025-12-25 13:39:33,416 - [PROD_STOCK] - INFO - Processing 9555...
+2025-12-25 13:39:37,501 - [PROD_STOCK] - INFO - ✅ 9410: 21 intraday points
+2025-12-25 13:39:37,501 - [PROD_STOCK] - INFO - ✅ 9410: 0 historical points
+2025-12-25 13:39:37,511 - [PROD_STOCK] - INFO - 💾 9410: Saved 21 intraday rows
+2025-12-25 13:39:39,020 - [PROD_STOCK] - INFO - ✅ 1212: 199 intraday points
+2025-12-25 13:39:39,031 - [PROD_STOCK] - INFO - 💾 1212: Saved 199 intraday rows
+2025-12-25 13:39:40,096 - [PROD_STOCK] - INFO - Processing 6013...
+2025-12-25 13:39:40,976 - [PROD_STOCK] - INFO - Processing 4321...
+2025-12-25 13:39:41,412 - [PROD_STOCK] - INFO - ✅ 4143: 106 intraday points
+2025-12-25 13:39:41,412 - [PROD_STOCK] - INFO - ✅ 4143: 0 historical points
+2025-12-25 13:39:41,425 - [PROD_STOCK] - INFO - 💾 4143: Saved 106 intraday rows
+2025-12-25 13:39:42,812 - [PROD_STOCK] - INFO - Processing 9593...
+2025-12-25 13:39:46,260 - [PROD_STOCK] - INFO - ✅ 9571: 16 intraday points
+2025-12-25 13:39:46,261 - [PROD_STOCK] - INFO - ✅ 9571: 0 historical points
+2025-12-25 13:39:46,268 - [PROD_STOCK] - INFO - 💾 9571: Saved 16 intraday rows
+2025-12-25 13:39:48,666 - [PROD_STOCK] - INFO - Processing 9539...
+2025-12-25 13:39:59,221 - [PROD_STOCK] - INFO - ✅ 9555: 1 intraday points
+2025-12-25 13:39:59,225 - [PROD_STOCK] - INFO - ✅ 9555: 0 historical points
+2025-12-25 13:39:59,251 - [PROD_STOCK] - INFO - 💾 9555: Saved 1 intraday rows
+2025-12-25 13:40:00,535 - [PROD_STOCK] - INFO - Processing 9563...
+2025-12-25 13:40:04,828 - [PROD_STOCK] - INFO - ✅ 4321: 273 intraday points
+2025-12-25 13:40:04,830 - [PROD_STOCK] - INFO - ✅ 4321: 0 historical points
+2025-12-25 13:40:04,849 - [PROD_STOCK] - INFO - 💾 4321: Saved 273 intraday rows
+2025-12-25 13:40:06,008 - [PROD_STOCK] - INFO - ✅ 6013: 130 intraday points
+2025-12-25 13:40:06,026 - [PROD_STOCK] - INFO - 💾 6013: Saved 130 intraday rows
+2025-12-25 13:40:07,356 - [PROD_STOCK] - INFO - Processing 3008...
+2025-12-25 13:40:07,564 - [PROD_STOCK] - INFO - Processing 7030...
+2025-12-25 13:40:11,082 - [PROD_STOCK] - INFO - ✅ 9593: 2 intraday points
+2025-12-25 13:40:11,082 - [PROD_STOCK] - INFO - ✅ 9593: 0 historical points
+2025-12-25 13:40:11,097 - [PROD_STOCK] - INFO - 💾 9593: Saved 2 intraday rows
+2025-12-25 13:40:13,472 - [PROD_STOCK] - INFO - Processing 4162...
+2025-12-25 13:40:13,685 - [PROD_STOCK] - INFO - ✅ 9539: 1 intraday points
+2025-12-25 13:40:13,685 - [PROD_STOCK] - INFO - ✅ 9539: 0 historical points
+2025-12-25 13:40:13,695 - [PROD_STOCK] - INFO - 💾 9539: Saved 1 intraday rows
+2025-12-25 13:40:15,862 - [PROD_STOCK] - INFO - Processing 1320...
+2025-12-25 13:40:19,294 - [PROD_STOCK] - INFO - ✅ 9563: 1 intraday points
+2025-12-25 13:40:19,298 - [PROD_STOCK] - INFO - ✅ 9563: 0 historical points
+2025-12-25 13:40:19,325 - [PROD_STOCK] - INFO - 💾 9563: Saved 1 intraday rows
+2025-12-25 13:40:20,363 - [PROD_STOCK] - INFO - ✅ 3008: 141 intraday points
+2025-12-25 13:40:20,364 - [PROD_STOCK] - INFO - ✅ 3008: 0 historical points
+2025-12-25 13:40:20,378 - [PROD_STOCK] - INFO - 💾 3008: Saved 141 intraday rows
+2025-12-25 13:40:20,769 - [PROD_STOCK] - INFO - ✅ 7030: 201 intraday points
+2025-12-25 13:40:20,769 - [PROD_STOCK] - INFO - ✅ 7030: 0 historical points
+2025-12-25 13:40:20,773 - [PROD_STOCK] - INFO - Processing 4347...
+2025-12-25 13:40:20,786 - [PROD_STOCK] - ERROR - DB Error (intraday) 7030: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(7030, 2025-12-22 13:52:00+02) already exists.
+2025-12-25 13:40:22,310 - [PROD_STOCK] - INFO - ✅ 4162: 136 intraday points
+2025-12-25 13:40:22,310 - [PROD_STOCK] - INFO - ✅ 4162: 0 historical points
+2025-12-25 13:40:22,324 - [PROD_STOCK] - INFO - 💾 4162: Saved 136 intraday rows
+2025-12-25 13:40:22,497 - [PROD_STOCK] - INFO - Processing 9613...
+2025-12-25 13:40:22,854 - [PROD_STOCK] - INFO - ✅ 1320: 192 intraday points
+2025-12-25 13:40:22,854 - [PROD_STOCK] - INFO - ✅ 1320: 0 historical points
+2025-12-25 13:40:22,870 - [PROD_STOCK] - INFO - 💾 1320: Saved 192 intraday rows
+2025-12-25 13:40:23,646 - [PROD_STOCK] - INFO - Processing 1113...
+2025-12-25 13:40:24,614 - [PROD_STOCK] - INFO - Processing 5282...
+2025-12-25 13:40:24,918 - [PROD_STOCK] - INFO - Processing 4006...
+2025-12-25 13:40:26,330 - [PROD_STOCK] - INFO - ✅ 4347: 90 intraday points
+2025-12-25 13:40:26,330 - [PROD_STOCK] - INFO - ✅ 4347: 0 historical points
+2025-12-25 13:40:26,360 - [PROD_STOCK] - INFO - 💾 4347: Saved 90 intraday rows
+2025-12-25 13:40:27,210 - [PROD_STOCK] - INFO - ✅ 9613: 3 intraday points
+2025-12-25 13:40:27,211 - [PROD_STOCK] - INFO - ✅ 9613: 0 historical points
+2025-12-25 13:40:27,239 - [PROD_STOCK] - INFO - 💾 9613: Saved 3 intraday rows
+2025-12-25 13:40:28,400 - [PROD_STOCK] - INFO - Processing 4327...
+2025-12-25 13:40:28,667 - [PROD_STOCK] - INFO - ✅ 1113: 56 intraday points
+2025-12-25 13:40:28,667 - [PROD_STOCK] - INFO - ✅ 1113: 0 historical points
+2025-12-25 13:40:28,681 - [PROD_STOCK] - INFO - 💾 1113: Saved 56 intraday rows
+2025-12-25 13:40:28,849 - [PROD_STOCK] - INFO - Processing 2040...
+2025-12-25 13:40:30,003 - [PROD_STOCK] - INFO - ✅ 5282: 1 intraday points
+2025-12-25 13:40:30,003 - [PROD_STOCK] - INFO - ✅ 5282: 0 historical points
+2025-12-25 13:40:30,017 - [PROD_STOCK] - INFO - 💾 5282: Saved 1 intraday rows
+2025-12-25 13:40:30,363 - [PROD_STOCK] - INFO - ✅ 4006: 103 intraday points
+2025-12-25 13:40:30,363 - [PROD_STOCK] - INFO - ✅ 4006: 0 historical points
+2025-12-25 13:40:30,399 - [PROD_STOCK] - INFO - 💾 4006: Saved 103 intraday rows
+2025-12-25 13:40:31,542 - [PROD_STOCK] - INFO - Processing 7204...
+2025-12-25 13:40:32,059 - [PROD_STOCK] - INFO - Processing 4270...
+2025-12-25 13:40:33,148 - [PROD_STOCK] - INFO - Processing 9510...
+2025-12-25 13:40:33,821 - [PROD_STOCK] - INFO - ✅ 4327: 307 intraday points
+2025-12-25 13:40:33,821 - [PROD_STOCK] - INFO - ✅ 4327: 0 historical points
+2025-12-25 13:40:33,853 - [PROD_STOCK] - ERROR - DB Error (intraday) 4327: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4327, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:40:34,354 - [PROD_STOCK] - INFO - ✅ 2040: 176 intraday points
+2025-12-25 13:40:34,355 - [PROD_STOCK] - INFO - ✅ 2040: 0 historical points
+2025-12-25 13:40:34,369 - [PROD_STOCK] - INFO - 💾 2040: Saved 176 intraday rows
+2025-12-25 13:40:36,048 - [PROD_STOCK] - INFO - Processing 9530...
+2025-12-25 13:40:36,778 - [PROD_STOCK] - INFO - Processing 2160...
+2025-12-25 13:40:37,890 - [PROD_STOCK] - INFO - ✅ 7204: 138 intraday points
+2025-12-25 13:40:37,890 - [PROD_STOCK] - INFO - ✅ 7204: 0 historical points
+2025-12-25 13:40:37,907 - [PROD_STOCK] - INFO - 💾 7204: Saved 138 intraday rows
+2025-12-25 13:40:38,973 - [PROD_STOCK] - INFO - ✅ 4270: 237 intraday points
+2025-12-25 13:40:38,973 - [PROD_STOCK] - INFO - ✅ 4270: 0 historical points
+2025-12-25 13:40:39,003 - [PROD_STOCK] - INFO - 💾 4270: Saved 237 intraday rows
+2025-12-25 13:40:40,205 - [PROD_STOCK] - INFO - ✅ 9510: 13 intraday points
+2025-12-25 13:40:40,206 - [PROD_STOCK] - INFO - ✅ 9510: 0 historical points
+2025-12-25 13:40:40,228 - [PROD_STOCK] - INFO - Processing 2370...
+2025-12-25 13:40:40,229 - [PROD_STOCK] - INFO - 💾 9510: Saved 13 intraday rows
+2025-12-25 13:40:40,372 - [PROD_STOCK] - INFO - Processing 4163...
+2025-12-25 13:40:41,596 - [PROD_STOCK] - INFO - Processing 4008...
+2025-12-25 13:40:42,046 - [PROD_STOCK] - INFO - ✅ 9530: 6 intraday points
+2025-12-25 13:40:42,046 - [PROD_STOCK] - INFO - ✅ 9530: 0 historical points
+2025-12-25 13:40:42,114 - [PROD_STOCK] - INFO - 💾 9530: Saved 6 intraday rows
+2025-12-25 13:40:43,126 - [PROD_STOCK] - INFO - ✅ 2160: 176 intraday points
+2025-12-25 13:40:43,127 - [PROD_STOCK] - INFO - ✅ 2160: 0 historical points
+2025-12-25 13:40:43,173 - [PROD_STOCK] - INFO - 💾 2160: Saved 176 intraday rows
+2025-12-25 13:40:44,441 - [PROD_STOCK] - INFO - Processing 4081...
+2025-12-25 13:40:44,706 - [PROD_STOCK] - INFO - Processing 4130...
+2025-12-25 13:40:46,497 - [PROD_STOCK] - INFO - ✅ 4163: 196 intraday points
+2025-12-25 13:40:46,498 - [PROD_STOCK] - INFO - ✅ 4163: 0 historical points
+2025-12-25 13:40:46,529 - [PROD_STOCK] - INFO - 💾 4163: Saved 196 intraday rows
+2025-12-25 13:40:46,909 - [PROD_STOCK] - INFO - ✅ 2370: 223 intraday points
+2025-12-25 13:40:46,909 - [PROD_STOCK] - INFO - ✅ 2370: 0 historical points
+2025-12-25 13:40:46,932 - [PROD_STOCK] - INFO - 💾 2370: Saved 223 intraday rows
+2025-12-25 13:40:47,827 - [PROD_STOCK] - INFO - Processing 4050...
+2025-12-25 13:40:48,124 - [PROD_STOCK] - INFO - ✅ 4008: 76 intraday points
+2025-12-25 13:40:48,126 - [PROD_STOCK] - INFO - ✅ 4008: 0 historical points
+2025-12-25 13:40:48,145 - [PROD_STOCK] - INFO - 💾 4008: Saved 76 intraday rows
+2025-12-25 13:40:49,492 - [PROD_STOCK] - INFO - Processing 9524...
+2025-12-25 13:40:50,545 - [PROD_STOCK] - INFO - Processing 4291...
+2025-12-25 13:40:53,048 - [PROD_STOCK] - INFO - ✅ 4081: 94 intraday points
+2025-12-25 13:40:53,049 - [PROD_STOCK] - INFO - ✅ 4081: 0 historical points
+2025-12-25 13:40:53,087 - [PROD_STOCK] - INFO - 💾 4081: Saved 94 intraday rows
+2025-12-25 13:40:53,901 - [PROD_STOCK] - INFO - ✅ 4130: 285 intraday points
+2025-12-25 13:40:53,902 - [PROD_STOCK] - INFO - ✅ 4130: 0 historical points
+2025-12-25 13:40:54,005 - [PROD_STOCK] - ERROR - DB Error (intraday) 4130: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4130, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:40:55,250 - [PROD_STOCK] - INFO - Processing 4015...
+2025-12-25 13:40:55,669 - [PROD_STOCK] - INFO - ✅ 4050: 200 intraday points
+2025-12-25 13:40:55,670 - [PROD_STOCK] - INFO - ✅ 4050: 0 historical points
+2025-12-25 13:40:55,718 - [PROD_STOCK] - INFO - 💾 4050: Saved 200 intraday rows
+2025-12-25 13:40:56,975 - [PROD_STOCK] - INFO - Processing 5015...
+2025-12-25 13:40:57,012 - [PROD_STOCK] - INFO - ✅ 9524: 4 intraday points
+2025-12-25 13:40:57,012 - [PROD_STOCK] - INFO - ✅ 9524: 0 historical points
+2025-12-25 13:40:57,027 - [PROD_STOCK] - INFO - 💾 9524: Saved 4 intraday rows
+2025-12-25 13:40:58,313 - [PROD_STOCK] - INFO - Processing 2380...
+2025-12-25 13:40:58,378 - [PROD_STOCK] - INFO - ✅ 4291: 99 intraday points
+2025-12-25 13:40:58,379 - [PROD_STOCK] - INFO - ✅ 4291: 0 historical points
+2025-12-25 13:40:58,396 - [PROD_STOCK] - INFO - 💾 4291: Saved 99 intraday rows
+2025-12-25 13:40:59,663 - [PROD_STOCK] - INFO - Processing 2223...
+2025-12-25 13:40:59,962 - [PROD_STOCK] - INFO - Processing 8070...
+2025-12-25 13:41:02,760 - [PROD_STOCK] - INFO - ✅ 4015: 169 intraday points
+2025-12-25 13:41:02,761 - [PROD_STOCK] - INFO - ✅ 4015: 0 historical points
+2025-12-25 13:41:02,781 - [PROD_STOCK] - ERROR - DB Error (intraday) 4015: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4015, 2025-12-22 11:57:00+02) already exists.
+2025-12-25 13:41:04,490 - [PROD_STOCK] - INFO - Processing 8012...
+2025-12-25 13:41:04,665 - [PROD_STOCK] - INFO - ✅ 5015: 2 intraday points
+2025-12-25 13:41:04,665 - [PROD_STOCK] - INFO - ✅ 5015: 0 historical points
+2025-12-25 13:41:04,673 - [PROD_STOCK] - INFO - 💾 5015: Saved 2 intraday rows
+2025-12-25 13:41:07,261 - [PROD_STOCK] - INFO - Processing 2030...
+2025-12-25 13:41:08,700 - [PROD_STOCK] - INFO - ✅ 2380: 249 intraday points
+2025-12-25 13:41:08,701 - [PROD_STOCK] - INFO - ✅ 2380: 0 historical points
+2025-12-25 13:41:08,732 - [PROD_STOCK] - INFO - 💾 2380: Saved 249 intraday rows
+2025-12-25 13:41:09,479 - [PROD_STOCK] - INFO - ✅ 2223: 256 intraday points
+2025-12-25 13:41:09,479 - [PROD_STOCK] - INFO - ✅ 2223: 0 historical points
+2025-12-25 13:41:09,502 - [PROD_STOCK] - ERROR - DB Error (intraday) 2223: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2223, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:41:09,596 - [PROD_STOCK] - INFO - ✅ 8070: 127 intraday points
+2025-12-25 13:41:09,597 - [PROD_STOCK] - INFO - ✅ 8070: 0 historical points
+2025-12-25 13:41:09,620 - [PROD_STOCK] - INFO - 💾 8070: Saved 127 intraday rows
+2025-12-25 13:41:10,356 - [PROD_STOCK] - INFO - Processing 1834...
+2025-12-25 13:41:11,928 - [PROD_STOCK] - INFO - Processing 1210...
+2025-12-25 13:41:12,052 - [PROD_STOCK] - INFO - ✅ 8012: 105 intraday points
+2025-12-25 13:41:12,052 - [PROD_STOCK] - INFO - ✅ 8012: 0 historical points
+2025-12-25 13:41:12,065 - [PROD_STOCK] - INFO - 💾 8012: Saved 105 intraday rows
+2025-12-25 13:41:12,373 - [PROD_STOCK] - INFO - Processing 2250...
+2025-12-25 13:41:13,707 - [PROD_STOCK] - INFO - Processing 4070...
+2025-12-25 13:41:18,333 - [PROD_STOCK] - INFO - ✅ 2030: 107 intraday points
+2025-12-25 13:41:18,334 - [PROD_STOCK] - INFO - ✅ 2030: 0 historical points
+2025-12-25 13:41:18,383 - [PROD_STOCK] - INFO - 💾 2030: Saved 107 intraday rows
+2025-12-25 13:41:19,841 - [PROD_STOCK] - INFO - ✅ 2250: 222 intraday points
+2025-12-25 13:41:19,842 - [PROD_STOCK] - INFO - ✅ 2250: 0 historical points
+2025-12-25 13:41:19,926 - [PROD_STOCK] - INFO - ✅ 1210: 72 intraday points
+2025-12-25 13:41:19,926 - [PROD_STOCK] - INFO - ✅ 1210: 0 historical points
+2025-12-25 13:41:19,950 - [PROD_STOCK] - ERROR - DB Error (intraday) 2250: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2250, 2025-12-22 13:43:00+02) already exists.
+2025-12-25 13:41:19,956 - [PROD_STOCK] - INFO - 💾 1210: Saved 72 intraday rows
+2025-12-25 13:41:20,180 - [PROD_STOCK] - INFO - ✅ 4070: 204 intraday points
+2025-12-25 13:41:20,181 - [PROD_STOCK] - INFO - ✅ 4070: 0 historical points
+2025-12-25 13:41:20,197 - [PROD_STOCK] - ERROR - DB Error (intraday) 4070: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(4070, 2025-12-22 13:41:00+02) already exists.
+2025-12-25 13:41:21,157 - [PROD_STOCK] - INFO - Processing 2230...
+2025-12-25 13:41:21,281 - [PROD_STOCK] - INFO - Processing 4331...
+2025-12-25 13:41:22,824 - [PROD_STOCK] - INFO - Processing 9565...
+2025-12-25 13:41:22,956 - [PROD_STOCK] - INFO - Processing 1120...
+2025-12-25 13:41:26,438 - [PROD_STOCK] - INFO - ✅ 1834: 236 intraday points
+2025-12-25 13:41:26,438 - [PROD_STOCK] - INFO - ✅ 1834: 0 historical points
+2025-12-25 13:41:26,453 - [PROD_STOCK] - INFO - 💾 1834: Saved 236 intraday rows
+2025-12-25 13:41:26,990 - [PROD_STOCK] - INFO - ✅ 2230: 296 intraday points
+2025-12-25 13:41:26,990 - [PROD_STOCK] - INFO - ✅ 2230: 0 historical points
+2025-12-25 13:41:27,004 - [PROD_STOCK] - ERROR - DB Error (intraday) 2230: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2230, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:41:27,956 - [PROD_STOCK] - INFO - ✅ 4331: 81 intraday points
+2025-12-25 13:41:27,956 - [PROD_STOCK] - INFO - ✅ 4331: 0 historical points
+2025-12-25 13:41:27,980 - [PROD_STOCK] - INFO - 💾 4331: Saved 81 intraday rows
+2025-12-25 13:41:28,821 - [PROD_STOCK] - INFO - Processing 9620...
+2025-12-25 13:41:28,967 - [PROD_STOCK] - INFO - Processing 5273...
+2025-12-25 13:41:30,794 - [PROD_STOCK] - INFO - ✅ 9565: 1 intraday points
+2025-12-25 13:41:30,794 - [PROD_STOCK] - INFO - ✅ 9565: 0 historical points
+2025-12-25 13:41:30,858 - [PROD_STOCK] - INFO - 💾 9565: Saved 1 intraday rows
+2025-12-25 13:41:30,900 - [PROD_STOCK] - INFO - Processing 9535...
+2025-12-25 13:41:31,238 - [PROD_STOCK] - INFO - ✅ 1120: 305 intraday points
+2025-12-25 13:41:31,238 - [PROD_STOCK] - INFO - ✅ 1120: 0 historical points
+2025-12-25 13:41:31,379 - [PROD_STOCK] - ERROR - DB Error (intraday) 1120: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(1120, 2025-12-22 12:20:00+02) already exists.
+2025-12-25 13:41:32,188 - [PROD_STOCK] - INFO - Processing 9634...
+2025-12-25 13:41:33,480 - [PROD_STOCK] - INFO - Processing 2070...
+2025-12-25 13:41:35,452 - [PROD_STOCK] - INFO - ✅ 5273: 1 intraday points
+2025-12-25 13:41:35,453 - [PROD_STOCK] - INFO - ✅ 5273: 0 historical points
+2025-12-25 13:41:35,471 - [PROD_STOCK] - INFO - ✅ 9620: 3 intraday points
+2025-12-25 13:41:35,471 - [PROD_STOCK] - INFO - ✅ 9620: 0 historical points
+2025-12-25 13:41:35,646 - [PROD_STOCK] - INFO - 💾 5273: Saved 1 intraday rows
+2025-12-25 13:41:35,650 - [PROD_STOCK] - INFO - 💾 9620: Saved 3 intraday rows
+2025-12-25 13:41:36,962 - [PROD_STOCK] - INFO - Processing 9607...
+2025-12-25 13:41:37,877 - [PROD_STOCK] - INFO - Processing 4264...
+2025-12-25 13:41:38,332 - [PROD_STOCK] - INFO - ✅ 9535: 59 intraday points
+2025-12-25 13:41:38,332 - [PROD_STOCK] - INFO - ✅ 9535: 0 historical points
+2025-12-25 13:41:38,347 - [PROD_STOCK] - INFO - 💾 9535: Saved 59 intraday rows
+2025-12-25 13:41:39,277 - [PROD_STOCK] - INFO - ✅ 9634: 6 intraday points
+2025-12-25 13:41:39,277 - [PROD_STOCK] - INFO - ✅ 9634: 0 historical points
+2025-12-25 13:41:39,314 - [PROD_STOCK] - INFO - 💾 9634: Saved 6 intraday rows
+2025-12-25 13:41:40,513 - [PROD_STOCK] - INFO - ✅ 2070: 224 intraday points
+2025-12-25 13:41:40,514 - [PROD_STOCK] - INFO - ✅ 2070: 0 historical points
+2025-12-25 13:41:40,544 - [PROD_STOCK] - INFO - 💾 2070: Saved 224 intraday rows
+2025-12-25 13:41:40,606 - [PROD_STOCK] - INFO - Processing 4349...
+2025-12-25 13:41:41,377 - [PROD_STOCK] - INFO - Processing 9558...
+2025-12-25 13:41:42,100 - [PROD_STOCK] - INFO - Processing 4701...
+2025-12-25 13:41:42,459 - [PROD_STOCK] - INFO - ✅ 9607: 3 intraday points
+2025-12-25 13:41:42,459 - [PROD_STOCK] - INFO - ✅ 9607: 0 historical points
+2025-12-25 13:41:42,476 - [PROD_STOCK] - INFO - 💾 9607: Saved 3 intraday rows
+2025-12-25 13:41:43,895 - [PROD_STOCK] - INFO - ✅ 4264: 289 intraday points
+2025-12-25 13:41:43,895 - [PROD_STOCK] - INFO - ✅ 4264: 0 historical points
+2025-12-25 13:41:43,926 - [PROD_STOCK] - INFO - 💾 4264: Saved 289 intraday rows
+2025-12-25 13:41:44,619 - [PROD_STOCK] - INFO - Processing 9543...
+2025-12-25 13:41:45,386 - [PROD_STOCK] - INFO - ✅ 4349: 96 intraday points
+2025-12-25 13:41:45,386 - [PROD_STOCK] - INFO - ✅ 4349: 0 historical points
+2025-12-25 13:41:45,399 - [PROD_STOCK] - INFO - 💾 4349: Saved 96 intraday rows
+2025-12-25 13:41:46,305 - [PROD_STOCK] - INFO - Processing 8230...
+2025-12-25 13:41:46,871 - [PROD_STOCK] - INFO - ✅ 9558: 1 intraday points
+2025-12-25 13:41:46,871 - [PROD_STOCK] - INFO - ✅ 9558: 0 historical points
+2025-12-25 13:41:46,882 - [PROD_STOCK] - INFO - 💾 9558: Saved 1 intraday rows
+2025-12-25 13:41:47,051 - [PROD_STOCK] - INFO - Processing 4342...
+2025-12-25 13:41:48,568 - [PROD_STOCK] - INFO - ✅ 4701: 172 intraday points
+2025-12-25 13:41:48,568 - [PROD_STOCK] - INFO - ✅ 4701: 0 historical points
+2025-12-25 13:41:48,592 - [PROD_STOCK] - INFO - 💾 4701: Saved 172 intraday rows
+2025-12-25 13:41:49,286 - [PROD_STOCK] - INFO - Processing 9606...
+2025-12-25 13:41:50,165 - [PROD_STOCK] - INFO - Processing 5023...
+2025-12-25 13:41:50,448 - [PROD_STOCK] - INFO - ✅ 9543: 6 intraday points
+2025-12-25 13:41:50,448 - [PROD_STOCK] - INFO - ✅ 9543: 0 historical points
+2025-12-25 13:41:50,467 - [PROD_STOCK] - INFO - 💾 9543: Saved 6 intraday rows
+2025-12-25 13:41:52,690 - [PROD_STOCK] - INFO - ✅ 8230: 195 intraday points
+2025-12-25 13:41:52,690 - [PROD_STOCK] - INFO - ✅ 8230: 0 historical points
+2025-12-25 13:41:52,710 - [PROD_STOCK] - INFO - 💾 8230: Saved 195 intraday rows
+2025-12-25 13:41:52,997 - [PROD_STOCK] - INFO - ✅ 4342: 75 intraday points
+2025-12-25 13:41:52,998 - [PROD_STOCK] - INFO - ✅ 4342: 0 historical points
+2025-12-25 13:41:53,015 - [PROD_STOCK] - INFO - 💾 4342: Saved 75 intraday rows
+2025-12-25 13:41:53,443 - [PROD_STOCK] - INFO - Processing 2290...
+2025-12-25 13:41:56,003 - [PROD_STOCK] - INFO - ✅ 9606: 2 intraday points
+2025-12-25 13:41:56,004 - [PROD_STOCK] - INFO - ✅ 9606: 0 historical points
+2025-12-25 13:41:56,021 - [PROD_STOCK] - INFO - 💾 9606: Saved 2 intraday rows
+2025-12-25 13:41:58,993 - [PROD_STOCK] - INFO - ✅ 5023: 39 intraday points
+2025-12-25 13:41:58,993 - [PROD_STOCK] - INFO - ✅ 5023: 0 historical points
+2025-12-25 13:41:59,013 - [PROD_STOCK] - INFO - 💾 5023: Saved 39 intraday rows
+2025-12-25 13:42:00,183 - [PROD_STOCK] - INFO - ✅ 2290: 250 intraday points
+2025-12-25 13:42:00,183 - [PROD_STOCK] - INFO - ✅ 2290: 0 historical points
+2025-12-25 13:42:00,209 - [PROD_STOCK] - ERROR - DB Error (intraday) 2290: duplicate key value violates unique constraint "intraday_data_pkey"
+DETAIL:  Key (symbol, "timestamp")=(2290, 2025-12-22 09:51:00+02) already exists.
+2025-12-25 13:42:01,745 - [PROD_STOCK] - INFO - 🎉 All stocks processed!

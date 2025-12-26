@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/home/Documents/Info Site/mubasher-deep-extract/backend/extractors/snapshot_extractor.py", line 5, in <module>
+    from database import db
+ModuleNotFoundError: No module named 'database'

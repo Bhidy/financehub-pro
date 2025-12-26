@@ -1,0 +1,33 @@
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - 
+================================================================================
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - 🚀 PRODUCTION REAL DATA EXTRACTION STARTED
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - ================================================================================
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - Target: ZERO simulated data - 100% real mubasher.info data
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - ================================================================================
+
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - ================================================================================
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - EXTRACTING REAL STOCK TICKERS
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - ================================================================================
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - 
+📊 Method 1: Trying TLS-client API calls...
+2025-12-25 00:25:33,911 - [REAL_DATA] - INFO - Trying endpoint: https://www.mubasher.info/api/1/market/tickers
+2025-12-25 00:25:34,373 - [REAL_DATA] - WARNING - Request failed: 500 for https://www.mubasher.info/api/1/market/tickers
+2025-12-25 00:25:34,373 - [REAL_DATA] - INFO - Trying endpoint: https://www.mubasher.info/api/v1/market/tickers
+2025-12-25 00:25:34,511 - [REAL_DATA] - WARNING - Request failed: 404 for https://www.mubasher.info/api/v1/market/tickers
+2025-12-25 00:25:34,511 - [REAL_DATA] - INFO - Trying endpoint: https://www.mubasher.info/api/1/markets/sa/stocks
+2025-12-25 00:25:34,625 - [REAL_DATA] - WARNING - Request failed: 500 for https://www.mubasher.info/api/1/markets/sa/stocks
+2025-12-25 00:25:34,625 - [REAL_DATA] - WARNING - All API endpoints failed
+2025-12-25 00:25:34,625 - [REAL_DATA] - INFO - 
+🎭 Method 2: Using Playwright browser automation...
+2025-12-25 00:25:34,625 - [REAL_DATA] - INFO - Using Playwright to extract stock tickers...
+2025-12-25 00:25:36,404 - [REAL_DATA] - INFO - Navigating to mubasher.info stocks page...
+2025-12-25 00:26:08,237 - [REAL_DATA] - ERROR - Playwright extraction failed: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("table") to be visible
+
+2025-12-25 00:26:08,414 - [REAL_DATA] - ERROR - ❌ CRITICAL: All ticker extraction methods failed
+2025-12-25 00:26:08,414 - [REAL_DATA] - ERROR - 
+❌ EXTRACTION FAILED - No data retrieved
+2025-12-25 00:26:08,414 - [REAL_DATA] - ERROR - This is a CRITICAL FAILURE for production
+2025-12-25 00:26:08,414 - [REAL_DATA] - ERROR - 
+❌ CRITICAL: Extraction failed. Cannot proceed to production.

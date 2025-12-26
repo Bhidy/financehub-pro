@@ -1,0 +1,559 @@
+الإمارات -> https://www.mubasher.info/change-country?to=ae&url=/countries/sa
+البحرين -> https://www.mubasher.info/change-country?to=bh&url=/countries/sa
+عُمان -> https://www.mubasher.info/change-country?to=om&url=/countries/sa
+قطر -> https://www.mubasher.info/change-country?to=qa&url=/countries/sa
+الكويت -> https://www.mubasher.info/change-country?to=kw&url=/countries/sa
+مصر -> https://www.mubasher.info/change-country?to=eg&url=/countries/sa
+الأردن -> https://www.mubasher.info/change-country?to=jo&url=/countries/sa
+تونس -> https://www.mubasher.info/change-country?to=tn&url=/countries/sa
+المغرب -> https://www.mubasher.info/change-country?to=ma&url=/countries/sa
+فلسطين -> https://www.mubasher.info/change-country?to=ps&url=/countries/sa
+العراق -> https://www.mubasher.info/change-country?to=iq&url=/countries/sa
+ -> 
+  -> 
+ -> https://www.mubasher.info/countries/sa#mm-0
+ -> https://www.mubasher.info/countries/sa#mm-2
+ -> https://www.mubasher.info/countries/sa#mm-3
+ -> https://www.mubasher.info/countries/sa#mm-4
+ -> https://www.mubasher.info/countries/sa#mm-5
+ -> https://www.mubasher.info/countries/sa#mm-6
+الاقتصاد الإسلامي -> https://www.mubasher.info/news/islamic-finance
+ -> https://www.mubasher.info/countries/sa#mm-7
+مباشر TV -> https://www.mubasher.info/mubashertv/%D8%A2%D8%AE%D8%B1-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A7%D8%AA?playlistId=PL2c0DZc94_Hql725VckPjSeAIaHq6SbBt
+ -> https://www.mubasher.info/countries/sa#mm-9
+ديسيفا -> 
+
+            
+           -> https://pulse.mubasher.info/
+ENGLISH -> https://english.mubasher.info/
+دخول -> javascript:void(0);
+ -> https://www.mubasher.info/countries/sa#mm-1
+الأسواق -> 
+سوق الأسهم السعودي -> https://www.mubasher.info/markets/TDWL
+البورصة المصرية -> https://www.mubasher.info/markets/EGX
+سوق دبي المالي -> https://www.mubasher.info/markets/DFM
+سوق أبوظبي -> https://www.mubasher.info/markets/ADX
+بورصة البحرين -> https://www.mubasher.info/markets/BB
+بورصة قطر -> https://www.mubasher.info/markets/QE
+سوق مسقط -> https://www.mubasher.info/markets/MSM
+سوق الكويت -> https://www.mubasher.info/markets/BK
+بورصة عمان -> https://www.mubasher.info/markets/ASE
+سوق الدار البيضاء -> https://www.mubasher.info/markets/CSE
+بورصة تونس -> https://www.mubasher.info/markets/BDT
+سوق فلسطين -> https://www.mubasher.info/markets/PEX
+سوق العراق -> https://www.mubasher.info/markets/ISX
+مؤشرات الأسواق العالمية -> https://www.mubasher.info/international-indices
+أسعار المعادن والطاقة -> https://www.mubasher.info/markets/commodities-prices
+أسعار العملات -> https://www.mubasher.info/countries/sa/currencies
+ -> https://www.mubasher.info/countries/sa#mm-1
+الأخبار -> 
+أهم الأخبار -> https://www.mubasher.info/news/sa/now/top
+حصرياً مباشر -> https://www.mubasher.info/news/sa/now/exclusive
+آخر الأخبار -> https://www.mubasher.info/news/sa/now/latest
+إعلانات السوق -> https://www.mubasher.info/news/sa/now/announcements
+منتشر الآن -> https://www.mubasher.info/news/sa/now/popular
+بيانات صحفية -> https://www.mubasher.info/news/now/news-releases
+مدونة مباشر -> https://www.mubasher.info/news/international/mubasherblog
+أخبار الأسهم -> https://www.mubasher.info/news/sa/pulse/stocks
+تحليلات إخبارية -> https://www.mubasher.info/news/sa/pulse/analysis
+اقتصاد محلي -> https://www.mubasher.info/news/sa/pulse/local
+توصيات -> https://www.mubasher.info/news/sa/pulse/recommendations
+بنوك وتأمين -> https://www.mubasher.info/news/sa/category/banking
+عقارات -> https://www.mubasher.info/news/sa/category/realEstate
+مصر -> https://www.mubasher.info/news/eg/now/latest
+السعودية -> https://www.mubasher.info/news/sa/now/latest
+الإمارات -> https://www.mubasher.info/news/ae/now/latest
+البحرين -> https://www.mubasher.info/news/bh/now/latest
+قطر -> https://www.mubasher.info/news/qa/now/latest
+عمان -> https://www.mubasher.info/news/om/now/latest
+الكويت -> https://www.mubasher.info/news/kw/now/latest
+الأردن -> https://www.mubasher.info/news/jo/now/latest
+المغرب -> https://www.mubasher.info/news/ma/now/latest
+تونس -> https://www.mubasher.info/news/tn/now/latest
+فلسطين -> https://www.mubasher.info/news/ps/now/latest
+العراق -> https://www.mubasher.info/news/iq/now/latest
+الخليج -> https://www.mubasher.info/news/regions/gulf
+الشام -> https://www.mubasher.info/news/regions/levant
+شمال أفريقيا -> https://www.mubasher.info/news/regions/north-africa
+الشرق الأوسط -> https://www.mubasher.info/news/regions/middle-east
+اقتصاد عالمى -> https://www.mubasher.info/news/international/global-economy
+أحداث عالمية -> https://www.mubasher.info/news/international/goods-and-metals
+السوق الأمريكي -> https://www.mubasher.info/news/international/us-markets
+نفط ومعادن -> https://www.mubasher.info/news/international/oil-and-energy
+عملات -> https://www.mubasher.info/news/international/currencies
+تقارير عالمية -> https://www.mubasher.info/news/international/global-reports
+ -> https://www.mubasher.info/countries/sa#mm-1
+الشركات -> 
+الشركات المدرجة -> https://www.mubasher.info/countries/sa/companies
+مفكرة الشركات -> https://www.mubasher.info/countries/sa/events
+أسعار الأسهم -> https://www.mubasher.info/countries/sa/stock-prices
+إعلانات الأرباح -> https://www.mubasher.info/countries/sa/earnings
+القيم العادلة -> https://www.mubasher.info/countries/sa/fair-values
+الإجراءات -> https://www.mubasher.info/countries/sa/corporate-action
+كبار الملاك -> https://www.mubasher.info/countries/sa/major-shareholders
+زيادة رأس المال -> https://www.mubasher.info/countries/sa/ipos/capital-increase
+قائمة الإكتتابات -> https://www.mubasher.info/countries/sa/ipos
+أخبار الاكتتابات -> https://www.mubasher.info/ipos/news
+ -> https://www.mubasher.info/countries/sa#mm-1
+صناديق الاستثمار -> 
+صناديق الاستثمار -> https://www.mubasher.info/countries/sa/funds
+إحصائيات الصناديق -> https://www.mubasher.info/countries/sa/funds-statistics
+ -> https://www.mubasher.info/countries/sa#mm-1
+أدوات التحليل -> 
+إحصائيات الشركات -> https://www.mubasher.info/analysis-tools/most-active-winners/TDWL
+الدعم والمقاومة -> https://www.mubasher.info/analysis-tools/stocks-support-resistance/TDWL
+مراقب السيولة -> https://www.mubasher.info/analysis-tools/liquidity-monitor/TDWL
+مراقب حجم التداول -> https://www.mubasher.info/analysis-tools/volume-monitor/TDWL
+المؤشرات المالية -> https://www.mubasher.info/analysis-tools/financial-ratios/TDWL
+مقارنة الأداء -> https://www.mubasher.info/analysis-tools/performance-comparison
+ -> https://www.mubasher.info/countries/sa#mm-1
+حديث السوق -> 
+حديث السوق -> https://community.mubasher.info/
+رسائل -> javascript:void(0);
+مجموعات -> javascript:void(0);
+كبار المحللين -> javascript:void(0);
+أكاديمية مباشر -> https://community.mubasher.info/learning-center/overview
+ -> https://www.mubasher.info/countries/sa#mm-8
+إعدادات -> javascript:void(0);
+مسابقة توقع أسعار الأسهم -> javascript:void(0);
+ -> https://www.mubasher.info/countries/sa#mm-7
+تقارير أبحاث التداول -> 
+تقارير التحليل الفني -> https://community.mubasher.info/research/reports?type=1
+تقارير التحليل الأساسي -> https://community.mubasher.info/research/reports?type=2
+تقارير إشارات التداول اللحظية -> https://community.mubasher.info/research/reports?type=3
+ -> https://www.mubasher.info/countries/sa#mm-1
+شخصي -> 
+التنبيهات -> https://www.mubasher.info/my/alerts
+أسهمي -> https://www.mubasher.info/my/watch-list
+النشرة البريدية -> https://www.mubasher.info/my/newsletters
+ -> https://www.mubasher.info/countries/sa#main-menu
+
+              السعودية
+              
+             -> https://www.mubasher.info/countries/sa#countries-menu
+
+               -> javascript:;
+ TV مباشر -> https://www.mubasher.info/mubashertv/%D8%A2%D8%AE%D8%B1-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A7%D8%AA?playlistId=PL2c0DZc94_Hql725VckPjSeAIaHq6SbBt
+ اتصل بنا -> https://www.mubasher.info/contact
+ اعلن معنا -> https://www.mubasher.info/advertise
+ديسيفا -> 
+مسابقة التداول الافتراضي -> 
+ -> https://pulse.mubasher.info/
+ -> https://twitter.com/mubasher
+ -> https://www.facebook.com/Mubasher.Info
+ -> https://www.youtube.com/channel/UC7hnxb7gD4nKZdZk3ZlZCYg
+ -> https://www.linkedin.com/company/1477149
+ -> https://t.me/MubasherInfoo
+ -> https://www.snapchat.com/add/mubasher.info
+ -> https://www.tiktok.com/@mubasher.info
+ -> https://www.instagram.com/mubasher.info
+ -> https://www.threads.net/@mubasher.info
+ -> https://www.mubasher.info/news/rss
+دخول  -> javascript:void(0);
+خروج -> 
+ENGLISH -> https://english.mubasher.info/
+السعودية  -> javascript:;
+الإمارات -> https://www.mubasher.info/change-country?to=ae&url=/countries/sa
+البحرين -> https://www.mubasher.info/change-country?to=bh&url=/countries/sa
+عُمان -> https://www.mubasher.info/change-country?to=om&url=/countries/sa
+قطر -> https://www.mubasher.info/change-country?to=qa&url=/countries/sa
+الكويت -> https://www.mubasher.info/change-country?to=kw&url=/countries/sa
+مصر -> https://www.mubasher.info/change-country?to=eg&url=/countries/sa
+الأردن -> https://www.mubasher.info/change-country?to=jo&url=/countries/sa
+تونس -> https://www.mubasher.info/change-country?to=tn&url=/countries/sa
+المغرب -> https://www.mubasher.info/change-country?to=ma&url=/countries/sa
+فلسطين -> https://www.mubasher.info/change-country?to=ps&url=/countries/sa
+العراق -> https://www.mubasher.info/change-country?to=iq&url=/countries/sa
+TDWL -> https://www.mubasher.info/markets/TDWL
+ -> https://www.mubasher.info/countries/sa
+الأسواق -> javascript:;
+ -> https://www.mubasher.info/markets/TDWL
+ -> https://www.mubasher.info/markets/EGX
+ -> https://www.mubasher.info/markets/DFM
+ -> https://www.mubasher.info/markets/ADX
+ -> https://www.mubasher.info/markets/BB
+ -> https://www.mubasher.info/markets/QE
+ -> https://www.mubasher.info/markets/MSM
+ -> https://www.mubasher.info/markets/BK
+ -> https://www.mubasher.info/markets/ASE
+ -> https://www.mubasher.info/markets/CSE
+ -> https://www.mubasher.info/markets/BDT
+ -> https://www.mubasher.info/markets/PEX
+ -> https://www.mubasher.info/markets/ISX
+ -> https://www.mubasher.info/international-indices
+ -> https://www.mubasher.info/markets/commodities-prices
+ -> https://www.mubasher.info/countries/sa/currencies
+الأخبار -> javascript:;
+يحدث الآن -> javascript:;
+ -> https://www.mubasher.info/news/sa/now/top
+ -> https://www.mubasher.info/news/sa/now/exclusive
+ -> https://www.mubasher.info/news/sa/now/latest
+ -> https://www.mubasher.info/news/sa/now/announcements
+ -> https://www.mubasher.info/news/sa/now/popular
+ -> https://www.mubasher.info/news/now/news-releases
+ -> https://www.mubasher.info/news/international/mubasherblog
+نبض السوق -> javascript:;
+ -> https://www.mubasher.info/news/sa/pulse/stocks
+ -> https://www.mubasher.info/news/sa/pulse/analysis
+ -> https://www.mubasher.info/news/sa/pulse/local
+ -> https://www.mubasher.info/news/sa/pulse/recommendations
+ -> https://www.mubasher.info/news/sa/category/banking
+ -> https://www.mubasher.info/news/sa/category/realEstate
+أخبار الدول -> javascript:;
+ -> https://www.mubasher.info/news/eg/now/latest
+ -> https://www.mubasher.info/news/sa/now/latest
+ -> https://www.mubasher.info/news/ae/now/latest
+ -> https://www.mubasher.info/news/bh/now/latest
+ -> https://www.mubasher.info/news/qa/now/latest
+ -> https://www.mubasher.info/news/om/now/latest
+أخبار الدول -> javascript:;
+ -> https://www.mubasher.info/news/kw/now/latest
+ -> https://www.mubasher.info/news/jo/now/latest
+ -> https://www.mubasher.info/news/ma/now/latest
+ -> https://www.mubasher.info/news/tn/now/latest
+ -> https://www.mubasher.info/news/ps/now/latest
+ -> https://www.mubasher.info/news/iq/now/latest
+أخبار إقليمية -> javascript:;
+ -> https://www.mubasher.info/news/regions/gulf
+ -> https://www.mubasher.info/news/regions/levant
+ -> https://www.mubasher.info/news/regions/north-africa
+ -> https://www.mubasher.info/news/regions/middle-east
+أخبار عالمية -> javascript:;
+ -> https://www.mubasher.info/news/international/global-economy
+ -> https://www.mubasher.info/news/international/goods-and-metals
+ -> https://www.mubasher.info/news/international/us-markets
+ -> https://www.mubasher.info/news/international/oil-and-energy
+ -> https://www.mubasher.info/news/international/currencies
+ -> https://www.mubasher.info/news/international/global-reports
+الشركات -> javascript:;
+ -> https://www.mubasher.info/countries/sa/companies
+ -> https://www.mubasher.info/countries/sa/events
+ -> https://www.mubasher.info/countries/sa/stock-prices
+ -> https://www.mubasher.info/countries/sa/fair-values
+ -> https://www.mubasher.info/countries/sa/earnings
+ -> https://www.mubasher.info/countries/sa/corporate-action
+ -> https://www.mubasher.info/countries/sa/major-shareholders
+ -> https://www.mubasher.info/countries/sa/ipos/capital-increase
+ -> https://www.mubasher.info/countries/sa/ipos
+ -> https://www.mubasher.info/ipos/news
+صناديق الاستثمار -> javascript:;
+ -> https://www.mubasher.info/countries/sa/funds
+ -> https://www.mubasher.info/countries/sa/funds-statistics
+أدوات التحليل -> javascript:;
+ -> https://www.mubasher.info/analysis-tools/most-active-winners/TDWL
+ -> https://www.mubasher.info/analysis-tools/stocks-support-resistance/TDWL
+ -> https://www.mubasher.info/analysis-tools/liquidity-monitor/TDWL
+ -> https://www.mubasher.info/analysis-tools/volume-monitor/TDWL
+ -> https://www.mubasher.info/analysis-tools/financial-ratios/TDWL
+ -> https://www.mubasher.info/analysis-tools/performance-comparison
+الاقتصاد الإسلامي -> https://www.mubasher.info/news/islamic-finance
+حديث السوق -> javascript:;
+ -> https://community.mubasher.info/?country=sa
+ -> javascript:void(0);
+ -> javascript:void(0);
+ -> javascript:void(0);
+ -> javascript:void(0);
+ -> javascript:void(0);
+ -> javascript:;
+تقارير التحليل الفني -> https://community.mubasher.info/research/reports?type=1&country=sa
+تقارير التحليل الأساسي -> https://community.mubasher.info/research/reports?type=2&country=sa
+تقارير إشارات التداول اللحظية -> https://community.mubasher.info/research/reports?type=3&country=sa
+ -> javascript:void(0);
+ -> javascript:void(0);
+ -> javascript:void(0);
+ -> javascript:void(0);
+مباشر TV -> https://www.mubasher.info/mubashertv/%D8%A2%D8%AE%D8%B1-%D8%A7%D9%84%D8%AD%D9%84%D9%82%D8%A7%D8%AA?playlistId=PL2c0DZc94_Hql725VckPjSeAIaHq6SbBt
+شخصي -> javascript:;
+ -> https://www.mubasher.info/my/alerts
+ -> https://www.mubasher.info/my/watch-list
+ -> https://www.mubasher.info/my/newsletters
+ -> javascript:;
+حصاد 2025.. وكالات التصنيف تؤكد متانة الاقتصاد السعودي وتوقعات نموه حتى 2028 -> https://www.mubasher.info/news/4539808/%D8%AD%D8%B5%D8%A7%D8%AF-2025-%D9%88%D9%83%D8%A7%D9%84%D8%A7%D8%AA-%D8%A7%D9%84%D8%AA%D8%B5%D9%86%D9%8A%D9%81-%D8%AA%D8%A4%D9%83%D8%AF-%D9%85%D8%AA%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A-%D9%88%D8%AA%D9%88%D9%82%D8%B9%D8%A7%D8%AA-%D9%86%D9%85%D9%88%D9%87-%D8%AD%D8%AA%D9%89-2028/
+"موانئ": إضافة خدمة شحن جديدة تربط السعودية بـ3 دول خليجية -> https://www.mubasher.info/news/4540127/-%D9%85%D9%88%D8%A7%D9%86%D8%A6-%D8%A5%D8%B6%D8%A7%D9%81%D8%A9-%D8%AE%D8%AF%D9%85%D8%A9-%D8%B4%D8%AD%D9%86-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9-%D8%AA%D8%B1%D8%A8%D8%B7-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A8%D9%803-%D8%AF%D9%88%D9%84-%D8%AE%D9%84%D9%8A%D8%AC%D9%8A%D8%A9/
+الرياض تشهد انطلاق المؤتمر الدولي لبناء القدرات في الذكاء الاصطناعي يناير المقبل -> https://www.mubasher.info/news/4540120/%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6-%D8%AA%D8%B4%D9%87%D8%AF-%D8%A7%D9%86%D8%B7%D9%84%D8%A7%D9%82-%D8%A7%D9%84%D9%85%D8%A4%D8%AA%D9%85%D8%B1-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%84%D8%A8%D9%86%D8%A7%D8%A1-%D8%A7%D9%84%D9%82%D8%AF%D8%B1%D8%A7%D8%AA-%D9%81%D9%8A-%D8%A7%D9%84%D8%B0%D9%83%D8%A7%D8%A1-%D8%A7%D9%84%D8%A7%D8%B5%D8%B7%D9%86%D8%A7%D8%B9%D9%8A-%D9%8A%D9%86%D8%A7%D9%8A%D8%B1-%D8%A7%D9%84%D9%85%D9%82%D8%A8%D9%84/
+"أكوا باور" تستحوذ على حصة "بديل" في "الشعيبة للمياه" بـ843 مليون ريال -> https://www.mubasher.info/news/4540104/-%D8%A3%D9%83%D9%88%D8%A7-%D8%A8%D8%A7%D9%88%D8%B1-%D8%AA%D8%B3%D8%AA%D8%AD%D9%88%D8%B0-%D8%B9%D9%84%D9%89-%D8%AD%D8%B5%D8%A9-%D8%A8%D8%AF%D9%8A%D9%84-%D9%81%D9%8A-%D8%A7%D9%84%D8%B4%D8%B9%D9%8A%D8%A8%D8%A9-%D9%84%D9%84%D9%85%D9%8A%D8%A7%D9%87-%D8%A8%D9%80843-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%B1%D9%8A%D8%A7%D9%84/
+سهم "ام آي اس" يتحرك في اتجاه صاعد يعزز النظرة الإيجابية بالمدى المتوسط -> https://www.mubasher.info/news/4540098/%D8%B3%D9%87%D9%85-%D8%A7%D9%85-%D8%A2%D9%8A-%D8%A7%D8%B3-%D9%8A%D8%AA%D8%AD%D8%B1%D9%83-%D9%81%D9%8A-%D8%A7%D8%AA%D8%AC%D8%A7%D9%87-%D8%B5%D8%A7%D8%B9%D8%AF-%D9%8A%D8%B9%D8%B2%D8%B2-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%8A%D8%AC%D8%A7%D8%A8%D9%8A%D8%A9-%D8%A8%D8%A7%D9%84%D9%85%D8%AF%D9%89-%D8%A7%D9%84%D9%85%D8%AA%D9%88%D8%B3%D8%B7/
+21 يناير .. مساهمو "ساكو" يصوتون على شراء 224.45 ألف سهم خزينة -> https://www.mubasher.info/news/4540095/21-%D9%8A%D9%86%D8%A7%D9%8A%D8%B1-%D9%85%D8%B3%D8%A7%D9%87%D9%85%D9%88-%D8%B3%D8%A7%D9%83%D9%88-%D9%8A%D8%B5%D9%88%D8%AA%D9%88%D9%86-%D8%B9%D9%84%D9%89-%D8%B4%D8%B1%D8%A7%D8%A1-224-45-%D8%A3%D9%84%D9%81-%D8%B3%D9%87%D9%85-%D8%AE%D8%B2%D9%8A%D9%86%D8%A9/
+السعودية -> javascript:;
+العربية -> https://www.mubasher.info/portlet/indices/gulf
+العالمية -> https://www.mubasher.info/portlet/indices/international
+معادن وطاقة -> https://www.mubasher.info/portlet/commodities
+TASI -> https://www.mubasher.info/markets/TDWL
+ -> https://vidverto.io/
+ -> https://vidverto.io/
+ -> https://vidverto.io/?utm_source=vidverto.io_branding&&utm_medium=www.mubasher.info
+آخر الأخبار -> https://www.mubasher.info/news/sa/now/latest
+ -> https://www.mubasher.info/news/4540130/%D8%A7%D8%B3%D8%AA%D9%82%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9-%D9%82%D8%A8%D9%8A%D9%84-%D8%B9%D8%B7%D9%84%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF/
+استقرار الأسهم الأمريكية قبيل عطلة عيد الميلاد -> https://www.mubasher.info/news/4540130/%D8%A7%D8%B3%D8%AA%D9%82%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9-%D9%82%D8%A8%D9%8A%D9%84-%D8%B9%D8%B7%D9%84%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF/
+اقتصاد عالمى -> https://www.mubasher.info/news/mainTag/3/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D8%B9%D8%A7%D9%84%D9%85%D9%89
+ -> https://www.mubasher.info/news/4540112/%D8%AD%D8%B1%D8%A8-%D8%A7%D9%84%D8%AA%D8%A3%D8%B4%D9%8A%D8%B1%D8%A7%D8%AA-%D8%AA%D8%B4%D8%AA%D8%B9%D9%84-%D8%A3%D9%88%D8%B1%D9%88%D8%A8%D8%A7-%D8%AA%D9%87%D8%AF%D8%AF-%D8%A8%D8%B1%D8%AF-%D8%AD%D8%A7%D8%B3%D9%85-%D8%B9%D9%84%D9%89-%D8%AA%D8%B1%D8%A7%D9%85%D8%A8/
+حرب التأشيرات تشتعل.. أوروبا تهدد برد "حاسم" على ترامب -> https://www.mubasher.info/news/4540112/%D8%AD%D8%B1%D8%A8-%D8%A7%D9%84%D8%AA%D8%A3%D8%B4%D9%8A%D8%B1%D8%A7%D8%AA-%D8%AA%D8%B4%D8%AA%D8%B9%D9%84-%D8%A3%D9%88%D8%B1%D9%88%D8%A8%D8%A7-%D8%AA%D9%87%D8%AF%D8%AF-%D8%A8%D8%B1%D8%AF-%D8%AD%D8%A7%D8%B3%D9%85-%D8%B9%D9%84%D9%89-%D8%AA%D8%B1%D8%A7%D9%85%D8%A8/
+اقتصاد عالمى -> https://www.mubasher.info/news/mainTag/3/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D8%B9%D8%A7%D9%84%D9%85%D9%89
+ -> https://www.mubasher.info/news/4540105/%D8%A7%D9%84%D8%A8%D9%8A%D8%AA%D9%83%D9%88%D9%8A%D9%86-%D8%AA%D9%81%D9%82%D8%AF-%D8%A8%D9%87%D8%AC%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF-%D9%88%D8%AA%D8%BA%D8%B1%D9%82-%D9%81%D9%8A-%D8%B1%D9%83%D9%88%D8%AF-%D8%B3%D8%B9%D8%B1%D9%8A/
+البيتكوين تفقد "بهجة عيد الميلاد" وتغرق في ركود سعري -> https://www.mubasher.info/news/4540105/%D8%A7%D9%84%D8%A8%D9%8A%D8%AA%D9%83%D9%88%D9%8A%D9%86-%D8%AA%D9%81%D9%82%D8%AF-%D8%A8%D9%87%D8%AC%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF-%D9%88%D8%AA%D8%BA%D8%B1%D9%82-%D9%81%D9%8A-%D8%B1%D9%83%D9%88%D8%AF-%D8%B3%D8%B9%D8%B1%D9%8A/
+عملات -> https://www.mubasher.info/news/subTag/13/%D8%B9%D9%85%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540127/-%D9%85%D9%88%D8%A7%D9%86%D8%A6-%D8%A5%D8%B6%D8%A7%D9%81%D8%A9-%D8%AE%D8%AF%D9%85%D8%A9-%D8%B4%D8%AD%D9%86-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9-%D8%AA%D8%B1%D8%A8%D8%B7-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A8%D9%803-%D8%AF%D9%88%D9%84-%D8%AE%D9%84%D9%8A%D8%AC%D9%8A%D8%A9/
+"موانئ": إضافة خدمة شحن جديدة تربط السعودية بـ3 دول خليجية -> https://www.mubasher.info/news/4540127/-%D9%85%D9%88%D8%A7%D9%86%D8%A6-%D8%A5%D8%B6%D8%A7%D9%81%D8%A9-%D8%AE%D8%AF%D9%85%D8%A9-%D8%B4%D8%AD%D9%86-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9-%D8%AA%D8%B1%D8%A8%D8%B7-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A8%D9%803-%D8%AF%D9%88%D9%84-%D8%AE%D9%84%D9%8A%D8%AC%D9%8A%D8%A9/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+ -> https://www.mubasher.info/news/4540120/%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6-%D8%AA%D8%B4%D9%87%D8%AF-%D8%A7%D9%86%D8%B7%D9%84%D8%A7%D9%82-%D8%A7%D9%84%D9%85%D8%A4%D8%AA%D9%85%D8%B1-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%84%D8%A8%D9%86%D8%A7%D8%A1-%D8%A7%D9%84%D9%82%D8%AF%D8%B1%D8%A7%D8%AA-%D9%81%D9%8A-%D8%A7%D9%84%D8%B0%D9%83%D8%A7%D8%A1-%D8%A7%D9%84%D8%A7%D8%B5%D8%B7%D9%86%D8%A7%D8%B9%D9%8A-%D9%8A%D9%86%D8%A7%D9%8A%D8%B1-%D8%A7%D9%84%D9%85%D9%82%D8%A8%D9%84/
+الرياض تشهد انطلاق المؤتمر الدولي لبناء القدرات في الذكاء الاصطناعي يناير المقبل -> https://www.mubasher.info/news/4540120/%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6-%D8%AA%D8%B4%D9%87%D8%AF-%D8%A7%D9%86%D8%B7%D9%84%D8%A7%D9%82-%D8%A7%D9%84%D9%85%D8%A4%D8%AA%D9%85%D8%B1-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%84%D8%A8%D9%86%D8%A7%D8%A1-%D8%A7%D9%84%D9%82%D8%AF%D8%B1%D8%A7%D8%AA-%D9%81%D9%8A-%D8%A7%D9%84%D8%B0%D9%83%D8%A7%D8%A1-%D8%A7%D9%84%D8%A7%D8%B5%D8%B7%D9%86%D8%A7%D8%B9%D9%8A-%D9%8A%D9%86%D8%A7%D9%8A%D8%B1-%D8%A7%D9%84%D9%85%D9%82%D8%A8%D9%84/
+الأخبار العامة -> https://www.mubasher.info/news/category/25/%D8%A7%D9%84%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B9%D8%A7%D9%85%D8%A9
+ -> https://www.mubasher.info/news/4540100/%D8%B1%D9%88%D8%B3%D9%8A%D8%A7-%D8%AA%D8%B1%D9%81%D8%B9-%D8%AD%D8%B5%D8%B5-%D8%AA%D8%B5%D8%AF%D9%8A%D8%B1-%D8%A7%D9%84%D8%AD%D8%A8%D9%88%D8%A8-%D9%85%D8%B9-%D8%A7%D8%B4%D8%AA%D8%B9%D8%A7%D9%84-%D8%A7%D9%84%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D8%A7%D9%84%D8%B9%D8%A7%D9%84%D9%85%D9%8A%D8%A9/
+روسيا ترفع حصص تصدير الحبوب مع اشتعال الأسعار العالمية -> https://www.mubasher.info/news/4540100/%D8%B1%D9%88%D8%B3%D9%8A%D8%A7-%D8%AA%D8%B1%D9%81%D8%B9-%D8%AD%D8%B5%D8%B5-%D8%AA%D8%B5%D8%AF%D9%8A%D8%B1-%D8%A7%D9%84%D8%AD%D8%A8%D9%88%D8%A8-%D9%85%D8%B9-%D8%A7%D8%B4%D8%AA%D8%B9%D8%A7%D9%84-%D8%A7%D9%84%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D8%A7%D9%84%D8%B9%D8%A7%D9%84%D9%85%D9%8A%D8%A9/
+اقتصاد عالمى -> https://www.mubasher.info/news/mainTag/3/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D8%B9%D8%A7%D9%84%D9%85%D9%89
+ -> https://www.mubasher.info/news/4540116/-%D8%AF%D8%AE%D9%88%D9%86-%D8%AA%D9%88%D9%82%D8%B9-%D8%A7%D8%AA%D9%81%D8%A7%D9%82%D9%8A%D8%A9-%D9%84%D9%85%D9%86%D8%AD-%D8%A3%D8%AD%D9%82%D9%8A%D8%A9-%D8%A7%D9%84%D8%A7%D9%85%D8%AA%D9%8A%D8%A7%D8%B2-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D9%8A-%D9%84%D9%81%D8%B1%D9%88%D8%B9%D9%87%D8%A7-%D9%81%D9%8A-%D8%B3%D9%84%D8%B7%D9%86%D8%A9-%D8%B9%D9%85%D8%A7%D9%86/
+"دخون" توقع اتفاقية لمنح أحقية الامتياز التجاري لفروعها في سلطنة عمان -> https://www.mubasher.info/news/4540116/-%D8%AF%D8%AE%D9%88%D9%86-%D8%AA%D9%88%D9%82%D8%B9-%D8%A7%D8%AA%D9%81%D8%A7%D9%82%D9%8A%D8%A9-%D9%84%D9%85%D9%86%D8%AD-%D8%A3%D8%AD%D9%82%D9%8A%D8%A9-%D8%A7%D9%84%D8%A7%D9%85%D8%AA%D9%8A%D8%A7%D8%B2-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D9%8A-%D9%84%D9%81%D8%B1%D9%88%D8%B9%D9%87%D8%A7-%D9%81%D9%8A-%D8%B3%D9%84%D8%B7%D9%86%D8%A9-%D8%B9%D9%85%D8%A7%D9%86/
+استثمارات الشركات -> https://www.mubasher.info/news/category/68/%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D8%A7%D8%AA-%D8%A7%D9%84%D8%B4%D8%B1%D9%83%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540097/-%D9%85%D9%88%D8%B1%D8%AC%D8%A7%D9%86-%D8%B3%D8%AA%D8%A7%D9%86%D9%84%D9%8A-%D8%A7%D9%84%D8%B1%D8%B3%D9%88%D9%85-%D8%A7%D9%84%D8%AC%D9%85%D8%B1%D9%83%D9%8A%D8%A9-%D9%82%D8%AF-%D8%AA%D8%B4%D8%B9%D9%84-%D8%A7%D9%84%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D9%85%D8%AC%D8%AF%D8%AF%D8%A7-%D9%81%D9%8A-2026/
+“مورجان ستانلي": الرسوم الجمركية قد تشعل الأسعار مجددا في 2026 -> https://www.mubasher.info/news/4540097/-%D9%85%D9%88%D8%B1%D8%AC%D8%A7%D9%86-%D8%B3%D8%AA%D8%A7%D9%86%D9%84%D9%8A-%D8%A7%D9%84%D8%B1%D8%B3%D9%88%D9%85-%D8%A7%D9%84%D8%AC%D9%85%D8%B1%D9%83%D9%8A%D8%A9-%D9%82%D8%AF-%D8%AA%D8%B4%D8%B9%D9%84-%D8%A7%D9%84%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D9%85%D8%AC%D8%AF%D8%AF%D8%A7-%D9%81%D9%8A-2026/
+السوق الأمريكي -> https://www.mubasher.info/news/subTag/10/%D8%A7%D9%84%D8%B3%D9%88%D9%82-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A
+ -> https://www.mubasher.info/news/4540107/%D8%A3%D8%B3%D9%87%D9%85-%D8%A5%D9%86%D8%AA%D9%84-%D8%AA%D8%AA%D8%B1%D8%A7%D8%AC%D8%B9-%D8%A8%D8%B9%D8%AF-%D8%AA%D9%88%D9%82%D9%81-%D8%A5%D9%86%D9%81%D9%8A%D8%AF%D9%8A%D8%A7-%D8%B9%D9%86-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1-%D8%B1%D9%82%D8%A7%D8%A6%D9%82%D9%87%D8%A7-%D8%A7%D9%84%D9%85%D8%AA%D9%82%D8%AF%D9%85%D8%A9/
+أسهم "إنتل" تتراجع بعد توقف "إنفيديا" عن اختبار رقائقها المتقدمة -> https://www.mubasher.info/news/4540107/%D8%A3%D8%B3%D9%87%D9%85-%D8%A5%D9%86%D8%AA%D9%84-%D8%AA%D8%AA%D8%B1%D8%A7%D8%AC%D8%B9-%D8%A8%D8%B9%D8%AF-%D8%AA%D9%88%D9%82%D9%81-%D8%A5%D9%86%D9%81%D9%8A%D8%AF%D9%8A%D8%A7-%D8%B9%D9%86-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1-%D8%B1%D9%82%D8%A7%D8%A6%D9%82%D9%87%D8%A7-%D8%A7%D9%84%D9%85%D8%AA%D9%82%D8%AF%D9%85%D8%A9/
+تقارير عالمية -> https://www.mubasher.info/news/subTag/14/%D8%AA%D9%82%D8%A7%D8%B1%D9%8A%D8%B1-%D8%B9%D8%A7%D9%84%D9%85%D9%8A%D8%A9
+ -> https://www.mubasher.info/news/4540106/%D8%A7%D9%86%D8%AE%D9%81%D8%A7%D8%B6-%D9%85%D9%81%D8%A7%D8%AC%D8%A6-%D9%81%D9%8A-%D8%B7%D9%84%D8%A8%D8%A7%D8%AA-%D8%A5%D8%B9%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9/
+انخفاض مفاجئ في طلبات إعانة البطالة الأمريكية -> https://www.mubasher.info/news/4540106/%D8%A7%D9%86%D8%AE%D9%81%D8%A7%D8%B6-%D9%85%D9%81%D8%A7%D8%AC%D8%A6-%D9%81%D9%8A-%D8%B7%D9%84%D8%A8%D8%A7%D8%AA-%D8%A5%D8%B9%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9/
+تقارير عالمية -> https://www.mubasher.info/news/subTag/14/%D8%AA%D9%82%D8%A7%D8%B1%D9%8A%D8%B1-%D8%B9%D8%A7%D9%84%D9%85%D9%8A%D8%A9
+المزيد  -> https://www.mubasher.info/news/sa/now/latest
+حصرياً مباشر -> https://www.mubasher.info/news/sa/now/exclusive/
+ -> https://www.mubasher.info/news/4540103/%D8%B3%D9%87%D9%85-%D8%A5%D8%B9%D9%85%D8%A7%D8%B1-%D9%8A%D8%AE%D8%AA%D8%B1%D9%82-%D8%A7%D9%84%D9%82%D8%A7%D8%B9-%D8%A7%D9%84%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE%D9%8A-%D8%AA%D8%B9%D8%B1%D9%81-%D8%B9%D9%84%D9%89-%D9%85%D8%B3%D8%AA%D9%88%D9%8A%D8%A7%D8%AA-%D8%A7%D9%84%D8%AF%D8%B9%D9%85-%D8%A7%D9%84%D9%85%D8%AD%D8%AA%D9%85%D9%84%D8%A9/
+سهم "إعمار" يخترق القاع التاريخي.. تعرف على مستويات الدعم المحتملة -> https://www.mubasher.info/news/4540103/%D8%B3%D9%87%D9%85-%D8%A5%D8%B9%D9%85%D8%A7%D8%B1-%D9%8A%D8%AE%D8%AA%D8%B1%D9%82-%D8%A7%D9%84%D9%82%D8%A7%D8%B9-%D8%A7%D9%84%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE%D9%8A-%D8%AA%D8%B9%D8%B1%D9%81-%D8%B9%D9%84%D9%89-%D9%85%D8%B3%D8%AA%D9%88%D9%8A%D8%A7%D8%AA-%D8%A7%D9%84%D8%AF%D8%B9%D9%85-%D8%A7%D9%84%D9%85%D8%AD%D8%AA%D9%85%D9%84%D8%A9/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540098/%D8%B3%D9%87%D9%85-%D8%A7%D9%85-%D8%A2%D9%8A-%D8%A7%D8%B3-%D9%8A%D8%AA%D8%AD%D8%B1%D9%83-%D9%81%D9%8A-%D8%A7%D8%AA%D8%AC%D8%A7%D9%87-%D8%B5%D8%A7%D8%B9%D8%AF-%D9%8A%D8%B9%D8%B2%D8%B2-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%8A%D8%AC%D8%A7%D8%A8%D9%8A%D8%A9-%D8%A8%D8%A7%D9%84%D9%85%D8%AF%D9%89-%D8%A7%D9%84%D9%85%D8%AA%D9%88%D8%B3%D8%B7/
+سهم "ام آي اس" يتحرك في اتجاه صاعد يعزز النظرة الإيجابية بالمدى المتوسط -> https://www.mubasher.info/news/4540098/%D8%B3%D9%87%D9%85-%D8%A7%D9%85-%D8%A2%D9%8A-%D8%A7%D8%B3-%D9%8A%D8%AA%D8%AD%D8%B1%D9%83-%D9%81%D9%8A-%D8%A7%D8%AA%D8%AC%D8%A7%D9%87-%D8%B5%D8%A7%D8%B9%D8%AF-%D9%8A%D8%B9%D8%B2%D8%B2-%D8%A7%D9%84%D9%86%D8%B8%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%8A%D8%AC%D8%A7%D8%A8%D9%8A%D8%A9-%D8%A8%D8%A7%D9%84%D9%85%D8%AF%D9%89-%D8%A7%D9%84%D9%85%D8%AA%D9%88%D8%B3%D8%B7/
+أخبار السوق -> https://www.mubasher.info/news/category/13/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B3%D9%88%D9%82
+ -> https://www.mubasher.info/news/4540059/207-%D8%A3%D8%B3%D9%87%D9%85-%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%AA%D8%AA%D8%B1%D8%A7%D8%AC%D8%B9-%D8%A8%D8%AC%D9%84%D8%B3%D8%A9-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%B9%D8%A7%D8%A1-%D9%88-%D8%A5%D9%85-%D8%A2%D9%8A-%D8%A5%D8%B3-%D9%8A%D8%AA%D8%B5%D8%AF%D8%B1-%D8%A7%D9%84%D9%85%D9%83%D8%A7%D8%B3%D8%A8-%D8%A8%D9%86%D8%B3%D8%A8%D8%A9-9-96-/
+207 أسهم سعودية تتراجع بجلسة الأربعاء.. و"إم آي إس" يتصدر المكاسب بنسبة 9.96% -> https://www.mubasher.info/news/4540059/207-%D8%A3%D8%B3%D9%87%D9%85-%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%AA%D8%AA%D8%B1%D8%A7%D8%AC%D8%B9-%D8%A8%D8%AC%D9%84%D8%B3%D8%A9-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%B9%D8%A7%D8%A1-%D9%88-%D8%A5%D9%85-%D8%A2%D9%8A-%D8%A5%D8%B3-%D9%8A%D8%AA%D8%B5%D8%AF%D8%B1-%D8%A7%D9%84%D9%85%D9%83%D8%A7%D8%B3%D8%A8-%D8%A8%D9%86%D8%B3%D8%A8%D8%A9-9-96-/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540054/%D9%85%D8%A4%D8%B4%D8%B1-%D8%AA%D8%A7%D8%B3%D9%8A-%D9%8A%D8%B9%D9%88%D8%AF-%D9%84%D9%84%D8%AE%D8%B3%D8%A7%D8%A6%D8%B1-%D8%A8%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D8%B9%D8%A7%D9%85%D9%84%D8%A7%D8%AA-%D9%88%D8%B3%D8%B7-%D9%87%D8%A8%D9%88%D8%B7-17-%D9%82%D8%B7%D8%A7%D8%B9%D8%A7-%D8%A8%D9%82%D9%8A%D8%A7%D8%AF%D8%A9-%D8%A7%D9%84%D8%A8%D9%86%D9%88%D9%83/
+مؤشر "تاسي" يعود للخسائر بنهاية التعاملات وسط هبوط 17 قطاعاً بقيادة البنوك -> https://www.mubasher.info/news/4540054/%D9%85%D8%A4%D8%B4%D8%B1-%D8%AA%D8%A7%D8%B3%D9%8A-%D9%8A%D8%B9%D9%88%D8%AF-%D9%84%D9%84%D8%AE%D8%B3%D8%A7%D8%A6%D8%B1-%D8%A8%D9%86%D9%87%D8%A7%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D8%B9%D8%A7%D9%85%D9%84%D8%A7%D8%AA-%D9%88%D8%B3%D8%B7-%D9%87%D8%A8%D9%88%D8%B7-17-%D9%82%D8%B7%D8%A7%D8%B9%D8%A7-%D8%A8%D9%82%D9%8A%D8%A7%D8%AF%D8%A9-%D8%A7%D9%84%D8%A8%D9%86%D9%88%D9%83/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4539997/%D8%B3%D9%87%D9%85-%D9%86%D9%82%D9%8A-%D9%8A%D9%82%D9%81%D8%B2-%D9%84%D8%A3%D8%B9%D9%84%D9%89-%D9%85%D8%B3%D8%AA%D9%88%D9%8A%D8%A7%D8%AA%D9%87-%D9%81%D9%8A-%D8%A3%D9%83%D8%AB%D8%B1-%D9%85%D9%86-8-%D8%A3%D8%B4%D9%87%D8%B1/
+سهم "نقي" يقفز لأعلى مستوياته في أكثر من 8 أشهر -> https://www.mubasher.info/news/4539997/%D8%B3%D9%87%D9%85-%D9%86%D9%82%D9%8A-%D9%8A%D9%82%D9%81%D8%B2-%D9%84%D8%A3%D8%B9%D9%84%D9%89-%D9%85%D8%B3%D8%AA%D9%88%D9%8A%D8%A7%D8%AA%D9%87-%D9%81%D9%8A-%D8%A3%D9%83%D8%AB%D8%B1-%D9%85%D9%86-8-%D8%A3%D8%B4%D9%87%D8%B1/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4539962/%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D9%85%D9%86%D8%AC%D9%85-%D9%8A%D8%AE%D8%AA%D8%A8%D8%B1-%D8%AF%D8%B9%D9%85%D8%A7-%D9%85%D9%87%D9%85%D8%A7-%D8%B3%D9%8A%D8%AD%D8%AF%D8%AF-%D8%A7%D8%AA%D8%AC%D8%A7%D9%87%D9%87-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D9%85%D8%AF%D9%89-%D8%A7%D9%84%D9%85%D8%AA%D9%88%D8%B3%D8%B7/
+سهم "المنجم" يختبر دعماً مهماً سيحدد اتجاهه على المدى المتوسط -> https://www.mubasher.info/news/4539962/%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D9%85%D9%86%D8%AC%D9%85-%D9%8A%D8%AE%D8%AA%D8%A8%D8%B1-%D8%AF%D8%B9%D9%85%D8%A7-%D9%85%D9%87%D9%85%D8%A7-%D8%B3%D9%8A%D8%AD%D8%AF%D8%AF-%D8%A7%D8%AA%D8%AC%D8%A7%D9%87%D9%87-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D9%85%D8%AF%D9%89-%D8%A7%D9%84%D9%85%D8%AA%D9%88%D8%B3%D8%B7/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4539961/%D8%B3%D9%87%D9%85-%D8%A5%D9%85-%D8%A2%D9%8A-%D8%A5%D8%B3-%D9%8A%D8%AA%D8%B5%D8%AF%D8%B1-%D8%A7%D9%84%D8%A7%D8%B1%D8%AA%D9%81%D8%A7%D8%B9%D8%A7%D8%AA-%D9%88%D9%8A%D9%82%D9%81%D8%B2-%D8%A8%D8%A3%D9%83%D8%A8%D8%B1-%D9%88%D8%AA%D9%8A%D8%B1%D8%A9-%D9%8A%D9%88%D9%85%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A3%D9%83%D8%AB%D8%B1-%D9%85%D9%86-3-%D8%B3%D9%86%D9%88%D8%A7%D8%AA/
+سهم "إم آي إس" يتصدر الارتفاعات ويقفز بأكبر وتيرة يومية في أكثر من 3 سنوات -> https://www.mubasher.info/news/4539961/%D8%B3%D9%87%D9%85-%D8%A5%D9%85-%D8%A2%D9%8A-%D8%A5%D8%B3-%D9%8A%D8%AA%D8%B5%D8%AF%D8%B1-%D8%A7%D9%84%D8%A7%D8%B1%D8%AA%D9%81%D8%A7%D8%B9%D8%A7%D8%AA-%D9%88%D9%8A%D9%82%D9%81%D8%B2-%D8%A8%D8%A3%D9%83%D8%A8%D8%B1-%D9%88%D8%AA%D9%8A%D8%B1%D8%A9-%D9%8A%D9%88%D9%85%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A3%D9%83%D8%AB%D8%B1-%D9%85%D9%86-3-%D8%B3%D9%86%D9%88%D8%A7%D8%AA/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4539953/%D8%B3%D9%87%D9%85-%D8%AF%D8%B1%D8%A7%D9%8A%D8%A9-%D9%8A%D9%88%D8%A7%D8%AC%D9%87-%D8%B6%D8%BA%D9%88%D8%B7%D8%A7-%D9%81%D9%86%D9%8A%D8%A9-%D9%85%D8%B9-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1-%D8%AF%D8%B9%D9%85-%D8%AD%D8%A7%D8%B3%D9%85/
+سهم "دراية" يواجه ضغوطاً فنية مع اختبار دعم حاسم -> https://www.mubasher.info/news/4539953/%D8%B3%D9%87%D9%85-%D8%AF%D8%B1%D8%A7%D9%8A%D8%A9-%D9%8A%D9%88%D8%A7%D8%AC%D9%87-%D8%B6%D8%BA%D9%88%D8%B7%D8%A7-%D9%81%D9%86%D9%8A%D8%A9-%D9%85%D8%B9-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1-%D8%AF%D8%B9%D9%85-%D8%AD%D8%A7%D8%B3%D9%85/
+أخبار السوق -> https://www.mubasher.info/news/category/13/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B3%D9%88%D9%82
+ -> https://www.mubasher.info/news/4539951/-%D8%AA%D8%A7%D8%B3%D9%8A-%D9%8A%D8%B9%D9%85-%D9%82-%D8%AE%D8%B3%D8%A7%D8%A6%D8%B1%D9%87-%D8%A8%D8%A7%D9%84%D9%85%D9%86%D8%AA%D8%B5%D9%81-%D9%88%D8%B3%D8%B7-%D9%87%D8%A8%D9%88%D8%B7-%D8%B4%D8%A8%D9%87-%D8%AC%D9%85%D8%A7%D8%B9%D9%8A-%D9%84%D9%84%D9%82%D8%B7%D8%A7%D8%B9%D8%A7%D8%AA/
+"تاسي" يعمّق خسائره بالمنتصف وسط هبوط شبه جماعي للقطاعات -> https://www.mubasher.info/news/4539951/-%D8%AA%D8%A7%D8%B3%D9%8A-%D9%8A%D8%B9%D9%85-%D9%82-%D8%AE%D8%B3%D8%A7%D8%A6%D8%B1%D9%87-%D8%A8%D8%A7%D9%84%D9%85%D9%86%D8%AA%D8%B5%D9%81-%D9%88%D8%B3%D8%B7-%D9%87%D8%A8%D9%88%D8%B7-%D8%B4%D8%A8%D9%87-%D8%AC%D9%85%D8%A7%D8%B9%D9%8A-%D9%84%D9%84%D9%82%D8%B7%D8%A7%D8%B9%D8%A7%D8%AA/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4539940/%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1-%D8%A7%D9%84%D8%A3%D8%AD%D9%85%D8%B1-%D9%8A%D9%88%D8%A7%D8%B5%D9%84-%D8%A7%D9%84%D8%A7%D8%AA%D8%AC%D8%A7%D9%87-%D8%A7%D9%84%D9%87%D8%A7%D8%A8%D8%B7-%D9%88%D9%8A%D8%AE%D8%AA%D8%A8%D8%B1-%D9%85%D9%82%D8%A7%D9%88%D9%85%D8%A9-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9/
+سهم "البحر الأحمر" يواصل الاتجاه الهابط ويختبر مقاومة محورية -> https://www.mubasher.info/news/4539940/%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1-%D8%A7%D9%84%D8%A3%D8%AD%D9%85%D8%B1-%D9%8A%D9%88%D8%A7%D8%B5%D9%84-%D8%A7%D9%84%D8%A7%D8%AA%D8%AC%D8%A7%D9%87-%D8%A7%D9%84%D9%87%D8%A7%D8%A8%D8%B7-%D9%88%D9%8A%D8%AE%D8%AA%D8%A8%D8%B1-%D9%85%D9%82%D8%A7%D9%88%D9%85%D8%A9-%D9%85%D8%AD%D9%88%D8%B1%D9%8A%D8%A9/
+حركة التداولات -> https://www.mubasher.info/news/category/12/%D8%AD%D8%B1%D9%83%D8%A9-%D8%A7%D9%84%D8%AA%D8%AF%D8%A7%D9%88%D9%84%D8%A7%D8%AA
+المزيد  -> https://www.mubasher.info/news/sa/now/exclusive
+اقتصاد إسلامي -> https://www.mubasher.info/news/islamic-finance
+ -> https://www.mubasher.info/news/4536986/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2-%D8%A7%D9%84%D9%88%D8%B7%D9%86%D9%8A-%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86-%D9%8A%D9%82%D9%81%D9%84-%D8%B7%D8%B1%D8%AD-%D8%B4%D9%87%D8%B1-%D8%AF%D9%8A%D8%B3%D9%85%D8%A8%D8%B1-2025-%D8%A8%D8%A3%D9%83%D8%AB%D8%B1-%D9%85%D9%86-7-%D9%85%D9%84%D9%8A%D8%A7%D8%B1%D8%A7%D8%AA-%D8%B1%D9%8A%D8%A7%D9%84/
+المركز الوطني لإدارة الدين يقفل طرح شهر ديسمبر 2025 بأكثر من 7 مليارات ريال -> https://www.mubasher.info/news/4536986/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2-%D8%A7%D9%84%D9%88%D8%B7%D9%86%D9%8A-%D9%84%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%AF%D9%8A%D9%86-%D9%8A%D9%82%D9%81%D9%84-%D8%B7%D8%B1%D8%AD-%D8%B4%D9%87%D8%B1-%D8%AF%D9%8A%D8%B3%D9%85%D8%A8%D8%B1-2025-%D8%A8%D8%A3%D9%83%D8%AB%D8%B1-%D9%85%D9%86-7-%D9%85%D9%84%D9%8A%D8%A7%D8%B1%D8%A7%D8%AA-%D8%B1%D9%8A%D8%A7%D9%84/
+صكوك وتمويل اسلامي -> https://www.mubasher.info/news/category/30/%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%AA%D9%85%D9%88%D9%8A%D9%84-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A
+ -> https://www.mubasher.info/news/4536481/%D9%85%D8%B5%D8%B1-%D8%AA%D8%A8%D9%8A%D8%B9-%D8%B5%D9%83%D9%88%D9%83%D8%A7-%D8%B3%D9%8A%D8%A7%D8%AF%D9%8A%D8%A9-%D8%A8%D9%82%D9%8A%D9%85%D8%A9-4-4-%D9%85%D9%84%D9%8A%D8%A7%D8%B1-%D8%AC%D9%86%D9%8A%D9%87-%D8%A8%D8%A3%D9%82%D9%84-12-%D8%B9%D9%86-%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D9%87%D8%AF%D9%81/
+مصر تبيع صكوكاً سيادية بقيمة 4.4 مليار جنيه بأقل 12% عن المستهدف -> https://www.mubasher.info/news/4536481/%D9%85%D8%B5%D8%B1-%D8%AA%D8%A8%D9%8A%D8%B9-%D8%B5%D9%83%D9%88%D9%83%D8%A7-%D8%B3%D9%8A%D8%A7%D8%AF%D9%8A%D8%A9-%D8%A8%D9%82%D9%8A%D9%85%D8%A9-4-4-%D9%85%D9%84%D9%8A%D8%A7%D8%B1-%D8%AC%D9%86%D9%8A%D9%87-%D8%A8%D8%A3%D9%82%D9%84-12-%D8%B9%D9%86-%D8%A7%D9%84%D9%85%D8%B3%D8%AA%D9%87%D8%AF%D9%81/
+صكوك وتمويل اسلامي -> https://www.mubasher.info/news/category/30/%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%AA%D9%85%D9%88%D9%8A%D9%84-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A
+ -> https://www.mubasher.info/news/4536279/-%D9%82%D8%B7%D8%B1-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A-%D9%8A-%D8%B5%D8%AF%D8%B1-%D8%B5%D9%83%D9%88%D9%83%D8%A7-%D8%A8%D9%80500-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%B1%D9%8A%D8%A7%D9%84/
+"قطر الدولي الإسلامي" يُصدر صكوكاً بـ500 مليون ريال -> https://www.mubasher.info/news/4536279/-%D9%82%D8%B7%D8%B1-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A-%D9%8A-%D8%B5%D8%AF%D8%B1-%D8%B5%D9%83%D9%88%D9%83%D8%A7-%D8%A8%D9%80500-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%B1%D9%8A%D8%A7%D9%84/
+بنوك ومالية -> https://www.mubasher.info/news/category/11/%D8%A8%D9%86%D9%88%D9%83-%D9%88%D9%85%D8%A7%D9%84%D9%8A%D8%A9
+ -> https://www.mubasher.info/news/4535161/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86%D9%8A-%D8%AA%D8%BA%D8%B7%D9%8A%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D8%AC%D8%A7%D8%B1%D8%A9-%D9%88%D9%85%D8%B1%D8%A7%D8%A8%D8%AD%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%A8%D9%8030-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1/
+المركزي البحريني: تغطية إصدار صكوك إجارة ومرابحة إسلامية بـ30 مليون دينار -> https://www.mubasher.info/news/4535161/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86%D9%8A-%D8%AA%D8%BA%D8%B7%D9%8A%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D8%AC%D8%A7%D8%B1%D8%A9-%D9%88%D9%85%D8%B1%D8%A7%D8%A8%D8%AD%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%A8%D9%8030-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1/
+صكوك وتمويل اسلامي -> https://www.mubasher.info/news/category/30/%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%AA%D9%85%D9%88%D9%8A%D9%84-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A
+ -> https://www.mubasher.info/news/4533821/%D8%A7%D9%84%D8%AF%D8%A7%D8%B1-%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%B1%D9%8A%D8%A9-%D8%AA%D8%B9%D8%AA%D9%85%D8%AF-%D8%AE%D8%B7%D8%A9-%D9%84%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%B3%D9%86%D8%AF%D8%A7%D8%AA-%D8%AA%D9%85%D9%88%D9%8A%D9%84%D9%8A%D8%A9-%D8%B6%D8%AE%D9%85%D8%A9/
+الدار العقارية تعتمد خطة لإصدار صكوك وسندات تمويلية ضخمة -> https://www.mubasher.info/news/4533821/%D8%A7%D9%84%D8%AF%D8%A7%D8%B1-%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%B1%D9%8A%D8%A9-%D8%AA%D8%B9%D8%AA%D9%85%D8%AF-%D8%AE%D8%B7%D8%A9-%D9%84%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%B3%D9%86%D8%AF%D8%A7%D8%AA-%D8%AA%D9%85%D9%88%D9%8A%D9%84%D9%8A%D8%A9-%D8%B6%D8%AE%D9%85%D8%A9/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+ -> https://www.mubasher.info/news/4533597/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86%D9%8A-%D8%AA%D8%BA%D8%B7%D9%8A%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D8%B3%D9%84%D9%85-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%AD%D9%83%D9%88%D9%85%D9%8A%D8%A9-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1/
+المركزي البحريني: تغطية إصدار صكوك سلم إسلامية حكومية بـ50 مليون دينار -> https://www.mubasher.info/news/4533597/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86%D9%8A-%D8%AA%D8%BA%D8%B7%D9%8A%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D8%B3%D9%84%D9%85-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%AD%D9%83%D9%88%D9%85%D9%8A%D8%A9-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1/
+صكوك وتمويل اسلامي -> https://www.mubasher.info/news/category/30/%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%AA%D9%85%D9%88%D9%8A%D9%84-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A
+ -> https://www.mubasher.info/news/4532383/%D8%A8%D9%88%D8%B1%D8%B5%D8%A9-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-%D8%A5%D8%AF%D8%B1%D8%A7%D8%AC-%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D8%AC%D8%A7%D8%B1%D8%A9-%D9%88%D9%85%D8%B1%D8%A7%D8%A8%D8%AD%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%AD%D8%AF-%D8%A7%D9%84%D9%85%D9%82%D8%A8%D9%84/
+بورصة البحرين: إدراج صكوك إجارة ومرابحة إسلامية بـ50 مليون دينار الأحد المقبل -> https://www.mubasher.info/news/4532383/%D8%A8%D9%88%D8%B1%D8%B5%D8%A9-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-%D8%A5%D8%AF%D8%B1%D8%A7%D8%AC-%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D8%AC%D8%A7%D8%B1%D8%A9-%D9%88%D9%85%D8%B1%D8%A7%D8%A8%D8%AD%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%AD%D8%AF-%D8%A7%D9%84%D9%85%D9%82%D8%A8%D9%84/
+صكوك وتمويل اسلامي -> https://www.mubasher.info/news/category/30/%D8%B5%D9%83%D9%88%D9%83-%D9%88%D8%AA%D9%85%D9%88%D9%8A%D9%84-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%D9%8A
+ -> https://www.mubasher.info/news/4531615/-%D8%A7%D9%84%D9%83%D8%A7%D8%A8%D9%84%D8%A7%D8%AA-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%AA%D9%82%D8%B1%D8%B1-%D8%B2%D9%8A%D8%A7%D8%AF%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%A7%D9%84%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D9%84%D9%89-600-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%B1%D9%8A%D8%A7%D9%84/
+"الكابلات السعودية" تقرر زيادة إصدار الصكوك إلى 600 مليون ريال -> https://www.mubasher.info/news/4531615/-%D8%A7%D9%84%D9%83%D8%A7%D8%A8%D9%84%D8%A7%D8%AA-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%AA%D9%82%D8%B1%D8%B1-%D8%B2%D9%8A%D8%A7%D8%AF%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%A7%D9%84%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D9%84%D9%89-600-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%B1%D9%8A%D8%A7%D9%84/
+أخبار الشركة -> https://www.mubasher.info/news/category/15/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B4%D8%B1%D9%83%D8%A9
+ -> https://www.mubasher.info/news/4531345/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86%D9%8A-%D8%AA%D8%BA%D8%B7%D9%8A%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D8%AC%D8%A7%D8%B1%D8%A9-%D9%88%D9%85%D8%B1%D8%A7%D8%A8%D8%AD%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1/
+المركزي البحريني: تغطية إصدار صكوك إجارة ومرابحة إسلامية بـ50 مليون دينار -> https://www.mubasher.info/news/4531345/%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86%D9%8A-%D8%AA%D8%BA%D8%B7%D9%8A%D8%A9-%D8%A5%D8%B5%D8%AF%D8%A7%D8%B1-%D8%B5%D9%83%D9%88%D9%83-%D8%A5%D8%AC%D8%A7%D8%B1%D8%A9-%D9%88%D9%85%D8%B1%D8%A7%D8%A8%D8%AD%D8%A9-%D8%A5%D8%B3%D9%84%D8%A7%D9%85%D9%8A%D8%A9-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%AF%D9%8A%D9%86%D8%A7%D8%B1/
+بيانات البنوك المركزية -> https://www.mubasher.info/news/category/10/%D8%A8%D9%8A%D8%A7%D9%86%D8%A7%D8%AA-%D8%A7%D9%84%D8%A8%D9%86%D9%88%D9%83-%D8%A7%D9%84%D9%85%D8%B1%D9%83%D8%B2%D9%8A%D8%A9
+ -> https://www.mubasher.info/news/4530703/-%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%8A-%D8%AA%D9%85%D9%85-%D8%A7%D8%B3%D8%AA%D8%B1%D8%AF%D8%A7%D8%AF-%D8%B5%D9%83%D9%88%D9%83-%D8%A8%D9%80300-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A/
+"الكويت الدولي" يُتمم استرداد صكوك بـ300 مليون أمريكي -> https://www.mubasher.info/news/4530703/-%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%8A-%D8%AA%D9%85%D9%85-%D8%A7%D8%B3%D8%AA%D8%B1%D8%AF%D8%A7%D8%AF-%D8%B5%D9%83%D9%88%D9%83-%D8%A8%D9%80300-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A/
+بنوك ومالية -> https://www.mubasher.info/news/category/11/%D8%A8%D9%86%D9%88%D9%83-%D9%88%D9%85%D8%A7%D9%84%D9%8A%D8%A9
+المزيد  -> https://www.mubasher.info/news/islamic-finance
+الأسواق العربية -> https://www.mubasher.info/news/regions/middle-east
+ -> https://www.mubasher.info/news/4540158/%D8%AA%D9%88%D9%82%D8%B9%D8%A7%D8%AA-%D8%A8%D8%A5%D8%A8%D8%B1%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D8%A9-%D8%B5%D9%81%D9%82%D8%A9-%D8%A8%D9%8A%D8%B9-%D8%A3%D8%B5%D9%88%D9%84-%D9%85%D9%81%D8%A7%D8%AC%D8%A6%D8%A9-%D9%81%D9%8A-2026/
+توقعات بإبرام الحكومة المصرية صفقة بيع أصول مفاجئة في 2026 -> https://www.mubasher.info/news/4540158/%D8%AA%D9%88%D9%82%D8%B9%D8%A7%D8%AA-%D8%A8%D8%A5%D8%A8%D8%B1%D8%A7%D9%85-%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D8%A9-%D8%B5%D9%81%D9%82%D8%A9-%D8%A8%D9%8A%D8%B9-%D8%A3%D8%B5%D9%88%D9%84-%D9%85%D9%81%D8%A7%D8%AC%D8%A6%D8%A9-%D9%81%D9%8A-2026/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+ -> https://www.mubasher.info/news/4540156/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D9%88%D9%86-%D8%AA%D8%AD%D9%85%D9%84%D9%88%D8%A7-%D9%83%D9%84%D9%81%D8%A9-%D8%A7%D9%84%D8%A5%D8%B5%D9%84%D8%A7%D8%AD%D8%A7%D8%AA-%D9%88%D8%A8%D9%86%D9%8A%D9%86%D8%A7-%D8%AF%D9%88%D9%84%D8%A9-%D8%AD%D8%AF%D9%8A%D8%AB%D8%A9-%D8%B1%D8%BA%D9%85-%D8%A7%D9%84%D8%AA%D8%AD%D8%AF%D9%8A%D8%A7%D8%AA/
+مدبولي: المصريون تحملوا كلفة الإصلاحات.. وبنينا دولة حديثة رغم التحديات -> https://www.mubasher.info/news/4540156/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D9%88%D9%86-%D8%AA%D8%AD%D9%85%D9%84%D9%88%D8%A7-%D9%83%D9%84%D9%81%D8%A9-%D8%A7%D9%84%D8%A5%D8%B5%D9%84%D8%A7%D8%AD%D8%A7%D8%AA-%D9%88%D8%A8%D9%86%D9%8A%D9%86%D8%A7-%D8%AF%D9%88%D9%84%D8%A9-%D8%AD%D8%AF%D9%8A%D8%AB%D8%A9-%D8%B1%D8%BA%D9%85-%D8%A7%D9%84%D8%AA%D8%AD%D8%AF%D9%8A%D8%A7%D8%AA/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+ -> https://www.mubasher.info/news/4540150/%D8%A8%D9%88%D8%B1%D8%B5%D8%A9-%D9%85%D8%B5%D8%B1-%D8%A7%D9%84%D9%8A%D9%88%D9%85-%D8%A8%D9%84%D8%AA%D9%88%D9%86-%D8%AA%D9%82%D8%AA%D9%86%D8%B5-%D8%AA%D9%85%D9%88%D9%8A%D9%84%D8%A7-%D9%88-%D8%B1%D8%A7%D9%8A%D8%A9-%D8%AA%D9%82%D8%AA%D8%B1%D8%A8-%D9%85%D9%86-%D8%AA%D8%AE%D8%A7%D8%B1%D8%AC-%D9%88%D8%B2%D9%8A%D8%A7%D8%AF%D8%A9-%D8%B1%D8%A3%D8%B3%D9%85%D8%A7%D9%84-%D8%A3%D8%AE%D8%B1%D9%89/
+بورصة مصر اليوم:"بلتون" تقتنص تمويلاً و"راية" تقترب من تخارج وزيادة رأسمال أخرى -> https://www.mubasher.info/news/4540150/%D8%A8%D9%88%D8%B1%D8%B5%D8%A9-%D9%85%D8%B5%D8%B1-%D8%A7%D9%84%D9%8A%D9%88%D9%85-%D8%A8%D9%84%D8%AA%D9%88%D9%86-%D8%AA%D9%82%D8%AA%D9%86%D8%B5-%D8%AA%D9%85%D9%88%D9%8A%D9%84%D8%A7-%D9%88-%D8%B1%D8%A7%D9%8A%D8%A9-%D8%AA%D9%82%D8%AA%D8%B1%D8%A8-%D9%85%D9%86-%D8%AA%D8%AE%D8%A7%D8%B1%D8%AC-%D9%88%D8%B2%D9%8A%D8%A7%D8%AF%D8%A9-%D8%B1%D8%A3%D8%B3%D9%85%D8%A7%D9%84-%D8%A3%D8%AE%D8%B1%D9%89/
+أخبار الشركة -> https://www.mubasher.info/news/category/15/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B4%D8%B1%D9%83%D8%A9
+ -> https://www.mubasher.info/news/4540130/%D8%A7%D8%B3%D8%AA%D9%82%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9-%D9%82%D8%A8%D9%8A%D9%84-%D8%B9%D8%B7%D9%84%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF/
+استقرار الأسهم الأمريكية قبيل عطلة عيد الميلاد -> https://www.mubasher.info/news/4540130/%D8%A7%D8%B3%D8%AA%D9%82%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D8%A3%D8%B3%D9%87%D9%85-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9-%D9%82%D8%A8%D9%8A%D9%84-%D8%B9%D8%B7%D9%84%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF/
+اقتصاد عالمى -> https://www.mubasher.info/news/mainTag/3/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D8%B9%D8%A7%D9%84%D9%85%D9%89
+ -> https://www.mubasher.info/news/4540146/%D8%B1%D8%A6%D9%8A%D8%B3-%D8%A7%D9%84%D9%88%D8%B2%D8%B1%D8%A7%D8%A1-%D9%8A%D8%B9%D9%84%D9%82-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D8%AC%D8%AF%D9%84-%D8%A8%D8%B4%D8%A3%D9%86-%D8%AD%D8%AC%D9%85-%D8%A7%D9%84%D8%AF%D9%8A%D9%86-%D8%A7%D9%84%D8%AE%D8%A7%D8%B1%D8%AC%D9%8A-%D9%84%D9%85%D8%B5%D8%B1/
+رئيس الوزراء يعلق على الجدل بشأن حجم الدين الخارجي لمصر -> https://www.mubasher.info/news/4540146/%D8%B1%D8%A6%D9%8A%D8%B3-%D8%A7%D9%84%D9%88%D8%B2%D8%B1%D8%A7%D8%A1-%D9%8A%D8%B9%D9%84%D9%82-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D8%AC%D8%AF%D9%84-%D8%A8%D8%B4%D8%A3%D9%86-%D8%AD%D8%AC%D9%85-%D8%A7%D9%84%D8%AF%D9%8A%D9%86-%D8%A7%D9%84%D8%AE%D8%A7%D8%B1%D8%AC%D9%8A-%D9%84%D9%85%D8%B5%D8%B1/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+ -> https://www.mubasher.info/news/4540144/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D9%85%D9%84%D8%AA%D8%B2%D9%85%D8%A9-%D8%A8%D8%A7%D9%84%D8%AD%D9%8A%D8%A7%D8%AF-%D9%88%D8%A5%D8%AA%D8%A7%D8%AD%D8%A9-%D8%A7%D9%84%D9%81%D8%B1%D8%B5-%D8%A3%D9%85%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D8%B9-%D8%A7%D9%84%D8%AE%D8%A7%D8%B5/
+مدبولي: الحكومة ملتزمة بالحياد وإتاحة الفرص أمام القطاع الخاص -> https://www.mubasher.info/news/4540144/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D9%85%D9%84%D8%AA%D8%B2%D9%85%D8%A9-%D8%A8%D8%A7%D9%84%D8%AD%D9%8A%D8%A7%D8%AF-%D9%88%D8%A5%D8%AA%D8%A7%D8%AD%D8%A9-%D8%A7%D9%84%D9%81%D8%B1%D8%B5-%D8%A3%D9%85%D8%A7%D9%85-%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D8%B9-%D8%A7%D9%84%D8%AE%D8%A7%D8%B5/
+الوزارات -> https://www.mubasher.info/news/category/58/%D8%A7%D9%84%D9%88%D8%B2%D8%A7%D8%B1%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540143/%D8%B1%D8%A6%D9%8A%D8%B3-%D8%A7%D9%84%D9%88%D8%B2%D8%B1%D8%A7%D8%A1-%D8%AE%D8%B7%D8%A9-%D9%84%D9%85%D8%B6%D8%A7%D8%B9%D9%81%D8%A9-%D8%A3%D8%B3%D8%B7%D9%88%D9%84-%D9%85%D8%B5%D8%B1-%D9%84%D9%84%D8%B7%D9%8A%D8%B1%D8%A7%D9%86-%D8%AE%D9%84%D8%A7%D9%84-%D8%B9%D8%A7%D9%85%D9%8A%D9%86-%D9%84%D9%85%D9%88%D8%A7%D9%83%D8%A8%D8%A9-%D8%AA%D9%88%D9%82%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%B3%D9%8A%D8%A7%D8%AD%D9%8A%D8%A9/
+رئيس الوزراء: خطة لمضاعفة أسطول مصر للطيران خلال عامين لمواكبة توقعات السياحية -> https://www.mubasher.info/news/4540143/%D8%B1%D8%A6%D9%8A%D8%B3-%D8%A7%D9%84%D9%88%D8%B2%D8%B1%D8%A7%D8%A1-%D8%AE%D8%B7%D8%A9-%D9%84%D9%85%D8%B6%D8%A7%D8%B9%D9%81%D8%A9-%D8%A3%D8%B3%D8%B7%D9%88%D9%84-%D9%85%D8%B5%D8%B1-%D9%84%D9%84%D8%B7%D9%8A%D8%B1%D8%A7%D9%86-%D8%AE%D9%84%D8%A7%D9%84-%D8%B9%D8%A7%D9%85%D9%8A%D9%86-%D9%84%D9%85%D9%88%D8%A7%D9%83%D8%A8%D8%A9-%D8%AA%D9%88%D9%82%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%B3%D9%8A%D8%A7%D8%AD%D9%8A%D8%A9/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+ -> https://www.mubasher.info/news/4540142/%D9%88%D8%B2%D9%8A%D8%B1-%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A-%D8%A7%D9%84%D9%85%D9%81%D8%A7%D9%88%D8%B6%D8%A7%D8%AA-%D9%85%D8%B9-%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A7%D9%84%D9%86%D9%82%D8%AF-%D8%A5%D9%8A%D8%AC%D8%A7%D8%A8%D9%8A%D8%A9-%D9%84%D9%84%D8%BA%D8%A7%D9%8A%D8%A9-/
+وزير المالية المصري: المفاوضات مع صندوق النقد "إيجابية للغاية" -> https://www.mubasher.info/news/4540142/%D9%88%D8%B2%D9%8A%D8%B1-%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A-%D8%A7%D9%84%D9%85%D9%81%D8%A7%D9%88%D8%B6%D8%A7%D8%AA-%D9%85%D8%B9-%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A7%D9%84%D9%86%D9%82%D8%AF-%D8%A5%D9%8A%D8%AC%D8%A7%D8%A8%D9%8A%D8%A9-%D9%84%D9%84%D8%BA%D8%A7%D9%8A%D8%A9-/
+الوزارات -> https://www.mubasher.info/news/category/58/%D8%A7%D9%84%D9%88%D8%B2%D8%A7%D8%B1%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540139/%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D8%A9-%D8%AA%D8%A8%D8%AD%D8%AB-%D8%AA%D8%B7%D8%A8%D9%8A%D9%82-%D8%AA%D9%8A%D8%B3%D9%8A%D9%8A%D8%B1%D8%A7%D8%AA-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9-%D9%84%D8%AC%D8%B0%D8%A8-%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D8%A7%D8%AA/
+الحكومة المصرية تبحث تطبيق تيسييرات جديدة لجذب الاستثمارات -> https://www.mubasher.info/news/4540139/%D8%A7%D9%84%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A%D8%A9-%D8%AA%D8%A8%D8%AD%D8%AB-%D8%AA%D8%B7%D8%A8%D9%8A%D9%82-%D8%AA%D9%8A%D8%B3%D9%8A%D9%8A%D8%B1%D8%A7%D8%AA-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9-%D9%84%D8%AC%D8%B0%D8%A8-%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D8%A7%D8%AA/
+الوزارات -> https://www.mubasher.info/news/category/58/%D8%A7%D9%84%D9%88%D8%B2%D8%A7%D8%B1%D8%A7%D8%AA
+ -> https://www.mubasher.info/news/4540132/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D8%A7%D8%AA%D9%81%D8%A7%D9%82-%D9%85%D8%B9-%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A7%D9%84%D9%86%D9%82%D8%AF-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D8%B9%D9%84%D9%89-%D9%85%D8%B3%D8%AA%D9%87%D8%AF%D9%81%D8%A7%D8%AA-%D8%A7%D9%84%D9%85%D8%B1%D8%A7%D8%AC%D8%B9%D8%A9-%D8%A7%D9%84%D8%B3%D8%A7%D8%A8%D8%B9%D8%A9-%D9%88%D8%A7%D9%84%D8%AB%D8%A7%D9%85%D9%86%D8%A9/
+مدبولي: الاتفاق مع صندوق النقد الدولي على مستهدفات المراجعة السابعة والثامنة -> https://www.mubasher.info/news/4540132/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D8%A7%D9%84%D8%A7%D8%AA%D9%81%D8%A7%D9%82-%D9%85%D8%B9-%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A7%D9%84%D9%86%D9%82%D8%AF-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D8%B9%D9%84%D9%89-%D9%85%D8%B3%D8%AA%D9%87%D8%AF%D9%81%D8%A7%D8%AA-%D8%A7%D9%84%D9%85%D8%B1%D8%A7%D8%AC%D8%B9%D8%A9-%D8%A7%D9%84%D8%B3%D8%A7%D8%A8%D8%B9%D8%A9-%D9%88%D8%A7%D9%84%D8%AB%D8%A7%D9%85%D9%86%D8%A9/
+اقتصاد كلي -> https://www.mubasher.info/news/category/26/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%83%D9%84%D9%8A
+المزيد  -> https://www.mubasher.info/news/regions/middle-east
+الأسواق العالمية -> https://www.mubasher.info/news/international/us-markets
+البيتكوين تفقد "بهجة عيد الميلاد" وتغرق في ركود سعري -> https://www.mubasher.info/news/4540105/%D8%A7%D9%84%D8%A8%D9%8A%D8%AA%D9%83%D9%88%D9%8A%D9%86-%D8%AA%D9%81%D9%82%D8%AF-%D8%A8%D9%87%D8%AC%D8%A9-%D8%B9%D9%8A%D8%AF-%D8%A7%D9%84%D9%85%D9%8A%D9%84%D8%A7%D8%AF-%D9%88%D8%AA%D8%BA%D8%B1%D9%82-%D9%81%D9%8A-%D8%B1%D9%83%D9%88%D8%AF-%D8%B3%D8%B9%D8%B1%D9%8A/
+“مورجان ستانلي": الرسوم الجمركية قد تشعل الأسعار مجددا في 2026 -> https://www.mubasher.info/news/4540097/-%D9%85%D9%88%D8%B1%D8%AC%D8%A7%D9%86-%D8%B3%D8%AA%D8%A7%D9%86%D9%84%D9%8A-%D8%A7%D9%84%D8%B1%D8%B3%D9%88%D9%85-%D8%A7%D9%84%D8%AC%D9%85%D8%B1%D9%83%D9%8A%D8%A9-%D9%82%D8%AF-%D8%AA%D8%B4%D8%B9%D9%84-%D8%A7%D9%84%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D9%85%D8%AC%D8%AF%D8%AF%D8%A7-%D9%81%D9%8A-2026/
+أسهم "إنتل" تتراجع بعد توقف "إنفيديا" عن اختبار رقائقها المتقدمة -> https://www.mubasher.info/news/4540107/%D8%A3%D8%B3%D9%87%D9%85-%D8%A5%D9%86%D8%AA%D9%84-%D8%AA%D8%AA%D8%B1%D8%A7%D8%AC%D8%B9-%D8%A8%D8%B9%D8%AF-%D8%AA%D9%88%D9%82%D9%81-%D8%A5%D9%86%D9%81%D9%8A%D8%AF%D9%8A%D8%A7-%D8%B9%D9%86-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1-%D8%B1%D9%82%D8%A7%D8%A6%D9%82%D9%87%D8%A7-%D8%A7%D9%84%D9%85%D8%AA%D9%82%D8%AF%D9%85%D8%A9/
+انخفاض مفاجئ في طلبات إعانة البطالة الأمريكية -> https://www.mubasher.info/news/4540106/%D8%A7%D9%86%D8%AE%D9%81%D8%A7%D8%B6-%D9%85%D9%81%D8%A7%D8%AC%D8%A6-%D9%81%D9%8A-%D8%B7%D9%84%D8%A8%D8%A7%D8%AA-%D8%A5%D8%B9%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D8%A8%D8%B7%D8%A7%D9%84%D8%A9-%D8%A7%D9%84%D8%A3%D9%85%D8%B1%D9%8A%D9%83%D9%8A%D8%A9/
+اشترك الآن -> 
+ربحاً -> https://www.mubasher.info/portlet/top-movers/sa/0
+خسارة -> https://www.mubasher.info/portlet/top-movers/sa/1
+قيمة -> https://www.mubasher.info/portlet/top-movers/sa/2
+كمية -> https://www.mubasher.info/portlet/top-movers/sa/3
+إم آي إس -> https://www.mubasher.info/markets/TDWL/stocks/7200
+ريال -> https://www.mubasher.info/markets/TDWL/stocks/9584
+إدارات -> https://www.mubasher.info/markets/TDWL/stocks/9557
+وسم -> https://www.mubasher.info/markets/TDWL/stocks/9595
+حديد الرياض -> https://www.mubasher.info/markets/TDWL/stocks/9588
+المسار الشامل -> https://www.mubasher.info/markets/TDWL/stocks/6019
+نقاوة -> https://www.mubasher.info/markets/TDWL/stocks/9614
+مفكرة الشركات -> https://www.mubasher.info/countries/sa/events
+المزيد  -> https://www.mubasher.info/countries/sa/events
+أخبار منوعة -> https://www.mubasher.info/news/international/mubasherblog
+مصر.. قرارات عاجلة بشأن واقعة تشغيل قرآن الفجر عبر المكبرات بأحد المساجد -> https://pulse.mubasher.info/news/variety/93342/%D9%85%D8%B5%D8%B1-%D9%82%D8%B1%D8%A7%D8%B1%D8%A7%D8%AA-%D8%B9%D8%A7%D8%AC%D9%84%D8%A9-%D8%A8%D8%B4%D8%A3%D9%86-%D9%88%D8%A7%D9%82%D8%B9%D8%A9-%D8%AA%D8%B4%D8%BA%D9%8A%D9%84-%D9%82%D8%B1%D8%A2%D9%86-%D8%A7%D9%84%D9%81%D8%AC%D8%B1-%D8%B9%D8%A8%D8%B1-%D8%A7%D9%84%D9%85%D9%83%D8%A8%D8%B1%D8%A7%D8%AA-%D8%A8%D8%A3%D8%AD%D8%AF-%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%AC%D8%AF
+"تنظيم الإعلام" تستدعي 40 مخالفًا لنشرهم محتوى من شأنه الإثارة والتأجيج -> https://pulse.mubasher.info/news/technology/93341/%D8%AA%D9%86%D8%B8%D9%8A%D9%85-%D8%A7%D9%84%D8%A5%D8%B9%D9%84%D8%A7%D9%85-%D8%AA%D8%B3%D8%AA%D8%AF%D8%B9%D9%8A-40-%D9%85%D8%AE%D8%A7%D9%84%D9%81%D8%A7-%D9%84%D9%86%D8%B4%D8%B1%D9%87%D9%85-%D9%85%D8%AD%D8%AA%D9%88%D9%89-%D9%85%D9%86-%D8%B4%D8%A3%D9%86%D9%87-%D8%A7%D9%84%D8%A5%D8%AB%D8%A7%D8%B1%D8%A9-%D9%88%D8%A7%D9%84%D8%AA%D8%A3%D8%AC%D9%8A%D8%AC
+في شهر واحد.. 30 مليار ريال مبيعات التجارة الإلكترونية بالمملكة -> https://pulse.mubasher.info/news/technology/93340/%D9%81%D9%8A-%D8%B4%D9%87%D8%B1-%D9%88%D8%A7%D8%AD%D8%AF-30-%D9%85%D9%84%D9%8A%D8%A7%D8%B1-%D8%B1%D9%8A%D8%A7%D9%84-%D9%85%D8%A8%D9%8A%D8%B9%D8%A7%D8%AA-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%84%D9%83%D8%AA%D8%B1%D9%88%D9%86%D9%8A%D8%A9-%D8%A8%D8%A7%D9%84%D9%85%D9%85%D9%84%D9%83%D8%A9
+أساسيًا أمام الزوراء.. رونالدو يقود النصر في "آسيا 2" لأول مرة -> https://pulse.mubasher.info/news/sport/93339/%D8%A3%D8%B3%D8%A7%D8%B3%D9%8A%D8%A7-%D8%A3%D9%85%D8%A7%D9%85-%D8%A7%D9%84%D8%B2%D9%88%D8%B1%D8%A7%D8%A1-%D8%B1%D9%88%D9%86%D8%A7%D9%84%D8%AF%D9%88-%D9%8A%D9%82%D9%88%D8%AF-%D8%A7%D9%84%D9%86%D8%B5%D8%B1-%D9%81%D9%8A-%D8%A2%D8%B3%D9%8A%D8%A7-2-%D9%84%D8%A3%D9%88%D9%84-%D9%85%D8%B1%D8%A9
+بعد 80 ثانية فقط.. محرز يسجل أسرع أهداف أمم إفريقيا 2025- فيديو -> https://pulse.mubasher.info/news/sport/93338/%D8%A8%D8%B9%D8%AF-80-%D8%AB%D8%A7%D9%86%D9%8A%D8%A9-%D9%81%D9%82%D8%B7-%D9%85%D8%AD%D8%B1%D8%B2-%D9%8A%D8%B3%D8%AC%D9%84-%D8%A3%D8%B3%D8%B1%D8%B9-%D8%A3%D9%87%D8%AF%D8%A7%D9%81-%D8%A3%D9%85%D9%85-%D8%A5%D9%81%D8%B1%D9%8A%D9%82%D9%8A%D8%A7-2025-%D9%81%D9%8A%D8%AF%D9%8A%D9%88
+مدبولي: ما تم التوافق عليه مع صندوق النقد لن يمس المواطن المصري -> https://pulse.mubasher.info/news/variety/93337/%D9%85%D8%AF%D8%A8%D9%88%D9%84%D9%8A-%D9%85%D8%A7-%D8%AA%D9%85-%D8%A7%D9%84%D8%AA%D9%88%D8%A7%D9%81%D9%82-%D8%B9%D9%84%D9%8A%D9%87-%D9%85%D8%B9-%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A7%D9%84%D9%86%D9%82%D8%AF-%D9%84%D9%86-%D9%8A%D9%85%D8%B3-%D8%A7%D9%84%D9%85%D9%88%D8%A7%D8%B7%D9%86-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A
+أول ريمونتادا في أمم إفريقيا.. بوركينا فاسو تقلب الطاولة بـ "هدفين +90" -> https://pulse.mubasher.info/news/sport/93336/%D8%A3%D9%88%D9%84-%D8%B1%D9%8A%D9%85%D9%88%D9%86%D8%AA%D8%A7%D8%AF%D8%A7-%D9%81%D9%8A-%D8%A3%D9%85%D9%85-%D8%A5%D9%81%D8%B1%D9%8A%D9%82%D9%8A%D8%A7-%D8%A8%D9%88%D8%B1%D9%83%D9%8A%D9%86%D8%A7-%D9%81%D8%A7%D8%B3%D9%88-%D8%AA%D9%82%D9%84%D8%A8-%D8%A7%D9%84%D8%B7%D8%A7%D9%88%D9%84%D8%A9-%D8%A8%D9%80-%D9%87%D8%AF%D9%81%D9%8A%D9%86-90
+عيار 24 على أعتاب 7000 جنيه.. قفزة تاريخية في أسعار الذهب بمصر -> https://pulse.mubasher.info/news/variety/93335/%D8%B9%D9%8A%D8%A7%D8%B1-24-%D8%B9%D9%84%D9%89-%D8%A3%D8%B9%D8%AA%D8%A7%D8%A8-7000-%D8%AC%D9%86%D9%8A%D9%87-%D9%82%D9%81%D8%B2%D8%A9-%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE%D9%8A%D8%A9-%D9%81%D9%8A-%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D8%A8%D9%85%D8%B5%D8%B1
+المزيد  -> https://www.mubasher.info/news/international/mubasherblog
+محدث
+الاكتتابات -> https://www.mubasher.info/countries/sa/ipos
+محدث
+القيم العادلة -> https://www.mubasher.info/countries/sa/fair-values
+محدث
+سعر الذهب
+4484.96 -> 
+محدث
+سعر الدولار
+3.6139 -> 
+الأكثر قراءة -> 
+الأكثر مشاركة -> https://www.mubasher.info/portlet/most-shared/sa
+ -> https://www.mubasher.info/news/4538632/%D8%A3%D9%85%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D9%85%D8%AF%D9%8A%D9%86%D8%A9-%D8%A7%D9%84%D9%85%D9%86%D9%88%D8%B1%D8%A9-%D8%AA%D8%B7%D8%B1%D8%AD-%D9%81%D8%B1%D8%B5%D8%A9-%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D9%8A%D8%A9-%D9%84%D8%A5%D9%86%D8%B4%D8%A7%D8%A1-%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D8%AA%D9%84%D9%8A%D9%81%D8%B1%D9%8A%D9%83/
+أمانة المدينة المنورة تطرح فرصة استثمارية لإنشاء مشروع تليفريك -> https://www.mubasher.info/news/4538632/%D8%A3%D9%85%D8%A7%D9%86%D8%A9-%D8%A7%D9%84%D9%85%D8%AF%D9%8A%D9%86%D8%A9-%D8%A7%D9%84%D9%85%D9%86%D9%88%D8%B1%D8%A9-%D8%AA%D8%B7%D8%B1%D8%AD-%D9%81%D8%B1%D8%B5%D8%A9-%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D9%8A%D8%A9-%D9%84%D8%A5%D9%86%D8%B4%D8%A7%D8%A1-%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D8%AA%D9%84%D9%8A%D9%81%D8%B1%D9%8A%D9%83/
+ -> https://www.mubasher.info/news/4539595/%D9%83%D9%8A%D9%81-%D9%8A%D8%AD%D9%85%D9%8A-%D9%88%D8%A7%D8%B1%D9%86-%D8%A8%D8%A7%D9%81%D9%8A%D8%AA-%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D8%A7%D8%AA%D9%87-%D8%A7%D8%B3%D8%AA%D8%B1%D8%A7%D8%AA%D9%8A%D8%AC%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A7%D9%81-%D8%A3%D9%88%D9%85%D8%A7%D9%87%D8%A7-%D9%84%D8%AA%D8%AC%D9%86%D8%A8-%D8%A7%D9%84%D8%AE%D8%B3%D8%A7%D8%A6%D8%B1/
+كيف يحمي وارن بافيت استثماراته؟ استراتيجيات "عراف أوماها" لتجنب الخسائر -> https://www.mubasher.info/news/4539595/%D9%83%D9%8A%D9%81-%D9%8A%D8%AD%D9%85%D9%8A-%D9%88%D8%A7%D8%B1%D9%86-%D8%A8%D8%A7%D9%81%D9%8A%D8%AA-%D8%A7%D8%B3%D8%AA%D8%AB%D9%85%D8%A7%D8%B1%D8%A7%D8%AA%D9%87-%D8%A7%D8%B3%D8%AA%D8%B1%D8%A7%D8%AA%D9%8A%D8%AC%D9%8A%D8%A7%D8%AA-%D8%B9%D8%B1%D8%A7%D9%81-%D8%A3%D9%88%D9%85%D8%A7%D9%87%D8%A7-%D9%84%D8%AA%D8%AC%D9%86%D8%A8-%D8%A7%D9%84%D8%AE%D8%B3%D8%A7%D8%A6%D8%B1/
+ -> https://www.mubasher.info/news/4539335/-%D8%A3%D8%B3%D9%85%D9%86%D8%AA-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%AA%D8%AF%D8%B9%D9%88-%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D9%87%D9%85%D9%8A%D9%86-%D9%84%D9%84%D8%AA%D8%AD%D9%82%D9%82-%D9%85%D9%86-%D8%A7%D8%B3%D8%AA%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%A7%D8%AD-%D8%B9%D9%86-%D8%A7%D9%84%D8%A3%D8%B9%D9%88%D8%A7%D9%85-%D8%A7%D9%84%D8%B3%D8%A7%D8%A8%D9%82%D8%A9/
+"أسمنت السعودية" تدعو المساهمين للتحقق من استلام الأرباح عن الأعوام السابقة -> https://www.mubasher.info/news/4539335/-%D8%A3%D8%B3%D9%85%D9%86%D8%AA-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%AA%D8%AF%D8%B9%D9%88-%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D9%87%D9%85%D9%8A%D9%86-%D9%84%D9%84%D8%AA%D8%AD%D9%82%D9%82-%D9%85%D9%86-%D8%A7%D8%B3%D8%AA%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%A3%D8%B1%D8%A8%D8%A7%D8%AD-%D8%B9%D9%86-%D8%A7%D9%84%D8%A3%D8%B9%D9%88%D8%A7%D9%85-%D8%A7%D9%84%D8%B3%D8%A7%D8%A8%D9%82%D8%A9/
+ -> https://www.mubasher.info/news/4539136/%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A3%D8%B3%D8%A8%D8%A7%D8%A8-%D8%AA%D8%AF%D9%81%D8%B9-%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D9%84%D9%84%D8%A7%D8%B1%D8%AA%D9%81%D8%A7%D8%B9-%D9%85%D8%AC%D8%AF%D8%AF-%D8%A7/
+ثلاثة أسباب تدفع أسعار الذهب للارتفاع مجددًا -> https://www.mubasher.info/news/4539136/%D8%AB%D9%84%D8%A7%D8%AB%D8%A9-%D8%A3%D8%B3%D8%A8%D8%A7%D8%A8-%D8%AA%D8%AF%D9%81%D8%B9-%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1-%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D9%84%D9%84%D8%A7%D8%B1%D8%AA%D9%81%D8%A7%D8%B9-%D9%85%D8%AC%D8%AF%D8%AF-%D8%A7/
+المزيد  -> https://www.mubasher.info/news/sa/now/popular
+بيانات صحفية -> https://www.mubasher.info/news/now/news-releases
+اتحاد سلام وDTM يطلقان 4 منتجات متطورة للأمن السيبراني -> https://www.mubasher.info/news/4538413/%D8%A7%D8%AA%D8%AD%D8%A7%D8%AF-%D8%B3%D9%84%D8%A7%D9%85-%D9%88DTM-%D9%8A%D8%B7%D9%84%D9%82%D8%A7%D9%86-4-%D9%85%D9%86%D8%AA%D8%AC%D8%A7%D8%AA-%D9%85%D8%AA%D8%B7%D9%88%D8%B1%D8%A9-%D9%84%D9%84%D8%A3%D9%85%D9%86-%D8%A7%D9%84%D8%B3%D9%8A%D8%A8%D8%B1%D8%A7%D9%86%D9%8A/
+اتحاد سلام يطلق حملة نحو آفاق جديدة ” #YesToPossible” -> https://www.mubasher.info/news/4533019/%D8%A7%D8%AA%D8%AD%D8%A7%D8%AF-%D8%B3%D9%84%D8%A7%D9%85-%D9%8A%D8%B7%D9%84%D9%82-%D8%AD%D9%85%D9%84%D8%A9-%D9%86%D8%AD%D9%88-%D8%A2%D9%81%D8%A7%D9%82-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9-YesToPossible-/
+شنايدر إلكتريك تشارك في معرض التحول الصناعي 2025 بالرياض -> https://www.mubasher.info/news/4530949/%D8%B4%D9%86%D8%A7%D9%8A%D8%AF%D8%B1-%D8%A5%D9%84%D9%83%D8%AA%D8%B1%D9%8A%D9%83-%D8%AA%D8%B4%D8%A7%D8%B1%D9%83-%D9%81%D9%8A-%D9%85%D8%B9%D8%B1%D8%B6-%D8%A7%D9%84%D8%AA%D8%AD%D9%88%D9%84-%D8%A7%D9%84%D8%B5%D9%86%D8%A7%D8%B9%D9%8A-2025-%D8%A8%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6/
+بوبا العربية توسع شراكاتها بقطاع التأمين الصحي بمؤتمر Money 20/20 -> https://www.mubasher.info/news/4500101/%D8%A8%D9%88%D8%A8%D8%A7-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-%D8%AA%D9%88%D8%B3%D8%B9-%D8%B4%D8%B1%D8%A7%D9%83%D8%A7%D8%AA%D9%87%D8%A7-%D8%A8%D9%82%D8%B7%D8%A7%D8%B9-%D8%A7%D9%84%D8%AA%D8%A3%D9%85%D9%8A%D9%86-%D8%A7%D9%84%D8%B5%D8%AD%D9%8A-%D8%A8%D9%85%D8%A4%D8%AA%D9%85%D8%B1-Money-20-20/
+صندوق الثروة النرويجي يتخارج من شركات إسرائيلية جديدة -> https://www.mubasher.info/news/4487803/%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A7%D9%84%D8%AB%D8%B1%D9%88%D8%A9-%D8%A7%D9%84%D9%86%D8%B1%D9%88%D9%8A%D8%AC%D9%8A-%D9%8A%D8%AA%D8%AE%D8%A7%D8%B1%D8%AC-%D9%85%D9%86-%D8%B4%D8%B1%D9%83%D8%A7%D8%AA-%D8%A5%D8%B3%D8%B1%D8%A7%D8%A6%D9%8A%D9%84%D9%8A%D8%A9-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9/
+إريكسون تنشئ مقراً إقليمياً جديداً لها في الرياض -> https://www.mubasher.info/news/4465632/%D8%A5%D8%B1%D9%8A%D9%83%D8%B3%D9%88%D9%86-%D8%AA%D9%86%D8%B4%D8%A6-%D9%85%D9%82%D8%B1%D8%A7-%D8%A5%D9%82%D9%84%D9%8A%D9%85%D9%8A%D8%A7-%D8%AC%D8%AF%D9%8A%D8%AF%D8%A7-%D9%84%D9%87%D8%A7-%D9%81%D9%8A-%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6/
+اطلب استشارات اقتصادية من محامين مرخصين عبر تطبيق بينه القانوني -> https://www.mubasher.info/news/4443376/%D8%A7%D8%B7%D9%84%D8%A8-%D8%A7%D8%B3%D8%AA%D8%B4%D8%A7%D8%B1%D8%A7%D8%AA-%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF%D9%8A%D8%A9-%D9%85%D9%86-%D9%85%D8%AD%D8%A7%D9%85%D9%8A%D9%86-%D9%85%D8%B1%D8%AE%D8%B5%D9%8A%D9%86-%D8%B9%D8%A8%D8%B1-%D8%AA%D8%B7%D8%A8%D9%8A%D9%82-%D8%A8%D9%8A%D9%86%D9%87-%D8%A7%D9%84%D9%82%D8%A7%D9%86%D9%88%D9%86%D9%8A/
+أقاسيم تطلق صكوك بـ50 مليون ريال لدعم التوسع الصناعي -> https://www.mubasher.info/news/4439862/%D8%A3%D9%82%D8%A7%D8%B3%D9%8A%D9%85-%D8%AA%D8%B7%D9%84%D9%82-%D8%B5%D9%83%D9%88%D9%83-%D8%A8%D9%8050-%D9%85%D9%84%D9%8A%D9%88%D9%86-%D8%B1%D9%8A%D8%A7%D9%84-%D9%84%D8%AF%D8%B9%D9%85-%D8%A7%D9%84%D8%AA%D9%88%D8%B3%D8%B9-%D8%A7%D9%84%D8%B5%D9%86%D8%A7%D8%B9%D9%8A/
+المزيد  -> https://www.mubasher.info/news/now/news-releases
+سوق الأسهم السعودي -> https://www.mubasher.info/markets/TDWL
+البورصة المصرية -> https://www.mubasher.info/markets/EGX
+سوق دبي المالي -> https://www.mubasher.info/markets/DFM
+سوق أبوظبي -> https://www.mubasher.info/markets/ADX
+بورصة البحرين -> https://www.mubasher.info/markets/BB
+بورصة قطر -> https://www.mubasher.info/markets/QE
+سوق مسقط -> https://www.mubasher.info/markets/MSM
+سوق الكويت -> https://www.mubasher.info/markets/KSE
+بورصة عمان -> https://www.mubasher.info/markets/ASE
+سوق الدار البيضاء -> https://www.mubasher.info/markets/CSE
+بورصة تونس -> https://www.mubasher.info/markets/BDT
+سوق فلسطين -> https://www.mubasher.info/markets/PEX
+سوق العراق -> https://www.mubasher.info/markets/ISX
+مؤشرات الأسواق العالمية -> https://www.mubasher.info/international-indices
+أسعار المعادن والطاقة -> https://www.mubasher.info/markets/commodities-prices
+أسعار العملات -> https://www.mubasher.info/countries/sa/currencies
+مصر -> https://www.mubasher.info/news/eg/now/latest
+السعودية -> https://www.mubasher.info/news/sa/now/latest
+الإمارات -> https://www.mubasher.info/news/ae/now/latest
+البحرين -> https://www.mubasher.info/news/bh/now/latest
+قطر -> https://www.mubasher.info/news/qa/now/latest
+عمان -> https://www.mubasher.info/news/om/now/latest
+الكويت -> https://www.mubasher.info/news/kw/now/latest
+الأردن -> https://www.mubasher.info/news/jo/now/latest
+المغرب -> https://www.mubasher.info/news/ma/now/latest
+تونس -> https://www.mubasher.info/news/tn/now/latest
+فلسطين -> https://www.mubasher.info/news/ps/now/latest
+العراق -> https://www.mubasher.info/news/iq/now/latest
+الخليج -> https://www.mubasher.info/news/regions/gulf
+الشام -> https://www.mubasher.info/news/regions/levant
+شمال أفريقيا -> https://www.mubasher.info/news/regions/north-africa
+الشرق الأوسط -> https://www.mubasher.info/news/regions/middle-east
+أهم الأخبار -> https://www.mubasher.info/news/sa/now/top
+حصرياً مباشر -> https://www.mubasher.info/news/sa/now/exclusive
+آخر الأخبار -> https://www.mubasher.info/news/sa/now/latest
+إعلانات السوق -> https://www.mubasher.info/news/sa/now/announcements
+منتشر الآن -> https://www.mubasher.info/news/sa/now/popular
+بيانات صحفية -> https://www.mubasher.info/news/now/news-releases
+مدونة مباشر -> https://www.mubasher.info/news/international/mubasherblog
+أخبار الأسهم -> https://www.mubasher.info/news/sa/pulse/stocks
+تحليلات إخبارية -> https://www.mubasher.info/news/sa/pulse/analysis
+اقتصاد محلي -> https://www.mubasher.info/news/sa/pulse/local
+توصيات -> https://www.mubasher.info/news/sa/pulse/recommendations
+بنوك وتأمين -> https://www.mubasher.info/news/sa/category/banking
+عقارات -> https://www.mubasher.info/news/sa/category/realEstate
+اقتصاد عالمى -> https://www.mubasher.info/news/international/global-economy
+أحداث عالمية -> https://www.mubasher.info/news/international/goods-and-metals
+السوق الأمريكي -> https://www.mubasher.info/news/international/us-markets
+نفط ومعادن -> https://www.mubasher.info/news/international/oil-and-energy
+عملات -> https://www.mubasher.info/news/international/currencies
+تقارير عالمية -> https://www.mubasher.info/news/international/global-reports
+الشركات المدرجة -> https://www.mubasher.info/countries/sa/companies
+مفكرة الشركات -> https://www.mubasher.info/countries/sa/events
+أسعار الأسهم -> https://www.mubasher.info/countries/sa/stock-prices
+إعلانات الأرباح -> https://www.mubasher.info/countries/sa/earnings
+القيم العادلة -> https://www.mubasher.info/countries/sa/fair-values
+كبار الملاك -> https://www.mubasher.info/countries/sa/major-shareholders
+زيادة رأس المال -> https://www.mubasher.info/countries/sa/ipos/capital-increase
+قائمة الإكتتابات -> https://www.mubasher.info/countries/sa/ipos
+أخبار الاكتتابات -> https://www.mubasher.info/ipos/news
+إحصائيات الشركات -> https://www.mubasher.info/analysis-tools/most-active-winners/TDWL
+الدعم والمقاومة -> https://www.mubasher.info/analysis-tools/stocks-support-resistance/TDWL
+مراقب السيولة -> https://www.mubasher.info/analysis-tools/liquidity-monitor/TDWL
+مراقب حجم التداول -> https://www.mubasher.info/analysis-tools/volume-monitor/TDWL
+المؤشرات المالية -> https://www.mubasher.info/analysis-tools/financial-ratios/TDWL
+مقارنة الأداء -> https://www.mubasher.info/analysis-tools/performance-comparison
+اتفاقية الاستخدام -> https://www.mubasher.info/s/Terms
+إخلاء المسؤولية -> https://www.mubasher.info/s/disclaimer
+من نحن -> https://www.mubasher.info/s/aboutus
+اتصل بنا -> https://www.mubasher.info/contact
+أعلن معنا -> https://www.mubasher.info/advertise
+موقع ديسيفا -> http://www.decypha.com/
+خدمات المواقع -> https://www.mubasher.info/ir-services
+وظائف -> https://www.mubasher.info/s/Jobs
+ديسيفا -> https://www.mubasher.info/decypha-packages
+سياسة الخصوصية -> https://www.mubasher.info/s/privacy-policy
+ -> https://twitter.com/mubasher
+ -> https://www.facebook.com/Mubasher.Info
+ -> https://www.youtube.com/channel/UC7hnxb7gD4nKZdZk3ZlZCYg
+ -> https://www.linkedin.com/company/1477149
+ -> https://t.me/MubasherInfoo
+ -> https://www.snapchat.com/add/mubasher.info
+ -> https://www.tiktok.com/@mubasher.info
+ -> https://www.instagram.com/mubasher.info
+ -> https://www.threads.net/@mubasher.info
+ -> https://www.mubasher.info/news/rss
+ -> https://vidverto.io/

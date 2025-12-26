@@ -1,0 +1,168 @@
+
+================================================================================
+🔍 COMPREHENSIVE API VALIDATION - REAL DATA CHECK
+================================================================================
+Testing backend at: http://localhost:8000
+Time: 2025-12-25 00:57:35
+================================================================================
+
+============================================================
+Testing: Stock Tickers
+URL: http://localhost:8000/tickers?limit=10
+------------------------------------------------------------
+✅ Status: 200 OK
+✅ Records: 118
+✅ Minimum records met (10)
+
+Sample Record:
+{
+  "symbol": "2270",
+  "name_en": "Saudi Cement",
+  "name_ar": null,
+  "sector_name": "Cement",
+  "last_price": "234.0000",
+  "change": "0.3357",
+  "change_percent": "0.6741",
+  "volume": 11655
+}...
+  ✅ symbol: 2270
+  ✅ name_en: Saudi Cement
+  ✅ last_price: 234.0000
+  ✅ change_percent: 0.6741
+
+============================================================
+Testing: OHLC Historical Data (Aramco)
+URL: http://localhost:8000/ohlc/2222?period=1y
+------------------------------------------------------------
+❌ Status: 404
+Response: {"detail":"Not Found"}
+
+============================================================
+Testing: Corporate Actions
+URL: http://localhost:8000/corporate-actions?limit=20
+------------------------------------------------------------
+✅ Status: 200 OK
+✅ Records: 20
+✅ Minimum records met (10)
+
+Sample Record:
+{
+  "id": 288,
+  "symbol": "4004",
+  "action_type": "RIGHTS",
+  "announcement_date": "2025-12-22",
+  "ex_date": "2026-01-14",
+  "record_date": "2026-01-16",
+  "payment_date": "2026-01-23",
+  "amount": "15.6000",
+  "currency": "SAR",
+  "description": "Rights issue at SAR 15.6 per share",
+  "created_a...
+  ✅ symbol: 4004
+  ✅ action_type: RIGHTS
+  ✅ ex_date: 2026-01-14
+  ✅ amount: 15.6000
+
+============================================================
+Testing: Economic Indicators
+URL: http://localhost:8000/economic-indicators
+------------------------------------------------------------
+✅ Status: 200 OK
+✅ Records: 365
+✅ Minimum records met (5)
+
+Sample Record:
+{
+  "indicator_code": "EUR_USD",
+  "date": "2025-12-25",
+  "value": "1.1792",
+  "unit": "USD",
+  "source": "ExchangeRate-API"
+}...
+  ✅ indicator_code: EUR_USD
+  ✅ value: 1.1792
+  ✅ date: 2025-12-25
+
+============================================================
+Testing: Mutual Funds
+URL: http://localhost:8000/mutual-funds
+------------------------------------------------------------
+❌ Status: 404
+Response: {"detail":"Not Found"}
+
+============================================================
+Testing: Fund NAV History
+URL: http://localhost:8000/fund-nav/ARC001?period=1y
+------------------------------------------------------------
+❌ Status: 404
+Response: {"detail":"Not Found"}
+
+============================================================
+Testing: Insider Trading
+URL: http://localhost:8000/insider-trading?limit=20
+------------------------------------------------------------
+✅ Status: 200 OK
+✅ Records: 20
+✅ Minimum records met (10)
+
+Sample Record:
+{
+  "id": 128,
+  "symbol": "2110",
+  "insider_name": "Mohammed Al Saud",
+  "insider_role": "CFO",
+  "transaction_date": "2025-12-24",
+  "transaction_type": "SELL",
+  "shares": 421203,
+  "price": "189.6400",
+  "value": "79876936.92",
+  "shares_held_after": 916748,
+  "filing_date": "2025-12-29",
+  "cr...
+  ✅ symbol: 2110
+  ✅ insider_name: Mohammed Al Saud
+  ✅ transaction_type: SELL
+  ✅ shares: 421203
+
+============================================================
+Testing: Analyst Ratings
+URL: http://localhost:8000/analyst-ratings?symbol=2222
+------------------------------------------------------------
+✅ Status: 200 OK
+✅ Records: 6
+✅ Minimum records met (1)
+
+Sample Record:
+{
+  "id": 30,
+  "symbol": "2222",
+  "analyst_firm": "Derayah Financial",
+  "analyst_name": "Dr. Fahad Al-Ghamdi",
+  "rating_date": "2025-07-07",
+  "rating": "STRONG SELL",
+  "previous_rating": "SELL",
+  "price_target": "29.55",
+  "price_at_rating": "27.91",
+  "target_upside": "5.88",
+  "created_at":...
+  ✅ analyst_firm: Derayah Financial
+  ✅ rating: STRONG SELL
+  ❌ Missing field: target_price
+
+================================================================================
+📊 VALIDATION SUMMARY
+================================================================================
+✅ TICKERS                   PASS
+❌ OHLC                      FAIL
+✅ CORPORATE_ACTIONS         PASS
+✅ ECONOMIC                  PASS
+❌ FUNDS                     FAIL
+❌ NAV                       FAIL
+✅ INSIDER                   PASS
+✅ RATINGS                   PASS
+================================================================================
+Results: 5/8 endpoints passed
+
+⚠️  3 endpoints need attention
+================================================================================
+

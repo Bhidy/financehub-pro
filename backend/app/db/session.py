@@ -8,6 +8,10 @@ class Database:
 
     async def connect(self):
         if not self._pool:
+            if not settings.DATABASE_URL:
+                print("WARNING: No DATABASE_URL set. Database features will be disabled.")
+                return
+                
             try:
                 self._pool = await asyncpg.create_pool(dsn=settings.DATABASE_URL)
                 print(f"Connected to Database: {settings.DATABASE_URL.split('@')[-1]}")

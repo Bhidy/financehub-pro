@@ -6,12 +6,12 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str
+    SECRET_KEY: Optional[str] = "temporary-secret-key-for-build"  # Fallback for build phase
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: Optional[str] = None
     
     # External Services
     OPENAI_API_KEY: Optional[str] = None

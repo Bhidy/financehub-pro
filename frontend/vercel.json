@@ -1,31 +1,30 @@
 {
-    "buildCommand": "npm run build",
+    "buildCommand": "next build",
     "outputDirectory": ".next",
     "framework": "nextjs",
-    "regions": [
-        "iad1"
-    ],
     "headers": [
         {
-            "source": "/api/(.*)",
+            "source": "/(.*)",
             "headers": [
                 {
-                    "key": "Access-Control-Allow-Credentials",
-                    "value": "true"
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
                 },
                 {
-                    "key": "Access-Control-Allow-Origin",
-                    "value": "*"
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
                 },
                 {
-                    "key": "Access-Control-Allow-Methods",
-                    "value": "GET,DELETE,PATCH,POST,PUT"
-                },
-                {
-                    "key": "Access-Control-Allow-Headers",
-                    "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
                 }
             ]
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/proxy/:path*",
+            "destination": "/api/proxy/:path*"
         }
     ]
 }

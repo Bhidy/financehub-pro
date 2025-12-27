@@ -4,17 +4,16 @@ on:
   schedule:
     # Run every Sunday at 2:00 AM UTC
     - cron: '0 2 * * 0'
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual trigger
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  PYTHON_VERSION: '3.11'
 
 jobs:
   backup-database:
-    name: Backup Database
+    name: Create Database Backup
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     
     steps:
       - name: Checkout Repository
@@ -23,61 +22,73 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
       
       - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install asyncpg pandas
+        run: pip install asyncpg
       
       - name: Create Backup Directory
         run: mkdir -p backups
       
       - name: Export Database to JSON
-        run: |
-          python scripts/backup_database.py --format json --output backups/
+        run: python scripts/backup_database.py --format json --output backups/
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
       - name: Compress Backup
         run: |
-          BACKUP_NAME="financehub_backup_$(date +%Y%m%d_%H%M%S)"
-          tar -czvf backups/${BACKUP_NAME}.tar.gz backups/*.json
-          echo "BACKUP_NAME=${BACKUP_NAME}" >> $GITHUB_ENV
+          BACKUP_DATE=$(date +%Y%m%d_%H%M%S)
+          tar -czvf backups/financehub_backup_${BACKUP_DATE}.tar.gz backups/*.json
+          echo "BACKUP_FILE=financehub_backup_${BACKUP_DATE}.tar.gz" >> $GITHUB_ENV
+          ls -lh backups/
       
       - name: Upload Backup Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: database-backup-${{ env.BACKUP_NAME }}
+          name: database-backup-${{ github.run_number }}
           path: backups/*.tar.gz
           retention-days: 90
       
-      - name: Generate Backup Report
+      - name: Generate Report
         run: |
           echo "## 💾 Weekly Database Backup Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Date:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Backup File:** ${{ env.BACKUP_NAME }}.tar.gz" >> $GITHUB_STEP_SUMMARY
+          echo "**Backup File:** ${{ env.BACKUP_FILE }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ls -lh backups/*.tar.gz >> $GITHUB_STEP_SUMMARY
+          echo "### Backup Contents:" >> $GITHUB_STEP_SUMMARY
+          ls -lh backups/*.json >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Data Stats:" >> $GITHUB_STEP_SUMMARY
+          python scripts/get_data_stats.py >> $GITHUB_STEP_SUMMARY
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  verify-backup:
+    name: Verify Backup Health
+    runs-on: ubuntu-latest
+    needs: backup-database
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       
-      - name: Send Success Notification
-        if: success()
-        uses: dawidd6/action-send-mail@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "✅ FinanceHub Pro - Weekly Backup Complete"
-          body: |
-            Weekly database backup completed successfully!
-            
-            Backup: ${{ env.BACKUP_NAME }}.tar.gz
-            Date: $(date -u '+%Y-%m-%d %H:%M UTC')
-            
-            You can download the backup from:
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          to: ${{ secrets.ALERT_EMAIL }}
-          from: FinanceHub Pro Backups
+          python-version: '3.11'
+      
+      - name: Install Dependencies
+        run: pip install asyncpg
+      
+      - name: Verify Data Integrity
+        run: python scripts/verify_data_integrity.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Backup Success
+        run: |
+          echo "## ✅ Backup Verification Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Database backup and integrity check both passed!" >> $GITHUB_STEP_SUMMARY

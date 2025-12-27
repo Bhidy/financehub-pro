@@ -32,12 +32,12 @@ export default function WatchlistPage() {
     // --- Queries ---
     const { data: watchlists, isLoading: loadWL } = useQuery({
         queryKey: ["watchlists"],
-        queryFn: fetchMyWatchlists
+        queryFn: () => fetchMyWatchlists()
     });
 
     const { data: alerts, isLoading: loadAlerts } = useQuery({
         queryKey: ["alerts"],
-        queryFn: fetchMyAlerts
+        queryFn: () => fetchMyAlerts()
     });
 
     // --- Mutations ---

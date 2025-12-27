@@ -127,7 +127,12 @@ async def main():
     print("╚" + "═" * 60 + "╝")
     print()
     
-    pool = await asyncpg.create_pool(DATABASE_URL)
+    pool = await asyncpg.create_pool(
+        DATABASE_URL,
+        min_size=2,
+        max_size=10,
+        statement_cache_size=0
+    )
     
     try:
         all_articles = []

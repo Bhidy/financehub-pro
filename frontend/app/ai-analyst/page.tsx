@@ -1,13 +1,14 @@
 "use client";
 
 import { useAIChat } from "@/hooks/useAIChat";
-import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { AnimatePresence, motion } from "framer-motion";
+import { PriceChart, FinancialTable, IndicatorBadge } from "@/components/ai/AnalystUI";
 
 export default function AIAnalystPage() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -217,38 +218,88 @@ export default function AIAnalystPage() {
                                         {/* Evidence Cards */}
                                         {msg.role === "assistant" && msg.data && (
                                             <div className="w-full mt-2 grid gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                                                {/* Price */}
+                                                {/* Price & Technicals */}
                                                 {msg.data.price_data && (
-                                                    <EvidenceCard title="Market Data" icon={TrendingUp} color="emerald">
-                                                        <div className="flex justify-between items-end">
+                                                    <EvidenceCard title="Market Context" icon={TrendingUp} color="emerald">
+                                                        <div className="flex justify-between items-end mb-4">
                                                             <div>
                                                                 <div className="text-xs text-slate-500 font-bold mb-1 tracking-wider">{msg.data.price_data.symbol}</div>
                                                                 <div className="text-2xl font-bold text-slate-900 tracking-tight">{msg.data.price_data.name_en}</div>
                                                             </div>
                                                             <div className="text-right">
                                                                 <div className="text-3xl font-black font-mono tracking-tighter text-slate-900">{Number(msg.data.price_data.last_price).toFixed(2)}</div>
-                                                                <div className={clsx("text-sm font-bold flex items-center justify-end gap-1.5 mt-1", msg.data.price_data.change >= 0 ? "text-emerald-600" : "text-red-500")}>
-                                                                    {msg.data.price_data.change >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />}
-                                                                    {msg.data.price_data.change >= 0 ? "+" : ""}{msg.data.price_data.change_percent}%
+                                                                <div className={clsx("text-sm font-bold flex items-center justify-end gap-1.5 mt-1", (msg.data.price_data.change_percent || 0) >= 0 ? "text-emerald-600" : "text-red-500")}>
+                                                                    {(msg.data.price_data.change_percent || 0) >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4 rotate-180" />}
+                                                                    {(msg.data.price_data.change_percent || 0) >= 0 ? "+" : ""}{msg.data.price_data.change_percent}%
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        {/* Tech Signals */}
+                                                        {msg.data.technical_analysis && (
+                                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                                <IndicatorBadge
+                                                                    label="RSI"
+                                                                    value={`${msg.data.technical_analysis.rsi || '-'}`}
+                                                                    type={(msg.data.technical_analysis.rsi || 50) > 70 ? 'bearish' : (msg.data.technical_analysis.rsi || 50) < 30 ? 'bullish' : 'neutral'}
+                                                                />
+                                                                <IndicatorBadge
+                                                                    label="Trend"
+                                                                    value={msg.data.technical_analysis.trend || 'NEUTRAL'}
+                                                                    type={msg.data.technical_analysis.trend === 'BULLISH' ? 'bullish' : msg.data.technical_analysis.trend === 'BEARISH' ? 'bearish' : 'neutral'}
+                                                                />
+                                                            </div>
+                                                        )}
+
+                                                        {/* Price History Chart */}
+                                                        {msg.data.price_history && (
+                                                            <PriceChart data={msg.data.price_history.history} symbol={msg.data.price_history.symbol} />
+                                                        )}
                                                     </EvidenceCard>
                                                 )}
-                                                {/* Fundamentals */}
+
+                                                {/* Institutional Fundamentals */}
                                                 {msg.data.fundamentals && (
-                                                    <EvidenceCard title="Fundamental Metrics" icon={PieChart} color="blue">
-                                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                                            {[
-                                                                { label: "P/E Ratio", value: `${Number(msg.data.fundamentals.pe_ratio).toFixed(2)}x` },
-                                                                { label: "P/B Ratio", value: `${Number(msg.data.fundamentals.pb_ratio).toFixed(2)}x` },
-                                                                { label: "Div Yield", value: `${Number(msg.data.fundamentals.dividend_yield).toFixed(2)}%`, highlight: true },
-                                                                { label: "Net Margin", value: `${Number(msg.data.fundamentals.net_margin).toFixed(1)}%` },
-                                                            ].map((metric, i) => (
-                                                                <div key={i} className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 group hover:border-blue-100 transition-colors">
-                                                                    <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1.5">{metric.label}</div>
-                                                                    <div className={clsx("font-bold font-mono text-base", metric.highlight ? "text-emerald-600" : "text-slate-900")}>
-                                                                        {metric.value}
+                                                    <EvidenceCard title="Institutional Analysis" icon={PieChart} color="blue">
+                                                        {/* High Level Metrics from latest row */}
+                                                        {msg.data.fundamentals.financials?.[0] && (
+                                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                                                {[
+                                                                    { label: "Margin", value: `${msg.data.fundamentals.financials[0].net_margin || '-'}%` },
+                                                                    { label: "ROA", value: `${msg.data.fundamentals.financials[0].roa || '-'}%`, highlight: true },
+                                                                    { label: "ROE", value: `${msg.data.fundamentals.financials[0].roe || '-'}%`, highlight: true },
+                                                                    { label: "Debt Ratio", value: `${msg.data.fundamentals.financials[0].debt_ratio || '-'}%` },
+                                                                ].map((metric, i) => (
+                                                                    <div key={i} className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 group hover:border-blue-100 transition-colors">
+                                                                        <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1.5">{metric.label}</div>
+                                                                        <div className={clsx("font-bold font-mono text-base uppercase", metric.highlight ? "text-blue-600" : "text-slate-900")}>
+                                                                            {metric.value}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Historical Financial Table */}
+                                                        <FinancialTable financials={msg.data.fundamentals.financials} />
+                                                    </EvidenceCard>
+                                                )}
+
+                                                {/* Ownership / Major Holders */}
+                                                {msg.data.major_holders && (
+                                                    <EvidenceCard title="Ownership Structure" icon={BarChart3} color="amber">
+                                                        <div className="space-y-3">
+                                                            {msg.data.major_holders.holders?.slice(0, 5).map((holder: any, i: number) => (
+                                                                <div key={i} className="flex justify-between items-center text-xs">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-bold text-slate-800">{holder.holder_name}</span>
+                                                                        <span className="text-[10px] text-slate-400 uppercase tracking-tighter">{holder.holder_type}</span>
+                                                                    </div>
+                                                                    <div className="text-right">
+                                                                        <div className="font-mono font-bold text-slate-900">{holder.ownership_percent}%</div>
+                                                                        <div className={clsx("text-[10px] font-bold", holder.change_percent >= 0 ? "text-emerald-600" : "text-red-500")}>
+                                                                            {holder.change_percent >= 0 ? '↑' : '↓'} {Math.abs(holder.change_percent)}%
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             ))}

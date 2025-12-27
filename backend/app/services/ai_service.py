@@ -15,8 +15,8 @@ if settings.GROQ_API_KEY:
         base_url="https://api.groq.com/openai/v1"
     )
 
-# Model to use (OpenAI OSS model with better tool calling)
-GROQ_MODEL = "openai/gpt-oss-120b"
+# Model to use - llama-3.3-70b-versatile has best tool calling support on Groq
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 
 
@@ -326,13 +326,36 @@ def detect_intent(message: str) -> Optional[str]:
 async def resolve_symbol(query: str) -> Optional[str]:
     """
     Attempt to resolve a company name or partial symbol to a 4-digit ticker.
-    This is a simple SQL LIKE search.
+    First checks common name aliases, then falls back to SQL LIKE search.
     """
     # If it looks like a 4-digit number, return it
     if re.fullmatch(r"\d{4}", query.strip()):
         return query.strip()
+    
+    # Common company name aliases (case-insensitive)
+    COMMON_ALIASES = {
+        "aramco": "2222", "saudi aramco": "2222",
+        "rajhi": "1120", "al rajhi": "1120", "alrajhi": "1120",
+        "sabic": "2010", "saudi basic": "2010",
+        "stc": "7010", "saudi telecom": "7010",
+        "ncb": "1180", "alahli": "1180", "al ahli": "1180", "snb": "1180",
+        "maaden": "1211", "saudi arabian mining": "1211",
+        "mobily": "7020", "etihad etisalat": "7020",
+        "almarai": "2280",
+        "jarir": "4190",
+        "samba": "1090",
+        "ribl": "1010", "riyad bank": "1010",
+        "acwa": "2082", "acwa power": "2082",
+        "zain": "7030", "zain ksa": "7030",
+        "elm": "7203",
+        "tadawul": "1111",
+    }
+    
+    query_lower = query.strip().lower()
+    if query_lower in COMMON_ALIASES:
+        return COMMON_ALIASES[query_lower]
         
-    # Search by name (English or Arabic)
+    # Search by name (English or Arabic) in database
     sql = """
         SELECT symbol FROM market_tickers 
         WHERE name_en ILIKE $1 OR name_ar ILIKE $1 
@@ -377,24 +400,73 @@ async def get_stock_price(symbol: str):
     return result
 
 async def get_fundamentals(symbol: str):
-    """Fetch valuation ratios (PE, PB, Yield, Margins). Phase 3: Includes citation metadata."""
+    """Fetch key financial metrics from financial_statements.raw_data (Arabic JSON)."""
     resolved = await resolve_symbol(symbol)
     if not resolved: return None
 
-    query = """
-        SELECT pe_ratio_ttm as pe_ratio, pb_ratio, dividend_yield, net_profit_margin as net_margin
-        FROM market_tickers 
-        WHERE symbol = $1
-    """
     try:
-        row = await db.fetch_one(query, resolved)
-        if not row: return None
-        result = dict(row)
-        # PHASE 3: Add citation metadata
+        import json
+        
+        # Get financial data from financial_statements.raw_data - this is where the actual data is
+        query = """
+            SELECT fiscal_year, period_type, raw_data
+            FROM financial_statements 
+            WHERE symbol = $1 
+            ORDER BY fiscal_year DESC, period_type DESC
+            LIMIT 4
+        """
+        rows = await db.fetch_all(query, resolved)
+        if not rows: return None
+        
+        result = {"symbol": resolved, "financials": []}
+        
+        for row in rows:
+            if row["raw_data"]:
+                try:
+                    raw = json.loads(row["raw_data"]) if isinstance(row["raw_data"], str) else row["raw_data"]
+                    
+                    # Extract key metrics using Arabic keys
+                    net_income = raw.get("صافى الربح", 0) or 0
+                    gross_profit = raw.get("مجمل الربح", 0) or 0
+                    total_assets = raw.get("إجمالي الأصول", 0) or 0
+                    total_liab = raw.get("إجمالي المطلوبات", 0) or 0
+                    total_equity = raw.get("اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية", 0) or 0
+                    op_cash = raw.get("صافي التغير في النقد من الأنشطة التشغيلية", 0) or 0
+                    
+                    # Format large numbers for readability (convert to billions)
+                    stmt = {
+                        "fiscal_year": row["fiscal_year"],
+                        "period": row["period_type"],
+                        "net_income_sar": net_income,
+                        "net_income_billions": round(net_income / 1e9, 2) if net_income else None,
+                        "gross_profit_billions": round(gross_profit / 1e9, 2) if gross_profit else None,
+                        "total_assets_billions": round(total_assets / 1e9, 2) if total_assets else None,
+                        "total_equity_billions": round(total_equity / 1e9, 2) if total_equity else None,
+                        "operating_cash_flow_billions": round(op_cash / 1e9, 2) if op_cash else None,
+                    }
+                    
+                    # Calculate ratios if we have data
+                    if total_assets and total_assets > 0:
+                        stmt["roa"] = round((net_income / total_assets) * 100, 2)
+                    if total_equity and total_equity > 0:
+                        stmt["roe"] = round((net_income / total_equity) * 100, 2)
+                    if total_assets and total_liab:
+                        stmt["debt_ratio"] = round((total_liab / total_assets) * 100, 2)
+                        
+                    result["financials"].append(stmt)
+                except (json.JSONDecodeError, TypeError) as e:
+                    print(f"Error parsing raw_data: {e}")
+                    continue
+        
+        # If no financials parsed, return None
+        if not result["financials"]:
+            return None
+            
+        # Add citation
         result["_citation"] = {
-            "source_table": "market_tickers",
-            "fields": ["pe_ratio_ttm", "pb_ratio", "dividend_yield", "net_profit_margin"],
-            "data_quality": "CALCULATED"
+            "source_table": "financial_statements",
+            "fields": ["net_income", "total_assets", "total_equity", "cash_flows"],
+            "data_quality": "QUARTERLY"
         }
         return result
     except Exception as e:
@@ -578,27 +650,49 @@ async def get_price_history(symbol: str, period: str = "1y"):
         return None
 
 async def get_income_statement(symbol: str):
-    """Fetch income statement data (revenue, net income, EPS)."""
+    """Fetch income statement data by parsing raw_data JSON with Arabic keys."""
     resolved = await resolve_symbol(symbol)
     if not resolved: return None
     
     query = """
-        SELECT fiscal_year, fiscal_period, revenue, net_income, eps, 
-               gross_profit, operating_income, ebitda
+        SELECT fiscal_year, period_type, raw_data
         FROM financial_statements 
         WHERE symbol = $1 
-        ORDER BY fiscal_year DESC, fiscal_period DESC
+        ORDER BY fiscal_year DESC, period_type DESC
         LIMIT 8
     """
     try:
         rows = await db.fetch_all(query, resolved)
         if not rows: return None
+        
+        import json
+        statements = []
+        for row in rows:
+            stmt = {
+                "fiscal_year": row["fiscal_year"],
+                "period": row["period_type"]
+            }
+            if row["raw_data"]:
+                try:
+                    raw = json.loads(row["raw_data"]) if isinstance(row["raw_data"], str) else row["raw_data"]
+                    # Arabic key mappings for income statement
+                    stmt["net_income"] = raw.get("صافى الربح")  # Net profit
+                    stmt["gross_profit"] = raw.get("مجمل الربح")  # Gross profit
+                    stmt["total_assets"] = raw.get("إجمالي الأصول")  # Total assets
+                    stmt["total_liabilities"] = raw.get("إجمالي المطلوبات")  # Total liabilities
+                    stmt["operating_cash_flow"] = raw.get("صافي التغير في النقد من الأنشطة التشغيلية")
+                    stmt["investing_cash_flow"] = raw.get("صافي التغير النقدي من الانشطة الاستثمارية")
+                    stmt["financing_cash_flow"] = raw.get("صافي التغير في النقد من الانشطة التمويلية")
+                except json.JSONDecodeError:
+                    pass
+            statements.append(stmt)
+        
         return {
             "symbol": resolved, 
-            "statements": [dict(r) for r in rows],
+            "statements": statements,
             "_citation": {
                 "source_table": "financial_statements",
-                "fields": ["revenue", "net_income", "eps", "ebitda"],
+                "fields": ["net_income", "gross_profit", "total_assets", "cash_flows"],
                 "data_quality": "QUARTERLY"
             }
         }
@@ -607,13 +701,12 @@ async def get_income_statement(symbol: str):
         return None
 
 async def get_balance_sheet(symbol: str):
-    """Fetch balance sheet data (assets, liabilities, equity)."""
+    """Fetch balance sheet data by parsing raw_data JSON with Arabic keys."""
     resolved = await resolve_symbol(symbol)
     if not resolved: return None
     
     query = """
-        SELECT fiscal_year, fiscal_period, total_assets, total_liabilities, 
-               total_equity, cash_and_equivalents, total_debt
+        SELECT fiscal_year, period_type, raw_data
         FROM financial_statements 
         WHERE symbol = $1 
         ORDER BY fiscal_year DESC
@@ -622,9 +715,29 @@ async def get_balance_sheet(symbol: str):
     try:
         rows = await db.fetch_all(query, resolved)
         if not rows: return None
+        
+        import json
+        balance_sheets = []
+        for row in rows:
+            bs = {
+                "fiscal_year": row["fiscal_year"],
+                "period": row["period_type"]
+            }
+            if row["raw_data"]:
+                try:
+                    raw = json.loads(row["raw_data"]) if isinstance(row["raw_data"], str) else row["raw_data"]
+                    # Arabic key mappings for balance sheet
+                    bs["total_assets"] = raw.get("إجمالي الأصول")
+                    bs["total_liabilities"] = raw.get("إجمالي المطلوبات")
+                    bs["total_equity"] = raw.get("اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية")
+                    bs["net_change_cash"] = raw.get("صافي التغير في النقد")
+                except json.JSONDecodeError:
+                    pass
+            balance_sheets.append(bs)
+        
         return {
             "symbol": resolved, 
-            "balance_sheets": [dict(r) for r in rows],
+            "balance_sheets": balance_sheets,
             "_citation": {
                 "source_table": "financial_statements",
                 "fields": ["total_assets", "total_liabilities", "total_equity"],

@@ -44,28 +44,42 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
-      - name: Create Issue on Failure
+      - name: Create Issue & Notify on Failure
         if: failure()
         uses: actions/github-script@v7
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
+            const time = new Date().toISOString().split('T')[1].split('.')[0];
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🚨 Data Health Alert - ${date}`,
-              body: `## Data Integrity Check Failed!
+              title: `🚨 URGENT: Data Health Alert - ${date} ${time} UTC`,
+              body: `## ⚠️ Data Integrity Check Failed!
               
-              **Run:** ${context.runId}
-              **Date:** ${date}
+              @Bhidy - **Immediate attention required!**
               
-              Please check the [workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.
+              | Detail | Value |
+              |--------|-------|
+              | **Run ID** | ${context.runId} |
+              | **Date** | ${date} |
+              | **Time** | ${time} UTC |
+              | **Workflow** | Data Health Monitor |
               
-              This could indicate:
+              ### 🔗 Quick Actions
+              - [View Workflow Run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              - [Check Production API](https://bhidy-financehub-api.hf.space/api/v1/dashboard/data-health)
+              - [View Live Site](https://finhub-pro.vercel.app)
+              
+              ### ⚠️ Possible Causes
               - Data loss or corruption
               - Database connectivity issues
               - Missing scheduled data updates
+              - API service down
               
-              **Action Required:** Investigate immediately to prevent data loss.`,
-              labels: ['bug', 'data-health', 'urgent']
+              ### 📧 Email Notification
+              GitHub will automatically email you about this issue.
+              
+              **Action Required:** Investigate immediately!`,
+              labels: ['bug', 'data-health', 'urgent', 'P0']
             });

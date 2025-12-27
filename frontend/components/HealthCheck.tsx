@@ -12,14 +12,11 @@ interface ServiceStatus {
 }
 
 export default function HealthCheck() {
-    const baseURL = (api.defaults.baseURL || "http://localhost:8000/api/v1");
-    // Remove /api/v1 suffix to get root URL
-    const API_URL = baseURL.replace(/\/api\/v1\/?$/, '');
-
+    // Use frontend proxy endpoints instead of direct backend URLs (avoids CORS issues in production)
     const [mounted, setMounted] = useState(false);
     const [services, setServices] = useState<ServiceStatus[]>([
-        { name: 'Backend API', url: `${API_URL}/`, status: 'checking' },
-        { name: 'Database', url: `${API_URL}/api/v1/stats`, status: 'checking' },
+        { name: 'Backend API', url: `/api/proxy/dashboard/summary`, status: 'checking' },
+        { name: 'Database', url: `/api/proxy/dashboard/summary`, status: 'checking' },
     ]);
     const [lastCheck, setLastCheck] = useState<Date | null>(null);
     const [isOpen, setIsOpen] = useState(false);

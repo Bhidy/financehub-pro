@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { sendChatMessage } from "@/lib/api";
+import { useAIChat } from "@/hooks/useAIChat";
+import { usePathname } from "next/navigation";
 import {
     MessageSquare,
     X,
@@ -12,7 +12,6 @@ import {
     Loader2,
     TrendingUp,
     PieChart,
-    Calendar,
     Newspaper
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,21 +19,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import clsx from "clsx";
 
-interface Message {
-    role: "user" | "assistant";
-    content: string;
-    data?: any; // The payload from backend
-}
-
 export default function AIChatWidget() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
-    const [query, setQuery] = useState("");
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: "assistant",
-            content: "Hello! I am your AI Market Analyst. Ask me about stock prices, valuations, or news."
-        }
-    ]);
+    const { query, setQuery, messages, isLoading, handleSend } = useAIChat();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to bottom
@@ -44,40 +32,15 @@ export default function AIChatWidget() {
         }
     }, [messages, isOpen]);
 
-    const mutation = useMutation({
-        mutationFn: async (text: string) => {
-            // Prepare history for backend (exclude local-only fields if any, generally just role/content)
-            const history = messages.map(m => ({ role: m.role, content: m.content }));
-            return await sendChatMessage(text, history);
-        },
-        onSuccess: (data) => {
-            setMessages(prev => [
-                ...prev,
-                { role: "assistant", content: data.reply, data: data.data }
-            ]);
-        },
-        onError: (err) => {
-            setMessages(prev => [
-                ...prev,
-                { role: "assistant", content: "Sorry, I encountered an error connecting to the market brain." }
-            ]);
-        }
-    });
-
-    const handleSend = () => {
-        if (!query.trim()) return;
-        const text = query;
-        setQuery("");
-        setMessages(prev => [...prev, { role: "user", content: text }]);
-        mutation.mutate(text);
-    };
-
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSend();
         }
     };
+
+    // Hide widget on the full AI Analyst page
+    if (pathname === '/ai-analyst') return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
@@ -212,7 +175,7 @@ export default function AIChatWidget() {
                                     </div>
                                 </div>
                             ))}
-                            {mutation.isPending && (
+                            {isLoading && (
                                 <div className="flex gap-3">
                                     <div className="w-8 h-8 rounded-full bg-white border border-slate-200 text-blue-600 flex items-center justify-center shadow-sm">
                                         <Bot className="w-4 h-4" />
@@ -234,11 +197,11 @@ export default function AIChatWidget() {
                                     onKeyDown={handleKeyDown}
                                     placeholder="Ask about prices, ratios, or news..."
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12 resize-none h-[50px] scrollbar-none"
-                                    disabled={mutation.isPending}
+                                    disabled={isLoading}
                                 />
                                 <button
                                     onClick={handleSend}
-                                    disabled={!query.trim() || mutation.isPending}
+                                    disabled={!query.trim() || isLoading}
                                     className="absolute right-2 top-1.5 p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <Send className="w-4 h-4" />
@@ -271,25 +234,11 @@ export default function AIChatWidget() {
     );
 }
 
-function EvidenceCard({ title, icon: Icon, children, color }: any) {
-    const colorStyles = {
-        emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
-        blue: "bg-blue-50 text-blue-700 border-blue-100",
-        amber: "bg-amber-50 text-amber-700 border-amber-100",
-    };
+// Re-export EvidenceCard if it was not exported before, or keep locally if only used here.
+// But we need EvidenceCard for full page too.
+// Let's create a separate component for EvidenceCard to be reusable.
+// For now I will reproduce it inline in the new page or move it to a shared component.
+// I'll keep it here for now to avoid breaking existing file structure too much in one step.
+import { EvidenceCard } from "@/components/EvidenceCard";
 
-    // Fallback if color is invalid, though strictly used internally
-    const style = colorStyles[color as keyof typeof colorStyles] || colorStyles.blue;
 
-    return (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-            <div className={`px-3 py-2 flex items-center gap-2 border-b ${style.replace("bg-", "border-").split(" ")[2]} ${style}`}>
-                <Icon className="w-3.5 h-3.5" />
-                <span className="text-xs font-bold uppercase tracking-wide">{title}</span>
-            </div>
-            <div className="p-3">
-                {children}
-            </div>
-        </div>
-    )
-}

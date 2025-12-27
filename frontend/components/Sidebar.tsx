@@ -51,6 +51,7 @@ const NAV_SECTIONS = [
         items: [
             { label: "Multi-Chart Grid", icon: Grid3x3, href: "/charts" },
             { label: "Market Intelligence", icon: TrendingUp, href: "/markets" },
+            { label: "AI Analyst", icon: BrainCircuit, href: "/ai-analyst", badge: "BETA", badgeColor: "blue" },
             { label: "Market Pulse", icon: Activity, href: "/market-pulse" },
             { label: "Intraday Desk", icon: BarChart3, href: "/intraday" },
         ]
@@ -251,7 +252,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v2.1.0 (Proxy)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v3.0.0 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

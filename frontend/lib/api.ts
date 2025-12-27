@@ -138,7 +138,8 @@ export const fetchScreener = async (params: Record<string, string | number>) => 
 };
 
 export const fetchPortfolio = async () => {
-    const { data } = await api.get("/portfolio");
+    // Use demo portfolio endpoint (no auth required for paper trading)
+    const { data } = await api.get("/portfolio/demo");
     return data;
 };
 

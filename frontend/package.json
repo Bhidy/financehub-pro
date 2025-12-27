@@ -9,7 +9,9 @@
     "lint": "eslint",
     "check-types": "tsc --noEmit",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "pull-env": "vercel env pull .env.local",
+    "verify": "npx tsx scripts/verify-prod.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.12",
@@ -50,6 +52,7 @@
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [
+      "eslint --fix",
       "prettier --write"
     ],
     "*.{json,css,md}": [

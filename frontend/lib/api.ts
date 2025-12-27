@@ -1,12 +1,14 @@
 import axios from "axios";
+import { env } from "./env";
+import { TickerResponseSchema, Ticker } from "./schemas";
 
 // Production API URL - HuggingFace Spaces
 const PRODUCTION_API = "https://bhidy-financehub-api.hf.space";
 
 const API_BASE_URL = typeof window !== 'undefined'
     ? "/api/proxy" // Use Smart Proxy in Browser (prevents 429)
-    : (process.env.NEXT_PUBLIC_API_URL
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
+    : (env.NEXT_PUBLIC_API_URL
+        ? `${env.NEXT_PUBLIC_API_URL}/api/v1`
         : `${PRODUCTION_API}/api/v1`);
 
 if (typeof window !== 'undefined') {
@@ -20,16 +22,7 @@ export const api = axios.create({
     baseURL: API_BASE_URL,
 });
 
-export type Ticker = {
-    symbol: string;
-    name_en: string;
-    name_ar: string;
-    sector_name: string;
-    last_price: number;
-    change: number;
-    change_percent: number;
-    volume: number;
-}
+export type { Ticker } from "./schemas";
 
 export type OHLC = {
     time: string;
@@ -101,11 +94,13 @@ export interface EconomicIndicator {
     unit: string;
     date: string;
     source: string;
+
 }
 
 export const fetchTickers = async (): Promise<Ticker[]> => {
     const { data } = await api.get("/tickers");
-    return data;
+    // Zod Validation: If backend returns invalid data, this throws an error explanation
+    return TickerResponseSchema.parse(data);
 };
 
 export const fetchHistory = async (symbol: string): Promise<OHLC[]> => {

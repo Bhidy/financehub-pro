@@ -250,6 +250,13 @@ export default function Sidebar() {
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50" />
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
+                    <div className="mt-1 flex justify-between items-center">
+                        <span className="text-[10px] text-slate-400 font-mono">v2.1.0 (Proxy)</span>
+                        <div className="flex gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                        </div>
+                    </div>
                 </div>
             )}
         </aside>

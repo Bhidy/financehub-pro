@@ -1,8 +1,11 @@
 import axios from "axios";
 
+// Production API URL - HuggingFace Spaces
+const PRODUCTION_API = "https://bhidy-financehub-api.hf.space";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
     ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
-    : "http://localhost:8000/api/v1";
+    : `${PRODUCTION_API}/api/v1`;
 
 if (typeof window !== 'undefined') {
     console.log(`[FinanceHub] Initializing API Client with Base URL: ${API_BASE_URL}`);

@@ -146,9 +146,34 @@ export default function CommandCenterPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/inventory');
-            const json = await res.json();
-            setData(json);
+            // Use production HuggingFace API
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space';
+            const res = await fetch(`${API_URL}/api/v1/dashboard/summary`);
+            const summary = await res.json();
+
+            // Transform API response to InventoryData format
+            const inventoryData: InventoryData = {
+                generated_at: new Date().toISOString(),
+                sections: {
+                    stocks: { title: "Stock Tickers", icon: "📈", color: "emerald", total: summary.stocks || 0 },
+                    mutual_funds: { title: "Mutual Funds", icon: "💼", color: "teal", total: summary.funds || 0 },
+                    shareholders: { title: "Major Shareholders", icon: "👥", color: "amber", total_rows: summary.shareholders || 0 },
+                    earnings: { title: "Earnings Calendar", icon: "📅", color: "rose", total_rows: summary.earnings || 0 },
+                    financials: { title: "Financial Statements", icon: "📑", color: "blue", total_rows: summary.financials || 0 },
+                    nav_history: { title: "Fund NAV History", icon: "📊", color: "cyan", total_rows: summary.nav_rows || 0 },
+                    ratios: { title: "Financial Ratios", icon: "📐", color: "lime", total_rows: summary.ratios || 0 },
+                    ohlc_history: { title: "OHLC Price Data", icon: "📉", color: "orange", total_rows: summary.ohlc_rows || 0 },
+                },
+                aggregate: {
+                    total_data_points: (summary.nav_rows || 0) + (summary.ohlc_rows || 0) + (summary.financials || 0),
+                    total_stocks: summary.stocks || 0,
+                    total_funds: summary.funds || 0,
+                    total_tables: 12,
+                    database_health: (summary.nav_rows || 0) > 500000 ? "EXCELLENT" : (summary.nav_rows || 0) > 100000 ? "GOOD" : "BUILDING"
+                }
+            };
+
+            setData(inventoryData);
             setLastRefresh(new Date());
         } catch (err) {
             console.error('Failed to fetch inventory:', err);

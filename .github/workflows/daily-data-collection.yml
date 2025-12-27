@@ -72,3 +72,28 @@ jobs:
           echo "## ✅ Data Integrity Check Passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "All data thresholds met. Database is healthy." >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create Issue & Notify on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Daily Data Collection Failed - ${date}`,
+              body: `## ⚠️ Daily Data Collection Failed!
+              
+              @Bhidy - **Attention required!**
+              
+              The daily market data update has failed. This means today's data may be missing.
+              
+              **Run:** ${context.runId}
+              **Date:** ${date}
+              
+              [View Workflow Run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              
+              **Action Required:** Re-run the workflow or investigate the failure.`,
+              labels: ['bug', 'data-collection', 'urgent']
+            });

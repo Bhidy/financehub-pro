@@ -249,3 +249,47 @@ export const fetchIntraday = async (symbol: string, interval: string = "1m", lim
     return data;
 };
 
+// ============================================================================
+// USER FEATURES (Watchlists & Alerts)
+// ============================================================================
+
+export const fetchMyWatchlists = async () => {
+    const { data } = await api.get("/user/watchlists");
+    return data;
+};
+
+export const createWatchlist = async (name: string) => {
+    const { data } = await api.post("/user/watchlists", { name });
+    return data;
+};
+
+export const deleteWatchlist = async (id: string) => {
+    const { data } = await api.delete(`/user/watchlists/${id}`);
+    return data;
+};
+
+export const addWatchlistItem = async (watchlistId: string, symbol: string) => {
+    const { data } = await api.post(`/user/watchlists/${watchlistId}/items`, { symbol });
+    return data;
+};
+
+export const removeWatchlistItem = async (watchlistId: string, symbol: string) => {
+    const { data } = await api.delete(`/user/watchlists/${watchlistId}/items/${symbol}`);
+    return data;
+};
+
+export const fetchMyAlerts = async () => {
+    const { data } = await api.get("/user/alerts");
+    return data;
+};
+
+export const createAlert = async (symbol: string, target_price: number, condition: 'ABOVE' | 'BELOW') => {
+    const { data } = await api.post("/user/alerts", { symbol, target_price, condition });
+    return data;
+};
+
+export const deleteAlert = async (id: string) => {
+    const { data } = await api.delete(`/user/alerts/${id}`);
+    return data;
+};
+

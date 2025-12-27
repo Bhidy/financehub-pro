@@ -4,9 +4,6 @@ const nextConfig = {
   output: 'standalone',
 
   // Environment variables are handled automatically by Next.js (NEXT_PUBLIC_*)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -25,6 +25,7 @@ export default function MarketTicker() {
         <div className="w-full bg-white border-b border-slate-200 py-3 overflow-hidden flex items-center shadow-sm z-50">
             <div className="flex whitespace-nowrap">
                 <motion.div
+                    key={displayTickers.length} // Force re-render when data loads to update duration
                     className="flex"
                     animate={{ x: ["0%", "-50%"] }}
                     transition={{

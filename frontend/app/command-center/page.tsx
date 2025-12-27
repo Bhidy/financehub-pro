@@ -165,7 +165,14 @@ export default function CommandCenterPage() {
                     ohlc_history: { title: "OHLC Price Data", icon: "📉", color: "orange", total_rows: summary.ohlc_rows || 0 },
                 },
                 aggregate: {
-                    total_data_points: (summary.nav_rows || 0) + (summary.ohlc_rows || 0) + (summary.financials || 0),
+                    // Calculate total data points same way as original:
+                    // NAV has 2 columns, OHLC has 5 columns, Financials have ~10 fields
+                    total_data_points:
+                        ((summary.nav_rows || 0) * 2) +
+                        ((summary.ohlc_rows || 0) * 5) +
+                        ((summary.financials || 0) * 10) +
+                        ((summary.shareholders || 0) * 3) +
+                        ((summary.earnings || 0) * 5),
                     total_stocks: summary.stocks || 0,
                     total_funds: summary.funds || 0,
                     total_tables: 12,

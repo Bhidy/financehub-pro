@@ -21,7 +21,9 @@ import {
     Star,
     Activity,
     Globe,
-    Zap
+    Zap,
+    List,
+    Newspaper
 } from "lucide-react";
 import { useState } from "react";
 
@@ -38,6 +40,7 @@ const NAV_SECTIONS = [
         color: "blue",
         items: [
             { label: "Market Overview", icon: LayoutDashboard, href: "/" },
+            { label: "Market News", icon: Newspaper, href: "/news", badge: "LIVE", badgeColor: "red" },
             { label: "Deep Screener", icon: ScanLine, href: "/screener" },
             { label: "Data Explorer", icon: Database, href: "/data-explorer", badge: "NEW", badgeColor: "blue" },
         ]
@@ -76,6 +79,7 @@ const NAV_SECTIONS = [
         color: "orange",
         items: [
             { label: "Portfolio", icon: Briefcase, href: "/portfolio" },
+            { label: "Watchlists", icon: List, href: "/watchlist", badge: "NEW", badgeColor: "orange" },
             { label: "Strategy Builder", icon: BrainCircuit, href: "/strategy" },
         ]
     },

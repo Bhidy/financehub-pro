@@ -33,7 +33,7 @@ export default function IntradayTradingPage() {
     const { data: orderBook } = useQuery({
         queryKey: ["orderbook", selectedSymbol],
         queryFn: () => fetchOrderBook(selectedSymbol),
-        refetchInterval: 5000, // Refresh every 5 seconds
+        refetchInterval: 10000, // Refresh every 10 seconds
     });
 
     const selectedTicker = tickers?.find((t: any) => t.symbol === selectedSymbol);

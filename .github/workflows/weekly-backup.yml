@@ -1,0 +1,83 @@
+name: Weekly Database Backup
+
+on:
+  schedule:
+    # Run every Sunday at 2:00 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  backup-database:
+    name: Backup Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install asyncpg pandas
+      
+      - name: Create Backup Directory
+        run: mkdir -p backups
+      
+      - name: Export Database to JSON
+        run: |
+          python scripts/backup_database.py --format json --output backups/
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Compress Backup
+        run: |
+          BACKUP_NAME="financehub_backup_$(date +%Y%m%d_%H%M%S)"
+          tar -czvf backups/${BACKUP_NAME}.tar.gz backups/*.json
+          echo "BACKUP_NAME=${BACKUP_NAME}" >> $GITHUB_ENV
+      
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ env.BACKUP_NAME }}
+          path: backups/*.tar.gz
+          retention-days: 90
+      
+      - name: Generate Backup Report
+        run: |
+          echo "## 💾 Weekly Database Backup Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Backup File:** ${{ env.BACKUP_NAME }}.tar.gz" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -lh backups/*.tar.gz >> $GITHUB_STEP_SUMMARY
+      
+      - name: Send Success Notification
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ FinanceHub Pro - Weekly Backup Complete"
+          body: |
+            Weekly database backup completed successfully!
+            
+            Backup: ${{ env.BACKUP_NAME }}.tar.gz
+            Date: $(date -u '+%Y-%m-%d %H:%M UTC')
+            
+            You can download the backup from:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.ALERT_EMAIL }}
+          from: FinanceHub Pro Backups

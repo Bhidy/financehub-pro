@@ -34,6 +34,13 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
+      - name: Fetch Real-Time News
+        run: |
+          pip install feedparser
+          python scripts/fetch_real_news.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
       - name: Generate Report
         run: |
           echo "## 📊 Daily Data Collection Report" >> $GITHUB_STEP_SUMMARY

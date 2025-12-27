@@ -3,23 +3,17 @@ name: Daily Data Collection
 on:
   schedule:
     # Run every day at 6:00 PM UTC (9:00 PM Saudi Time - after market close)
-    - cron: '0 18 * * *'
-  workflow_dispatch:
-    inputs:
-      full_sync:
-        description: 'Run full data sync (not just incremental)'
-        required: false
-        default: 'false'
+    - cron: '0 18 * * 0-4'  # Sun-Thu only (Saudi trading days)
+  workflow_dispatch:  # Allow manual trigger
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  PYTHON_VERSION: '3.11'
 
 jobs:
   collect-market-data:
-    name: Collect Market Data
+    name: Daily Market Data Update
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     
     steps:
       - name: Checkout Repository
@@ -28,20 +22,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
       
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install asyncpg pandas tls_client aiohttp
+          pip install asyncpg
       
       - name: Run Daily OHLC Update
-        run: |
-          python scripts/daily_ohlc_update.py
+        run: python scripts/daily_ohlc_update.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
-      - name: Record Collection Stats
+      - name: Generate Report
         run: |
           echo "## 📊 Daily Data Collection Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -51,7 +44,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-  verify-data-integrity:
+  verify-integrity:
     name: Verify Data Integrity
     runs-on: ubuntu-latest
     needs: collect-market-data
@@ -63,33 +56,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
       
       - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install asyncpg
+        run: pip install asyncpg
       
       - name: Verify Data Counts
-        id: verify
-        run: |
-          python scripts/verify_data_integrity.py
+        run: python scripts/verify_data_integrity.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
-      - name: Send Alert on Failure
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "🚨 FinanceHub Pro - Data Integrity Alert"
-          body: |
-            Data integrity verification failed!
-            
-            Please check the GitHub Actions log for details:
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          to: ${{ secrets.ALERT_EMAIL }}
-          from: FinanceHub Pro Alerts
+      - name: Mark Success
+        if: success()
+        run: |
+          echo "## ✅ Data Integrity Check Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All data thresholds met. Database is healthy." >> $GITHUB_STEP_SUMMARY

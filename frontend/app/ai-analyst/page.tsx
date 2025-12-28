@@ -39,42 +39,42 @@ export default function AIAnalystPage() {
     }, [query]);
 
 
-    // Premium curated suggestions by category
+    // Premium curated suggestions - VERIFIED WORKING QUERIES ONLY
     const suggestionCategories = [
         {
             id: 'trending',
             label: '🔥 Trending',
             suggestions: [
-                { text: "How is the market today?", icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
-                { text: "Top movers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
-                { text: "Aramco price", icon: TrendingUp, gradient: "from-blue-500 to-indigo-600" },
+                { text: "What is Aramco stock price?", icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
+                { text: "Al Rajhi Bank current price", icon: BarChart3, gradient: "from-blue-500 to-indigo-600" },
+                { text: "SABIC stock quote", icon: TrendingUp, gradient: "from-orange-500 to-red-500" },
             ]
         },
         {
-            id: 'stocks',
-            label: '📊 Stocks',
+            id: 'analysis',
+            label: '📊 Analysis',
             suggestions: [
-                { text: "Al Rajhi fundamentals", icon: PieChart, gradient: "from-violet-500 to-purple-600" },
-                { text: "SABIC technical analysis", icon: BarChart3, gradient: "from-cyan-500 to-blue-600" },
-                { text: "STC income statement", icon: Newspaper, gradient: "from-pink-500 to-rose-600" },
+                { text: "Aramco technical analysis", icon: BarChart3, gradient: "from-violet-500 to-purple-600" },
+                { text: "Al Rajhi fundamentals", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
+                { text: "Is STC overbought?", icon: TrendingUp, gradient: "from-pink-500 to-rose-600" },
             ]
         },
         {
-            id: 'research',
-            label: '🔍 Research',
+            id: 'financials',
+            label: '💰 Financials',
             suggestions: [
-                { text: "Compare Al Rajhi with peers", icon: PieChart, gradient: "from-amber-500 to-orange-600" },
-                { text: "Analyst ratings for Aramco", icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
-                { text: "Who owns Al Rajhi?", icon: User, gradient: "from-indigo-500 to-violet-600" },
+                { text: "Aramco income statement", icon: Newspaper, gradient: "from-amber-500 to-orange-600" },
+                { text: "Al Rajhi balance sheet", icon: PieChart, gradient: "from-green-500 to-emerald-600" },
+                { text: "SABIC financial metrics", icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
             ]
         },
         {
-            id: 'explore',
-            label: '🌍 Explore',
+            id: 'market',
+            label: '🌍 Market',
             suggestions: [
-                { text: "Oil price today", icon: TrendingUp, gradient: "from-yellow-500 to-amber-600" },
-                { text: "Upcoming dividends", icon: Newspaper, gradient: "from-teal-500 to-cyan-600" },
-                { text: "Show me mutual funds", icon: PieChart, gradient: "from-rose-500 to-pink-600" },
+                { text: "Top gainers today", icon: TrendingUp, gradient: "from-emerald-500 to-green-600" },
+                { text: "Top losers today", icon: BarChart3, gradient: "from-red-500 to-rose-600" },
+                { text: "Aramco price history", icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
             ]
         },
     ];

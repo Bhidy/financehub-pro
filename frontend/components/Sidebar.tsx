@@ -66,9 +66,11 @@ const NAV_SECTIONS = [
         items: [
             { label: "Mutual Funds", icon: DollarSign, href: "/funds" },
             { label: "Shareholders", icon: Users, href: "/shareholders" },
-            { label: "Earnings Calendar", icon: TrendingUp, href: "/earnings" },
+            // HIDDEN: Earnings Calendar - can be re-enabled later
+            // { label: "Earnings Calendar", icon: TrendingUp, href: "/earnings" },
             { label: "Analyst Ratings", icon: Star, href: "/analyst-ratings" },
-            { label: "Insider Trading", icon: Users, href: "/insider-trading" },
+            // HIDDEN: Insider Trading - can be re-enabled later
+            // { label: "Insider Trading", icon: Users, href: "/insider-trading" },
             { label: "Corporate Actions", icon: Building2, href: "/corporate-actions" },
         ]
     },
@@ -76,7 +78,8 @@ const NAV_SECTIONS = [
         title: "Macro & Global",
         color: "amber",
         items: [
-            { label: "Economics Center", icon: Globe, href: "/economics" },
+            // HIDDEN: Economics Center - can be re-enabled later
+            // { label: "Economics Center", icon: Globe, href: "/economics" },
         ]
     },
     {
@@ -256,7 +259,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v1.0.11 (Enterprise)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v1.0.12 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

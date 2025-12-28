@@ -548,7 +548,7 @@ export default function CommandCenterPage() {
                             <Globe className="w-8 h-8 text-blue-500" />
                             <div>
                                 <h3 className="font-bold text-gray-800">FinanceHub Pro Enterprise Database</h3>
-                                <p className="text-gray-500 text-sm">Made with ❤️ by Bhidy • <span className="font-mono bg-blue-50 text-blue-600 px-1 py-0.5 rounded text-xs font-bold">v1.0.2</span></p>
+                                <p className="text-gray-500 text-sm">Made with ❤️ by Bhidy • <span className="font-mono bg-blue-50 text-blue-600 px-1 py-0.5 rounded text-xs font-bold">v1.0.3</span></p>
                             </div>
                         </div>
                         <div className="text-right">

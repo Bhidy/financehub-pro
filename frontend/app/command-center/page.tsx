@@ -143,7 +143,7 @@ export default function CommandCenterPage() {
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
     const [autoRefresh, setAutoRefresh] = useState(false);
     const [aiStatus, setAiStatus] = useState<{ status: string; model: string; provider: string; tier: string } | null>(null);
-    const [selectedProvider, setSelectedProvider] = useState<'groq' | 'openrouter'>('groq');
+    const [selectedModel, setSelectedModel] = useState<'main' | 'backup'>('main');
 
     // Check AI status
     const checkAIStatus = useCallback(async () => {

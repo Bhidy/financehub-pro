@@ -42,7 +42,8 @@ const NAV_SECTIONS = [
             { label: "Market Overview", icon: LayoutDashboard, href: "/" },
             { label: "Market News", icon: Newspaper, href: "/news", badge: "LIVE", badgeColor: "red" },
             { label: "Deep Screener", icon: ScanLine, href: "/screener" },
-            { label: "Data Explorer", icon: Database, href: "/data-explorer", badge: "NEW", badgeColor: "blue" },
+            // HIDDEN: Data Explorer - can be re-enabled later
+            // { label: "Data Explorer", icon: Database, href: "/data-explorer", badge: "NEW", badgeColor: "blue" },
         ]
     },
     {
@@ -53,8 +54,10 @@ const NAV_SECTIONS = [
             // { label: "Multi-Chart Grid", icon: Grid3x3, href: "/charts" },
             { label: "Market Intelligence", icon: TrendingUp, href: "/markets" },
             { label: "AI Analyst", icon: BrainCircuit, href: "/ai-analyst", badge: "BETA", badgeColor: "blue" },
-            { label: "Market Pulse", icon: Activity, href: "/market-pulse" },
-            { label: "Intraday Desk", icon: BarChart3, href: "/intraday" },
+            // HIDDEN: Market Pulse - can be re-enabled later
+            // { label: "Market Pulse", icon: Activity, href: "/market-pulse" },
+            // HIDDEN: Intraday Desk - can be re-enabled later
+            // { label: "Intraday Desk", icon: BarChart3, href: "/intraday" },
         ]
     },
     {
@@ -253,7 +256,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v1.0.10 (Enterprise)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v1.0.11 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

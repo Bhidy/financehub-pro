@@ -1,0 +1,65 @@
+name: Deploy Backend to HuggingFace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hf-space/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to HuggingFace Spaces
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper push
+      
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+      
+      - name: Push to HuggingFace Spaces
+        working-directory: hf-space
+        run: |
+          # Set remote with token
+          git remote set-url origin https://Bhidy:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/Bhidy/financehub-api || \
+          git remote add hf https://Bhidy:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/Bhidy/financehub-api
+          
+          # Push changes
+          git push origin main --force || git push hf main --force
+          
+          echo "✅ Pushed to HuggingFace Spaces"
+      
+      - name: Wait for Build
+        run: |
+          echo "Waiting 60 seconds for HuggingFace to rebuild..."
+          sleep 60
+      
+      - name: Health Check
+        run: |
+          for i in 1 2 3 4 5; do
+            response=$(curl -s https://bhidy-financehub-api.hf.space/health)
+            if echo "$response" | grep -q '"status":"healthy"'; then
+              echo "✅ Backend is healthy!"
+              echo "$response" | jq .
+              exit 0
+            fi
+            echo "Attempt $i failed, waiting 15 seconds..."
+            sleep 15
+          done
+          echo "⚠️ Health check failed after 5 attempts"
+          exit 1
+      
+      - name: Post Deployment Summary
+        run: |
+          echo "## 🚀 Backend Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://bhidy-financehub-api.hf.space" >> $GITHUB_STEP_SUMMARY
+          echo "**Health:** https://bhidy-financehub-api.hf.space/health" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

@@ -52,7 +52,8 @@ const NAV_SECTIONS = [
         items: [
             // HIDDEN: Multi-Chart Grid - can be re-enabled later
             // { label: "Multi-Chart Grid", icon: Grid3x3, href: "/charts" },
-            { label: "Market Intelligence", icon: TrendingUp, href: "/markets" },
+            // HIDDEN: Market Intelligence - merged into Market Overview page
+            // { label: "Market Intelligence", icon: TrendingUp, href: "/markets" },
             { label: "AI Analyst", icon: BrainCircuit, href: "/ai-analyst", badge: "BETA", badgeColor: "blue" },
             // HIDDEN: Market Pulse - can be re-enabled later
             // { label: "Market Pulse", icon: Activity, href: "/market-pulse" },
@@ -259,7 +260,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v1.0.12 (Enterprise)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v1.0.13 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

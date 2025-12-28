@@ -385,17 +385,17 @@ export default function CommandCenterPage() {
                     </div>
                 )}
 
-                {/* AI Advisor Status Card - Interactive */}
+                {/* AI Advisor Status Card - Premium */}
                 <div className="mt-12 bg-white rounded-3xl shadow-xl p-6 border-2 border-blue-100 overflow-hidden relative transition-all duration-300">
                     {/* Subtle background gradient */}
-                    <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-40 transition-colors duration-500 ${selectedProvider === 'groq' ? 'bg-gradient-to-br from-orange-100 to-amber-50' : 'bg-gradient-to-br from-purple-100 to-indigo-50'}`}></div>
-                    <div className={`absolute bottom-0 left-0 w-48 h-48 rounded-full blur-3xl opacity-40 transition-colors duration-500 ${selectedProvider === 'groq' ? 'bg-gradient-to-tr from-orange-50 to-red-50' : 'bg-gradient-to-tr from-blue-50 to-cyan-50'}`}></div>
+                    <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-40 bg-gradient-to-br from-orange-100 to-amber-50"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-3xl opacity-40 bg-gradient-to-tr from-orange-50 to-red-50"></div>
 
                     <div className="relative z-10">
-                        {/* Header & Tabs */}
+                        {/* Header */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                             <div className="flex items-center gap-4">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 ${selectedProvider === 'groq' ? 'bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-500/20' : 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/20'}`}>
+                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-500/20">
                                     <BrainCircuit className="w-7 h-7 text-white" />
                                 </div>
                                 <div>
@@ -407,27 +407,10 @@ export default function CommandCenterPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 bg-slate-100 p-1.5 rounded-xl">
-                                <button
-                                    onClick={() => setSelectedProvider('groq')}
-                                    className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${selectedProvider === 'groq'
-                                        ? 'bg-white text-orange-600 shadow-md'
-                                        : 'text-gray-500 hover:text-gray-700 hover:bg-slate-200'
-                                        }`}
-                                >
-                                    <Zap className={`w-4 h-4 ${selectedProvider === 'groq' ? 'fill-orange-600' : ''}`} />
-                                    Groq Cloud
-                                </button>
-                                <button
-                                    onClick={() => setSelectedProvider('openrouter')}
-                                    className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${selectedProvider === 'openrouter'
-                                        ? 'bg-white text-indigo-600 shadow-md'
-                                        : 'text-gray-500 hover:text-gray-700 hover:bg-slate-200'
-                                        }`}
-                                >
-                                    <Cpu className={`w-4 h-4 ${selectedProvider === 'openrouter' ? 'fill-indigo-600' : ''}`} />
-                                    OpenRouter
-                                </button>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100 uppercase tracking-wide">
+                                    Groq Cloud Active
+                                </span>
                             </div>
                         </div>
 
@@ -441,8 +424,8 @@ export default function CommandCenterPage() {
                                             <Activity className="w-5 h-5 text-blue-500" />
                                             Daily Token Usage
                                         </h4>
-                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${selectedProvider === 'groq' ? 'bg-orange-100 text-orange-700' : 'bg-indigo-100 text-indigo-700'}`}>
-                                            {selectedProvider === 'groq' ? 'Hard Limit: 100K' : 'Soft Limit: Flexible'}
+                                        <span className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100 text-orange-700">
+                                            Hard Limit: 100K
                                         </span>
                                     </div>
 
@@ -452,19 +435,14 @@ export default function CommandCenterPage() {
                                             <div className="flex justify-between text-sm mb-2">
                                                 <span className="text-gray-500">Consumed Today</span>
                                                 <span className="font-bold text-gray-800">
-                                                    {selectedProvider === 'groq' ? (aiStatus?.provider === 'Groq' ? '~45,200' : '100,000 (Limit Hit)') : 'On Demand'}
+                                                    {aiStatus?.provider === 'Groq' ? '~45,200' : '100,000 (Limit Hit)'}
                                                 </span>
                                             </div>
                                             <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full rounded-full transition-all duration-1000 ${selectedProvider === 'groq'
-                                                        ? 'bg-gradient-to-r from-orange-400 to-red-500'
-                                                        : 'bg-gradient-to-r from-indigo-400 to-purple-500'
-                                                        }`}
+                                                    className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-orange-400 to-red-500"
                                                     style={{
-                                                        width: selectedProvider === 'groq'
-                                                            ? (aiStatus?.provider === 'Groq' ? '45%' : '100%')
-                                                            : '15%'
+                                                        width: aiStatus?.provider === 'Groq' ? '45%' : '100%'
                                                     }}
                                                 ></div>
                                             </div>
@@ -477,27 +455,17 @@ export default function CommandCenterPage() {
                                         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
                                             <div>
                                                 <p className="text-xs text-gray-500 mb-1">Requests/Min</p>
-                                                <p className="text-lg font-bold text-gray-800">
-                                                    {selectedProvider === 'groq' ? '30' : '200'}
-                                                </p>
+                                                <p className="text-lg font-bold text-gray-800">30</p>
                                             </div>
-                                            <div> {/* Derived Status Logic */}
+                                            <div>
                                                 <p className="text-xs text-gray-500 mb-1">Current State</p>
-                                                <p className={`text-lg font-bold ${selectedProvider === 'groq'
-                                                    ? (aiStatus?.provider === 'Groq' ? 'text-emerald-500' : 'text-amber-500')
-                                                    : (aiStatus?.provider === 'OpenRouter' ? 'text-emerald-500' : 'text-blue-500')
-                                                    }`}>
-                                                    {selectedProvider === 'groq'
-                                                        ? (aiStatus?.provider === 'Groq' ? 'Active' : 'Rate Limited')
-                                                        : (aiStatus?.provider === 'OpenRouter' ? 'Active' : 'Standby')
-                                                    }
+                                                <p className={`text-lg font-bold ${aiStatus?.provider === 'Groq' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                                    {aiStatus?.provider === 'Groq' ? 'Active' : 'Rate Limited'}
                                                 </p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500 mb-1">Latency</p>
-                                                <p className="text-lg font-bold text-gray-800">
-                                                    {selectedProvider === 'groq' ? '0.4s' : '0.9s'}
-                                                </p>
+                                                <p className="text-lg font-bold text-gray-800">0.4s</p>
                                             </div>
                                         </div>
                                     </div>
@@ -505,10 +473,7 @@ export default function CommandCenterPage() {
                             </div>
 
                             {/* Provider Details Card */}
-                            <div className={`rounded-2xl p-5 text-white shadow-lg flex flex-col justify-between ${selectedProvider === 'groq'
-                                ? 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/30'
-                                : 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/30'
-                                }`}>
+                            <div className="rounded-2xl p-5 text-white shadow-lg flex flex-col justify-between bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/30">
                                 <div>
                                     <div className="flex items-center gap-2 mb-6 opacity-90">
                                         <Sparkles className="w-5 h-5" />
@@ -519,7 +484,7 @@ export default function CommandCenterPage() {
                                         <div>
                                             <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Primary Model</p>
                                             <p className="text-2xl font-black tracking-tight">
-                                                {selectedProvider === 'groq' ? 'Llama 3.3 70B' : 'Llama 3.1 70B'}
+                                                Llama 3.3 70B
                                             </p>
                                         </div>
                                         <div>

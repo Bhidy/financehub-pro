@@ -6,10 +6,8 @@ import { TickerResponseSchema, Ticker } from "./schemas";
 const PRODUCTION_API = "https://bhidy-financehub-api.hf.space";
 
 const API_BASE_URL = typeof window !== 'undefined'
-    ? "/api/proxy" // Use Smart Proxy in Browser (prevents 429)
-    : (env.NEXT_PUBLIC_API_URL
-        ? `${env.NEXT_PUBLIC_API_URL}/api/v1`
-        : `${PRODUCTION_API}/api/v1`);
+    ? (env.NEXT_PUBLIC_API_URL || `${PRODUCTION_API}/api/v1`)
+    : (env.NEXT_PUBLIC_API_URL || `${PRODUCTION_API}/api/v1`);
 
 if (typeof window !== 'undefined') {
     console.log(`[FinanceHub] Initializing API Client with Base URL: ${API_BASE_URL}`);

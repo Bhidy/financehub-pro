@@ -2,62 +2,46 @@
 description: Deploy backend API to HuggingFace Spaces
 ---
 
-# Backend Deployment Workflow
+# Deploy Backend to HuggingFace Spaces
 
-The backend is deployed on HuggingFace Spaces and auto-deploys on push.
-
-## Prerequisites
-- You are in the `hf-space/` directory
-- Changes are committed
-
-## Steps
+This workflow deploys the backend API to HuggingFace Spaces.
 
 // turbo-all
 
-1. Navigate to the backend directory:
+## Steps
+
+1. Navigate to hf-space directory:
 ```bash
 cd /Users/home/Documents/Info\ Site/mubasher-deep-extract/hf-space
 ```
 
-2. Check git status:
+2. Stage all changes:
 ```bash
-git status
+git add -A
 ```
 
-3. Add and commit changes:
+3. Commit changes (skip if nothing to commit):
 ```bash
-git add . && git commit -m "your commit message"
+git commit -m "deploy: $(date +%Y%m%d-%H%M%S)" || echo "Nothing to commit"
 ```
 
-4. Push to HuggingFace Spaces:
+4. Push to HuggingFace:
 ```bash
 git push origin main
 ```
 
-5. Wait 2-3 minutes for HuggingFace to rebuild the Docker container
-
-6. Verify the deployment is live:
+5. Wait for deployment (60 seconds):
 ```bash
-curl https://bhidy-financehub-api.hf.space/health
+echo "Waiting 60 seconds for HuggingFace to rebuild..." && sleep 60
 ```
 
-7. Verify database connection:
+6. Verify health:
 ```bash
-curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
+curl -s https://bhidy-financehub-api.hf.space/health | jq
 ```
 
-## Expected Response
-```json
-{"status":"healthy","database":"healthy","version":"1.0.0","environment":"production"}
-```
+## Notes
 
-## If Deployment Fails
-1. Check HuggingFace Space logs: https://huggingface.co/spaces/Bhidy/financehub-api/logs
-2. Verify DATABASE_URL secret is set in HF Space settings
-3. Check Dockerfile for syntax errors
-
-## Key URLs
-- **API Base**: https://bhidy-financehub-api.hf.space
-- **Health Check**: https://bhidy-financehub-api.hf.space/health
-- **OpenAPI Docs**: https://bhidy-financehub-api.hf.space/docs
-- **HF Space Dashboard**: https://huggingface.co/spaces/Bhidy/financehub-api
+- HuggingFace Spaces takes 1-3 minutes to rebuild after push
+- The `/health` endpoint returns version, database status, and environment
+- If deployment fails, check logs at https://huggingface.co/spaces/Bhidy/financehub-api

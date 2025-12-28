@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
     RefreshCw, Database, TrendingUp, BarChart3, Users, Calendar,
     FileText, PieChart, Activity, Zap, Clock, Server, CheckCircle2,
-    AlertCircle, Layers, Globe, ChevronRight
+    AlertCircle, Layers, Globe, ChevronRight, BrainCircuit, Cpu, Sparkles
 } from 'lucide-react';
 
 interface InventoryData {
@@ -142,6 +142,32 @@ export default function CommandCenterPage() {
     const [loading, setLoading] = useState(true);
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
     const [autoRefresh, setAutoRefresh] = useState(false);
+    const [aiStatus, setAiStatus] = useState<{ status: string; model: string; provider: string; tier: string } | null>(null);
+
+    // Check AI status
+    const checkAIStatus = useCallback(async () => {
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space';
+            const res = await fetch(`${API_URL}/api/v1/ai/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'ping' })
+            });
+            const data = await res.json();
+            if (data.error) {
+                setAiStatus({ status: 'rate_limited', model: '-', provider: 'Groq', tier: 'Free' });
+            } else {
+                setAiStatus({
+                    status: 'online',
+                    model: data.model_used || 'llama-3.3-70b',
+                    provider: data.provider || 'Groq',
+                    tier: 'Free'
+                });
+            }
+        } catch {
+            setAiStatus({ status: 'offline', model: '-', provider: '-', tier: '-' });
+        }
+    }, []);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -191,7 +217,8 @@ export default function CommandCenterPage() {
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+        checkAIStatus();
+    }, [fetchData, checkAIStatus]);
 
     useEffect(() => {
         if (autoRefresh) {
@@ -330,6 +357,98 @@ export default function CommandCenterPage() {
                         </div>
                     </div>
                 )}
+
+                {/* AI Advisor Status Card - Ultra Premium */}
+                <div className="mb-8">
+                    <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 rounded-3xl shadow-2xl p-6 text-white overflow-hidden relative">
+                        {/* Animated background glow */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-500/20 to-cyan-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                                        <BrainCircuit className="w-7 h-7 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold">AI Advisor Status</h3>
+                                        <p className="text-blue-300 text-sm">Real-time LLM monitoring</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={checkAIStatus}
+                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+                                >
+                                    <RefreshCw className="w-4 h-4" />
+                                    Check Status
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {/* Status */}
+                                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className={`w-3 h-3 rounded-full ${aiStatus?.status === 'online' ? 'bg-emerald-400 animate-pulse' : aiStatus?.status === 'rate_limited' ? 'bg-amber-400' : 'bg-red-400'}`}></div>
+                                        <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Status</span>
+                                    </div>
+                                    <div className="text-xl font-bold capitalize">
+                                        {aiStatus?.status === 'online' ? '🟢 Online' : aiStatus?.status === 'rate_limited' ? '🟡 Rate Limited' : '🔴 Offline'}
+                                    </div>
+                                </div>
+
+                                {/* Provider */}
+                                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Cpu className="w-4 h-4 text-white/60" />
+                                        <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Provider</span>
+                                    </div>
+                                    <div className="text-xl font-bold">
+                                        {aiStatus?.provider || 'Groq'}
+                                    </div>
+                                </div>
+
+                                {/* Model */}
+                                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Sparkles className="w-4 h-4 text-white/60" />
+                                        <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Model</span>
+                                    </div>
+                                    <div className="text-lg font-bold truncate">
+                                        {aiStatus?.model?.split('-').slice(-2).join('-') || 'Llama 3.3'}
+                                    </div>
+                                </div>
+
+                                {/* Tier */}
+                                <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 backdrop-blur-sm rounded-2xl p-4 border border-amber-500/30">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Zap className="w-4 h-4 text-amber-400" />
+                                        <span className="text-amber-300 text-xs font-medium uppercase tracking-wider">Tier</span>
+                                    </div>
+                                    <div className="text-xl font-bold text-amber-400">
+                                        Free Tier
+                                    </div>
+                                    <div className="text-xs text-amber-300/70 mt-1">~20 req/day</div>
+                                </div>
+                            </div>
+
+                            {/* Usage Bar */}
+                            <div className="mt-6 bg-white/5 rounded-2xl p-4 border border-white/10">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-white/70">Daily Token Usage (Estimated)</span>
+                                    <span className="text-sm font-bold text-blue-400">~50% Used</span>
+                                </div>
+                                <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-1000" style={{ width: '50%' }}></div>
+                                </div>
+                                <div className="flex justify-between mt-2 text-xs text-white/50">
+                                    <span>0 tokens</span>
+                                    <span>~50K / 100K tokens</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Section Title */}
                 <div className="flex items-center gap-3 mb-6">

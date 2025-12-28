@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchTickers,
+  fetchSectors,
   Ticker,
 } from "@/lib/api";
 import { useMemo } from "react";
@@ -24,6 +25,7 @@ import {
 
 export default function Home() {
   const { data: tickers = [], isLoading } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers });
+  const { data: sectors = [] } = useQuery({ queryKey: ["sectors"], queryFn: fetchSectors });
 
   // Computed Lists
   const topGainers = useMemo(() => [...tickers].sort((a: Ticker, b: Ticker) => b.change_percent - a.change_percent).slice(0, 5), [tickers]);
@@ -178,6 +180,66 @@ export default function Home() {
                   );
                 })}
               </div>
+            </div>
+          </div>
+
+          {/* Compact Market Intelligence Section */}
+          <div className="col-span-12 bg-white rounded-2xl border border-slate-100 shadow-lg p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <PieChart className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Market Intelligence</h3>
+                <p className="text-xs text-slate-500">Breadth & Sector Performance</p>
+              </div>
+            </div>
+
+            {/* Market Breadth Bar */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 h-6 rounded-full overflow-hidden bg-slate-100">
+                <div
+                  className="h-full bg-emerald-500 flex items-center justify-center text-[10px] font-bold text-white transition-all duration-500"
+                  style={{ width: `${(gainersCount / (totalStocks || 1)) * 100}%` }}
+                >
+                  {gainersCount > 0 && `${gainersCount} Up`}
+                </div>
+                <div
+                  className="h-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600 transition-all duration-500"
+                  style={{ width: `${((totalStocks - gainersCount - losersCount) / (totalStocks || 1)) * 100}%` }}
+                >
+                  {(totalStocks - gainersCount - losersCount) > 0 && `${totalStocks - gainersCount - losersCount} Flat`}
+                </div>
+                <div
+                  className="h-full bg-red-500 flex items-center justify-center text-[10px] font-bold text-white transition-all duration-500"
+                  style={{ width: `${(losersCount / (totalStocks || 1)) * 100}%` }}
+                >
+                  {losersCount > 0 && `${losersCount} Down`}
+                </div>
+              </div>
+            </div>
+
+            {/* Compact Sector Heatmap Grid */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+              {sectors.slice(0, 6).map((s: any) => (
+                <div
+                  key={s.sector_name}
+                  className={clsx(
+                    "p-3 rounded-xl border transition-all hover:shadow-md cursor-pointer text-center",
+                    s.performance > 0
+                      ? "bg-emerald-50 border-emerald-100"
+                      : "bg-red-50 border-red-100"
+                  )}
+                >
+                  <div className="text-xs font-bold text-slate-700 truncate">{s.sector_name}</div>
+                  <div className={clsx(
+                    "text-sm font-black font-mono mt-1",
+                    s.performance > 0 ? "text-emerald-600" : "text-red-600"
+                  )}>
+                    {s.performance > 0 ? "+" : ""}{Number(s.performance).toFixed(2)}%
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

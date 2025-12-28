@@ -1,7 +1,7 @@
 "use client";
 
 import { useAIChat } from "@/hooks/useAIChat";
-import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3 } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3, Plus, MessageSquarePlus } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import clsx from "clsx";
@@ -157,13 +157,20 @@ export default function AIAnalystPage() {
             <main className="flex-1 flex flex-col relative z-10 w-full h-full">
 
                 {/* Header Actions (Floating) */}
-                <div className="absolute top-6 left-6 z-20">
+                <div className="absolute top-6 left-6 z-20 flex gap-2">
                     <button
                         onClick={() => setIsHistoryOpen(!isHistoryOpen)}
                         className="p-3 bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md rounded-2xl text-slate-500 hover:text-blue-600 transition-all group active:scale-95"
                         title="View History"
                     >
                         <History className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
+                    </button>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 backdrop-blur-md border border-white/40 shadow-md hover:shadow-lg rounded-2xl text-white transition-all group active:scale-95"
+                        title="New Chat"
+                    >
+                        <MessageSquarePlus className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                     </button>
                 </div>
 
@@ -184,7 +191,7 @@ export default function AIAnalystPage() {
 
                                 {/* Title */}
                                 <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 drop-shadow-sm">
-                                    FinanceHub <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">Analyst</span>
+                                    FinanceHub <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">AI Advisor</span>
                                 </h1>
 
                                 <p className="text-slate-500 text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed font-medium">
@@ -215,7 +222,7 @@ export default function AIAnalystPage() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3 }}
-                                    className="grid md:grid-cols-3 gap-3 w-full max-w-3xl"
+                                    className="grid md:grid-cols-3 gap-4 w-full max-w-4xl"
                                 >
                                     {activeSuggestions.map((s, i) => (
                                         <motion.button
@@ -224,15 +231,15 @@ export default function AIAnalystPage() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ delay: i * 0.1 }}
                                             onClick={() => handleSuggestionClick(s.text)}
-                                            className="group p-4 rounded-2xl bg-white/80 backdrop-blur-sm hover:bg-white border border-slate-200/60 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 text-left flex items-center gap-3"
+                                            className="group p-5 rounded-2xl bg-white/90 backdrop-blur-sm hover:bg-white border border-slate-200/60 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/15 transition-all duration-300 text-left flex items-center gap-4"
                                         >
                                             <div className={clsx(
-                                                "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg",
+                                                "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg",
                                                 s.gradient
                                             )}>
-                                                <s.icon className="w-5 h-5 text-white" />
+                                                <s.icon className="w-6 h-6 text-white" />
                                             </div>
-                                            <span className="text-sm font-semibold text-slate-700 group-hover:text-blue-700 transition-colors line-clamp-2">
+                                            <span className="text-base font-semibold text-slate-700 group-hover:text-blue-700 transition-colors">
                                                 {s.text}
                                             </span>
                                         </motion.button>

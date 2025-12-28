@@ -252,7 +252,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v3.0.0 (Enterprise)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v1.0.1 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

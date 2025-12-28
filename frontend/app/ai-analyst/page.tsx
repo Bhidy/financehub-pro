@@ -281,18 +281,22 @@ export default function AIAnalystPage() {
 
                                     {/* Message content */}
                                     <div className={clsx(
-                                        "flex flex-col gap-3 max-w-[85%] md:max-w-2xl",
+                                        "flex flex-col gap-3 max-w-[85%] md:max-w-3xl",
                                         msg.role === "user" ? "items-end" : "items-start w-full"
                                     )}>
                                         <div className={clsx(
-                                            "px-7 py-5 rounded-[2rem] text-[15px] md:text-base leading-relaxed shadow-sm ring-1 ring-inset",
+                                            "text-[15px] md:text-base leading-relaxed shadow-lg ring-1 ring-inset",
                                             msg.role === "user"
-                                                ? "bg-blue-600 text-white rounded-tr-sm ring-blue-600"
-                                                : "bg-white/80 backdrop-blur-sm border border-slate-200/50 text-slate-800 rounded-tl-sm w-full ring-slate-200/20"
+                                                ? "px-6 py-4 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm ring-blue-600 shadow-blue-500/20"
+                                                : "px-6 py-6 bg-white/95 backdrop-blur-xl border border-slate-100 text-slate-800 rounded-2xl rounded-tl-sm w-full ring-slate-100/50 shadow-slate-200/50"
                                         )}>
-                                            <div className="prose prose-slate max-w-none prose-p:leading-7 prose-strong:text-current prose-headings:text-current">
+                                            <div className={clsx(
+                                                msg.role === "user"
+                                                    ? ""
+                                                    : "prose prose-slate max-w-none prose-headings:text-slate-900 prose-headings:font-bold prose-h3:text-lg prose-h3:mt-0 prose-h3:mb-4 prose-h3:flex prose-h3:items-center prose-h3:gap-2 prose-p:text-slate-700 prose-p:leading-relaxed prose-strong:text-blue-700 prose-strong:font-semibold prose-table:my-4 prose-table:border-collapse prose-th:bg-slate-50 prose-th:text-slate-600 prose-th:text-xs prose-th:font-semibold prose-th:uppercase prose-th:tracking-wider prose-th:py-3 prose-th:px-4 prose-th:text-left prose-th:border-b prose-th:border-slate-200 prose-td:py-3 prose-td:px-4 prose-td:border-b prose-td:border-slate-100 prose-td:text-slate-800 prose-ul:my-3 prose-li:text-slate-700 prose-li:marker:text-blue-500 prose-hr:my-4 prose-hr:border-slate-100 prose-em:text-slate-500 prose-em:text-sm"
+                                            )}>
                                                 {msg.role === "user" ? (
-                                                    msg.content
+                                                    <span className="font-medium">{msg.content}</span>
                                                 ) : (
                                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                                         {msg.content}

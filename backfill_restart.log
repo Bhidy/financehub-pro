@@ -1,0 +1,489 @@
+============================================================
+  🚀 ENTERPRISE DATA COLLECTION v6.4 (SELF-HEALING)
+  Started: 2025-12-29 13:55:39
+============================================================
+🔌 Connecting to DB (Attempt 1)...
+✅ Connected!
+📊 453 stocks found
+
+[78/453] 2287... ✅ 3,698 recs (Total: 3,698)
+[79/453] 2290... ✅ 9,750 recs (Total: 13,448)
+[80/453] 2300... ✅ 9,617 recs (Total: 23,065)
+[81/453] 2310... ✅ 9,759 recs (Total: 32,824)
+[82/453] 2320... ✅ 9,748 recs (Total: 42,572)
+[83/453] 2330... ✅ 9,763 recs (Total: 52,335)
+[84/453] 2340... ✅ 9,204 recs (Total: 61,539)
+[85/453] 2350... ✅ 7,238 recs (Total: 68,777)
+[86/453] 2360... ✅ 8,800 recs (Total: 77,577)
+[87/453] 2370... ✅ 9,739 recs (Total: 87,316)
+[88/453] 2380... ✅ 7,236 recs (Total: 94,552)
+[89/453] 2381... ✅ 4,376 recs (Total: 98,928)
+[90/453] 2382... ✅ 4,148 recs (Total: 103,076)
+[91/453] 3002... ✅ 6,158 recs (Total: 109,234)
+[92/453] 3003... ✅ 9,675 recs (Total: 118,909)
+[93/453] 3004... ✅ 3,642 recs (Total: 122,551)
+[94/453] 3005... ✅ 6,596 recs (Total: 129,147)
+[95/453] 3007... ✅ 5,102 recs (Total: 134,249)
+[96/453] 3008... ✅ 7,147 recs (Total: 141,396)
+[97/453] 3010... ✅ 9,437 recs (Total: 150,833)
+[98/453] 3020... ✅ 3,642 recs (Total: 154,475)
+[99/453] 3030... ✅ 9,692 recs (Total: 164,167)
+[100/453] 3040... ✅ 9,751 recs (Total: 173,918)
+[101/453] 3050... ✅ 9,471 recs (Total: 183,389)
+[102/453] 3060... ✅ 3,642 recs (Total: 187,031)
+[103/453] 3080... ✅ 3,390 recs (Total: 190,421)
+[104/453] 3090... ✅ 9,350 recs (Total: 199,771)
+[105/453] 3091... ✅ 6,746 recs (Total: 206,517)
+[106/453] 3092... ✅ 6,100 recs (Total: 212,617)
+[107/453] 4001... ✅ 3,642 recs (Total: 216,259)
+[108/453] 4002... ✅ 9,766 recs (Total: 226,025)
+[109/453] 4003... ✅ 6,164 recs (Total: 232,189)
+[110/453] 4004... ✅ 6,101 recs (Total: 238,290)
+[111/453] 4005... ✅ 9,708 recs (Total: 247,998)
+[112/453] 4006... ✅ 3,642 recs (Total: 251,640)
+[113/453] 4007... ✅ 3,552 recs (Total: 255,192)
+[114/453] 4008... ✅ 5,787 recs (Total: 260,979)
+[115/453] 4009... ✅ 2,466 recs (Total: 263,445)
+[116/453] 4011... ✅ 9,154 recs (Total: 272,599)
+[117/453] 4012... ✅ 3,471 recs (Total: 276,070)
+[118/453] 4013... ✅ 8,677 recs (Total: 284,747)
+[119/453] 4014... ✅ 6,843 recs (Total: 291,590)
+[120/453] 4015... ✅ 619 recs (Total: 292,209)
+[121/453] 4016... ✅ 5,706 recs (Total: 297,915)
+[122/453] 4017... ✅ 1,965 recs (Total: 299,880)
+[123/453] 4018... ✅ 4,676 recs (Total: 304,556)
+[124/453] 4019... ✅ 4,387 recs (Total: 308,943)
+[125/453] 4020... ✅ 6,105 recs (Total: 315,048)
+[126/453] 4021... ✅ 1,336 recs (Total: 316,384)
+[127/453] 4030... ✅ 6,104 recs (Total: 322,488)
+[128/453] 4031... ✅ 6,105 recs (Total: 328,593)
+[129/453] 4040... ✅ 7,183 recs (Total: 335,776)
+[130/453] 4050... ✅ 9,741 recs (Total: 345,517)
+[131/453] 4051... ✅ 8,480 recs (Total: 353,997)
+[132/453] 4061... ✅ 9,650 recs (Total: 363,647)
+[133/453] 4070... ✅ 5,586 recs (Total: 369,233)
+[134/453] 4071... ✅ 8,230 recs (Total: 377,463)
+[135/453] 4072... ✅ 6,446 recs (Total: 383,909)
+[136/453] 4080... ✅ 6,738 recs (Total: 390,647)
+[137/453] 4081... ✅ 7,787 recs (Total: 398,434)
+[138/453] 4082... ✅ 3,349 recs (Total: 401,783)
+[139/453] 4083... ✅ 3,587 recs (Total: 405,370)
+[140/453] 4084... ✅ 4,783 recs (Total: 410,153)
+[141/453] 4090... ✅ 5,933 recs (Total: 416,086)
+[142/453] 4100... ✅ 2,523 recs (Total: 418,609)
+[143/453] 4110... ✅ 0 recs (Total: 418,609)
+[144/453] 4130... ✅ 7,218 recs (Total: 425,827)
+[145/453] 4140... ✅ 9,513 recs (Total: 435,340)
+[146/453] 4141... ✅ 0 recs (Total: 435,340)
+[147/453] 4142... ✅ 4,395 recs (Total: 439,735)
+[148/453] 4143... ✅ 3,767 recs (Total: 443,502)
+[149/453] 4144... ✅ 4,770 recs (Total: 448,272)
+[150/453] 4145... ✅ 4,103 recs (Total: 452,375)
+[151/453] 4146... ✅ 3,347 recs (Total: 455,722)
+[152/453] 4150... ✅ 7,085 recs (Total: 462,807)
+[153/453] 4160... ✅ 6,051 recs (Total: 468,858)
+[154/453] 4161... ✅ 4,811 recs (Total: 473,669)
+[155/453] 4162... ✅ 8,151 recs (Total: 481,820)
+[156/453] 4163... ✅ 943 recs (Total: 482,763)
+[157/453] 4164... ✅ 4,562 recs (Total: 487,325)
+[158/453] 4165... ✅ 5,008 recs (Total: 492,333)
+[159/453] 4170... ✅ 5,995 recs (Total: 498,328)
+[160/453] 4180... ✅ 7,154 recs (Total: 505,482)
+[161/453] 4190... ✅ 9,763 recs (Total: 515,245)
+[162/453] 4191... ✅ 5,177 recs (Total: 520,422)
+[163/453] 4192... ✅ 7,703 recs (Total: 528,125)
+[164/453] 4193... ✅ 1,465 recs (Total: 529,590)
+[165/453] 4194... ✅ 4,050 recs (Total: 533,640)
+[166/453] 4200... ✅ 9,761 recs (Total: 543,401)
+[167/453] 4210... ✅ 3,538 recs (Total: 546,939)
+[168/453] 4220... ✅ 6,156 recs (Total: 553,095)
+[169/453] 4230... ✅ 0 recs (Total: 553,095)
+[170/453] 4240... ✅ 7,242 recs (Total: 560,337)
+[171/453] 4250... ✅ 9,762 recs (Total: 570,099)
+[172/453] 4260... ✅ 9,672 recs (Total: 579,771)
+[173/453] 4261... ✅ 7,021 recs (Total: 586,792)
+[174/453] 4262... ✅ 3,942 recs (Total: 590,734)
+[175/453] 4263... ✅ 4,138 recs (Total: 594,872)
+[176/453] 4264... ✅ 4,428 recs (Total: 599,300)
+[177/453] 4265... ✅ 1,280 recs (Total: 600,580)
+[178/453] 4270... ✅ 9,560 recs (Total: 610,140)
+[179/453] 4280... ✅ 9,547 recs (Total: 619,687)
+[180/453] 4290... ✅ 6,146 recs (Total: 625,833)
+[181/453] 4291... ✅ 6,811 recs (Total: 632,644)
+[182/453] 4292... ✅ 5,247 recs (Total: 637,891)
+[183/453] 4300... ✅ 3,591 recs (Total: 641,482)
+[184/453] 4310... ✅ 3,643 recs (Total: 645,125)
+[185/453] 4320... ✅ 3,643 recs (Total: 648,768)
+[186/453] 4321... ✅ 3,643 recs (Total: 652,411)
+[187/453] 4322... ✅ 7,226 recs (Total: 659,637)
+[188/453] 4323... ✅ 6,251 recs (Total: 665,888)
+[189/453] 4324... ✅ 4,650 recs (Total: 670,538)
+[190/453] 4325... ✅ 3,791 recs (Total: 674,329)
+[191/453] 4326... ✅ 3,597 recs (Total: 677,926)
+[192/453] 4327... ✅ 532 recs (Total: 678,458)
+[193/453] 4330... ✅ 5,441 recs (Total: 683,899)
+[194/453] 4331... ✅ 8,493 recs (Total: 692,392)
+[195/453] 4332... ✅ 4,704 recs (Total: 697,096)
+[196/453] 4333... ✅ 6,133 recs (Total: 703,229)
+[197/453] 4334... ✅ 2,213 recs (Total: 705,442)
+[198/453] 4335... ✅ 8,051 recs (Total: 713,493)
+[199/453] 4336... ✅ 6,629 recs (Total: 720,122)
+[200/453] 4337... ✅ 6,193 recs (Total: 726,315)
+[201/453] 4338... ✅ 6,513 recs (Total: 732,828)
+[202/453] 4339... ✅ 5,040 recs (Total: 737,868)
+[203/453] 4340... ✅ 1,961 recs (Total: 739,829)
+[204/453] 4342... ✅ 8,859 recs (Total: 748,688)
+[205/453] 4344... ✅ 8,943 recs (Total: 757,631)
+[206/453] 4345... ✅ 3,034 recs (Total: 760,665)
+[207/453] 4346... ✅ 1,061 recs (Total: 761,726)
+[208/453] 4347... ✅ 4,451 recs (Total: 766,177)
+[209/453] 4348... ✅ 4,704 recs (Total: 770,881)
+[210/453] 4349... ✅ 724 recs (Total: 771,605)
+[211/453] 4350... ✅ 1,999 recs (Total: 773,604)
+[212/453] 4700... ✅ 59 recs (Total: 773,663)
+[213/453] 4701... ✅ 1,525 recs (Total: 775,188)
+[214/453] 4702... ✅ 58 recs (Total: 775,246)
+[215/453] 4703... ✅ 774 recs (Total: 776,020)
+[216/453] 5015... ✅ 0 recs (Total: 776,020)
+[217/453] 5019... ✅ 1 recs (Total: 776,021)
+[218/453] 5021... ✅ 0 recs (Total: 776,021)
+[219/453] 5022... ✅ 731 recs (Total: 776,752)
+[220/453] 5023... ✅ 904 recs (Total: 777,656)
+[221/453] 5110... ✅ 2,521 recs (Total: 780,177)
+[222/453] 5214... ✅ 1 recs (Total: 780,178)
+[223/453] 5216... ✅ 1 recs (Total: 780,179)
+[224/453] 5221... ✅ 1 recs (Total: 780,180)
+[225/453] 5227... ✅ 0 recs (Total: 780,180)
+[226/453] 5243... ✅ 0 recs (Total: 780,180)
+[227/453] 5245... ✅ 0 recs (Total: 780,180)
+[228/453] 5246... ✅ 0 recs (Total: 780,180)
+[229/453] 5247... ✅ 0 recs (Total: 780,180)
+[230/453] 5249... ✅ 0 recs (Total: 780,180)
+[231/453] 5250... ✅ 0 recs (Total: 780,180)
+[232/453] 5251... ✅ 1 recs (Total: 780,181)
+[233/453] 5252... ✅ 0 recs (Total: 780,181)
+[234/453] 5253... ✅ 0 recs (Total: 780,181)
+[235/453] 5254... ✅ 0 recs (Total: 780,181)
+[236/453] 5267... ✅ 0 recs (Total: 780,181)
+[237/453] 5272... ✅ 1 recs (Total: 780,182)
+[238/453] 5273... ✅ 1 recs (Total: 780,183)
+[239/453] 5274... ✅ 0 recs (Total: 780,183)
+[240/453] 5280... ✅ 0 recs (Total: 780,183)
+[241/453] 5282... ✅ 0 recs (Total: 780,183)
+[242/453] 5283... ✅ 0 recs (Total: 780,183)
+[243/453] 5284... ✅ 0 recs (Total: 780,183)
+[244/453] 5285... ✅ 0 recs (Total: 780,183)
+[245/453] 5301... ✅ 0 recs (Total: 780,183)
+[246/453] 5303... ✅ 0 recs (Total: 780,183)
+[247/453] 5306... ✅ 0 recs (Total: 780,183)
+[248/453] 5308... ✅ 0 recs (Total: 780,183)
+[249/453] 5311... ✅ 0 recs (Total: 780,183)
+[250/453] 5312... ✅ 0 recs (Total: 780,183)
+[251/453] 5313... ✅ 0 recs (Total: 780,183)
+[252/453] 5318... ✅ 0 recs (Total: 780,183)
+[253/453] 5320... ✅ 0 recs (Total: 780,183)
+[254/453] 5321... ✅ 0 recs (Total: 780,183)
+[255/453] 5323... ✅ 0 recs (Total: 780,183)
+[256/453] 5332... ✅ 0 recs (Total: 780,183)
+[257/453] 5333... ✅ 0 recs (Total: 780,183)
+[258/453] 5334... ⚠️ DB Connection Lost! Reconnecting...
+🔌 Connecting to DB (Attempt 1)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 2)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 3)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 4)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 5)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 6)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 7)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 8)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 9)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 10)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+✅ 0 recs (Total: 780,183)
+[259/453] 5336... ⚠️ DB Connection Lost! Reconnecting...
+🔌 Connecting to DB (Attempt 1)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 2)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 3)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 4)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 5)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 6)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 7)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 8)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 9)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 10)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+✅ 0 recs (Total: 780,183)
+[260/453] 5338... ⚠️ DB Connection Lost! Reconnecting...
+🔌 Connecting to DB (Attempt 1)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 2)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 3)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 4)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 5)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 6)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 7)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 8)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 9)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+🔌 Connecting to DB (Attempt 10)...
+❌ DB Conn Fail: could not translate host name "aws-1-eu-central-1.pooler.supabase.com" to address: nodename nor servname provided, or not known
+
+DB Err (OHLC): cursor already closed
+⚠️ DB Connection Lost! Reconnecting...
+🔌 Connecting to DB (Attempt 1)...
+✅ Connected!
+✅ 0 recs (Total: 780,183)
+[261/453] 5339... ✅ 1 recs (Total: 780,184)
+[262/453] 5343... ✅ 1 recs (Total: 780,185)
+[263/453] 5344... ✅ 0 recs (Total: 780,185)
+[264/453] 6001... ✅ 9,212 recs (Total: 789,397)
+[265/453] 6002... ✅ 7,024 recs (Total: 796,421)
+[266/453] 6004... ✅ 6,154 recs (Total: 802,575)
+[267/453] 6010... ✅ 9,747 recs (Total: 812,322)
+[268/453] 6012... ✅ 8,011 recs (Total: 820,333)
+[269/453] 6013... ✅ 7,929 recs (Total: 828,262)
+[270/453] 6014... ✅ 838 recs (Total: 829,100)
+[271/453] 6015... ✅ 7,998 recs (Total: 837,098)
+[272/453] 6016... ✅ 3,650 recs (Total: 840,748)
+[273/453] 6017... ✅ 5,197 recs (Total: 845,945)
+[274/453] 6018... ✅ 571 recs (Total: 846,516)
+[275/453] 6019... ✅ 1,220 recs (Total: 847,736)
+[276/453] 6020... ✅ 6,185 recs (Total: 853,921)
+[277/453] 6040... ✅ 6,598 recs (Total: 860,519)
+[278/453] 6050... ✅ 9,413 recs (Total: 869,932)
+[279/453] 6060... ✅ 0 recs (Total: 869,932)
+[280/453] 6070... ✅ 9,462 recs (Total: 879,394)
+[281/453] 6090... ✅ 2,530 recs (Total: 881,924)
+[282/453] 7010... ✅ 7,242 recs (Total: 889,166)
+[283/453] 7020... ✅ 3,593 recs (Total: 892,759)
+[284/453] 7030... ✅ 9,753 recs (Total: 902,512)
+[285/453] 7040... ✅ 6,109 recs (Total: 908,621)
+[286/453] 7200... ✅ 8,674 recs (Total: 917,295)
+[287/453] 7201... ✅ 5,064 recs (Total: 922,359)
+[288/453] 7202... ✅ 8,286 recs (Total: 930,645)
+[289/453] 7203... ✅ 8,204 recs (Total: 938,849)
+[290/453] 7204... ✅ 773 recs (Total: 939,622)
+[291/453] 7211... ✅ 697 recs (Total: 940,319)
+[292/453] 8010... ✅ 6,175 recs (Total: 946,494)
+[293/453] 8012... ✅ 9,156 recs (Total: 955,650)
+[294/453] 8020... ✅ 6,166 recs (Total: 961,816)
+[295/453] 8030... ✅ 9,751 recs (Total: 971,567)
+[296/453] 8040... ✅ 8,692 recs (Total: 980,259)
+[297/453] 8050... ✅ 3,259 recs (Total: 983,518)
+[298/453] 8060... ✅ 9,716 recs (Total: 993,234)
+[299/453] 8070... ✅ 3,091 recs (Total: 996,325)
+[300/453] 8100... ✅ 8,952 recs (Total: 1,005,277)
+[301/453] 8120... ✅ 8,696 recs (Total: 1,013,973)
+[302/453] 8150... ✅ 9,646 recs (Total: 1,023,619)
+[303/453] 8160... ✅ 8,576 recs (Total: 1,032,195)
+[304/453] 8170... ✅ 2,907 recs (Total: 1,035,102)
+[305/453] 8180... ✅ 2,522 recs (Total: 1,037,624)
+[306/453] 8190... ✅ 9,520 recs (Total: 1,047,144)
+[307/453] 8200... ✅ 9,764 recs (Total: 1,056,908)
+[308/453] 8210... ✅ 6,165 recs (Total: 1,063,073)
+[309/453] 8230... ✅ 7,223 recs (Total: 1,070,296)
+[310/453] 8240... ✅ 9,729 recs (Total: 1,080,025)
+[311/453] 8250... ✅ 6,165 recs (Total: 1,086,190)
+[312/453] 8260... ✅ 9,371 recs (Total: 1,095,561)
+[313/453] 8280... ✅ 8,984 recs (Total: 1,104,545)
+[314/453] 8300... ✅ 3,643 recs (Total: 1,108,188)
+[315/453] 8310... ✅ 2,900 recs (Total: 1,111,088)
+[316/453] 8311... ✅ 3,056 recs (Total: 1,114,144)
+[317/453] 8313... ✅ 5,530 recs (Total: 1,119,674)
+[318/453] 9300... ✅ 1,752 recs (Total: 1,121,426)
+[319/453] 9403... ✅ 5,197 recs (Total: 1,126,623)
+[320/453] 9404... ✅ 5,566 recs (Total: 1,132,189)
+[321/453] 9405... ✅ 7,157 recs (Total: 1,139,346)
+[322/453] 9406... ✅ 4,323 recs (Total: 1,143,669)
+[323/453] 9407... ✅ 4,320 recs (Total: 1,147,989)
+[324/453] 9408... ✅ 1,508 recs (Total: 1,149,497)
+[325/453] 9409... ✅ 1,664 recs (Total: 1,151,161)
+[326/453] 9410... ✅ 1,750 recs (Total: 1,152,911)
+[327/453] 9411... ✅ 2,818 recs (Total: 1,155,729)
+[328/453] 9412... ✅ 299 recs (Total: 1,156,028)
+[329/453] 9510... ✅ 0 recs (Total: 1,156,028)
+[330/453] 9513... ✅ 4,448 recs (Total: 1,160,476)
+[331/453] 9514... ✅ 4,451 recs (Total: 1,164,927)
+[332/453] 9515... ✅ 4,252 recs (Total: 1,169,179)
+[333/453] 9516... ✅ 2,752 recs (Total: 1,171,931)
+[334/453] 9517... ✅ 3,684 recs (Total: 1,175,615)
+[335/453] 9521... ✅ 2,698 recs (Total: 1,178,313)
+[336/453] 9522... ✅ 2,582 recs (Total: 1,180,895)
+[337/453] 9523... ✅ 5,202 recs (Total: 1,186,097)
+[338/453] 9524... ✅ 2,725 recs (Total: 1,188,822)
+[339/453] 9525... ✅ 3,474 recs (Total: 1,192,296)
+[340/453] 9527... ✅ 3,981 recs (Total: 1,196,277)
+[341/453] 9530... ✅ 3,922 recs (Total: 1,200,199)
+[342/453] 9532... ✅ 3,055 recs (Total: 1,203,254)
+[343/453] 9533... ✅ 1,992 recs (Total: 1,205,246)
+[344/453] 9535... ✅ 5,595 recs (Total: 1,210,841)
+[345/453] 9536... ✅ 2,612 recs (Total: 1,213,453)
+[346/453] 9537... ✅ 2,370 recs (Total: 1,215,823)
+[347/453] 9538... ✅ 1,925 recs (Total: 1,217,748)
+[348/453] 9539... ✅ 2,810 recs (Total: 1,220,558)
+[349/453] 9540... ✅ 895 recs (Total: 1,221,453)
+[350/453] 9541... ✅ 3,822 recs (Total: 1,225,275)
+[351/453] 9542... ✅ 2,474 recs (Total: 1,227,749)
+[352/453] 9543... ✅ 454 recs (Total: 1,228,203)
+[353/453] 9544... ✅ 6,719 recs (Total: 1,234,922)
+[354/453] 9545... ✅ 2,715 recs (Total: 1,237,637)
+[355/453] 9546... ✅ 1,130 recs (Total: 1,238,767)
+[356/453] 9547... DB Err (OHLC): could not receive data from server: Operation timed out
+SSL SYSCALL error: Operation timed out
+
+⚠️ DB Connection Lost! Reconnecting...
+🔌 Connecting to DB (Attempt 1)...
+✅ Connected!
+✅ 2,443 recs (Total: 1,241,210)
+[357/453] 9548... ✅ 2,693 recs (Total: 1,243,903)
+[358/453] 9549... ✅ 1,195 recs (Total: 1,245,098)
+[359/453] 9550... ✅ 3,326 recs (Total: 1,248,424)
+[360/453] 9551... ✅ 3,489 recs (Total: 1,251,913)
+[361/453] 9552... ✅ 3,217 recs (Total: 1,255,130)
+[362/453] 9553... ✅ 199 recs (Total: 1,255,329)
+[363/453] 9555... ✅ 2,170 recs (Total: 1,257,499)
+[364/453] 9556... ✅ 3,460 recs (Total: 1,260,959)
+[365/453] 9557... ✅ 4,253 recs (Total: 1,265,212)
+[366/453] 9558... ✅ 47 recs (Total: 1,265,259)
+[367/453] 9559... ✅ 1,403 recs (Total: 1,266,662)
+[368/453] 9560... ✅ 1,241 recs (Total: 1,267,903)
+[369/453] 9561... ✅ 1,181 recs (Total: 1,269,084)
+[370/453] 9562... ✅ 680 recs (Total: 1,269,764)
+[371/453] 9563... ✅ 722 recs (Total: 1,270,486)
+[372/453] 9564... ✅ 737 recs (Total: 1,271,223)
+[373/453] 9565... ✅ 748 recs (Total: 1,271,971)
+[374/453] 9566... ✅ 211 recs (Total: 1,272,182)
+[375/453] 9567... ✅ 249 recs (Total: 1,272,431)
+[376/453] 9568... ✅ 674 recs (Total: 1,273,105)
+[377/453] 9569... ✅ 641 recs (Total: 1,273,746)
+[378/453] 9570... ✅ 1,167 recs (Total: 1,274,913)
+[379/453] 9571... ✅ 958 recs (Total: 1,275,871)
+[380/453] 9572... ✅ 348 recs (Total: 1,276,219)
+[381/453] 9574... ✅ 415 recs (Total: 1,276,634)
+[382/453] 9575... ✅ 602 recs (Total: 1,277,236)
+[383/453] 9576... ✅ 797 recs (Total: 1,278,033)
+[384/453] 9577... ✅ 1,126 recs (Total: 1,279,159)
+[385/453] 9578... ✅ 560 recs (Total: 1,279,719)
+[386/453] 9579... ✅ 564 recs (Total: 1,280,283)
+[387/453] 9580... ✅ 575 recs (Total: 1,280,858)
+[388/453] 9581... ✅ 644 recs (Total: 1,281,502)
+[389/453] 9583... ✅ 759 recs (Total: 1,282,261)
+[390/453] 9584... ✅ 0 recs (Total: 1,282,261)
+[391/453] 9585... ✅ 535 recs (Total: 1,282,796)
+[392/453] 9586... ✅ 568 recs (Total: 1,283,364)
+[393/453] 9587... ✅ 926 recs (Total: 1,284,290)
+[394/453] 9588... ✅ 965 recs (Total: 1,285,255)
+[395/453] 9589... ✅ 181 recs (Total: 1,285,436)
+[396/453] 9590... ✅ 518 recs (Total: 1,285,954)
+[397/453] 9591... ✅ 219 recs (Total: 1,286,173)
+[398/453] 9592... ✅ 705 recs (Total: 1,286,878)
+[399/453] 9593... ✅ 464 recs (Total: 1,287,342)
+[400/453] 9594... ✅ 3,163 recs (Total: 1,290,505)
+[401/453] 9595... ✅ 2,274 recs (Total: 1,292,779)
+[402/453] 9596... ✅ 1,109 recs (Total: 1,293,888)
+[403/453] 9597... ✅ 2,390 recs (Total: 1,296,278)
+[404/453] 9598... ✅ 1,357 recs (Total: 1,297,635)
+[405/453] 9599... ✅ 434 recs (Total: 1,298,069)
+[406/453] 9600... ✅ 1,805 recs (Total: 1,299,874)
+[407/453] 9601... ✅ 2,062 recs (Total: 1,301,936)
+[408/453] 9602... ✅ 2,211 recs (Total: 1,304,147)
+[409/453] 9603... ✅ 1,064 recs (Total: 1,305,211)
+[410/453] 9604... ✅ 1,849 recs (Total: 1,307,060)
+[411/453] 9605... ✅ 1,835 recs (Total: 1,308,895)
+[412/453] 9606... ✅ 1,316 recs (Total: 1,310,211)
+[413/453] 9607... ✅ 240 recs (Total: 1,310,451)
+[414/453] 9608... ✅ 362 recs (Total: 1,310,813)
+[415/453] 9609... ✅ 1,515 recs (Total: 1,312,328)
+[416/453] 9610... ✅ 2,119 recs (Total: 1,314,447)
+[417/453] 9611... ✅ 1,452 recs (Total: 1,315,899)
+[418/453] 9612... ✅ 1,996 recs (Total: 1,317,895)
+[419/453] 9613... ✅ 946 recs (Total: 1,318,841)
+[420/453] 9614... ✅ 2,063 recs (Total: 1,320,904)
+[421/453] 9615... ✅ 1,408 recs (Total: 1,322,312)
+[422/453] 9616... ✅ 1,276 recs (Total: 1,323,588)
+[423/453] 9617... ✅ 1,426 recs (Total: 1,325,014)
+[424/453] 9618... ✅ 1,971 recs (Total: 1,326,985)
+[425/453] 9619... ✅ 1,555 recs (Total: 1,328,540)
+[426/453] 9620... ✅ 890 recs (Total: 1,329,430)
+[427/453] 9621... ✅ 1,173 recs (Total: 1,330,603)
+[428/453] 9622... ✅ 1,108 recs (Total: 1,331,711)
+[429/453] 9623... ✅ 1,066 recs (Total: 1,332,777)
+[430/453] 9624... ✅ 975 recs (Total: 1,333,752)
+[431/453] 9625... ✅ 955 recs (Total: 1,334,707)
+[432/453] 9626... ✅ 226 recs (Total: 1,334,933)
+[433/453] 9627... ✅ 1,592 recs (Total: 1,336,525)
+[434/453] 9628... ✅ 1,298 recs (Total: 1,337,823)
+[435/453] 9630... ✅ 1,357 recs (Total: 1,339,180)
+[436/453] 9631... ✅ 205 recs (Total: 1,339,385)
+[437/453] 9632... ✅ 2,328 recs (Total: 1,341,713)
+[438/453] 9633... ✅ 279 recs (Total: 1,341,992)
+[439/453] 9634... ✅ 1,062 recs (Total: 1,343,054)
+[440/453] 9635... ✅ 616 recs (Total: 1,343,670)
+[441/453] 9636... ✅ 813 recs (Total: 1,344,483)
+[442/453] 9637... ✅ 983 recs (Total: 1,345,466)
+[443/453] 9639... ✅ 1,241 recs (Total: 1,346,707)
+[444/453] 9640... ✅ 140 recs (Total: 1,346,847)
+[445/453] 9641... ✅ 498 recs (Total: 1,347,345)
+[446/453] 9642... ✅ 544 recs (Total: 1,347,889)
+[447/453] 9644... ✅ 527 recs (Total: 1,348,416)
+[448/453] 9645... ✅ 1,092 recs (Total: 1,349,508)
+[449/453] 9647... ✅ 419 recs (Total: 1,349,927)
+[450/453] 9648... ✅ 405 recs (Total: 1,350,332)
+[451/453] 9649... ✅ 643 recs (Total: 1,350,975)
+[452/453] 9650... ✅ 632 recs (Total: 1,351,607)
+[453/453] 9651... ✅ 453 recs (Total: 1,352,060)
+
+✅ COMPLETE! Total: 1,352,060

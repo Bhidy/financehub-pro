@@ -65,6 +65,7 @@ const NAV_SECTIONS = [
         title: "Investment Research",
         color: "green",
         items: [
+            { label: "Company Profile", icon: Building2, href: "/company/1120", badge: "NEW", badgeColor: "green" },
             { label: "Mutual Funds", icon: DollarSign, href: "/funds" },
             { label: "Shareholders", icon: Users, href: "/shareholders" },
             // HIDDEN: Earnings Calendar - can be re-enabled later
@@ -260,7 +261,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v1.0.13 (Enterprise)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v1.0.14 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

@@ -1,50 +1,13 @@
-2025-12-24 23:06:47,949 - [PHASE3] - INFO - 🚀 PHASE 3: ADVANCED DATA EXPANSION
-2025-12-24 23:06:47,949 - [PHASE3] - INFO - ============================================================
-2025-12-24 23:06:48,011 - [PHASE3] - INFO - Creating Phase 3 tables...
-2025-12-24 23:06:48,045 - [PHASE3] - INFO - ✅ Phase 3 tables created
-2025-12-24 23:06:48,045 - [PHASE3] - INFO - Populating corporate actions...
-2025-12-24 23:07:03,883 - [PHASE3] - INFO - 🚀 PHASE 3: ADVANCED DATA EXPANSION
-2025-12-24 23:07:03,883 - [PHASE3] - INFO - ============================================================
-2025-12-24 23:07:03,918 - [PHASE3] - INFO - Creating Phase 3 tables...
-2025-12-24 23:07:03,941 - [PHASE3] - INFO - ✅ Phase 3 tables created
-2025-12-24 23:07:03,942 - [PHASE3] - INFO - Populating corporate actions...
-2025-12-24 23:07:04,053 - [PHASE3] - INFO - ✅ Generated 369 corporate actions for 50 stocks
-2025-12-24 23:07:04,053 - [PHASE3] - INFO - Populating insider trading data...
-2025-12-24 23:07:04,126 - [PHASE3] - INFO - ✅ Generated 281 insider transactions for 50 stocks
-2025-12-24 23:07:04,126 - [PHASE3] - INFO - Populating analyst ratings...
-2025-12-24 23:07:04,180 - [PHASE3] - INFO - ✅ Generated 190 analyst ratings for 30 stocks
-2025-12-24 23:07:04,180 - [PHASE3] - INFO - Populating index constituents...
-2025-12-24 23:07:04,196 - [PHASE3] - INFO - ✅ Populated TASI and MT30 index constituents (30 stocks)
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - 
-============================================================
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - PHASE 3 COMPLETE - SUMMARY
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - ============================================================
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - Corporate Actions:     369
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - Insider Transactions:  281
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - Analyst Ratings:       190
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - Index Constituents:    60
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - ============================================================
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - 
-Sample Data:
-2025-12-24 23:07:04,197 - [PHASE3] - INFO - 
-Recent Dividends:
-2025-12-24 23:07:04,197 - [PHASE3] - INFO -   2230: SAR 4.4900 - Cash dividend of SAR 4.49 per share (Ex-Date: 2025-12-25)
-2025-12-24 23:07:04,197 - [PHASE3] - INFO -   4002: SAR 3.0900 - Cash dividend of SAR 3.09 per share (Ex-Date: 2025-12-03)
-2025-12-24 23:07:04,197 - [PHASE3] - INFO -   4031: SAR 4.6300 - Cash dividend of SAR 4.63 per share (Ex-Date: 2025-11-20)
-2025-12-24 23:07:04,197 - [PHASE3] - INFO -   1180: SAR 4.5800 - Cash dividend of SAR 4.58 per share (Ex-Date: 2025-09-17)
-2025-12-24 23:07:04,197 - [PHASE3] - INFO -   1211: SAR 4.8200 - Cash dividend of SAR 4.82 per share (Ex-Date: 2025-09-05)
-2025-12-24 23:07:04,198 - [PHASE3] - INFO - 
-Recent Insider Buys:
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   4051: Fahad Al Rajhi (CTO) bought 439,205 shares at SAR 51.3500
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   4008: Abdullah Al Saud (CTO) bought 126,399 shares at SAR 177.4500
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   7010: Mohammed Al Faisal (Board Member) bought 131,102 shares at SAR 97.5900
-2025-12-24 23:07:04,198 - [PHASE3] - INFO - 
-Top Analyst Recommendations:
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   7200: BUY by Aljazira Capital (Target: SAR 135.86, Upside: -2.65%)
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   2180: BUY by Al Rajhi Capital (Target: SAR 24.11, Upside: -13.06%)
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   2030: BUY by Riyad Capital (Target: SAR 66.75, Upside: 8.15%)
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   2210: STRONG BUY by Derayah Financial (Target: SAR 16.31, Upside: 9.74%)
-2025-12-24 23:07:04,198 - [PHASE3] - INFO -   1111: BUY by Derayah Financial (Target: SAR 76.03, Upside: -15.12%)
-2025-12-24 23:07:04,198 - [PHASE3] - INFO - 
-🎉 PHASE 3 COMPLETE!
-2025-12-24 23:07:04,198 - [PHASE3] - INFO - Next: Run Phase 4 for intraday data & real-time features
+🚀 STARTING PHASE 3: DEEP FINANCIALS (YahooQuery v2)...
+[1/453] 1010 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[2/453] 1020 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[3/453] 1030 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[4/453] 1050 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[5/453] 1060 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[6/453] 1080 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[7/453] 1111 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[8/453] 1113 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[9/453] 1120 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[10/453] 1140 Deep Dive... ✅ Saved 0 Stmts, 0 Insiders
+[11/453] 1150 Deep Dive... /Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:301: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-6qj10r7q'}
+  warnings.warn(

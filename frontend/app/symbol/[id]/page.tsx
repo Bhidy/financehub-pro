@@ -2,440 +2,412 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTickers, fetchOHLC, fetchFinancials, fetchCorporateActions, fetchRatios, Ticker } from "@/lib/api";
-import { useMemo, useState, useEffect, useRef } from "react";
-import { createChart, ColorType, CrosshairMode, Time, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts";
-import clsx from "clsx";
+import { useState, useMemo } from "react";
+import { fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders, fetchCorporateActions, Ticker } from "@/lib/api";
 import {
     TrendingUp,
     TrendingDown,
-    Activity,
+    Building2,
+    Globe,
+    Users,
     BarChart3,
     DollarSign,
     Percent,
-    ArrowUpRight,
-    ArrowDownRight,
-    Clock,
-    Volume2,
+    FileText,
+    ArrowUp,
+    ArrowDown,
+    ExternalLink,
+    Star,
+    Bell,
+    Share2,
+    Activity,
     Target,
-    Zap,
+    Newspaper,
     LineChart,
     CandlestickChart,
-    AreaChart,
-    RefreshCw,
-    Building2,
-    PieChart
+    Zap
 } from "lucide-react";
 
-type Timeframe = "1M" | "3M" | "6M" | "1Y" | "3Y" | "5Y" | "MAX";
-type ChartStyle = "candle" | "line" | "area";
+// API Base for company profile endpoints
+const API_BASE = "https://bhidy-financehub-api.hf.space/api/v1";
 
-export default function SymbolPage() {
+// Types
+interface CompanyProfile {
+    business_summary?: string;
+    website?: string;
+    industry?: string;
+    sector?: string;
+}
+
+interface Shareholder {
+    shareholder_name: string;
+    shareholder_name_en?: string;
+    ownership_percent: number;
+    shares_held: number;
+}
+
+// Fetch company profile
+async function fetchCompanyProfile(symbol: string): Promise<CompanyProfile | null> {
+    try {
+        const res = await fetch(`${API_BASE}/api/company/${symbol}/profile`);
+        if (!res.ok) return null;
+        return res.json();
+    } catch {
+        return null;
+    }
+}
+
+// Utility functions
+function formatNumber(num: number | null | undefined): string {
+    if (num === null || num === undefined) return "-";
+    const n = Number(num);
+    if (Math.abs(n) >= 1e12) return (n / 1e12).toFixed(2) + "T";
+    if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(2) + "K";
+    return n.toFixed(2);
+}
+
+function formatCurrency(num: number | null | undefined): string {
+    if (num === null || num === undefined) return "-";
+    return `SAR ${formatNumber(num)}`;
+}
+
+// Components
+function StatCard({ label, value, icon: Icon, trend }: {
+    label: string;
+    value: string;
+    icon?: any;
+    trend?: "up" | "down" | null;
+}) {
+    return (
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-200">
+            <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-500 text-sm font-medium">{label}</span>
+                {Icon && <Icon className="w-4 h-4 text-slate-400" />}
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="text-xl font-bold text-slate-800">{value}</span>
+                {trend === "up" && <ArrowUp className="w-4 h-4 text-emerald-500" />}
+                {trend === "down" && <ArrowDown className="w-4 h-4 text-red-500" />}
+            </div>
+        </div>
+    );
+}
+
+function SectionHeader({ title, icon: Icon }: { title: string; icon: any }) {
+    return (
+        <div className="flex items-center gap-2 mb-4">
+            <Icon className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+        </div>
+    );
+}
+
+function LoadingSkeleton() {
+    return (
+        <div className="animate-pulse p-6">
+            <div className="h-24 bg-slate-200 rounded-xl mb-6" />
+            <div className="grid grid-cols-4 gap-4 mb-6">
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-slate-200 rounded-xl" />)}
+            </div>
+            <div className="h-80 bg-slate-200 rounded-xl" />
+        </div>
+    );
+}
+
+// Main Page Component
+export default function SymbolDetailPage() {
     const params = useParams();
     const symbol = params.id as string;
-    const chartContainerRef = useRef<HTMLDivElement>(null);
-    const chartRef = useRef<any>(null);
+    const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership">("overview");
+    const [chartPeriod, setChartPeriod] = useState("1y");
 
-    const [timeframe, setTimeframe] = useState<Timeframe>("1Y");
-    const [chartStyle, setChartStyle] = useState<ChartStyle>("candle");
+    // Fetch tickers
+    const { data: tickers = [], isLoading: tickersLoading } = useQuery({
+        queryKey: ["tickers"],
+        queryFn: fetchTickers,
+    });
 
-    const { data: tickers = [] } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers });
-    const { data: history = [], isLoading: isLoadingOHLC } = useQuery({
-        queryKey: ["ohlc", symbol],
-        queryFn: () => fetchOHLC(symbol, "5y"),
-        enabled: !!symbol
+    // Find current stock from tickers
+    const stockData = useMemo(() =>
+        tickers.find((t: Ticker) => t.symbol === symbol),
+        [tickers, symbol]
+    );
+
+    // Fetch additional data
+    const { data: profile } = useQuery({
+        queryKey: ["profile", symbol],
+        queryFn: () => fetchCompanyProfile(symbol),
+        enabled: !!symbol,
     });
-    const { data: ratios = [] } = useQuery({
-        queryKey: ["ratios", symbol],
-        queryFn: () => fetchRatios(symbol),
-        enabled: !!symbol
+
+    const { data: financials = [] } = useQuery({
+        queryKey: ["financials", symbol],
+        queryFn: () => fetchFinancials(symbol),
+        enabled: !!symbol,
     });
+
+    const { data: shareholders = [] } = useQuery({
+        queryKey: ["shareholders", symbol],
+        queryFn: () => fetchShareholders(symbol),
+        enabled: !!symbol,
+    });
+
     const { data: corporateActions = [] } = useQuery({
         queryKey: ["corporate-actions", symbol],
         queryFn: () => fetchCorporateActions(symbol),
-        enabled: !!symbol
+        enabled: !!symbol,
     });
 
-    const ticker = useMemo(() => tickers.find((t: Ticker) => t.symbol === symbol), [tickers, symbol]);
-    const activeRatios = ratios.length > 0 ? ratios[0] : null;
-    const isPositive = (ticker?.change || 0) >= 0;
+    const { data: ohlcData = [] } = useQuery({
+        queryKey: ["ohlc", symbol, chartPeriod],
+        queryFn: () => fetchOHLC(symbol, chartPeriod),
+        enabled: !!symbol,
+    });
 
-    // Filter data based on timeframe
-    const filteredData = useMemo(() => {
-        if (!history || history.length === 0) return [];
-        const timeframeMap: Record<Timeframe, number> = {
-            "1M": 30, "3M": 90, "6M": 180, "1Y": 365, "3Y": 1095, "5Y": 1825, "MAX": history.length
-        };
-        const sorted = [...history].sort((a: any, b: any) =>
-            new Date(a.date || a.time).getTime() - new Date(b.date || b.time).getTime()
-        );
-        return sorted.slice(-timeframeMap[timeframe]).map((item: any) => ({
-            time: new Date(item.date || item.time).toISOString().split('T')[0] as Time,
-            open: Number(item.open),
-            high: Number(item.high),
-            low: Number(item.low),
-            close: Number(item.close),
-            volume: Number(item.volume)
-        }));
-    }, [history, timeframe]);
+    if (tickersLoading) return <LoadingSkeleton />;
+    if (!stockData) return <div className="p-8 text-center text-slate-500">Stock not found: {symbol}</div>;
 
-    // Calculate stats
-    const stats = useMemo(() => {
-        if (filteredData.length < 2) return null;
-        const current = filteredData[filteredData.length - 1];
-        const first = filteredData[0];
-        const high52 = Math.max(...filteredData.slice(-252).map(d => d.high));
-        const low52 = Math.min(...filteredData.slice(-252).map(d => d.low));
-        const avgVolume = filteredData.slice(-30).reduce((sum, d) => sum + d.volume, 0) / 30;
-        const periodReturn = ((current.close - first.close) / first.close) * 100;
-
-        return { high52, low52, avgVolume, periodReturn, current };
-    }, [filteredData]);
-
-    // Chart initialization
-    useEffect(() => {
-        if (!chartContainerRef.current || filteredData.length === 0) return;
-
-        // Clear previous chart
-        if (chartRef.current) {
-            chartRef.current.remove();
-            chartRef.current = null;
-        }
-
-        const chart = createChart(chartContainerRef.current, {
-            layout: {
-                background: { type: ColorType.Solid, color: '#ffffff' },
-                textColor: '#64748b',
-            },
-            width: chartContainerRef.current.clientWidth,
-            height: 420,
-            grid: {
-                vertLines: { color: '#f1f5f9' },
-                horzLines: { color: '#f1f5f9' },
-            },
-            timeScale: {
-                timeVisible: true,
-                secondsVisible: false,
-                borderColor: '#e2e8f0'
-            },
-            rightPriceScale: {
-                borderColor: '#e2e8f0'
-            },
-            crosshair: {
-                mode: CrosshairMode.Normal,
-                vertLine: { color: '#10b981', width: 1, style: 2 },
-                horzLine: { color: '#10b981', width: 1, style: 2 }
-            }
-        });
-
-        chartRef.current = chart;
-
-        try {
-            // Use lightweight-charts v5 API
-            if (chartStyle === "candle") {
-                const series = chart.addSeries(CandlestickSeries, {
-                    upColor: '#10b981',
-                    downColor: '#ef4444',
-                    borderUpColor: '#10b981',
-                    borderDownColor: '#ef4444',
-                    wickUpColor: '#10b981',
-                    wickDownColor: '#ef4444',
-                });
-                series.setData(filteredData);
-            } else if (chartStyle === "line") {
-                const series = chart.addSeries(LineSeries, {
-                    color: '#6366f1',
-                    lineWidth: 2,
-                });
-                series.setData(filteredData.map((d: any) => ({ time: d.time, value: d.close })));
-            } else {
-                const series = chart.addSeries(AreaSeries, {
-                    topColor: 'rgba(99, 102, 241, 0.4)',
-                    bottomColor: 'rgba(99, 102, 241, 0.0)',
-                    lineColor: '#6366f1',
-                    lineWidth: 2,
-                });
-                series.setData(filteredData.map((d: any) => ({ time: d.time, value: d.close })));
-            }
-
-            // Add volume
-            const volumeSeries = chart.addSeries(HistogramSeries, {
-                color: '#94a3b8',
-                priceFormat: { type: 'volume' },
-                priceScaleId: '',
-            });
-            volumeSeries.priceScale().applyOptions({
-                scaleMargins: { top: 0.85, bottom: 0 },
-            });
-            volumeSeries.setData(filteredData.map((d: any) => ({
-                time: d.time,
-                value: d.volume,
-                color: d.close >= d.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'
-            })));
-
-            chart.timeScale().fitContent();
-        } catch (err) {
-            console.error("Chart error:", err);
-        }
-
-        const handleResize = () => {
-            if (chartContainerRef.current && chartRef.current) {
-                chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
-            }
-        };
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            if (chartRef.current) {
-                chartRef.current.remove();
-                chartRef.current = null;
-            }
-        };
-    }, [filteredData, chartStyle]);
-
-    const timeframes: Timeframe[] = ["1M", "3M", "6M", "1Y", "3Y", "5Y", "MAX"];
+    const isPositive = Number(stockData.change || 0) >= 0;
+    const changeColor = isPositive ? "text-emerald-600" : "text-red-600";
+    const changeBg = isPositive ? "bg-emerald-50" : "bg-red-50";
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pb-12">
+        <div className="min-h-screen bg-slate-50 pb-12">
             {/* Premium Header */}
-            <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40">
-                <div className="max-w-[1800px] mx-auto px-6 py-5">
+            <div className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+                <div className="max-w-7xl mx-auto px-6 py-5">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         {/* Stock Identity */}
                         <div className="flex items-center gap-4">
-                            <div className={clsx(
-                                "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white shadow-lg",
-                                isPositive
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white shadow-lg ${isPositive
                                     ? "bg-gradient-to-br from-emerald-400 to-emerald-600"
                                     : "bg-gradient-to-br from-red-400 to-red-600"
-                            )}>
+                                }`}>
                                 {symbol.slice(0, 2)}
                             </div>
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">{symbol}</h1>
-                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-indigo-600 border border-indigo-100">
-                                        {ticker?.sector_name || "EQUITY"}
+                                    <h1 className="text-2xl font-black text-slate-900">{symbol}</h1>
+                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100">
+                                        {stockData.sector_name || "EQUITY"}
                                     </span>
                                 </div>
-                                <p className="text-slate-500 font-medium">{ticker?.name_en || "Loading..."}</p>
+                                <p className="text-slate-500 font-medium">{stockData.name_en || stockData.name_ar || "Loading..."}</p>
                             </div>
                         </div>
 
                         {/* Price Display */}
                         <div className="flex items-center gap-6">
                             <div className="text-right">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-black text-slate-900 tracking-tight font-mono">
-                                        {Number(ticker?.last_price || 0).toFixed(2)}
-                                    </span>
-                                    <span className="text-slate-400 text-sm font-bold">SAR</span>
+                                <div className="text-3xl font-black text-slate-900 font-mono">
+                                    SAR {Number(stockData.last_price || 0).toFixed(2)}
                                 </div>
-                                <div className={clsx(
-                                    "flex items-center justify-end gap-2 mt-1 text-lg font-bold",
-                                    isPositive ? "text-emerald-600" : "text-red-600"
-                                )}>
-                                    {isPositive ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
-                                    <span>{isPositive ? "+" : ""}{Number(ticker?.change || 0).toFixed(2)}</span>
-                                    <span className="text-slate-300">|</span>
-                                    <span>{isPositive ? "+" : ""}{Number(ticker?.change_percent || 0).toFixed(2)}%</span>
+                                <div className={`flex items-center justify-end gap-2 mt-1 ${changeColor}`}>
+                                    {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                                    <span className={`px-2 py-0.5 rounded font-bold ${changeBg}`}>
+                                        {isPositive ? "+" : ""}{Number(stockData.change || 0).toFixed(2)} ({Number(stockData.change_percent || 0).toFixed(2)}%)
+                                    </span>
                                 </div>
                             </div>
-
-                            {/* Live Badge */}
                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100">
                                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Live</span>
+                                <span className="text-xs font-bold text-emerald-600 uppercase">Live</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-3 mt-4">
+                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            <Star className="w-4 h-4" /> Add to Watchlist
+                        </button>
+                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium">
+                            <Bell className="w-4 h-4" /> Set Alert
+                        </button>
+                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium">
+                            <Share2 className="w-4 h-4" /> Share
+                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1800px] mx-auto px-6 mt-6">
-                <div className="grid grid-cols-12 gap-6">
-                    {/* Chart Section - 9 cols */}
-                    <div className="col-span-12 xl:col-span-9">
-                        {/* Chart Card */}
-                        <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-xl shadow-slate-200/50">
-                            {/* Chart Controls */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50/50 to-white">
-                                {/* Timeframe Selector */}
-                                <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
-                                    {timeframes.map(tf => (
+            <div className="max-w-7xl mx-auto px-6 py-6">
+                {/* Quick Stats Row */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+                    <StatCard label="Open" value={Number(stockData.open_price || 0).toFixed(2)} />
+                    <StatCard label="High" value={Number(stockData.high || 0).toFixed(2)} trend="up" />
+                    <StatCard label="Low" value={Number(stockData.low || 0).toFixed(2)} trend="down" />
+                    <StatCard label="Prev Close" value={Number(stockData.prev_close || 0).toFixed(2)} />
+                    <StatCard label="Volume" value={formatNumber(stockData.volume)} icon={BarChart3} />
+                    <StatCard label="Market Cap" value={formatCurrency(stockData.market_cap)} icon={Building2} />
+                    <StatCard label="P/E Ratio" value={stockData.pe_ratio ? Number(stockData.pe_ratio).toFixed(2) : "-"} icon={Percent} />
+                    <StatCard label="Div Yield" value={stockData.dividend_yield ? `${Number(stockData.dividend_yield).toFixed(2)}%` : "-"} icon={DollarSign} />
+                </div>
+
+                {/* Tabs Navigation */}
+                <div className="flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm border border-slate-100 mb-6">
+                    {[
+                        { id: "overview", label: "Overview", icon: Activity },
+                        { id: "financials", label: "Financials", icon: FileText },
+                        { id: "ownership", label: "Ownership", icon: Users },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${activeTab === tab.id
+                                    ? "bg-blue-600 text-white shadow-md"
+                                    : "text-slate-600 hover:bg-slate-100"
+                                }`}
+                        >
+                            <tab.icon className="w-4 h-4" />
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Tab Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Main Content Area */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Price Chart Card */}
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <SectionHeader title="Price Chart" icon={LineChart} />
+                                <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                                    {["1m", "3m", "6m", "1y", "5y", "max"].map((period) => (
                                         <button
-                                            key={tf}
-                                            onClick={() => setTimeframe(tf)}
-                                            className={clsx(
-                                                "px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200",
-                                                timeframe === tf
-                                                    ? "bg-white text-slate-900 shadow-md"
-                                                    : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-                                            )}
+                                            key={period}
+                                            onClick={() => setChartPeriod(period)}
+                                            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${chartPeriod === period
+                                                    ? "bg-white text-blue-600 shadow-sm"
+                                                    : "text-slate-600 hover:text-slate-800"
+                                                }`}
                                         >
-                                            {tf}
+                                            {period.toUpperCase()}
                                         </button>
                                     ))}
                                 </div>
-
-                                {/* Chart Style */}
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
-                                        {[
-                                            { style: "candle" as ChartStyle, icon: CandlestickChart, color: "emerald" },
-                                            { style: "line" as ChartStyle, icon: LineChart, color: "indigo" },
-                                            { style: "area" as ChartStyle, icon: AreaChart, color: "purple" },
-                                        ].map(({ style, icon: Icon, color }) => (
-                                            <button
-                                                key={style}
-                                                onClick={() => setChartStyle(style)}
-                                                className={clsx(
-                                                    "p-2.5 rounded-lg transition-all",
-                                                    chartStyle === style
-                                                        ? `bg-white shadow-md text-${color}-600`
-                                                        : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
-                                                )}
-                                            >
-                                                <Icon className="w-5 h-5" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <button className="p-2.5 rounded-xl bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all">
-                                        <RefreshCw className="w-5 h-5" />
-                                    </button>
+                            </div>
+                            <div className="h-80 bg-gradient-to-br from-slate-50 to-blue-50/50 rounded-xl flex items-center justify-center">
+                                <div className="text-center">
+                                    <CandlestickChart className="w-12 h-12 mx-auto mb-2 text-blue-400" />
+                                    <p className="text-slate-600 font-medium">Interactive Chart</p>
+                                    <p className="text-sm text-slate-400">{ohlcData.length} data points loaded</p>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Chart Container */}
-                            <div className="relative bg-white">
-                                {isLoadingOHLC && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm z-10">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin" />
-                                            <span className="text-slate-500 font-medium">Loading Chart...</span>
-                                        </div>
-                                    </div>
+                        {/* Overview Tab */}
+                        {activeTab === "overview" && (
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                                <SectionHeader title="About Company" icon={Building2} />
+                                <p className="text-slate-600 leading-relaxed mb-4">
+                                    {profile?.business_summary ||
+                                        `${stockData.name_en || symbol} is a publicly traded company on the Saudi Stock Exchange (Tadawul). This section displays company description, business operations, and strategic focus when available.`}
+                                </p>
+                                {profile?.website && (
+                                    <a
+                                        href={profile.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                                    >
+                                        <Globe className="w-4 h-4" /> Visit Website <ExternalLink className="w-3 h-3" />
+                                    </a>
                                 )}
-                                {filteredData.length === 0 && !isLoadingOHLC && (
-                                    <div className="h-[420px] flex items-center justify-center text-slate-400">
-                                        No data available
-                                    </div>
-                                )}
-                                <div ref={chartContainerRef} className="w-full h-[420px]" />
                             </div>
+                        )}
 
-                            {/* Chart Footer */}
-                            {stats && (
-                                <div className="grid grid-cols-4 gap-4 p-5 border-t border-slate-100 bg-gradient-to-r from-slate-50/50 to-white">
-                                    {[
-                                        { label: "Open", value: stats.current.open.toFixed(2), color: "slate" },
-                                        { label: "High", value: stats.current.high.toFixed(2), color: "emerald" },
-                                        { label: "Low", value: stats.current.low.toFixed(2), color: "red" },
-                                        { label: "Close", value: stats.current.close.toFixed(2), color: "blue" },
-                                    ].map((item, i) => (
-                                        <div key={i} className="text-center">
-                                            <div className="text-xs text-slate-400 uppercase tracking-wider mb-1 font-bold">{item.label}</div>
-                                            <div className={clsx("text-lg font-black font-mono", `text-${item.color}-600`)}>{item.value}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Metric Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                            {[
-                                { label: "52W High", value: stats?.high52.toFixed(2) || "—", icon: TrendingUp, gradient: "from-emerald-400 to-teal-500", bg: "bg-emerald-50", text: "text-emerald-700" },
-                                { label: "52W Low", value: stats?.low52.toFixed(2) || "—", icon: TrendingDown, gradient: "from-red-400 to-rose-500", bg: "bg-red-50", text: "text-red-700" },
-                                { label: "Avg Volume", value: stats ? (stats.avgVolume / 1000000).toFixed(2) + "M" : "—", icon: BarChart3, gradient: "from-blue-400 to-teal-500", bg: "bg-blue-50", text: "text-blue-700" },
-                                { label: "Period Return", value: stats?.periodReturn !== undefined ? ((stats.periodReturn >= 0 ? "+" : "") + stats.periodReturn.toFixed(2) + "%") : "—", icon: Percent, gradient: (stats?.periodReturn ?? 0) >= 0 ? "from-emerald-400 to-teal-500" : "from-red-400 to-rose-500", bg: (stats?.periodReturn ?? 0) >= 0 ? "bg-emerald-50" : "bg-red-50", text: (stats?.periodReturn ?? 0) >= 0 ? "text-emerald-700" : "text-red-700" },
-                            ].map((metric, i) => (
-                                <div
-                                    key={i}
-                                    className="group relative bg-white rounded-2xl border border-slate-100 p-5 shadow-lg shadow-slate-100/50 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 overflow-hidden"
-                                >
-                                    <div className={clsx("absolute -top-4 -right-4 w-20 h-20 rounded-full opacity-20 blur-xl bg-gradient-to-br", metric.gradient)} />
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className={clsx("p-2.5 rounded-xl", metric.bg)}>
-                                            <metric.icon className={clsx("w-5 h-5", metric.text)} />
-                                        </div>
-                                        <span className="text-xs text-slate-400 uppercase tracking-wider font-bold">{metric.label}</span>
-                                    </div>
-                                    <div className={clsx("text-2xl font-black font-mono", metric.text)}>{metric.value}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Sidebar - 3 cols */}
-                    <div className="col-span-12 xl:col-span-3 space-y-6">
-                        {/* Valuation Card */}
-                        {activeRatios && (
-                            <div className="bg-gradient-to-br from-blue-500 to-teal-500 rounded-2xl overflow-hidden shadow-xl shadow-blue-200/50 text-white">
-                                <div className="p-5 border-b border-white/10">
-                                    <h3 className="text-lg font-bold flex items-center gap-2">
-                                        <Target className="w-5 h-5" />
-                                        Valuation Metrics
-                                    </h3>
-                                </div>
-                                <div className="p-5 space-y-4">
-                                    {[
-                                        { label: "P/E Ratio", value: Number(activeRatios.pe_ratio).toFixed(2) + "x" },
-                                        { label: "P/B Ratio", value: Number(activeRatios.pb_ratio).toFixed(2) + "x" },
-                                        { label: "Dividend Yield", value: Number(activeRatios.dividend_yield).toFixed(2) + "%" },
-                                        { label: "Debt/Equity", value: Number(activeRatios.debt_to_equity).toFixed(2) },
-                                    ].map((ratio, i) => (
-                                        <div key={i} className="flex items-center justify-between py-2 border-b border-white/10 last:border-0">
-                                            <span className="text-white/70 text-sm">{ratio.label}</span>
-                                            <span className="font-bold font-mono">{ratio.value}</span>
-                                        </div>
-                                    ))}
+                        {/* Financials Tab */}
+                        {activeTab === "financials" && (
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                                <SectionHeader title="Financial Statements" icon={FileText} />
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="border-b border-slate-200">
+                                                <th className="text-left py-3 text-slate-500 font-medium">Period</th>
+                                                <th className="text-right py-3 text-slate-500 font-medium">Revenue</th>
+                                                <th className="text-right py-3 text-slate-500 font-medium">Net Income</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {financials.length > 0 ? financials.slice(0, 8).map((f: any, i: number) => (
+                                                <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
+                                                    <td className="py-3 text-slate-800 font-medium">{f.end_date || f.period}</td>
+                                                    <td className="py-3 text-right text-slate-800">{formatCurrency(f.revenue)}</td>
+                                                    <td className="py-3 text-right text-slate-800">{formatCurrency(f.net_income)}</td>
+                                                </tr>
+                                            )) : (
+                                                <tr>
+                                                    <td colSpan={3} className="py-8 text-center text-slate-500">
+                                                        No financial data available
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         )}
 
-                        {/* Trading Info Card */}
-                        <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl overflow-hidden shadow-xl shadow-blue-200/50 text-white">
-                            <div className="p-5 border-b border-white/10">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <Activity className="w-5 h-5" />
-                                    Trading Info
-                                </h3>
-                            </div>
-                            <div className="p-5 space-y-4">
-                                {[
-                                    { label: "Volume", value: Number(ticker?.volume || 0).toLocaleString(), icon: Volume2 },
-                                    { label: "Market", value: "TADAWUL", icon: Building2 },
-                                    { label: "Currency", value: "SAR", icon: DollarSign },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center justify-between py-2 border-b border-white/10 last:border-0">
-                                        <div className="flex items-center gap-2 text-white/70 text-sm">
-                                            <item.icon className="w-4 h-4" />
-                                            {item.label}
+                        {/* Ownership Tab */}
+                        {activeTab === "ownership" && (
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                                <SectionHeader title="Major Shareholders" icon={Users} />
+                                <div className="space-y-3">
+                                    {shareholders.length > 0 ? shareholders.slice(0, 10).map((s: Shareholder, i: number) => (
+                                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                                            <div>
+                                                <p className="font-medium text-slate-800">{s.shareholder_name_en || s.shareholder_name}</p>
+                                                <p className="text-sm text-slate-500">{formatNumber(s.shares_held)} shares</p>
+                                            </div>
+                                            <span className="text-lg font-bold text-blue-600">{s.ownership_percent?.toFixed(2)}%</span>
                                         </div>
-                                        <span className="font-bold font-mono">{item.value}</span>
+                                    )) : (
+                                        <div className="py-8 text-center text-slate-500">
+                                            No ownership data available
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="space-y-6">
+                        {/* Key Metrics Card */}
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                            <SectionHeader title="Key Metrics" icon={Target} />
+                            <div className="space-y-3">
+                                {[
+                                    { label: "52 Week High", value: `SAR ${Number(stockData.high_52w || 0).toFixed(2)}` },
+                                    { label: "52 Week Low", value: `SAR ${Number(stockData.low_52w || 0).toFixed(2)}` },
+                                    { label: "Beta", value: stockData.beta ? Number(stockData.beta).toFixed(2) : "-" },
+                                    { label: "P/B Ratio", value: stockData.pb_ratio ? Number(stockData.pb_ratio).toFixed(2) : "-" },
+                                    { label: "Target Price", value: stockData.target_price ? `SAR ${Number(stockData.target_price).toFixed(2)}` : "-" },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
+                                        <span className="text-slate-500">{item.label}</span>
+                                        <span className="font-bold text-slate-800">{item.value}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Corporate Actions */}
+                        {/* Corporate Actions Card */}
                         {corporateActions.length > 0 && (
-                            <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-lg shadow-slate-100/50">
-                                <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-orange-50">
-                                    <h3 className="text-lg font-bold text-amber-800 flex items-center gap-2">
-                                        <Zap className="w-5 h-5 text-amber-500" />
-                                        Recent Actions
-                                    </h3>
-                                </div>
-                                <div className="p-4 space-y-3">
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                                <SectionHeader title="Recent Actions" icon={Zap} />
+                                <div className="space-y-3">
                                     {corporateActions.slice(0, 3).map((action: any, i: number) => (
-                                        <div key={i} className="p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100">
+                                        <div key={i} className="p-3 rounded-xl bg-amber-50 border border-amber-100">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold text-amber-600 uppercase">{action.action_type}</span>
-                                                <span className="text-xs text-amber-500">{new Date(action.ex_date).toLocaleDateString()}</span>
+                                                <span className="text-xs font-bold text-amber-700 uppercase">{action.action_type}</span>
+                                                <span className="text-xs text-amber-600">{new Date(action.ex_date).toLocaleDateString()}</span>
                                             </div>
                                             <p className="text-sm text-amber-800 line-clamp-2">{action.description}</p>
                                         </div>
@@ -444,23 +416,10 @@ export default function SymbolPage() {
                             </div>
                         )}
 
-                        {/* Data Stats Card */}
-                        <div className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl p-5 text-white shadow-xl">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                                    <PieChart className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Data Points</div>
-                                    <div className="text-2xl font-black">{filteredData.length.toLocaleString()}</div>
-                                </div>
-                            </div>
-                            <div className="text-xs text-slate-500">
-                                {filteredData.length > 0
-                                    ? `From ${filteredData[0]?.time} to ${filteredData[filteredData.length - 1]?.time}`
-                                    : "No data range available"
-                                }
-                            </div>
+                        {/* News Placeholder */}
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                            <SectionHeader title="Latest News" icon={Newspaper} />
+                            <p className="text-slate-500 text-center py-4">News feed coming soon...</p>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,101 @@
+🚀 STARTING PHASE 3: DEEP FINANCIALS (YahooQuery v2)...
+[1/453] 1010 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5621, 1010, Annual, null, 2024-12-31, 17284531000.0000, null, null, 9321894000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 9..., 2025-12-29 11:12:37.554501+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5622, 1010, Annual, null, 2023-12-31, 15898838000.0000, null, null, 8045844000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 8..., 2025-12-29 11:12:37.866537+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5623, 1010, Annual, null, 2022-12-31, 13599366000.0000, null, null, 7019322000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 7..., 2025-12-29 11:12:37.933558+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5624, 1010, Annual, null, 2021-12-31, 11568000000.0000, null, null, 6025000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 6..., 2025-12-29 11:12:37.995651+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+[2/453] 1020 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5625, 1020, Annual, null, 2024-12-31, 3779400000.0000, null, null, 1231000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 1..., 2025-12-29 11:12:44.194146+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5626, 1020, Annual, null, 2023-12-31, 3334700000.0000, null, null, 1020000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 1..., 2025-12-29 11:12:44.256916+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5627, 1020, Annual, null, 2022-12-31, 3495300000.0000, null, null, 1109100000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 1..., 2025-12-29 11:12:44.328551+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5628, 1020, Annual, null, 2021-12-31, 3547165000.0000, null, null, 1006076000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 1..., 2025-12-29 11:12:44.393135+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+[3/453] 1030 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5629, 1030, Annual, null, 2024-12-31, 4178000000.0000, null, null, 1956600000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 1..., 2025-12-29 11:12:54.881003+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5630, 1030, Annual, null, 2023-12-31, 3966583000.0000, null, null, 1761607000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 1..., 2025-12-29 11:12:54.943655+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5631, 1030, Annual, null, 2022-12-31, 3265296000.0000, null, null, 1507855000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 1..., 2025-12-29 11:12:55.005535+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5632, 1030, Annual, null, 2021-12-31, 2767700000.0000, null, null, 1061700000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 1..., 2025-12-29 11:12:55.139408+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+[4/453] 1050 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5633, 1050, Annual, null, 2024-12-31, 9658000000.0000, null, null, 4544000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 4..., 2025-12-29 11:13:02.18599+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5634, 1050, Annual, null, 2023-12-31, 9323994000.0000, null, null, 4222733000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 4..., 2025-12-29 11:13:02.258941+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5635, 1050, Annual, null, 2022-12-31, 8017275000.0000, null, null, 3575130000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 3..., 2025-12-29 11:13:02.328247+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5636, 1050, Annual, null, 2021-12-31, 7188000000.0000, null, null, 3450000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 3..., 2025-12-29 11:13:02.482822+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+[5/453] 1060 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5637, 1060, Annual, null, 2024-12-31, 14018000000.0000, null, null, 8070000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 8..., 2025-12-29 11:13:08.597554+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5638, 1060, Annual, null, 2023-12-31, 12710460000.0000, null, null, 7002373000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 7..., 2025-12-29 11:13:08.660568+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5639, 1060, Annual, null, 2022-12-31, 9869172000.0000, null, null, 4870000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 4..., 2025-12-29 11:13:08.723453+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5640, 1060, Annual, null, 2021-12-31, 7938000000.0000, null, null, 3201645000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 3..., 2025-12-29 11:13:08.861089+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+[6/453] 1080 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5641, 1080, Annual, null, 2024-12-31, 9500000000.0000, null, null, 4966000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 4..., 2025-12-29 11:13:24.07933+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5642, 1080, Annual, null, 2023-12-31, 8567109000.0000, null, null, 4070510000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 4..., 2025-12-29 11:13:24.146421+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5643, 1080, Annual, null, 2022-12-31, 6862240000.0000, null, null, 3070405000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 3..., 2025-12-29 11:13:24.218448+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5644, 1080, Annual, null, 2021-12-31, 5765000000.0000, null, null, 2177000000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 2..., 2025-12-29 11:13:24.280375+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+[7/453] 1111 Deep Dive...   - Found 4 Income Stmts
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5645, 1111, Annual, null, 2024-12-31, 1446559000.0000, null, null, 621843000.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2024-12-31", "netIncome": 6..., 2025-12-29 11:13:30.055465+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5646, 1111, Annual, null, 2023-12-31, 1072780200.0000, null, null, 390060730.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2023-12-31", "netIncome": 3..., 2025-12-29 11:13:30.117561+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5647, 1111, Annual, null, 2022-12-31, 1071429660.0000, null, null, 424598330.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2022-12-31", "netIncome": 4..., 2025-12-29 11:13:30.18031+00).
+
+    Insert Err: null value in column "fiscal_year" of relation "financial_statements" violates not-null constraint
+DETAIL:  Failing row contains (5648, 1111, Annual, null, 2021-12-31, 1166080140.0000, null, null, 587703530.0000, null, null, null, null, null, {"ebit": 0, "maxAge": 1, "endDate": "2021-12-31", "netIncome": 5..., 2025-12-29 11:13:30.241931+00).
+
+✅ Saved 0 Stmts, 0 Insiders
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:301: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-054bqcnp'}
+  warnings.warn(

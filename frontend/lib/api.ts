@@ -287,3 +287,46 @@ export const deleteAlert = async (id: string) => {
     return data;
 };
 
+// ============================================================================
+// COMPANY PROFILE API FUNCTIONS
+// ============================================================================
+
+export const fetchCompanyProfile = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/profile`);
+    return data;
+};
+
+export const fetchCompanyFinancials = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/financials`);
+    return data;
+};
+
+export const fetchCompanyShareholders = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/shareholders`);
+    return data;
+};
+
+export const fetchCompanyAnalysts = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/analysts`);
+    return data;
+};
+
+export const fetchCompanyDividends = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/dividends`);
+    return data;
+};
+
+export const fetchCompanyOwnership = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/ownership`);
+    return data;
+};
+
+export const fetchCompanyNews = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/news`);
+    return data;
+};
+
+export const fetchCompanyInsiderTransactions = async (symbol: string) => {
+    const { data } = await api.get(`/api/company/${symbol}/insider-transactions`);
+    return data;
+};

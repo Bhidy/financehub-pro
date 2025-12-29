@@ -1,0 +1,21 @@
+🚀 STARTING FUNDAMENTAL DATA COLLECTION (YahooQuery v2)...
+[1/453] 1010 Funda... ✅ Updated
+[2/453] 1020 Funda... ✅ Updated
+[3/453] 1030 Funda... ✅ Updated
+[4/453] 1050 Funda... ✅ Updated
+[5/453] 1060 Funda... ✅ Updated
+[6/453] 1080 Funda... ✅ Updated
+[7/453] 1111 Funda... ✅ Updated
+[8/453] 1113 Funda... ✅ Updated
+[9/453] 1120 Funda... ✅ Updated
+[10/453] 1140 Funda... ✅ Updated
+[11/453] 1150 Funda... ✅ Updated
+[12/453] 1180 Funda... ✅ Updated
+[13/453] 1182 Funda... ✅ Updated
+[14/453] 1183 Funda... ✅ Updated
+[15/453] 1201 Funda... ✅ Updated
+[16/453] 1202 Funda... ✅ Updated
+[17/453] 1210 Funda... ✅ Updated
+[18/453] 1211 Funda... ✅ Updated
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:301: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-230mluik'}
+  warnings.warn(

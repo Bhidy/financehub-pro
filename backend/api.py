@@ -568,3 +568,98 @@ async def get_dashboard_summary():
         }
     except Exception as e:
         return {"error": str(e)}
+
+# ============================================================================
+# COMPANY PROFILE ENDPOINTS
+# ============================================================================
+
+@app.get("/api/company/{symbol}/profile")
+async def get_company_profile(symbol: str):
+    """Get company profile details"""
+    profile = await db.fetch_one("""
+        SELECT * FROM company_profiles WHERE symbol = $1
+    """, symbol)
+    if not profile:
+        return {"description": None, "website": None, "industry": None, "sector": None}
+    return dict(profile)
+
+@app.get("/api/company/{symbol}/financials")
+async def get_company_financials(symbol: str):
+    """Get financial statements for a company"""
+    return await db.fetch_all("""
+        SELECT end_date, period_type, fiscal_year, revenue, net_income, 
+               operating_income, total_assets, total_liabilities, total_equity,
+               gross_profit, operating_cashflow, investing_cashflow, financing_cashflow
+        FROM financial_statements 
+        WHERE symbol = $1 
+        ORDER BY end_date DESC
+        LIMIT 20
+    """, symbol)
+
+@app.get("/api/company/{symbol}/shareholders")
+async def get_company_shareholders(symbol: str):
+    """Get major shareholders for a company"""
+    return await db.fetch_all("""
+        SELECT shareholder_name, shareholder_name_en, ownership_percent, shares_held, shareholder_type
+        FROM major_shareholders 
+        WHERE symbol = $1 
+        ORDER BY ownership_percent DESC NULLS LAST
+        LIMIT 20
+    """, symbol)
+
+@app.get("/api/company/{symbol}/analysts")
+async def get_company_analysts(symbol: str):
+    """Get analyst ratings for a company"""
+    return await db.fetch_all("""
+        SELECT period, strong_buy, buy, hold, sell, strong_sell
+        FROM analyst_ratings 
+        WHERE symbol = $1 
+        ORDER BY period DESC
+        LIMIT 10
+    """, symbol)
+
+@app.get("/api/company/{symbol}/dividends")
+async def get_company_dividends(symbol: str):
+    """Get dividend history for a company"""
+    return await db.fetch_all("""
+        SELECT ex_date, payment_date, amount, dividend_yield
+        FROM dividend_history 
+        WHERE symbol = $1 
+        ORDER BY ex_date DESC
+        LIMIT 20
+    """, symbol)
+
+@app.get("/api/company/{symbol}/ownership")
+async def get_company_ownership(symbol: str):
+    """Get ownership breakdown for a company"""
+    ownership = await db.fetch_one("""
+        SELECT insiders_percent, institutions_percent, institutions_float_percent, institutions_count
+        FROM ownership_breakdown 
+        WHERE symbol = $1
+    """, symbol)
+    if not ownership:
+        return {"insiders_percent": None, "institutions_percent": None, "public_percent": None}
+    return dict(ownership)
+
+@app.get("/api/company/{symbol}/news")
+async def get_company_news(symbol: str):
+    """Get news for a company"""
+    return await db.fetch_all("""
+        SELECT headline, source, url, published_at, sentiment_score
+        FROM market_news 
+        WHERE symbol = $1 
+        ORDER BY published_at DESC
+        LIMIT 10
+    """, symbol)
+
+@app.get("/api/company/{symbol}/insider-transactions")
+async def get_company_insider_transactions(symbol: str):
+    """Get insider transactions for a company"""
+    return await db.fetch_all("""
+        SELECT insider_name, insider_role, transaction_date, transaction_type, shares, price, value
+        FROM insider_transactions 
+        WHERE symbol = $1 
+        ORDER BY transaction_date DESC
+        LIMIT 20
+    """, symbol)
+

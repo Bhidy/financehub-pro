@@ -3,75 +3,60 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders, fetchCorporateActions, fetchAnalystRatings, fetchNews, Ticker } from "@/lib/api";
+import { fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders, fetchCorporateActions, fetchAnalystRatings, Ticker } from "@/lib/api";
 import { createChart, ColorType, CrosshairMode, CandlestickSeries, LineSeries, HistogramSeries, Time } from "lightweight-charts";
 import {
     TrendingUp,
     TrendingDown,
     Building2,
-    Globe,
     Users,
     BarChart3,
     DollarSign,
-    Percent,
     FileText,
     ArrowUpRight,
     ArrowDownRight,
-    ExternalLink,
     Star,
     Bell,
     Share2,
     Activity,
     Target,
-    Newspaper,
     LineChart,
     CandlestickChart,
-    AreaChart,
     Zap,
     PieChart,
-    TrendingDown as TrendDown,
-    ChevronRight,
-    Clock,
-    RefreshCw,
-    AlertCircle
+    AlertCircle,
+    Wallet,
+    Scale,
+    Banknote
 } from "lucide-react";
 
-// API Base for company profile endpoints
-const API_BASE = "https://bhidy-financehub-api.hf.space/api/v1";
+// Arabic to English key mapping for financials raw_data
+const ARABIC_KEYS: Record<string, string> = {
+    "صافى الربح": "net_income",
+    "مجمل الربح": "gross_profit",
+    "إجمالي الأصول": "total_assets",
+    "إجمالي المطلوبات": "total_liabilities",
+    "اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية": "total_equity",
+    "صافي التغير النقدي من الانشطة الاستثمارية": "investing_cashflow",
+    "صافي التدفق النقدي من (المستخدم في) الأنشطة التشغيلية": "operating_cashflow",
+    "صافي التدفق النقدي من (المستخدم في) الأنشطة التمويلية": "financing_cashflow",
+};
 
-// Types
-interface CompanyProfile {
-    business_summary?: string;
-    website?: string;
-    industry?: string;
-    sector?: string;
-    address?: string;
-    city?: string;
-    country?: string;
-    phone?: string;
-    employees?: number;
-    ceo?: string;
-}
-
-// Fetch company profile
-async function fetchCompanyProfile(symbol: string): Promise<CompanyProfile | null> {
+// Parse financials raw_data JSON
+function parseFinancialsRawData(rawData: string | null): Record<string, number> {
+    if (!rawData) return {};
     try {
-        const res = await fetch(`${API_BASE}/api/company/${symbol}/profile`);
-        if (!res.ok) return null;
-        return res.json();
+        const parsed = JSON.parse(rawData);
+        const result: Record<string, number> = {};
+        for (const [arabicKey, value] of Object.entries(parsed)) {
+            const englishKey = ARABIC_KEYS[arabicKey];
+            if (englishKey && typeof value === "number") {
+                result[englishKey] = value;
+            }
+        }
+        return result;
     } catch {
-        return null;
-    }
-}
-
-// Fetch dividends
-async function fetchDividends(symbol: string) {
-    try {
-        const res = await fetch(`${API_BASE}/api/company/${symbol}/dividends`);
-        if (!res.ok) return [];
-        return res.json();
-    } catch {
-        return [];
+        return {};
     }
 }
 
@@ -96,23 +81,20 @@ function formatCurrency(num: number | string | null | undefined): string {
 function LoadingSkeleton() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white p-6">
-            <div className="max-w-[1800px] mx-auto animate-pulse">
-                {/* Header Skeleton */}
-                <div className="h-32 bg-gradient-to-r from-slate-200 to-slate-100 rounded-3xl mb-6" />
-
-                {/* Stats Row */}
-                <div className="grid grid-cols-8 gap-3 mb-6">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="h-24 bg-gradient-to-br from-white to-slate-100 rounded-2xl shadow-lg" />
-                    ))}
-                </div>
-
-                {/* Chart Skeleton */}
-                <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2 h-[500px] bg-white rounded-3xl shadow-xl" />
-                    <div className="space-y-4">
-                        <div className="h-60 bg-white rounded-2xl shadow-lg" />
-                        <div className="h-60 bg-white rounded-2xl shadow-lg" />
+            <div className="max-w-[1800px] mx-auto">
+                <div className="animate-pulse">
+                    <div className="h-28 bg-gradient-to-r from-slate-200 to-slate-100 rounded-3xl mb-6" />
+                    <div className="grid grid-cols-4 gap-4 mb-6">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-24 bg-white rounded-2xl shadow-lg" />
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-6">
+                        <div className="col-span-2 h-[450px] bg-white rounded-3xl shadow-xl" />
+                        <div className="space-y-4">
+                            <div className="h-48 bg-white rounded-2xl shadow-lg" />
+                            <div className="h-48 bg-white rounded-2xl shadow-lg" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,82 +103,79 @@ function LoadingSkeleton() {
 }
 
 // Premium Stat Card Component
-function StatCard({ label, value, icon: Icon, trend, gradient }: {
+function StatCard({ label, value, icon: Icon, trend, color = "blue" }: {
     label: string;
     value: string;
     icon?: any;
     trend?: "up" | "down" | null;
-    gradient?: string;
+    color?: "blue" | "emerald" | "red" | "amber";
 }) {
-    const trendColor = trend === "up" ? "text-emerald-500" : trend === "down" ? "text-red-500" : "";
+    const colorMap = {
+        blue: "from-blue-500 to-blue-600",
+        emerald: "from-emerald-500 to-emerald-600",
+        red: "from-red-500 to-red-600",
+        amber: "from-amber-500 to-amber-600"
+    };
 
     return (
-        <div className={`relative overflow-hidden bg-white rounded-2xl p-4 shadow-lg shadow-slate-200/50 
-            hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-slate-100
-            ${gradient || ""}`}>
-            {/* Background Decoration */}
-            <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-gradient-to-br from-blue-100/50 to-transparent blur-xl" />
+        <div className="relative overflow-hidden bg-white rounded-2xl p-5 shadow-lg shadow-slate-200/50 
+            hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 group">
+            <div className={`absolute -top-6 -right-6 w-20 h-20 rounded-full bg-gradient-to-br ${colorMap[color]} opacity-10 blur-xl group-hover:opacity-20 transition-opacity`} />
 
             <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{label}</span>
-                    {Icon && <Icon className="w-4 h-4 text-blue-400" />}
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">{label}</span>
+                    {Icon && (
+                        <div className={`p-2 rounded-lg bg-gradient-to-br ${colorMap[color]} shadow-lg`}>
+                            <Icon className="w-4 h-4 text-white" />
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className={`text-xl font-black text-slate-800 font-mono ${trendColor}`}>{value}</span>
-                    {trend === "up" && <ArrowUpRight className="w-4 h-4 text-emerald-500" />}
-                    {trend === "down" && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+                    <span className="text-2xl font-black text-slate-800 font-mono">{value}</span>
+                    {trend === "up" && <ArrowUpRight className="w-5 h-5 text-emerald-500" />}
+                    {trend === "down" && <ArrowDownRight className="w-5 h-5 text-red-500" />}
                 </div>
             </div>
-        </div>
-    );
-}
-
-// Premium Section Header
-function SectionHeader({ title, icon: Icon, action, gradient }: {
-    title: string;
-    icon: any;
-    action?: React.ReactNode;
-    gradient?: string;
-}) {
-    return (
-        <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${gradient || "bg-gradient-to-br from-blue-500 to-blue-600"} shadow-lg`}>
-                    <Icon className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-lg font-bold text-slate-800">{title}</h2>
-            </div>
-            {action}
         </div>
     );
 }
 
 // Premium Card Wrapper
-function PremiumCard({ children, className = "", gradient }: {
-    children: React.ReactNode;
-    className?: string;
-    gradient?: boolean;
-}) {
+function PremiumCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={`
-            relative overflow-hidden bg-white rounded-3xl p-6 
-            shadow-xl shadow-slate-200/50 border border-slate-100/50
-            hover:shadow-2xl transition-all duration-300
-            ${gradient ? "bg-gradient-to-br from-white via-blue-50/10 to-white" : ""}
-            ${className}
-        `}>
+        <div className={`bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 ${className}`}>
             {children}
         </div>
     );
 }
 
-// Empty State Component
-function EmptyState({ message, icon: Icon }: { message: string; icon: any }) {
+// Section Header
+function SectionHeader({ title, icon: Icon, color = "blue" }: { title: string; icon: any; color?: string }) {
+    const colorMap: Record<string, string> = {
+        blue: "from-blue-500 to-blue-600",
+        emerald: "from-emerald-500 to-teal-600",
+        violet: "from-violet-500 to-purple-600",
+        orange: "from-orange-500 to-amber-600",
+        cyan: "from-cyan-500 to-blue-600",
+    };
+
+    return (
+        <div className="flex items-center gap-3 mb-5">
+            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${colorMap[color] || colorMap.blue} shadow-lg`}>
+                <Icon className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+        </div>
+    );
+}
+
+// Empty State
+function EmptyState({ message }: { message: string }) {
     return (
         <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-            <Icon className="w-12 h-12 mb-3 opacity-50" />
-            <p className="text-sm font-medium">{message}</p>
+            <AlertCircle className="w-10 h-10 mb-2 opacity-50" />
+            <p className="text-sm">{message}</p>
         </div>
     );
 }
@@ -208,7 +187,7 @@ export default function SymbolDetailPage() {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null);
 
-    const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership" | "analysts" | "dividends">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership" | "analysts">("overview");
     const [chartPeriod, setChartPeriod] = useState("1y");
     const [chartStyle, setChartStyle] = useState<"candle" | "line">("candle");
 
@@ -225,17 +204,10 @@ export default function SymbolDetailPage() {
         [tickers, symbol]
     );
 
-    // Fetch OHLC data for chart
+    // Fetch OHLC data
     const { data: ohlcData = [], isLoading: chartLoading } = useQuery({
         queryKey: ["ohlc", symbol, chartPeriod],
         queryFn: () => fetchOHLC(symbol, chartPeriod),
-        enabled: !!symbol,
-    });
-
-    // Fetch company profile
-    const { data: profile } = useQuery({
-        queryKey: ["profile", symbol],
-        queryFn: () => fetchCompanyProfile(symbol),
         enabled: !!symbol,
     });
 
@@ -260,24 +232,10 @@ export default function SymbolDetailPage() {
         enabled: !!symbol,
     });
 
-    // Fetch dividends
-    const { data: dividends = [] } = useQuery({
-        queryKey: ["dividends", symbol],
-        queryFn: () => fetchDividends(symbol),
-        enabled: !!symbol,
-    });
-
     // Fetch corporate actions
     const { data: corporateActions = [] } = useQuery({
         queryKey: ["corporate-actions", symbol],
         queryFn: () => fetchCorporateActions(symbol),
-        enabled: !!symbol,
-    });
-
-    // Fetch news
-    const { data: news = [] } = useQuery({
-        queryKey: ["news", symbol],
-        queryFn: () => fetchNews(symbol),
         enabled: !!symbol,
     });
 
@@ -296,11 +254,32 @@ export default function SymbolDetailPage() {
             }));
     }, [ohlcData]);
 
+    // Parse financials with raw_data
+    const parsedFinancials = useMemo(() => {
+        return financials.map((f: any) => {
+            const rawParsed = parseFinancialsRawData(f.raw_data);
+            return {
+                ...f,
+                net_income: f.net_income || rawParsed.net_income,
+                gross_profit: f.gross_profit || rawParsed.gross_profit,
+                total_assets: f.total_assets || rawParsed.total_assets,
+                total_liabilities: f.total_liabilities || rawParsed.total_liabilities,
+                total_equity: f.total_equity || rawParsed.total_equity,
+                operating_cashflow: f.operating_cashflow || rawParsed.operating_cashflow,
+            };
+        });
+    }, [financials]);
+
+    // Filter analyst ratings for this symbol
+    const symbolAnalystRatings = useMemo(() =>
+        analystRatings.filter((r: any) => r.symbol === symbol),
+        [analystRatings, symbol]
+    );
+
     // Chart initialization
     useEffect(() => {
         if (!chartContainerRef.current || chartData.length === 0) return;
 
-        // Clear previous chart
         if (chartRef.current) {
             chartRef.current.remove();
             chartRef.current = null;
@@ -313,7 +292,7 @@ export default function SymbolDetailPage() {
                 fontFamily: "'Inter', sans-serif",
             },
             width: chartContainerRef.current.clientWidth,
-            height: 400,
+            height: 380,
             grid: {
                 vertLines: { color: '#f1f5f9' },
                 horzLines: { color: '#f1f5f9' },
@@ -354,7 +333,6 @@ export default function SymbolDetailPage() {
                 series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
             }
 
-            // Add volume
             const volumeSeries = chart.addSeries(HistogramSeries, {
                 color: '#94a3b8',
                 priceFormat: { type: 'volume' },
@@ -390,7 +368,7 @@ export default function SymbolDetailPage() {
         };
     }, [chartData, chartStyle]);
 
-    // Calculate stats
+    // Calculate stats from OHLC
     const stats = useMemo(() => {
         if (chartData.length < 2) return null;
         const current = chartData[chartData.length - 1];
@@ -404,32 +382,26 @@ export default function SymbolDetailPage() {
         return { high52, low52, avgVolume, periodReturn, current };
     }, [chartData]);
 
-    // Filter analyst ratings for this symbol
-    const symbolAnalystRatings = useMemo(() =>
-        analystRatings.filter((r: any) => r.symbol === symbol),
-        [analystRatings, symbol]
-    );
-
-    // Filter news for this symbol
-    const symbolNews = useMemo(() =>
-        news.filter((n: any) => n.symbol === symbol).slice(0, 5),
-        [news, symbol]
-    );
-
     if (tickersLoading) return <LoadingSkeleton />;
+
     if (!stockData) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-                <div className="text-center">
-                    <AlertCircle className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-                    <h2 className="text-2xl font-bold text-slate-600 mb-2">Stock Not Found</h2>
-                    <p className="text-slate-400">Symbol: {symbol}</p>
+                <div className="text-center bg-white p-10 rounded-3xl shadow-xl">
+                    <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400" />
+                    <h2 className="text-2xl font-bold text-slate-700 mb-2">Stock Not Found</h2>
+                    <p className="text-slate-500">Symbol: <span className="font-mono font-bold">{symbol}</span></p>
+                    <p className="text-sm text-slate-400 mt-2">Check the symbol and try again</p>
                 </div>
             </div>
         );
     }
 
     const isPositive = Number(stockData.change || 0) >= 0;
+    const lastPrice = Number(stockData.last_price || 0);
+    const change = Number(stockData.change || 0);
+    const changePercent = Number(stockData.change_percent || 0);
+    const volume = Number(stockData.volume || 0);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white pb-12">
@@ -448,11 +420,11 @@ export default function SymbolDetailPage() {
                             <div>
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">{symbol}</h1>
-                                    <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-200/50 shadow-sm">
+                                    <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border border-blue-200/50">
                                         {stockData.sector_name || "EQUITY"}
                                     </span>
                                 </div>
-                                <p className="text-slate-500 font-medium text-lg">{stockData.name_en || stockData.name_ar || "Loading..."}</p>
+                                <p className="text-slate-500 font-medium text-lg">{stockData.name_en || stockData.name_ar || symbol}</p>
                             </div>
                         </div>
 
@@ -461,21 +433,20 @@ export default function SymbolDetailPage() {
                             <div className="text-right">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-4xl font-black text-slate-900 font-mono tracking-tight">
-                                        {Number(stockData.last_price || 0).toFixed(2)}
+                                        {lastPrice.toFixed(2)}
                                     </span>
                                     <span className="text-slate-400 text-sm font-bold">SAR</span>
                                 </div>
                                 <div className={`flex items-center justify-end gap-2 mt-1 ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
                                     {isPositive ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
                                     <span className={`px-3 py-1 rounded-lg font-bold text-sm ${isPositive ? "bg-emerald-50" : "bg-red-50"}`}>
-                                        {isPositive ? "+" : ""}{Number(stockData.change || 0).toFixed(2)} ({Number(stockData.change_percent || 0).toFixed(2)}%)
+                                        {isPositive ? "+" : ""}{change.toFixed(2)} ({changePercent.toFixed(2)}%)
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Live Badge */}
-                            <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50 shadow-lg shadow-emerald-100/50">
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50" />
+                            <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50">
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Live</span>
                             </div>
                         </div>
@@ -483,13 +454,13 @@ export default function SymbolDetailPage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3 mt-5">
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-bold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-0.5">
+                        <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-bold shadow-lg shadow-blue-500/30">
                             <Star className="w-4 h-4" /> Add to Watchlist
                         </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold border border-slate-200 shadow-md hover:shadow-lg">
+                        <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold border border-slate-200 shadow-md">
                             <Bell className="w-4 h-4" /> Set Alert
                         </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold border border-slate-200 shadow-md hover:shadow-lg">
+                        <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold border border-slate-200 shadow-md">
                             <Share2 className="w-4 h-4" /> Share
                         </button>
                     </div>
@@ -498,26 +469,43 @@ export default function SymbolDetailPage() {
 
             {/* ========== MAIN CONTENT ========== */}
             <div className="max-w-[1800px] mx-auto px-6 py-6">
-                {/* Quick Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
-                    <StatCard label="Open" value={Number(stockData.open_price || stats?.current?.open || 0).toFixed(2)} />
-                    <StatCard label="High" value={Number(stockData.high || stats?.current?.high || 0).toFixed(2)} trend="up" />
-                    <StatCard label="Low" value={Number(stockData.low || stats?.current?.low || 0).toFixed(2)} trend="down" />
-                    <StatCard label="Volume" value={formatNumber(stockData.volume)} icon={BarChart3} />
-                    <StatCard label="52W High" value={stats?.high52?.toFixed(2) || "-"} icon={TrendingUp} />
-                    <StatCard label="52W Low" value={stats?.low52?.toFixed(2) || "-"} icon={TrendDown} />
-                    <StatCard label="Market Cap" value={formatCurrency(stockData.market_cap)} icon={Building2} />
-                    <StatCard label="Period Return" value={stats?.periodReturn ? `${stats.periodReturn >= 0 ? "+" : ""}${stats.periodReturn.toFixed(2)}%` : "-"} trend={stats?.periodReturn && stats.periodReturn >= 0 ? "up" : "down"} />
+                {/* Quick Stats Row - ONLY fields that exist in API */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <StatCard
+                        label="Volume"
+                        value={formatNumber(volume)}
+                        icon={BarChart3}
+                        color="blue"
+                    />
+                    <StatCard
+                        label="52W High"
+                        value={stats?.high52?.toFixed(2) || "-"}
+                        icon={TrendingUp}
+                        trend="up"
+                        color="emerald"
+                    />
+                    <StatCard
+                        label="52W Low"
+                        value={stats?.low52?.toFixed(2) || "-"}
+                        icon={TrendingDown}
+                        trend="down"
+                        color="red"
+                    />
+                    <StatCard
+                        label="Period Return"
+                        value={stats?.periodReturn ? `${stats.periodReturn >= 0 ? "+" : ""}${stats.periodReturn.toFixed(2)}%` : "-"}
+                        trend={stats?.periodReturn && stats.periodReturn >= 0 ? "up" : "down"}
+                        color="amber"
+                    />
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-lg shadow-slate-200/50 border border-slate-100/50 mb-6 overflow-x-auto">
+                <div className="flex items-center gap-2 bg-white rounded-2xl p-2 shadow-lg border border-slate-100 mb-6 overflow-x-auto">
                     {[
                         { id: "overview", label: "Overview", icon: Activity },
                         { id: "financials", label: "Financials", icon: FileText },
                         { id: "ownership", label: "Ownership", icon: Users },
                         { id: "analysts", label: "Analysts", icon: Target },
-                        { id: "dividends", label: "Dividends", icon: DollarSign },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -538,9 +526,9 @@ export default function SymbolDetailPage() {
                     {/* Left Column (2/3) */}
                     <div className="xl:col-span-2 space-y-6">
                         {/* Interactive Chart Card */}
-                        <PremiumCard gradient>
+                        <PremiumCard>
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                                <SectionHeader title="Price Chart" icon={LineChart} gradient="bg-gradient-to-br from-blue-500 to-indigo-600" />
+                                <SectionHeader title="Price Chart" icon={LineChart} color="blue" />
 
                                 <div className="flex items-center gap-3">
                                     {/* Timeframe Selector */}
@@ -559,7 +547,7 @@ export default function SymbolDetailPage() {
                                         ))}
                                     </div>
 
-                                    {/* Chart Style */}
+                                    {/* Chart Style Toggle */}
                                     <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
                                         <button
                                             onClick={() => setChartStyle("candle")}
@@ -580,98 +568,104 @@ export default function SymbolDetailPage() {
                             {/* Chart Container */}
                             <div className="relative bg-gradient-to-b from-white to-slate-50/50 rounded-2xl overflow-hidden">
                                 {chartLoading && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm z-10">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin" />
-                                            <span className="text-slate-500 font-medium">Loading Chart...</span>
-                                        </div>
+                                    <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
+                                        <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin" />
                                     </div>
                                 )}
                                 {chartData.length === 0 && !chartLoading && (
-                                    <EmptyState message="No chart data available" icon={BarChart3} />
+                                    <EmptyState message="No chart data available" />
                                 )}
-                                <div ref={chartContainerRef} className="w-full h-[400px]" />
+                                <div ref={chartContainerRef} className="w-full h-[380px]" />
                             </div>
 
-                            {/* Chart Stats Footer */}
+                            {/* OHLC Stats Footer */}
                             {stats && (
                                 <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100">
-                                    <div className="text-center">
-                                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Open</div>
-                                        <div className="text-lg font-black text-slate-700 font-mono">{stats.current.open.toFixed(2)}</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">High</div>
-                                        <div className="text-lg font-black text-emerald-600 font-mono">{stats.current.high.toFixed(2)}</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Low</div>
-                                        <div className="text-lg font-black text-red-600 font-mono">{stats.current.low.toFixed(2)}</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Close</div>
-                                        <div className="text-lg font-black text-blue-600 font-mono">{stats.current.close.toFixed(2)}</div>
-                                    </div>
+                                    {[
+                                        { label: "Open", value: stats.current.open.toFixed(2), color: "slate" },
+                                        { label: "High", value: stats.current.high.toFixed(2), color: "emerald" },
+                                        { label: "Low", value: stats.current.low.toFixed(2), color: "red" },
+                                        { label: "Close", value: stats.current.close.toFixed(2), color: "blue" },
+                                    ].map((item, i) => (
+                                        <div key={i} className="text-center">
+                                            <div className="text-xs text-slate-400 uppercase font-bold mb-1">{item.label}</div>
+                                            <div className={`text-lg font-black font-mono text-${item.color}-600`}>{item.value}</div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </PremiumCard>
 
-                        {/* Tab Content */}
+                        {/* Overview Tab */}
                         {activeTab === "overview" && (
                             <PremiumCard>
-                                <SectionHeader title="About Company" icon={Building2} gradient="bg-gradient-to-br from-emerald-500 to-teal-600" />
-                                <p className="text-slate-600 leading-relaxed mb-4 text-lg">
-                                    {profile?.business_summary ||
-                                        `${stockData.name_en || symbol} is a publicly traded company on the Saudi Stock Exchange (Tadawul) in the ${stockData.sector_name || "market"} sector.`}
-                                </p>
-                                {profile?.website && (
-                                    <a
-                                        href={profile.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold hover:bg-blue-100 transition-colors"
-                                    >
-                                        <Globe className="w-4 h-4" /> Visit Website <ExternalLink className="w-3 h-3" />
-                                    </a>
-                                )}
+                                <SectionHeader title="Stock Information" icon={Building2} color="emerald" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-slate-50 rounded-xl">
+                                        <p className="text-sm text-slate-500 mb-1">Name</p>
+                                        <p className="font-bold text-slate-800">{stockData.name_en || stockData.name_ar || symbol}</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-xl">
+                                        <p className="text-sm text-slate-500 mb-1">Sector</p>
+                                        <p className="font-bold text-slate-800">{stockData.sector_name || "N/A"}</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-xl">
+                                        <p className="text-sm text-slate-500 mb-1">Market</p>
+                                        <p className="font-bold text-slate-800">Tadawul (Saudi Exchange)</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-xl">
+                                        <p className="text-sm text-slate-500 mb-1">Currency</p>
+                                        <p className="font-bold text-slate-800">SAR (Saudi Riyal)</p>
+                                    </div>
+                                </div>
                             </PremiumCard>
                         )}
 
+                        {/* Financials Tab - Using parsed raw_data */}
                         {activeTab === "financials" && (
                             <PremiumCard>
-                                <SectionHeader title="Financial Statements" icon={FileText} gradient="bg-gradient-to-br from-violet-500 to-purple-600" />
-                                {financials.length > 0 ? (
+                                <SectionHeader title="Financial Statements" icon={FileText} color="violet" />
+                                {parsedFinancials.length > 0 ? (
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
                                             <thead>
                                                 <tr className="border-b-2 border-slate-200">
                                                     <th className="text-left py-3 px-4 text-slate-500 font-bold text-sm">Period</th>
-                                                    <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Revenue</th>
                                                     <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Net Income</th>
-                                                    <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Assets</th>
+                                                    <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Total Assets</th>
+                                                    <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Total Equity</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {financials.slice(0, 10).map((f: any, i: number) => (
+                                                {parsedFinancials.slice(0, 8).map((f: any, i: number) => (
                                                     <tr key={i} className="border-b border-slate-100 hover:bg-blue-50/30 transition-colors">
-                                                        <td className="py-4 px-4 font-bold text-slate-800">{f.end_date} ({f.period_type || "Annual"})</td>
-                                                        <td className="py-4 px-4 text-right font-mono text-slate-700">{formatCurrency(f.revenue)}</td>
-                                                        <td className="py-4 px-4 text-right font-mono text-slate-700">{formatCurrency(f.net_income)}</td>
-                                                        <td className="py-4 px-4 text-right font-mono text-slate-700">{formatCurrency(f.total_assets)}</td>
+                                                        <td className="py-4 px-4">
+                                                            <span className="font-bold text-slate-800">{f.period_type} {f.fiscal_year}</span>
+                                                        </td>
+                                                        <td className="py-4 px-4 text-right font-mono text-emerald-600 font-bold">
+                                                            {formatCurrency(f.net_income)}
+                                                        </td>
+                                                        <td className="py-4 px-4 text-right font-mono text-slate-700">
+                                                            {formatCurrency(f.total_assets)}
+                                                        </td>
+                                                        <td className="py-4 px-4 text-right font-mono text-slate-700">
+                                                            {formatCurrency(f.total_equity)}
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 ) : (
-                                    <EmptyState message="No financial data available" icon={FileText} />
+                                    <EmptyState message="No financial data available" />
                                 )}
                             </PremiumCard>
                         )}
 
+                        {/* Ownership Tab */}
                         {activeTab === "ownership" && (
                             <PremiumCard>
-                                <SectionHeader title="Major Shareholders" icon={Users} gradient="bg-gradient-to-br from-orange-500 to-amber-600" />
+                                <SectionHeader title="Major Shareholders" icon={Users} color="orange" />
                                 {shareholders.length > 0 ? (
                                     <div className="space-y-3">
                                         {shareholders.slice(0, 10).map((s: any, i: number) => (
@@ -692,71 +686,51 @@ export default function SymbolDetailPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <EmptyState message="No ownership data available" icon={Users} />
+                                    <EmptyState message="No ownership data available" />
                                 )}
                             </PremiumCard>
                         )}
 
+                        {/* Analysts Tab - Showing actual rating data */}
                         {activeTab === "analysts" && (
                             <PremiumCard>
-                                <SectionHeader title="Analyst Ratings" icon={Target} gradient="bg-gradient-to-br from-cyan-500 to-blue-600" />
+                                <SectionHeader title="Analyst Recommendations" icon={Target} color="cyan" />
                                 {symbolAnalystRatings.length > 0 ? (
                                     <div className="space-y-4">
-                                        {symbolAnalystRatings.slice(0, 5).map((r: any, i: number) => {
-                                            const total = (r.strong_buy || 0) + (r.buy || 0) + (r.hold || 0) + (r.sell || 0) + (r.strong_sell || 0);
-                                            if (total === 0) return null;
-                                            return (
-                                                <div key={i} className="p-4 bg-slate-50 rounded-xl">
-                                                    <p className="text-sm font-bold text-slate-600 mb-2">{r.period}</p>
-                                                    <div className="flex h-8 rounded-lg overflow-hidden shadow-inner">
-                                                        <div className="bg-emerald-500" style={{ width: `${((r.strong_buy || 0) / total) * 100}%` }} />
-                                                        <div className="bg-emerald-300" style={{ width: `${((r.buy || 0) / total) * 100}%` }} />
-                                                        <div className="bg-slate-300" style={{ width: `${((r.hold || 0) / total) * 100}%` }} />
-                                                        <div className="bg-red-300" style={{ width: `${((r.sell || 0) / total) * 100}%` }} />
-                                                        <div className="bg-red-500" style={{ width: `${((r.strong_sell || 0) / total) * 100}%` }} />
+                                        {symbolAnalystRatings.map((r: any, i: number) => (
+                                            <div key={i} className="p-5 bg-gradient-to-r from-slate-50 to-blue-50/30 rounded-xl border border-slate-100">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <span className="font-bold text-slate-800">{r.analyst_firm || "Analyst"}</span>
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${r.rating?.toUpperCase() === "BUY" ? "bg-emerald-100 text-emerald-700" :
+                                                            r.rating?.toUpperCase() === "SELL" ? "bg-red-100 text-red-700" :
+                                                                "bg-amber-100 text-amber-700"
+                                                        }`}>
+                                                        {r.rating || "N/A"}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Target Price</p>
+                                                        <p className="text-xl font-bold text-blue-600">SAR {Number(r.target_price || 0).toFixed(2)}</p>
                                                     </div>
-                                                    <div className="flex justify-between mt-2 text-xs font-bold">
-                                                        <span className="text-emerald-600">Strong Buy: {r.strong_buy || 0}</span>
-                                                        <span className="text-emerald-500">Buy: {r.buy || 0}</span>
-                                                        <span className="text-slate-500">Hold: {r.hold || 0}</span>
-                                                        <span className="text-red-500">Sell: {r.sell || 0}</span>
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Current Price</p>
+                                                        <p className="text-xl font-bold text-slate-700">SAR {Number(r.current_price || lastPrice).toFixed(2)}</p>
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
+                                                {r.target_price && lastPrice && (
+                                                    <div className="mt-3 pt-3 border-t border-slate-200">
+                                                        <p className="text-sm text-slate-500">Potential Upside</p>
+                                                        <p className={`text-lg font-bold ${Number(r.target_price) > lastPrice ? "text-emerald-600" : "text-red-600"}`}>
+                                                            {(((Number(r.target_price) - lastPrice) / lastPrice) * 100).toFixed(2)}%
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 ) : (
-                                    <EmptyState message="No analyst ratings available for this stock" icon={Target} />
-                                )}
-                            </PremiumCard>
-                        )}
-
-                        {activeTab === "dividends" && (
-                            <PremiumCard>
-                                <SectionHeader title="Dividend History" icon={DollarSign} gradient="bg-gradient-to-br from-green-500 to-emerald-600" />
-                                {dividends.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full">
-                                            <thead>
-                                                <tr className="border-b-2 border-slate-200">
-                                                    <th className="text-left py-3 px-4 text-slate-500 font-bold text-sm">Ex-Date</th>
-                                                    <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Amount</th>
-                                                    <th className="text-right py-3 px-4 text-slate-500 font-bold text-sm">Yield</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {dividends.slice(0, 10).map((d: any, i: number) => (
-                                                    <tr key={i} className="border-b border-slate-100 hover:bg-emerald-50/30 transition-colors">
-                                                        <td className="py-4 px-4 font-medium text-slate-800">{d.ex_date}</td>
-                                                        <td className="py-4 px-4 text-right font-bold text-emerald-600">SAR {Number(d.amount || 0).toFixed(2)}</td>
-                                                        <td className="py-4 px-4 text-right font-mono text-slate-600">{Number(d.dividend_yield || 0).toFixed(2)}%</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <EmptyState message="No dividend history available" icon={DollarSign} />
+                                    <EmptyState message="No analyst ratings available" />
                                 )}
                             </PremiumCard>
                         )}
@@ -764,92 +738,66 @@ export default function SymbolDetailPage() {
 
                     {/* Right Sidebar (1/3) */}
                     <div className="space-y-6">
-                        {/* Key Metrics Card */}
+                        {/* Trading Info Card */}
                         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-3xl p-6 text-white shadow-2xl shadow-blue-500/30">
                             <div className="flex items-center gap-3 mb-5">
                                 <div className="p-2.5 rounded-xl bg-white/20">
-                                    <Target className="w-5 h-5" />
+                                    <Wallet className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-lg font-bold">Key Metrics</h3>
+                                <h3 className="text-lg font-bold">Trading Info</h3>
                             </div>
                             <div className="space-y-4">
-                                {[
-                                    { label: "P/E Ratio", value: stockData.pe_ratio ? `${Number(stockData.pe_ratio).toFixed(2)}x` : "-" },
-                                    { label: "P/B Ratio", value: stockData.pb_ratio ? `${Number(stockData.pb_ratio).toFixed(2)}x` : "-" },
-                                    { label: "Dividend Yield", value: stockData.dividend_yield ? `${Number(stockData.dividend_yield).toFixed(2)}%` : "-" },
-                                    { label: "Beta", value: stockData.beta ? Number(stockData.beta).toFixed(2) : "-" },
-                                    { label: "Target Price", value: stockData.target_price ? `SAR ${Number(stockData.target_price).toFixed(2)}` : "-" },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex justify-between items-center py-2 border-b border-white/10 last:border-0">
-                                        <span className="text-white/70">{item.label}</span>
-                                        <span className="font-bold font-mono">{item.value}</span>
-                                    </div>
-                                ))}
+                                <div className="flex justify-between items-center py-2 border-b border-white/10">
+                                    <span className="text-white/70">Last Price</span>
+                                    <span className="font-bold font-mono">SAR {lastPrice.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/10">
+                                    <span className="text-white/70">Change</span>
+                                    <span className={`font-bold font-mono ${isPositive ? "text-emerald-300" : "text-red-300"}`}>
+                                        {isPositive ? "+" : ""}{change.toFixed(2)} ({changePercent.toFixed(2)}%)
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/10">
+                                    <span className="text-white/70">Volume</span>
+                                    <span className="font-bold font-mono">{volume.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2">
+                                    <span className="text-white/70">Market</span>
+                                    <span className="font-bold">TADAWUL</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* Corporate Actions */}
                         {corporateActions.length > 0 && (
                             <PremiumCard>
-                                <SectionHeader title="Corporate Actions" icon={Zap} gradient="bg-gradient-to-br from-amber-500 to-orange-600" />
+                                <SectionHeader title="Corporate Actions" icon={Zap} color="orange" />
                                 <div className="space-y-3">
                                     {corporateActions.slice(0, 4).map((action: any, i: number) => (
                                         <div key={i} className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/50">
-                                            <div className="flex items-center justify-between mb-1">
+                                            <div className="flex items-center justify-between mb-2">
                                                 <span className="text-xs font-black text-amber-700 uppercase">{action.action_type}</span>
-                                                <span className="text-xs text-amber-600">{new Date(action.ex_date).toLocaleDateString()}</span>
+                                                <span className="text-xs text-amber-600">{action.ex_date}</span>
                                             </div>
-                                            <p className="text-sm text-amber-800 line-clamp-2">{action.description}</p>
+                                            <p className="text-sm text-amber-800">{action.description}</p>
                                         </div>
                                     ))}
                                 </div>
                             </PremiumCard>
                         )}
 
-                        {/* News Feed */}
-                        <PremiumCard>
-                            <SectionHeader title="Latest News" icon={Newspaper} gradient="bg-gradient-to-br from-slate-600 to-slate-800" />
-                            {symbolNews.length > 0 ? (
-                                <div className="space-y-3">
-                                    {symbolNews.map((article: any, i: number) => (
-                                        <a
-                                            key={i}
-                                            href={article.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors group"
-                                        >
-                                            <p className="font-medium text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2">{article.headline}</p>
-                                            <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
-                                                <Clock className="w-3 h-3" />
-                                                {new Date(article.published_at).toLocaleDateString()}
-                                                <span>•</span>
-                                                <span>{article.source}</span>
-                                            </div>
-                                        </a>
-                                    ))}
-                                </div>
-                            ) : (
-                                <EmptyState message="No news available" icon={Newspaper} />
-                            )}
-                        </PremiumCard>
-
-                        {/* Data Stats */}
+                        {/* Chart Stats */}
                         <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 rounded-3xl p-6 text-white shadow-2xl">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2.5 rounded-xl bg-white/10">
                                     <PieChart className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Chart Data Points</div>
+                                    <div className="text-xs text-slate-400 uppercase font-bold">Chart Data</div>
                                     <div className="text-3xl font-black">{chartData.length.toLocaleString()}</div>
                                 </div>
                             </div>
-                            <div className="text-xs text-slate-500 font-mono">
-                                {chartData.length > 0
-                                    ? `${chartData[0]?.time} → ${chartData[chartData.length - 1]?.time}`
-                                    : "No data range"}
-                            </div>
+                            <p className="text-xs text-slate-500">Historical data points</p>
                         </div>
                     </div>
                 </div>

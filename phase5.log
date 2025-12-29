@@ -440,4 +440,28 @@ Started: 2025-12-29 20:33:27.065834
 [433/453] 9627... ✅ Inst:0 Funds:0 Brkdn:304
 [434/453] 9628... ✅ Inst:0 Funds:0 Brkdn:305
 [435/453] 9630... ✅ Inst:0 Funds:0 Brkdn:306
-[436/453] 9631... 
+[436/453] 9631... ✅ Inst:0 Funds:0 Brkdn:307
+[437/453] 9632... ✅ Inst:0 Funds:0 Brkdn:308
+[438/453] 9633... ✅ Inst:0 Funds:0 Brkdn:309
+[439/453] 9634... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 244878 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[440/453] 9635... ✅ Inst:0 Funds:0 Brkdn:310
+[441/453] 9636... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 296617 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[442/453] 9637... ✅ Inst:0 Funds:0 Brkdn:311
+[443/453] 9639... ✅ Inst:0 Funds:0 Brkdn:312
+[444/453] 9640... ✅ Inst:0 Funds:0 Brkdn:313
+[445/453] 9641... ✅ Inst:0 Funds:0 Brkdn:314
+[446/453] 9642... ✅ Inst:0 Funds:0 Brkdn:315
+[447/453] 9644... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 212676 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[448/453] 9645... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 34575 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[449/453] 9647... ✅ Inst:0 Funds:0 Brkdn:316
+[450/453] 9648... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 222083 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[451/453] 9649... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 128979 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[452/453] 9650... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 164347 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[453/453] 9651... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 172138 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+╔══════════════════════════════════════════════════════════════╗
+║  ✅ PHASE 5 COMPLETE!                                         ║
+╚══════════════════════════════════════════════════════════════╝
+Institutional Holders: 0
+Fund Holders: 0
+Ownership Breakdowns: 316

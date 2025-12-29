@@ -412,8 +412,8 @@ export default function SymbolDetailPage() {
                         {/* Stock Identity */}
                         <div className="flex items-center gap-4">
                             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-2xl ${isPositive
-                                    ? "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600"
-                                    : "bg-gradient-to-br from-red-400 via-red-500 to-rose-600"
+                                ? "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600"
+                                : "bg-gradient-to-br from-red-400 via-red-500 to-rose-600"
                                 }`}>
                                 {symbol.slice(0, 2)}
                             </div>
@@ -511,8 +511,8 @@ export default function SymbolDetailPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold transition-all whitespace-nowrap ${activeTab === tab.id
-                                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
-                                    : "text-slate-600 hover:bg-slate-100"
+                                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
+                                : "text-slate-600 hover:bg-slate-100"
                                 }`}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -525,78 +525,80 @@ export default function SymbolDetailPage() {
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     {/* Left Column (2/3) */}
                     <div className="xl:col-span-2 space-y-6">
-                        {/* Interactive Chart Card */}
-                        <PremiumCard>
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                                <SectionHeader title="Price Chart" icon={LineChart} color="blue" />
+                        {/* Interactive Chart Card - Only on Overview Tab */}
+                        {activeTab === "overview" && (
+                            <PremiumCard>
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                    <SectionHeader title="Price Chart" icon={LineChart} color="blue" />
 
-                                <div className="flex items-center gap-3">
-                                    {/* Timeframe Selector */}
-                                    <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
-                                        {["1m", "3m", "6m", "1y", "5y", "max"].map(tf => (
-                                            <button
-                                                key={tf}
-                                                onClick={() => setChartPeriod(tf)}
-                                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${chartPeriod === tf
+                                    <div className="flex items-center gap-3">
+                                        {/* Timeframe Selector */}
+                                        <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
+                                            {["1m", "3m", "6m", "1y", "5y", "max"].map(tf => (
+                                                <button
+                                                    key={tf}
+                                                    onClick={() => setChartPeriod(tf)}
+                                                    className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${chartPeriod === tf
                                                         ? "bg-white text-blue-600 shadow-md"
                                                         : "text-slate-500 hover:text-slate-700"
-                                                    }`}
+                                                        }`}
+                                                >
+                                                    {tf.toUpperCase()}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {/* Chart Style Toggle */}
+                                        <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
+                                            <button
+                                                onClick={() => setChartStyle("candle")}
+                                                className={`p-2 rounded-lg transition-all ${chartStyle === "candle" ? "bg-white shadow-md text-emerald-600" : "text-slate-400"}`}
                                             >
-                                                {tf.toUpperCase()}
+                                                <CandlestickChart className="w-5 h-5" />
                                             </button>
+                                            <button
+                                                onClick={() => setChartStyle("line")}
+                                                className={`p-2 rounded-lg transition-all ${chartStyle === "line" ? "bg-white shadow-md text-blue-600" : "text-slate-400"}`}
+                                            >
+                                                <LineChart className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Chart Container */}
+                                <div className="relative bg-gradient-to-b from-white to-slate-50/50 rounded-2xl overflow-hidden">
+                                    {chartLoading && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
+                                            <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin" />
+                                        </div>
+                                    )}
+                                    {chartData.length === 0 && !chartLoading && (
+                                        <EmptyState message="No chart data available" />
+                                    )}
+                                    <div ref={chartContainerRef} className="w-full h-[380px]" />
+                                </div>
+
+                                {/* OHLC Stats Footer */}
+                                {stats && (
+                                    <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100">
+                                        {[
+                                            { label: "Open", value: stats.current.open.toFixed(2), color: "slate" },
+                                            { label: "High", value: stats.current.high.toFixed(2), color: "emerald" },
+                                            { label: "Low", value: stats.current.low.toFixed(2), color: "red" },
+                                            { label: "Close", value: stats.current.close.toFixed(2), color: "blue" },
+                                        ].map((item, i) => (
+                                            <div key={i} className="text-center">
+                                                <div className="text-xs text-slate-400 uppercase font-bold mb-1">{item.label}</div>
+                                                <div className={`text-lg font-black font-mono text-${item.color}-600`}>{item.value}</div>
+                                            </div>
                                         ))}
                                     </div>
-
-                                    {/* Chart Style Toggle */}
-                                    <div className="flex items-center gap-1 p-1.5 bg-slate-100 rounded-xl">
-                                        <button
-                                            onClick={() => setChartStyle("candle")}
-                                            className={`p-2 rounded-lg transition-all ${chartStyle === "candle" ? "bg-white shadow-md text-emerald-600" : "text-slate-400"}`}
-                                        >
-                                            <CandlestickChart className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => setChartStyle("line")}
-                                            className={`p-2 rounded-lg transition-all ${chartStyle === "line" ? "bg-white shadow-md text-blue-600" : "text-slate-400"}`}
-                                        >
-                                            <LineChart className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Chart Container */}
-                            <div className="relative bg-gradient-to-b from-white to-slate-50/50 rounded-2xl overflow-hidden">
-                                {chartLoading && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
-                                        <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin" />
-                                    </div>
                                 )}
-                                {chartData.length === 0 && !chartLoading && (
-                                    <EmptyState message="No chart data available" />
-                                )}
-                                <div ref={chartContainerRef} className="w-full h-[380px]" />
-                            </div>
+                            </PremiumCard>
+                        )}
 
-                            {/* OHLC Stats Footer */}
-                            {stats && (
-                                <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100">
-                                    {[
-                                        { label: "Open", value: stats.current.open.toFixed(2), color: "slate" },
-                                        { label: "High", value: stats.current.high.toFixed(2), color: "emerald" },
-                                        { label: "Low", value: stats.current.low.toFixed(2), color: "red" },
-                                        { label: "Close", value: stats.current.close.toFixed(2), color: "blue" },
-                                    ].map((item, i) => (
-                                        <div key={i} className="text-center">
-                                            <div className="text-xs text-slate-400 uppercase font-bold mb-1">{item.label}</div>
-                                            <div className={`text-lg font-black font-mono text-${item.color}-600`}>{item.value}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </PremiumCard>
-
-                        {/* Overview Tab */}
+                        {/* Overview Tab - Stock Information */}
                         {activeTab === "overview" && (
                             <PremiumCard>
                                 <SectionHeader title="Stock Information" icon={Building2} color="emerald" />
@@ -702,8 +704,8 @@ export default function SymbolDetailPage() {
                                                 <div className="flex items-center justify-between mb-3">
                                                     <span className="font-bold text-slate-800">{r.analyst_firm || "Analyst"}</span>
                                                     <span className={`px-3 py-1 rounded-full text-sm font-bold ${r.rating?.toUpperCase() === "BUY" ? "bg-emerald-100 text-emerald-700" :
-                                                            r.rating?.toUpperCase() === "SELL" ? "bg-red-100 text-red-700" :
-                                                                "bg-amber-100 text-amber-700"
+                                                        r.rating?.toUpperCase() === "SELL" ? "bg-red-100 text-red-700" :
+                                                            "bg-amber-100 text-amber-700"
                                                         }`}>
                                                         {r.rating || "N/A"}
                                                     </span>

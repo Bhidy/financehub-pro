@@ -65,7 +65,7 @@ const NAV_SECTIONS = [
         title: "Investment Research",
         color: "green",
         items: [
-            { label: "Company Profile", icon: Building2, href: "/company/1120", badge: "NEW", badgeColor: "green" },
+            { label: "Company Profile", icon: Building2, href: "/symbol/2222", badge: "NEW", badgeColor: "green" },
             { label: "Mutual Funds", icon: DollarSign, href: "/funds" },
             { label: "Shareholders", icon: Users, href: "/shareholders" },
             // HIDDEN: Earnings Calendar - can be re-enabled later

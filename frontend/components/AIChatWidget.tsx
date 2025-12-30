@@ -30,17 +30,28 @@ export default function AIChatWidget() {
         setLoading(true);
 
         try {
-            // TODO: Connect to real backend endpoint
-            // const res = await fetch('/api/ai/chat', { ... });
+            // Connect to real backend
+            console.log("Sending message to AI:", userMsg);
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-            // Mock response for UI demo
-            setTimeout(() => {
-                setMessages(prev => [...prev, {
-                    role: 'ai',
-                    content: `I'm analyzing the data for "${userMsg}"... (Backend integration pending)`
-                }]);
-                setLoading(false);
-            }, 1500);
+            const res = await fetch(`${baseUrl}/api/v1/ai/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: userMsg,
+                    history: messages // Send conversation context
+                })
+            });
+
+            if (!res.ok) throw new Error("API Error");
+
+            const data = await res.json();
+
+            setMessages(prev => [...prev, {
+                role: 'ai',
+                content: data.reply || "Sorry, I couldn't process that."
+            }]);
+            setLoading(false);
 
         } catch (error) {
             console.error("Chat error:", error);
@@ -90,8 +101,8 @@ export default function AIChatWidget() {
                                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed ${msg.role === 'user'
-                                                ? 'bg-emerald-600 text-white rounded-br-none shadow-lg shadow-emerald-900/20'
-                                                : 'bg-slate-800/80 border border-white/5 text-slate-200 rounded-bl-none shadow-sm'
+                                            ? 'bg-emerald-600 text-white rounded-br-none shadow-lg shadow-emerald-900/20'
+                                            : 'bg-slate-800/80 border border-white/5 text-slate-200 rounded-bl-none shadow-sm'
                                             }`}>
                                             {msg.role === 'ai' && (
                                                 <div className="flex items-center gap-1.5 mb-1.5 text-xs font-semibold text-emerald-400/80 uppercase tracking-wider">

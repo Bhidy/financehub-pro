@@ -6,17 +6,23 @@ let pool: Pool | null = null;
 function getPool(): Pool {
     if (pool) return pool;
 
-    const connectionString = process.env.DATABASE_URL;
+    let connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
         throw new Error('DATABASE_URL is not defined in environment variables');
     }
 
+    // ENTERPRISE FIX: Remove sslmode from URL to prevent conflict with our SSL config
+    // Supabase pooler requires SSL but we need to accept their certificate
+    connectionString = connectionString.replace(/[?&]sslmode=[^&]*/g, '');
+
+    console.log('[DB] Connecting to database...');
+
     pool = new Pool({
         connectionString,
-        ssl: { rejectUnauthorized: false },
-        max: 5,
+        ssl: { rejectUnauthorized: false }, // Accept Supabase self-signed cert
+        max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
+        connectionTimeoutMillis: 5000,
     });
 
     return pool;

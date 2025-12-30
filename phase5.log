@@ -1698,4 +1698,34 @@ Started: 2025-12-30 10:06:54.999770
 [290/453] 7204... ✅ Inst:0 Funds:0 Brkdn:0
 [291/453] 7211... ✅ Inst:0 Funds:0 Brkdn:0
 [292/453] 8010... ✅ Inst:0 Funds:0 Brkdn:0
-[293/453] 8012... 
+[293/453] 8012... ╔══════════════════════════════════════════════════════════════╗
+║  🚀 PHASE 5: OWNERSHIP DATA COLLECTION                       ║
+╚══════════════════════════════════════════════════════════════╝
+Started: 2025-12-30 12:13:07.208018
+
+📊 Processing 453 stocks...
+
+[1/453] 1010... ✅ Inst:0 Funds:0 Brkdn:1
+[2/453] 1020... ✅ Inst:0 Funds:0 Brkdn:2
+[3/453] 1030... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 315990 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[4/453] 1050... ✅ Inst:0 Funds:0 Brkdn:3
+[5/453] 1060... ✅ Inst:0 Funds:0 Brkdn:4
+[6/453] 1080... ✅ Inst:0 Funds:0 Brkdn:5
+[7/453] 1111... ✅ Inst:0 Funds:0 Brkdn:6
+[8/453] 1113... ✅ Inst:0 Funds:0 Brkdn:6
+[9/453] 1120... ✅ Inst:0 Funds:0 Brkdn:7
+[10/453] 1140... ✅ Inst:0 Funds:0 Brkdn:8
+[11/453] 1150... ✅ Inst:0 Funds:0 Brkdn:9
+[12/453] 1180... ✅ Inst:0 Funds:0 Brkdn:10
+[13/453] 1182... ✅ Inst:0 Funds:0 Brkdn:11
+[14/453] 1183... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[15/453] 1201... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 279708 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[16/453] 1202... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 256583 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[17/453] 1210... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 237683 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[18/453] 1211... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 235787 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[19/453] 1212... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 300623 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[20/453] 1213... ✅ Inst:0 Funds:0 Brkdn:12
+[21/453] 1214... ✅ Inst:0 Funds:0 Brkdn:13
+[22/453] 1301... ✅ Inst:0 Funds:0 Brkdn:14
+[23/453] 1302... ✅ Inst:0 Funds:0 Brkdn:15
+[24/453] 1303... 

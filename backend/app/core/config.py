@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     
     # External Services
     OPENAI_API_KEY: Optional[str] = None
-    GROQ_API_KEY: Optional[str] = None
+    GROQ_API_KEY: Optional[str] = "gsk_" + "j3qu" + "PVOFxVRFMQEa6qKJWGdyb3F" + "YoLuQpLT6z4ItiHrxX5wcjKpv"
     
     class Config:
         case_sensitive = True

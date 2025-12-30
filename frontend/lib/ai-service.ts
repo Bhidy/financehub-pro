@@ -267,6 +267,9 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 temperature: 0.2
             });
 
+            const responseMsg = response.choices[0].message;
+            const toolCalls = responseMsg.tool_calls;
+
             console.log(`[AI] Raw Response:`, JSON.stringify(responseMsg));
 
             if (toolCalls && toolCalls.length > 0) {

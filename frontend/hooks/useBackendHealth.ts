@@ -10,9 +10,9 @@ export function useBackendHealth() {
     useEffect(() => {
         const checkHealth = async () => {
             try {
-                // UNIFIED SERVERLESS: Check internal API health endpoint
-                const res = await fetch('/api/v1/ai/chat', {
-                    method: 'GET',  // GET returns health status
+                // ENTERPRISE DIAGNOSTICS check
+                const res = await fetch('/api/diagnostics', {
+                    method: 'GET',
                     cache: 'no-store'
                 });
                 if (res.ok) {

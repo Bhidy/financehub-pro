@@ -1717,4 +1717,53 @@ Started: 2025-12-30 10:05:55.701996
 [309/453] 8230... ✅ Recs:0 Ests:0 Hist:0
 [310/453] 8240... ✅ Recs:0 Ests:0 Hist:0
 [311/453] 8250... ❌ No Data
-[312/453] 8260... 
+[312/453] 8260... ╔══════════════════════════════════════════════════════════════╗
+║  🚀 PHASE 4B: ANALYST & EARNINGS COLLECTION                  ║
+╚══════════════════════════════════════════════════════════════╝
+Started: 2025-12-30 12:04:06.598187
+
+📊 Processing 453 stocks...
+
+[1/453] 1010... ✅ Recs:0 Ests:4 Hist:0
+[2/453] 1020... ✅ Recs:0 Ests:8 Hist:0
+[3/453] 1030... ❌ No Data
+[4/453] 1050... ✅ Recs:0 Ests:12 Hist:0
+[5/453] 1060... ✅ Recs:0 Ests:16 Hist:0
+[6/453] 1080... ✅ Recs:0 Ests:20 Hist:0
+[7/453] 1111... ❌ No Data
+[8/453] 1113... ❌ No Data
+[9/453] 1120... ✅ Recs:0 Ests:24 Hist:0
+[10/453] 1140... ✅ Recs:0 Ests:28 Hist:0
+[11/453] 1150... ✅ Recs:0 Ests:32 Hist:0
+[12/453] 1180... ✅ Recs:0 Ests:36 Hist:0
+[13/453] 1182... ✅ Recs:0 Ests:40 Hist:0
+[14/453] 1183... ✅ Recs:0 Ests:44 Hist:0
+[15/453] 1201... ✅ Recs:0 Ests:48 Hist:0
+[16/453] 1202... ❌ No Data
+[17/453] 1210... ✅ Recs:0 Ests:52 Hist:0
+[18/453] 1211... ✅ Recs:0 Ests:56 Hist:0
+[19/453] 1212... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[20/453] 1213... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[21/453] 1214... ❌ No Data
+[22/453] 1301... ✅ Recs:0 Ests:60 Hist:0
+[23/453] 1302... ❌ No Data
+[24/453] 1303... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 325109 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[25/453] 1304... ✅ Recs:0 Ests:64 Hist:0
+[26/453] 1320... ❌ No Data
+[27/453] 1321... ✅ Recs:0 Ests:68 Hist:0
+[28/453] 1322... ❌ No Data
+[29/453] 1323... ✅ Recs:0 Ests:72 Hist:0
+[30/453] 1810... ❌ No Data
+[31/453] 1820... ❌ No Data
+[32/453] 1830... ✅ Recs:0 Ests:76 Hist:0
+[33/453] 1831... ✅ Recs:0 Ests:80 Hist:0
+[34/453] 1832... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[35/453] 1833... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 333092 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[36/453] 1834... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 323900 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[37/453] 1835... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 262828 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[38/453] 2001... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 219176 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[39/453] 2010... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 282277 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[40/453] 2020... ✅ Recs:0 Ests:84 Hist:0
+[41/453] 2030... ✅ Recs:0 Ests:88 Hist:0
+[42/453] 2040... ❌ No Data
+[43/453] 2050... 

@@ -1720,4 +1720,42 @@ Started: 2025-12-30 10:05:55.702190
 [309/453] 8230... ✅ BS:0 IS:0 CF:0 (Total: 0)
 [310/453] 8240... ✅ BS:0 IS:0 CF:0 (Total: 0)
 [311/453] 8250... ✅ BS:0 IS:0 CF:0 (Total: 0)
-[312/453] 8260... 
+[312/453] 8260... ╔══════════════════════════════════════════════════════════════╗
+║  🚀 PHASE 4A: QUARTERLY FINANCIALS COLLECTION                ║
+╚══════════════════════════════════════════════════════════════╝
+Started: 2025-12-30 12:05:06.392844
+
+📊 Processing 453 stocks...
+
+[1/453] 1010... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[2/453] 1020... ✅ BS:4 IS:0 CF:0 (Total: 4)
+[3/453] 1030... ✅ BS:6 IS:0 CF:0 (Total: 6)
+[4/453] 1050... ✅ BS:8 IS:0 CF:0 (Total: 8)
+[5/453] 1060... ✅ BS:10 IS:0 CF:0 (Total: 10)
+[6/453] 1080... ✅ BS:12 IS:0 CF:0 (Total: 12)
+[7/453] 1111... ✅ BS:14 IS:0 CF:0 (Total: 14)
+[8/453] 1113... ✅ BS:14 IS:0 CF:0 (Total: 14)
+[9/453] 1120... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[10/453] 1140... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[11/453] 1150... ✅ BS:16 IS:0 CF:0 (Total: 16)
+[12/453] 1180... ✅ BS:18 IS:0 CF:0 (Total: 18)
+[13/453] 1182... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 331664 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[14/453] 1183... ✅ BS:18 IS:0 CF:0 (Total: 18)
+[15/453] 1201... ✅ BS:19 IS:0 CF:0 (Total: 19)
+[16/453] 1202... ✅ BS:21 IS:0 CF:0 (Total: 21)
+[17/453] 1210... ✅ BS:21 IS:0 CF:0 (Total: 21)
+[18/453] 1211... ✅ BS:23 IS:0 CF:0 (Total: 23)
+[19/453] 1212... ✅ BS:25 IS:0 CF:0 (Total: 25)
+[20/453] 1213... ✅ BS:25 IS:0 CF:0 (Total: 25)
+[21/453] 1214... ✅ BS:27 IS:0 CF:0 (Total: 27)
+[22/453] 1301... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[23/453] 1302... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[24/453] 1303... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 242410 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[25/453] 1304... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 179932 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[26/453] 1320... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 313610 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[27/453] 1321... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 252679 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[28/453] 1322... ✅ BS:29 IS:0 CF:0 (Total: 29)
+[29/453] 1323... ✅ BS:29 IS:0 CF:0 (Total: 29)
+[30/453] 1810... ✅ BS:31 IS:0 CF:0 (Total: 31)
+[31/453] 1820... ✅ BS:33 IS:0 CF:0 (Total: 33)
+[32/453] 1830... 

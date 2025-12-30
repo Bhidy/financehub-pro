@@ -4,7 +4,7 @@ import { TickerResponseSchema, Ticker } from "./schemas";
 
 // FIXED: Always use the correct API URL with /api/v1 prefix
 // Previous issue: NEXT_PUBLIC_API_URL was set without /api/v1, causing 404 errors
-const PRODUCTION_API_BASE = "https://bhidy-financehub-api.hf.space/api/v1";
+const PRODUCTION_API_BASE = "https://financehub-pro-production.up.railway.app/api/v1";
 
 // For development, allow override but production always uses the correct URL
 const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'

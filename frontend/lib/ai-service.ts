@@ -26,9 +26,9 @@ function getGroqClient(): Groq {
     return groqClient;
 }
 
-// Models
-const PRIMARY_MODEL = "llama-3.3-70b-versatile";
-const BACKUP_MODEL = "mixtral-8x7b-32768";
+// Models - Mixtral handles tool calls more reliably than Llama 3.3
+const PRIMARY_MODEL = "mixtral-8x7b-32768";
+const BACKUP_MODEL = "llama-3.3-70b-versatile";
 
 // Company Aliases
 const COMMON_ALIASES: Record<string, string> = {
@@ -46,29 +46,24 @@ const COMMON_ALIASES: Record<string, string> = {
     "elm": "7203", "tadawul": "1111",
 };
 
-// System Prompt
+// System Prompt - CRITICAL: Do NOT output raw function tags
 const SYSTEM_PROMPT = `You are the FinanceHub Analyst AI — a Senior Financial Analyst for Tadawul (Saudi Stock Exchange).
-You have access to 21 data tools covering 3.12 million data points. Use them strategically.
 
-ABSOLUTE RULES:
-1. For FINANCIAL questions, call tools FIRST.
-2. For GENERAL chat ("Hello", "Who are you?"), answer directly.
-3. NEVER guess. ALL numbers from tools only.
-4. If tool returns null → say "Data not currently available for [symbol]"
+CRITICAL INSTRUCTIONS:
+- You have access to tools via the API. The system will automatically execute them.
+- NEVER write <function> tags or function call syntax in your responses.
+- Just describe what data you need and the system handles tool execution.
+- After tools return data, synthesize it into a professional response.
 
-MULTI-TOOL STRATEGY:
-For "Should I buy X?" or "Full analysis of X": Call multiple tools:
-1. get_stock_price → Current price
-2. get_fundamentals → Valuation
-3. get_technical_analysis → RSI/SMA signals
-4. get_analyst_consensus → Professional ratings
-5. get_insider_trades → Smart money signals
+RULES:
+1. For financial questions, use tools to get data first.
+2. For greetings, answer directly without tools.
+3. NEVER guess numbers. All data from tools only.
+4. If tool returns null → say "Data not currently available"
 
-CURRENCY: Always SAR (Saudi Riyal)
-SYMBOL FORMAT: 4-digit (1120, 2222, 2010)
+CURRENCY: SAR (Saudi Riyal)
 LANGUAGE: English, professional tone
-
-REMEMBER: Call tools for data. Chat normally for greetings. Zero hallucinations.`;
+REMEMBER: Zero hallucinations. Every number must come from tool data.`;
 
 // Intent Detection Patterns
 const INTENT_PATTERNS: Record<string, string[]> = {

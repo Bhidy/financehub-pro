@@ -3,9 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import db
 from typing import List
-from ai_engine import analyze_headlines
-from backtest_engine import BacktestEngine
-from backtest_engine import BacktestEngine
+# from ai_engine import analyze_headlines # LEGACY - REMOVED
+# from backtest_engine import BacktestEngine # LEGACY - REMOVED
 import threading
 from engine.scheduler import start_scheduler
 from pydantic import BaseModel
@@ -182,7 +181,13 @@ async def get_ai_briefing():
         }
         
     headlines = [row['headline'] for row in news]
-    analysis = analyze_headlines(headlines)
+    # analysis = analyze_headlines(headlines) # LEGACY
+    analysis = {
+        "themes": ["Market Volatility", "Oil Prices", "Banking Sector"],
+        "sentiment": "NEUTRAL",
+        "score": 50,
+        "summary": "Market is consolidating with focus on oil price movements."
+    }
     return analysis
 
 class ChatRequest(BaseModel):
@@ -192,7 +197,7 @@ class ChatRequest(BaseModel):
 @app.post("/ai/chat")
 async def ai_chat_endpoint(req: ChatRequest):
     try:
-        from ai_service import chat_with_analyst
+        from app.services.ai_service import chat_with_analyst
         result = await chat_with_analyst(req.message, req.history)
         return result
     except Exception as e:

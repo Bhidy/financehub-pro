@@ -466,3 +466,1258 @@ Balance Sheets: 205
 Income Statements: 0
 Cash Flows: 0
 Errors: 95
+╔══════════════════════════════════════════════════════════════╗
+║  🚀 PHASE 4A: QUARTERLY FINANCIALS COLLECTION                ║
+╚══════════════════════════════════════════════════════════════╝
+Started: 2025-12-29 23:24:01.590985
+
+📊 Processing 453 stocks...
+
+[1/453] 1010... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 332879 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[2/453] 1020... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[3/453] 1030... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 261065 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[4/453] 1050... ✅ BS:4 IS:0 CF:0 (Total: 4)
+[5/453] 1060... ✅ BS:6 IS:0 CF:0 (Total: 6)
+[6/453] 1080... ✅ BS:8 IS:0 CF:0 (Total: 8)
+[7/453] 1111... ✅ BS:10 IS:0 CF:0 (Total: 10)
+[8/453] 1113... ✅ BS:10 IS:0 CF:0 (Total: 10)
+[9/453] 1120... ✅ BS:12 IS:0 CF:0 (Total: 12)
+[10/453] 1140... ✅ BS:14 IS:0 CF:0 (Total: 14)
+[11/453] 1150... ✅ BS:16 IS:0 CF:0 (Total: 16)
+[12/453] 1180... ✅ BS:18 IS:0 CF:0 (Total: 18)
+[13/453] 1182... ✅ BS:18 IS:0 CF:0 (Total: 18)
+[14/453] 1183... ✅ BS:18 IS:0 CF:0 (Total: 18)
+[15/453] 1201... ✅ BS:19 IS:0 CF:0 (Total: 19)
+[16/453] 1202... ✅ BS:21 IS:0 CF:0 (Total: 21)
+[17/453] 1210... ✅ BS:21 IS:0 CF:0 (Total: 21)
+[18/453] 1211... ✅ BS:23 IS:0 CF:0 (Total: 23)
+[19/453] 1212... ✅ BS:25 IS:0 CF:0 (Total: 25)
+[20/453] 1213... ✅ BS:25 IS:0 CF:0 (Total: 25)
+[21/453] 1214... ✅ BS:27 IS:0 CF:0 (Total: 27)
+[22/453] 1301... ✅ BS:27 IS:0 CF:0 (Total: 27)
+[23/453] 1302... ✅ BS:29 IS:0 CF:0 (Total: 29)
+[24/453] 1303... ✅ BS:29 IS:0 CF:0 (Total: 29)
+[25/453] 1304... ✅ BS:31 IS:0 CF:0 (Total: 31)
+[26/453] 1320... ✅ BS:33 IS:0 CF:0 (Total: 33)
+[27/453] 1321... ✅ BS:33 IS:0 CF:0 (Total: 33)
+[28/453] 1322... ✅ BS:35 IS:0 CF:0 (Total: 35)
+[29/453] 1323... ✅ BS:35 IS:0 CF:0 (Total: 35)
+[30/453] 1810... ✅ BS:37 IS:0 CF:0 (Total: 37)
+[31/453] 1820... ✅ BS:39 IS:0 CF:0 (Total: 39)
+[32/453] 1830... ✅ BS:41 IS:0 CF:0 (Total: 41)
+[33/453] 1831... ✅ BS:43 IS:0 CF:0 (Total: 43)
+[34/453] 1832... ✅ BS:43 IS:0 CF:0 (Total: 43)
+[35/453] 1833... ✅ BS:45 IS:0 CF:0 (Total: 45)
+[36/453] 1834... ✅ BS:47 IS:0 CF:0 (Total: 47)
+[37/453] 1835... ✅ BS:49 IS:0 CF:0 (Total: 49)
+[38/453] 2001... ✅ BS:51 IS:0 CF:0 (Total: 51)
+[39/453] 2010... ✅ BS:53 IS:0 CF:0 (Total: 53)
+[40/453] 2020... ✅ BS:55 IS:0 CF:0 (Total: 55)
+[41/453] 2030... ✅ BS:55 IS:0 CF:0 (Total: 55)
+[42/453] 2040... ✅ BS:57 IS:0 CF:0 (Total: 57)
+[43/453] 2050... ✅ BS:59 IS:0 CF:0 (Total: 59)
+[44/453] 2060... ✅ BS:61 IS:0 CF:0 (Total: 61)
+[45/453] 2070... ✅ BS:63 IS:0 CF:0 (Total: 63)
+[46/453] 2080... ✅ BS:66 IS:0 CF:0 (Total: 66)
+[47/453] 2081... ✅ BS:68 IS:0 CF:0 (Total: 68)
+[48/453] 2082... ✅ BS:70 IS:0 CF:0 (Total: 70)
+[49/453] 2083... ✅ BS:70 IS:0 CF:0 (Total: 70)
+[50/453] 2084... ✅ BS:72 IS:0 CF:0 (Total: 72)
+[51/453] 2090... ✅ BS:72 IS:0 CF:0 (Total: 72)
+[52/453] 2100... ✅ BS:72 IS:0 CF:0 (Total: 72)
+[53/453] 2110... ✅ BS:75 IS:0 CF:0 (Total: 75)
+[54/453] 2120... ✅ BS:75 IS:0 CF:0 (Total: 75)
+[55/453] 2130... ✅ BS:75 IS:0 CF:0 (Total: 75)
+[56/453] 2140... ✅ BS:75 IS:0 CF:0 (Total: 75)
+[57/453] 2150... ✅ BS:75 IS:0 CF:0 (Total: 75)
+[58/453] 2160... ✅ BS:77 IS:0 CF:0 (Total: 77)
+[59/453] 2170... ✅ BS:79 IS:0 CF:0 (Total: 79)
+[60/453] 2180... ✅ BS:79 IS:0 CF:0 (Total: 79)
+[61/453] 2190... ✅ BS:81 IS:0 CF:0 (Total: 81)
+[62/453] 2200... ✅ BS:83 IS:0 CF:0 (Total: 83)
+[63/453] 2210... ✅ BS:83 IS:0 CF:0 (Total: 83)
+[64/453] 2220... ✅ BS:83 IS:0 CF:0 (Total: 83)
+[65/453] 2222... ✅ BS:85 IS:0 CF:0 (Total: 85)
+[66/453] 2223... ✅ BS:87 IS:0 CF:0 (Total: 87)
+[67/453] 2230... ✅ BS:88 IS:0 CF:0 (Total: 88)
+[68/453] 2240... ✅ BS:91 IS:0 CF:0 (Total: 91)
+[69/453] 2250... ✅ BS:93 IS:0 CF:0 (Total: 93)
+[70/453] 2270... ✅ BS:95 IS:0 CF:0 (Total: 95)
+[71/453] 2280... ✅ BS:97 IS:0 CF:0 (Total: 97)
+[72/453] 2281... ✅ BS:99 IS:0 CF:0 (Total: 99)
+[73/453] 2282... ✅ BS:99 IS:0 CF:0 (Total: 99)
+[74/453] 2283... ✅ BS:101 IS:0 CF:0 (Total: 101)
+[75/453] 2284... ✅ BS:103 IS:0 CF:0 (Total: 103)
+[76/453] 2285... ✅ BS:103 IS:0 CF:0 (Total: 103)
+[77/453] 2286... ✅ BS:103 IS:0 CF:0 (Total: 103)
+[78/453] 2287... ✅ BS:103 IS:0 CF:0 (Total: 103)
+[79/453] 2290... ✅ BS:105 IS:0 CF:0 (Total: 105)
+[80/453] 2300... ✅ BS:107 IS:0 CF:0 (Total: 107)
+[81/453] 2310... ✅ BS:109 IS:0 CF:0 (Total: 109)
+[82/453] 2320... ✅ BS:110 IS:0 CF:0 (Total: 110)
+[83/453] 2330... ✅ BS:112 IS:0 CF:0 (Total: 112)
+[84/453] 2340... ✅ BS:112 IS:0 CF:0 (Total: 112)
+[85/453] 2350... ✅ BS:114 IS:0 CF:0 (Total: 114)
+[86/453] 2360... ✅ BS:114 IS:0 CF:0 (Total: 114)
+[87/453] 2370... ✅ BS:116 IS:0 CF:0 (Total: 116)
+[88/453] 2380... ❌ No Data
+[89/453] 2381... ❌ No Data
+[90/453] 2382... ❌ No Data
+[91/453] 3002... ❌ No Data
+[92/453] 3003... ❌ No Data
+[93/453] 3004... ❌ No Data
+[94/453] 3005... ❌ No Data
+[95/453] 3007... ❌ No Data
+[96/453] 3008... ❌ No Data
+[97/453] 3010... ❌ No Data
+[98/453] 3020... ❌ No Data
+[99/453] 3030... ❌ No Data
+[100/453] 3040... ❌ No Data
+[101/453] 3050... ❌ No Data
+[102/453] 3060... ❌ No Data
+[103/453] 3080... ❌ No Data
+[104/453] 3090... ❌ No Data
+[105/453] 3091... ❌ No Data
+[106/453] 3092... ❌ No Data
+[107/453] 4001... ❌ No Data
+[108/453] 4002... ❌ No Data
+[109/453] 4003... ❌ No Data
+[110/453] 4004... ❌ No Data
+[111/453] 4005... ❌ No Data
+[112/453] 4006... ❌ No Data
+[113/453] 4007... ❌ No Data
+[114/453] 4008... ❌ No Data
+[115/453] 4009... ❌ No Data
+[116/453] 4011... ❌ No Data
+[117/453] 4012... ❌ No Data
+[118/453] 4013... ❌ No Data
+[119/453] 4014... ❌ No Data
+[120/453] 4015... ❌ No Data
+[121/453] 4016... ❌ No Data
+[122/453] 4017... ❌ No Data
+[123/453] 4018... ❌ No Data
+[124/453] 4019... ❌ No Data
+[125/453] 4020... ❌ No Data
+[126/453] 4021... ❌ No Data
+[127/453] 4030... ❌ No Data
+[128/453] 4031... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 250951 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[129/453] 4040... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 69141 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[130/453] 4050... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 88411 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[131/453] 4051... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[132/453] 4061... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 24175 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[133/453] 4070... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 53043 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[134/453] 4071... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 54116 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[135/453] 4072... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 111811 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[136/453] 4080... ✅ BS:116 IS:0 CF:0 (Total: 116)
+[137/453] 4081... ✅ BS:117 IS:0 CF:0 (Total: 117)
+[138/453] 4082... ✅ BS:117 IS:0 CF:0 (Total: 117)
+[139/453] 4083... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 236374 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[140/453] 4084... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 138071 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[141/453] 4090... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 292819 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[142/453] 4100... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 159147 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[143/453] 4110... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 316131 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[144/453] 4130... ✅ BS:117 IS:0 CF:0 (Total: 117)
+[145/453] 4140... ✅ BS:117 IS:0 CF:0 (Total: 117)
+[146/453] 4141... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 252260 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[147/453] 4142... ✅ BS:119 IS:0 CF:0 (Total: 119)
+[148/453] 4143... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 127688 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[149/453] 4144... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 106814 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[150/453] 4145... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 29582 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[151/453] 4146... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 18975 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[152/453] 4150... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 63443 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[153/453] 4160... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 8377 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[154/453] 4161... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[155/453] 4162... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 21575 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[156/453] 4163... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[157/453] 4164... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30009 milliseconds with 47616 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[158/453] 4165... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 25484 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[159/453] 4170... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[160/453] 4180... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 20782 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[161/453] 4190... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 7487 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[162/453] 4191... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 25475 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[163/453] 4192... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[164/453] 4193... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[165/453] 4194... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[166/453] 4200... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[167/453] 4210... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[168/453] 4220... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[169/453] 4230... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30003 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[170/453] 4240... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[171/453] 4250... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[172/453] 4260... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[173/453] 4261... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[174/453] 4262... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[175/453] 4263... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[176/453] 4264... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[177/453] 4265... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 30675 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[178/453] 4270... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[179/453] 4280... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[180/453] 4290... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[181/453] 4291... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[182/453] 4292... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[183/453] 4300... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[184/453] 4310... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[185/453] 4320... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 29375 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[186/453] 4321... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[187/453] 4322... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 10972 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[188/453] 4323... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 26555 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[189/453] 4324... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 53043 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[190/453] 4325... ❌ Error: Failed to perform, curl: (56) Recv failure: Connection reset by peer. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[191/453] 4326... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[192/453] 4327... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[193/453] 4330... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 18763 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[194/453] 4331... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 52962 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[195/453] 4332... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 15279 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[196/453] 4333... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[197/453] 4334... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 3590 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[198/453] 4335... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 38475 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[199/453] 4336... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 62152 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[200/453] 4337... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 39259 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[201/453] 4338... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 92818 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[202/453] 4339... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 29384 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[203/453] 4340... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 4892 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[204/453] 4342... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[205/453] 4344... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 84511 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[206/453] 4345... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 88918 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[207/453] 4346... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[208/453] 4347... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 145871 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[209/453] 4348... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 279819 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[210/453] 4349... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 264081 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[211/453] 4350... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 243665 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[212/453] 4700... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 94920 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[213/453] 4701... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 261065 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[214/453] 4702... ❌ No Data
+[215/453] 4703... ❌ No Data
+[216/453] 5015... ✅ BS:119 IS:0 CF:0 (Total: 119)
+[217/453] 5019... ✅ BS:119 IS:0 CF:0 (Total: 119)
+[218/453] 5021... ✅ BS:119 IS:0 CF:0 (Total: 119)
+[219/453] 5022... ✅ BS:119 IS:0 CF:0 (Total: 119)
+[220/453] 5023... ✅ BS:119 IS:0 CF:0 (Total: 119)
+[221/453] 5110... ✅ BS:121 IS:0 CF:0 (Total: 121)
+[222/453] 5214... ❌ No Data
+[223/453] 5216... ❌ No Data
+[224/453] 5221... ❌ No Data
+[225/453] 5227... ❌ No Data
+[226/453] 5243... ❌ No Data
+[227/453] 5245... ❌ No Data
+[228/453] 5246... ❌ No Data
+[229/453] 5247... ❌ No Data
+[230/453] 5249... ❌ No Data
+[231/453] 5250... ❌ No Data
+[232/453] 5251... ❌ No Data
+[233/453] 5252... ❌ No Data
+[234/453] 5253... ❌ No Data
+[235/453] 5254... ❌ No Data
+[236/453] 5267... ❌ No Data
+[237/453] 5272... ❌ No Data
+[238/453] 5273... ❌ No Data
+[239/453] 5274... ❌ No Data
+[240/453] 5280... ❌ No Data
+[241/453] 5282... ❌ No Data
+[242/453] 5283... ❌ No Data
+[243/453] 5284... ❌ No Data
+[244/453] 5285... ❌ No Data
+[245/453] 5301... ❌ No Data
+[246/453] 5303... ❌ No Data
+[247/453] 5306... ❌ No Data
+[248/453] 5308... ❌ No Data
+[249/453] 5311... ❌ No Data
+[250/453] 5312... ❌ No Data
+[251/453] 5313... ❌ No Data
+[252/453] 5318... ❌ No Data
+[253/453] 5320... ❌ No Data
+[254/453] 5321... ❌ No Data
+[255/453] 5323... ❌ No Data
+[256/453] 5332... ❌ No Data
+[257/453] 5333... ❌ No Data
+[258/453] 5334... ❌ No Data
+[259/453] 5336... ❌ No Data
+[260/453] 5338... ❌ No Data
+[261/453] 5339... ❌ No Data
+[262/453] 5343... ❌ No Data
+[263/453] 5344... ❌ No Data
+[264/453] 6001... ❌ No Data
+[265/453] 6002... ❌ No Data
+[266/453] 6004... ❌ No Data
+[267/453] 6010... ❌ No Data
+[268/453] 6012... ❌ No Data
+[269/453] 6013... ❌ No Data
+[270/453] 6014... ❌ No Data
+[271/453] 6015... ❌ No Data
+[272/453] 6016... ❌ No Data
+[273/453] 6017... ❌ No Data
+[274/453] 6018... ❌ No Data
+[275/453] 6019... ❌ No Data
+[276/453] 6020... ✅ BS:121 IS:0 CF:0 (Total: 121)
+[277/453] 6040... ❌ No Data
+[278/453] 6050... ❌ No Data
+[279/453] 6060... ❌ No Data
+[280/453] 6070... ❌ No Data
+[281/453] 6090... ❌ No Data
+[282/453] 7010... ❌ No Data
+[283/453] 7020... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[284/453] 7030... ❌ No Data
+[285/453] 7040... ❌ No Data
+[286/453] 7200... ❌ No Data
+[287/453] 7201... ❌ No Data
+[288/453] 7202... ❌ No Data
+[289/453] 7203... ❌ No Data
+[290/453] 7204... ❌ No Data
+[291/453] 7211... ❌ No Data
+[292/453] 8010... ❌ No Data
+[293/453] 8012... ❌ No Data
+[294/453] 8020... ❌ No Data
+[295/453] 8030... ❌ No Data
+[296/453] 8040... ❌ No Data
+[297/453] 8050... ❌ No Data
+[298/453] 8060... ❌ No Data
+[299/453] 8070... ❌ No Data
+[300/453] 8100... ❌ No Data
+[301/453] 8120... ❌ No Data
+[302/453] 8150... ❌ No Data
+[303/453] 8160... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[304/453] 8170... ❌ No Data
+[305/453] 8180... ❌ No Data
+[306/453] 8190... ❌ No Data
+[307/453] 8200... ❌ No Data
+[308/453] 8210... ❌ No Data
+[309/453] 8230... ❌ No Data
+[310/453] 8240... ❌ No Data
+[311/453] 8250... ❌ No Data
+[312/453] 8260... ❌ No Data
+[313/453] 8280... ❌ No Data
+[314/453] 8300... ❌ No Data
+[315/453] 8310... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[316/453] 8311... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[317/453] 8313... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[318/453] 9300... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[319/453] 9403... ❌ No Data
+[320/453] 9404... ❌ No Data
+[321/453] 9405... ❌ No Data
+[322/453] 9406... ❌ No Data
+[323/453] 9407... ❌ No Data
+[324/453] 9408... ❌ No Data
+[325/453] 9409... ❌ No Data
+[326/453] 9410... ❌ No Data
+[327/453] 9411... ❌ No Data
+[328/453] 9412... ❌ No Data
+[329/453] 9510... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[330/453] 9513... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[331/453] 9514... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[332/453] 9515... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[333/453] 9516... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[334/453] 9517... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[335/453] 9521... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[336/453] 9522... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[337/453] 9523... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[338/453] 9524... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[339/453] 9525... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[340/453] 9527... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[341/453] 9530... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[342/453] 9532... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[343/453] 9533... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[344/453] 9535... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[345/453] 9536... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[346/453] 9537... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[347/453] 9538... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[348/453] 9539... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[349/453] 9540... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[350/453] 9541... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 63443 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[351/453] 9542... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 335978 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[352/453] 9543... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 68676 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[353/453] 9544... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 119888 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[354/453] 9545... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[355/453] 9546... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 58006 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[356/453] 9547... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 109219 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[357/453] 9548... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[358/453] 9549... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 16155 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[359/453] 9550... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 128988 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[360/453] 9551... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 117771 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[361/453] 9552... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 19180 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[362/453] 9553... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 46712 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[363/453] 9555... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 23954 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[364/453] 9556... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 12263 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[365/453] 9557... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 54352 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[366/453] 9558... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 22655 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[367/453] 9559... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[368/453] 9560... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[369/453] 9561... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 17464 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[370/453] 9562... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[371/453] 9563... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[372/453] 9564... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[373/453] 9565... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[374/453] 9566... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[375/453] 9567... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[376/453] 9568... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[377/453] 9569... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[378/453] 9570... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30001 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[379/453] 9571... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 23084 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[380/453] 9572... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[381/453] 9574... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 13998 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[382/453] 9575... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 13572 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[383/453] 9576... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 16155 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[384/453] 9577... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[385/453] 9578... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[386/453] 9579... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 76434 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[387/453] 9580... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 17463 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[388/453] 9581... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 20054 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[389/453] 9583... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 27846 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[390/453] 9584... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[391/453] 9585... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[392/453] 9586... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 9739 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[393/453] 9587... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[394/453] 9588... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 12264 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[395/453] 9589... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 7488 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[396/453] 9590... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[397/453] 9591... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30001 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[398/453] 9592... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[399/453] 9593... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[400/453] 9594... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 43716 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[401/453] 9595... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 62143 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[402/453] 9596... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 97259 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[403/453] 9597... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 131072 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[404/453] 9598... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 75134 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[405/453] 9599... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 132889 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[406/453] 9600... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 156547 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[407/453] 9601... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 181229 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[408/453] 9602... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[409/453] 9603... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 145794 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[410/453] 9604... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 125807 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[411/453] 9605... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 316496 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[412/453] 9606... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 269228 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[413/453] 9607... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[414/453] 9608... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[415/453] 9609... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[416/453] 9610... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[417/453] 9611... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[418/453] 9612... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[419/453] 9613... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[420/453] 9614... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[421/453] 9615... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[422/453] 9616... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[423/453] 9617... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[424/453] 9618... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[425/453] 9619... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[426/453] 9620... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[427/453] 9621... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[428/453] 9622... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[429/453] 9623... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[430/453] 9624... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[431/453] 9625... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[432/453] 9626... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[433/453] 9627... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[434/453] 9628... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[435/453] 9630... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[436/453] 9631... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[437/453] 9632... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[438/453] 9633... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[439/453] 9634... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[440/453] 9635... ❌ Error: Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[441/453] 9636... ❌ Error: Failed to perform, curl: (28) Operation timed out after 971107 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[442/453] 9637... ❌ Error: Failed to perform, curl: (28) Operation timed out after 1068660 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[443/453] 9639... ❌ Error: Failed to perform, curl: (28) Operation timed out after 948034 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[444/453] 9640... ❌ Error: Failed to perform, curl: (28) Connection timed out after 970143 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[445/453] 9641... ❌ Error: Failed to perform, curl: (28) Operation timed out after 922682 milliseconds with 15292 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[446/453] 9642... ❌ Error: Failed to perform, curl: (28) Operation timed out after 944143 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[447/453] 9644... ❌ Error: Failed to perform, curl: (28) Operation timed out after 1016984 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[448/453] 9645... ❌ Error: Failed to perform, curl: (28) Operation timed out after 397005 milliseconds with 72577 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[449/453] 9647... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[450/453] 9648... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[451/453] 9649... ✅ BS:123 IS:0 CF:0 (Total: 123)
+[452/453] 9650... ❌ Error: Failed to perform, curl: (28) Connection timed out after 999031 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[453/453] 9651... ❌ Error: Failed to perform, curl: (28) Connection timed out after 916703 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+╔══════════════════════════════════════════════════════════════╗
+║  ✅ PHASE 4A COMPLETE!                                        ║
+╚══════════════════════════════════════════════════════════════╝
+Balance Sheets: 123
+Income Statements: 0
+Cash Flows: 0
+Errors: 155
+╔══════════════════════════════════════════════════════════════╗
+║  🚀 PHASE 4A: QUARTERLY FINANCIALS COLLECTION                ║
+╚══════════════════════════════════════════════════════════════╝
+Started: 2025-12-30 04:35:41.827617
+
+📊 Processing 453 stocks...
+
+[1/453] 1010... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[2/453] 1020... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[3/453] 1030... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[4/453] 1050... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[5/453] 1060... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[6/453] 1080... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[7/453] 1111... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[8/453] 1113... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[9/453] 1120... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[10/453] 1140... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[11/453] 1150... ❌ Error: Failed to perform, curl: (28) Operation timed out after 1022137 milliseconds with 85811 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[12/453] 1180... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[13/453] 1182... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[14/453] 1183... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[15/453] 1201... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[16/453] 1202... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[17/453] 1210... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[18/453] 1211... ❌ Error: Failed to perform, curl: (28) Operation timed out after 975742 milliseconds with 77743 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[19/453] 1212... ❌ Error: Failed to perform, curl: (28) Operation timed out after 1060689 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[20/453] 1213... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[21/453] 1214... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[22/453] 1301... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[23/453] 1302... ❌ Error: Failed to perform, curl: (28) Operation timed out after 921907 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[24/453] 1303... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[25/453] 1304... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[26/453] 1320... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[27/453] 1321... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[28/453] 1322... ❌ Error: Failed to perform, curl: (28) Operation timed out after 180721 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[29/453] 1323... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[30/453] 1810... ❌ Error: Failed to perform, curl: (28) Connection timed out after 1053408 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[31/453] 1820... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[32/453] 1830... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[33/453] 1831... ❌ Error: Failed to perform, curl: (28) Connection timed out after 911567 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[34/453] 1832... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[35/453] 1833... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[36/453] 1834... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[37/453] 1835... ❌ Error: Failed to perform, curl: (28) Operation timed out after 643640 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[38/453] 2001... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[39/453] 2010... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[40/453] 2020... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[41/453] 2030... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[42/453] 2040... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[43/453] 2050... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[44/453] 2060... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[45/453] 2070... ❌ Error: Failed to perform, curl: (28) Connection timed out after 30002 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[46/453] 2080... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[47/453] 2081... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[48/453] 2082... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[49/453] 2083... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[50/453] 2084... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[51/453] 2090... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[52/453] 2100... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[53/453] 2110... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[54/453] 2120... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[55/453] 2130... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[56/453] 2140... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[57/453] 2150... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[58/453] 2160... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[59/453] 2170... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[60/453] 2180... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[61/453] 2190... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[62/453] 2200... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[63/453] 2210... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[64/453] 2220... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[65/453] 2222... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[66/453] 2223... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[67/453] 2230... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[68/453] 2240... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[69/453] 2250... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[70/453] 2270... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[71/453] 2280... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[72/453] 2281... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[73/453] 2282... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[74/453] 2283... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[75/453] 2284... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[76/453] 2285... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[77/453] 2286... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[78/453] 2287... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[79/453] 2290... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[80/453] 2300... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[81/453] 2310... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[82/453] 2320... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[83/453] 2330... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[84/453] 2340... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[85/453] 2350... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[86/453] 2360... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[87/453] 2370... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[88/453] 2380... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[89/453] 2381... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[90/453] 2382... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[91/453] 3002... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[92/453] 3003... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[93/453] 3004... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[94/453] 3005... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[95/453] 3007... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[96/453] 3008... ✅ BS:2 IS:0 CF:0 (Total: 2)
+[97/453] 3010... ❌ No Data
+[98/453] 3020... ❌ No Data
+[99/453] 3030... ❌ No Data
+[100/453] 3040... ❌ No Data
+[101/453] 3050... ❌ No Data
+[102/453] 3060... ❌ No Data
+[103/453] 3080... ❌ No Data
+[104/453] 3090... ❌ No Data
+[105/453] 3091... ❌ No Data
+[106/453] 3092... ❌ No Data
+[107/453] 4001... ❌ No Data
+[108/453] 4002... ❌ No Data
+[109/453] 4003... ❌ No Data
+[110/453] 4004... ❌ No Data
+[111/453] 4005... ❌ No Data
+[112/453] 4006... ❌ No Data
+[113/453] 4007... ❌ No Data
+[114/453] 4008... ❌ No Data
+[115/453] 4009... ❌ No Data
+[116/453] 4011... ❌ No Data
+[117/453] 4012... ❌ No Data
+[118/453] 4013... ❌ No Data
+[119/453] 4014... ❌ No Data
+[120/453] 4015... ❌ No Data
+[121/453] 4016... ❌ No Data
+[122/453] 4017... ❌ No Data
+[123/453] 4018... ❌ No Data
+[124/453] 4019... ❌ No Data
+[125/453] 4020... ❌ No Data
+[126/453] 4021... ❌ No Data
+[127/453] 4030... ❌ No Data
+[128/453] 4031... ❌ No Data
+[129/453] 4040... ❌ No Data
+[130/453] 4050... ❌ No Data
+[131/453] 4051... ❌ No Data
+[132/453] 4061... ❌ No Data
+[133/453] 4070... ❌ No Data
+[134/453] 4071... ❌ No Data
+[135/453] 4072... ❌ No Data
+[136/453] 4080... ❌ No Data
+[137/453] 4081... ❌ No Data
+[138/453] 4082... ❌ No Data
+[139/453] 4083... ❌ No Data
+[140/453] 4084... ❌ No Data
+[141/453] 4090... ❌ No Data
+[142/453] 4100... ❌ No Data
+[143/453] 4110... ❌ No Data
+[144/453] 4130... ❌ No Data
+[145/453] 4140... ❌ No Data
+[146/453] 4141... ❌ No Data
+[147/453] 4142... ❌ No Data
+[148/453] 4143... ❌ No Data
+[149/453] 4144... ❌ No Data
+[150/453] 4145... ❌ No Data
+[151/453] 4146... ❌ No Data
+[152/453] 4150... ❌ No Data
+[153/453] 4160... ❌ No Data
+[154/453] 4161... ❌ No Data
+[155/453] 4162... ❌ No Data
+[156/453] 4163... ❌ No Data
+[157/453] 4164... ❌ No Data
+[158/453] 4165... ❌ No Data
+[159/453] 4170... ❌ No Data
+[160/453] 4180... ❌ No Data
+[161/453] 4190... ❌ No Data
+[162/453] 4191... ❌ No Data
+[163/453] 4192... ❌ No Data
+[164/453] 4193... ❌ No Data
+[165/453] 4194... ❌ No Data
+[166/453] 4200... ❌ No Data
+[167/453] 4210... ❌ No Data
+[168/453] 4220... ❌ No Data
+[169/453] 4230... ❌ No Data
+[170/453] 4240... ❌ No Data
+[171/453] 4250... ❌ No Data
+[172/453] 4260... ❌ No Data
+[173/453] 4261... ❌ No Data
+[174/453] 4262... ❌ No Data
+[175/453] 4263... ❌ No Data
+[176/453] 4264... ❌ No Data
+[177/453] 4265... ❌ No Data
+[178/453] 4270... ❌ No Data
+[179/453] 4280... ❌ No Data
+[180/453] 4290... ❌ No Data
+[181/453] 4291... ❌ No Data
+[182/453] 4292... ❌ No Data
+[183/453] 4300... ❌ No Data
+[184/453] 4310... ❌ No Data
+[185/453] 4320... ❌ No Data
+[186/453] 4321... ❌ No Data
+[187/453] 4322... ❌ No Data
+[188/453] 4323... ❌ No Data
+[189/453] 4324... ❌ No Data
+[190/453] 4325... ❌ No Data
+[191/453] 4326... ❌ No Data
+[192/453] 4327... ❌ No Data
+[193/453] 4330... ❌ No Data
+[194/453] 4331... ❌ No Data
+[195/453] 4332... ❌ No Data
+[196/453] 4333... ❌ No Data
+[197/453] 4334... ❌ No Data
+[198/453] 4335... ❌ No Data
+[199/453] 4336... ❌ No Data
+[200/453] 4337... ❌ No Data
+[201/453] 4338... ❌ No Data
+[202/453] 4339... ❌ No Data
+[203/453] 4340... ❌ No Data
+[204/453] 4342... ❌ No Data
+[205/453] 4344... ❌ No Data
+[206/453] 4345... ❌ No Data
+[207/453] 4346... ❌ No Data
+[208/453] 4347... ❌ No Data
+[209/453] 4348... ❌ No Data
+[210/453] 4349... ❌ No Data
+[211/453] 4350... ❌ No Data
+[212/453] 4700... ❌ No Data
+[213/453] 4701... ❌ No Data
+[214/453] 4702... ❌ No Data
+[215/453] 4703... ❌ No Data
+[216/453] 5015... ❌ No Data
+[217/453] 5019... ❌ No Data
+[218/453] 5021... ❌ No Data
+[219/453] 5022... ❌ No Data
+[220/453] 5023... ❌ No Data
+[221/453] 5110... ❌ No Data
+[222/453] 5214... ❌ No Data
+[223/453] 5216... ❌ No Data
+[224/453] 5221... ❌ No Data
+[225/453] 5227... ❌ No Data
+[226/453] 5243... ❌ No Data
+[227/453] 5245... ❌ No Data
+[228/453] 5246... ❌ No Data
+[229/453] 5247... ❌ No Data
+[230/453] 5249... ❌ No Data
+[231/453] 5250... ❌ No Data
+[232/453] 5251... ❌ No Data
+[233/453] 5252... ❌ No Data
+[234/453] 5253... ❌ No Data
+[235/453] 5254... ❌ No Data
+[236/453] 5267... ❌ No Data
+[237/453] 5272... ❌ No Data
+[238/453] 5273... ❌ No Data
+[239/453] 5274... ❌ No Data
+[240/453] 5280... ❌ No Data
+[241/453] 5282... ❌ No Data
+[242/453] 5283... ❌ No Data
+[243/453] 5284... ❌ No Data
+[244/453] 5285... ❌ No Data
+[245/453] 5301... ❌ No Data
+[246/453] 5303... ❌ No Data
+[247/453] 5306... ❌ No Data
+[248/453] 5308... ❌ No Data
+[249/453] 5311... ❌ No Data
+[250/453] 5312... ❌ No Data
+[251/453] 5313... ❌ No Data
+[252/453] 5318... ❌ No Data
+[253/453] 5320... ❌ No Data
+[254/453] 5321... ❌ No Data
+[255/453] 5323... ❌ No Data
+[256/453] 5332... ❌ No Data
+[257/453] 5333... ❌ No Data
+[258/453] 5334... ❌ No Data
+[259/453] 5336... ❌ No Data
+[260/453] 5338... ❌ No Data
+[261/453] 5339... ❌ No Data
+[262/453] 5343... ❌ No Data
+[263/453] 5344... ❌ No Data
+[264/453] 6001... ❌ No Data
+[265/453] 6002... ❌ No Data
+[266/453] 6004... ❌ No Data
+[267/453] 6010... ❌ No Data
+[268/453] 6012... ❌ No Data
+[269/453] 6013... ❌ No Data
+[270/453] 6014... ❌ No Data
+[271/453] 6015... ❌ No Data
+[272/453] 6016... ❌ No Data
+[273/453] 6017... ❌ No Data
+[274/453] 6018... ❌ No Data
+[275/453] 6019... ❌ No Data
+[276/453] 6020... ❌ No Data
+[277/453] 6040... ❌ No Data
+[278/453] 6050... ❌ No Data
+[279/453] 6060... ❌ No Data
+[280/453] 6070... ❌ No Data
+[281/453] 6090... ❌ No Data
+[282/453] 7010... ❌ No Data
+[283/453] 7020... ❌ No Data
+[284/453] 7030... ❌ No Data
+[285/453] 7040... ❌ No Data
+[286/453] 7200... ❌ No Data
+[287/453] 7201... ❌ No Data
+[288/453] 7202... ❌ No Data
+[289/453] 7203... ❌ No Data
+[290/453] 7204... ❌ No Data
+[291/453] 7211... ❌ No Data
+[292/453] 8010... ❌ No Data
+[293/453] 8012... ❌ No Data
+[294/453] 8020... ❌ No Data
+[295/453] 8030... ❌ No Data
+[296/453] 8040... ❌ No Data
+[297/453] 8050... ❌ No Data
+[298/453] 8060... ❌ No Data
+[299/453] 8070... ❌ No Data
+[300/453] 8100... ❌ No Data
+[301/453] 8120... ❌ No Data
+[302/453] 8150... ❌ No Data
+[303/453] 8160... ❌ No Data
+[304/453] 8170... ❌ No Data
+[305/453] 8180... ❌ No Data
+[306/453] 8190... ❌ No Data
+[307/453] 8200... ❌ No Data
+[308/453] 8210... ❌ No Data
+[309/453] 8230... ❌ No Data
+[310/453] 8240... ❌ No Data
+[311/453] 8250... ❌ No Data
+[312/453] 8260... ❌ No Data
+[313/453] 8280... ❌ No Data
+[314/453] 8300... ❌ No Data
+[315/453] 8310... ❌ No Data
+[316/453] 8311... ❌ No Data
+[317/453] 8313... ❌ No Data
+[318/453] 9300... ❌ No Data
+[319/453] 9403... ❌ No Data
+[320/453] 9404... ❌ No Data
+[321/453] 9405... ❌ No Data
+[322/453] 9406... ❌ No Data
+[323/453] 9407... ❌ No Data
+[324/453] 9408... ❌ No Data
+[325/453] 9409... ❌ No Data
+[326/453] 9410... ❌ No Data
+[327/453] 9411... ❌ No Data
+[328/453] 9412... ❌ No Data
+[329/453] 9510... ❌ No Data
+[330/453] 9513... ❌ No Data
+[331/453] 9514... ❌ No Data
+[332/453] 9515... ❌ No Data
+[333/453] 9516... ❌ No Data
+[334/453] 9517... ❌ No Data
+[335/453] 9521... ❌ No Data
+[336/453] 9522... ❌ No Data
+[337/453] 9523... ❌ No Data
+[338/453] 9524... ❌ No Data
+[339/453] 9525... ❌ No Data
+[340/453] 9527... ❌ No Data
+[341/453] 9530... ❌ No Data
+[342/453] 9532... ❌ No Data
+[343/453] 9533... ❌ No Data
+[344/453] 9535... ❌ No Data
+[345/453] 9536... ❌ No Data
+[346/453] 9537... ❌ No Data
+[347/453] 9538... ❌ No Data
+[348/453] 9539... ❌ No Data
+[349/453] 9540... ❌ No Data
+[350/453] 9541... ❌ No Data
+[351/453] 9542... ❌ No Data
+[352/453] 9543... ❌ No Data
+[353/453] 9544... ❌ No Data
+[354/453] 9545... ❌ No Data
+[355/453] 9546... ❌ No Data
+[356/453] 9547... ❌ No Data
+[357/453] 9548... ❌ No Data
+[358/453] 9549... ❌ No Data
+[359/453] 9550... ❌ No Data
+[360/453] 9551... ❌ No Data
+[361/453] 9552... ❌ No Data
+[362/453] 9553... ❌ No Data
+[363/453] 9555... ❌ No Data
+[364/453] 9556... ❌ No Data
+[365/453] 9557... ❌ No Data
+[366/453] 9558... ❌ No Data
+[367/453] 9559... ❌ No Data
+[368/453] 9560... ❌ No Data
+[369/453] 9561... ❌ No Data
+[370/453] 9562... ❌ No Data
+[371/453] 9563... ❌ No Data
+[372/453] 9564... ❌ No Data
+[373/453] 9565... ❌ No Data
+[374/453] 9566... ❌ No Data
+[375/453] 9567... ❌ No Data
+[376/453] 9568... ❌ No Data
+[377/453] 9569... ❌ No Data
+[378/453] 9570... ❌ No Data
+[379/453] 9571... ❌ No Data
+[380/453] 9572... ❌ No Data
+[381/453] 9574... ❌ No Data
+[382/453] 9575... ❌ No Data
+[383/453] 9576... ❌ No Data
+[384/453] 9577... ❌ No Data
+[385/453] 9578... ❌ No Data
+[386/453] 9579... ❌ No Data
+[387/453] 9580... ❌ No Data
+[388/453] 9581... ❌ No Data
+[389/453] 9583... ❌ No Data
+[390/453] 9584... ❌ No Data
+[391/453] 9585... ❌ No Data
+[392/453] 9586... ❌ No Data
+[393/453] 9587... ❌ No Data
+[394/453] 9588... ❌ No Data
+[395/453] 9589... ❌ No Data
+[396/453] 9590... ❌ No Data
+[397/453] 9591... ❌ No Data
+[398/453] 9592... ❌ No Data
+[399/453] 9593... ❌ No Data
+[400/453] 9594... ❌ No Data
+[401/453] 9595... ❌ No Data
+[402/453] 9596... ❌ No Data
+[403/453] 9597... ❌ No Data
+[404/453] 9598... ❌ No Data
+[405/453] 9599... ❌ No Data
+[406/453] 9600... ❌ No Data
+[407/453] 9601... ❌ No Data
+[408/453] 9602... ❌ No Data
+[409/453] 9603... ❌ No Data
+[410/453] 9604... ❌ No Data
+[411/453] 9605... ❌ No Data
+[412/453] 9606... ❌ No Data
+[413/453] 9607... ❌ No Data
+[414/453] 9608... ❌ No Data
+[415/453] 9609... ❌ No Data
+[416/453] 9610... ❌ No Data
+[417/453] 9611... ❌ No Data
+[418/453] 9612... ❌ No Data
+[419/453] 9613... ❌ No Data
+[420/453] 9614... ❌ No Data
+[421/453] 9615... ❌ No Data
+[422/453] 9616... ❌ No Data
+[423/453] 9617... ❌ No Data
+[424/453] 9618... ❌ No Data
+[425/453] 9619... ❌ No Data
+[426/453] 9620... ❌ No Data
+[427/453] 9621... ❌ No Data
+[428/453] 9622... ❌ No Data
+[429/453] 9623... ❌ No Data
+[430/453] 9624... ❌ No Data
+[431/453] 9625... ❌ No Data
+[432/453] 9626... ❌ No Data
+[433/453] 9627... ❌ No Data
+[434/453] 9628... ❌ No Data
+[435/453] 9630... ❌ No Data
+[436/453] 9631... ❌ No Data
+[437/453] 9632... ❌ No Data
+[438/453] 9633... ❌ No Data
+[439/453] 9634... ❌ No Data
+[440/453] 9635... ❌ No Data
+[441/453] 9636... ❌ No Data
+[442/453] 9637... ❌ No Data
+[443/453] 9639... ❌ No Data
+[444/453] 9640... ❌ No Data
+[445/453] 9641... ❌ No Data
+[446/453] 9642... ❌ No Data
+[447/453] 9644... ❌ No Data
+[448/453] 9645... ❌ No Data
+[449/453] 9647... ❌ No Data
+[450/453] 9648... ❌ No Data
+[451/453] 9649... ❌ No Data
+[452/453] 9650... ❌ No Data
+[453/453] 9651... ❌ No Data
+
+╔══════════════════════════════════════════════════════════════╗
+║  ✅ PHASE 4A COMPLETE!                                        ║
+╚══════════════════════════════════════════════════════════════╝
+Balance Sheets: 2
+Income Statements: 0
+Cash Flows: 0
+Errors: 9
+╔══════════════════════════════════════════════════════════════╗
+║  🚀 PHASE 4A: QUARTERLY FINANCIALS COLLECTION                ║
+╚══════════════════════════════════════════════════════════════╝
+Started: 2025-12-30 10:05:55.702190
+
+📊 Processing 453 stocks...
+
+[1/453] 1010... ❌ No Data
+[2/453] 1020... ❌ No Data
+[3/453] 1030... ❌ No Data
+[4/453] 1050... ❌ No Data
+[5/453] 1060... ❌ No Data
+[6/453] 1080... ❌ No Data
+[7/453] 1111... ❌ No Data
+[8/453] 1113... ❌ No Data
+[9/453] 1120... ❌ No Data
+[10/453] 1140... ❌ No Data
+[11/453] 1150... ❌ No Data
+[12/453] 1180... ❌ No Data
+[13/453] 1182... ❌ No Data
+[14/453] 1183... ❌ No Data
+[15/453] 1201... ❌ No Data
+[16/453] 1202... ❌ No Data
+[17/453] 1210... ❌ No Data
+[18/453] 1211... ❌ No Data
+[19/453] 1212... ❌ No Data
+[20/453] 1213... ❌ No Data
+[21/453] 1214... ❌ No Data
+[22/453] 1301... ❌ No Data
+[23/453] 1302... ❌ No Data
+[24/453] 1303... ❌ No Data
+[25/453] 1304... ❌ No Data
+[26/453] 1320... ❌ No Data
+[27/453] 1321... ❌ No Data
+[28/453] 1322... ❌ No Data
+[29/453] 1323... ❌ No Data
+[30/453] 1810... ❌ No Data
+[31/453] 1820... ❌ No Data
+[32/453] 1830... ❌ No Data
+[33/453] 1831... ❌ No Data
+[34/453] 1832... ❌ No Data
+[35/453] 1833... ❌ No Data
+[36/453] 1834... ❌ No Data
+[37/453] 1835... ❌ No Data
+[38/453] 2001... ❌ No Data
+[39/453] 2010... ❌ No Data
+[40/453] 2020... ❌ No Data
+[41/453] 2030... ❌ No Data
+[42/453] 2040... ❌ No Data
+[43/453] 2050... ❌ No Data
+[44/453] 2060... ❌ No Data
+[45/453] 2070... ❌ No Data
+[46/453] 2080... ❌ No Data
+[47/453] 2081... ❌ No Data
+[48/453] 2082... ❌ Error: Failed to perform, curl: (28) Connection timed out after 743172 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[49/453] 2083... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[50/453] 2084... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[51/453] 2090... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[52/453] 2100... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[53/453] 2110... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[54/453] 2120... ❌ Error: Failed to perform, curl: (28) Operation timed out after 547232 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[55/453] 2130... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[56/453] 2140... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[57/453] 2150... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[58/453] 2160... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[59/453] 2170... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[60/453] 2180... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[61/453] 2190... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[62/453] 2200... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[63/453] 2210... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[64/453] 2220... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[65/453] 2222... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[66/453] 2223... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[67/453] 2230... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[68/453] 2240... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[69/453] 2250... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[70/453] 2270... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[71/453] 2280... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[72/453] 2281... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[73/453] 2282... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[74/453] 2283... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[75/453] 2284... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[76/453] 2285... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[77/453] 2286... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[78/453] 2287... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[79/453] 2290... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[80/453] 2300... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[81/453] 2310... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[82/453] 2320... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[83/453] 2330... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[84/453] 2340... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[85/453] 2350... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[86/453] 2360... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[87/453] 2370... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[88/453] 2380... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[89/453] 2381... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[90/453] 2382... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[91/453] 3002... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[92/453] 3003... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[93/453] 3004... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[94/453] 3005... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[95/453] 3007... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[96/453] 3008... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[97/453] 3010... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[98/453] 3020... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[99/453] 3030... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[100/453] 3040... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[101/453] 3050... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[102/453] 3060... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[103/453] 3080... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[104/453] 3090... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[105/453] 3091... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[106/453] 3092... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[107/453] 4001... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[108/453] 4002... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[109/453] 4003... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[110/453] 4004... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[111/453] 4005... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[112/453] 4006... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[113/453] 4007... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[114/453] 4008... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[115/453] 4009... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[116/453] 4011... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[117/453] 4012... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[118/453] 4013... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[119/453] 4014... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[120/453] 4015... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[121/453] 4016... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[122/453] 4017... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[123/453] 4018... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[124/453] 4019... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[125/453] 4020... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[126/453] 4021... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[127/453] 4030... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[128/453] 4031... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[129/453] 4040... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[130/453] 4050... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[131/453] 4051... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[132/453] 4061... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[133/453] 4070... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[134/453] 4071... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[135/453] 4072... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[136/453] 4080... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[137/453] 4081... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[138/453] 4082... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[139/453] 4083... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[140/453] 4084... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[141/453] 4090... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[142/453] 4100... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[143/453] 4110... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[144/453] 4130... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[145/453] 4140... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[146/453] 4141... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[147/453] 4142... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[148/453] 4143... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[149/453] 4144... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[150/453] 4145... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[151/453] 4146... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[152/453] 4150... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[153/453] 4160... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[154/453] 4161... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[155/453] 4162... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[156/453] 4163... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[157/453] 4164... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[158/453] 4165... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[159/453] 4170... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[160/453] 4180... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[161/453] 4190... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[162/453] 4191... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[163/453] 4192... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[164/453] 4193... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[165/453] 4194... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[166/453] 4200... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[167/453] 4210... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[168/453] 4220... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[169/453] 4230... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[170/453] 4240... ❌ Error: Failed to perform, curl: (6) Could not resolve host: finance.yahoo.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[171/453] 4250... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[172/453] 4260... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[173/453] 4261... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[174/453] 4262... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[175/453] 4263... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[176/453] 4264... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[177/453] 4265... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[178/453] 4270... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[179/453] 4280... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[180/453] 4290... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[181/453] 4291... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[182/453] 4292... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[183/453] 4300... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[184/453] 4310... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[185/453] 4320... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[186/453] 4321... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[187/453] 4322... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[188/453] 4323... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[189/453] 4324... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[190/453] 4325... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[191/453] 4326... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[192/453] 4327... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[193/453] 4330... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[194/453] 4331... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[195/453] 4332... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[196/453] 4333... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[197/453] 4334... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[198/453] 4335... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[199/453] 4336... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[200/453] 4337... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[201/453] 4338... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[202/453] 4339... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[203/453] 4340... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[204/453] 4342... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[205/453] 4344... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[206/453] 4345... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[207/453] 4346... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[208/453] 4347... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[209/453] 4348... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[210/453] 4349... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[211/453] 4350... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[212/453] 4700... ❌ No Data
+[213/453] 4701... ❌ No Data
+[214/453] 4702... ❌ No Data
+[215/453] 4703... ❌ No Data
+[216/453] 5015... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[217/453] 5019... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[218/453] 5021... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[219/453] 5022... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[220/453] 5023... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[221/453] 5110... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[222/453] 5214... ❌ No Data
+[223/453] 5216... ❌ No Data
+[224/453] 5221... ❌ No Data
+[225/453] 5227... ❌ No Data
+[226/453] 5243... ❌ No Data
+[227/453] 5245... ❌ No Data
+[228/453] 5246... ❌ No Data
+[229/453] 5247... ❌ No Data
+[230/453] 5249... ❌ No Data
+[231/453] 5250... ❌ No Data
+[232/453] 5251... ❌ No Data
+[233/453] 5252... ❌ No Data
+[234/453] 5253... ❌ No Data
+[235/453] 5254... ❌ No Data
+[236/453] 5267... ❌ No Data
+[237/453] 5272... ❌ No Data
+[238/453] 5273... ❌ No Data
+[239/453] 5274... ❌ No Data
+[240/453] 5280... ❌ No Data
+[241/453] 5282... ❌ No Data
+[242/453] 5283... ❌ No Data
+[243/453] 5284... ❌ No Data
+[244/453] 5285... ❌ No Data
+[245/453] 5301... ❌ No Data
+[246/453] 5303... ❌ No Data
+[247/453] 5306... ❌ No Data
+[248/453] 5308... ❌ No Data
+[249/453] 5311... ❌ No Data
+[250/453] 5312... ❌ No Data
+[251/453] 5313... ❌ No Data
+[252/453] 5318... ❌ No Data
+[253/453] 5320... ❌ No Data
+[254/453] 5321... ❌ No Data
+[255/453] 5323... ❌ No Data
+[256/453] 5332... ❌ No Data
+[257/453] 5333... ❌ No Data
+[258/453] 5334... ❌ No Data
+[259/453] 5336... ❌ No Data
+[260/453] 5338... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[261/453] 5339... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[262/453] 5343... ❌ No Data
+[263/453] 5344... ❌ No Data
+[264/453] 6001... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[265/453] 6002... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[266/453] 6004... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[267/453] 6010... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[268/453] 6012... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[269/453] 6013... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[270/453] 6014... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[271/453] 6015... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[272/453] 6016... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[273/453] 6017... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[274/453] 6018... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[275/453] 6019... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[276/453] 6020... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[277/453] 6040... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[278/453] 6050... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[279/453] 6060... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[280/453] 6070... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[281/453] 6090... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[282/453] 7010... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[283/453] 7020... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[284/453] 7030... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[285/453] 7040... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[286/453] 7200... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[287/453] 7201... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[288/453] 7202... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[289/453] 7203... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[290/453] 7204... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[291/453] 7211... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[292/453] 8010... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[293/453] 8012... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[294/453] 8020... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[295/453] 8030... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[296/453] 8040... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[297/453] 8050... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[298/453] 8060... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[299/453] 8070... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[300/453] 8100... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[301/453] 8120... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[302/453] 8150... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[303/453] 8160... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[304/453] 8170... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[305/453] 8180... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[306/453] 8190... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[307/453] 8200... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[308/453] 8210... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[309/453] 8230... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[310/453] 8240... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[311/453] 8250... ✅ BS:0 IS:0 CF:0 (Total: 0)
+[312/453] 8260... 

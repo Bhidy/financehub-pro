@@ -1292,12 +1292,28 @@ async def chat_with_analyst(message: str, history: List[Dict], max_retries: int 
         # Let AI decide (but enhanced prompt should guide it)
         tool_choice = "auto"
     
-    # Retry logic for robustness
+    # === HYBRID MODEL ARCHITECTURE (World Class Reliability) ===
+    # Primary: Llama 3.3 (State of the Art, Fast, Smart)
+    # Backup: Llama 3.1 (Reliable Fallback if 3.3 is busy/rate-limited)
+    PRIMARY_MODEL = "llama-3.3-70b-versatile"
+    BACKUP_MODEL = "llama-3.1-70b-versatile"
+    
+    # Retry logic with Smart Fallback
     last_error = None
-    for attempt in range(max_retries):
+    warnings = []
+    
+    for attempt in range(max_retries + 1): # +1 for backup attempt
+        # Determine model strategy
+        current_model = PRIMARY_MODEL
+        if attempt > 0 and attempt == max_retries:
+            # On final try, switch to BACKUP
+            current_model = BACKUP_MODEL
+            print(f"[AI] ⚠️ Switching to BACKUP MODEL: {current_model}")
+            
         try:
+            print(f"[AI] 🚀 Executing with {current_model} (Attempt {attempt+1})")
             response = await client.chat.completions.create(
-                model=GROQ_MODEL,
+                model=current_model,
                 messages=messages,
                 tools=TOOLS_SCHEMA,
                 tool_choice=tool_choice,
@@ -1395,7 +1411,7 @@ async def chat_with_analyst(message: str, history: List[Dict], max_retries: int 
                     })
                     
                 final_response = await client.chat.completions.create(
-                    model=GROQ_MODEL,
+                    model=current_model,
                     messages=messages,
                     temperature=0.5
                 )

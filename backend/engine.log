@@ -2491,3 +2491,12 @@ asyncpg.exceptions.ConnectionDoesNotExistError: connection was closed in the mid
 2025-12-30 12:34:55,862 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
 2025-12-30 12:34:55,863 - [ENGINE] - ERROR - Main Event Loop not found!
 2025-12-30 12:34:55,863 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:35:56,059 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:36:26,268 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:36:26,269 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:36:26,269 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:37:26,477 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:37:56,606 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:37:56,607 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:37:56,607 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:38:56,840 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...

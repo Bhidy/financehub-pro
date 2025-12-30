@@ -749,13 +749,13 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 });
 
                 return {
-                    reply: finalResponse.choices[0].message.content || "Analysis complete.",
+                    reply: sanitizeResponse(finalResponse.choices[0].message.content || "Analysis complete."),
                     data: dataPayload,
                     tools_used: toolCalls.map(tc => tc.function.name)
                 };
             } else {
                 return {
-                    reply: responseMsg.content || "I couldn't generate a response. Please try again.",
+                    reply: sanitizeResponse(responseMsg.content || "I couldn't generate a response. Please try again."),
                     data: {},
                     tools_used: []
                 };
@@ -770,3 +770,30 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
 
     return { reply: "Service temporarily unavailable.", data: null, error: "MAX_RETRIES" };
 }
+
+// ============================================================================
+// SANITIZATION: Remove raw function tag hallucinations
+// ============================================================================
+function sanitizeResponse(text: string): string {
+    if (!text) return text;
+
+    // Remove <function=...>...</function> tags and their content
+    let cleaned = text.replace(/<function=[^>]*>[\s\S]*?<\/function>/gi, '');
+
+    // Remove standalone <function=...> tags without closing
+    cleaned = cleaned.replace(/<function=[^>]*>/gi, '');
+
+    // Remove [function_call:...] patterns
+    cleaned = cleaned.replace(/\[function_call:[^\]]*\]/gi, '');
+
+    // Clean up excessive whitespace/newlines from removals
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+
+    // If everything was stripped, provide fallback
+    if (!cleaned || cleaned.length < 10) {
+        return "I've retrieved the data. Please ask a more specific question about what you'd like to know.";
+    }
+
+    return cleaned;
+}
+

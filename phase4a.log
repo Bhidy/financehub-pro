@@ -1799,3 +1799,148 @@ Started: 2025-12-30 12:05:06.392844
 [70/453] 2270... ✅ BS:89 IS:0 CF:0 (Total: 89)
 [71/453] 2280... ✅ BS:91 IS:0 CF:0 (Total: 91)
 [72/453] 2281... ✅ BS:93 IS:0 CF:0 (Total: 93)
+[73/453] 2282... ✅ BS:93 IS:0 CF:0 (Total: 93)
+[74/453] 2283... ✅ BS:95 IS:0 CF:0 (Total: 95)
+[75/453] 2284... ✅ BS:97 IS:0 CF:0 (Total: 97)
+[76/453] 2285... ✅ BS:97 IS:0 CF:0 (Total: 97)
+[77/453] 2286... ✅ BS:97 IS:0 CF:0 (Total: 97)
+[78/453] 2287... ✅ BS:97 IS:0 CF:0 (Total: 97)
+[79/453] 2290... ✅ BS:99 IS:0 CF:0 (Total: 99)
+[80/453] 2300... ✅ BS:101 IS:0 CF:0 (Total: 101)
+[81/453] 2310... ✅ BS:103 IS:0 CF:0 (Total: 103)
+[82/453] 2320... ✅ BS:104 IS:0 CF:0 (Total: 104)
+[83/453] 2330... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[84/453] 2340... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 301823 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[85/453] 2350... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 195815 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[86/453] 2360... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 208775 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[87/453] 2370... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 215014 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[88/453] 2380... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 255865 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[89/453] 2381... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 249374 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[90/453] 2382... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 111820 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[91/453] 3002... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 204897 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[92/453] 3003... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 193371 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[93/453] 3004... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 169523 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[94/453] 3005... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 182523 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[95/453] 3007... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 183838 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[96/453] 3008... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 181215 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[97/453] 3010... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 182524 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[98/453] 3020... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 163047 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[99/453] 3030... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 145872 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[100/453] 3040... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 181211 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[101/453] 3050... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 166947 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[102/453] 3060... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 191915 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[103/453] 3080... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 244831 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[104/453] 3090... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 220211 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[105/453] 3091... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 127679 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[106/453] 3092... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 152371 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[107/453] 4001... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 152371 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[108/453] 4002... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 194515 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[109/453] 4003... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 239958 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[110/453] 4004... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 161461 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[111/453] 4005... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 202315 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[112/453] 4006... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 213975 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[113/453] 4007... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 196608 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[114/453] 4008... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[115/453] 4009... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[116/453] 4011... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[117/453] 4012... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[118/453] 4013... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 329201 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[119/453] 4014... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[120/453] 4015... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[121/453] 4016... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[122/453] 4017... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[123/453] 4018... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[124/453] 4019... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 326554 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[125/453] 4020... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[126/453] 4021... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 292826 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[127/453] 4030... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 330349 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[128/453] 4031... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 325075 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[129/453] 4040... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[130/453] 4050... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 269079 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[131/453] 4051... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[132/453] 4061... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 221877 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[133/453] 4070... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 233195 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[134/453] 4071... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 303994 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[135/453] 4072... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 295373 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[136/453] 4080... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 282080 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[137/453] 4081... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 254270 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[138/453] 4082... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[139/453] 4083... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[140/453] 4084... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[141/453] 4090... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 331846 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[142/453] 4100... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[143/453] 4110... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 269378 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[144/453] 4130... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[145/453] 4140... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 303067 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[146/453] 4141... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[147/453] 4142... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 294119 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[148/453] 4143... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[149/453] 4144... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[150/453] 4145... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 279834 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[151/453] 4146... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[152/453] 4150... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[153/453] 4160... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 327684 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[154/453] 4161... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 196822 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[155/453] 4162... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[156/453] 4163... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[157/453] 4164... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[158/453] 4165... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[159/453] 4170... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 313518 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[160/453] 4180... ❌ Error: Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 75168 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[161/453] 4190... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[162/453] 4191... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[163/453] 4192... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[164/453] 4193... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[165/453] 4194... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[166/453] 4200... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[167/453] 4210... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[168/453] 4220... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[169/453] 4230... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[170/453] 4240... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[171/453] 4250... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[172/453] 4260... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[173/453] 4261... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[174/453] 4262... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[175/453] 4263... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[176/453] 4264... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[177/453] 4265... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[178/453] 4270... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[179/453] 4280... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[180/453] 4290... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[181/453] 4291... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[182/453] 4292... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[183/453] 4300... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[184/453] 4310... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[185/453] 4320... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[186/453] 4321... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[187/453] 4322... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[188/453] 4323... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[189/453] 4324... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[190/453] 4325... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[191/453] 4326... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[192/453] 4327... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[193/453] 4330... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[194/453] 4331... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[195/453] 4332... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[196/453] 4333... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[197/453] 4334... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[198/453] 4335... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[199/453] 4336... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[200/453] 4337... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[201/453] 4338... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[202/453] 4339... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[203/453] 4340... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[204/453] 4342... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[205/453] 4344... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[206/453] 4345... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[207/453] 4346... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[208/453] 4347... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[209/453] 4348... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[210/453] 4349... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[211/453] 4350... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[212/453] 4700... ❌ No Data
+[213/453] 4701... ❌ No Data
+[214/453] 4702... ❌ No Data
+[215/453] 4703... ❌ No Data
+[216/453] 5015... ✅ BS:106 IS:0 CF:0 (Total: 106)
+[217/453] 5019... ✅ BS:106 IS:0 CF:0 (Total: 106)

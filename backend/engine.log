@@ -2500,3 +2500,151 @@ asyncpg.exceptions.ConnectionDoesNotExistError: connection was closed in the mid
 2025-12-30 12:37:56,607 - [ENGINE] - ERROR - Main Event Loop not found!
 2025-12-30 12:37:56,607 - [ENGINE] - INFO - Fast Loop Complete.
 2025-12-30 12:38:56,840 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:39:26,974 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:39:26,976 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:39:26,976 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:40:01,105 - [ENGINE] - INFO - 📰 Executing Medium Loop (News & Scan)...
+2025-12-30 12:40:01,334 - [ENGINE] - ERROR - News Job Failed: Command '['/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13', '/Users/home/Documents/Info Site/mubasher-deep-extract/backend/extractors/news_extractor.py']' returned non-zero exit status 1.
+2025-12-30 12:40:01,334 - [ENGINE] - INFO - Medium Loop Complete.
+2025-12-30 12:40:27,429 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:40:57,574 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:40:57,575 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:40:57,575 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:41:57,768 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:42:27,869 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:42:27,871 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:42:27,871 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:43:28,081 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:43:58,183 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:43:58,198 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:43:58,198 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:44:58,416 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:45:20,622 - [ENGINE] - INFO - Extractor completed successfully.
+2025-12-30 12:45:20,623 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:45:20,623 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:46:20,853 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:46:41,032 - [ENGINE] - INFO - Extractor completed successfully.
+2025-12-30 12:46:41,033 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:46:41,033 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:47:41,287 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:48:01,572 - [ENGINE] - INFO - Extractor completed successfully.
+2025-12-30 12:48:01,573 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:48:01,573 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:49:01,771 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:49:31,889 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:49:31,891 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:49:31,891 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:50:32,338 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:51:02,445 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:51:02,447 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:51:02,447 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:52:02,849 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:52:32,988 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:52:32,990 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:52:32,990 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:53:33,394 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:54:03,523 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:54:03,524 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:54:03,524 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:55:01,976 - [ENGINE] - INFO - 📰 Executing Medium Loop (News & Scan)...
+2025-12-30 12:55:02,989 - [ENGINE] - ERROR - News Job Failed: Command '['/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13', '/Users/home/Documents/Info Site/mubasher-deep-extract/backend/extractors/news_extractor.py']' returned non-zero exit status 1.
+2025-12-30 12:55:02,991 - [ENGINE] - INFO - Medium Loop Complete.
+2025-12-30 12:55:03,997 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:55:34,157 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:55:34,159 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:55:34,159 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:56:34,393 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:57:04,645 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:57:04,647 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:57:04,647 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:58:04,857 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 12:58:34,944 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 12:58:34,946 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 12:58:34,946 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 12:59:35,173 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:00:05,313 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:00:05,314 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:00:05,314 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:01:05,518 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:01:35,652 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:01:35,653 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:01:35,653 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:02:35,870 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:03:05,991 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:03:05,992 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:03:05,992 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:04:06,205 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:04:36,423 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:04:36,425 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:04:36,427 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:05:36,661 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:06:06,785 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:06:06,786 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:06:06,786 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:07:06,998 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:07:37,125 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:07:37,126 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:07:37,126 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:08:37,995 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:09:09,014 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:09:09,019 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:09:09,019 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:10:03,245 - [ENGINE] - INFO - 📰 Executing Medium Loop (News & Scan)...
+2025-12-30 13:10:03,475 - [ENGINE] - ERROR - News Job Failed: Command '['/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13', '/Users/home/Documents/Info Site/mubasher-deep-extract/backend/extractors/news_extractor.py']' returned non-zero exit status 1.
+2025-12-30 13:10:03,475 - [ENGINE] - INFO - Medium Loop Complete.
+2025-12-30 13:10:09,502 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:10:39,620 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:10:39,620 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:10:39,620 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:11:39,932 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:11:48,222 - [ENGINE] - INFO - Extractor completed successfully.
+2025-12-30 13:11:48,226 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:11:48,226 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:12:48,449 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:13:18,569 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:13:18,570 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:13:18,570 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:14:18,808 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:14:48,961 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:14:48,963 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:14:48,965 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:15:49,337 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:16:19,574 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:16:19,574 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:16:19,574 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:17:19,815 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:17:49,912 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:17:49,912 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:17:49,912 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:18:50,233 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:19:20,375 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:19:20,376 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:19:20,376 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:20:20,603 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:20:50,720 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:20:50,721 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:20:50,721 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:21:50,950 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:22:21,036 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:22:21,037 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:22:21,037 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:23:21,305 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:23:51,439 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:23:51,441 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:23:51,441 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:24:51,817 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:25:21,939 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:25:21,944 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:25:21,944 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:25:22,952 - [ENGINE] - INFO - 📰 Executing Medium Loop (News & Scan)...
+2025-12-30 13:25:23,030 - [ENGINE] - ERROR - News Job Failed: Command '['/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13', '/Users/home/Documents/Info Site/mubasher-deep-extract/backend/extractors/news_extractor.py']' returned non-zero exit status 1.
+2025-12-30 13:25:23,030 - [ENGINE] - INFO - Medium Loop Complete.
+2025-12-30 13:26:22,262 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:26:52,374 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:26:52,375 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:26:52,375 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:27:52,626 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...
+2025-12-30 13:28:22,783 - [ENGINE] - WARNING - Extractor timed out - using existing DB data.
+2025-12-30 13:28:22,784 - [ENGINE] - ERROR - Main Event Loop not found!
+2025-12-30 13:28:22,785 - [ENGINE] - INFO - Fast Loop Complete.
+2025-12-30 13:29:23,010 - [ENGINE] - INFO - ⚡ Executing Fast Loop (Market Snapshot)...

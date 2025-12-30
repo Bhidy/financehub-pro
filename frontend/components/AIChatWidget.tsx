@@ -35,16 +35,15 @@ export default function AIChatWidget() {
         setLoading(true);
 
         try {
-            // Connect to real backend
+            // UNIFIED SERVERLESS: Use internal Next.js API route
             console.log("Sending message to AI:", userMsg);
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-            const res = await fetch(`${baseUrl}/api/v1/ai/chat`, {
+            const res = await fetch("/api/v1/ai/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     message: userMsg,
-                    history: messages // Send conversation context
+                    history: messages
                 })
             });
 

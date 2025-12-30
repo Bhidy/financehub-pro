@@ -216,8 +216,17 @@ export const fetchOrderBook = async (symbol: string) => {
 };
 
 export const sendChatMessage = async (message: string, history: any[]) => {
-    const { data } = await api.post("/ai/chat", { message, history });
-    return data;
+    // UNIFIED SERVERLESS: Use internal Next.js API route (no external backend)
+    const response = await fetch("/api/v1/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, history })
+    });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "AI request failed");
+    }
+    return response.json();
 };
 
 export const fetchEarnings = async (symbol?: string, limit: number = 200) => {

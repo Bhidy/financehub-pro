@@ -267,8 +267,7 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 temperature: 0.2
             });
 
-            const responseMsg = response.choices[0].message;
-            const toolCalls = responseMsg.tool_calls;
+            console.log(`[AI] Raw Response:`, JSON.stringify(responseMsg));
 
             if (toolCalls && toolCalls.length > 0) {
                 messages.push(responseMsg);
@@ -277,6 +276,7 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 for (const toolCall of toolCalls) {
                     const fnName = toolCall.function.name;
                     const args = JSON.parse(toolCall.function.arguments || '{}');
+                    console.log(`[AI] Executing tool: ${fnName}`);
                     const result = await executeTool(fnName, args);
 
                     dataPayload[fnName] = result;
@@ -295,15 +295,19 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 });
 
                 return {
-                    reply: finalResponse.choices[0].message.content,
+                    reply: finalResponse.choices[0].message.content || "Analysis complete.",
                     data: dataPayload,
                     tools_used: toolCalls.map(tc => tc.function.name)
                 };
             } else {
-                return { reply: responseMsg.content, data: {}, tools_used: [] };
+                return {
+                    reply: responseMsg.content || "I couldn't generate a response. Please try again.",
+                    data: {},
+                    tools_used: []
+                };
             }
         } catch (e: any) {
-            console.error(`[AI] Attempt ${attempt + 1} failed:`, e.message);
+            console.error(`[AI] Attempt ${attempt + 1} failed:`, e);
             if (attempt === 2) {
                 return { reply: "I apologize, but I'm encountering a temporary issue.", data: null, error: e.message };
             }

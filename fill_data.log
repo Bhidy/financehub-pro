@@ -2158,3 +2158,251 @@
 [182/453] Processing 4292... ✅
 
 [183/453] Processing 4300... ✅
+
+[184/453] Processing 4310... ✅
+
+[185/453] Processing 4320... ✅
+
+[186/453] Processing 4321... ✅
+
+[187/453] Processing 4322... ✅
+
+[188/453] Processing 4323... ✅
+
+[189/453] Processing 4324... ✅
+
+[190/453] Processing 4325... ✅
+
+[191/453] Processing 4326... ✅
+
+[192/453] Processing 4327... ✅
+
+[193/453] Processing 4330... ✅
+
+[194/453] Processing 4331... ✅
+
+[195/453] Processing 4332... ✅
+
+[196/453] Processing 4333... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 268166 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[197/453] Processing 4334... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 207467 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[198/453] Processing 4335... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 151061 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[199/453] Processing 4336... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 239070 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[200/453] Processing 4337... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 304432 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[201/453] Processing 4338... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 224107 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[202/453] Processing 4339... ❌ Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 213706 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[203/453] Processing 4340... ❌ Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 93611 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[204/453] Processing 4342... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 163792 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[205/453] Processing 4344... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 195529 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[206/453] Processing 4345... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 189024 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[207/453] Processing 4346... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 202305 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[208/453] Processing 4347... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 202015 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[209/453] Processing 4348... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 189324 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[210/453] Processing 4349... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 166947 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[211/453] Processing 4350... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 143272 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[212/453] Processing 4700... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 163047 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[213/453] Processing 4701... ❌ Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 200705 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[214/453] Processing 4702... ❌ Failed to perform, curl: (28) Operation timed out after 30003 milliseconds with 181224 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[215/453] Processing 4703... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 173406 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[216/453] Processing 5015... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 193215 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[217/453] Processing 5019... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 194205 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[218/453] Processing 5021... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 111819 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[219/453] Processing 5022... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 223097 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[220/453] Processing 5023... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 218906 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[221/453] Processing 5110... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 213976 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[222/453] Processing 5214... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 213578 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[223/453] Processing 5216... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 81503 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[224/453] Processing 5221... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 169279 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[225/453] Processing 5227... ❌ Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 227850 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[226/453] Processing 5243... ❌ Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[227/453] Processing 5245... ⚠️ No fundamentals data found for symbol: 5245.SR
+
+[228/453] Processing 5246... ❌ Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[229/453] Processing 5247... ⚠️ No fundamentals data found for symbol: 5247.SR
+
+[230/453] Processing 5249... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 291528 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[231/453] Processing 5250... ⚠️ No fundamentals data found for symbol: 5250.SR
+
+[232/453] Processing 5251... ⚠️ No fundamentals data found for symbol: 5251.SR
+
+[233/453] Processing 5252... ⚠️ No fundamentals data found for symbol: 5252.SR
+
+[234/453] Processing 5253... ⚠️ No fundamentals data found for symbol: 5253.SR
+
+[235/453] Processing 5254... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 279770 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[236/453] Processing 5267... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 313545 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[237/453] Processing 5272... ❌ Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 244887 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[238/453] Processing 5273... ⚠️ No fundamentals data found for symbol: 5273.SR
+
+[239/453] Processing 5274... ⚠️ Quote not found for symbol: 5274.SR
+
+[240/453] Processing 5280... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 294912 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[241/453] Processing 5282... ❌ Failed to perform, curl: (28) Operation timed out after 30005 milliseconds with 317510 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[242/453] Processing 5283... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 160162 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[243/453] Processing 5284... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 251234 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[244/453] Processing 5285... ❌ Failed to perform, curl: (28) Operation timed out after 30002 milliseconds with 294119 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[245/453] Processing 5301... ⚠️ Quote not found for symbol: 5301.SR
+
+[246/453] Processing 5303... ❌ Failed to perform, curl: (28) Operation timed out after 30000 milliseconds with 331780 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[247/453] Processing 5306... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 182896 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[248/453] Processing 5308... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 246179 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[249/453] Processing 5311... ⚠️ Quote not found for symbol: 5311.SR
+
+[250/453] Processing 5312... ⚠️ Quote not found for symbol: 5312.SR
+
+[251/453] Processing 5313... ⚠️ Quote not found for symbol: 5313.SR
+
+[252/453] Processing 5318... ⚠️ Quote not found for symbol: 5318.SR
+
+[253/453] Processing 5320... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 317508 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[254/453] Processing 5321... ⚠️ Quote not found for symbol: 5321.SR
+
+[255/453] Processing 5323... ⚠️ Quote not found for symbol: 5323.SR
+
+[256/453] Processing 5332... ⚠️ Quote not found for symbol: 5332.SR
+
+[257/453] Processing 5333... ⚠️ Quote not found for symbol: 5333.SR
+
+[258/453] Processing 5334... ⚠️ Quote not found for symbol: 5334.SR
+
+[259/453] Processing 5336... ⚠️ Quote not found for symbol: 5336.SR
+
+[260/453] Processing 5338... ✅
+
+[261/453] Processing 5339... ✅
+
+[262/453] Processing 5343... ❌ Failed to perform, curl: (28) Operation timed out after 30001 milliseconds with 339520 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+[263/453] Processing 5344... ⚠️ Quote not found for symbol: 5344.SR
+
+[264/453] Processing 6001... ✅
+
+[265/453] Processing 6002... ✅
+
+[266/453] Processing 6004... ✅
+
+[267/453] Processing 6010... ✅
+
+[268/453] Processing 6012... ✅
+
+[269/453] Processing 6013... ✅
+
+[270/453] Processing 6014... ✅
+
+[271/453] Processing 6015... ✅
+
+[272/453] Processing 6016... ✅
+
+[273/453] Processing 6017... ✅
+
+[274/453] Processing 6018... ✅
+
+[275/453] Processing 6019... ✅
+
+[276/453] Processing 6020... ✅
+
+[277/453] Processing 6040... ✅
+
+[278/453] Processing 6050... ✅
+
+[279/453] Processing 6060... ✅
+
+[280/453] Processing 6070... ✅
+
+[281/453] Processing 6090... ✅
+
+[282/453] Processing 7010... ✅
+
+[283/453] Processing 7020... ✅
+
+[284/453] Processing 7030... ✅
+
+[285/453] Processing 7040... ✅
+
+[286/453] Processing 7200... ✅
+
+[287/453] Processing 7201... ✅
+
+[288/453] Processing 7202... ✅
+
+[289/453] Processing 7203... ✅
+
+[290/453] Processing 7204... ✅
+
+[291/453] Processing 7211... ✅
+
+[292/453] Processing 8010... ✅
+
+[293/453] Processing 8012... ✅
+
+[294/453] Processing 8020... ✅
+
+[295/453] Processing 8030... ✅
+
+[296/453] Processing 8040... ✅
+
+[297/453] Processing 8050... ✅
+
+[298/453] Processing 8060... ✅
+
+[299/453] Processing 8070... ✅
+
+[300/453] Processing 8100... ✅
+
+[301/453] Processing 8120... ✅
+
+[302/453] Processing 8150... ✅
+
+[303/453] Processing 8160... ✅
+
+[304/453] Processing 8170... ✅
+
+[305/453] Processing 8180... ✅
+
+[306/453] Processing 8190... ✅
+
+[307/453] Processing 8200... ✅

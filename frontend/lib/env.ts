@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-    // Centralized Production URL (The Source of Truth) - Using HuggingFace (Railway broken)
-    NEXT_PUBLIC_API_URL: z.string().url().default("https://bhidy-financehub-api.hf.space/api/v1"),
+    // Unified Serverless: AI is now internal, no external backend needed
+    // This is kept for other API calls if any, but AI uses /api/v1/ai/chat directly
+    NEXT_PUBLIC_API_URL: z.string().url().default("https://finhub-pro.vercel.app/api/v1"),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

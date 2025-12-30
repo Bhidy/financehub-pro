@@ -14,6 +14,10 @@ export default function AIChatWidget() {
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Connection Sentinel
+    const health = useBackendHealth();
+    const isOffline = health === 'offline';
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };

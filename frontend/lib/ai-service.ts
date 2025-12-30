@@ -31,8 +31,9 @@ function getGroqClient(): Groq {
 }
 
 // Models
+// Note: Llama 3.1-70b-versatile is decommissioned.
 const PRIMARY_MODEL = "llama-3.3-70b-versatile";
-const BACKUP_MODEL = "llama-3.1-70b-versatile";
+const BACKUP_MODEL = "mixtral-8x7b-32768"; // Reliable fallback
 
 // Common company aliases
 const COMMON_ALIASES: Record<string, string> = {

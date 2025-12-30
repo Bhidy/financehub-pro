@@ -224,7 +224,14 @@ async function executeTool(name: string, args: any): Promise<any> {
 
 // ===== MAIN CHAT FUNCTION =====
 export async function chatWithAnalyst(message: string, history: { role: string; content: string }[] = []) {
-    if (!process.env.GROQ_API_KEY) {
+    const apiKey = process.env.GROQ_API_KEY;
+
+    // Debug logging
+    console.log('[AI Service] GROQ_API_KEY present:', !!apiKey);
+    console.log('[AI Service] GROQ_API_KEY length:', apiKey?.length || 0);
+    console.log('[AI Service] All env keys:', Object.keys(process.env).filter(k => k.includes('GROQ') || k.includes('API')));
+
+    if (!apiKey) {
         return { reply: "⚠️ AI service not configured. Set GROQ_API_KEY.", data: null, error: "NO_API_KEY" };
     }
 

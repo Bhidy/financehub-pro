@@ -30,10 +30,14 @@ export function useAIChat() {
                 { role: "assistant", content: data.reply, data: data.data }
             ]);
         },
-        onError: (err) => {
+        onError: (err: any) => {
+            console.error("AI Chat Error:", err);
             setMessages(prev => [
                 ...prev,
-                { role: "assistant", content: "Sorry, I encountered an error connecting to the market brain." }
+                {
+                    role: "assistant",
+                    content: `System Error: ${err.message || "Connection to Market Brain Failed"}. Please check network.`
+                }
             ]);
         }
     });

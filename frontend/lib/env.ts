@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-    NEXT_PUBLIC_API_URL: z.string().url().optional().or(z.literal("")),
+    // Centralized Production URL (The Source of Truth)
+    NEXT_PUBLIC_API_URL: z.string().url().default("https://financehub-pro-production.up.railway.app/api/v1"),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

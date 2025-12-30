@@ -2,17 +2,11 @@ import axios from "axios";
 import { env } from "./env";
 import { TickerResponseSchema, Ticker } from "./schemas";
 
-// FIXED: Always use the correct API URL with /api/v1 prefix
-// Previous issue: NEXT_PUBLIC_API_URL was set without /api/v1, causing 404 errors
-const PRODUCTION_API_BASE = "https://financehub-pro-production.up.railway.app/api/v1";
-
-// For development, allow override but production always uses the correct URL
-const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? (env.NEXT_PUBLIC_API_URL || PRODUCTION_API_BASE)
-    : PRODUCTION_API_BASE;
+// Unified Data Plane: Trust env.ts only
+const API_BASE_URL = env.NEXT_PUBLIC_API_URL;
 
 if (typeof window !== 'undefined') {
-    console.log(`[FinanceHub v1.0.9] API Base URL: ${API_BASE_URL}`);
+    console.log(`[FinanceHub Pro] Connected to Brain: ${API_BASE_URL}`);
 }
 
 export const api = axios.create({

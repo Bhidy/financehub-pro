@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Bot, Sparkles, Loader2, BarChart2 } from 'lucide-react';
+import { useBackendHealth } from '@/hooks/useBackendHealth';
 
 export default function AIChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
@@ -72,16 +73,22 @@ export default function AIChatWidget() {
                             className="mb-4 w-[380px] h-[600px] bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                         >
                             {/* Header */}
-                            <div className="p-4 border-b border-white/10 bg-gradient-to-r from-emerald-900/40 to-slate-900/40 flex items-center justify-between">
+                            <div className={`p-4 border-b border-white/10 flex items-center justify-between ${isOffline ? 'bg-amber-900/40' : 'bg-gradient-to-r from-emerald-900/40 to-slate-900/40'
+                                }`}>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                                        <Bot className="w-5 h-5 text-white" />
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg ${isOffline ? 'bg-amber-600 shadow-amber-500/20' : 'bg-gradient-to-tr from-emerald-500 to-cyan-500 shadow-emerald-500/20'
+                                        }`}>
+                                        {isOffline ? <div className="w-2 h-2 bg-white rounded-full animate-pulse" /> : <Bot className="w-5 h-5 text-white" />}
                                     </div>
                                     <div>
                                         <h3 className="text-white font-medium text-sm">AI Market Analyst</h3>
                                         <div className="flex items-center gap-1.5">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-[10px] text-emerald-400 font-medium tracking-wide">ONLINE • GROK 2</span>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${isOffline ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'
+                                                }`} />
+                                            <span className={`text-[10px] font-medium tracking-wide ${isOffline ? 'text-amber-400' : 'text-emerald-400'
+                                                }`}>
+                                                {isOffline ? 'SYSTEM OFFLINE' : 'ONLINE • GROK 2'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -132,14 +139,18 @@ export default function AIChatWidget() {
                                         type="text"
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                        placeholder="Ask about 1120.SR financials..."
-                                        className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-light"
+                                        onKeyDown={(e) => e.key === 'Enter' && !isOffline && handleSend()}
+                                        disabled={loading || isOffline}
+                                        placeholder={isOffline ? "System reconnecting..." : "Ask about 1120.SR financials..."}
+                                        className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-light disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                     <button
                                         onClick={handleSend}
-                                        disabled={!input.trim() || loading}
-                                        className="absolute right-1.5 p-1.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-emerald-500/20"
+                                        disabled={!input.trim() || loading || isOffline}
+                                        className={`absolute right-1.5 p-1.5 rounded-lg transition-all shadow-lg ${isOffline
+                                            ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                            : 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/20'
+                                            }`}
                                     >
                                         <Send className="w-4 h-4" />
                                     </button>

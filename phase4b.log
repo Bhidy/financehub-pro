@@ -1801,4 +1801,14 @@ Started: 2025-12-30 12:04:06.598187
 [75/453] 2284... ✅ Recs:0 Ests:192 Hist:0
 [76/453] 2285... ✅ Recs:0 Ests:196 Hist:0
 [77/453] 2286... ✅ Recs:0 Ests:200 Hist:0
-[78/453] 2287... 
+[78/453] 2287... ✅ Recs:0 Ests:204 Hist:0
+[79/453] 2290... ✅ Recs:0 Ests:208 Hist:0
+[80/453] 2300... ❌ No Data
+[81/453] 2310... ✅ Recs:0 Ests:212 Hist:0
+[82/453] 2320... ✅ Recs:0 Ests:216 Hist:0
+[83/453] 2330... ✅ Recs:0 Ests:220 Hist:0
+[84/453] 2340... ✅ Recs:0 Ests:224 Hist:0
+[85/453] 2350... ✅ Recs:0 Ests:228 Hist:0
+[86/453] 2360... ❌ Error: Failed to perform, curl: (35) TLS connect error: error:00000000:invalid library (0):OPENSSL_internal:invalid library (0). See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+[87/453] 2370... ❌ No Data
+[88/453] 2380... 

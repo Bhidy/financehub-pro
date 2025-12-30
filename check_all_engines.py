@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 ╔══════════════════════════════════════════════════════════════════╗
-║       SAUDI MARKET DATA COLLECTION - UNIFIED DASHBOARD v3        ║
+║       SAUDI MARKET DATA COLLECTION - UNIFIED DASHBOARD v4        ║
 ╚══════════════════════════════════════════════════════════════════╝
-With completion percentages and progress bars.
+With completion percentages and progress bars for ALL phases.
 """
 
 import psycopg2
@@ -20,16 +20,20 @@ DB_PARAMS = {
 
 TOTAL_SYMBOLS = 453
 
-# Expected records per phase (for percentage calculation)
-EXPECTED = {
-    "phase4a": 453 * 12,  # ~12 quarterly statements per stock (4 quarters × 3 types)
-    "phase4b": 453 * 8,   # ~8 analyst/earnings records per stock
-    "phase5": 453 * 12,   # ~12 ownership records per stock
-}
-
 def progress_bar(pct, width=20):
+    pct = min(100, max(0, pct))
     filled = int(width * pct / 100)
     return '█' * filled + '░' * (width - filled)
+
+def get_count(cur, table, distinct_col=None):
+    try:
+        if distinct_col:
+            cur.execute(f"SELECT COUNT(DISTINCT {distinct_col}) FROM {table}")
+        else:
+            cur.execute(f"SELECT COUNT(*) FROM {table}")
+        return cur.fetchone()[0]
+    except:
+        return 0
 
 def get_metrics():
     try:
@@ -37,104 +41,69 @@ def get_metrics():
         cur = conn.cursor()
         
         # ============ PHASE 1-3 (COMPLETED) ============
-        cur.execute("SELECT COUNT(*) FROM ohlc_data")
-        ohlc_count = cur.fetchone()[0]
-        
-        cur.execute("SELECT COUNT(*) FROM intraday_1h")
-        h1_count = cur.fetchone()[0]
-        
-        cur.execute("SELECT COUNT(*) FROM intraday_5m")
-        m5_count = cur.fetchone()[0]
-        
-        cur.execute("SELECT COUNT(*) FROM company_profiles")
-        profiles = cur.fetchone()[0]
-        
-        cur.execute("SELECT COUNT(*) FROM financial_statements WHERE period_type = 'Annual'")
-        annual_stmts = cur.fetchone()[0]
+        ohlc_count = get_count(cur, "ohlc_data")
+        h1_count = get_count(cur, "intraday_1h")
+        m5_count = get_count(cur, "intraday_5m")
+        profiles = get_count(cur, "company_profiles")
         
         # ============ PHASE 4A: QUARTERLY FINANCIALS ============
         cur.execute("SELECT COUNT(*) FROM financial_statements WHERE period_type LIKE 'Quarterly%'")
         quarterly_stmts = cur.fetchone()[0]
-        
         cur.execute("SELECT COUNT(DISTINCT symbol) FROM financial_statements WHERE period_type LIKE 'Quarterly%'")
         quarterly_stocks = cur.fetchone()[0]
         
-        # ============ PHASE 4B: ANALYST DATA ============
-        try:
-            cur.execute("SELECT COUNT(*) FROM analyst_ratings")
-            analyst_recs = cur.fetchone()[0]
-            cur.execute("SELECT COUNT(DISTINCT symbol) FROM analyst_ratings")
-            analyst_stocks = cur.fetchone()[0]
-        except:
-            analyst_recs = 0
-            analyst_stocks = 0
+        # ============ PHASE 4B: ANALYST & EARNINGS ============
+        analyst_recs = get_count(cur, "analyst_ratings")
+        analyst_stocks = get_count(cur, "analyst_ratings", "symbol")
+        earnings_est = get_count(cur, "earnings_estimates")
+        earnings_cal = get_count(cur, "earnings_calendar")
+        earnings_cal_stocks = get_count(cur, "earnings_calendar", "symbol")
         
-        try:
-            cur.execute("SELECT COUNT(*) FROM earnings_estimates")
-            earnings_est = cur.fetchone()[0]
-        except:
-            earnings_est = 0
-            
-        try:
-            cur.execute("SELECT COUNT(*) FROM earnings_history")
-            earnings_hist = cur.fetchone()[0]
-        except:
-            earnings_hist = 0
+        # ============ PHASE 4C: ACTIONS & FAIR VALUES ============
+        corp_actions = get_count(cur, "corporate_actions")
+        corp_actions_stocks = get_count(cur, "corporate_actions", "symbol")
+        fair_values = get_count(cur, "fair_values")
+        fair_values_stocks = get_count(cur, "fair_values", "symbol")
         
-        # ============ PHASE 5: OWNERSHIP ============
-        try:
-            cur.execute("SELECT COUNT(*) FROM institutional_holders")
-            inst_holders = cur.fetchone()[0]
-        except:
-            inst_holders = 0
-            
-        try:
-            cur.execute("SELECT COUNT(*) FROM ownership_breakdown")
-            own_breakdown = cur.fetchone()[0]
-        except:
-            own_breakdown = 0
-        
-        # ============ LEGACY DATA ============
-        cur.execute("SELECT COUNT(*) FROM ohlc_history")
-        legacy_ohlc = cur.fetchone()[0]
-        
-        cur.execute("SELECT COUNT(*) FROM nav_history")
-        legacy_nav = cur.fetchone()[0]
+        # ============ PHASE 5: OWNERSHIP & INSIDERS ============
+        inst_holders = get_count(cur, "institutional_holders")
+        own_breakdown = get_count(cur, "ownership_breakdown")
+        own_stocks = get_count(cur, "ownership_breakdown", "symbol")
+        insider_tx = get_count(cur, "insider_trading")
+        insider_stocks = get_count(cur, "insider_trading", "symbol")
         
         conn.close()
         
         # ============ CALCULATIONS ============
-        phase1_total = ohlc_count + h1_count + m5_count
+        phase1_total = ohlc_count + h1_count + m5_count + profiles
         phase4a_total = quarterly_stmts
-        phase4b_total = analyst_recs + earnings_est + earnings_hist
-        phase5_total = inst_holders + own_breakdown
-        legacy_total = legacy_ohlc + legacy_nav
-        grand_total = phase1_total + annual_stmts + profiles + phase4a_total + phase4b_total + phase5_total + legacy_total
+        phase4b_total = analyst_recs + earnings_est + earnings_cal
+        phase4c_total = corp_actions + fair_values
+        phase5_total = inst_holders + own_breakdown + insider_tx
         
-        # Percentages (based on stocks processed)
         phase4a_pct = (quarterly_stocks / TOTAL_SYMBOLS) * 100
         phase4b_pct = (analyst_stocks / TOTAL_SYMBOLS) * 100
-        phase5_pct = (own_breakdown / TOTAL_SYMBOLS) * 100
+        phase4c_pct = (corp_actions_stocks / TOTAL_SYMBOLS) * 100
+        phase5_pct = (own_stocks / TOTAL_SYMBOLS) * 100
+        
+        grand_total = phase1_total + phase4a_total + phase4b_total + phase4c_total + phase5_total
         
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         print(f"""
 ╔══════════════════════════════════════════════════════════════════╗
-║         🚀 UNIFIED STATUS DASHBOARD v3 - {now}          
+║         🚀 UNIFIED STATUS DASHBOARD v4 - {now}          
 ╚══════════════════════════════════════════════════════════════════╝
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ PHASE 1-3: COMPLETED (100%)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  [{progress_bar(100)}] 100% Complete
+  [████████████████████] 100% Complete
   
   📊 Daily OHLC (10y):        {ohlc_count:>12,} rows
   📊 Intraday 1-Hour (2y):    {h1_count:>12,} rows
   📊 Intraday 5-Min (60d):    {m5_count:>12,} rows
   📊 Company Profiles:        {profiles:>12,} stocks
-  📊 Annual Financials:       {annual_stmts:>12,} reports
-  ─────────────────────────────────────────────
-  SUBTOTAL:                   {phase1_total + annual_stmts + profiles:>12,} rows
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔵 PHASE 4A: QUARTERLY FINANCIALS
@@ -150,27 +119,24 @@ def get_metrics():
   
   📊 Analyst Recommendations: {analyst_recs:>12,} records
   📊 Earnings Estimates:      {earnings_est:>12,} records
-  📊 Earnings History:        {earnings_hist:>12,} records
-  ─────────────────────────────────────────────
-  SUBTOTAL:                   {phase4b_total:>12,} records
+  📊 Earnings Calendar:       {earnings_cal:>12,} records (Stocks: {earnings_cal_stocks})
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🟠 PHASE 5: OWNERSHIP DATA
+🟣 PHASE 4C: ACTIONS & FAIR VALUES (NEW)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  [{progress_bar(phase5_pct)}] {phase5_pct:>5.1f}% ({own_breakdown}/{TOTAL_SYMBOLS} stocks)
+  [{progress_bar(phase4c_pct)}] {phase4c_pct:>5.1f}% ({corp_actions_stocks}/{TOTAL_SYMBOLS} stocks)
   
-  📊 Institutional Holders:   {inst_holders:>12,} records
-  📊 Ownership Breakdowns:    {own_breakdown:>12,} records
-  ─────────────────────────────────────────────
-  SUBTOTAL:                   {phase5_total:>12,} records
+  📊 Corporate Actions:       {corp_actions:>12,} records
+  📊 Fair Values:             {fair_values:>12,} records ({fair_values_stocks} stocks)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📦 LEGACY DATA
+🟠 PHASE 5: OWNERSHIP & INSIDERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📊 OHLC History:            {legacy_ohlc:>12,} rows
-  📊 NAV History:             {legacy_nav:>12,} rows
-  ─────────────────────────────────────────────
-  SUBTOTAL:                   {legacy_total:>12,} rows
+  [{progress_bar(phase5_pct)}] {phase5_pct:>5.1f}% ({own_stocks}/{TOTAL_SYMBOLS} stocks)
+  
+  📊 Ownership Breakdowns:    {own_breakdown:>12,} records
+  📊 Institutional Holders:   {inst_holders:>12,} records
+  📊 Insider Trading:         {insider_tx:>12,} records ({insider_stocks} stocks)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📈 GRAND TOTAL

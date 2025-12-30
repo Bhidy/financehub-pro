@@ -1,0 +1,1613 @@
+🎭 PLAYWRIGHT YAHOO COLLECTOR STARTING...
+Traceback (most recent call last):
+  File "/Users/home/Documents/Info Site/mubasher-deep-extract/playwright_yahoo_collector.py", line 122, in <module>
+    main()
+    ~~~~^^
+  File "/Users/home/Documents/Info Site/mubasher-deep-extract/playwright_yahoo_collector.py", line 41, in main
+    browser = p.chromium.launch(headless=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/playwright/sync_api/_generated.py", line 14568, in launch
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.launch(
+        ^^^^^^^^^^^^^^^^^^^^^^
+    ...<17 lines>...
+        )
+        ^
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/playwright/_impl/_browser_type.py", line 98, in launch
+    await self._channel.send(
+        "launch", TimeoutSettings.launch_timeout, params
+    )
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at /Users/home/Library/Caches/ms-playwright/chromium_headless_shell-1200/chrome-headless-shell-mac-arm64/chrome-headless-shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+🎭 PLAYWRIGHT YAHOO COLLECTOR (FULL) STARTING...
+[1/453] 🔄 1010: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1010.SR/financials", waiting until "domcontentloaded"
+ 
+[2/453] 🔄 1020: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1020.SR/financials", waiting until "domcontentloaded"
+ 
+[3/453] 🔄 1030: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1030.SR/financials", waiting until "domcontentloaded"
+ 
+[4/453] 🔄 1050: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1050.SR/financials", waiting until "domcontentloaded"
+ 
+[5/453] 🔄 1060: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1060.SR/financials", waiting until "domcontentloaded"
+ 
+[6/453] 🔄 1080: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1080.SR/financials", waiting until "domcontentloaded"
+ 
+[7/453] 🔄 1111: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1111.SR/financials", waiting until "domcontentloaded"
+ 
+[8/453] 🔄 1113: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1113.SR/financials", waiting until "domcontentloaded"
+ 
+[9/453] 🔄 1120: ❌ Nav/Parse Err: Page.goto: Timeout 15000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1120.SR/financials", waiting until "domcontentloaded"
+ 
+🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1010.SR/financials", waiting until "domcontentloaded"
+ 
+[2/453] 🔄 1020: 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1010.SR/financials", waiting until "domcontentloaded"
+ 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ No JSON 
+[2/453] 🔄 1020: ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1020.SR/financials", waiting until "commit"
+ 
+[3/453] 🔄 1030: 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ No JSON 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ No JSON 
+[2/453] 🔄 1020: ⚠️ No JSON 
+[3/453] 🔄 1030: ⚠️ No JSON 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ No JSON 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ No JSON 
+[2/453] 🔄 1020: ⚠️ No JSON 
+[3/453] 🔄 1030: 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ Redir to: ... ⚠️ No JSON 
+[2/453] 🔄 1020: ⚠️ No JSON 
+[3/453] 🔄 1030: ⚠️ Redir to: ... ⚠️ No JSON 
+[4/453] 🔄 1050: ⚠️ No JSON 
+[5/453] 🔄 1060: ❌ Nav Err: Page.content: Unable to retrieve content because the page is navigating and changing the content.
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[6/453] 🔄 1080: ❌ Nav Err: Page.content: Unable to retrieve content because the page is navigating and changing the content.
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[7/453] 🔄 1111: ❌ Nav Err: Page.content: Unable to retrieve content because the page is navigating and changing the content.
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[8/453] 🔄 1113: ❌ Nav Err: Page.content: Unable to retrieve content because the page is navigating and changing the content.
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[9/453] 🔄 1120: 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ Redir to Home. Retrying via Summary... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_text("Financials", exact=True)
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[2/453] 🔄 1020: ⚠️ Redir to Home. Retrying via Summary... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_text("Financials", exact=True)
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[3/453] 🔄 1030: ⚠️ Redir to Home. Retrying via Summary... 🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ Redir to Home. Retrying via Summary... ❌ Nav Err: Page.goto: net::ERR_NETWORK_IO_SUSPENDED at https://finance.yahoo.com/quote/1010.SR
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1010.SR", waiting until "load"
+
+
+[2/453] 🔄 1020: ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1020.SR/financials", waiting until "domcontentloaded"
+
+
+[3/453] 🔄 1030: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[4/453] 🔄 1050: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[5/453] 🔄 1060: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[6/453] 🔄 1080: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[7/453] 🔄 1111: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[8/453] 🔄 1113: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[9/453] 🔄 1120: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[10/453] 🔄 1140: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[11/453] 🔄 1150: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[12/453] 🔄 1180: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[13/453] 🔄 1182: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[14/453] 🔄 1183: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[15/453] 🔄 1201: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[16/453] 🔄 1202: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[17/453] 🔄 1210: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[18/453] 🔄 1211: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[19/453] 🔄 1212: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[20/453] 🔄 1213: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[21/453] 🔄 1214: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[22/453] 🔄 1301: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[23/453] 🔄 1302: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[24/453] 🔄 1303: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[25/453] 🔄 1304: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[26/453] 🔄 1320: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[27/453] 🔄 1321: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[28/453] 🔄 1322: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[29/453] 🔄 1323: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[30/453] 🔄 1810: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[31/453] 🔄 1820: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[32/453] 🔄 1830: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[33/453] 🔄 1831: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[34/453] 🔄 1832: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[35/453] 🔄 1833: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[36/453] 🔄 1834: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[37/453] 🔄 1835: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[38/453] 🔄 2001: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[39/453] 🔄 2010: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[40/453] 🔄 2020: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[41/453] 🔄 2030: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[42/453] 🔄 2040: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[43/453] 🔄 2050: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[44/453] 🔄 2060: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[45/453] 🔄 2070: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[46/453] 🔄 2080: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[47/453] 🔄 2081: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[48/453] 🔄 2082: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[49/453] 🔄 2083: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[50/453] 🔄 2084: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[51/453] 🔄 2090: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[52/453] 🔄 2100: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[53/453] 🔄 2110: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[54/453] 🔄 2120: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[55/453] 🔄 2130: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[56/453] 🔄 2140: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[57/453] 🔄 2150: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[58/453] 🔄 2160: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[59/453] 🔄 2170: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[60/453] 🔄 2180: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[61/453] 🔄 2190: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[62/453] 🔄 2200: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[63/453] 🔄 2210: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[64/453] 🔄 2220: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[65/453] 🔄 2222: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[66/453] 🔄 2223: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[67/453] 🔄 2230: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[68/453] 🔄 2240: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[69/453] 🔄 2250: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[70/453] 🔄 2270: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[71/453] 🔄 2280: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[72/453] 🔄 2281: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[73/453] 🔄 2282: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[74/453] 🔄 2283: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[75/453] 🔄 2284: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[76/453] 🔄 2285: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[77/453] 🔄 2286: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[78/453] 🔄 2287: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[79/453] 🔄 2290: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[80/453] 🔄 2300: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[81/453] 🔄 2310: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[82/453] 🔄 2320: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[83/453] 🔄 2330: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[84/453] 🔄 2340: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[85/453] 🔄 2350: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[86/453] 🔄 2360: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[87/453] 🔄 2370: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[88/453] 🔄 2380: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[89/453] 🔄 2381: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[90/453] 🔄 2382: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[91/453] 🔄 3002: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[92/453] 🔄 3003: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[93/453] 🔄 3004: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[94/453] 🔄 3005: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[95/453] 🔄 3007: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[96/453] 🔄 3008: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[97/453] 🔄 3010: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[98/453] 🔄 3020: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[99/453] 🔄 3030: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[100/453] 🔄 3040: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[101/453] 🔄 3050: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[102/453] 🔄 3060: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[103/453] 🔄 3080: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[104/453] 🔄 3090: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[105/453] 🔄 3091: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[106/453] 🔄 3092: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[107/453] 🔄 4001: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[108/453] 🔄 4002: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[109/453] 🔄 4003: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[110/453] 🔄 4004: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[111/453] 🔄 4005: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[112/453] 🔄 4006: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[113/453] 🔄 4007: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[114/453] 🔄 4008: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[115/453] 🔄 4009: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[116/453] 🔄 4011: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[117/453] 🔄 4012: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[118/453] 🔄 4013: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[119/453] 🔄 4014: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[120/453] 🔄 4015: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[121/453] 🔄 4016: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[122/453] 🔄 4017: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[123/453] 🔄 4018: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[124/453] 🔄 4019: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[125/453] 🔄 4020: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[126/453] 🔄 4021: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[127/453] 🔄 4030: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[128/453] 🔄 4031: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[129/453] 🔄 4040: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[130/453] 🔄 4050: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[131/453] 🔄 4051: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[132/453] 🔄 4061: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[133/453] 🔄 4070: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[134/453] 🔄 4071: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[135/453] 🔄 4072: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[136/453] 🔄 4080: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[137/453] 🔄 4081: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[138/453] 🔄 4082: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[139/453] 🔄 4083: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[140/453] 🔄 4084: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[141/453] 🔄 4090: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[142/453] 🔄 4100: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[143/453] 🔄 4110: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[144/453] 🔄 4130: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[145/453] 🔄 4140: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[146/453] 🔄 4141: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[147/453] 🔄 4142: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[148/453] 🔄 4143: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[149/453] 🔄 4144: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[150/453] 🔄 4145: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[151/453] 🔄 4146: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[152/453] 🔄 4150: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[153/453] 🔄 4160: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[154/453] 🔄 4161: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[155/453] 🔄 4162: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[156/453] 🔄 4163: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[157/453] 🔄 4164: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[158/453] 🔄 4165: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[159/453] 🔄 4170: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[160/453] 🔄 4180: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[161/453] 🔄 4190: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[162/453] 🔄 4191: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[163/453] 🔄 4192: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[164/453] 🔄 4193: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[165/453] 🔄 4194: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[166/453] 🔄 4200: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[167/453] 🔄 4210: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[168/453] 🔄 4220: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[169/453] 🔄 4230: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[170/453] 🔄 4240: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[171/453] 🔄 4250: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[172/453] 🔄 4260: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[173/453] 🔄 4261: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[174/453] 🔄 4262: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[175/453] 🔄 4263: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[176/453] 🔄 4264: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[177/453] 🔄 4265: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[178/453] 🔄 4270: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[179/453] 🔄 4280: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[180/453] 🔄 4290: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[181/453] 🔄 4291: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[182/453] 🔄 4292: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[183/453] 🔄 4300: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[184/453] 🔄 4310: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[185/453] 🔄 4320: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[186/453] 🔄 4321: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[187/453] 🔄 4322: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[188/453] 🔄 4323: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[189/453] 🔄 4324: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[190/453] 🔄 4325: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[191/453] 🔄 4326: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[192/453] 🔄 4327: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[193/453] 🔄 4330: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[194/453] 🔄 4331: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[195/453] 🔄 4332: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[196/453] 🔄 4333: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[197/453] 🔄 4334: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[198/453] 🔄 4335: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[199/453] 🔄 4336: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[200/453] 🔄 4337: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[201/453] 🔄 4338: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[202/453] 🔄 4339: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[203/453] 🔄 4340: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[204/453] 🔄 4342: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[205/453] 🔄 4344: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[206/453] 🔄 4345: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[207/453] 🔄 4346: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[208/453] 🔄 4347: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[209/453] 🔄 4348: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[210/453] 🔄 4349: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[211/453] 🔄 4350: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[212/453] 🔄 4700: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[213/453] 🔄 4701: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[214/453] 🔄 4702: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[215/453] 🔄 4703: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[216/453] 🔄 5015: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[217/453] 🔄 5019: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[218/453] 🔄 5021: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[219/453] 🔄 5022: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[220/453] 🔄 5023: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[221/453] 🔄 5110: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[222/453] 🔄 5214: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[223/453] 🔄 5216: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[224/453] 🔄 5221: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[225/453] 🔄 5227: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[226/453] 🔄 5243: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[227/453] 🔄 5245: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[228/453] 🔄 5246: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[229/453] 🔄 5247: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[230/453] 🔄 5249: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[231/453] 🔄 5250: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[232/453] 🔄 5251: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[233/453] 🔄 5252: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[234/453] 🔄 5253: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[235/453] 🔄 5254: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[236/453] 🔄 5267: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[237/453] 🔄 5272: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[238/453] 🔄 5273: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[239/453] 🔄 5274: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[240/453] 🔄 5280: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[241/453] 🔄 5282: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[242/453] 🔄 5283: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[243/453] 🔄 5284: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[244/453] 🔄 5285: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[245/453] 🔄 5301: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[246/453] 🔄 5303: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[247/453] 🔄 5306: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[248/453] 🔄 5308: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[249/453] 🔄 5311: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[250/453] 🔄 5312: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[251/453] 🔄 5313: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[252/453] 🔄 5318: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[253/453] 🔄 5320: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[254/453] 🔄 5321: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[255/453] 🔄 5323: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[256/453] 🔄 5332: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[257/453] 🔄 5333: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[258/453] 🔄 5334: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[259/453] 🔄 5336: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[260/453] 🔄 5338: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[261/453] 🔄 5339: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[262/453] 🔄 5343: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[263/453] 🔄 5344: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[264/453] 🔄 6001: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[265/453] 🔄 6002: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[266/453] 🔄 6004: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[267/453] 🔄 6010: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[268/453] 🔄 6012: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[269/453] 🔄 6013: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[270/453] 🔄 6014: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[271/453] 🔄 6015: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[272/453] 🔄 6016: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[273/453] 🔄 6017: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[274/453] 🔄 6018: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[275/453] 🔄 6019: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[276/453] 🔄 6020: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[277/453] 🔄 6040: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[278/453] 🔄 6050: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[279/453] 🔄 6060: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[280/453] 🔄 6070: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[281/453] 🔄 6090: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[282/453] 🔄 7010: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[283/453] 🔄 7020: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[284/453] 🔄 7030: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[285/453] 🔄 7040: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[286/453] 🔄 7200: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[287/453] 🔄 7201: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[288/453] 🔄 7202: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[289/453] 🔄 7203: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[290/453] 🔄 7204: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[291/453] 🔄 7211: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[292/453] 🔄 8010: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[293/453] 🔄 8012: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[294/453] 🔄 8020: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[295/453] 🔄 8030: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[296/453] 🔄 8040: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[297/453] 🔄 8050: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[298/453] 🔄 8060: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[299/453] 🔄 8070: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[300/453] 🔄 8100: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[301/453] 🔄 8120: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[302/453] 🔄 8150: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[303/453] 🔄 8160: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[304/453] 🔄 8170: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[305/453] 🔄 8180: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[306/453] 🔄 8190: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[307/453] 🔄 8200: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[308/453] 🔄 8210: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[309/453] 🔄 8230: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[310/453] 🔄 8240: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[311/453] 🔄 8250: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[312/453] 🔄 8260: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[313/453] 🔄 8280: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[314/453] 🔄 8300: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[315/453] 🔄 8310: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[316/453] 🔄 8311: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[317/453] 🔄 8313: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[318/453] 🔄 9300: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[319/453] 🔄 9403: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[320/453] 🔄 9404: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[321/453] 🔄 9405: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[322/453] 🔄 9406: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[323/453] 🔄 9407: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[324/453] 🔄 9408: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[325/453] 🔄 9409: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[326/453] 🔄 9410: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[327/453] 🔄 9411: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[328/453] 🔄 9412: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[329/453] 🔄 9510: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[330/453] 🔄 9513: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[331/453] 🔄 9514: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[332/453] 🔄 9515: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[333/453] 🔄 9516: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[334/453] 🔄 9517: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[335/453] 🔄 9521: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[336/453] 🔄 9522: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[337/453] 🔄 9523: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[338/453] 🔄 9524: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[339/453] 🔄 9525: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[340/453] 🔄 9527: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[341/453] 🔄 9530: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[342/453] 🔄 9532: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[343/453] 🔄 9533: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[344/453] 🔄 9535: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[345/453] 🔄 9536: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[346/453] 🔄 9537: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[347/453] 🔄 9538: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[348/453] 🔄 9539: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[349/453] 🔄 9540: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[350/453] 🔄 9541: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[351/453] 🔄 9542: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[352/453] 🔄 9543: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[353/453] 🔄 9544: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[354/453] 🔄 9545: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[355/453] 🔄 9546: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[356/453] 🔄 9547: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[357/453] 🔄 9548: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[358/453] 🔄 9549: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[359/453] 🔄 9550: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[360/453] 🔄 9551: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[361/453] 🔄 9552: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[362/453] 🔄 9553: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[363/453] 🔄 9555: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[364/453] 🔄 9556: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[365/453] 🔄 9557: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[366/453] 🔄 9558: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[367/453] 🔄 9559: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[368/453] 🔄 9560: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[369/453] 🔄 9561: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[370/453] 🔄 9562: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[371/453] 🔄 9563: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[372/453] 🔄 9564: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[373/453] 🔄 9565: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[374/453] 🔄 9566: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[375/453] 🔄 9567: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[376/453] 🔄 9568: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[377/453] 🔄 9569: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[378/453] 🔄 9570: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[379/453] 🔄 9571: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[380/453] 🔄 9572: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[381/453] 🔄 9574: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[382/453] 🔄 9575: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[383/453] 🔄 9576: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[384/453] 🔄 9577: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[385/453] 🔄 9578: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[386/453] 🔄 9579: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[387/453] 🔄 9580: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[388/453] 🔄 9581: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[389/453] 🔄 9583: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[390/453] 🔄 9584: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[391/453] 🔄 9585: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[392/453] 🔄 9586: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[393/453] 🔄 9587: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[394/453] 🔄 9588: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[395/453] 🔄 9589: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[396/453] 🔄 9590: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[397/453] 🔄 9591: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[398/453] 🔄 9592: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[399/453] 🔄 9593: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[400/453] 🔄 9594: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[401/453] 🔄 9595: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[402/453] 🔄 9596: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[403/453] 🔄 9597: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[404/453] 🔄 9598: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[405/453] 🔄 9599: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[406/453] 🔄 9600: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[407/453] 🔄 9601: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[408/453] 🔄 9602: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[409/453] 🔄 9603: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[410/453] 🔄 9604: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[411/453] 🔄 9605: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[412/453] 🔄 9606: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[413/453] 🔄 9607: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[414/453] 🔄 9608: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[415/453] 🔄 9609: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[416/453] 🔄 9610: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[417/453] 🔄 9611: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[418/453] 🔄 9612: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[419/453] 🔄 9613: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[420/453] 🔄 9614: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[421/453] 🔄 9615: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[422/453] 🔄 9616: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[423/453] 🔄 9617: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[424/453] 🔄 9618: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[425/453] 🔄 9619: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[426/453] 🔄 9620: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[427/453] 🔄 9621: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[428/453] 🔄 9622: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[429/453] 🔄 9623: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[430/453] 🔄 9624: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[431/453] 🔄 9625: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[432/453] 🔄 9626: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[433/453] 🔄 9627: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[434/453] 🔄 9628: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[435/453] 🔄 9630: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[436/453] 🔄 9631: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[437/453] 🔄 9632: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[438/453] 🔄 9633: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[439/453] 🔄 9634: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[440/453] 🔄 9635: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[441/453] 🔄 9636: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[442/453] 🔄 9637: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[443/453] 🔄 9639: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[444/453] 🔄 9640: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[445/453] 🔄 9641: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[446/453] 🔄 9642: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[447/453] 🔄 9644: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[448/453] 🔄 9645: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[449/453] 🔄 9647: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[450/453] 🔄 9648: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[451/453] 🔄 9649: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[452/453] 🔄 9650: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+[453/453] 🔄 9651: ❌ Nav Err: Page.goto: Target page, context or browser has been closed
+
+🎭 PLAYWRIGHT YAHOO COLLECTOR (STEALTH MODE) STARTING...
+[1/453] 🔄 1010: ⚠️ Redir to Home. Retrying via Summary... ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1010.SR", waiting until "load"
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[2/453] 🔄 1020: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[3/453] 🔄 1030: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[4/453] 🔄 1050: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[5/453] 🔄 1060: ⚠️ Redir to Home. Retrying via Summary... ❌ Nav Err: Timeout 15000ms exceeded.
+=========================== logs ===========================
+"commit" event fired
+"domcontentloaded" event fired
+"load" event fired
+============================================================
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[6/453] 🔄 1080: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[7/453] 🔄 1111: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[8/453] 🔄 1113: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[9/453] 🔄 1120: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[10/453] 🔄 1140: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[11/453] 🔄 1150: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[12/453] 🔄 1180: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[13/453] 🔄 1182: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[14/453] 🔄 1183: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[15/453] 🔄 1201: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[16/453] 🔄 1202: ⚠️ Redir to Home. Retrying via Summary... ⚠️ 'Financials' link not found via Selector. Trying Menu... ❌ Nav Err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("section[data-test='quote-nav']").locator("text=Financials")
+
+PAGE TITLE: Yahoo Finance - Stock Market Live, Quotes, Business & Finance News
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[17/453] 🔄 1210: ⚠️ No JSON 
+[18/453] 🔄 1211: ⚠️ No JSON 
+[19/453] 🔄 1212: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1212.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1212.SR/financials", waiting until "domcontentloaded"
+
+
+[20/453] 🔄 1213: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1213.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1213.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[21/453] 🔄 1214: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1214.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1214.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[22/453] 🔄 1301: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1301.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1301.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[23/453] 🔄 1302: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1302.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1302.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[24/453] 🔄 1303: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1303.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1303.SR/financials", waiting until "domcontentloaded"
+
+
+[25/453] 🔄 1304: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1304.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1304.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[26/453] 🔄 1320: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1320.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1320.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[27/453] 🔄 1321: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1321.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1321.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[28/453] 🔄 1322: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1322.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1322.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[29/453] 🔄 1323: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1323.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1323.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[30/453] 🔄 1810: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1810.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1810.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[31/453] 🔄 1820: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1820.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1820.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[32/453] 🔄 1830: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1830.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1830.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[33/453] 🔄 1831: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1831.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1831.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[34/453] 🔄 1832: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1832.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1832.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[35/453] 🔄 1833: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1833.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1833.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[36/453] 🔄 1834: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1834.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1834.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[37/453] 🔄 1835: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/1835.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/1835.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[38/453] 🔄 2001: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2001.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2001.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[39/453] 🔄 2010: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2010.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2010.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[40/453] 🔄 2020: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2020.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2020.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[41/453] 🔄 2030: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2030.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2030.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[42/453] 🔄 2040: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2040.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2040.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[43/453] 🔄 2050: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2050.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2050.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[44/453] 🔄 2060: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2060.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2060.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[45/453] 🔄 2070: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2070.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2070.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[46/453] 🔄 2080: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2080.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2080.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[47/453] 🔄 2081: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2081.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2081.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[48/453] 🔄 2082: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2082.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2082.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[49/453] 🔄 2083: ❌ Nav Err: Page.goto: net::ERR_CERT_AUTHORITY_INVALID at https://finance.yahoo.com/quote/2083.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2083.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[50/453] 🔄 2084: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2084.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2084.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[51/453] 🔄 2090: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2090.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2090.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[52/453] 🔄 2100: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2100.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2100.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[53/453] 🔄 2110: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2110.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2110.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[54/453] 🔄 2120: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2120.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2120.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[55/453] 🔄 2130: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2130.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2130.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[56/453] 🔄 2140: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2140.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2140.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[57/453] 🔄 2150: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2150.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2150.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[58/453] 🔄 2160: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2160.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2160.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[59/453] 🔄 2170: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2170.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2170.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[60/453] 🔄 2180: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2180.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2180.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[61/453] 🔄 2190: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2190.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2190.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[62/453] 🔄 2200: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2200.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2200.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: 
+PAGE BODY: <html><head></head><body></body></html>
+
+[63/453] 🔄 2210: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2210.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2210.SR/financials", waiting until "domcontentloaded"
+
+
+[64/453] 🔄 2220: ❌ Nav Err: Page.goto: net::ERR_INTERNET_DISCONNECTED at https://finance.yahoo.com/quote/2220.SR/financials
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/2220.SR/financials", waiting until "domcontentloaded"
+
+
+[65/453] 🔄 2222: ⚠️ No JSON 
+[66/453] 🔄 2223: ⚠️ No JSON 
+[67/453] 🔄 2230: ⚠️ No JSON 
+[68/453] 🔄 2240: ⚠️ No JSON 
+[69/453] 🔄 2250: ⚠️ No JSON 
+[70/453] 🔄 2270: ⚠️ No JSON 
+[71/453] 🔄 2280: ⚠️ No JSON 
+[72/453] 🔄 2281: ⚠️ No JSON 
+[73/453] 🔄 2282: ⚠️ No JSON 
+[74/453] 🔄 2283: ⚠️ No JSON 
+[75/453] 🔄 2284: ⚠️ No JSON 
+[76/453] 🔄 2285: ⚠️ No JSON 
+[77/453] 🔄 2286: ⚠️ No JSON 
+[78/453] 🔄 2287: ⚠️ No JSON 
+[79/453] 🔄 2290: ⚠️ No JSON 
+[80/453] 🔄 2300: ⚠️ No JSON 
+[81/453] 🔄 2310: ⚠️ No JSON 
+[82/453] 🔄 2320: ⚠️ No JSON 
+[83/453] 🔄 2330: ⚠️ No JSON 
+[84/453] 🔄 2340: ⚠️ No JSON 
+[85/453] 🔄 2350: ⚠️ No JSON 
+[86/453] 🔄 2360: ⚠️ No JSON 
+[87/453] 🔄 2370: ⚠️ No JSON 
+[88/453] 🔄 2380: ⚠️ No JSON 
+[89/453] 🔄 2381: ⚠️ No JSON 
+[90/453] 🔄 2382: ⚠️ No JSON 
+[91/453] 🔄 3002: ⚠️ No JSON 
+[92/453] 🔄 3003: ⚠️ No JSON 
+[93/453] 🔄 3004: ⚠️ No JSON 
+[94/453] 🔄 3005: ⚠️ No JSON 
+[95/453] 🔄 3007: ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/3007.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: Zahrat Al Waha For Trading Company (3007.SR) Income Statement - Yahoo Finance
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[96/453] 🔄 3008: ⚠️ No JSON 
+[97/453] 🔄 3010: ⚠️ No JSON 
+[98/453] 🔄 3020: ⚠️ No JSON 
+[99/453] 🔄 3030: ⚠️ No JSON 
+[100/453] 🔄 3040: ⚠️ No JSON 
+[101/453] 🔄 3050: ⚠️ No JSON 
+[102/453] 🔄 3060: ⚠️ No JSON 
+[103/453] 🔄 3080: ❌ Nav Err: Page.goto: Timeout 60000ms exceeded.
+Call log:
+  - navigating to "https://finance.yahoo.com/quote/3080.SR/financials", waiting until "domcontentloaded"
+
+PAGE TITLE: Eastern Province Cement Company (3080.SR) Income Statement - Yahoo Finance
+PAGE BODY: <!DOCTYPE html><html lang="en-US" theme="auto" data-color-theme-enabled="true" data-color-scheme="auto" class="smartphone neo-green dock-upscale wider-dock-1280"><head>
+        <meta charset="utf-8">
+        <meta name="oath:guce:consent-host" content="guce.yahoo.com">
+        <link rel="preconnect" href="//s.yimg.com" crossorigin="anonymous"><link rel="preconnect" href="//geo.yahoo.com"><link rel="preconnect" href="//query1.finance.yahoo.com"><link rel="preconnect" href="//query2.finance.yahoo.
+
+[104/453] 🔄 3090: ⚠️ No JSON 
+[105/453] 🔄 3091: ⚠️ No JSON 
+[106/453] 🔄 3092: ⚠️ No JSON 
+[107/453] 🔄 4001: ⚠️ No JSON 
+[108/453] 🔄 4002: ⚠️ No JSON 
+[109/453] 🔄 4003: ⚠️ No JSON 
+[110/453] 🔄 4004: ⚠️ No JSON 
+[111/453] 🔄 4005: ⚠️ No JSON 
+[112/453] 🔄 4006: 

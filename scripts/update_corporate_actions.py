@@ -100,11 +100,11 @@ async def main():
     # Robust DB connection
     pool = None
     try:
-        pool = await asyncpg.create_pool(DATABASE_URL, ssl=get_ssl_context(), min_size=1, max_size=3)
+        pool = await asyncpg.create_pool(DATABASE_URL, ssl=get_ssl_context(), min_size=1, max_size=3, statement_cache_size=0)
         logger.info("✅ Connected to Database")
     except:
         try:
-            pool = await asyncpg.create_pool(DATABASE_URL, ssl='require', min_size=1, max_size=3)
+            pool = await asyncpg.create_pool(DATABASE_URL, ssl='require', min_size=1, max_size=3, statement_cache_size=0)
             logger.info("✅ Connected to Database (fallback)")
         except:
             logger.error("❌ Failed to connect to DB")

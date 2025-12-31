@@ -33,18 +33,30 @@ export async function GET() {
         const stats = result.rows[0];
         const breadth = breadthResult.rows[0] || {};
 
-        // Calculate a synthetic index value based on market cap weighted average
-        // This gives us a TASI-like representation
+        // Try to get REAL TASI index data
+        const tasiResult = await db.query(`
+            SELECT last_price, change, change_percent 
+            FROM market_tickers 
+            WHERE symbol = 'TASI'
+        `);
+        const tasi = tasiResult.rows[0];
+
+        // Fallback: Calculate a synthetic index value based on market cap weighted average
         const indexResult = await db.query(`
             SELECT 
                 ROUND(SUM(last_price * volume) / NULLIF(SUM(volume), 0), 2) as weighted_price,
                 ROUND(SUM(change * volume) / NULLIF(SUM(volume), 0), 3) as weighted_change,
                 ROUND(SUM(change_percent * volume) / NULLIF(SUM(volume), 0), 2) as weighted_change_percent
             FROM market_tickers 
-            WHERE last_price IS NOT NULL AND volume > 0
+            WHERE last_price IS NOT NULL AND volume > 0 AND symbol != 'TASI'
         `);
 
         const indexData = indexResult.rows[0];
+
+        // Use real TASI if available, otherwise synthetic
+        const indexValue = tasi ? parseFloat(tasi.last_price) : (parseFloat(indexData?.weighted_price) || 0);
+        const indexChange = tasi ? parseFloat(tasi.change) : (parseFloat(indexData?.weighted_change) || 0);
+        const indexChangePercent = tasi ? parseFloat(tasi.change_percent) : (parseFloat(indexData?.weighted_change_percent) || 0);
 
         // Calculate market status based on Saudi trading hours
         const now = new Date();
@@ -61,10 +73,10 @@ export async function GET() {
             market_code: "TASI",
             market_name: "Tadawul All Share Index",
 
-            // Synthetic index (volume-weighted) - based on actual market data
-            index_value: parseFloat(indexData?.weighted_price) || 0,
-            index_change: parseFloat(indexData?.weighted_change) || 0,
-            index_change_percent: parseFloat(indexData?.weighted_change_percent) || 0,
+            // Real or Synthetic index
+            index_value: indexValue,
+            index_change: indexChange,
+            index_change_percent: indexChangePercent,
 
             // Market breadth stats
             total_stocks: parseInt(stats?.total_stocks) || 0,

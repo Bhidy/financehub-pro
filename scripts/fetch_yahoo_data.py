@@ -184,6 +184,46 @@ def fetch_with_retry(symbols: list, max_retries: int = 3) -> dict:
     return {}
 
 
+
+async def update_market_indices(pool):
+    """Fetch and update TASI index"""
+    logger.info("Fetching TASI Index data...")
+    try:
+        # Use yfinance directly for the index
+        tasi = yf.Ticker("^TASI.SR")
+        
+        # Get fast info first (often more reliable for indices)
+        info = tasi.fast_info
+        last_price = info.last_price
+        prev_close = info.previous_close
+        
+        if last_price and prev_close:
+            change = last_price - prev_close
+            change_percent = (change / prev_close) * 100
+            
+            logger.info(f"✅ TASI Index found: {last_price:.2f} ({change:+.2f} / {change_percent:+.2f}%)")
+            
+            async with pool.acquire() as conn:
+                # Upsert TASI into market_tickers
+                # We use 'TASI' as the symbol (4 chars, fits most schemas)
+                # Or '0000' if TASI fails constraint, but TASI is preferred
+                await conn.execute("""
+                    INSERT INTO market_tickers (symbol, name_en, name_ar, last_price, change, change_percent, last_updated)
+                    VALUES ('TASI', 'Tadawul All Share Index', 'مؤشر تاسي', $1, $2, $3, NOW())
+                    ON CONFLICT (symbol) DO UPDATE 
+                    SET last_price = $1, change = $2, change_percent = $3, last_updated = NOW()
+                """, round(last_price, 2), round(change, 2), round(change_percent, 2))
+                logger.info("✅ TASI Index saved to database")
+                return True
+        else:
+            logger.warning("⚠️ Could not fetch TASI price details")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Failed to update TASI index: {e}")
+        return False
+
+
 async def main():
     if not DATABASE_URL:
         logger.error("DATABASE_URL environment variable not set!")
@@ -202,7 +242,14 @@ async def main():
     )
     
     try:
+        # 1. Update Market Indices (TASI)
+        await update_market_indices(pool)
+        
+        # 2. Update Stocks
         symbols = await get_all_symbols(pool)
+        # Filter out TASI if it exists in the list to avoid double processing
+        symbols = [s for s in symbols if s != 'TASI']
+        
         logger.info(f"Found {len(symbols)} symbols to update")
         
         if not symbols:

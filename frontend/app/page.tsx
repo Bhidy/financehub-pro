@@ -212,25 +212,18 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {["1D", "1W", "1M", "1Y"].map((tf) => (
-                    <button
-                      key={tf}
-                      onClick={() => setChartPeriod(tf)}
-                      className={clsx(
-                        "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                        chartPeriod === tf
-                          ? "bg-blue-500 text-white shadow-md"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      )}
-                    >
-                      {tf}
-                    </button>
-                  ))}
+                  {/* Market Heatmap Label */}
+                  <div className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold text-slate-600">
+                    Market Heatmap
+                  </div>
                 </div>
               </div>
             </div>
-            {/* Chart Area - Real Bar Chart from tickers data */}
-            <div className="h-64 p-6 bg-gradient-to-b from-white to-blue-50/30">
+            {/* Chart Area - Market Heatmap */}
+            <div className="h-64 p-6 bg-gradient-to-b from-white to-blue-50/30 relative">
+              <div className="absolute top-4 right-6 text-xs font-bold text-slate-400 uppercase tracking-widest pointer-events-none">
+                Performance (Top 60)
+              </div>
               <div className="w-full h-full flex items-end gap-[2px]">
                 {(tickers || []).slice(0, 60).map((ticker: Ticker, i: number) => {
                   const changePercent = ticker.change_percent ?? 0;
@@ -509,6 +502,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </main>
+    </main >
   );
 }

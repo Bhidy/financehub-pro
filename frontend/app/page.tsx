@@ -70,6 +70,28 @@ export default function Home() {
       .slice(0, 4);
   }, [sectors]);
 
+  // Dynamic Market Status Calculation (Saudi Market: 10 AM - 3 PM, Sun-Thu)
+  const marketStatus = useMemo(() => {
+    const now = new Date();
+    // Saudi time is UTC+3
+    const saudiOffset = 3 * 60; // minutes
+    const saudiTime = new Date(now.getTime() + (saudiOffset + now.getTimezoneOffset()) * 60000);
+    const hour = saudiTime.getHours();
+    const day = saudiTime.getDay(); // 0=Sunday, 6=Saturday
+
+    // Market is open: Sunday(0) to Thursday(4), 10 AM to 3 PM Saudi
+    const isTradingDay = day >= 0 && day <= 4;
+    const isTradingHours = hour >= 10 && hour < 15;
+    const isOpen = isTradingDay && isTradingHours;
+
+    return {
+      isOpen,
+      label: isOpen ? "MARKET OPEN" : "MARKET CLOSED",
+      color: isOpen ? "bg-emerald-400" : "bg-red-400",
+      shadow: isOpen ? "shadow-emerald-400/50" : "shadow-red-400/50"
+    };
+  }, []);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pb-12">
       {/* Premium Ticker Tape */}
@@ -100,8 +122,8 @@ export default function Home() {
               <div className="text-right">
                 <div className="text-sm text-blue-200 font-medium">Market Status</div>
                 <div className="flex items-center gap-2 font-bold">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
-                  MARKET OPEN
+                  <div className={`w-2 h-2 rounded-full ${marketStatus.color} ${marketStatus.isOpen ? 'animate-pulse' : ''} shadow-lg ${marketStatus.shadow}`} />
+                  {marketStatus.label}
                 </div>
               </div>
               <div className="w-px h-10 bg-white/20" />

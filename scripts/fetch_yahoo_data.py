@@ -1,91 +1,137 @@
 #!/usr/bin/env python3
 """
-REAL YAHOO FINANCE DATA COLLECTOR
-==================================
-Fetches authentic historical OHLC data from Yahoo Finance for all Saudi stocks.
-Yahoo Finance uses .SR suffix for Saudi (Tadawul) stocks.
-
-Target: Replace synthetic data with real historical data
+FinanceHub Pro - Live Stock Price Fetcher
+==========================================
+Fetches REAL live stock prices from Yahoo Finance and updates the database.
+Designed for GitHub Actions scheduled runs.
 """
 
 import asyncio
 import asyncpg
-import yfinance as yf
-import pandas as pd
+import os
 import logging
+from datetime import datetime
 import sys
-from datetime import datetime, timedelta
-from typing import List, Dict, Tuple
-import time
 
-# Configuration
-DATABASE_URL = "postgresql://postgres.kgjpkphfjmmiyjsgsaup:DgYNreqd4S7YLF6R@aws-1-eu-central-1.pooler.supabase.com:6543/postgres"
+# Try to import yfinance, install if not available
+try:
+    import yfinance as yf
+except ImportError:
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "yfinance"])
+    import yfinance as yf
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('yahoo_data_collection.log')
-    ]
+    format='%(asctime)s [%(levelname)s] %(message)s'
 )
 logger = logging.getLogger(__name__)
 
+# Saudi Stock Exchange suffix
+SAUDI_SUFFIX = ".SR"
 
-def fetch_yahoo_ohlc(symbol: str, period: str = "5y") -> pd.DataFrame:
-    """
-    Fetch historical OHLC data from Yahoo Finance.
-    Saudi stocks use .SR suffix (e.g., 2222.SR for Aramco)
-    """
-    yahoo_symbol = f"{symbol}.SR"
-    
+
+async def get_all_symbols(pool) -> list:
+    """Get all stock symbols from database"""
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT symbol FROM market_tickers WHERE symbol ~ '^[0-9]{4}$' ORDER BY symbol"
+        )
+        return [r['symbol'] for r in rows]
+
+
+async def update_stock_price(pool, symbol: str, data: dict) -> bool:
+    """Update a single stock's price in the database"""
+    if not data:
+        return False
+        
+    async with pool.acquire() as conn:
+        await conn.execute("""
+            UPDATE market_tickers 
+            SET 
+                last_price = $2,
+                change = $3,
+                change_percent = $4,
+                volume = $5,
+                open_price = $6,
+                high = $7,
+                low = $8,
+                prev_close = $9,
+                last_updated = NOW()
+            WHERE symbol = $1
+        """, 
+            symbol,
+            data.get('last_price'),
+            data.get('change'),
+            data.get('change_percent'),
+            data.get('volume'),
+            data.get('open'),
+            data.get('high'),
+            data.get('low'),
+            data.get('prev_close')
+        )
+        return True
+
+
+def fetch_yahoo_data(symbol: str) -> dict:
+    """Fetch live data from Yahoo Finance"""
     try:
+        yahoo_symbol = f"{symbol}{SAUDI_SUFFIX}"
         ticker = yf.Ticker(yahoo_symbol)
-        df = ticker.history(period=period)
+        info = ticker.info
         
-        if df.empty:
-            logger.warning(f"No data returned for {yahoo_symbol}")
-            return pd.DataFrame()
+        if not info or 'regularMarketPrice' not in info:
+            # Try fast_info as fallback
+            fast = ticker.fast_info
+            if hasattr(fast, 'last_price'):
+                return {
+                    'last_price': fast.last_price,
+                    'prev_close': getattr(fast, 'previous_close', None),
+                    'open': getattr(fast, 'open', None),
+                    'high': getattr(fast, 'day_high', None),
+                    'low': getattr(fast, 'day_low', None),
+                    'volume': getattr(fast, 'last_volume', None),
+                    'change': None,
+                    'change_percent': None
+                }
+            return None
         
-        # Reset index to get date as column
-        df = df.reset_index()
+        current_price = info.get('regularMarketPrice') or info.get('currentPrice')
+        prev_close = info.get('regularMarketPreviousClose') or info.get('previousClose')
         
-        # Rename columns to match our schema
-        df = df.rename(columns={
-            'Date': 'time',
-            'Open': 'open',
-            'High': 'high',
-            'Low': 'low',
-            'Close': 'close',
-            'Volume': 'volume'
-        })
+        change = None
+        change_percent = None
+        if current_price and prev_close:
+            change = round(current_price - prev_close, 4)
+            change_percent = round((change / prev_close) * 100, 2)
         
-        # Add symbol
-        df['symbol'] = symbol
-        
-        # Select only needed columns
-        df = df[['time', 'symbol', 'open', 'high', 'low', 'close', 'volume']]
-        
-        # Convert timestamp to Python datetime (timezone-naive for asyncpg)
-        df['time'] = pd.to_datetime(df['time']).dt.tz_localize(None)
-        
-        return df
+        return {
+            'last_price': current_price,
+            'change': change,
+            'change_percent': change_percent,
+            'volume': info.get('regularMarketVolume') or info.get('volume'),
+            'open': info.get('regularMarketOpen') or info.get('open'),
+            'high': info.get('regularMarketDayHigh') or info.get('dayHigh'),
+            'low': info.get('regularMarketDayLow') or info.get('dayLow'),
+            'prev_close': prev_close
+        }
         
     except Exception as e:
-        logger.error(f"Error fetching {yahoo_symbol}: {e}")
-        return pd.DataFrame()
+        logger.warning(f"Failed to fetch {symbol}: {e}")
+        return None
 
 
 async def main():
-    print()
-    print("╔" + "═" * 68 + "╗")
-    print("║" + " YAHOO FINANCE REAL DATA COLLECTOR ".center(68) + "║")
-    print("║" + " Fetching authentic historical data for Saudi stocks ".center(68) + "║")
-    print("╚" + "═" * 68 + "╝")
-    print()
+    if not DATABASE_URL:
+        logger.error("DATABASE_URL environment variable not set!")
+        sys.exit(1)
     
-    # Connect to database
-    logger.info("Connecting to database...")
+    logger.info("=" * 60)
+    logger.info("    LIVE STOCK PRICE UPDATE - Starting")
+    logger.info("=" * 60)
+    
     pool = await asyncpg.create_pool(
         DATABASE_URL,
         min_size=2,
@@ -93,102 +139,42 @@ async def main():
         statement_cache_size=0
     )
     
-    stats = {
-        'processed': 0,
-        'success': 0,
-        'failed': 0,
-        'rows_added': 0,
-        'start_time': datetime.now()
-    }
-    
     try:
-        # Get all symbols
-        async with pool.acquire() as conn:
-            rows = await conn.fetch(
-                "SELECT symbol FROM market_tickers ORDER BY symbol"
-            )
-            symbols = [r['symbol'] for r in rows]
+        symbols = await get_all_symbols(pool)
+        logger.info(f"Found {len(symbols)} symbols to update")
         
-        logger.info(f"Found {len(symbols)} symbols to fetch")
+        updated = 0
+        failed = 0
         
-        # Process symbols in batches to avoid rate limiting
+        # Process in batches to avoid rate limiting
         batch_size = 10
-        total = len(symbols)
-        
-        for i in range(0, total, batch_size):
+        for i in range(0, len(symbols), batch_size):
             batch = symbols[i:i+batch_size]
             
             for symbol in batch:
-                stats['processed'] += 1
-                progress = (stats['processed'] / total) * 100
-                
-                logger.info(f"[{stats['processed']}/{total}] ({progress:.1f}%) Fetching {symbol}...")
-                
-                # Fetch from Yahoo Finance
-                df = fetch_yahoo_ohlc(symbol, period="5y")
-                
-                if df.empty:
-                    stats['failed'] += 1
-                    continue
-                
-                # Insert into database (replacing synthetic data)
-                async with pool.acquire() as conn:
-                    # Delete existing data for this symbol
-                    await conn.execute(
-                        "DELETE FROM ohlc_history WHERE symbol = $1",
-                        symbol
-                    )
-                    
-                    # Insert new data - convert timestamps to Python datetime
-                    records = [
-                        (row['time'].to_pydatetime(), row['symbol'], float(row['open']), float(row['high']), 
-                         float(row['low']), float(row['close']), int(row['volume']))
-                        for _, row in df.iterrows()
-                    ]
-                    
-                    await conn.executemany("""
-                        INSERT INTO ohlc_history (time, symbol, open, high, low, close, volume)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7)
-                        ON CONFLICT (time, symbol) DO UPDATE SET
-                            open = EXCLUDED.open,
-                            high = EXCLUDED.high,
-                            low = EXCLUDED.low,
-                            close = EXCLUDED.close,
-                            volume = EXCLUDED.volume
-                    """, records)
-                    
-                    stats['success'] += 1
-                    stats['rows_added'] += len(records)
-                    logger.info(f"  ✅ Added {len(records)} real data points for {symbol}")
+                data = fetch_yahoo_data(symbol)
+                if data:
+                    success = await update_stock_price(pool, symbol, data)
+                    if success:
+                        updated += 1
+                        logger.info(f"✅ {symbol}: {data['last_price']} SAR ({data['change_percent']}%)")
+                    else:
+                        failed += 1
+                else:
+                    failed += 1
             
-            # Rate limiting between batches
-            if i + batch_size < total:
-                logger.info(f"  💤 Waiting 2 seconds (rate limiting)...")
-                time.sleep(2)
+            # Small delay between batches to avoid rate limiting
+            await asyncio.sleep(1)
         
-        # Final stats
-        duration = (datetime.now() - stats['start_time']).total_seconds()
+        logger.info("=" * 60)
+        logger.info(f"✅ Updated: {updated} stocks")
+        logger.info(f"❌ Failed: {failed} stocks")
+        logger.info(f"📊 Success Rate: {(updated/(updated+failed))*100:.1f}%")
+        logger.info("=" * 60)
         
-        print()
-        print("=" * 70)
-        print("    YAHOO FINANCE DATA COLLECTION COMPLETE")
-        print("=" * 70)
-        print(f"  Symbols Processed: {stats['processed']}")
-        print(f"  Successful:        {stats['success']}")
-        print(f"  Failed:            {stats['failed']}")
-        print(f"  Total Rows Added:  {stats['rows_added']:,}")
-        print(f"  Duration:          {duration:.1f} seconds")
-        print("=" * 70)
-        
-        # Get new totals
-        async with pool.acquire() as conn:
-            ohlc_count = await conn.fetchval("SELECT COUNT(*) FROM ohlc_history")
-            ohlc_symbols = await conn.fetchval("SELECT COUNT(DISTINCT symbol) FROM ohlc_history")
-        
-        print()
-        print(f"  📊 NEW OHLC Total:  {ohlc_count:,} records")
-        print(f"  📈 Symbols Covered: {ohlc_symbols}")
-        print()
+        if updated == 0:
+            logger.error("No stocks were updated! This is a critical failure.")
+            sys.exit(1)
         
     finally:
         await pool.close()

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
-import Sidebar from "@/components/Sidebar";
+import AppSidebar from "@/components/AppSidebar";
 import { ToastProvider } from "@/components/ToastProvider";
-import GlobalSearch from "@/components/GlobalSearch";
+import GlobalSearchWidget from "@/components/GlobalSearchWidget";
 
 
 const inter = Inter({
@@ -49,12 +49,12 @@ export default function RootLayout({
         <Providers>
           <ToastProvider>
             {/* Enterprise Shell Layout */}
-            <Sidebar />
+            <AppSidebar />
             <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
               {/* Floating Global Search - Merged Overlay */}
               <div className="absolute top-5 right-8 z-50 pointer-events-none">
                 <div className="pointer-events-auto">
-                  <GlobalSearch />
+                  <GlobalSearchWidget />
                 </div>
               </div>
 

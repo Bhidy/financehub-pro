@@ -169,7 +169,7 @@ export default function GlobalSearch() {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
+                className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md hover:bg-white transition-all border border-slate-200/60 shadow-lg shadow-slate-200/20 rounded-full group"
             >
                 <Search className="w-4 h-4 text-slate-600" />
                 <span className="text-sm text-slate-600 font-medium">Search</span>

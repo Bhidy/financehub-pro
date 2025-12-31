@@ -62,8 +62,9 @@ jobs:
           fi
           
       - name: Send Failure Email
-        if: failure() && secrets.SMTP_PASSWORD != ''
+        if: failure()
         uses: dawidd6/action-send-mail@v3
+        continue-on-error: true
         with:
           server_address: smtp.gmail.com
           server_port: 587
@@ -204,8 +205,9 @@ jobs:
           python update_navs.py
           
       - name: Send Failure Email
-        if: failure() && secrets.SMTP_PASSWORD != ''
+        if: failure()
         uses: dawidd6/action-send-mail@v3
+        continue-on-error: true
         with:
           server_address: smtp.gmail.com
           server_port: 587
@@ -258,7 +260,7 @@ jobs:
           python scripts/get_data_stats.py >> $GITHUB_STEP_SUMMARY || echo "Stats unavailable"
           
       - name: Send Daily Success Email
-        if: success() && secrets.SMTP_PASSWORD != ''
+        if: success()
         uses: dawidd6/action-send-mail@v3
         continue-on-error: true
         with:
@@ -283,7 +285,7 @@ jobs:
             — FinanceHub Pro Automation
             
       - name: Send Failure Alert Email
-        if: failure() && secrets.SMTP_PASSWORD != ''
+        if: failure()
         uses: dawidd6/action-send-mail@v3
         continue-on-error: true
         with:
@@ -348,15 +350,15 @@ jobs:
               
               # Try multiple connection methods
               methods = [
-                  ("SSL Context (no verify)", lambda: create_ssl_context_pool(db_url)),
-                  ("SSL Require", lambda: create_ssl_require_pool(db_url)),
-                  ("No SSL", lambda: create_no_ssl_pool(db_url)),
+                  ("SSL Context (no verify)", create_ssl_context_pool),
+                  ("SSL Require", create_ssl_require_pool),
+                  ("No SSL", create_no_ssl_pool),
               ]
               
               for name, create_pool in methods:
                   try:
                       print(f"\n🔄 Trying: {name}...")
-                      pool = await create_pool()
+                      pool = await create_pool(db_url)
                       async with pool.acquire() as conn:
                           count = await conn.fetchval("SELECT COUNT(*) FROM market_tickers")
                           print(f"✅ SUCCESS with {name}! Found {count} tickers")

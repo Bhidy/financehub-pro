@@ -54,7 +54,7 @@ async def main():
             
             # Fetch Top Movers
             top_movers = await conn.fetch("""
-                SELECT symbol, name_en, change_percent, close as price
+                SELECT symbol, name_en, change_percent, last_price as price
                 FROM market_tickers 
                 WHERE change_percent IS NOT NULL 
                 ORDER BY abs(change_percent) DESC 

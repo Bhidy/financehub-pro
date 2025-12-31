@@ -48,6 +48,11 @@ jobs:
       - name: Install Dependencies
         run: pip install asyncpg yfinance pandas
         
+      - name: Update Live Stock Prices
+        id: update_prices
+        run: python scripts/fetch_yahoo_data.py
+        continue-on-error: true
+        
       - name: Update OHLC History
         id: update_ohlc
         run: python scripts/daily_ohlc_update.py

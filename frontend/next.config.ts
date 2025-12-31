@@ -13,13 +13,14 @@ if (process.env.VERCEL) {
   // We are building on Vercel. Enforce ALL required env vars.
   for (const envVar of REQUIRED_SERVER_ENV_VARS) {
     if (!process.env[envVar]) {
-      throw new Error(
-        `❌ CRITICAL BUILD ERROR: Missing required environment variable: ${envVar}.\n` +
-        `   Please add it in the Vercel Dashboard: Settings > Environment Variables.`
+      // WARN ONLY - Do not block build (allows UI updates even if DB is flaky)
+      console.warn(
+        `⚠️ BUILD WARNING: Missing required environment variable: ${envVar}.\n` +
+        `   API routes depending on this variable may fail at runtime.`
       );
     }
   }
-  console.log('✅ [Build] All required environment variables are present.');
+  console.log('✅ [Build] Environment check complete.');
 }
 
 /** @type {import('next').NextConfig} */

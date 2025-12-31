@@ -46,6 +46,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-slate-50 flex h-screen overflow-hidden`}
       >
+        <div id="build-id" data-timestamp={new Date().toISOString()} className="hidden" />
         <Providers>
           <ToastProvider>
             {/* Enterprise Shell Layout */}

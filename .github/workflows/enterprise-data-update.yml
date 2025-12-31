@@ -130,9 +130,7 @@ jobs:
           python-version: '3.11'
           
       - name: Install Dependencies
-        run: |
-          pip install asyncpg playwright
-          playwright install chromium
+        run: pip install asyncpg yfinance pandas
         
       - name: Update Corporate Actions
         run: python scripts/update_corporate_actions.py

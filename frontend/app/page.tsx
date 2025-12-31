@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import {
   fetchTickers,
   fetchSectors,
+  fetchMarketSummary,
   Ticker,
 } from "@/lib/api";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
 import MarketTicker from "@/components/MarketTicker";
 import Link from "next/link";
@@ -15,50 +16,85 @@ import {
   TrendingDown,
   Activity,
   BarChart3,
-  DollarSign,
   Zap,
   ArrowUpRight,
   ArrowDownRight,
   PieChart,
-  Target
+  Target,
+  Sparkles,
+  Clock,
+  Building2,
+  ChevronRight
 } from "lucide-react";
 
 export default function Home() {
   const { data: tickers = [], isLoading } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers });
   const { data: sectors = [] } = useQuery({ queryKey: ["sectors"], queryFn: fetchSectors });
+  const { data: marketSummary } = useQuery({ queryKey: ["market-summary"], queryFn: fetchMarketSummary });
+  const [chartPeriod, setChartPeriod] = useState("1D");
 
-  // Computed Lists
-  const topGainers = useMemo(() => [...tickers].sort((a: Ticker, b: Ticker) => b.change_percent - a.change_percent).slice(0, 5), [tickers]);
-  const topLosers = useMemo(() => [...tickers].sort((a: Ticker, b: Ticker) => a.change_percent - b.change_percent).slice(0, 5), [tickers]);
-  const mostActive = useMemo(() => [...tickers].sort((a: Ticker, b: Ticker) => Number(b.volume) - Number(a.volume)).slice(0, 5), [tickers]);
-
-  // Market Stats
-  const marketVolume = useMemo(() => tickers.reduce((acc: number, t: Ticker) => acc + (Number(t.volume) || 0), 0), [tickers]);
-  const marketTrend = useMemo(() => {
-    if (!tickers.length) return 0;
-    return (tickers.filter((t: Ticker) => t.change > 0).length / tickers.length) * 100;
+  // Computed Lists - wrapped with safe array handling
+  const topGainers = useMemo(() => {
+    if (!tickers || tickers.length === 0) return [];
+    return [...tickers].sort((a: Ticker, b: Ticker) => (b.change_percent || 0) - (a.change_percent || 0)).slice(0, 5);
   }, [tickers]);
-  const totalStocks = tickers.length;
-  const gainersCount = tickers.filter((t: Ticker) => t.change > 0).length;
-  const losersCount = tickers.filter((t: Ticker) => t.change < 0).length;
+
+  const topLosers = useMemo(() => {
+    if (!tickers || tickers.length === 0) return [];
+    return [...tickers].sort((a: Ticker, b: Ticker) => (a.change_percent || 0) - (b.change_percent || 0)).slice(0, 5);
+  }, [tickers]);
+
+  const mostActive = useMemo(() => {
+    if (!tickers || tickers.length === 0) return [];
+    return [...tickers].sort((a: Ticker, b: Ticker) => Number(b.volume || 0) - Number(a.volume || 0)).slice(0, 5);
+  }, [tickers]);
+
+  // Market Stats from real data - with safe fallbacks
+  const marketVolume = marketSummary?.total_volume || (tickers?.reduce((acc: number, t: Ticker) => acc + (Number(t.volume) || 0), 0) || 0);
+  const totalStocks = marketSummary?.total_stocks || tickers?.length || 0;
+  const gainersCount = marketSummary?.advancing || tickers?.filter((t: Ticker) => (t.change || 0) > 0).length || 0;
+  const losersCount = marketSummary?.declining || tickers?.filter((t: Ticker) => (t.change || 0) < 0).length || 0;
+  const unchangedCount = marketSummary?.unchanged || Math.max(0, (totalStocks - gainersCount - losersCount));
+
+  // Index values from market summary
+  const indexValue = Number(marketSummary?.index_value) || 12150.45;
+  const indexChange = Number(marketSummary?.index_change) || 0;
+  const indexChangePercent = Number(marketSummary?.index_change_percent) || 0;
+
+  // Top performing sectors (sorted by performance)
+  const topSectors = useMemo(() => {
+    if (!sectors || sectors.length === 0) return [];
+    return [...sectors]
+      .filter((s: any) => s.performance !== null && s.performance !== undefined)
+      .sort((a: any, b: any) => (Number(b.performance) || 0) - (Number(a.performance) || 0))
+      .slice(0, 4);
+  }, [sectors]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pb-12">
       {/* Premium Ticker Tape */}
       <MarketTicker />
 
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Hero Header - Premium Gradient */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white">
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        <div className="relative max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-black tracking-tight">Market Overview</h1>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm flex items-center gap-1">
+                  <Building2 className="w-3 h-3" />
                   Saudi Exchange
                 </span>
               </div>
-              <p className="text-blue-100 font-medium">Real-time market data from Tadawul</p>
+              <p className="text-blue-100 font-medium flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Real-time market data from Tadawul • Updated live
+              </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
@@ -79,43 +115,43 @@ export default function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-6">
-        {/* Quick Stats Row */}
+        {/* Quick Stats Row - Premium Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             {
               label: "Total Volume",
               value: (marketVolume / 1000000).toFixed(1) + "M",
               icon: BarChart3,
-              color: "blue",
-              bg: "from-blue-500 to-blue-600"
+              bg: "from-blue-500 to-blue-600",
+              shadow: "shadow-blue-500/20"
             },
             {
               label: "Market Breadth",
-              value: marketTrend.toFixed(1) + "% Up",
+              value: ((gainersCount / (totalStocks || 1)) * 100).toFixed(1) + "% Up",
               icon: PieChart,
-              color: "teal",
-              bg: "from-teal-500 to-teal-600"
+              bg: "from-teal-500 to-teal-600",
+              shadow: "shadow-teal-500/20"
             },
             {
               label: "Gainers",
               value: gainersCount.toString(),
               icon: TrendingUp,
-              color: "green",
-              bg: "from-emerald-500 to-emerald-600"
+              bg: "from-emerald-500 to-emerald-600",
+              shadow: "shadow-emerald-500/20"
             },
             {
               label: "Losers",
               value: losersCount.toString(),
               icon: TrendingDown,
-              color: "red",
-              bg: "from-red-500 to-red-600"
+              bg: "from-red-500 to-red-600",
+              shadow: "shadow-red-500/20"
             },
           ].map((stat, i) => (
             <div
               key={i}
               className={clsx(
                 "relative overflow-hidden rounded-2xl p-5 text-white shadow-xl",
-                `bg-gradient-to-br ${stat.bg}`
+                `bg-gradient-to-br ${stat.bg} ${stat.shadow}`
               )}
             >
               <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -128,20 +164,28 @@ export default function Home() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-6">
-          {/* TASI Index Card */}
+          {/* TASI Index Card - Premium Design */}
           <div className="col-span-12 lg:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
             <div className="p-6 border-b border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">TASI Index</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">TASI Index</span>
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">LIVE</span>
+                  </div>
                   <div className="flex items-baseline gap-4">
-                    <span className="text-5xl font-black text-slate-900 tracking-tight font-mono">12,150.45</span>
-                    <div className="flex flex-col text-lg font-bold text-emerald-600">
+                    <span className="text-5xl font-black text-slate-900 tracking-tight font-mono">
+                      {indexValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <div className={clsx(
+                      "flex flex-col text-lg font-bold",
+                      indexChange >= 0 ? "text-emerald-600" : "text-red-600"
+                    )}>
                       <span className="flex items-center gap-1">
-                        <ArrowUpRight className="w-5 h-5" />
-                        +84.20
+                        {indexChange >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+                        {indexChange >= 0 ? "+" : ""}{indexChange.toFixed(2)}
                       </span>
-                      <span className="text-sm">(+0.72%)</span>
+                      <span className="text-sm">({indexChange >= 0 ? "+" : ""}{indexChangePercent.toFixed(2)}%)</span>
                     </div>
                   </div>
                 </div>
@@ -149,9 +193,10 @@ export default function Home() {
                   {["1D", "1W", "1M", "1Y"].map((tf) => (
                     <button
                       key={tf}
+                      onClick={() => setChartPeriod(tf)}
                       className={clsx(
                         "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                        tf === "1D"
+                        chartPeriod === tf
                           ? "bg-blue-500 text-white shadow-md"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       )}
@@ -162,20 +207,24 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            {/* Chart Area */}
+            {/* Chart Area - Real Bar Chart from tickers data */}
             <div className="h-64 p-6 bg-gradient-to-b from-white to-blue-50/30">
-              <div className="w-full h-full flex items-end gap-1">
-                {Array.from({ length: 50 }, (_, i) => {
-                  const height = 30 + Math.sin(i / 5) * 20 + Math.random() * 30;
-                  const isUp = Math.random() > 0.4;
+              <div className="w-full h-full flex items-end gap-[2px]">
+                {(tickers || []).slice(0, 60).map((ticker: Ticker, i: number) => {
+                  const changePercent = ticker.change_percent ?? 0;
+                  const change = ticker.change ?? 0;
+                  const normalizedChange = Math.min(Math.max(changePercent, -5), 5);
+                  const height = 50 + (normalizedChange * 8);
+                  const isUp = change >= 0;
                   return (
                     <div
-                      key={i}
+                      key={ticker.symbol}
                       className={clsx(
-                        "flex-1 rounded-t transition-all duration-300 hover:opacity-80",
-                        isUp ? "bg-emerald-400" : "bg-red-400"
+                        "flex-1 rounded-t transition-all duration-300 hover:opacity-80 cursor-pointer",
+                        isUp ? "bg-gradient-to-t from-emerald-500 to-emerald-400" : "bg-gradient-to-t from-red-500 to-red-400"
                       )}
-                      style={{ height: `${height}%` }}
+                      style={{ height: `${Math.max(height, 10)}%` }}
+                      title={`${ticker.symbol}: ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`}
                     />
                   );
                 })}
@@ -183,7 +232,65 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Compact Market Intelligence Section */}
+          {/* Side Stats */}
+          <div className="col-span-12 lg:col-span-4 space-y-4">
+            {/* Sector Performance - Real Data */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-100/50 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-blue-500" />
+                <h3 className="font-bold text-slate-800">Sector Leaders</h3>
+              </div>
+              <div className="space-y-3">
+                {topSectors.length > 0 ? topSectors.map((sector: any, i: number) => (
+                  <div key={sector.sector_name || i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <span className={clsx(
+                        "w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center",
+                        sector.performance >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                      )}>
+                        {i + 1}
+                      </span>
+                      <span className="text-sm font-medium text-slate-700 truncate max-w-[100px]">{sector.sector_name}</span>
+                    </div>
+                    <span className={clsx(
+                      "text-sm font-bold font-mono",
+                      sector.performance >= 0 ? "text-emerald-600" : "text-red-600"
+                    )}>
+                      {sector.performance >= 0 ? "+" : ""}{Number(sector.performance).toFixed(2)}%
+                    </span>
+                  </div>
+                )) : (
+                  <div className="text-sm text-slate-400 text-center py-4">Loading sectors...</div>
+                )}
+              </div>
+            </div>
+
+            {/* AI Insights - Premium Card */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-orange-400 via-orange-500 to-amber-500 rounded-2xl p-5 text-white shadow-xl shadow-orange-200/50">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-5 h-5" />
+                  <span className="font-bold">AI Market Insight</span>
+                </div>
+                <p className="text-sm text-white/90 leading-relaxed">
+                  {gainersCount > losersCount
+                    ? `Bullish sentiment: ${gainersCount} stocks advancing vs ${losersCount} declining. Market breadth at ${((gainersCount / totalStocks) * 100).toFixed(1)}%.`
+                    : `Bearish pressure: ${losersCount} stocks declining vs ${gainersCount} advancing. Consider defensive positions.`
+                  }
+                </p>
+                <Link
+                  href="/ai-analyst"
+                  className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-all inline-flex items-center gap-2"
+                >
+                  Full Analysis
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Market Intelligence Section - Real Sector Data */}
           <div className="col-span-12 bg-white rounded-2xl border border-slate-100 shadow-lg p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -195,23 +302,23 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Market Breadth Bar */}
+            {/* Market Breadth Bar - Real Data */}
             <div className="mb-4">
-              <div className="flex items-center gap-2 h-6 rounded-full overflow-hidden bg-slate-100">
+              <div className="flex items-center gap-2 h-8 rounded-full overflow-hidden bg-slate-100">
                 <div
-                  className="h-full bg-emerald-500 flex items-center justify-center text-[10px] font-bold text-white transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 flex items-center justify-center text-[11px] font-bold text-white transition-all duration-500"
                   style={{ width: `${(gainersCount / (totalStocks || 1)) * 100}%` }}
                 >
                   {gainersCount > 0 && `${gainersCount} Up`}
                 </div>
                 <div
-                  className="h-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600 transition-all duration-500"
-                  style={{ width: `${((totalStocks - gainersCount - losersCount) / (totalStocks || 1)) * 100}%` }}
+                  className="h-full bg-slate-300 flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-500"
+                  style={{ width: `${(unchangedCount / (totalStocks || 1)) * 100}%` }}
                 >
-                  {(totalStocks - gainersCount - losersCount) > 0 && `${totalStocks - gainersCount - losersCount} Flat`}
+                  {unchangedCount > 0 && `${unchangedCount} Flat`}
                 </div>
                 <div
-                  className="h-full bg-red-500 flex items-center justify-center text-[10px] font-bold text-white transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-red-400 to-red-500 flex items-center justify-center text-[11px] font-bold text-white transition-all duration-500"
                   style={{ width: `${(losersCount / (totalStocks || 1)) * 100}%` }}
                 >
                   {losersCount > 0 && `${losersCount} Down`}
@@ -219,76 +326,40 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Compact Sector Heatmap Grid */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-              {sectors.slice(0, 6).map((s: any) => (
-                <div
-                  key={s.sector_name}
-                  className={clsx(
-                    "p-3 rounded-xl border transition-all hover:shadow-md cursor-pointer text-center",
-                    s.performance > 0
-                      ? "bg-emerald-50 border-emerald-100"
-                      : "bg-red-50 border-red-100"
-                  )}
-                >
-                  <div className="text-xs font-bold text-slate-700 truncate">{s.sector_name}</div>
-                  <div className={clsx(
-                    "text-sm font-black font-mono mt-1",
-                    s.performance > 0 ? "text-emerald-600" : "text-red-600"
-                  )}>
-                    {s.performance > 0 ? "+" : ""}{Number(s.performance).toFixed(2)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Side Stats */}
-          <div className="col-span-12 lg:col-span-4 space-y-4">
-            {/* Sector Performance */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-100/50 p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-blue-500" />
-                <h3 className="font-bold text-slate-800">Sector Leaders</h3>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { name: "Banks", change: 1.24, color: "emerald" },
-                  { name: "Petrochemicals", change: 0.89, color: "emerald" },
-                  { name: "Telecom", change: -0.45, color: "red" },
-                  { name: "Real Estate", change: 0.32, color: "emerald" },
-                ].map((sector, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                    <span className="text-sm font-medium text-slate-700">{sector.name}</span>
-                    <span className={clsx(
-                      "text-sm font-bold",
-                      sector.change >= 0 ? "text-emerald-600" : "text-red-600"
+            {/* Compact Sector Heatmap Grid - Real Data */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              {sectors.slice(0, 12).map((s: any, idx: number) => {
+                const perf = Number(s.performance) || 0;
+                return (
+                  <div
+                    key={s.sector_name || idx}
+                    className={clsx(
+                      "p-3 rounded-xl border transition-all hover:shadow-md cursor-pointer text-center",
+                      perf > 0
+                        ? "bg-emerald-50 border-emerald-100 hover:border-emerald-200"
+                        : perf < 0
+                          ? "bg-red-50 border-red-100 hover:border-red-200"
+                          : "bg-slate-50 border-slate-100 hover:border-slate-200"
+                    )}
+                  >
+                    <div className="text-xs font-bold text-slate-700 truncate">{s.sector_name}</div>
+                    <div className={clsx(
+                      "text-sm font-black font-mono mt-1",
+                      perf > 0 ? "text-emerald-600" : perf < 0 ? "text-red-600" : "text-slate-500"
                     )}>
-                      {sector.change >= 0 ? "+" : ""}{sector.change}%
-                    </span>
+                      {perf > 0 ? "+" : ""}{perf.toFixed(2)}%
+                    </div>
+                    {s.stock_count && (
+                      <div className="text-[10px] text-slate-400 mt-0.5">{s.stock_count} stocks</div>
+                    )}
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Insights */}
-            <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl p-5 text-white shadow-xl shadow-orange-200/50">
-              <div className="flex items-center gap-2 mb-3">
-                <Zap className="w-5 h-5" />
-                <span className="font-bold">AI Market Insight</span>
-              </div>
-              <p className="text-sm text-white/90 leading-relaxed">
-                Banking sector showing strong momentum with SABB and Rajhi leading gains.
-                Consider monitoring energy stocks for potential reversal signals.
-              </p>
-              <button className="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-all">
-                View Full Analysis →
-              </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Stock Lists Row */}
+        {/* Stock Lists Row - Premium Design */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           {/* Top Gainers */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-emerald-100/30 overflow-hidden">

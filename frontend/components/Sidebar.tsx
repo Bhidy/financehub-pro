@@ -67,32 +67,36 @@ const NAV_SECTIONS = [
         items: [
             { label: "Company Profile", icon: Building2, href: "/symbol/2222", badge: "NEW", badgeColor: "green" },
             { label: "Mutual Funds", icon: DollarSign, href: "/funds" },
-            { label: "Shareholders", icon: Users, href: "/shareholders" },
+            // HIDDEN: Shareholders - can be re-enabled later
+            // { label: "Shareholders", icon: Users, href: "/shareholders" },
             // HIDDEN: Earnings Calendar - can be re-enabled later
             // { label: "Earnings Calendar", icon: TrendingUp, href: "/earnings" },
-            { label: "Analyst Ratings", icon: Star, href: "/analyst-ratings" },
+            // HIDDEN: Analyst Ratings - can be re-enabled later
+            // { label: "Analyst Ratings", icon: Star, href: "/analyst-ratings" },
             // HIDDEN: Insider Trading - can be re-enabled later
             // { label: "Insider Trading", icon: Users, href: "/insider-trading" },
-            { label: "Corporate Actions", icon: Building2, href: "/corporate-actions" },
+            // HIDDEN: Corporate Actions - can be re-enabled later
+            // { label: "Corporate Actions", icon: Building2, href: "/corporate-actions" },
         ]
     },
-    {
-        title: "Macro & Global",
-        color: "amber",
-        items: [
-            // HIDDEN: Economics Center - can be re-enabled later
-            // { label: "Economics Center", icon: Globe, href: "/economics" },
-        ]
-    },
-    {
-        title: "Trading",
-        color: "orange",
-        items: [
-            { label: "Portfolio", icon: Briefcase, href: "/portfolio" },
-            { label: "Watchlists", icon: List, href: "/watchlist", badge: "NEW", badgeColor: "orange" },
-            { label: "Strategy Builder", icon: BrainCircuit, href: "/strategy" },
-        ]
-    },
+    // HIDDEN: Macro & Global section - can be re-enabled later
+    // {
+    //     title: "Macro & Global",
+    //     color: "amber",
+    //     items: [
+    //         { label: "Economics Center", icon: Globe, href: "/economics" },
+    //     ]
+    // },
+    // HIDDEN: Trading section - can be re-enabled later
+    // {
+    //     title: "Trading",
+    //     color: "orange",
+    //     items: [
+    //         { label: "Portfolio", icon: Briefcase, href: "/portfolio" },
+    //         { label: "Watchlists", icon: List, href: "/watchlist", badge: "NEW", badgeColor: "orange" },
+    //         { label: "Strategy Builder", icon: BrainCircuit, href: "/strategy" },
+    //     ]
+    // },
 ];
 
 const colorMap: Record<string, { bg: string; text: string; activeBg: string; activeText: string; hoverBg: string }> = {
@@ -261,7 +265,7 @@ export default function Sidebar() {
                         <span className="text-xs font-bold text-emerald-700">All Systems Online</span>
                     </div>
                     <div className="mt-1 flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 font-mono">v1.0.15 (Enterprise)</span>
+                        <span className="text-[10px] text-slate-400 font-mono">v1.2.0 (Enterprise)</span>
                         <div className="flex gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>

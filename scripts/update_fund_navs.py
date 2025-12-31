@@ -89,8 +89,8 @@ async def main():
     
     try:
         async with pool.acquire() as conn:
-            # Get all funds
-            funds = await conn.fetch("SELECT id, fund_name FROM mutual_funds LIMIT 600")
+                # Get all funds
+            funds = await conn.fetch("SELECT fund_id, fund_name FROM mutual_funds LIMIT 600")
             logger.info(f"📊 Found {len(funds)} funds to update...")
             
             today = datetime.now().date()
@@ -102,7 +102,7 @@ async def main():
                     # Get latest NAV
                     latest = await conn.fetchval(
                         "SELECT nav FROM nav_history WHERE fund_id = $1 ORDER BY date DESC LIMIT 1",
-                        fund['id']
+                        fund['fund_id']
                     )
                     if latest:
                         # Simulate small daily fluctuation for demo/filling purposes
@@ -114,12 +114,12 @@ async def main():
                             INSERT INTO nav_history (fund_id, date, nav)
                             VALUES ($1, $2, $3)
                             ON CONFLICT (fund_id, date) DO UPDATE SET nav = $3
-                        """, fund['id'], today, round(new_nav, 4))
+                        """, fund['fund_id'], today, round(new_nav, 4))
                         updated += 1
                 except Exception as e:
                     errors += 1
                     if errors < 5:  # Only log first few errors
-                        logger.warning(f"Error updating fund {fund['id']}: {e}")
+                        logger.warning(f"Error updating fund {fund['fund_id']}: {e}")
             
             # Update mutual_funds table with latest NAV
             logger.info("Updating latest_nav in mutual_funds table...")
@@ -131,7 +131,7 @@ async def main():
                     FROM nav_history
                     ORDER BY fund_id, date DESC
                 ) nh
-                WHERE mf.id = nh.fund_id
+                WHERE mf.fund_id = nh.fund_id
             """)
             
             logger.info("=" * 60)

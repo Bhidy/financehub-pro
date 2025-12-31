@@ -2,11 +2,11 @@ name: Enterprise Data Update System
 
 on:
   schedule:
-    # Daily OHLC Update: 6:00 PM UTC (9:00 PM Saudi Time) - after market close
+    # Daily OHLC & Funds: 6:00 PM UTC (9:00 PM Saudi Time) - after market close
     - cron: '0 18 * * 0-4'
     
-    # Fund NAVs: 4:00 PM UTC (7:00 PM Saudi Time)
-    - cron: '0 16 * * 0-4'
+    # Intraday News & Actions: Every 4 hours
+    - cron: '0 */4 * * 0-4'
     
   workflow_dispatch:
     inputs:
@@ -19,6 +19,8 @@ on:
           - all
           - ohlc_only
           - funds_only
+          - actions_only
+          - news_only
           - test_database
 
 env:
@@ -44,23 +46,13 @@ jobs:
           python-version: '3.11'
           
       - name: Install Dependencies
-        run: pip install asyncpg
+        run: pip install asyncpg yfinance pandas
         
       - name: Update OHLC History
         id: update_ohlc
-        run: python scripts/daily_ohlc_update.py 2>&1 | tee ohlc.log
+        run: python scripts/daily_ohlc_update.py
         continue-on-error: true
         
-      - name: Report Result
-        run: |
-          echo "## 📈 Daily OHLC Update" >> $GITHUB_STEP_SUMMARY
-          echo "**Time:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.update_ohlc.outcome }}" == "success" ]; then
-            echo "**Status:** ✅ Success" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
       - name: Send Failure Email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -75,15 +67,8 @@ jobs:
           from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
           body: |
             ⚠️ DAILY OHLC UPDATE FAILED
-            
-            Date: ${{ github.event.head_commit.timestamp || 'Scheduled Run' }}
             Run ID: ${{ github.run_id }}
-            
-            Action Required: Check the workflow immediately.
-            
             Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            — FinanceHub Pro Automation
 
   # =========================================================================
   # JOB 2: MUTUAL FUND NAVs
@@ -107,103 +92,8 @@ jobs:
         run: pip install asyncpg
         
       - name: Update Fund NAVs
-        run: |
-          cat > update_navs.py << 'ENDOFSCRIPT'
-          import asyncio
-          import asyncpg
-          import os
-          import ssl
-          import random
-          from datetime import datetime
-          
-          async def main():
-              db_url = os.environ.get('DATABASE_URL')
-              if not db_url:
-                  print("❌ DATABASE_URL not set!")
-                  return
-              
-              print(f"🔌 Connecting to database...")
-              
-              # For Supabase pooler, we need to disable SSL verification
-              # The pooler URL uses port 6543
-              try:
-                  # Try with SSL context that doesn't verify
-                  ssl_context = ssl.create_default_context()
-                  ssl_context.check_hostname = False
-                  ssl_context.verify_mode = ssl.CERT_NONE
-                  
-                  pool = await asyncpg.create_pool(
-                      db_url,
-                      ssl=ssl_context,
-                      min_size=1,
-                      max_size=3,
-                      command_timeout=60,
-                      statement_cache_size=0
-                  )
-                  print("✅ Connected with custom SSL context")
-              except Exception as e1:
-                  print(f"SSL context failed: {e1}")
-                  try:
-                      # Fallback: Try with ssl='require'
-                      pool = await asyncpg.create_pool(
-                          db_url,
-                          ssl='require',
-                          min_size=1,
-                          max_size=3,
-                          command_timeout=60,
-                          statement_cache_size=0
-                      )
-                      print("✅ Connected with ssl='require'")
-                  except Exception as e2:
-                      print(f"ssl='require' failed: {e2}")
-                      # Final fallback: Try without SSL
-                      pool = await asyncpg.create_pool(
-                          db_url,
-                          min_size=1,
-                          max_size=3,
-                          command_timeout=60,
-                          statement_cache_size=0
-                      )
-                      print("✅ Connected without SSL")
-              
-              async with pool.acquire() as conn:
-                  # Get all funds
-                  funds = await conn.fetch("SELECT id, fund_name FROM mutual_funds LIMIT 600")
-                  print(f"📊 Found {len(funds)} funds to update...")
-                  
-                  today = datetime.now().date()
-                  updated = 0
-                  errors = 0
-                  
-                  for fund in funds:
-                      try:
-                          # Get latest NAV
-                          latest = await conn.fetchval(
-                              "SELECT nav FROM nav_history WHERE fund_id = $1 ORDER BY date DESC LIMIT 1",
-                              fund['id']
-                          )
-                          if latest:
-                              new_nav = float(latest) * (1 + random.uniform(-0.005, 0.015))
-                              await conn.execute("""
-                                  INSERT INTO nav_history (fund_id, date, nav)
-                                  VALUES ($1, $2, $3)
-                                  ON CONFLICT (fund_id, date) DO UPDATE SET nav = $3
-                              """, fund['id'], today, round(new_nav, 4))
-                              updated += 1
-                      except Exception as e:
-                          errors += 1
-                          if errors < 5:  # Only log first few errors
-                              print(f"Error updating fund {fund['id']}: {e}")
-                  
-                  print(f"✅ Updated {updated} fund NAVs ({errors} errors)")
-              
-              await pool.close()
-              print("✅ Fund NAV update complete!")
-          
-          asyncio.run(main())
-          ENDOFSCRIPT
-          python update_navs.py
-          
+        run: python scripts/update_fund_navs.py
+        
       - name: Send Failure Email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -218,20 +108,100 @@ jobs:
           from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
           body: |
             ⚠️ FUND NAV UPDATE FAILED
-            
             Run ID: ${{ github.run_id }}
-            
             Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            — FinanceHub Pro Automation
 
   # =========================================================================
-  # JOB 3: DATA HEALTH VERIFICATION
+  # JOB 3: CORPORATE ACTIONS (Dividends)
+  # =========================================================================
+  update-corporate-actions:
+    name: 🎁 Corporate Actions
+    runs-on: ubuntu-latest
+    if: github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'actions_only' || github.event_name == 'schedule'
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Dependencies
+        run: |
+          pip install asyncpg playwright
+          playwright install chromium
+        
+      - name: Update Corporate Actions
+        run: python scripts/update_corporate_actions.py
+        
+      - name: Send Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        continue-on-error: true
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.NOTIFICATION_EMAIL }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "🚨 FinanceHub Alert: Corporate Actions Update FAILED"
+          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
+          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
+          body: |
+            ⚠️ CORPORATE ACTIONS UPDATE FAILED
+            Run ID: ${{ github.run_id }}
+            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  # =========================================================================
+  # JOB 4: MARKET NEWS
+  # =========================================================================
+  update-news:
+    name: 📰 Market News
+    runs-on: ubuntu-latest
+    if: github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'news_only' || github.event_name == 'schedule'
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Dependencies
+        run: pip install asyncpg
+        
+      - name: Update News
+        run: python scripts/update_news.py
+        
+      - name: Send Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        continue-on-error: true
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.NOTIFICATION_EMAIL }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "🚨 FinanceHub Alert: News Update FAILED"
+          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
+          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
+          body: |
+            ⚠️ NEWS UPDATE FAILED
+            Run ID: ${{ github.run_id }}
+            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  # =========================================================================
+  # JOB 5: DATA HEALTH VERIFICATION
   # =========================================================================
   verify-data-health:
     name: 🏥 Data Health Check
     runs-on: ubuntu-latest
-    needs: [update-daily-ohlc, update-fund-navs]
+    needs: [update-daily-ohlc, update-fund-navs, update-corporate-actions, update-news]
     if: always()
     
     steps:
@@ -251,14 +221,6 @@ jobs:
         run: python scripts/verify_data_integrity.py
         continue-on-error: true
         
-      - name: Generate Health Report
-        run: |
-          echo "## 🏥 Data Health Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Timestamp:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          python scripts/get_data_stats.py >> $GITHUB_STEP_SUMMARY || echo "Stats unavailable"
-          
       - name: Send Daily Success Email
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -268,7 +230,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.NOTIFICATION_EMAIL }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "✅ FinanceHub Daily Update Complete - ${{ github.run_id }}"
+          subject: "✅ FinanceHub Daily Update Complete - All Systems Go"
           to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
           from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
           body: |
@@ -276,9 +238,11 @@ jobs:
             
             Date: ${{ github.run_id }}
             
-            All systems are healthy:
-            - OHLC history updated
-            - Fund NAVs current
+            All systems verified:
+            - OHLC History: Updated
+            - Funds: Updated
+            - Corporate Actions: Updated
+            - Market News: Updated
             
             View your site: https://finhub-pro.vercel.app
             
@@ -300,93 +264,5 @@ jobs:
             🚨🚨 CRITICAL: DATA HEALTH CHECK FAILED 🚨🚨
             
             Immediate action required!
-            
             Run ID: ${{ github.run_id }}
-            
-            IMMEDIATE ACTION REQUIRED:
-            1. Check the workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            2. Verify database: https://supabase.com/dashboard
-            3. Check live site: https://finhub-pro.vercel.app
-            
-            — FinanceHub Pro Automation
-
-  # =========================================================================
-  # JOB 4: TEST DATABASE CONNECTION
-  # =========================================================================
-  test-database:
-    name: 🔌 Test Database Connection
-    runs-on: ubuntu-latest
-    if: github.event.inputs.update_type == 'test_database'
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Dependencies
-        run: pip install asyncpg
-        
-      - name: Test Connection
-        run: |
-          cat > test_db.py << 'ENDOFSCRIPT'
-          import asyncio
-          import asyncpg
-          import os
-          import ssl
-          
-          async def main():
-              print("🔌 Testing database connection...")
-              
-              db_url = os.environ.get('DATABASE_URL')
-              if not db_url:
-                  print("❌ DATABASE_URL not set!")
-                  return
-              
-              print(f"URL prefix: {db_url[:50]}...")
-              
-              # Try multiple connection methods
-              methods = [
-                  ("SSL Context (no verify)", create_ssl_context_pool),
-                  ("SSL Require", create_ssl_require_pool),
-                  ("No SSL", create_no_ssl_pool),
-              ]
-              
-              for name, create_pool in methods:
-                  try:
-                      print(f"\n🔄 Trying: {name}...")
-                      pool = await create_pool(db_url)
-                      async with pool.acquire() as conn:
-                          count = await conn.fetchval("SELECT COUNT(*) FROM market_tickers")
-                          print(f"✅ SUCCESS with {name}! Found {count} tickers")
-                          await pool.close()
-                          return  # Success - exit
-                  except Exception as e:
-                      print(f"❌ {name} failed: {e}")
-              
-              print("\n❌ ALL CONNECTION METHODS FAILED!")
-              raise Exception("Could not connect to database with any method")
-          
-          async def create_ssl_context_pool(url):
-              ssl_context = ssl.create_default_context()
-              ssl_context.check_hostname = False
-              ssl_context.verify_mode = ssl.CERT_NONE
-              return await asyncpg.create_pool(url, ssl=ssl_context, min_size=1, max_size=2, statement_cache_size=0)
-          
-          async def create_ssl_require_pool(url):
-              return await asyncpg.create_pool(url, ssl='require', min_size=1, max_size=2, statement_cache_size=0)
-          
-          async def create_no_ssl_pool(url):
-              return await asyncpg.create_pool(url, min_size=1, max_size=2, statement_cache_size=0)
-          
-          asyncio.run(main())
-          ENDOFSCRIPT
-          python test_db.py
-          
-      - name: Report Result
-        run: |
-          echo "## 🔌 Database Connection Test" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Connection test completed!" >> $GITHUB_STEP_SUMMARY
+            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

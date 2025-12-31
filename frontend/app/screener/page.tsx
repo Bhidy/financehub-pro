@@ -52,7 +52,7 @@ export default function ScreenerPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-black tracking-tight">Stock Screener</h1>
-                            <p className="text-blue-100 font-medium">Advanced filtering with institutional-grade criteria</p>
+                            <p className="text-blue-100 font-medium">Advanced filtering with institutional-grade criteria • <span className="text-blue-200 text-sm">Prices delayed 5 min</span></p>
                         </div>
                     </div>
                 </div>

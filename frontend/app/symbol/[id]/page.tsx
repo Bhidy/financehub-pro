@@ -161,7 +161,7 @@ export default function SymbolDetailPage() {
     const chartRef = useRef<any>(null);
 
     const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership" | "analysts" | "earnings" | "insider">("overview");
-    const [chartPeriod, setChartPeriod] = useState("1y");
+    const [chartPeriod, setChartPeriod] = useState("1m");
     const [chartStyle, setChartStyle] = useState<"candle" | "line" | "area">("area");
     const [isIntraday, setIsIntraday] = useState(false);
 
@@ -382,7 +382,7 @@ export default function SymbolDetailPage() {
                                                     <button onClick={() => setIsIntraday(true)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${isIntraday ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg" : "text-slate-500 hover:text-slate-700"}`}>
                                                         <Clock className="w-4 h-4 inline mr-1" />1D
                                                     </button>
-                                                    {["1m", "3m", "6m", "1y", "5y"].map(tf => (
+                                                    {["1w", "1m", "3m", "6m", "1y", "5y"].map(tf => (
                                                         <button key={tf} onClick={() => { setIsIntraday(false); setChartPeriod(tf); }}
                                                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${!isIntraday && chartPeriod === tf ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg" : "text-slate-500 hover:text-slate-700"}`}>
                                                             {tf.toUpperCase()}

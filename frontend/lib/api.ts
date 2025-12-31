@@ -1,12 +1,17 @@
 import axios from "axios";
-import { env } from "./env";
 import { TickerResponseSchema, Ticker } from "./schemas";
 
-// Unified Data Plane: Trust env.ts only
-const API_BASE_URL = env.NEXT_PUBLIC_API_URL;
+// =============================================================================
+// UNIFIED SERVERLESS ARCHITECTURE - ENTERPRISE FIX
+// =============================================================================
+// CRITICAL: We ALWAYS use internal Next.js API routes.
+// This eliminates any dependency on external backends (Railway, HuggingFace, etc.)
+// The API routes are co-located with the frontend at /api/v1/*
+// =============================================================================
+const API_BASE_URL = "/api/v1";
 
 if (typeof window !== 'undefined') {
-    console.log(`[FinanceHub Pro] Connected to Brain: ${API_BASE_URL}`);
+    console.log(`[FinanceHub Pro v1.3.1] Unified Serverless Mode: ${API_BASE_URL}`);
 }
 
 export const api = axios.create({
@@ -187,6 +192,11 @@ export const fetchMarketBreadth = async (limit: number = 30) => {
     return data;
 };
 
+export const fetchMarketSummary = async () => {
+    const { data } = await api.get("/market-summary");
+    return data;
+};
+
 // ============================================================================
 // NEW FUNCTIONS (Priorities 1 & 2)
 // ============================================================================
@@ -295,41 +305,41 @@ export const deleteAlert = async (id: string) => {
 // ============================================================================
 
 export const fetchCompanyProfile = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/profile`);
+    const { data } = await api.get(`/company/${symbol}/profile`);
     return data;
 };
 
 export const fetchCompanyFinancials = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/financials`);
+    const { data } = await api.get(`/company/${symbol}/financials`);
     return data;
 };
 
 export const fetchCompanyShareholders = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/shareholders`);
+    const { data } = await api.get(`/company/${symbol}/shareholders`);
     return data;
 };
 
 export const fetchCompanyAnalysts = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/analysts`);
+    const { data } = await api.get(`/company/${symbol}/analysts`);
     return data;
 };
 
 export const fetchCompanyDividends = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/dividends`);
+    const { data } = await api.get(`/company/${symbol}/dividends`);
     return data;
 };
 
 export const fetchCompanyOwnership = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/ownership`);
+    const { data } = await api.get(`/company/${symbol}/ownership`);
     return data;
 };
 
 export const fetchCompanyNews = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/news`);
+    const { data } = await api.get(`/company/${symbol}/news`);
     return data;
 };
 
 export const fetchCompanyInsiderTransactions = async (symbol: string) => {
-    const { data } = await api.get(`/api/company/${symbol}/insider-transactions`);
+    const { data } = await api.get(`/company/${symbol}/insider-transactions`);
     return data;
 };

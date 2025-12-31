@@ -5,8 +5,7 @@ import Providers from "./providers";
 import Sidebar from "@/components/Sidebar";
 import { ToastProvider } from "@/components/ToastProvider";
 import GlobalSearch from "@/components/GlobalSearch";
-import HealthCheck from "@/components/HealthCheck";
-import AIChatWidget from "@/components/AIChatWidget";
+
 
 const inter = Inter({
   variable: "--font-inter",
@@ -62,9 +61,7 @@ export default function RootLayout({
                 {children}
               </div>
             </div>
-            {/* Health Check Indicator */}
-            <HealthCheck />
-            <AIChatWidget />
+
           </ToastProvider>
         </Providers>
       </body>

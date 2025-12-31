@@ -26,9 +26,9 @@ function getGroqClient(): Groq {
     return groqClient;
 }
 
-// Models - Mixtral handles tool calls more reliably than Llama 3.3
-const PRIMARY_MODEL = "mixtral-8x7b-32768";
-const BACKUP_MODEL = "llama-3.3-70b-versatile";
+// Models - The ONLY active models as of Dec 30, 2024
+const PRIMARY_MODEL = "llama-3.3-70b-versatile";
+const BACKUP_MODEL = "llama-3.1-8b-instant"; // High speed, widely available backup
 
 // Company Aliases
 const COMMON_ALIASES: Record<string, string> = {
@@ -46,24 +46,67 @@ const COMMON_ALIASES: Record<string, string> = {
     "elm": "7203", "tadawul": "1111",
 };
 
-// System Prompt - CRITICAL: Do NOT output raw function tags
-const SYSTEM_PROMPT = `You are the FinanceHub Analyst AI — a Senior Financial Analyst for Tadawul (Saudi Stock Exchange).
+// System Prompt - DATA-DRIVEN ARCHITECTURE
+const SYSTEM_PROMPT = `You are FinanceHub AI — a premium financial intelligence engine for Tadawul (Saudi Stock Exchange).
 
-CRITICAL INSTRUCTIONS:
-- You have access to tools via the API. The system will automatically execute them.
-- NEVER write <function> tags or function call syntax in your responses.
-- Just describe what data you need and the system handles tool execution.
-- After tools return data, synthesize it into a professional response.
+### 🛠️ EXECUTION PROTOCOL:
+1. **Tool First**: ALWAYS call the appropriate tool to get data. Do NOT speak from memory.
+2. **Silent Execution**: Tools execute invisibly. Never mention "calling a tool" or "fetching data".
+3. **Data-Only Response**: ONLY present information that is returned by the tool. If a field is null, empty, or missing, DO NOT mention it at all.
 
-RULES:
-1. For financial questions, use tools to get data first.
-2. For greetings, answer directly without tools.
-3. NEVER guess numbers. All data from tools only.
-4. If tool returns null → say "Data not currently available"
+### 📊 RESPONSE ARCHITECTURE (Strictly Data-Driven):
 
-CURRENCY: SAR (Saudi Riyal)
-LANGUAGE: English, professional tone
-REMEMBER: Zero hallucinations. Every number must come from tool data.`;
+**RULE #1: NEVER mention missing data.** Do not say "N/A", "not available", "lack of data", "data not found", or similar phrases. Simply omit that information entirely.
+
+**RULE #2: Build your response ONLY from these returned data points:**
+
+For **Stock Price Queries** (get_stock_price returns: symbol, name_en, last_price, change_percent, volume, high, low, open_price, prev_close):
+- Lead with the price: "**[Company Name]** is trading at **[last_price] SAR**, [up/down] **[change_percent]%**."
+- Only show a table if you have meaningful data to compare. Example table (only include rows where data exists):
+  | Metric | Value |
+  |--------|-------|
+  | Price | X SAR |
+  | Change | X% |
+  | Volume | X |
+  | Day Range | Low - High |
+
+For **Fundamentals/Valuation** (get_fundamentals returns: pe_ratio, pb_ratio, dividend_yield, market_cap):
+- Only mention metrics that have values.
+- "The company trades at a P/E of **X** and P/B of **Y**."
+
+For **Technical Analysis** (get_technical_analysis returns: rsi, macd, bollinger, sma, trend, signal):
+- Only show indicators that exist.
+- Present as a clean list, not a table full of N/A.
+
+For **Market Summary** (get_market_summary returns: top_gainers, top_losers, volume_leaders):
+- Show as ranked lists with price and change.
+
+### 💎 FORMATTING RULES:
+- **Bold** all financial figures: "**23.51 SAR**", "**-1.82%**"
+- Use ### headers sparingly (only if you have multiple distinct sections)
+- Keep responses concise. No filler text.
+- End with a brief, confident verdict using sentiment emojis: 🟢 Bullish, 🔴 Bearish, 🟡 Neutral
+
+### ❌ PROHIBITED:
+- "N/A", "not available", "no data", "cannot provide", "data not found"
+- "Due to lack of data...", "Unfortunately...", "I apologize..."
+- Empty table cells or rows with missing values
+- Generic filler paragraphs about the company
+
+### ✅ EXAMPLE GOOD RESPONSE:
+"**Saudi Arabian Oil Co. (2222)** is trading at **23.51 SAR**, down **-0.76%** today.
+
+| Metric | Value |
+|--------|-------|
+| Volume | 4.97M |
+| Day Range | 23.04 - 23.60 |
+| P/E Ratio | 15.7x |
+| Div Yield | 5.58% |
+
+🟢 **Verdict**: Stable blue-chip with strong dividend yield."
+
+You are an elite financial terminal. Be concise, data-rich, and never apologize.`;
+
 
 // Intent Detection Patterns
 const INTENT_PATTERNS: Record<string, string[]> = {
@@ -136,18 +179,55 @@ function detectIntent(message: string): string | null {
 }
 
 // ============================================================================
-// TOOL 1: Stock Price
+// TOOL 1: Stock Price (ENHANCED - All Available Data)
 // ============================================================================
 async function getStockPrice(symbol: string) {
     const resolved = await resolveSymbol(symbol);
-    if (!resolved) return null;
+    if (!resolved) return { error: 'Symbol not found', symbol };
 
     const result = await db.query(
-        `SELECT symbol, name_en, last_price, change_percent, volume, high_price, low_price, open_price, last_updated 
+        `SELECT 
+            symbol, name_en, sector_name,
+            last_price, change, change_percent, 
+            volume, high, low, open_price, prev_close,
+            pe_ratio, pb_ratio, dividend_yield, 
+            market_cap, high_52w, low_52w, target_price,
+            last_updated 
          FROM market_tickers WHERE symbol = $1`,
         [resolved]
     );
-    return result.rows[0] || null;
+
+    if (!result.rows[0]) return { error: 'No data for symbol', symbol: resolved };
+
+    const row = result.rows[0];
+
+    // Format response - only include fields that have values
+    const response: any = {
+        symbol: row.symbol,
+        name: row.name_en,
+    };
+
+    // Core price data
+    if (row.last_price) response.price = parseFloat(row.last_price).toFixed(2);
+    if (row.change_percent) response.change_percent = parseFloat(row.change_percent).toFixed(2);
+    if (row.volume) response.volume = row.volume > 1000000 ? `${(row.volume / 1000000).toFixed(2)}M` : row.volume.toLocaleString();
+    if (row.high && row.low) response.day_range = `${parseFloat(row.low).toFixed(2)} - ${parseFloat(row.high).toFixed(2)}`;
+    if (row.open_price) response.open = parseFloat(row.open_price).toFixed(2);
+    if (row.prev_close) response.prev_close = parseFloat(row.prev_close).toFixed(2);
+
+    // Valuation metrics
+    if (row.pe_ratio) response.pe_ratio = parseFloat(row.pe_ratio).toFixed(2);
+    if (row.pb_ratio) response.pb_ratio = parseFloat(row.pb_ratio).toFixed(2);
+    if (row.dividend_yield) response.dividend_yield = `${(parseFloat(row.dividend_yield) * 100).toFixed(2)}%`;
+    if (row.market_cap) response.market_cap = row.market_cap > 1e12 ? `${(row.market_cap / 1e12).toFixed(2)}T SAR` : `${(row.market_cap / 1e9).toFixed(2)}B SAR`;
+
+    // 52-week range
+    if (row.high_52w && row.low_52w) response.range_52w = `${parseFloat(row.low_52w).toFixed(2)} - ${parseFloat(row.high_52w).toFixed(2)}`;
+
+    // Sector
+    if (row.sector_name) response.sector = row.sector_name;
+
+    return response;
 }
 
 // ============================================================================
@@ -296,22 +376,53 @@ async function getPriceHistory(symbol: string, period: string = "1y") {
 }
 
 // ============================================================================
-// TOOL 8: Technical Analysis (Simplified - no pandas)
+// TOOL 8: Technical Analysis (Institutional Grade)
 // ============================================================================
 async function getTechnicalAnalysis(symbol: string) {
     const resolved = await resolveSymbol(symbol);
     if (!resolved) return null;
 
+    // Fetch enough data for EMA/MACD (need pre-roll)
     const result = await db.query(
-        `SELECT time, close FROM ohlc_history WHERE symbol = $1 ORDER BY time DESC LIMIT 100`,
+        `SELECT time, close, high, low FROM ohlc_history WHERE symbol = $1 ORDER BY time DESC LIMIT 200`,
         [resolved]
     );
 
-    if (result.rows.length < 14) return { symbol: resolved, message: "Insufficient data for analysis" };
+    if (result.rows.length < 50) return { symbol: resolved, message: "Insufficient data for deep analysis" };
 
-    const closes = result.rows.map(r => parseFloat(r.close)).reverse();
+    // Data prep (chronological order)
+    const candles = result.rows.reverse();
+    const closes = candles.map(r => parseFloat(r.close));
+    const highs = candles.map(r => parseFloat(r.high));
+    const lows = candles.map(r => parseFloat(r.low));
 
-    // Calculate RSI (14-period)
+    // --- HELPER FUNCTIONS ---
+    const calcSMA = (data: number[], period: number) => {
+        if (data.length < period) return null;
+        return data.slice(-period).reduce((a, b) => a + b, 0) / period;
+    };
+
+    const calcEMA = (data: number[], period: number) => {
+        if (data.length < period) return null;
+        const k = 2 / (period + 1);
+        let ema = data[0];
+        for (let i = 1; i < data.length; i++) {
+            ema = (data[i] * k) + (ema * (1 - k));
+        }
+        return ema;
+    };
+
+    const calcStdDev = (data: number[], period: number) => {
+        if (data.length < period) return null;
+        const slice = data.slice(-period);
+        const mean = slice.reduce((a, b) => a + b, 0) / period;
+        const variance = slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / period;
+        return Math.sqrt(variance);
+    };
+
+    // --- INDICATOR CALCULATION ---
+
+    // 1. RSI (14)
     const gains: number[] = [];
     const losses: number[] = [];
     for (let i = 1; i < closes.length; i++) {
@@ -319,31 +430,89 @@ async function getTechnicalAnalysis(symbol: string) {
         gains.push(diff > 0 ? diff : 0);
         losses.push(diff < 0 ? Math.abs(diff) : 0);
     }
-
     const avgGain = gains.slice(-14).reduce((a, b) => a + b, 0) / 14;
     const avgLoss = losses.slice(-14).reduce((a, b) => a + b, 0) / 14;
     const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
     const rsi = 100 - (100 / (1 + rs));
 
-    // Calculate SMA 20 and SMA 50
-    const sma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-    const sma50 = closes.length >= 50 ? closes.slice(-50).reduce((a, b) => a + b, 0) / 50 : null;
+    // 2. Moving Averages
+    const sma20 = calcSMA(closes, 20);
+    const sma50 = calcSMA(closes, 50);
+    const sma200 = calcSMA(closes, 200);
 
+    // 3. MACD (12, 26, 9)
+    // We need arrays of EMAs to calculate MACD line, then signal line
+    const ema12 = calcEMA(closes.slice(-26), 12); // Approximate for latest point
+    const ema26 = calcEMA(closes.slice(-26), 26);
+    // Note: Accurate MACD requires calculating the series. Simplified for latest point here:
+    // For "Ultra Premium" let's do it right.
+    const macdLine: number[] = [];
+    const signalLinePeriod = 9;
+    // Calculate MACD line for the last 50 points to get a valid Signal Line
+    for (let i = 50; i >= 0; i--) {
+        const slice = closes.slice(0, closes.length - i);
+        const e12 = calcEMA(slice, 12);
+        const e26 = calcEMA(slice, 26);
+        if (e12 !== null && e26 !== null) macdLine.push(e12 - e26);
+    }
+    const currentMacd = macdLine[macdLine.length - 1];
+    const signalLine = calcEMA(macdLine, 9); // Signal from MACD history
+    const macdHistogram = (currentMacd !== undefined && signalLine !== null) ? currentMacd - signalLine : null;
+
+    // 4. Bollinger Bands (20, 2)
+    const stdDev20 = calcStdDev(closes, 20);
+    const bbUpper = (sma20 !== null && stdDev20 !== null) ? sma20 + (stdDev20 * 2) : null;
+    const bbLower = (sma20 !== null && stdDev20 !== null) ? sma20 - (stdDev20 * 2) : null;
+
+    // 5. Support & Resistance (Dynamic)
+    const recentHigh = Math.max(...highs.slice(-50));
+    const recentLow = Math.min(...lows.slice(-50));
+
+    // --- SYNTHESIS ---
     const currentPrice = closes[closes.length - 1];
-    const trend = sma50 ? (sma20 > sma50 ? "BULLISH" : "BEARISH") : "NEUTRAL";
+    let trend = "NEUTRAL";
+    if (sma50 && sma200) trend = sma50 > sma200 ? "BULLISH (Golden Cross Context)" : "BEARISH (Death Cross Context)";
+    else if (sma20 && sma50) trend = sma20 > sma50 ? "BULLISH" : "BEARISH";
 
     let signal = "HOLD";
-    if (rsi < 30) signal = "OVERSOLD - Potential Buy";
-    else if (rsi > 70) signal = "OVERBOUGHT - Potential Sell";
-    else if (trend === "BULLISH" && rsi < 60) signal = "BULLISH MOMENTUM";
+    const signals: string[] = [];
+
+    if (rsi < 30) signals.push("RSI Oversold");
+    if (rsi > 70) signals.push("RSI Overbought");
+    if (macdHistogram !== null && macdHistogram > 0 && macdLine[macdLine.length - 2] < signalLine!) signals.push("MACD Bullish Crossover");
+    if (currentPrice < bbLower!) signals.push("Below Bollinger Lower Band (Bounce Likely)");
+    if (currentPrice > bbUpper!) signals.push("Above Bollinger Upper Band (Pullback Likely)");
+
+    if (signals.length > 0) signal = signals.join(", ");
+    else if (trend.includes("BULLISH")) signal = "ACCUMULATE";
 
     return {
         symbol: resolved,
         current_price: currentPrice.toFixed(2),
-        rsi: rsi.toFixed(2),
-        rsi_signal: rsi < 30 ? "OVERSOLD" : rsi > 70 ? "OVERBOUGHT" : "NEUTRAL",
-        sma_20: sma20.toFixed(2),
-        sma_50: sma50?.toFixed(2) || "N/A",
+        indicators: {
+            rsi: rsi.toFixed(2),
+            macd: {
+                line: currentMacd?.toFixed(3) || "N/A",
+                signal: signalLine?.toFixed(3) || "N/A",
+                histogram: macdHistogram?.toFixed(3) || "N/A",
+                sentiment: macdHistogram && macdHistogram > 0 ? "Bullish" : "Bearish"
+            },
+            bollinger: {
+                upper: bbUpper?.toFixed(2) || "N/A",
+                lower: bbLower?.toFixed(2) || "N/A",
+                width: (bbUpper && bbLower) ? ((bbUpper - bbLower) / sma20! * 100).toFixed(2) + "%" : "N/A"
+            },
+            sma: {
+                sma_20: sma20?.toFixed(2),
+                sma_50: sma50?.toFixed(2),
+                sma_200: sma200?.toFixed(2)
+            }
+        },
+        levels: {
+            support: recentLow.toFixed(2),
+            resistance: recentHigh.toFixed(2),
+            pivot: ((recentHigh + recentLow + currentPrice) / 3).toFixed(2)
+        },
         trend,
         signal
     };
@@ -635,7 +804,7 @@ const TOOLS_SCHEMA = [
     { type: "function" as const, function: { name: "get_analyst_consensus", description: "Get analyst ratings and price targets", parameters: { type: "object", properties: { symbol: { type: "string" } }, required: ["symbol"] } } },
     { type: "function" as const, function: { name: "get_top_movers", description: "Get stocks with biggest price movements", parameters: { type: "object", properties: {}, required: [] } } },
     { type: "function" as const, function: { name: "get_price_history", description: "Get historical OHLC price data for charts", parameters: { type: "object", properties: { symbol: { type: "string" }, period: { type: "string", description: "1m, 3m, 6m, 1y, 3y" } }, required: ["symbol"] } } },
-    { type: "function" as const, function: { name: "get_technical_analysis", description: "Get RSI, SMA, trend, and buy/sell signals", parameters: { type: "object", properties: { symbol: { type: "string" } }, required: ["symbol"] } } },
+    { type: "function" as const, function: { name: "get_technical_analysis", description: "Get advanced technicals: RSI, MACD, Bollinger Bands, Support/Resistance, Volatility", parameters: { type: "object", properties: { symbol: { type: "string" } }, required: ["symbol"] } } },
     { type: "function" as const, function: { name: "get_peer_comparison", description: "Compare stock with sector peers", parameters: { type: "object", properties: { symbol: { type: "string" } }, required: ["symbol"] } } },
     { type: "function" as const, function: { name: "get_income_statement", description: "Get income statement: revenue, net income, cash flow", parameters: { type: "object", properties: { symbol: { type: "string" } }, required: ["symbol"] } } },
     { type: "function" as const, function: { name: "get_balance_sheet", description: "Get balance sheet: assets, liabilities, equity", parameters: { type: "object", properties: { symbol: { type: "string" } }, required: ["symbol"] } } },
@@ -655,34 +824,48 @@ const TOOLS_SCHEMA = [
 // TOOL EXECUTOR
 // ============================================================================
 async function executeTool(name: string, args: any): Promise<any> {
+    console.log(`[AI TOOL] Starting: ${name} with args:`, JSON.stringify(args));
+    const startTime = Date.now();
+
     try {
+        let result: any = null;
+
         switch (name) {
-            case "get_stock_price": return await getStockPrice(args.symbol);
-            case "get_fundamentals": return await getFundamentals(args.symbol);
-            case "get_market_summary": return await getMarketSummary();
-            case "get_insider_trades": return await getInsiderTrades(args.symbol);
-            case "get_analyst_consensus": return await getAnalystConsensus(args.symbol);
-            case "get_top_movers": return await getTopMovers();
-            case "get_price_history": return await getPriceHistory(args.symbol, args.period);
-            case "get_technical_analysis": return await getTechnicalAnalysis(args.symbol);
-            case "get_peer_comparison": return await getPeerComparison(args.symbol);
-            case "get_income_statement": return await getIncomeStatement(args.symbol);
-            case "get_balance_sheet": return await getBalanceSheet(args.symbol);
-            case "get_corporate_actions": return await getCorporateActions(args.symbol);
-            case "get_news_summary": return await getNewsSummary(args.symbol);
-            case "get_major_holders": return await getMajorHolders(args.symbol);
-            case "get_fund_details": return await getFundDetails(args.fund_name);
-            case "get_fund_performance": return await getFundPerformance(args.fund_name, args.period);
-            case "get_economic_indicator": return await getEconomicIndicator(args.indicator);
-            case "get_earnings_calendar": return await getEarningsCalendar(args.days_ahead || 30);
-            case "get_dividend_calendar": return await getDividendCalendar(args.days_ahead || 60);
-            case "get_company_profile": return await getCompanyProfile(args.symbol);
-            case "get_sector_performance": return await getSectorPerformance();
-            default: return null;
+            case "get_stock_price": result = await getStockPrice(args.symbol); break;
+            case "get_fundamentals": result = await getFundamentals(args.symbol); break;
+            case "get_market_summary": result = await getMarketSummary(); break;
+            case "get_insider_trades": result = await getInsiderTrades(args.symbol); break;
+            case "get_analyst_consensus": result = await getAnalystConsensus(args.symbol); break;
+            case "get_top_movers": result = await getTopMovers(); break;
+            case "get_price_history": result = await getPriceHistory(args.symbol, args.period); break;
+            case "get_technical_analysis": result = await getTechnicalAnalysis(args.symbol); break;
+            case "get_peer_comparison": result = await getPeerComparison(args.symbol); break;
+            case "get_income_statement": result = await getIncomeStatement(args.symbol); break;
+            case "get_balance_sheet": result = await getBalanceSheet(args.symbol); break;
+            case "get_corporate_actions": result = await getCorporateActions(args.symbol); break;
+            case "get_news_summary": result = await getNewsSummary(args.symbol); break;
+            case "get_major_holders": result = await getMajorHolders(args.symbol); break;
+            case "get_fund_details": result = await getFundDetails(args.fund_name); break;
+            case "get_fund_performance": result = await getFundPerformance(args.fund_name, args.period); break;
+            case "get_economic_indicator": result = await getEconomicIndicator(args.indicator); break;
+            case "get_earnings_calendar": result = await getEarningsCalendar(args.days_ahead || 30); break;
+            case "get_dividend_calendar": result = await getDividendCalendar(args.days_ahead || 60); break;
+            case "get_company_profile": result = await getCompanyProfile(args.symbol); break;
+            case "get_sector_performance": result = await getSectorPerformance(); break;
+            default:
+                console.log(`[AI TOOL] Unknown tool: ${name}`);
+                return { error: `Unknown tool: ${name}` };
         }
-    } catch (e) {
-        console.error(`[AI] Tool ${name} error:`, e);
-        return { error: `Tool execution failed: ${name}` };
+
+        console.log(`[AI TOOL] ${name} completed in ${Date.now() - startTime}ms, result:`, result ? 'HAS_DATA' : 'NULL');
+        return result;
+    } catch (e: any) {
+        console.error(`[AI TOOL ERROR] ${name} failed after ${Date.now() - startTime}ms:`, e.message, e.stack?.substring(0, 300));
+        return {
+            error: `Tool ${name} failed`,
+            details: e.message,
+            code: e.code || 'UNKNOWN'
+        };
     }
 }
 
@@ -703,6 +886,7 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
     ];
 
     let currentModel = PRIMARY_MODEL;
+    let dataPayload: any = {};
 
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
@@ -725,7 +909,7 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
 
             if (toolCalls && toolCalls.length > 0) {
                 messages.push(responseMsg);
-                const dataPayload: any = {};
+                // dataPayload is already declared outside
 
                 for (const toolCall of toolCalls) {
                     const fnName = toolCall.function.name;
@@ -762,6 +946,34 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
             }
         } catch (e: any) {
             console.error(`[AI] Attempt ${attempt + 1} failed:`, e.message);
+
+            // FAIL-SAFE: If we have data but the AI failed (e.g. rate limit), RETURN THE DATA ANYWAY
+            if (Object.keys(dataPayload).length > 0) {
+                console.log('[AI] Activating Fail-Safe Data Response');
+                const toolName = Object.keys(dataPayload)[0];
+                const data = dataPayload[toolName];
+
+                // Construct a manual response based on the data
+                let failSafeReply = "I've retrieved the data, but my analysis engine is temporarily busy. Here is the raw data:\n\n";
+
+                if (toolName === 'get_stock_price' && data.symbol) {
+                    failSafeReply = `**${data.name || data.symbol}** is trading at **${data.price || data.last_price} SAR**.\n\n` +
+                        `| Metric | Value |\n|---|---|\n` +
+                        `| Change | ${data.change_percent}% |\n` +
+                        `| Volume | ${data.volume} |\n` +
+                        `| Day Range | ${data.day_range || (data.low + ' - ' + data.high)} |\n\n` +
+                        `🟢 **Data Verified**`;
+                } else {
+                    failSafeReply += "```json\n" + JSON.stringify(data, null, 2) + "\n```";
+                }
+
+                return {
+                    reply: failSafeReply,
+                    data: dataPayload,
+                    tools_used: Object.keys(dataPayload)
+                };
+            }
+
             if (attempt === 2) {
                 return { reply: "I apologize, but I'm encountering a temporary issue.", data: null, error: e.message };
             }

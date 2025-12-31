@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Bot, Sparkles, Loader2, BarChart2 } from 'lucide-react';
 import { useBackendHealth } from '@/hooks/useBackendHealth';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function AIChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
@@ -120,7 +122,11 @@ export default function AIChatWidget() {
                                                     Analyst Insight
                                                 </div>
                                             )}
-                                            {msg.content}
+                                            <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-slate-900/50 prose-pre:border prose-pre:border-white/10 prose-headings:text-emerald-400 prose-headings:font-bold prose-a:text-emerald-400 prose-strong:text-white prose-table:my-2 prose-th:px-2 prose-th:py-1 prose-th:text-emerald-500 prose-td:px-2 prose-td:py-1">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {msg.content}
+                                                </ReactMarkdown>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

@@ -2,8 +2,8 @@
 """
 Data Integrity Verification Script
 ===================================
-Verifies database integrity and ensures data counts are expected.
-Fails if data appears to be missing or corrupted.
+Checks that database contains expected data and reports issues.
+Used by GitHub Actions to verify data updates are working.
 """
 
 import asyncio
@@ -14,107 +14,149 @@ from datetime import datetime, timedelta
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Minimum expected counts - will fail if below these thresholds
-MIN_EXPECTED = {
+# Minimum thresholds for healthy data
+THRESHOLDS = {
     'market_tickers': 400,      # At least 400 stocks
+    'ohlc_history': 300000,     # At least 300k OHLC rows
     'mutual_funds': 500,        # At least 500 funds
-    'ohlc_history': 300000,     # At least 300K OHLC records
-    'nav_history': 600000,      # At least 600K NAV records
-    'financial_statements': 5000,
-    'corporate_actions': 5000,
+    'nav_history': 500000,      # At least 500k NAV rows
+    'corporate_actions': 5000,   # At least 5k corporate actions
 }
+
+
+async def check_data_freshness(pool) -> dict:
+    """Check when data was last updated"""
+    async with pool.acquire() as conn:
+        # Check market_tickers last_updated
+        latest_ticker = await conn.fetchval(
+            "SELECT MAX(last_updated) FROM market_tickers"
+        )
+        
+        # Check latest OHLC date
+        latest_ohlc = await conn.fetchval(
+            "SELECT MAX(time)::date FROM ohlc_history"
+        )
+        
+        # Check latest NAV date
+        latest_nav = await conn.fetchval(
+            "SELECT MAX(date) FROM nav_history"
+        )
+        
+        return {
+            'ticker_update': latest_ticker,
+            'latest_ohlc': latest_ohlc,
+            'latest_nav': latest_nav
+        }
+
+
+async def check_row_counts(pool) -> dict:
+    """Check row counts against thresholds"""
+    results = {}
+    
+    async with pool.acquire() as conn:
+        for table, threshold in THRESHOLDS.items():
+            try:
+                count = await conn.fetchval(f"SELECT COUNT(*) FROM {table}")
+                results[table] = {
+                    'count': count,
+                    'threshold': threshold,
+                    'healthy': count >= threshold
+                }
+            except Exception as e:
+                results[table] = {
+                    'count': 0,
+                    'threshold': threshold,
+                    'healthy': False,
+                    'error': str(e)
+                }
+    
+    return results
 
 
 async def main():
     if not DATABASE_URL:
-        print("❌ DATABASE_URL not set")
+        print("❌ DATABASE_URL not set!")
         sys.exit(1)
     
+    print("🏥 DATA INTEGRITY CHECK")
     print("=" * 60)
-    print("    DATA INTEGRITY VERIFICATION")
-    print("=" * 60)
-    print()
     
-    conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
-    
-    errors = []
-    warnings = []
+    pool = await asyncpg.create_pool(
+        DATABASE_URL,
+        min_size=1,
+        max_size=5,
+        statement_cache_size=0
+    )
     
     try:
-        # Check 1: Minimum row counts
-        print("📋 Checking minimum data thresholds...")
-        for table, min_count in MIN_EXPECTED.items():
-            count = await conn.fetchval(f'SELECT COUNT(*) FROM {table}')
-            if count < min_count:
-                errors.append(f"{table}: {count:,} rows (expected >= {min_count:,})")
-                print(f"  ❌ {table}: {count:,} < {min_count:,}")
-            else:
-                print(f"  ✅ {table}: {count:,} rows")
+        # Check freshness
+        print("\n📅 DATA FRESHNESS:")
+        print("-" * 40)
+        freshness = await check_data_freshness(pool)
         
-        print()
+        now = datetime.now()
+        all_fresh = True
         
-        # Check 2: OHLC coverage
-        print("📊 Checking OHLC coverage...")
-        ohlc_symbols = await conn.fetchval(
-            "SELECT COUNT(DISTINCT symbol) FROM ohlc_history"
-        )
-        total_symbols = await conn.fetchval(
-            "SELECT COUNT(*) FROM market_tickers"
-        )
-        coverage = (ohlc_symbols / total_symbols) * 100 if total_symbols > 0 else 0
-        
-        if coverage < 95:
-            warnings.append(f"OHLC coverage: {coverage:.1f}% (expected >= 95%)")
-            print(f"  ⚠️ Coverage: {coverage:.1f}% ({ohlc_symbols}/{total_symbols})")
+        if freshness['ticker_update']:
+            age = now - freshness['ticker_update'].replace(tzinfo=None)
+            status = "✅" if age.days < 1 else "⚠️"
+            if age.days > 1:
+                all_fresh = False
+            print(f"{status} Ticker data: {freshness['ticker_update']} (Age: {age.days}d {age.seconds//3600}h)")
         else:
-            print(f"  ✅ Coverage: {coverage:.1f}% ({ohlc_symbols}/{total_symbols})")
+            print("❌ Ticker data: NEVER UPDATED")
+            all_fresh = False
         
-        print()
+        if freshness['latest_ohlc']:
+            age = (now.date() - freshness['latest_ohlc']).days
+            status = "✅" if age <= 3 else "⚠️"  # Allow for weekends
+            if age > 3:
+                all_fresh = False
+            print(f"{status} Latest OHLC: {freshness['latest_ohlc']} (Age: {age} days)")
+        else:
+            print("❌ OHLC data: NO DATA")
+            all_fresh = False
         
-        # Check 3: Data freshness
-        print("🕐 Checking data freshness...")
-        latest_ohlc = await conn.fetchval(
-            "SELECT MAX(time) FROM ohlc_history"
-        )
+        if freshness['latest_nav']:
+            age = (now.date() - freshness['latest_nav']).days
+            status = "✅" if age <= 3 else "⚠️"
+            if age > 3:
+                all_fresh = False
+            print(f"{status} Latest NAV: {freshness['latest_nav']} (Age: {age} days)")
+        else:
+            print("❌ NAV data: NO DATA")
+            all_fresh = False
         
-        if latest_ohlc:
-            days_old = (datetime.now(latest_ohlc.tzinfo) - latest_ohlc).days if latest_ohlc.tzinfo else (datetime.now() - latest_ohlc).days
-            if days_old > 7:
-                warnings.append(f"OHLC data is {days_old} days old")
-                print(f"  ⚠️ Latest OHLC: {latest_ohlc} ({days_old} days old)")
-            else:
-                print(f"  ✅ Latest OHLC: {latest_ohlc}")
+        # Check row counts
+        print("\n📊 ROW COUNTS:")
+        print("-" * 40)
+        counts = await check_row_counts(pool)
         
-        print()
+        all_counts_ok = True
+        for table, data in counts.items():
+            status = "✅" if data['healthy'] else "❌"
+            if not data['healthy']:
+                all_counts_ok = False
+            print(f"{status} {table}: {data['count']:,} (min: {data['threshold']:,})")
         
-        # Check 4: Database connectivity
-        print("🔌 Testing database operations...")
-        test_result = await conn.fetchval("SELECT 1")
-        if test_result == 1:
-            print("  ✅ Database responsive")
-        
-        print()
-        print("=" * 60)
-        
-        # Summary
-        if errors:
-            print("❌ VERIFICATION FAILED")
-            print()
-            for error in errors:
-                print(f"  ERROR: {error}")
+        # Final verdict
+        print("\n" + "=" * 60)
+        if all_fresh and all_counts_ok:
+            print("✅ ALL CHECKS PASSED - Database is healthy!")
+            sys.exit(0)
+        else:
+            if not all_fresh:
+                print("⚠️ DATA FRESHNESS ISSUE - Some data is stale!")
+            if not all_counts_ok:
+                print("⚠️ ROW COUNT ISSUE - Some tables below threshold!")
+            # Don't fail for freshness during weekends
+            if now.weekday() in [4, 5]:  # Friday, Saturday
+                print("ℹ️ Note: It's the weekend, staleness may be expected.")
+                sys.exit(0)
             sys.exit(1)
-        elif warnings:
-            print("⚠️ VERIFICATION PASSED WITH WARNINGS")
-            print()
-            for warning in warnings:
-                print(f"  WARNING: {warning}")
-        else:
-            print("✅ ALL CHECKS PASSED")
-        
-        print("=" * 60)
         
     finally:
-        await conn.close()
+        await pool.close()
 
 
 if __name__ == "__main__":

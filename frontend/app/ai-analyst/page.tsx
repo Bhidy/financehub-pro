@@ -298,7 +298,43 @@ export default function AIAnalystPage() {
                                                 {msg.role === "user" ? (
                                                     <span className="font-medium">{msg.content}</span>
                                                 ) : (
-                                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    <ReactMarkdown
+                                                        remarkPlugins={[remarkGfm]}
+                                                        components={{
+                                                            table: ({ node, ...props }) => (
+                                                                <div className="overflow-x-auto my-6 rounded-xl border border-slate-200 shadow-sm bg-slate-50/50">
+                                                                    <table className="w-full text-sm text-left" {...props} />
+                                                                </div>
+                                                            ),
+                                                            thead: ({ node, ...props }) => (
+                                                                <thead className="bg-slate-100 text-xs uppercase font-bold text-slate-500" {...props} />
+                                                            ),
+                                                            tr: ({ node, ...props }) => (
+                                                                <tr className="border-b border-slate-100 last:border-0 hover:bg-white transition-colors" {...props} />
+                                                            ),
+                                                            th: ({ node, ...props }) => (
+                                                                <th className="px-6 py-4 font-bold tracking-wider text-slate-600" {...props} />
+                                                            ),
+                                                            td: ({ node, ...props }) => (
+                                                                <td className="px-6 py-4 font-medium text-slate-700 tabular-nums" {...props} />
+                                                            ),
+                                                            h3: ({ node, ...props }) => (
+                                                                <h3 className="text-xl font-bold mt-8 mb-4 text-slate-900 flex items-center gap-3 pb-2 border-b border-slate-100" {...props} />
+                                                            ),
+                                                            strong: ({ node, ...props }) => (
+                                                                <strong className="font-bold text-blue-700" {...props} />
+                                                            ),
+                                                            ul: ({ node, ...props }) => (
+                                                                <ul className="space-y-2 my-4 pl-4" {...props} />
+                                                            ),
+                                                            li: ({ node, ...props }) => (
+                                                                <li className="flex gap-2 items-start text-slate-700" {...props}>
+                                                                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
+                                                                    <span className="flex-1">{props.children?.toString().replace(/^\*/, '')}</span>
+                                                                </li>
+                                                            )
+                                                        }}
+                                                    >
                                                         {msg.content}
                                                     </ReactMarkdown>
                                                 )}
@@ -328,15 +364,27 @@ export default function AIAnalystPage() {
                                                         {/* Tech Signals */}
                                                         {msg.data.technical_analysis && (
                                                             <div className="flex flex-wrap gap-2 mb-4">
+                                                                {/* RSI Badge */}
                                                                 <IndicatorBadge
                                                                     label="RSI"
-                                                                    value={`${msg.data.technical_analysis.rsi || '-'}`}
-                                                                    type={(msg.data.technical_analysis.rsi || 50) > 70 ? 'bearish' : (msg.data.technical_analysis.rsi || 50) < 30 ? 'bullish' : 'neutral'}
+                                                                    value={`${msg.data.technical_analysis.indicators?.rsi || msg.data.technical_analysis.rsi || '-'}`}
+                                                                    type={(msg.data.technical_analysis.indicators?.rsi || 50) > 70 ? 'bearish' : (msg.data.technical_analysis.indicators?.rsi || 50) < 30 ? 'bullish' : 'neutral'}
                                                                 />
+
+                                                                {/* MACD Badge */}
+                                                                {msg.data.technical_analysis.indicators?.macd?.sentiment && (
+                                                                    <IndicatorBadge
+                                                                        label="MACD"
+                                                                        value={msg.data.technical_analysis.indicators.macd.sentiment}
+                                                                        type={msg.data.technical_analysis.indicators.macd.sentiment === 'Bullish' ? 'bullish' : 'bearish'}
+                                                                    />
+                                                                )}
+
+                                                                {/* Trend Badge */}
                                                                 <IndicatorBadge
                                                                     label="Trend"
                                                                     value={msg.data.technical_analysis.trend || 'NEUTRAL'}
-                                                                    type={msg.data.technical_analysis.trend === 'BULLISH' ? 'bullish' : msg.data.technical_analysis.trend === 'BEARISH' ? 'bearish' : 'neutral'}
+                                                                    type={msg.data.technical_analysis.trend && msg.data.technical_analysis.trend.includes('BULLISH') ? 'bullish' : msg.data.technical_analysis.trend && msg.data.technical_analysis.trend.includes('BEARISH') ? 'bearish' : 'neutral'}
                                                                 />
                                                             </div>
                                                         )}

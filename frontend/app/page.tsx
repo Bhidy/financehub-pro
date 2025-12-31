@@ -10,6 +10,7 @@ import {
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import MarketTicker from "@/components/MarketTicker";
+import TasiIndexChart from "@/components/TasiIndexChart";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -219,31 +220,9 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            {/* Chart Area - Market Heatmap */}
-            <div className="h-64 p-6 bg-gradient-to-b from-white to-blue-50/30 relative">
-              <div className="absolute top-4 right-6 text-xs font-bold text-slate-400 uppercase tracking-widest pointer-events-none">
-                Performance (Top 60)
-              </div>
-              <div className="w-full h-full flex items-end gap-[2px]">
-                {(tickers || []).slice(0, 60).map((ticker: Ticker, i: number) => {
-                  const changePercent = ticker.change_percent ?? 0;
-                  const change = ticker.change ?? 0;
-                  const normalizedChange = Math.min(Math.max(changePercent, -5), 5);
-                  const height = 50 + (normalizedChange * 8);
-                  const isUp = change >= 0;
-                  return (
-                    <div
-                      key={ticker.symbol}
-                      className={clsx(
-                        "flex-1 rounded-t transition-all duration-300 hover:opacity-80 cursor-pointer",
-                        isUp ? "bg-gradient-to-t from-emerald-500 to-emerald-400" : "bg-gradient-to-t from-red-500 to-red-400"
-                      )}
-                      style={{ height: `${Math.max(height, 10)}%` }}
-                      title={`${ticker.symbol}: ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`}
-                    />
-                  );
-                })}
-              </div>
+            {/* TASI Index Chart - Premium Real-Time */}
+            <div className="p-6 bg-gradient-to-b from-white to-blue-50/10 min-h-[320px]">
+              <TasiIndexChart />
             </div>
           </div>
 

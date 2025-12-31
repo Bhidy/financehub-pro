@@ -28,13 +28,7 @@ import {
 import { useState } from "react";
 
 const NAV_SECTIONS = [
-    {
-        title: "System",
-        color: "orange",
-        items: [
-            { label: "Command Center", icon: Database, href: "/command-center", badge: "LIVE", badgeColor: "green" },
-        ]
-    },
+
     {
         title: "Market Data",
         color: "blue",
@@ -98,6 +92,17 @@ const NAV_SECTIONS = [
     //     ]
     // },
 ];
+
+const SYSTEM_SECTION = {
+    title: "System",
+    color: "orange",
+    items: [
+        { label: "Command Center", icon: Database, href: "/command-center", badge: "LIVE", badgeColor: "green" },
+    ]
+};
+
+// Add System to end
+NAV_SECTIONS.push(SYSTEM_SECTION);
 
 const colorMap: Record<string, { bg: string; text: string; activeBg: string; activeText: string; hoverBg: string }> = {
     blue: {

@@ -9,6 +9,7 @@ Designed to run via GitHub Actions daily after market close.
 import asyncio
 import asyncpg
 import os
+import ssl
 import logging
 from datetime import datetime, timedelta
 import sys
@@ -21,6 +22,14 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+def get_ssl_context():
+    """Create SSL context for Supabase connection"""
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    return ssl_context
 
 
 async def get_all_symbols(pool) -> list:
@@ -83,6 +92,7 @@ async def main():
     
     pool = await asyncpg.create_pool(
         DATABASE_URL,
+        ssl=get_ssl_context(),
         min_size=2,
         max_size=10,
         statement_cache_size=0

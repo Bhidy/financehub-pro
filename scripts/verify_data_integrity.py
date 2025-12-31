@@ -9,6 +9,7 @@ Used by GitHub Actions to verify data updates are working.
 import asyncio
 import asyncpg
 import os
+import ssl
 import sys
 from datetime import datetime, timedelta
 
@@ -22,6 +23,14 @@ THRESHOLDS = {
     'nav_history': 500000,      # At least 500k NAV rows
     'corporate_actions': 5000,   # At least 5k corporate actions
 }
+
+
+def get_ssl_context():
+    """Create SSL context for Supabase connection"""
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    return ssl_context
 
 
 async def check_data_freshness(pool) -> dict:
@@ -83,6 +92,7 @@ async def main():
     
     pool = await asyncpg.create_pool(
         DATABASE_URL,
+        ssl=get_ssl_context(),
         min_size=1,
         max_size=5,
         statement_cache_size=0

@@ -167,6 +167,7 @@ export default function GlobalSearch() {
 
     if (!isOpen) {
         return (
+            /* Premium Search Button */
             <button
                 onClick={() => setIsOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md hover:bg-white transition-all border border-slate-200/60 shadow-lg shadow-slate-200/20 rounded-full group"

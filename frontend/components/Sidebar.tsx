@@ -91,18 +91,15 @@ const NAV_SECTIONS = [
     //         { label: "Strategy Builder", icon: BrainCircuit, href: "/strategy" },
     //     ]
     // },
+    {
+        title: "System",
+        color: "orange",
+        items: [
+            { label: "Command Center", icon: Database, href: "/command-center", badge: "LIVE", badgeColor: "green" },
+        ]
+    }
 ];
 
-const SYSTEM_SECTION = {
-    title: "System",
-    color: "orange",
-    items: [
-        { label: "Command Center", icon: Database, href: "/command-center", badge: "LIVE", badgeColor: "green" },
-    ]
-};
-
-// Add System to end
-NAV_SECTIONS.push(SYSTEM_SECTION);
 
 const colorMap: Record<string, { bg: string; text: string; activeBg: string; activeText: string; hoverBg: string }> = {
     blue: {

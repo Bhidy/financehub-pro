@@ -1,0 +1,28 @@
+name: Manual History Fetch
+
+on:
+  workflow_dispatch:
+    inputs:
+      script_name:
+        description: 'Script to run'
+        required: true
+        default: 'scripts/fetch_tasi_history.py'
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+jobs:
+  fetch-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Dependencies
+        run: pip install asyncpg yfinance pandas
+        
+      - name: Run Script
+        run: python ${{ github.event.inputs.script_name }}

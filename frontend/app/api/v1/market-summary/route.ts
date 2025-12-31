@@ -46,13 +46,23 @@ export async function GET() {
 
         const indexData = indexResult.rows[0];
 
+        // Calculate market status based on Saudi trading hours
+        const now = new Date();
+        const saudiOffset = 3 * 60; // Saudi is UTC+3
+        const saudiTime = new Date(now.getTime() + (saudiOffset + now.getTimezoneOffset()) * 60000);
+        const hour = saudiTime.getHours();
+        const day = saudiTime.getDay(); // 0=Sunday, 6=Saturday
+        const isTradingDay = day >= 0 && day <= 4; // Sunday to Thursday
+        const isTradingHours = hour >= 10 && hour < 15; // 10 AM to 3 PM Saudi
+        const marketStatus = isTradingDay && isTradingHours ? "OPEN" : "CLOSED";
+
         return NextResponse.json({
-            market_status: "OPEN",
+            market_status: marketStatus,
             market_code: "TASI",
             market_name: "Tadawul All Share Index",
 
-            // Synthetic index (volume-weighted)
-            index_value: 12000 + (parseFloat(indexData?.weighted_price) || 0) * 0.5,
+            // Synthetic index (volume-weighted) - based on actual market data
+            index_value: parseFloat(indexData?.weighted_price) || 0,
             index_change: parseFloat(indexData?.weighted_change) || 0,
             index_change_percent: parseFloat(indexData?.weighted_change_percent) || 0,
 

@@ -1,4 +1,4 @@
-"use client";
+ho"use client";
 
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { BarChart3 } from "lucide-react";

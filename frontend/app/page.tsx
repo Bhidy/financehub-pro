@@ -193,7 +193,7 @@ export default function Home() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">TASI Index</span>
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">LIVE</span>
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">DELAYED 5 MIN</span>
                   </div>
                   <div className="flex items-baseline gap-4">
                     <span className="text-5xl font-black text-slate-900 tracking-tight font-mono">

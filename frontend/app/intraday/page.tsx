@@ -51,7 +51,7 @@ export default function IntradayTradingPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-black tracking-tight">Intraday Trading Desk</h1>
-                            <p className="text-blue-100 text-sm font-medium">Live 1-minute bars • Level 2 order book • Pro interface</p>
+                            <p className="text-blue-100 text-sm font-medium">1-minute bars • Level 2 order book • <span className="text-blue-200">Prices delayed 5 min</span></p>
                         </div>
                     </div>
                 </div>
@@ -97,11 +97,11 @@ export default function IntradayTradingPage() {
                             </div>
                         </div>
 
-                        {/* Live Status */}
-                        <div className="bg-green-100 border border-green-500 rounded-lg px-4 py-2">
+                        {/* Delay Status */}
+                        <div className="bg-blue-100 border border-blue-400 rounded-lg px-4 py-2">
                             <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-green-600 text-sm font-bold">LIVE</span>
+                                <Clock className="w-4 h-4 text-blue-600" />
+                                <span className="text-blue-700 text-sm font-bold">DELAYED 5 MIN</span>
                             </div>
                         </div>
                     </div>

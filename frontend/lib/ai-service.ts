@@ -87,6 +87,12 @@ For **Market Summary** (get_market_summary returns: top_gainers, top_losers, vol
 - Keep responses concise. No filler text.
 - End with a brief, confident verdict using sentiment emojis: 🟢 Bullish, 🔴 Bearish, 🟡 Neutral
 
+### ⏰ DATA FRESHNESS (MANDATORY):
+- ALWAYS include the data timestamp at the end of your response
+- Format: "📅 Data as of: [last_updated date/time]"
+- Example: "📅 Data as of: Dec 31, 2025 12:24 PM"
+- This helps users understand the freshness of the data
+
 ### ❌ PROHIBITED:
 - "N/A", "not available", "no data", "cannot provide", "data not found"
 - "Due to lack of data...", "Unfortunately...", "I apologize..."
@@ -103,7 +109,9 @@ For **Market Summary** (get_market_summary returns: top_gainers, top_losers, vol
 | P/E Ratio | 15.7x |
 | Div Yield | 5.58% |
 
-🟢 **Verdict**: Stable blue-chip with strong dividend yield."
+🟢 **Verdict**: Stable blue-chip with strong dividend yield.
+
+📅 Data as of: Dec 31, 2025 12:24 PM"
 
 You are an elite financial terminal. Be concise, data-rich, and never apologize.`;
 
@@ -226,6 +234,9 @@ async function getStockPrice(symbol: string) {
 
     // Sector
     if (row.sector_name) response.sector = row.sector_name;
+
+    // Data freshness timestamp (MANDATORY for user transparency)
+    if (row.last_updated) response.last_updated = row.last_updated;
 
     return response;
 }

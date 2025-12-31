@@ -14,7 +14,7 @@ on:
       force_update:
         description: 'Force update even outside market hours'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 env:
@@ -99,8 +99,8 @@ jobs:
           body: |
             ⚠️ INTRADAY PRICE UPDATE FAILED
             
-            Time: ${{ github.event.head_commit.timestamp }}
-            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Run ID: ${{ github.run_id }}
+            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
             This affects live stock prices on the website.
             Please investigate immediately.

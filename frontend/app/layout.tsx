@@ -51,10 +51,12 @@ export default function RootLayout({
             {/* Enterprise Shell Layout */}
             <Sidebar />
             <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-              {/* Header with Global Search */}
-              <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-end shadow-sm z-10">
-                <GlobalSearch />
-              </header>
+              {/* Floating Global Search - Merged Overlay */}
+              <div className="absolute top-5 right-8 z-50 pointer-events-none">
+                <div className="pointer-events-auto">
+                  <GlobalSearch />
+                </div>
+              </div>
 
               {/* Main Content Area */}
               <div className="flex-1 overflow-auto">

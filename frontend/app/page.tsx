@@ -115,7 +115,7 @@ export default function Home() {
               </div>
               <p className="text-blue-100 font-medium flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                Real-time market data from Tadawul • Updated live
+                Real-time market data from Tadawul • <span className="text-blue-200 text-sm">Prices delayed up to 5 min</span>
               </p>
             </div>
             <div className="flex items-center gap-4">

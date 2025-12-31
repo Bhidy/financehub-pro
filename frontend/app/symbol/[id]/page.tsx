@@ -312,9 +312,9 @@ export default function SymbolDetailPage() {
                                     </span>
                                 </div>
                             </div>
-                            <div className="hidden md:flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-300/50 shadow-lg shadow-emerald-500/10">
-                                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500" />
-                                <span className="text-sm font-black text-emerald-700 uppercase tracking-wider">Live</span>
+                            <div className="hidden md:flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300/50 shadow-lg shadow-blue-500/10">
+                                <Clock className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-bold text-blue-700">Delayed 5 min</span>
                             </div>
                         </div>
                     </div>

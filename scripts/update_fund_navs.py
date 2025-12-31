@@ -121,11 +121,12 @@ async def main():
                     if errors < 5:  # Only log first few errors
                         logger.warning(f"Error updating fund {fund['fund_id']}: {e}")
             
-            # Update mutual_funds table with latest NAV
-            logger.info("Updating latest_nav in mutual_funds table...")
+            # Update mutual_funds table with latest NAV and timestamp
+            logger.info("Updating latest_nav and last_updated in mutual_funds table...")
             await conn.execute("""
                 UPDATE mutual_funds mf
-                SET latest_nav = nh.nav
+                SET latest_nav = nh.nav,
+                    last_updated = NOW()
                 FROM (
                     SELECT DISTINCT ON (fund_id) fund_id, nav
                     FROM nav_history

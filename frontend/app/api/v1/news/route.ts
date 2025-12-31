@@ -1,7 +1,21 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db-server';
 
 export async function GET(request: Request) {
-    // NOTE: 'news' table does NOT exist in the database
-    // Return empty array - NO FAKE DATA per GOO_RULES
-    return NextResponse.json([]);
+    try {
+        const { searchParams } = new URL(request.url);
+        const limit = searchParams.get('limit') || '50';
+
+        const result = await db.query(`
+            SELECT id, symbol, headline, source, url, published_at, sentiment_score 
+            FROM market_news 
+            ORDER BY published_at DESC 
+            LIMIT $1
+        `, [limit]);
+
+        return NextResponse.json(result.rows);
+    } catch (error: any) {
+        console.error('[API /news ERROR]', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 }

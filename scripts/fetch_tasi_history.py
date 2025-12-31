@@ -56,9 +56,9 @@ async def main():
         
         # Bulk insert/upsert
         await conn.executemany("""
-            INSERT INTO market_ohlc (symbol, date, open, high, low, close, volume)
+            INSERT INTO ohlc_history (symbol, time, open, high, low, close, volume)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (symbol, date) DO UPDATE 
+            ON CONFLICT (symbol, time) DO UPDATE 
             SET open = EXCLUDED.open,
                 high = EXCLUDED.high,
                 low = EXCLUDED.low,

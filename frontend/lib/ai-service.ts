@@ -46,6 +46,38 @@ const COMMON_ALIASES: Record<string, string> = {
     "elm": "7203", "tadawul": "1111",
 };
 
+// ============================================================================
+// HELPER: Clean Response - Remove null, undefined, empty, and N/A values
+// This prevents [object Object], N/A, and empty data from appearing in AI responses
+// ============================================================================
+function cleanResponse(obj: any): any {
+    if (obj === null || obj === undefined) return null;
+    if (typeof obj === 'string') {
+        // Remove N/A, empty strings, and [object Object] literals
+        if (obj === '' || obj === 'N/A' || obj === 'null' || obj === 'undefined' || obj.includes('[object Object]')) {
+            return null;
+        }
+        return obj;
+    }
+    if (typeof obj === 'number' && isNaN(obj)) return null;
+    if (typeof obj !== 'object') return obj;
+
+    if (Array.isArray(obj)) {
+        const cleaned = obj.map(cleanResponse).filter(x => x !== null && x !== undefined);
+        return cleaned.length > 0 ? cleaned : null;
+    }
+
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+        const cleanedValue = cleanResponse(value);
+        // Only include non-null, non-empty values
+        if (cleanedValue !== null && cleanedValue !== undefined) {
+            cleaned[key] = cleanedValue;
+        }
+    }
+    return Object.keys(cleaned).length > 0 ? cleaned : null;
+}
+
 // System Prompt - DATA-DRIVEN ARCHITECTURE
 const SYSTEM_PROMPT = `You are FinanceHub AI — a premium financial intelligence engine for Tadawul (Saudi Stock Exchange).
 
@@ -235,8 +267,27 @@ async function getStockPrice(symbol: string) {
     // Sector
     if (row.sector_name) response.sector = row.sector_name;
 
-    // Data freshness timestamp (MANDATORY for user transparency)
-    if (row.last_updated) response.last_updated = row.last_updated;
+    // Data freshness timestamp with age indicator (MANDATORY for user transparency)
+    if (row.last_updated) {
+        const lastUpdated = new Date(row.last_updated);
+        const now = new Date();
+        const ageMinutes = Math.round((now.getTime() - lastUpdated.getTime()) / 60000);
+
+        response.last_updated = row.last_updated;
+        response.data_age_minutes = ageMinutes;
+
+        // Human-readable freshness indicator
+        if (ageMinutes < 5) {
+            response.data_freshness = "Real-time";
+        } else if (ageMinutes < 30) {
+            response.data_freshness = `${ageMinutes} minutes ago`;
+        } else if (ageMinutes < 60) {
+            response.data_freshness = "Within last hour";
+        } else {
+            const hours = Math.floor(ageMinutes / 60);
+            response.data_freshness = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        }
+    }
 
     return response;
 }
@@ -275,18 +326,37 @@ async function getFundamentals(symbol: string) {
 }
 
 // ============================================================================
-// TOOL 3: Market Summary
+// TOOL 3: Market Summary - FIXED: Returns formatted strings, not raw objects
 // ============================================================================
 async function getMarketSummary() {
     const [gainers, losers, volume] = await Promise.all([
-        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers ORDER BY change_percent DESC LIMIT 5`),
-        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers ORDER BY change_percent ASC LIMIT 5`),
-        db.query(`SELECT symbol, name_en, last_price, volume FROM market_tickers ORDER BY volume DESC LIMIT 5`)
+        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers WHERE change_percent IS NOT NULL ORDER BY change_percent DESC LIMIT 5`),
+        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers WHERE change_percent IS NOT NULL ORDER BY change_percent ASC LIMIT 5`),
+        db.query(`SELECT symbol, name_en, last_price, volume FROM market_tickers WHERE volume IS NOT NULL ORDER BY volume DESC LIMIT 5`)
     ]);
+
+    // FIXED: Format as readable strings to prevent [object Object]
+    const formatStock = (r: any) => `${r.symbol} (${r.name_en || 'Unknown'}): ${parseFloat(r.last_price || 0).toFixed(2)} SAR, ${parseFloat(r.change_percent || 0) >= 0 ? '+' : ''}${parseFloat(r.change_percent || 0).toFixed(2)}%`;
+    const formatVolume = (r: any) => `${r.symbol} (${r.name_en || 'Unknown'}): ${parseFloat(r.last_price || 0).toFixed(2)} SAR, Vol: ${r.volume > 1000000 ? (r.volume / 1000000).toFixed(2) + 'M' : r.volume?.toLocaleString() || '0'}`;
+
     return {
-        top_gainers: gainers.rows,
-        top_losers: losers.rows,
-        volume_leaders: volume.rows
+        top_gainers_count: gainers.rows.length,
+        top_gainers_list: gainers.rows.map(formatStock).join('\n'),
+        top_gainers_1: gainers.rows[0] ? formatStock(gainers.rows[0]) : null,
+        top_gainers_2: gainers.rows[1] ? formatStock(gainers.rows[1]) : null,
+        top_gainers_3: gainers.rows[2] ? formatStock(gainers.rows[2]) : null,
+        top_gainers_4: gainers.rows[3] ? formatStock(gainers.rows[3]) : null,
+        top_gainers_5: gainers.rows[4] ? formatStock(gainers.rows[4]) : null,
+        top_losers_count: losers.rows.length,
+        top_losers_list: losers.rows.map(formatStock).join('\n'),
+        top_losers_1: losers.rows[0] ? formatStock(losers.rows[0]) : null,
+        top_losers_2: losers.rows[1] ? formatStock(losers.rows[1]) : null,
+        top_losers_3: losers.rows[2] ? formatStock(losers.rows[2]) : null,
+        top_losers_4: losers.rows[3] ? formatStock(losers.rows[3]) : null,
+        top_losers_5: losers.rows[4] ? formatStock(losers.rows[4]) : null,
+        volume_leaders_count: volume.rows.length,
+        volume_leaders_list: volume.rows.map(formatVolume).join('\n'),
+        last_updated: new Date().toISOString()
     };
 }
 
@@ -352,18 +422,34 @@ async function getAnalystConsensus(symbol: string) {
 }
 
 // ============================================================================
-// TOOL 6: Top Movers
+// TOOL 6: Top Movers - FIXED: Returns formatted strings, not raw objects
 // ============================================================================
 async function getTopMovers() {
     const result = await db.query(
         `SELECT symbol, name_en, last_price, change_percent, volume 
-         FROM market_tickers ORDER BY ABS(change_percent) DESC LIMIT 10`
+         FROM market_tickers WHERE change_percent IS NOT NULL ORDER BY ABS(change_percent) DESC LIMIT 10`
     );
-    return { movers: result.rows };
+
+    // FIXED: Format as readable strings to prevent [object Object]
+    const formatMover = (r: any, i: number) => {
+        const direction = parseFloat(r.change_percent || 0) >= 0 ? '↑' : '↓';
+        return `${i + 1}. ${r.symbol} (${r.name_en || 'Unknown'}): ${parseFloat(r.last_price || 0).toFixed(2)} SAR ${direction} ${Math.abs(parseFloat(r.change_percent || 0)).toFixed(2)}%`;
+    };
+
+    return {
+        movers_count: result.rows.length,
+        movers_list: result.rows.map((r: any, i: number) => formatMover(r, i)).join('\n'),
+        mover_1: result.rows[0] ? formatMover(result.rows[0], 0) : null,
+        mover_2: result.rows[1] ? formatMover(result.rows[1], 1) : null,
+        mover_3: result.rows[2] ? formatMover(result.rows[2], 2) : null,
+        mover_4: result.rows[3] ? formatMover(result.rows[3], 3) : null,
+        mover_5: result.rows[4] ? formatMover(result.rows[4], 4) : null,
+        last_updated: new Date().toISOString()
+    };
 }
 
 // ============================================================================
-// TOOL 7: Price History
+// TOOL 7: Price History - FIXED: Returns formatted strings, not raw objects
 // ============================================================================
 async function getPriceHistory(symbol: string, period: string = "1y") {
     const resolved = await resolveSymbol(symbol);
@@ -378,11 +464,36 @@ async function getPriceHistory(symbol: string, period: string = "1y") {
         [resolved, days]
     );
 
+    if (result.rows.length === 0) {
+        return { symbol: resolved, period, message: "No historical data available for this symbol" };
+    }
+
+    // FIXED: Format as readable strings to prevent [object Object]
+    const formatOHLC = (r: any) => {
+        const date = new Date(r.date).toISOString().split('T')[0];
+        return `${date}: O:${parseFloat(r.open || 0).toFixed(2)} H:${parseFloat(r.high || 0).toFixed(2)} L:${parseFloat(r.low || 0).toFixed(2)} C:${parseFloat(r.close || 0).toFixed(2)} V:${r.volume > 1000000 ? (r.volume / 1000000).toFixed(1) + 'M' : r.volume?.toLocaleString() || '0'}`;
+    };
+
+    // Get key metrics
+    const latest = result.rows[0];
+    const oldest = result.rows[result.rows.length - 1];
+    const latestClose = parseFloat(latest?.close || 0);
+    const oldestClose = parseFloat(oldest?.close || 0);
+    const periodReturn = oldestClose > 0 ? ((latestClose - oldestClose) / oldestClose * 100).toFixed(2) : null;
+    const highInPeriod = Math.max(...result.rows.map((r: any) => parseFloat(r.high || 0)));
+    const lowInPeriod = Math.min(...result.rows.map((r: any) => parseFloat(r.low || 0)));
+
     return {
         symbol: resolved,
         period,
         data_points: result.rows.length,
-        history: result.rows.slice(0, 50) // Limit response
+        latest_price: latestClose.toFixed(2),
+        period_high: highInPeriod.toFixed(2),
+        period_low: lowInPeriod.toFixed(2),
+        period_return: periodReturn ? `${periodReturn}%` : null,
+        // Show only first 10 formatted rows to avoid huge responses
+        recent_history: result.rows.slice(0, 10).map(formatOHLC).join('\n'),
+        last_updated: new Date().toISOString()
     };
 }
 
@@ -497,35 +608,36 @@ async function getTechnicalAnalysis(symbol: string) {
     if (signals.length > 0) signal = signals.join(", ");
     else if (trend.includes("BULLISH")) signal = "ACCUMULATE";
 
+    // FIXED: Flatten all objects to prevent [object Object] display
+    // Return null instead of "N/A" so AI omits missing fields
     return {
         symbol: resolved,
         current_price: currentPrice.toFixed(2),
-        indicators: {
-            rsi: rsi.toFixed(2),
-            macd: {
-                line: currentMacd?.toFixed(3) || "N/A",
-                signal: signalLine?.toFixed(3) || "N/A",
-                histogram: macdHistogram?.toFixed(3) || "N/A",
-                sentiment: macdHistogram && macdHistogram > 0 ? "Bullish" : "Bearish"
-            },
-            bollinger: {
-                upper: bbUpper?.toFixed(2) || "N/A",
-                lower: bbLower?.toFixed(2) || "N/A",
-                width: (bbUpper && bbLower) ? ((bbUpper - bbLower) / sma20! * 100).toFixed(2) + "%" : "N/A"
-            },
-            sma: {
-                sma_20: sma20?.toFixed(2),
-                sma_50: sma50?.toFixed(2),
-                sma_200: sma200?.toFixed(2)
-            }
-        },
-        levels: {
-            support: recentLow.toFixed(2),
-            resistance: recentHigh.toFixed(2),
-            pivot: ((recentHigh + recentLow + currentPrice) / 3).toFixed(2)
-        },
+        // RSI - Flattened
+        rsi: rsi.toFixed(2),
+        rsi_signal: rsi > 70 ? "Overbought" : rsi < 30 ? "Oversold" : "Neutral",
+        // MACD - Flattened (was nested object causing [object Object])
+        macd_line: currentMacd !== undefined ? currentMacd.toFixed(3) : null,
+        macd_signal: signalLine !== null ? signalLine.toFixed(3) : null,
+        macd_histogram: macdHistogram !== null ? macdHistogram.toFixed(3) : null,
+        macd_sentiment: macdHistogram && macdHistogram > 0 ? "Bullish" : "Bearish",
+        // Bollinger Bands - Flattened (was nested object causing [object Object])
+        bb_upper: bbUpper !== null ? bbUpper.toFixed(2) : null,
+        bb_lower: bbLower !== null ? bbLower.toFixed(2) : null,
+        bb_width: (bbUpper && bbLower && sma20) ? ((bbUpper - bbLower) / sma20 * 100).toFixed(2) + "%" : null,
+        // SMA - Flattened (was nested object causing [object Object])
+        sma_20: sma20 !== null ? sma20.toFixed(2) : null,
+        sma_50: sma50 !== null ? sma50.toFixed(2) : null,
+        sma_200: sma200 !== null ? sma200.toFixed(2) : null,
+        // Support/Resistance - Flattened (was nested object causing [object Object])
+        support: recentLow.toFixed(2),
+        resistance: recentHigh.toFixed(2),
+        pivot: ((recentHigh + recentLow + currentPrice) / 3).toFixed(2),
+        // Trend and Signal
         trend,
-        signal
+        signal,
+        // Data freshness - use current timestamp for calculated indicators
+        last_updated: new Date().toISOString()
     };
 }
 
@@ -869,7 +981,8 @@ async function executeTool(name: string, args: any): Promise<any> {
         }
 
         console.log(`[AI TOOL] ${name} completed in ${Date.now() - startTime}ms, result:`, result ? 'HAS_DATA' : 'NULL');
-        return result;
+        // FIXED: Clean response to remove null, N/A, and [object Object] values
+        return cleanResponse(result);
     } catch (e: any) {
         console.error(`[AI TOOL ERROR] ${name} failed after ${Date.now() - startTime}ms:`, e.message, e.stack?.substring(0, 300));
         return {

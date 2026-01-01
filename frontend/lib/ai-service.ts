@@ -1012,9 +1012,14 @@ async function executeTool(name: string, args: any): Promise<any> {
                 return { error: `Unknown tool: ${name}` };
         }
 
-        console.log(`[AI TOOL] ${name} completed in ${Date.now() - startTime}ms, result:`, result ? 'HAS_DATA' : 'NULL');
-        // ENTERPRISE FIX: Universal flattener - guarantees no [object Object] ever
-        return flattenForAI(result);
+        console.log(`[AI TOOL] ${name} completed in ${Date.now() - startTime}ms`);
+        console.log(`[AI TOOL DEBUG] Raw result type:`, typeof result);
+        console.log(`[AI TOOL DEBUG] Raw result keys:`, result ? Object.keys(result) : 'null');
+        const flattened = flattenForAI(result);
+        console.log(`[AI TOOL DEBUG] Flattened result type:`, typeof flattened);
+        console.log(`[AI TOOL DEBUG] Flattened keys:`, Object.keys(flattened));
+        console.log(`[AI TOOL DEBUG] Flattened sample:`, JSON.stringify(flattened).substring(0, 500));
+        return flattened;
     } catch (e: any) {
         console.error(`[AI TOOL ERROR] ${name} failed after ${Date.now() - startTime}ms:`, e.message, e.stack?.substring(0, 300));
         return {

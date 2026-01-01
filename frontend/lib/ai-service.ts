@@ -47,35 +47,67 @@ const COMMON_ALIASES: Record<string, string> = {
 };
 
 // ============================================================================
-// HELPER: Clean Response - Remove null, undefined, empty, and N/A values
-// This prevents [object Object], N/A, and empty data from appearing in AI responses
+// ENTERPRISE: Universal Deep Flattener - THE NUCLEAR OPTION
+// Converts ANY nested structure to flat key-value pairs
+// GUARANTEES: No [object Object] ever reaches AI
 // ============================================================================
-function cleanResponse(obj: any): any {
-    if (obj === null || obj === undefined) return null;
-    if (typeof obj === 'string') {
-        // Remove N/A, empty strings, and [object Object] literals
-        if (obj === '' || obj === 'N/A' || obj === 'null' || obj === 'undefined' || obj.includes('[object Object]')) {
-            return null;
-        }
-        return obj;
-    }
-    if (typeof obj === 'number' && isNaN(obj)) return null;
-    if (typeof obj !== 'object') return obj;
-
-    if (Array.isArray(obj)) {
-        const cleaned = obj.map(cleanResponse).filter(x => x !== null && x !== undefined);
-        return cleaned.length > 0 ? cleaned : null;
+function flattenForAI(obj: any, prefix: string = ''): Record<string, string | number | boolean> {
+    if (obj === null || obj === undefined) return {};
+    if (typeof obj !== 'object') {
+        const key = prefix || 'value';
+        if (obj === '' || obj === 'N/A' || obj === 'null' || obj === 'undefined') return {};
+        return { [key]: obj };
     }
 
-    const cleaned: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-        const cleanedValue = cleanResponse(value);
-        // Only include non-null, non-empty values
-        if (cleanedValue !== null && cleanedValue !== undefined) {
-            cleaned[key] = cleanedValue;
+    const result: Record<string, string | number | boolean> = {};
+
+    const process = (value: any, key: string) => {
+        // Skip null, undefined, empty strings, N/A
+        if (value === null || value === undefined || value === '' || value === 'N/A') return;
+
+        // Primitives: add directly
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            // Skip [object Object] literals
+            if (typeof value === 'string' && value.includes('[object Object]')) return;
+            result[key] = value;
+            return;
         }
-    }
-    return Object.keys(cleaned).length > 0 ? cleaned : null;
+
+        // Arrays: flatten to numbered entries (limit to 5 items)
+        if (Array.isArray(value)) {
+            result[`${key}_count`] = value.length;
+            value.slice(0, 5).forEach((item, i) => {
+                if (typeof item === 'object' && item !== null) {
+                    // Flatten each object in array
+                    Object.entries(item).forEach(([k, v]) => {
+                        if (v !== null && v !== undefined && v !== '' && v !== 'N/A') {
+                            const itemKey = `${key}_${i + 1}_${k}`;
+                            if (typeof v === 'object') {
+                                // Deeply nested - stringify it
+                                result[itemKey] = JSON.stringify(v);
+                            } else {
+                                result[itemKey] = v as string | number | boolean;
+                            }
+                        }
+                    });
+                } else if (item !== null && item !== undefined && item !== '') {
+                    result[`${key}_${i + 1}`] = item;
+                }
+            });
+            return;
+        }
+
+        // Objects: recursively flatten
+        if (typeof value === 'object') {
+            Object.entries(value).forEach(([k, v]) => {
+                const newKey = key ? `${key}_${k}` : k;
+                process(v, newKey);
+            });
+        }
+    };
+
+    Object.entries(obj).forEach(([k, v]) => process(v, prefix ? `${prefix}_${k}` : k));
+    return result;
 }
 
 // System Prompt - DATA-DRIVEN ARCHITECTURE
@@ -981,8 +1013,8 @@ async function executeTool(name: string, args: any): Promise<any> {
         }
 
         console.log(`[AI TOOL] ${name} completed in ${Date.now() - startTime}ms, result:`, result ? 'HAS_DATA' : 'NULL');
-        // FIXED: Clean response to remove null, N/A, and [object Object] values
-        return cleanResponse(result);
+        // ENTERPRISE FIX: Universal flattener - guarantees no [object Object] ever
+        return flattenForAI(result);
     } catch (e: any) {
         console.error(`[AI TOOL ERROR] ${name} failed after ${Date.now() - startTime}ms:`, e.message, e.stack?.substring(0, 300));
         return {

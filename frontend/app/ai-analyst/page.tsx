@@ -38,47 +38,74 @@ export default function AIAnalystPage() {
     }, [query]);
 
 
-    // Gen Z Friendly Suggestions - Casual & Fun
+    // Smart Suggestions - Covers ALL 21 Database Tools
     const suggestionCategories = [
         {
-            id: 'hot',
+            id: 'popular',
             label: '🔥 Hot',
             suggestions: [
-                { text: "What's Aramco at rn?", icon: TrendingUp, gradient: "from-orange-500 to-red-500" },
-                { text: "Top gainers today", icon: BarChart3, gradient: "from-emerald-500 to-green-600" },
-                { text: "Is SABIC doing good?", icon: TrendingUp, gradient: "from-pink-500 to-rose-500" },
+                { text: "Aramco price now", icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
+                { text: "Top gainers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
+                { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
             ]
         },
         {
             id: 'beginner',
             label: '📚 Starter',
             suggestions: [
-                { text: "Tell me about Aramco", icon: Sparkles, gradient: "from-blue-500 to-indigo-600" },
-                { text: "What's a good stock to watch?", icon: TrendingUp, gradient: "from-violet-500 to-purple-600" },
-                { text: "How's the market today?", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
+                { text: "Tell me about Al Rajhi", icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
+                { text: "Best performing sector", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
+                { text: "STC stock info", icon: TrendingUp, gradient: "from-pink-500 to-rose-500" },
             ]
         },
         {
-            id: 'quick',
-            label: '⚡ Quick',
+            id: 'technical',
+            label: '📊 Technical',
             suggestions: [
-                { text: "Al Rajhi price", icon: BarChart3, gradient: "from-amber-500 to-orange-600" },
-                { text: "STC price", icon: TrendingUp, gradient: "from-teal-500 to-emerald-600" },
-                { text: "Top losers", icon: Newspaper, gradient: "from-red-500 to-rose-600" },
+                { text: "SABIC technical analysis", icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
+                { text: "Aramco RSI and MACD", icon: TrendingUp, gradient: "from-blue-500 to-cyan-600" },
+                { text: "Al Rajhi price history", icon: Newspaper, gradient: "from-slate-500 to-slate-700" },
             ]
         },
         {
-            id: 'deep',
-            label: '🧠 Deep Dive',
+            id: 'fundamental',
+            label: '💰 Financials',
             suggestions: [
-                { text: "Aramco technicals", icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
-                { text: "SABIC financials", icon: PieChart, gradient: "from-green-500 to-emerald-600" },
-                { text: "Who owns Aramco?", icon: Sparkles, gradient: "from-purple-500 to-pink-600" },
+                { text: "Aramco financials", icon: PieChart, gradient: "from-emerald-500 to-green-600" },
+                { text: "SABIC balance sheet", icon: BarChart3, gradient: "from-teal-500 to-emerald-600" },
+                { text: "SNB income statement", icon: TrendingUp, gradient: "from-green-500 to-lime-600" },
+            ]
+        },
+        {
+            id: 'research',
+            label: '🔬 Research',
+            suggestions: [
+                { text: "Al Rajhi analyst ratings", icon: Sparkles, gradient: "from-amber-500 to-orange-600" },
+                { text: "Aramco insider trading", icon: TrendingUp, gradient: "from-red-500 to-rose-600" },
+                { text: "Who owns SABIC?", icon: PieChart, gradient: "from-purple-500 to-pink-600" },
+            ]
+        },
+        {
+            id: 'events',
+            label: '📅 Calendar',
+            suggestions: [
+                { text: "Upcoming dividends", icon: Newspaper, gradient: "from-pink-500 to-rose-600" },
+                { text: "Earnings calendar", icon: BarChart3, gradient: "from-cyan-500 to-teal-600" },
+                { text: "Recent corporate actions", icon: Sparkles, gradient: "from-indigo-500 to-blue-600" },
+            ]
+        },
+        {
+            id: 'macro',
+            label: '🌍 Economy',
+            suggestions: [
+                { text: "Oil price today", icon: TrendingUp, gradient: "from-amber-500 to-yellow-600" },
+                { text: "Gold price", icon: Sparkles, gradient: "from-yellow-500 to-amber-600" },
+                { text: "Latest market news", icon: Newspaper, gradient: "from-slate-500 to-zinc-600" },
             ]
         },
     ];
 
-    const [activeCategory, setActiveCategory] = useState('trending');
+    const [activeCategory, setActiveCategory] = useState('popular');
     const activeSuggestions = suggestionCategories.find(c => c.id === activeCategory)?.suggestions || [];
 
     const handleSuggestionClick = (text: string) => {
@@ -180,21 +207,15 @@ export default function AIAnalystPage() {
                         {/* Welcome Screen - Premium Redesigned */}
                         {messages.length === 1 && (
                             <div className="flex-1 flex flex-col justify-center items-center text-center animate-in fade-in duration-700 slide-in-from-bottom-6">
-                                {/* Hero Icon */}
-                                <div className="mb-8 relative group cursor-default">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-indigo-500/30 to-teal-500/30 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500 animate-pulse"></div>
-                                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-teal-500 rounded-[2rem] flex items-center justify-center relative shadow-2xl shadow-blue-500/30 group-hover:scale-105 transition-transform duration-500">
-                                        <Bot className="w-10 h-10 md:w-12 md:h-12 text-white drop-shadow-md" />
-                                    </div>
-                                </div>
+                                {/* Hero Icon - Removed */}
 
-                                {/* Title - Gen Z Friendly */}
+                                {/* Title */}
                                 <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 drop-shadow-sm">
-                                    Hey! I'm <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">Finny</span> 🤖
+                                    Hey! I'm <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">Finny</span> 🤖
                                 </h1>
 
                                 <p className="text-slate-500 text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed font-medium">
-                                    Your friendly AI guide to Saudi stocks. No jargon, just vibes ✨
+                                    Your AI-powered guide to Saudi stocks. Ask me anything! ✨
                                 </p>
 
                                 {/* Category Tabs */}
@@ -206,7 +227,7 @@ export default function AIAnalystPage() {
                                             className={clsx(
                                                 "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300",
                                                 activeCategory === cat.id
-                                                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+                                                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25"
                                                     : "bg-white/70 text-slate-600 hover:bg-white hover:shadow-md border border-slate-200/50"
                                             )}
                                         >
@@ -230,7 +251,7 @@ export default function AIAnalystPage() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ delay: i * 0.1 }}
                                             onClick={() => handleSuggestionClick(s.text)}
-                                            className="group p-5 rounded-2xl bg-white/90 backdrop-blur-sm hover:bg-white border border-slate-200/60 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/15 transition-all duration-300 text-left flex items-center gap-4"
+                                            className="group p-5 rounded-2xl bg-white/90 backdrop-blur-sm hover:bg-white border border-slate-200/60 hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-500/15 transition-all duration-300 text-left flex items-center gap-4"
                                         >
                                             <div className={clsx(
                                                 "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg",
@@ -238,21 +259,21 @@ export default function AIAnalystPage() {
                                             )}>
                                                 <s.icon className="w-6 h-6 text-white" />
                                             </div>
-                                            <span className="text-base font-semibold text-slate-700 group-hover:text-blue-700 transition-colors">
+                                            <span className="text-base font-semibold text-slate-700 group-hover:text-emerald-700 transition-colors">
                                                 {s.text}
                                             </span>
                                         </motion.button>
                                     ))}
                                 </motion.div>
 
-                                {/* Quick Actions */}
+                                {/* Quick Actions - Top Stocks */}
                                 <div className="mt-8 flex flex-wrap justify-center gap-3">
                                     <span className="text-xs text-slate-400 font-medium">Popular:</span>
-                                    {["Aramco", "Al Rajhi", "SABIC", "STC"].map((stock, i) => (
+                                    {["Aramco", "Al Rajhi", "SABIC", "STC", "SNB", "Maaden"].map((stock, i) => (
                                         <button
                                             key={i}
                                             onClick={() => handleSuggestionClick(`${stock} price`)}
-                                            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-blue-50 text-xs font-semibold text-slate-600 hover:text-blue-600 transition-all border border-transparent hover:border-blue-200"
+                                            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-emerald-50 text-xs font-semibold text-slate-600 hover:text-emerald-600 transition-all border border-transparent hover:border-emerald-200"
                                         >
                                             {stock}
                                         </button>

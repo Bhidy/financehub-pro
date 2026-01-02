@@ -264,6 +264,46 @@ async function getStockPrice(symbol: string) {
 }
 
 // ============================================================================
+// COMPREHENSIVE KEY MAPPINGS (Shared with Company Profile Logic)
+// ============================================================================
+const FIELD_MAPPINGS: Record<string, string> = {
+    // Arabic keys
+    "صافى الربح": "net_income",
+    "صافي الربح": "net_income",
+    "مجمل الربح": "gross_profit",
+    "إجمالي الأصول": "total_assets",
+    "إجمالي المطلوبات": "total_liabilities",
+    "اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية": "total_equity",
+    "إجمالي حقوق المساهمين": "total_equity",
+    "إجمالي المطلوبات وحقوق المساهمين": "total_assets",
+    "صافي التغير في النقد من الأنشطة التشغيلية": "operating_cashflow",
+    "صافي التدفق النقدي من (المستخدم في) الأنشطة التشغيلية": "operating_cashflow",
+    // English keys
+    "netIncome": "net_income",
+    "grossProfit": "gross_profit",
+    "totalAssets": "total_assets",
+    "totalLiab": "total_liabilities",
+    "totalStockholderEquity": "total_equity",
+    "totalRevenue": "revenue",
+    "operatingIncome": "operating_income",
+};
+
+function parseFinancialsRawData(rawData: any): Record<string, number> {
+    if (!rawData) return {};
+    try {
+        const parsed = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+        const result: Record<string, number> = {};
+        for (const [k, v] of Object.entries(parsed)) {
+            const mappedKey = FIELD_MAPPINGS[k];
+            if (mappedKey && typeof v === "number") {
+                result[mappedKey] = v;
+            }
+        }
+        return result;
+    } catch { return {}; }
+}
+
+// ============================================================================
 // TOOL 2: Fundamentals
 // ============================================================================
 async function getFundamentals(symbol: string) {
@@ -277,23 +317,79 @@ async function getFundamentals(symbol: string) {
     if (result.rows.length === 0) return null;
 
     const financials = result.rows.map(row => {
-        const raw = typeof row.raw_data === 'string' ? JSON.parse(row.raw_data) : row.raw_data;
-        const netIncome = raw?.["صافى الربح"] || 0;
-        const totalAssets = raw?.["إجمالي الأصول"] || 0;
-        const totalEquity = raw?.["اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية"] || 0;
+        const parsed = parseFinancialsRawData(row.raw_data);
+        const netIncome = parsed.net_income || 0;
+        const totalAssets = parsed.total_assets || 0;
+        const totalEquity = parsed.total_equity || 0;
 
         return {
             fiscal_year: row.fiscal_year,
             period: row.period_type,
             net_income: netIncome,
-            net_income_billions: netIncome ? (netIncome / 1e9).toFixed(2) : null,
-            total_assets_billions: totalAssets ? (totalAssets / 1e9).toFixed(2) : null,
-            total_equity_billions: totalEquity ? (totalEquity / 1e9).toFixed(2) : null,
-            roe: totalEquity > 0 ? ((netIncome / totalEquity) * 100).toFixed(2) : null,
-            roa: totalAssets > 0 ? ((netIncome / totalAssets) * 100).toFixed(2) : null,
+            net_income_fmt: netIncome ? (netIncome / 1e9).toFixed(2) + 'B' : '-',
+            total_assets_fmt: totalAssets ? (totalAssets / 1e9).toFixed(2) + 'B' : '-',
+            total_equity_fmt: totalEquity ? (totalEquity / 1e9).toFixed(2) + 'B' : '-',
+            roe: totalEquity > 0 ? ((netIncome / totalEquity) * 100).toFixed(2) + '%' : null,
+            roa: totalAssets > 0 ? ((netIncome / totalAssets) * 100).toFixed(2) + '%' : null,
         };
     });
     return { symbol: resolved, financials };
+}
+
+// ... Market Summary section ...
+
+// ============================================================================
+// TOOL 10: Income Statement
+// ============================================================================
+async function getIncomeStatement(symbol: string) {
+    const resolved = await resolveSymbol(symbol);
+    if (!resolved) return null;
+
+    const result = await db.query(
+        `SELECT fiscal_year, period_type, raw_data FROM financial_statements 
+         WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT 8`,
+        [resolved]
+    );
+
+    const statements = result.rows.map(row => {
+        const parsed = parseFinancialsRawData(row.raw_data);
+        return {
+            fiscal_year: row.fiscal_year,
+            period: row.period_type,
+            net_income: parsed.net_income,
+            gross_profit: parsed.gross_profit,
+            operating_cash_flow: parsed.operating_cashflow,
+        };
+    });
+
+    return { symbol: resolved, statements };
+}
+
+// ============================================================================
+// TOOL 11: Balance Sheet
+// ============================================================================
+async function getBalanceSheet(symbol: string) {
+    const resolved = await resolveSymbol(symbol);
+    if (!resolved) return null;
+
+    const result = await db.query(
+        `SELECT fiscal_year, period_type, raw_data FROM financial_statements 
+         WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT 4`,
+        [resolved]
+    );
+
+    const sheets = result.rows.map(row => {
+        const parsed = parseFinancialsRawData(row.raw_data);
+        return {
+            fiscal_year: row.fiscal_year,
+            period: row.period_type,
+            total_assets: parsed.total_assets,
+            total_liabilities: parsed.total_liabilities,
+            total_equity: parsed.total_equity,
+        };
+    });
+
+    return { symbol: resolved, balance_sheets: sheets };
 }
 
 // ============================================================================
@@ -636,59 +732,7 @@ async function getPeerComparison(symbol: string) {
     return { sector, symbol: resolved, peers: peers.rows };
 }
 
-// ============================================================================
-// TOOL 10: Income Statement
-// ============================================================================
-async function getIncomeStatement(symbol: string) {
-    const resolved = await resolveSymbol(symbol);
-    if (!resolved) return null;
 
-    const result = await db.query(
-        `SELECT fiscal_year, period_type, raw_data FROM financial_statements 
-         WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT 8`,
-        [resolved]
-    );
-
-    const statements = result.rows.map(row => {
-        const raw = typeof row.raw_data === 'string' ? JSON.parse(row.raw_data) : row.raw_data;
-        return {
-            fiscal_year: row.fiscal_year,
-            period: row.period_type,
-            net_income: raw?.["صافى الربح"],
-            gross_profit: raw?.["مجمل الربح"],
-            operating_cash_flow: raw?.["صافي التغير في النقد من الأنشطة التشغيلية"],
-        };
-    });
-
-    return { symbol: resolved, statements };
-}
-
-// ============================================================================
-// TOOL 11: Balance Sheet
-// ============================================================================
-async function getBalanceSheet(symbol: string) {
-    const resolved = await resolveSymbol(symbol);
-    if (!resolved) return null;
-
-    const result = await db.query(
-        `SELECT fiscal_year, period_type, raw_data FROM financial_statements 
-         WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT 4`,
-        [resolved]
-    );
-
-    const sheets = result.rows.map(row => {
-        const raw = typeof row.raw_data === 'string' ? JSON.parse(row.raw_data) : row.raw_data;
-        return {
-            fiscal_year: row.fiscal_year,
-            period: row.period_type,
-            total_assets: raw?.["إجمالي الأصول"],
-            total_liabilities: raw?.["إجمالي المطلوبات"],
-            total_equity: raw?.["اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية"],
-        };
-    });
-
-    return { symbol: resolved, balance_sheets: sheets };
-}
 
 // ============================================================================
 // TOOL 12: Corporate Actions

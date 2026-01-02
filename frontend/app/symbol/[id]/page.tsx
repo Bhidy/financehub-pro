@@ -492,7 +492,7 @@ export default function SymbolDetailPage() {
                                             </div>
                                         ))}
                                     </div>
-                                ) : <EmptyState message="No ownership data" />}
+                                ) : <EmptyState message="Ownership data not yet available for this stock. Try 1301 for insider data." />}
                             </PremiumCard>
                         )}
 
@@ -518,31 +518,37 @@ export default function SymbolDetailPage() {
                             </PremiumCard>
                         )}
 
-                        {activeTab === "earnings" && (
-                            <PremiumCard gradient>
-                                <SectionHeader title="Earnings History" icon={Calendar} color="violet" />
-                                {earnings.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full">
-                                            <thead><tr className="border-b-2 border-slate-100">
-                                                <th className="text-left py-4 px-4 text-slate-500 font-bold">Quarter</th>
-                                                <th className="text-right py-4 px-4 text-slate-500 font-bold">EPS</th>
-                                                <th className="text-right py-4 px-4 text-slate-500 font-bold">Revenue</th>
-                                            </tr></thead>
-                                            <tbody>
-                                                {earnings.slice(0, 8).map((e: any, i: number) => (
-                                                    <tr key={i} className="border-b border-slate-50 hover:bg-pink-50/30 transition-all">
-                                                        <td className="py-5 px-4 font-bold text-slate-800">{e.fiscal_quarter}</td>
-                                                        <td className="py-5 px-4 text-right font-mono font-bold text-pink-600">{e.eps_actual || "-"}</td>
-                                                        <td className="py-5 px-4 text-right font-mono text-slate-700">{formatNumber(e.revenue_actual)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : <EmptyState message="No earnings data. Try symbol 1111 or 1182." />}
-                            </PremiumCard>
-                        )}
+                        {activeTab === "earnings" && (() => {
+                            // Filter for quarterly periods only
+                            const quarterlyData = parsedFinancials.filter((f: any) =>
+                                f.period_type?.includes('Q') || f.period_type === 'Quarterly'
+                            );
+                            return (
+                                <PremiumCard gradient>
+                                    <SectionHeader title="Quarterly Earnings" icon={Calendar} color="violet" />
+                                    {quarterlyData.length > 0 ? (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                                <thead><tr className="border-b-2 border-slate-100">
+                                                    <th className="text-left py-4 px-4 text-slate-500 font-bold">Period</th>
+                                                    <th className="text-right py-4 px-4 text-slate-500 font-bold">Net Income</th>
+                                                    <th className="text-right py-4 px-4 text-slate-500 font-bold">Gross Profit</th>
+                                                </tr></thead>
+                                                <tbody>
+                                                    {quarterlyData.slice(0, 8).map((f: any, i: number) => (
+                                                        <tr key={i} className="border-b border-slate-50 hover:bg-pink-50/30 transition-all">
+                                                            <td className="py-5 px-4 font-bold text-slate-800">{f.period_type} {f.fiscal_year}</td>
+                                                            <td className="py-5 px-4 text-right font-mono font-bold text-pink-600">{formatCurrency(f.net_income)}</td>
+                                                            <td className="py-5 px-4 text-right font-mono text-slate-700">{formatCurrency(f.gross_profit)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : <EmptyState message="No quarterly earnings data available" />}
+                                </PremiumCard>
+                            );
+                        })()}
 
                         {activeTab === "insider" && (
                             <PremiumCard gradient>

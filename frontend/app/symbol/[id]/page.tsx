@@ -255,42 +255,52 @@ export default function SymbolDetailPage() {
         return { high52, low52, periodReturn, current };
     }, [chartData]);
 
-    // Chart Effect
+    // Chart Effect - FIXED: Added activeTab dependency and timeout for DOM readiness
     useEffect(() => {
-        if (!chartContainerRef.current || chartData.length === 0) return;
-        if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
+        // Only render chart when Overview tab is active and we have data
+        if (activeTab !== "overview" || chartData.length === 0) return;
 
-        const chart = createChart(chartContainerRef.current, {
-            layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', -apple-system, sans-serif" },
-            width: chartContainerRef.current.clientWidth, height: 420,
-            grid: { vertLines: { color: 'rgba(148, 163, 184, 0.1)' }, horzLines: { color: 'rgba(148, 163, 184, 0.1)' } },
-            timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(148, 163, 184, 0.2)', rightOffset: 5 },
-            rightPriceScale: { borderColor: 'rgba(148, 163, 184, 0.2)' },
-            crosshair: { mode: CrosshairMode.Normal, vertLine: { color: 'rgba(99, 102, 241, 0.5)', width: 1, style: 2, labelBackgroundColor: '#6366f1' }, horzLine: { color: 'rgba(99, 102, 241, 0.5)', width: 1, style: 2, labelBackgroundColor: '#6366f1' } }
-        });
-        chartRef.current = chart;
+        // Small delay to ensure DOM container is mounted
+        const timeoutId = setTimeout(() => {
+            if (!chartContainerRef.current) return;
+            if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
 
-        try {
-            if (chartStyle === "candle") {
-                const series = chart.addSeries(CandlestickSeries, { upColor: '#10b981', downColor: '#ef4444', borderUpColor: '#10b981', borderDownColor: '#ef4444', wickUpColor: '#10b981', wickDownColor: '#ef4444' });
-                series.setData(chartData);
-            } else if (chartStyle === "line") {
-                const series = chart.addSeries(LineSeries, { color: '#6366f1', lineWidth: 3 });
-                series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
-            } else {
-                const series = chart.addSeries(AreaSeries, { topColor: 'rgba(99, 102, 241, 0.4)', bottomColor: 'rgba(99, 102, 241, 0.02)', lineColor: '#6366f1', lineWidth: 3 });
-                series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
-            }
-            const volumeSeries = chart.addSeries(HistogramSeries, { color: 'rgba(148,163,184,0.2)', priceFormat: { type: 'volume' }, priceScaleId: '' });
-            volumeSeries.priceScale().applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
-            volumeSeries.setData(chartData.map((d: any) => ({ time: d.time, value: d.volume, color: d.close >= d.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)' })));
-            chart.timeScale().fitContent();
-        } catch (err) { console.error("Chart error:", err); }
+            const chart = createChart(chartContainerRef.current, {
+                layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', -apple-system, sans-serif" },
+                width: chartContainerRef.current.clientWidth, height: 420,
+                grid: { vertLines: { color: 'rgba(148, 163, 184, 0.1)' }, horzLines: { color: 'rgba(148, 163, 184, 0.1)' } },
+                timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(148, 163, 184, 0.2)', rightOffset: 5 },
+                rightPriceScale: { borderColor: 'rgba(148, 163, 184, 0.2)' },
+                crosshair: { mode: CrosshairMode.Normal, vertLine: { color: 'rgba(99, 102, 241, 0.5)', width: 1, style: 2, labelBackgroundColor: '#6366f1' }, horzLine: { color: 'rgba(99, 102, 241, 0.5)', width: 1, style: 2, labelBackgroundColor: '#6366f1' } }
+            });
+            chartRef.current = chart;
+
+            try {
+                if (chartStyle === "candle") {
+                    const series = chart.addSeries(CandlestickSeries, { upColor: '#10b981', downColor: '#ef4444', borderUpColor: '#10b981', borderDownColor: '#ef4444', wickUpColor: '#10b981', wickDownColor: '#ef4444' });
+                    series.setData(chartData);
+                } else if (chartStyle === "line") {
+                    const series = chart.addSeries(LineSeries, { color: '#6366f1', lineWidth: 3 });
+                    series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
+                } else {
+                    const series = chart.addSeries(AreaSeries, { topColor: 'rgba(99, 102, 241, 0.4)', bottomColor: 'rgba(99, 102, 241, 0.02)', lineColor: '#6366f1', lineWidth: 3 });
+                    series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
+                }
+                const volumeSeries = chart.addSeries(HistogramSeries, { color: 'rgba(148,163,184,0.2)', priceFormat: { type: 'volume' }, priceScaleId: '' });
+                volumeSeries.priceScale().applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
+                volumeSeries.setData(chartData.map((d: any) => ({ time: d.time, value: d.volume, color: d.close >= d.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)' })));
+                chart.timeScale().fitContent();
+            } catch (err) { console.error("Chart error:", err); }
+        }, 100);
 
         const handleResize = () => { if (chartContainerRef.current && chartRef.current) chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth }); };
         window.addEventListener('resize', handleResize);
-        return () => { window.removeEventListener('resize', handleResize); if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; } };
-    }, [chartData, chartStyle]);
+        return () => {
+            clearTimeout(timeoutId);
+            window.removeEventListener('resize', handleResize);
+            if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
+        };
+    }, [chartData, chartStyle, activeTab]);
 
     if (tickersLoading) return <LoadingSkeleton />;
     if (!stockData) return (

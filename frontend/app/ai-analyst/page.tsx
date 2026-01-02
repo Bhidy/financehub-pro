@@ -2,13 +2,12 @@
 
 import { useAIChat } from "@/hooks/useAIChat";
 import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3, Plus, MessageSquarePlus } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { PriceChart, FinancialTable, IndicatorBadge } from "@/components/ai/AnalystUI";
+import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 
 export default function AIAnalystPage() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -39,42 +38,42 @@ export default function AIAnalystPage() {
     }, [query]);
 
 
-    // Premium curated suggestions - VERIFIED WORKING QUERIES ONLY
+    // Gen Z Friendly Suggestions - Casual & Fun
     const suggestionCategories = [
         {
-            id: 'trending',
-            label: '🔥 Trending',
+            id: 'hot',
+            label: '🔥 Hot',
             suggestions: [
-                { text: "What is Aramco stock price?", icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
-                { text: "Al Rajhi Bank current price", icon: BarChart3, gradient: "from-blue-500 to-indigo-600" },
-                { text: "SABIC stock quote", icon: TrendingUp, gradient: "from-orange-500 to-red-500" },
+                { text: "What's Aramco at rn?", icon: TrendingUp, gradient: "from-orange-500 to-red-500" },
+                { text: "Top gainers today", icon: BarChart3, gradient: "from-emerald-500 to-green-600" },
+                { text: "Is SABIC doing good?", icon: TrendingUp, gradient: "from-pink-500 to-rose-500" },
             ]
         },
         {
-            id: 'analysis',
-            label: '📊 Analysis',
+            id: 'beginner',
+            label: '📚 Starter',
             suggestions: [
-                { text: "Aramco technical analysis", icon: BarChart3, gradient: "from-violet-500 to-purple-600" },
-                { text: "Al Rajhi fundamentals", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
-                { text: "Is STC overbought?", icon: TrendingUp, gradient: "from-pink-500 to-rose-600" },
+                { text: "Tell me about Aramco", icon: Sparkles, gradient: "from-blue-500 to-indigo-600" },
+                { text: "What's a good stock to watch?", icon: TrendingUp, gradient: "from-violet-500 to-purple-600" },
+                { text: "How's the market today?", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
             ]
         },
         {
-            id: 'financials',
-            label: '💰 Financials',
+            id: 'quick',
+            label: '⚡ Quick',
             suggestions: [
-                { text: "Aramco income statement", icon: Newspaper, gradient: "from-amber-500 to-orange-600" },
-                { text: "Al Rajhi balance sheet", icon: PieChart, gradient: "from-green-500 to-emerald-600" },
-                { text: "SABIC financial metrics", icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
+                { text: "Al Rajhi price", icon: BarChart3, gradient: "from-amber-500 to-orange-600" },
+                { text: "STC price", icon: TrendingUp, gradient: "from-teal-500 to-emerald-600" },
+                { text: "Top losers", icon: Newspaper, gradient: "from-red-500 to-rose-600" },
             ]
         },
         {
-            id: 'market',
-            label: '🌍 Market',
+            id: 'deep',
+            label: '🧠 Deep Dive',
             suggestions: [
-                { text: "Top gainers today", icon: TrendingUp, gradient: "from-emerald-500 to-green-600" },
-                { text: "Top losers today", icon: BarChart3, gradient: "from-red-500 to-rose-600" },
-                { text: "Aramco price history", icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
+                { text: "Aramco technicals", icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
+                { text: "SABIC financials", icon: PieChart, gradient: "from-green-500 to-emerald-600" },
+                { text: "Who owns Aramco?", icon: Sparkles, gradient: "from-purple-500 to-pink-600" },
             ]
         },
     ];
@@ -189,13 +188,13 @@ export default function AIAnalystPage() {
                                     </div>
                                 </div>
 
-                                {/* Title */}
+                                {/* Title - Gen Z Friendly */}
                                 <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 drop-shadow-sm">
-                                    FinanceHub <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">AI Advisor</span>
+                                    Hey! I'm <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">Finny</span> 🤖
                                 </h1>
 
                                 <p className="text-slate-500 text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed font-medium">
-                                    Ask anything about Saudi stocks, markets, and economics.
+                                    Your friendly AI guide to Saudi stocks. No jargon, just vibes ✨
                                 </p>
 
                                 {/* Category Tabs */}
@@ -298,45 +297,7 @@ export default function AIAnalystPage() {
                                                 {msg.role === "user" ? (
                                                     <span className="font-medium">{msg.content}</span>
                                                 ) : (
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[remarkGfm]}
-                                                        components={{
-                                                            table: ({ node, ...props }) => (
-                                                                <div className="overflow-x-auto my-6 rounded-xl border border-slate-200 shadow-sm bg-slate-50/50">
-                                                                    <table className="w-full text-sm text-left" {...props} />
-                                                                </div>
-                                                            ),
-                                                            thead: ({ node, ...props }) => (
-                                                                <thead className="bg-slate-100 text-xs uppercase font-bold text-slate-500" {...props} />
-                                                            ),
-                                                            tr: ({ node, ...props }) => (
-                                                                <tr className="border-b border-slate-100 last:border-0 hover:bg-white transition-colors" {...props} />
-                                                            ),
-                                                            th: ({ node, ...props }) => (
-                                                                <th className="px-6 py-4 font-bold tracking-wider text-slate-600" {...props} />
-                                                            ),
-                                                            td: ({ node, ...props }) => (
-                                                                <td className="px-6 py-4 font-medium text-slate-700 tabular-nums" {...props} />
-                                                            ),
-                                                            h3: ({ node, ...props }) => (
-                                                                <h3 className="text-xl font-bold mt-8 mb-4 text-slate-900 flex items-center gap-3 pb-2 border-b border-slate-100" {...props} />
-                                                            ),
-                                                            strong: ({ node, ...props }) => (
-                                                                <strong className="font-bold text-blue-700" {...props} />
-                                                            ),
-                                                            ul: ({ node, ...props }) => (
-                                                                <ul className="space-y-2 my-4 pl-4" {...props} />
-                                                            ),
-                                                            li: ({ node, ...props }) => (
-                                                                <li className="flex gap-2 items-start text-slate-700" {...props}>
-                                                                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
-                                                                    <span className="flex-1">{props.children?.toString().replace(/^\*/, '')}</span>
-                                                                </li>
-                                                            )
-                                                        }}
-                                                    >
-                                                        {msg.content}
-                                                    </ReactMarkdown>
+                                                    <PremiumMessageRenderer content={msg.content} />
                                                 )}
                                             </div>
                                         </div>

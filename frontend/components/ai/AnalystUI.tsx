@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { TrendingUp, TrendingDown, Target, ShieldCheck, Activity, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, ShieldCheck, Activity, BarChart3, Zap, DollarSign, Users, Clock, ArrowUpRight, ArrowDownRight, Sparkles, Flame, AlertCircle } from "lucide-react";
 import clsx from "clsx";
 
 /**
@@ -35,14 +35,8 @@ export function PriceChart({ data, symbol }: { data: any[], symbol: string }) {
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis
-                        dataKey="date"
-                        hide={true}
-                    />
-                    <YAxis
-                        domain={['auto', 'auto']}
-                        hide={true}
-                    />
+                    <XAxis dataKey="date" hide={true} />
+                    <YAxis domain={['auto', 'auto']} hide={true} />
                     <Tooltip
                         content={({ active, payload }) => {
                             if (active && payload && payload.length) {
@@ -56,14 +50,7 @@ export function PriceChart({ data, symbol }: { data: any[], symbol: string }) {
                             return null;
                         }}
                     />
-                    <Area
-                        type="monotone"
-                        dataKey="price"
-                        stroke="#2563eb"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorPrice)"
-                    />
+                    <Area type="monotone" dataKey="price" stroke="#2563eb" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
@@ -128,6 +115,186 @@ export function IndicatorBadge({ label, value, type }: { label: string, value: s
             <Icon className="w-3.5 h-3.5" />
             <span className="opacity-70">{label}:</span>
             <span>{value}</span>
+        </div>
+    );
+}
+
+// ============================================================================
+// ULTRA PREMIUM UI COMPONENTS 
+// ============================================================================
+
+/**
+ * 💎 MetricCard - Glass morphism stat card with icon
+ */
+export function MetricCard({
+    icon: Icon,
+    label,
+    value,
+    subValue,
+    gradient = "from-blue-500 to-indigo-600"
+}: {
+    icon: React.ComponentType<{ className?: string }>,
+    label: string,
+    value: string,
+    subValue?: string,
+    gradient?: string
+}) {
+    return (
+        <div className="group relative p-4 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-0.5">
+            {/* Glass effect overlay */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/80 to-white/40 pointer-events-none" />
+
+            <div className="relative flex items-center gap-3">
+                <div className={clsx("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg", gradient)}>
+                    <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</div>
+                    <div className="text-lg font-black text-slate-900 truncate">{value}</div>
+                    {subValue && <div className="text-xs text-slate-500">{subValue}</div>}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * 🔥 VerdictBadge - Animated verdict display with emoji-style icon
+ */
+export function VerdictBadge({
+    verdict,
+    explanation
+}: {
+    verdict: 'bullish' | 'bearish' | 'neutral' | 'hot',
+    explanation: string
+}) {
+    const configs = {
+        bullish: {
+            bg: 'bg-gradient-to-r from-emerald-500 to-teal-600',
+            icon: TrendingUp,
+            label: 'Looking good!',
+            glow: 'shadow-emerald-500/30'
+        },
+        bearish: {
+            bg: 'bg-gradient-to-r from-red-500 to-rose-600',
+            icon: TrendingDown,
+            label: 'Heads up!',
+            glow: 'shadow-red-500/30'
+        },
+        neutral: {
+            bg: 'bg-gradient-to-r from-slate-500 to-slate-600',
+            icon: AlertCircle,
+            label: 'Mixed vibes',
+            glow: 'shadow-slate-500/30'
+        },
+        hot: {
+            bg: 'bg-gradient-to-r from-orange-500 to-red-500',
+            icon: Flame,
+            label: 'On fire!',
+            glow: 'shadow-orange-500/30'
+        }
+    };
+
+    const config = configs[verdict];
+    const Icon = config.icon;
+
+    return (
+        <div className={clsx(
+            "inline-flex items-center gap-3 px-5 py-3 rounded-2xl text-white font-bold shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500",
+            config.bg, config.glow
+        )}>
+            <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                <Icon className="w-5 h-5" />
+            </div>
+            <div>
+                <div className="text-sm font-black">{config.label}</div>
+                <div className="text-xs opacity-90">{explanation}</div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * ⚡ DataChip - Compact stat with icon (replaces emoji bullets)
+ */
+export function DataChip({
+    icon: Icon,
+    label,
+    value,
+    trend
+}: {
+    icon: React.ComponentType<{ className?: string }>,
+    label: string,
+    value: string,
+    trend?: 'up' | 'down' | 'neutral'
+}) {
+    return (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50/80 border border-slate-100">
+            <Icon className="w-4 h-4 text-slate-400" />
+            <span className="text-xs text-slate-500">{label}</span>
+            <span className="text-sm font-bold text-slate-800">{value}</span>
+            {trend === 'up' && <ArrowUpRight className="w-4 h-4 text-emerald-500" />}
+            {trend === 'down' && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+        </div>
+    );
+}
+
+/**
+ * 💰 PriceHero - Large hero-style price display
+ */
+export function PriceHero({
+    symbol,
+    name,
+    price,
+    change,
+    changePercent
+}: {
+    symbol: string,
+    name: string,
+    price: string,
+    change?: string,
+    changePercent?: string
+}) {
+    const isPositive = parseFloat(changePercent || '0') >= 0;
+
+    return (
+        <div className="relative p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/20 rounded-full blur-2xl" />
+
+            <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 rounded-md bg-white/10 text-xs font-mono">{symbol}</span>
+                    <span className="text-slate-400 text-sm truncate">{name}</span>
+                </div>
+
+                <div className="flex items-end gap-4">
+                    <div className="text-4xl font-black tracking-tight">{price} <span className="text-lg text-slate-400">SAR</span></div>
+                    {changePercent && (
+                        <div className={clsx(
+                            "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold",
+                            isPositive ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                        )}>
+                            {isPositive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                            {changePercent}%
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * ✨ QuickStats - Row of icon-based stats
+ */
+export function QuickStats({ stats }: { stats: { icon: React.ComponentType<{ className?: string }>, label: string, value: string }[] }) {
+    return (
+        <div className="flex flex-wrap gap-2 mt-4">
+            {stats.map((stat, i) => (
+                <DataChip key={i} icon={stat.icon} label={stat.label} value={stat.value} />
+            ))}
         </div>
     );
 }

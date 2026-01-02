@@ -1,3 +1,22 @@
+# Environment files
 backend/.env
 .env
 .env.backup_critical
+.env*.local
+
+# Vercel
+.vercel
+
+# Logs
+*.log
+logs/
+
+# Debug artifacts
+debug_*.html
+debug_*.png
+
+# Temporary files
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json

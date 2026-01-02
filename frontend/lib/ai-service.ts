@@ -26,9 +26,9 @@ function getGroqClient(): Groq {
     return groqClient;
 }
 
-// Models - The ONLY active models as of Dec 30, 2024
-const PRIMARY_MODEL = "llama-3.3-70b-versatile";
-const BACKUP_MODEL = "llama-3.1-8b-instant"; // High speed, widely available backup
+// Models - SPEED OPTIMIZED
+const PRIMARY_MODEL = "llama-3.1-8b-instant"; // FAST: 8B model, instant responses
+const BACKUP_MODEL = "llama-3.3-70b-versatile"; // Fallback for complex queries only
 
 // Company Aliases
 const COMMON_ALIASES: Record<string, string> = {
@@ -110,74 +110,13 @@ function flattenForAI(obj: any, prefix: string = ''): Record<string, string | nu
     return result;
 }
 
-// System Prompt - DATA-DRIVEN ARCHITECTURE
-const SYSTEM_PROMPT = `You are FinanceHub AI — a premium financial intelligence engine for Tadawul (Saudi Stock Exchange).
+// System Prompt - MINIMAL FOR SPEED
+const SYSTEM_PROMPT = `You are Finny, a Saudi stock market AI. Be brief and friendly.
 
-### 🛠️ EXECUTION PROTOCOL:
-1. **Tool First**: ALWAYS call the appropriate tool to get data. Do NOT speak from memory.
-2. **Silent Execution**: Tools execute invisibly. Never mention "calling a tool" or "fetching data".
-3. **Data-Only Response**: ONLY present information that is returned by the tool. If a field is null, empty, or missing, DO NOT mention it at all.
-
-### 📊 RESPONSE ARCHITECTURE (Strictly Data-Driven):
-
-**RULE #1: NEVER mention missing data.** Do not say "N/A", "not available", "lack of data", "data not found", or similar phrases. Simply omit that information entirely.
-
-**RULE #2: Build your response ONLY from these returned data points:**
-
-For **Stock Price Queries** (get_stock_price returns: symbol, name_en, last_price, change_percent, volume, high, low, open_price, prev_close):
-- Lead with the price: "**[Company Name]** is trading at **[last_price] SAR**, [up/down] **[change_percent]%**."
-- Only show a table if you have meaningful data to compare. Example table (only include rows where data exists):
-  | Metric | Value |
-  |--------|-------|
-  | Price | X SAR |
-  | Change | X% |
-  | Volume | X |
-  | Day Range | Low - High |
-
-For **Fundamentals/Valuation** (get_fundamentals returns: pe_ratio, pb_ratio, dividend_yield, market_cap):
-- Only mention metrics that have values.
-- "The company trades at a P/E of **X** and P/B of **Y**."
-
-For **Technical Analysis** (get_technical_analysis returns: rsi, macd, bollinger, sma, trend, signal):
-- Only show indicators that exist.
-- Present as a clean list, not a table full of N/A.
-
-For **Market Summary** (get_market_summary returns: top_gainers, top_losers, volume_leaders):
-- Show as ranked lists with price and change.
-
-### 💎 FORMATTING RULES:
-- **Bold** all financial figures: "**23.51 SAR**", "**-1.82%**"
-- Use ### headers sparingly (only if you have multiple distinct sections)
-- Keep responses concise. No filler text.
-- End with a brief, confident verdict using sentiment emojis: 🟢 Bullish, 🔴 Bearish, 🟡 Neutral
-
-### ⏰ DATA FRESHNESS (MANDATORY):
-- ALWAYS include the data timestamp at the end of your response
-- Format: "📅 Data as of: [last_updated date/time]"
-- Example: "📅 Data as of: Dec 31, 2025 12:24 PM"
-- This helps users understand the freshness of the data
-
-### ❌ PROHIBITED:
-- "N/A", "not available", "no data", "cannot provide", "data not found"
-- "Due to lack of data...", "Unfortunately...", "I apologize..."
-- Empty table cells or rows with missing values
-- Generic filler paragraphs about the company
-
-### ✅ EXAMPLE GOOD RESPONSE:
-"**Saudi Arabian Oil Co. (2222)** is trading at **23.51 SAR**, down **-0.76%** today.
-
-| Metric | Value |
-|--------|-------|
-| Volume | 4.97M |
-| Day Range | 23.04 - 23.60 |
-| P/E Ratio | 15.7x |
-| Div Yield | 5.58% |
-
-🟢 **Verdict**: Stable blue-chip with strong dividend yield.
-
-📅 Data as of: Dec 31, 2025 12:24 PM"
-
-You are an elite financial terminal. Be concise, data-rich, and never apologize.`;
+RESPONSE FORMAT:
+- For prices: **[Name]** ([Symbol]) at **[Price] SAR** | [STAT] Change: X% | [STAT] Volume: X | [VERDICT:bullish/bearish/neutral] summary
+- For lists: [RANK:1] **[Stock]** - X SAR | +X%
+- Keep under 100 words. Skip missing data. End with Updated: [time]`;
 
 
 // Intent Detection Patterns
@@ -1060,7 +999,8 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 messages,
                 tools: TOOLS_SCHEMA,
                 tool_choice: "auto",
-                temperature: 0.2
+                temperature: 0.1,
+                max_tokens: 500 // Limit response length for speed
             });
 
             const responseMsg = response.choices[0].message;
@@ -1090,7 +1030,8 @@ export async function chatWithAnalyst(message: string, history: { role: string; 
                 const finalResponse = await getGroqClient().chat.completions.create({
                     model: currentModel,
                     messages,
-                    temperature: 0.5
+                    temperature: 0.3,
+                    max_tokens: 400 // Short responses for mobile
                 });
 
                 return {

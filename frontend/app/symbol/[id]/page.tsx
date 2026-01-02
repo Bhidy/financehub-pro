@@ -18,8 +18,9 @@ import {
     AreaChart, Sparkles, Globe, Award
 } from "lucide-react";
 
-// Arabic key mapping for financials - COMPREHENSIVE
-const ARABIC_KEYS: Record<string, string> = {
+// COMPREHENSIVE key mapping for financials - Arabic AND English keys
+const FIELD_MAPPINGS: Record<string, string> = {
+    // Arabic keys
     "صافى الربح": "net_income",
     "صافي الربح": "net_income",
     "مجمل الربح": "gross_profit",
@@ -27,8 +28,19 @@ const ARABIC_KEYS: Record<string, string> = {
     "إجمالي المطلوبات": "total_liabilities",
     "اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية": "total_equity",
     "إجمالي حقوق المساهمين": "total_equity",
+    "إجمالي المطلوبات وحقوق المساهمين": "total_assets",
     "صافي التغير في النقد من الأنشطة التشغيلية": "operating_cashflow",
     "صافي التدفق النقدي من (المستخدم في) الأنشطة التشغيلية": "operating_cashflow",
+    // English keys (from external APIs)
+    "netIncome": "net_income",
+    "grossProfit": "gross_profit",
+    "totalAssets": "total_assets",
+    "totalLiab": "total_liabilities",
+    "totalStockholderEquity": "total_equity",
+    "totalRevenue": "revenue",
+    "operatingIncome": "operating_income",
+    "ebit": "ebit",
+    "incomeBeforeTax": "income_before_tax",
 };
 
 function parseFinancialsRawData(rawData: any): Record<string, number> {
@@ -38,8 +50,11 @@ function parseFinancialsRawData(rawData: any): Record<string, number> {
         const parsed = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
         const result: Record<string, number> = {};
         for (const [k, v] of Object.entries(parsed)) {
-            const ek = ARABIC_KEYS[k];
-            if (ek && typeof v === "number") result[ek] = v;
+            // Check if key matches any mapping
+            const mappedKey = FIELD_MAPPINGS[k];
+            if (mappedKey && typeof v === "number") {
+                result[mappedKey] = v;
+            }
         }
         return result;
     } catch { return {}; }
@@ -208,12 +223,26 @@ export default function SymbolDetailPage() {
     const rawData = isIntraday ? intradayData : ohlcData;
     const chartData = useMemo(() => {
         if (!rawData || rawData.length === 0) return [];
-        const dateField = isIntraday ? "timestamp" : "date";
-        return [...rawData].sort((a: any, b: any) => new Date(a[dateField] || a.time).getTime() - new Date(b[dateField] || b.time).getTime())
-            .map((item: any) => ({
-                time: (isIntraday ? Math.floor(new Date(item.timestamp).getTime() / 1000) : new Date(item.date || item.time).toISOString().split('T')[0]) as Time,
-                open: Number(item.open), high: Number(item.high), low: Number(item.low), close: Number(item.close), volume: Number(item.volume)
-            }));
+        // Process OHLC data - handle both 'time' and 'date' fields
+        return [...rawData].sort((a: any, b: any) => {
+            const dateA = new Date(a.time || a.date || a.timestamp);
+            const dateB = new Date(b.time || b.date || b.timestamp);
+            return dateA.getTime() - dateB.getTime();
+        }).map((item: any) => {
+            const dateValue = item.time || item.date || item.timestamp;
+            // For intraday, use unix timestamp; for daily, use YYYY-MM-DD format
+            const timeValue = isIntraday
+                ? Math.floor(new Date(dateValue).getTime() / 1000)
+                : new Date(dateValue).toISOString().split('T')[0];
+            return {
+                time: timeValue as Time,
+                open: Number(item.open),
+                high: Number(item.high),
+                low: Number(item.low),
+                close: Number(item.close),
+                volume: Number(item.volume)
+            };
+        });
     }, [rawData, isIntraday]);
 
     const stats = useMemo(() => {

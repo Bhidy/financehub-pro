@@ -4,35 +4,30 @@ description: Deploy frontend to Vercel production
 
 # Deploy Frontend to Vercel
 
-This workflow deploys the frontend to Vercel production.
+> **CRITICAL**: Deploy from REPOSITORY ROOT, not from frontend folder!
 
 // turbo-all
 
 ## Steps
 
-1. Navigate to frontend directory:
+1. Navigate to repository root:
 ```bash
-cd /Users/home/Documents/Info\ Site/mubasher-deep-extract/frontend
+cd /Users/home/Documents/Info\ Site/mubasher-deep-extract
 ```
 
-2. Install dependencies:
+2. Install frontend dependencies:
 ```bash
-npm install
+cd frontend && npm install && cd ..
 ```
 
-3. Build production bundle:
-```bash
-npm run build
-```
-
-4. Deploy to Vercel production:
+3. Deploy to Vercel production (from root!):
 ```bash
 npx vercel --prod --yes
 ```
 
-5. Verify deployment is live:
+4. Verify deployment is live:
 ```bash
-curl -s https://finhub-pro.vercel.app | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+'
+curl -s -o /dev/null -w "%{http_code}" https://finhub-pro.vercel.app/
 ```
 
 ## Manual Alternative

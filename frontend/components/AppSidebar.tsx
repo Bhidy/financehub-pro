@@ -48,7 +48,7 @@ const NAV_SECTIONS = [
             // { label: "Multi-Chart Grid", icon: Grid3x3, href: "/charts" },
             // HIDDEN: Market Intelligence - merged into Market Overview page
             // { label: "Market Intelligence", icon: TrendingUp, href: "/markets" },
-            { label: "AI Analyst", icon: BrainCircuit, href: "/ai-analyst", badge: "BETA", badgeColor: "blue" },
+            { label: "AI Advisor", icon: BrainCircuit, href: "/ai-analyst", badge: "BETA", badgeColor: "blue" },
             // HIDDEN: Market Pulse - can be re-enabled later
             // { label: "Market Pulse", icon: Activity, href: "/market-pulse" },
             // HIDDEN: Intraday Desk - can be re-enabled later

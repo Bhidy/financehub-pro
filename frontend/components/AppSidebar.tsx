@@ -59,7 +59,7 @@ const NAV_SECTIONS = [
         title: "Investment Research",
         color: "green",
         items: [
-            { label: "Company Profile", icon: Building2, href: "/symbol/2222", badge: "NEW", badgeColor: "green" },
+            { label: "Company Profile", icon: Building2, href: "/symbol/1120", badge: "NEW", badgeColor: "green" },
             { label: "Mutual Funds", icon: DollarSign, href: "/funds" },
             // HIDDEN: Shareholders - can be re-enabled later
             // { label: "Shareholders", icon: Users, href: "/shareholders" },

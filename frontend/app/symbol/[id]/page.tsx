@@ -18,17 +18,24 @@ import {
     AreaChart, Sparkles, Globe, Award
 } from "lucide-react";
 
-// Arabic key mapping for financials
+// Arabic key mapping for financials - COMPREHENSIVE
 const ARABIC_KEYS: Record<string, string> = {
-    "صافى الربح": "net_income", "مجمل الربح": "gross_profit",
-    "إجمالي الأصول": "total_assets", "إجمالي المطلوبات": "total_liabilities",
+    "صافى الربح": "net_income",
+    "صافي الربح": "net_income",
+    "مجمل الربح": "gross_profit",
+    "إجمالي الأصول": "total_assets",
+    "إجمالي المطلوبات": "total_liabilities",
     "اجمالي حقوق المساهمين مضاف اليها حقوق الاقلية": "total_equity",
+    "إجمالي حقوق المساهمين": "total_equity",
+    "صافي التغير في النقد من الأنشطة التشغيلية": "operating_cashflow",
+    "صافي التدفق النقدي من (المستخدم في) الأنشطة التشغيلية": "operating_cashflow",
 };
 
-function parseFinancialsRawData(rawData: string | null): Record<string, number> {
+function parseFinancialsRawData(rawData: any): Record<string, number> {
     if (!rawData) return {};
     try {
-        const parsed = JSON.parse(rawData);
+        // Handle both string (needs parsing) and object (already parsed)
+        const parsed = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
         const result: Record<string, number> = {};
         for (const [k, v] of Object.entries(parsed)) {
             const ek = ARABIC_KEYS[k];
@@ -175,19 +182,27 @@ export default function SymbolDetailPage() {
     const { data: allAnalystRatings = [] } = useQuery({ queryKey: ["analyst-ratings"], queryFn: () => fetchAnalystRatings(), enabled: !!symbol });
     const { data: corporateActions = [] } = useQuery({ queryKey: ["corporate-actions", symbol], queryFn: () => fetchCorporateActions(symbol), enabled: !!symbol });
     const { data: allInsiderTrading = [] } = useQuery({ queryKey: ["insider-trading"], queryFn: () => fetchInsiderTrading(), enabled: !!symbol });
-    const { data: allEarnings = [] } = useQuery({ queryKey: ["earnings"], queryFn: () => fetchEarnings(), enabled: !!symbol });
+    const { data: allEarnings = [] } = useQuery({ queryKey: ["earnings", symbol], queryFn: () => fetchEarnings(symbol), enabled: !!symbol });
     const { data: allFairValues = [] } = useQuery({ queryKey: ["fair-values"], queryFn: () => fetchFairValues(), enabled: !!symbol });
     const { data: marketBreadth = [] } = useQuery({ queryKey: ["market-breadth"], queryFn: () => fetchMarketBreadth(), enabled: !!symbol });
 
     const analystRatings = useMemo(() => allAnalystRatings.filter((r: any) => r.symbol === symbol), [allAnalystRatings, symbol]);
     const insiderTrades = useMemo(() => allInsiderTrading.filter((t: any) => t.symbol === symbol), [allInsiderTrading, symbol]);
-    const earnings = useMemo(() => allEarnings.filter((e: any) => e.symbol === symbol), [allEarnings, symbol]);
+    const earnings = allEarnings; // Already filtered by symbol in API
     const fairValue = useMemo(() => allFairValues.find((f: any) => f.symbol === symbol), [allFairValues, symbol]);
     const latestBreadth = marketBreadth[0];
 
     const parsedFinancials = useMemo(() => financials.map((f: any) => {
         const rp = parseFinancialsRawData(f.raw_data);
-        return { ...f, net_income: f.net_income || rp.net_income, total_assets: f.total_assets || rp.total_assets, total_equity: f.total_equity || rp.total_equity };
+        return {
+            ...f,
+            net_income: f.net_income || rp.net_income,
+            total_assets: f.total_assets || rp.total_assets,
+            total_equity: f.total_equity || rp.total_equity,
+            gross_profit: f.gross_profit || rp.gross_profit,
+            total_liabilities: f.total_liabilities || rp.total_liabilities,
+            operating_cashflow: f.operating_cashflow || rp.operating_cashflow,
+        };
     }), [financials]);
 
     const rawData = isIntraday ? intradayData : ohlcData;

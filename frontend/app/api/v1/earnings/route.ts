@@ -4,34 +4,41 @@ import { db } from '@/lib/db-server';
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const symbol = searchParams.get('symbol');
+    const limit = parseInt(searchParams.get('limit') || '50');
 
     try {
-        // NOTE: 'earnings' table does NOT exist in the database
-        // We can derive earnings data from financial_statements table
+        // Get quarterly/earnings data from financial_statements
+        // period_type includes: Q1, Q2, Q3, Q4, Quarterly, etc.
         if (symbol) {
             const result = await db.query(
                 `SELECT symbol, period_type as fiscal_quarter, fiscal_year, 
-                        eps as eps_actual, revenue as revenue_actual, net_income
+                        eps as eps_actual, revenue as revenue_actual, net_income,
+                        gross_profit, operating_income, end_date
                  FROM financial_statements 
-                 WHERE symbol = $1 AND period_type = 'Q'
+                 WHERE symbol = $1 AND (
+                     period_type LIKE 'Q%' OR period_type = 'Quarterly'
+                 )
                  ORDER BY fiscal_year DESC, end_date DESC
-                 LIMIT 12`,
-                [symbol]
+                 LIMIT $2`,
+                [symbol, limit]
             );
             return NextResponse.json(result.rows);
         }
 
-        // Return recent quarterly earnings from financial_statements
+        // Return recent quarterly earnings from all stocks
         const result = await db.query(
             `SELECT symbol, period_type as fiscal_quarter, fiscal_year, 
-                    eps as eps_actual, revenue as revenue_actual, net_income
+                    eps as eps_actual, revenue as revenue_actual, net_income,
+                    gross_profit, operating_income, end_date
              FROM financial_statements 
-             WHERE period_type = 'Q'
-             ORDER BY end_date DESC
-             LIMIT 50`
+             WHERE period_type LIKE 'Q%' OR period_type = 'Quarterly'
+             ORDER BY end_date DESC, fiscal_year DESC
+             LIMIT $1`,
+            [limit]
         );
         return NextResponse.json(result.rows);
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('[API /earnings ERROR]', error.message);
+        return NextResponse.json([]);
     }
 }

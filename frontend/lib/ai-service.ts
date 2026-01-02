@@ -707,33 +707,68 @@ async function getCorporateActions(symbol: string) {
 }
 
 // ============================================================================
-// TOOL 13: News Summary
+// TOOL 13: News Summary - FIXED: Use correct column names
 // ============================================================================
 async function getNewsSummary(symbol: string) {
     const resolved = await resolveSymbol(symbol);
     if (!resolved) return null;
 
     const result = await db.query(
-        `SELECT title, source, published_at, url 
+        `SELECT headline, source, published_at, url, sentiment_score 
          FROM market_news WHERE symbol = $1 ORDER BY published_at DESC LIMIT 5`,
         [resolved]
     );
 
-    return { symbol: resolved, news: result.rows };
+    if (result.rows.length === 0) {
+        return {
+            symbol: resolved,
+            news: [],
+            message: "No recent news for this stock"
+        };
+    }
+
+    // Format news items for AI consumption
+    const newsItems = result.rows.map((n: any, i: number) => ({
+        headline: n.headline,
+        source: n.source,
+        date: new Date(n.published_at).toLocaleDateString(),
+        sentiment: n.sentiment_score > 0.5 ? 'positive' : n.sentiment_score < -0.5 ? 'negative' : 'neutral'
+    }));
+
+    return { symbol: resolved, news_count: result.rows.length, news: newsItems };
 }
 
 // ============================================================================
-// TOOL 14: Major Holders
+// TOOL 14: Major Holders - FIXED: Query shareholders table
 // ============================================================================
 async function getMajorHolders(symbol: string) {
     const resolved = await resolveSymbol(symbol);
     if (!resolved) return null;
 
-    const result = await db.query(
-        `SELECT holder_name, holder_type, shares_held, ownership_percent, report_date 
-         FROM major_shareholders WHERE symbol = $1 ORDER BY ownership_percent DESC LIMIT 10`,
+    // Try shareholders table first
+    let result = await db.query(
+        `SELECT shareholder_name_en as holder_name, shareholder_type as holder_type, 
+                shares_held, ownership_percent, report_date 
+         FROM shareholders WHERE symbol = $1 ORDER BY ownership_percent DESC NULLS LAST LIMIT 10`,
         [resolved]
     );
+
+    // Fallback to major_shareholders if shareholders is empty
+    if (result.rows.length === 0) {
+        result = await db.query(
+            `SELECT holder_name, holder_type, shares_held, ownership_percent, report_date 
+             FROM major_shareholders WHERE symbol = $1 ORDER BY ownership_percent DESC LIMIT 10`,
+            [resolved]
+        );
+    }
+
+    if (result.rows.length === 0) {
+        return {
+            symbol: resolved,
+            holders: [],
+            message: "No ownership data available for this stock"
+        };
+    }
 
     return { symbol: resolved, holders: result.rows };
 }

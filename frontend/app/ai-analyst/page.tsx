@@ -3,16 +3,18 @@
 import { useAIChat, Message, Action as ChatAction, ChatResponse } from "@/hooks/useAIChat";
 import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3, Plus, MessageSquarePlus } from "lucide-react";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { EvidenceCard } from "@/components/EvidenceCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { PriceChart, FinancialTable, IndicatorBadge } from "@/components/ai/AnalystUI";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { ChatCards, ActionsBar, Disclaimer } from "@/components/ai/ChatCards";
+import { useMarketSafe } from "@/contexts/MarketContext";
 
 export default function AIAnalystPage() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const { query, setQuery, messages, isLoading, handleSend, handleAction, clearHistory } = useAIChat();
+    const { market, config } = useMarketSafe();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -39,72 +41,72 @@ export default function AIAnalystPage() {
     }, [query]);
 
 
-    // Smart Suggestions - Covers ALL 21 Database Tools
-    const suggestionCategories = [
-        {
-            id: 'popular',
-            label: '🔥 Hot',
-            suggestions: [
-                { text: "Aramco price now", icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
-                { text: "Top gainers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
-                { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
-            ]
-        },
-        {
-            id: 'beginner',
-            label: '📚 Starter',
-            suggestions: [
-                { text: "Tell me about Al Rajhi", icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
-                { text: "Best performing sector", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
-                { text: "STC stock info", icon: TrendingUp, gradient: "from-pink-500 to-rose-500" },
-            ]
-        },
-        {
-            id: 'technical',
-            label: '📊 Technical',
-            suggestions: [
-                { text: "SABIC technical analysis", icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
-                { text: "Aramco RSI and MACD", icon: TrendingUp, gradient: "from-blue-500 to-cyan-600" },
-                { text: "Al Rajhi price history", icon: Newspaper, gradient: "from-slate-500 to-slate-700" },
-            ]
-        },
-        {
-            id: 'fundamental',
-            label: '💰 Financials',
-            suggestions: [
-                { text: "Aramco financials", icon: PieChart, gradient: "from-emerald-500 to-green-600" },
-                { text: "SABIC balance sheet", icon: BarChart3, gradient: "from-teal-500 to-emerald-600" },
-                { text: "SNB income statement", icon: TrendingUp, gradient: "from-green-500 to-lime-600" },
-            ]
-        },
-        {
-            id: 'research',
-            label: '🔬 Research',
-            suggestions: [
-                { text: "Al Rajhi analyst ratings", icon: Sparkles, gradient: "from-amber-500 to-orange-600" },
-                { text: "Aramco insider trading", icon: TrendingUp, gradient: "from-red-500 to-rose-600" },
-                { text: "Who owns SABIC?", icon: PieChart, gradient: "from-purple-500 to-pink-600" },
-            ]
-        },
-        {
-            id: 'events',
-            label: '📅 Calendar',
-            suggestions: [
-                { text: "Upcoming dividends", icon: Newspaper, gradient: "from-pink-500 to-rose-600" },
-                { text: "Earnings calendar", icon: BarChart3, gradient: "from-cyan-500 to-teal-600" },
-                { text: "Recent corporate actions", icon: Sparkles, gradient: "from-indigo-500 to-blue-600" },
-            ]
-        },
-        {
-            id: 'macro',
-            label: '🌍 Economy',
-            suggestions: [
-                { text: "Oil price today", icon: TrendingUp, gradient: "from-amber-500 to-yellow-600" },
-                { text: "Gold price", icon: Sparkles, gradient: "from-yellow-500 to-amber-600" },
-                { text: "Latest market news", icon: Newspaper, gradient: "from-slate-500 to-zinc-600" },
-            ]
-        },
-    ];
+    // Smart Suggestions - Market-aware
+    const suggestionCategories = useMemo(() => {
+        const isEgypt = market === 'EGX';
+
+        // Market-specific stock names
+        const stocks = isEgypt
+            ? { main: "CIB", second: "SWDY", third: "HRHO", bank: "COMI", index: "EGX30" }
+            : { main: "Aramco", second: "Al Rajhi", third: "SABIC", bank: "SNB", index: "TASI" };
+
+        return [
+            {
+                id: 'popular',
+                label: `🔥 ${isEgypt ? 'Egypt' : 'KSA'} Hot`,
+                suggestions: [
+                    { text: `${stocks.main} price now`, icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
+                    { text: "Top gainers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
+                    { text: `${stocks.index} summary`, icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
+                ]
+            },
+            {
+                id: 'beginner',
+                label: '📚 Starter',
+                suggestions: [
+                    { text: `Tell me about ${stocks.second}`, icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
+                    { text: "Best performing sector", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
+                    { text: `${stocks.third} stock info`, icon: TrendingUp, gradient: "from-pink-500 to-rose-500" },
+                ]
+            },
+            {
+                id: 'technical',
+                label: '📊 Technical',
+                suggestions: [
+                    { text: `${stocks.main} chart`, icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
+                    { text: `${stocks.second} price history`, icon: TrendingUp, gradient: "from-blue-500 to-cyan-600" },
+                    { text: `Show ${stocks.third} chart`, icon: Newspaper, gradient: "from-slate-500 to-slate-700" },
+                ]
+            },
+            {
+                id: 'fundamental',
+                label: '💰 Financials',
+                suggestions: [
+                    { text: `${stocks.main} financials`, icon: PieChart, gradient: "from-emerald-500 to-green-600" },
+                    { text: `${stocks.bank} income statement`, icon: BarChart3, gradient: "from-teal-500 to-emerald-600" },
+                    { text: `${stocks.second} balance sheet`, icon: TrendingUp, gradient: "from-green-500 to-lime-600" },
+                ]
+            },
+            {
+                id: 'dividends',
+                label: '💵 Dividends',
+                suggestions: [
+                    { text: `${stocks.main} dividends`, icon: Sparkles, gradient: "from-amber-500 to-orange-600" },
+                    { text: "Highest dividend stocks", icon: TrendingUp, gradient: "from-red-500 to-rose-600" },
+                    { text: `${stocks.bank} dividend history`, icon: PieChart, gradient: "from-purple-500 to-pink-600" },
+                ]
+            },
+            {
+                id: 'compare',
+                label: '⚖️ Compare',
+                suggestions: [
+                    { text: `Compare ${stocks.main} vs ${stocks.second}`, icon: Newspaper, gradient: "from-pink-500 to-rose-600" },
+                    { text: `${stocks.bank} vs ${stocks.third}`, icon: BarChart3, gradient: "from-cyan-500 to-teal-600" },
+                    { text: "Top losers today", icon: Sparkles, gradient: "from-indigo-500 to-blue-600" },
+                ]
+            },
+        ];
+    }, [market]);
 
     const [activeCategory, setActiveCategory] = useState('popular');
     const activeSuggestions = suggestionCategories.find(c => c.id === activeCategory)?.suggestions || [];

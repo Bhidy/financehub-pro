@@ -23,9 +23,11 @@ import {
     Globe,
     Zap,
     List,
-    Newspaper
+    Newspaper,
+    Flag
 } from "lucide-react";
 import { useState } from "react";
+import { useMarketSafe, MARKET_CONFIGS, type Market } from "@/contexts/MarketContext";
 
 const NAV_SECTIONS = [
 
@@ -156,6 +158,7 @@ const badgeColorMap: Record<string, string> = {
 export default function Sidebar() {
     const pathname = usePathname();
     const [collapsed, setCollapsed] = useState(false);
+    const { market, setMarket, config } = useMarketSafe();
 
     return (
         <aside
@@ -183,6 +186,47 @@ export default function Sidebar() {
                 {collapsed && (
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
                         <Zap className="w-5 h-5 text-white" />
+                    </div>
+                )}
+            </div>
+
+            {/* Market Toggle */}
+            <div className={clsx("px-3 py-2 border-b border-slate-100", collapsed ? "px-2" : "")}>
+                {!collapsed ? (
+                    <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+                        {(['SAUDI', 'EGX'] as Market[]).map((m) => (
+                            <button
+                                key={m}
+                                onClick={() => setMarket(m)}
+                                className={clsx(
+                                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+                                    market === m
+                                        ? "bg-white shadow-sm text-slate-800"
+                                        : "text-slate-500 hover:text-slate-700"
+                                )}
+                            >
+                                <span className="text-base">{MARKET_CONFIGS[m].flag}</span>
+                                <span>{m === 'SAUDI' ? 'KSA' : 'Egypt'}</span>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-1">
+                        {(['SAUDI', 'EGX'] as Market[]).map((m) => (
+                            <button
+                                key={m}
+                                onClick={() => setMarket(m)}
+                                className={clsx(
+                                    "w-full flex items-center justify-center p-2 rounded-lg text-lg transition-all",
+                                    market === m
+                                        ? "bg-white shadow-sm"
+                                        : "opacity-50 hover:opacity-100"
+                                )}
+                                title={MARKET_CONFIGS[m].name}
+                            >
+                                {MARKET_CONFIGS[m].flag}
+                            </button>
+                        ))}
                     </div>
                 )}
             </div>

@@ -126,6 +126,115 @@ def run_slow_loop():
         logger.error(f"Sync Failed: {e}")
     logger.info("Slow Loop Complete.")
 
+
+# ============================================================================
+# EGX (Egyptian Stock Exchange) SCHEDULED JOBS
+# ============================================================================
+
+def run_egx_daily_update():
+    """
+    EGX Daily Update (runs at 08:00 Egypt time)
+    Updates ticker prices and fetches new OHLC data
+    """
+    logger.info("🇪🇬 Executing EGX Daily Update...")
+    try:
+        script_path = os.path.join(
+            os.path.dirname(BACKEND_ROOT),  # Go to project root
+            "scripts", "egx_production_loader.py"
+        )
+        
+        result = subprocess.run(
+            [sys.executable, script_path, "--daily"],
+            capture_output=True,
+            text=True,
+            timeout=600  # 10 minute timeout
+        )
+        
+        if result.returncode == 0:
+            logger.info("✅ EGX Daily Update completed successfully")
+        else:
+            logger.error(f"EGX Update failed: {result.stderr}")
+            
+    except subprocess.TimeoutExpired:
+        logger.error("EGX Daily Update timed out after 10 minutes")
+    except Exception as e:
+        logger.error(f"EGX Daily Update failed: {e}")
+
+
+def run_egx_price_refresh():
+    """
+    EGX Price Refresh (runs every 15 minutes during market hours)
+    Updates ticker prices only (fast operation)
+    """
+    logger.info("🇪🇬 Refreshing EGX prices...")
+    try:
+        # Check if market is open (EGX: Sun-Thu, 10:00-14:30 Egypt time)
+        now = datetime.now()
+        weekday = now.weekday()  # 0=Mon, 6=Sun
+        hour = now.hour
+        
+        # EGX is open Sunday (6) to Thursday (3), 10:00-14:30
+        market_open = weekday in [6, 0, 1, 2, 3] and 10 <= hour < 15
+        
+        if not market_open:
+            logger.info("EGX market closed - skipping price refresh")
+            return
+        
+        script_path = os.path.join(
+            os.path.dirname(BACKEND_ROOT),
+            "scripts", "egx_production_loader.py"
+        )
+        
+        # Quick price update only (no OHLC history)
+        result = subprocess.run(
+            [sys.executable, script_path, "--daily"],
+            capture_output=True,
+            text=True,
+            timeout=120  # 2 minute timeout
+        )
+        
+        if result.returncode == 0:
+            logger.info("✅ EGX price refresh completed")
+        else:
+            logger.warning(f"EGX price refresh issue: {result.stderr[:200]}")
+            
+    except Exception as e:
+        logger.error(f"EGX price refresh failed: {e}")
+
+
+def run_egx_full_sync():
+    """
+    EGX Full Sync (runs once per week on Friday)
+    Complete refresh of all EGX data
+    """
+    logger.info("🇪🇬 Executing EGX Weekly Full Sync...")
+    try:
+        # Only run on Fridays
+        if datetime.now().weekday() != 4:  # 4 = Friday
+            logger.info("Not Friday - skipping weekly full sync")
+            return
+            
+        script_path = os.path.join(
+            os.path.dirname(BACKEND_ROOT),
+            "scripts", "egx_production_loader.py"
+        )
+        
+        result = subprocess.run(
+            [sys.executable, script_path, "--full"],
+            capture_output=True,
+            text=True,
+            timeout=3600  # 1 hour timeout for full sync
+        )
+        
+        if result.returncode == 0:
+            logger.info("✅ EGX Weekly Full Sync completed")
+        else:
+            logger.error(f"EGX Full Sync failed: {result.stderr}")
+            
+    except Exception as e:
+        logger.error(f"EGX Full Sync failed: {e}")
+
+
 def start_scheduler():
     logger.info("🚀 Enterprise Engine Started. Initializing Loops...")
 
@@ -133,6 +242,16 @@ def start_scheduler():
     schedule.every(1).minutes.do(run_fast_loop)
     schedule.every(15).minutes.do(run_medium_loop)
     schedule.every(24).hours.do(run_slow_loop)
+    
+    # EGX (Egyptian Stock Exchange) Schedules
+    schedule.every().day.at("08:00").do(run_egx_daily_update)  # Daily update at 8 AM
+    schedule.every(15).minutes.do(run_egx_price_refresh)       # Price refresh every 15 min
+    schedule.every().day.at("18:00").do(run_egx_full_sync)     # Weekly full sync (checks for Friday)
+    
+    logger.info("📅 EGX Scheduler Active:")
+    logger.info("   - Daily update: 08:00 Egypt time")
+    logger.info("   - Price refresh: Every 15 min (market hours)")
+    logger.info("   - Full sync: Weekly on Fridays")
 
     # Initial Run
     run_fast_loop()

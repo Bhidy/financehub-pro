@@ -135,6 +135,10 @@ function UpdatedLine({ text }: { text: string }) {
 }
 
 export function PremiumMessageRenderer({ content }: PremiumMessageProps) {
+    // Guard against null/undefined content
+    if (!content || typeof content !== 'string') {
+        return <p className="text-slate-600 text-sm">...</p>;
+    }
     // Split content into lines and parse each
     const lines = content.split('\n');
 

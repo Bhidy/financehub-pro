@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { PriceChart, FinancialTable, IndicatorBadge } from "@/components/ai/AnalystUI";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { ChatCards, ActionsBar, Disclaimer } from "@/components/ai/ChatCards";
+import { ChartCard } from "@/components/ai/ChartCard";
 import { useMarketSafe } from "@/contexts/MarketContext";
 
 export default function AIAnalystPage() {
@@ -446,7 +447,15 @@ export default function AIAnalystPage() {
                                                     onExampleClick={(text) => {
                                                         setQuery(text);
                                                     }}
+                                                    showExport={true}
                                                 />
+
+                                                {/* Chart rendering */}
+                                                {msg.response.chart && (
+                                                    <div className="mt-4">
+                                                        <ChartCard chart={msg.response.chart} />
+                                                    </div>
+                                                )}
 
                                                 {/* Action buttons */}
                                                 {msg.response.actions && msg.response.actions.length > 0 && (

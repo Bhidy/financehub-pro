@@ -361,6 +361,219 @@ export function Disclaimer({ text }: { text: string }) {
 }
 
 // ============================================================
+// Ratios Card (PE, PB, ROE, ROA, etc.)
+// ============================================================
+
+interface RatiosProps {
+    title?: string;
+    data: {
+        pe?: number;
+        pb?: number;
+        ps?: number;
+        roe?: number;
+        roa?: number;
+        debt_equity?: number;
+        dividend_yield?: number;
+        marketcap?: number;
+        earnings_yield?: number;
+        payout_ratio?: number;
+        peg_ratio?: number;
+        fcf_yield?: number;
+    };
+}
+
+export function RatiosCard({ title, data }: RatiosProps) {
+    const formatRatio = (v: number | null | undefined) => v !== null && v !== undefined ? v.toFixed(2) : "N/A";
+    const formatPct = (v: number | null | undefined) => v !== null && v !== undefined ? `${(v * 100).toFixed(1)}%` : "N/A";
+
+    const ratios = [
+        { label: "P/E", value: formatRatio(data.pe), color: "text-blue-600" },
+        { label: "P/B", value: formatRatio(data.pb), color: "text-blue-600" },
+        { label: "P/S", value: formatRatio(data.ps), color: "text-blue-600" },
+        { label: "ROE", value: formatPct(data.roe), color: "text-emerald-600" },
+        { label: "ROA", value: formatPct(data.roa), color: "text-emerald-600" },
+        { label: "D/E", value: formatRatio(data.debt_equity), color: "text-amber-600" },
+        { label: "PEG", value: formatRatio(data.peg_ratio), color: "text-purple-600" },
+        { label: "Yield", value: formatPct(data.earnings_yield), color: "text-teal-600" },
+    ].filter(r => r.value !== "N/A");
+
+    if (!ratios.length) return null;
+
+    return (
+        <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-slate-100 shadow-sm">
+            {title && (
+                <div className="flex items-center gap-2 mb-3 text-slate-700 font-semibold">
+                    <BarChart3 size={16} />
+                    {title}
+                </div>
+            )}
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                {ratios.map(r => (
+                    <div key={r.label} className="text-center p-2 bg-white rounded-lg shadow-sm">
+                        <div className="text-xs text-slate-500">{r.label}</div>
+                        <div className={`font-bold text-sm ${r.color}`}>{r.value}</div>
+                    </div>
+                ))}
+            </div>
+            {data.marketcap && (
+                <div className="mt-3 pt-3 border-t border-slate-200 text-center">
+                    <span className="text-xs text-slate-500">Market Cap: </span>
+                    <span className="font-bold text-slate-800">{formatNumber(data.marketcap)}</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================
+// Financials Table Card
+// ============================================================
+
+interface FinancialsTableProps {
+    title?: string;
+    data: {
+        periods: Array<{
+            period: string;
+            revenue?: number | null;
+            gross_profit?: number | null;
+            operating_income?: number | null;
+            net_income?: number | null;
+            eps?: number | null;
+            total_assets?: number | null;
+            total_liabilities?: number | null;
+            total_equity?: number | null;
+        }>;
+        currency: string;
+        period_type: string;
+        statement_type: string;
+    };
+}
+
+export function FinancialsTableCard({ title, data }: FinancialsTableProps) {
+    const validPeriods = data.periods.filter(p =>
+        p.revenue || p.net_income || p.total_assets
+    );
+
+    if (!validPeriods.length) {
+        return (
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center text-slate-500">
+                No financial data available
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm overflow-x-auto">
+            {title && (
+                <div className="flex items-center gap-2 mb-3 text-slate-700 font-semibold">
+                    <DollarSign size={16} />
+                    {title}
+                </div>
+            )}
+            <table className="w-full text-sm">
+                <thead>
+                    <tr className="border-b border-slate-200">
+                        <th className="text-left p-2 font-medium text-slate-500">Period</th>
+                        <th className="text-right p-2 font-medium text-slate-500">Revenue</th>
+                        <th className="text-right p-2 font-medium text-slate-500">Net Income</th>
+                        <th className="text-right p-2 font-medium text-slate-500">EPS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {validPeriods.map((p, i) => (
+                        <tr key={i} className="border-b border-slate-50 hover:bg-blue-50/50">
+                            <td className="p-2 font-medium text-slate-800">{p.period}</td>
+                            <td className="text-right p-2 text-slate-700">{formatNumber(p.revenue)}</td>
+                            <td className="text-right p-2 text-slate-700">{formatNumber(p.net_income)}</td>
+                            <td className="text-right p-2 text-slate-700">{p.eps?.toFixed(2) || "N/A"}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <div className="mt-2 text-xs text-slate-400 text-right">
+                Currency: {data.currency}
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// Export Toolbar
+// ============================================================
+
+interface ExportToolbarProps {
+    data: any;
+    title?: string;
+    onExport?: (format: 'excel' | 'pdf' | 'image') => void;
+}
+
+export function ExportToolbar({ data, title, onExport }: ExportToolbarProps) {
+    const handleExport = async (format: 'excel' | 'pdf' | 'image') => {
+        if (onExport) {
+            onExport(format);
+            return;
+        }
+
+        // Basic export implementations
+        if (format === 'excel') {
+            // Convert to CSV and download
+            const csv = convertToCSV(data);
+            downloadFile(csv, `${title || 'data'}.csv`, 'text/csv');
+        } else if (format === 'pdf') {
+            // Use browser print
+            window.print();
+        } else if (format === 'image') {
+            // Screenshot notification
+            alert('Use browser screenshot (Cmd+Shift+4 on Mac) to capture');
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+            <span className="text-xs text-slate-500">Export:</span>
+            <button
+                onClick={() => handleExport('excel')}
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-emerald-50 text-emerald-700 rounded hover:bg-emerald-100 transition-colors"
+            >
+                📊 Excel
+            </button>
+            <button
+                onClick={() => handleExport('pdf')}
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors"
+            >
+                📄 PDF
+            </button>
+            <button
+                onClick={() => handleExport('image')}
+                className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
+            >
+                📸 Image
+            </button>
+        </div>
+    );
+}
+
+function convertToCSV(data: any): string {
+    if (Array.isArray(data)) {
+        if (!data.length) return '';
+        const headers = Object.keys(data[0]);
+        const rows = data.map(row => headers.map(h => row[h] ?? '').join(','));
+        return [headers.join(','), ...rows].join('\n');
+    }
+    return JSON.stringify(data, null, 2);
+}
+
+function downloadFile(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ============================================================
 // Main Card Router
 // ============================================================
 
@@ -379,6 +592,10 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
             return <SnapshotCard data={card.data as any} />;
         case "stats":
             return <StatsCard title={card.title} data={card.data as any} />;
+        case "ratios":
+            return <RatiosCard title={card.title} data={card.data as any} />;
+        case "financials_table":
+            return <FinancialsTableCard title={card.title} data={card.data as any} />;
         case "movers_table":
             return <MoversTable title={card.title} data={card.data as any} onSymbolClick={onSymbolClick} />;
         case "compare_table":
@@ -390,10 +607,11 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
         case "sector_list":
             return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
         default:
-            // Fallback for unknown card types
+            // Fallback for unknown card types - pretty format
             return (
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <pre className="text-xs text-slate-600 overflow-auto">
+                <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                    <div className="text-xs text-slate-500 mb-2">📋 {card.type}</div>
+                    <pre className="text-xs text-slate-600 overflow-auto max-h-40">
                         {JSON.stringify(card.data, null, 2)}
                     </pre>
                 </div>
@@ -410,9 +628,10 @@ interface ChatCardsProps {
     language?: "en" | "ar" | "mixed";
     onSymbolClick?: (symbol: string) => void;
     onExampleClick?: (text: string) => void;
+    showExport?: boolean;
 }
 
-export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClick }: ChatCardsProps) {
+export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClick, showExport = false }: ChatCardsProps) {
     if (!cards.length) return null;
 
     return (
@@ -426,6 +645,13 @@ export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClic
                     onExampleClick={onExampleClick}
                 />
             ))}
+            {showExport && cards.length > 0 && (
+                <ExportToolbar
+                    data={cards.map(c => c.data)}
+                    title="chat_data"
+                />
+            )}
         </div>
     );
 }
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAIChat } from "@/hooks/useAIChat";
+import { useAIChat, Message, Action as ChatAction, ChatResponse } from "@/hooks/useAIChat";
 import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3, Plus, MessageSquarePlus } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -8,10 +8,11 @@ import { EvidenceCard } from "@/components/EvidenceCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { PriceChart, FinancialTable, IndicatorBadge } from "@/components/ai/AnalystUI";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
+import { ChatCards, ActionsBar, Disclaimer } from "@/components/ai/ChatCards";
 
 export default function AIAnalystPage() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const { query, setQuery, messages, isLoading, handleSend } = useAIChat();
+    const { query, setQuery, messages, isLoading, handleSend, handleAction, clearHistory } = useAIChat();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -425,6 +426,40 @@ export default function AIAnalystPage() {
                                                             ))}
                                                         </div>
                                                     </EvidenceCard>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* NEW: Structured Response Cards (from deterministic chatbot) */}
+                                        {msg.role === "assistant" && msg.response && (
+                                            <div className="w-full mt-2 animate-in fade-in slide-in-from-top-4 duration-500">
+                                                {/* Render cards from new response schema */}
+                                                <ChatCards
+                                                    cards={msg.response.cards}
+                                                    language={msg.response.language}
+                                                    onSymbolClick={(symbol) => {
+                                                        setQuery(`Price of ${symbol}`);
+                                                        handleSend();
+                                                    }}
+                                                    onExampleClick={(text) => {
+                                                        setQuery(text);
+                                                    }}
+                                                />
+
+                                                {/* Action buttons */}
+                                                {msg.response.actions && msg.response.actions.length > 0 && (
+                                                    <ActionsBar
+                                                        actions={msg.response.actions}
+                                                        language={msg.response.language}
+                                                        onAction={handleAction}
+                                                    />
+                                                )}
+
+                                                {/* Disclaimer */}
+                                                {msg.response.disclaimer && (
+                                                    <div className="mt-3">
+                                                        <Disclaimer text={msg.response.disclaimer} />
+                                                    </div>
                                                 )}
                                             </div>
                                         )}

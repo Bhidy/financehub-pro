@@ -668,3 +668,221 @@ async def get_company_insider_transactions(symbol: str):
         LIMIT 20
     """, symbol)
 
+# ============================================================================
+# EGYPTIAN STOCK EXCHANGE (EGX) API ENDPOINTS
+# ============================================================================
+
+@app.get("/api/egx/stocks", response_model=List[dict])
+async def get_egx_stocks(
+    limit: int = 50,
+    offset: int = 0,
+    sort_by: str = "market_cap",
+    order: str = "desc"
+):
+    """Get all Egyptian Stock Exchange stocks with sorting and pagination"""
+    valid_sort_cols = ["market_cap", "last_price", "change_percent", "volume", "pe_ratio", "symbol"]
+    sort_col = sort_by if sort_by in valid_sort_cols else "market_cap"
+    order_dir = "DESC" if order.lower() == "desc" else "ASC"
+    
+    query = f"""
+        SELECT 
+            symbol, name_en, sector_name, market_code, currency,
+            market_cap, last_price, change_percent, volume,
+            pe_ratio, dividend_yield, revenue, net_income,
+            last_updated
+        FROM market_tickers 
+        WHERE market_code = 'EGX'
+        ORDER BY {sort_col} {order_dir} NULLS LAST
+        LIMIT $1 OFFSET $2
+    """
+    return await db.fetch_all(query, limit, offset)
+
+@app.get("/api/egx/stocks/count")
+async def get_egx_stocks_count():
+    """Get total count of EGX stocks"""
+    count = await db.fetch_one("SELECT COUNT(*) as total FROM market_tickers WHERE market_code = 'EGX'")
+    return count
+
+@app.get("/api/egx/stock/{symbol}")
+async def get_egx_stock(symbol: str):
+    """Get detailed information for a single EGX stock"""
+    stock = await db.fetch_one("""
+        SELECT * FROM market_tickers WHERE symbol = $1 AND market_code = 'EGX'
+    """, symbol.upper())
+    if not stock:
+        raise HTTPException(status_code=404, detail=f"Stock {symbol} not found in EGX")
+    return dict(stock)
+
+@app.get("/api/egx/ohlc/{symbol}", response_model=List[dict])
+async def get_egx_ohlc(symbol: str, period: str = "6m", limit: int = 200):
+    """Get OHLC historical data for an EGX stock"""
+    limit_map = {"1m": 30, "3m": 90, "6m": 180, "1y": 365, "3y": 1095, "5y": 1825, "max": 10000}
+    actual_limit = min(limit_map.get(period, 180), limit)
+    
+    query = """
+        SELECT date, open, high, low, close, adj_close, volume, change_percent
+        FROM ohlc_data 
+        WHERE symbol = $1 
+        ORDER BY date DESC 
+        LIMIT $2
+    """
+    return await db.fetch_all(query, symbol.upper(), actual_limit)
+
+@app.get("/api/egx/sectors", response_model=List[dict])
+async def get_egx_sectors():
+    """Get sector breakdown for EGX stocks"""
+    query = """
+        SELECT 
+            COALESCE(sector_name, 'Other') as sector_name,
+            COUNT(*) as stock_count,
+            AVG(change_percent) as avg_change,
+            SUM(volume) as total_volume,
+            SUM(market_cap) as total_market_cap
+        FROM market_tickers 
+        WHERE market_code = 'EGX'
+        GROUP BY sector_name
+        ORDER BY total_market_cap DESC NULLS LAST
+    """
+    return await db.fetch_all(query)
+
+@app.get("/api/egx/movers/gainers", response_model=List[dict])
+async def get_egx_top_gainers(limit: int = 10):
+    """Get top gaining EGX stocks"""
+    query = """
+        SELECT symbol, name_en, last_price, change_percent, volume, market_cap
+        FROM market_tickers 
+        WHERE market_code = 'EGX' AND change_percent IS NOT NULL
+        ORDER BY change_percent DESC
+        LIMIT $1
+    """
+    return await db.fetch_all(query, limit)
+
+@app.get("/api/egx/movers/losers", response_model=List[dict])
+async def get_egx_top_losers(limit: int = 10):
+    """Get top losing EGX stocks"""
+    query = """
+        SELECT symbol, name_en, last_price, change_percent, volume, market_cap
+        FROM market_tickers 
+        WHERE market_code = 'EGX' AND change_percent IS NOT NULL
+        ORDER BY change_percent ASC
+        LIMIT $1
+    """
+    return await db.fetch_all(query, limit)
+
+@app.get("/api/egx/movers/volume", response_model=List[dict])
+async def get_egx_most_active(limit: int = 10):
+    """Get most actively traded EGX stocks by volume"""
+    query = """
+        SELECT symbol, name_en, last_price, change_percent, volume, market_cap
+        FROM market_tickers 
+        WHERE market_code = 'EGX' AND volume IS NOT NULL
+        ORDER BY volume DESC
+        LIMIT $1
+    """
+    return await db.fetch_all(query, limit)
+
+@app.get("/api/egx/stats")
+async def get_egx_stats():
+    """Get comprehensive EGX market statistics"""
+    stats = {}
+    
+    # Total counts
+    stats['total_stocks'] = await db.fetch_one("SELECT COUNT(*) as count FROM market_tickers WHERE market_code = 'EGX'")
+    stats['total_ohlc'] = await db.fetch_one("SELECT COUNT(*) as count FROM ohlc_data WHERE symbol IN (SELECT symbol FROM market_tickers WHERE market_code = 'EGX')")
+    stats['stocks_with_history'] = await db.fetch_one("SELECT COUNT(DISTINCT symbol) as count FROM ohlc_data WHERE symbol IN (SELECT symbol FROM market_tickers WHERE market_code = 'EGX')")
+    
+    # Market overview
+    stats['market_overview'] = await db.fetch_one("""
+        SELECT 
+            SUM(market_cap) as total_market_cap,
+            AVG(change_percent) as avg_change,
+            SUM(volume) as total_volume,
+            COUNT(CASE WHEN change_percent > 0 THEN 1 END) as advancing,
+            COUNT(CASE WHEN change_percent < 0 THEN 1 END) as declining,
+            COUNT(CASE WHEN change_percent = 0 OR change_percent IS NULL THEN 1 END) as unchanged
+        FROM market_tickers WHERE market_code = 'EGX'
+    """)
+    
+    return {
+        "total_stocks": stats['total_stocks']['count'] if stats['total_stocks'] else 0,
+        "total_ohlc_records": stats['total_ohlc']['count'] if stats['total_ohlc'] else 0,
+        "stocks_with_history": stats['stocks_with_history']['count'] if stats['stocks_with_history'] else 0,
+        "market_overview": dict(stats['market_overview']) if stats['market_overview'] else {}
+    }
+
+@app.get("/api/egx/search")
+async def search_egx_stocks(q: str, limit: int = 20):
+    """Search EGX stocks by symbol or name"""
+    query = """
+        SELECT symbol, name_en, sector_name, last_price, change_percent, market_cap
+        FROM market_tickers 
+        WHERE market_code = 'EGX' 
+          AND (UPPER(symbol) LIKE $1 OR UPPER(name_en) LIKE $1)
+        ORDER BY market_cap DESC NULLS LAST
+        LIMIT $2
+    """
+    search_term = f"%{q.upper()}%"
+    return await db.fetch_all(query, search_term, limit)
+
+@app.get("/api/egx/profile/{symbol}")
+async def get_egx_profile(symbol: str):
+    """Get company profile for an EGX stock"""
+    profile = await db.fetch_one("""
+        SELECT * FROM company_profiles WHERE symbol = $1
+    """, symbol.upper())
+    
+    if not profile:
+        # Return basic info from market_tickers if no profile exists
+        ticker = await db.fetch_one("""
+            SELECT symbol, name_en, sector_name as sector, sector_name as industry
+            FROM market_tickers WHERE symbol = $1 AND market_code = 'EGX'
+        """, symbol.upper())
+        if ticker:
+            return dict(ticker)
+        raise HTTPException(status_code=404, detail=f"Profile not found for {symbol}")
+    
+    return dict(profile)
+
+@app.get("/api/egx/dividends/{symbol}", response_model=List[dict])
+async def get_egx_dividends(symbol: str):
+    """Get dividend history for an EGX stock"""
+    dividends = await db.fetch_all("""
+        SELECT ex_date, payment_date, record_date, amount, currency
+        FROM dividend_history 
+        WHERE symbol = $1 
+        ORDER BY ex_date DESC
+    """, symbol.upper())
+    return dividends
+
+@app.get("/api/egx/financials/{symbol}")
+async def get_egx_financials(symbol: str, statement_type: str = "income-statement", period: str = "annual"):
+    """Get financial statements for an EGX stock"""
+    financials = await db.fetch_all("""
+        SELECT * FROM financial_statements 
+        WHERE symbol = $1 AND statement_type = $2 AND period_type = $3
+        ORDER BY fiscal_year DESC, fiscal_quarter DESC NULLS LAST
+    """, symbol.upper(), statement_type, period)
+    return financials
+
+@app.get("/api/egx/statistics/{symbol}")
+async def get_egx_statistics(symbol: str):
+    """Get all statistics/ratios for an EGX stock"""
+    stats = await db.fetch_one("""
+        SELECT * FROM stock_statistics 
+        WHERE symbol = $1 
+        ORDER BY date DESC 
+        LIMIT 1
+    """, symbol.upper())
+    
+    if not stats:
+        # Return basic stats from market_tickers
+        ticker = await db.fetch_one("""
+            SELECT pe_ratio, dividend_yield, revenue, net_income, market_cap
+            FROM market_tickers WHERE symbol = $1 AND market_code = 'EGX'
+        """, symbol.upper())
+        if ticker:
+            return dict(ticker)
+        raise HTTPException(status_code=404, detail=f"Statistics not found for {symbol}")
+    
+    return dict(stats)
+

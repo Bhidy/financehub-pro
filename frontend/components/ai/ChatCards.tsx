@@ -780,6 +780,20 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
             return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
         case "sector_list":
             return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
+        case "financial_explorer":
+            // Ultra-Premium Financial Explorer Card
+            return <FinancialExplorerCard data={card.data as any} />;
+        case "financial_statement_table":
+            // Legacy Financial Table
+            return (
+                <FinancialsTableCard
+                    title={card.data?.title || "Financial Statement"}
+                    subtitle={card.data?.subtitle}
+                    years={card.data?.years || []}
+                    rows={card.data?.rows || []}
+                    currency={card.data?.currency}
+                />
+            );
         default:
             // Handle new ultra-premium Financial Explorer
             if (card.type === 'financial_explorer' || (card.data?.income && card.data?.balance)) {

@@ -15,7 +15,8 @@ import {
     Download,
     HelpCircle,
     ExternalLink,
-    ChevronRight
+    ChevronRight,
+    Target
 } from "lucide-react";
 import { Card, ChartPayload, Action } from "@/hooks/useAIChat";
 
@@ -842,12 +843,13 @@ interface FinancialExplorerProps {
         balance: StatementRow[];
         cashflow: StatementRow[];
         ratios: StatementRow[];
+        kpis?: StatementRow[];
     };
 }
 
 function FinancialExplorerCard({ data }: FinancialExplorerProps) {
-    const [activeTab, setActiveTab] = useState<'income' | 'balance' | 'cashflow' | 'ratios'>('income');
-    const [displayType, setDisplayType] = useState<'annual' | 'quarterly'>('annual'); // Placeholder for now
+    const [activeTab, setActiveTab] = useState<'income' | 'balance' | 'cashflow' | 'ratios' | 'kpis'>('income');
+    const [displayType, setDisplayType] = useState<'annual' | 'quarterly' | 'ttm'>('annual');
 
     const activeRows = data[activeTab] || [];
     const uniqueYears = data.years || [];
@@ -908,7 +910,8 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                         { id: 'income', label: 'Income', icon: BarChart3 },
                         { id: 'balance', label: 'Balance Sheet', icon: PieChart },
                         { id: 'cashflow', label: 'Cash Flow', icon: TrendingUp },
-                        { id: 'ratios', label: 'Ratios', icon: Activity }
+                        { id: 'ratios', label: 'Ratios', icon: Activity },
+                        { id: 'kpis', label: 'KPIs', icon: Target }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -930,7 +933,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
             {/* Controls Bar */}
             <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex justify-end">
                 <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
-                    {['Annual', 'Quarterly'].map((type) => (
+                    {['Annual', 'Quarterly', 'TTM'].map((type) => (
                         <button
                             key={type}
                             onClick={() => setDisplayType(type.toLowerCase() as any)}
@@ -950,11 +953,11 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                 <table className="w-full text-sm">
                     <thead className="bg-slate-50 sticky top-0 z-20 shadow-sm">
                         <tr>
-                            <th className="px-5 py-3 text-left font-semibold text-slate-600 sticky left-0 bg-slate-50 z-20 min-w-[220px] shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">
+                            <th className="px-5 py-3 text-left font-semibold text-slate-600 sticky left-0 bg-slate-50 z-20 min-w-[280px] w-[30%] shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">
                                 Line Item
                             </th>
                             {uniqueYears.map(year => (
-                                <th key={year} className="px-4 py-3 text-right font-semibold text-slate-600 min-w-[110px]">
+                                <th key={year} className="px-5 py-3 text-right font-semibold text-slate-600 min-w-[130px]">
                                     {year}
                                 </th>
                             ))}

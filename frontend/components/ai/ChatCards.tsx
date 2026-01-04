@@ -833,6 +833,16 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
 // Financial Explorer Card (Ultra Premium)
 // ============================================================
 
+interface PeriodDataset {
+    years: string[];
+    income: StatementRow[];
+    balance: StatementRow[];
+    cashflow: StatementRow[];
+    ratios: StatementRow[];
+    kpis?: StatementRow[];
+    [key: string]: any;
+}
+
 interface FinancialExplorerProps {
     data: {
         symbol: string;
@@ -841,9 +851,14 @@ interface FinancialExplorerProps {
         years: string[];
         income: StatementRow[];
         balance: StatementRow[];
+
         cashflow: StatementRow[];
         ratios: StatementRow[];
         kpis?: StatementRow[];
+        annual_data?: PeriodDataset;
+        quarterly_data?: PeriodDataset;
+        ttm_data?: PeriodDataset;
+        [key: string]: any;
     };
 }
 
@@ -851,20 +866,28 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
     const [activeTab, setActiveTab] = useState<'income' | 'balance' | 'cashflow' | 'ratios' | 'kpis'>('income');
     const [displayType, setDisplayType] = useState<'annual' | 'quarterly' | 'ttm'>('annual');
 
-    const activeRows = data[activeTab] || [];
-    const uniqueYears = data.years || [];
+    // Get the correct dataset based on displayType (annual vs quarterly vs TTM)
+    let currentDataset = data.annual_data || data;
+    if (displayType === 'quarterly') {
+        currentDataset = data.quarterly_data || data;
+    } else if (displayType === 'ttm') {
+        currentDataset = data.ttm_data || data.annual_data || data;
+    }
+
+    const activeRows = currentDataset[activeTab] || [];
+    const uniqueYears = currentDataset.years || data.years || [];
 
     // Format large numbers
     const formatValue = (val: number | null | undefined, fmt?: string): string => {
         if (val === null || val === undefined) return "—";
         if (fmt === 'percent' || (val !== 0 && Math.abs(val) < 1 && !Number.isInteger(val))) {
             const pct = Math.abs(val) <= 1 ? val * 100 : val;
-            return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+            return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% `;
         }
         const absVal = Math.abs(val);
-        if (absVal >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(2)}B`;
-        if (absVal >= 1_000_000) return `${(val / 1_000_000).toFixed(2)}M`;
-        if (absVal >= 1_000) return `${(val / 1_000).toFixed(2)}K`;
+        if (absVal >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(2)} B`;
+        if (absVal >= 1_000_000) return `${(val / 1_000_000).toFixed(2)} M`;
+        if (absVal >= 1_000) return `${(val / 1_000).toFixed(2)} K`;
         return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
@@ -917,11 +940,12 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`
-                                flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap
+                                flex items - center gap - 2 px - 4 py - 2.5 rounded - xl text - sm font - semibold transition - all whitespace - nowrap
                                 ${activeTab === tab.id
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20 translate-y-[1px]'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5'}
-                            `}
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                }
+`}
                         >
                             <tab.icon className="w-4 h-4" />
                             {tab.label}
@@ -937,10 +961,10 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                         <button
                             key={type}
                             onClick={() => setDisplayType(type.toLowerCase() as any)}
-                            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${displayType === type.toLowerCase()
-                                ? 'bg-slate-800 text-white shadow-sm'
-                                : 'text-slate-500 hover:text-slate-800'
-                                }`}
+                            className={`px - 3 py - 1 text - xs font - semibold rounded - md transition - all ${displayType === type.toLowerCase()
+                                    ? 'bg-slate-800 text-white shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-800'
+                                } `}
                         >
                             {type}
                         </button>
@@ -966,10 +990,10 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                     <tbody className="divide-y divide-slate-100">
                         {activeRows.length > 0 ? (
                             activeRows.map((row, idx) => (
-                                <tr key={idx} className={`group hover:bg-blue-50/30 transition-colors ${row.isSubtotal ? 'bg-slate-50/50' : ''}`}>
+                                <tr key={idx} className={`group hover: bg - blue - 50 / 30 transition - colors ${row.isSubtotal ? 'bg-slate-50/50' : ''} `}>
                                     <td
                                         className="px-5 py-2.5 text-slate-700 sticky left-0 bg-white group-hover:bg-blue-50/10 z-10 border-r border-slate-100 font-medium"
-                                        style={{ paddingLeft: `${20 + (row.indent || 0) * 16}px` }}
+                                        style={{ paddingLeft: `${20 + (row.indent || 0) * 16} px` }}
                                     >
                                         <div className="flex items-center justify-between">
                                             <span className={row.isSubtotal ? "font-bold text-slate-900" : ""}>{row.label}</span>
@@ -981,10 +1005,10 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                         return (
                                             <td
                                                 key={year}
-                                                className={`px-4 py-2.5 text-right font-mono tabular-nums ${row.isGrowth
-                                                    ? (val || 0) >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-500 font-semibold'
-                                                    : row.isSubtotal ? 'text-slate-900 font-bold' : 'text-slate-600'
-                                                    }`}
+                                                className={`px - 4 py - 2.5 text - right font - mono tabular - nums ${row.isGrowth
+                                                        ? (val || 0) >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-500 font-semibold'
+                                                        : row.isSubtotal ? 'text-slate-900 font-bold' : 'text-slate-600'
+                                                    } `}
                                             >
                                                 {formatValue(val, row.format)}
                                             </td>
@@ -1059,15 +1083,15 @@ export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClic
 
 function formatNumber(value: number | null | undefined, decimals = 2): string {
     if (value === null || value === undefined) return "N/A";
-    if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
-    if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
-    if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
+    if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(1)} B`;
+    if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(1)} M`;
+    if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(1)} K`;
     return value.toFixed(decimals);
 }
 
 function formatPercent(value: number | null | undefined): string {
     if (value === null || value === undefined) return "N/A";
     const sign = value >= 0 ? "+" : "";
-    return `${sign}${value.toFixed(2)}%`;
+    return `${sign}${value.toFixed(2)}% `;
 }
 

@@ -440,42 +440,56 @@ export default function FundDetailPage() {
                     </div>
                 </div>
 
-                {/* Extended Performance Grid - Full Width */}
-                <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-full blur-2xl pointer-events-none"></div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
-                        <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-lg">📈</span>
-                        Complete Performance Grid
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
-                        {[
-                            { label: "1 Week", val: fund.profit_week },
-                            { label: "1 Month", val: fund.profit_month },
-                            { label: "3 Months", val: fund.profit_3month },
-                            { label: "6 Months", val: fund.profit_6month },
-                            { label: "YTD", val: fund.ytd_return },
-                            { label: "1 Year", val: fund.one_year_return },
-                            { label: "3 Years", val: fund.three_year_return },
-                            { label: "5 Years", val: fund.five_year_return },
-                            { label: "52W High", val: fund.profit_52w_high },
-                            { label: "52W Low", val: fund.profit_52w_low },
-                        ].map((item, i) => {
-                            const val = safeNumber(item.val);
-                            const isPositive = val !== null && val >= 0;
-                            return (
-                                <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                    <div className="text-xs font-bold text-slate-400 uppercase mb-1">{item.label}</div>
-                                    <div className={clsx(
-                                        "text-lg font-black font-mono",
-                                        val === null ? "text-slate-300" : isPositive ? "text-emerald-600" : "text-red-500"
-                                    )}>
-                                        {val !== null ? `${isPositive ? '+' : ''}${val.toFixed(2)}%` : "—"}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                {/* Extended Performance Grid - Full Width - Only shows fields with data */}
+                {/* Extended Performance Grid - Full Width - Only shows fields with data */}
+                {(() => {
+                    const perfData = [
+                        { label: "1 Week", val: fund.profit_week },
+                        { label: "1 Month", val: fund.profit_month },
+                        { label: "3 Months", val: fund.profit_3month },
+                        { label: "6 Months", val: fund.profit_6month },
+                        { label: "YTD", val: fund.ytd_return },
+                        { label: "1 Year", val: fund.one_year_return },
+                        { label: "3 Years", val: fund.three_year_return },
+                        { label: "5 Years", val: fund.five_year_return },
+                        { label: "52W High", val: fund.profit_52w_high },
+                        { label: "52W Low", val: fund.profit_52w_low },
+                    ].filter(item => safeNumber(item.val) !== null);
+
+                    if (perfData.length === 0) return null;
+
+                    return (
+                        <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-full blur-2xl pointer-events-none"></div>
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
+                                <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-lg">📈</span>
+                                Performance Overview
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
+                                {perfData.map((item, i) => {
+                                    const val = safeNumber(item.val)!;
+                                    const isPositive = val >= 0;
+                                    const isPrice = item.label.includes("High") || item.label.includes("Low");
+
+                                    return (
+                                        <div key={i} className={clsx(
+                                            "rounded-2xl p-4 border transition-all hover:bg-white hover:shadow-md",
+                                            isPrice ? "bg-slate-50 border-slate-100" : (isPositive ? "bg-emerald-50/50 border-emerald-100" : "bg-red-50/50 border-red-100")
+                                        )}>
+                                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">{item.label}</div>
+                                            <div className={clsx(
+                                                "text-lg font-black font-mono",
+                                                isPrice ? "text-slate-700" : (isPositive ? "text-emerald-600" : "text-red-500")
+                                            )}>
+                                                {isPrice ? '' : (isPositive ? '+' : '')}{val.toFixed(2)}{isPrice ? '' : '%'}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })()}
             </div>
         </main>
     );

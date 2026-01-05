@@ -30,9 +30,13 @@ interface MutualFund {
     one_year_return: number | string | null;
     three_year_return: number | string | null;
     five_year_return: number | string | null;
+    profit_3month: number | string | null;
     sharpe_ratio: number | string | null;
     standard_deviation: number | string | null;
     market_code: string | null;
+    eligibility: string | null;
+    investment_strategy: string | null;
+    establishment_date: string | null;
 }
 
 // Mini chart component for each fund card
@@ -92,9 +96,10 @@ function MiniNavChart({ fundId }: { fundId: string }) {
 
 // Sorting & Period options
 type SortOption = "name" | "nav" | "performance";
-type PeriodOption = "ytd" | "1y" | "3y" | "5y";
+type PeriodOption = "3m" | "ytd" | "1y" | "3y" | "5y";
 
 const metricConfig: Record<PeriodOption, { label: string, key: keyof MutualFund }> = {
+    "3m": { label: "3 Months Return", key: "profit_3month" },
     "ytd": { label: "YTD Return", key: "ytd_return" },
     "1y": { label: "1 Year Return", key: "one_year_return" },
     "3y": { label: "3 Years Return", key: "three_year_return" },

@@ -4,7 +4,7 @@ import "./globals.css";
 import Providers from "./providers";
 import AppSidebar from "@/components/AppSidebar";
 import { ToastProvider } from "@/components/ToastProvider";
-import GlobalSearchWidget from "@/components/GlobalSearchWidget";
+import ConditionalGlobalSearch from "@/components/ConditionalGlobalSearch";
 
 
 const inter = Inter({
@@ -52,12 +52,8 @@ export default function RootLayout({
             {/* Enterprise Shell Layout */}
             <AppSidebar />
             <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-              {/* Floating Global Search - Merged Overlay */}
-              <div className="absolute top-5 right-8 z-50 pointer-events-none">
-                <div className="pointer-events-auto">
-                  <GlobalSearchWidget />
-                </div>
-              </div>
+              {/* Conditional Global Search - Hidden on /funds pages */}
+              <ConditionalGlobalSearch />
 
               {/* Main Content Area */}
               <div className="flex-1 overflow-auto">

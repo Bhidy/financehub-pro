@@ -206,9 +206,13 @@ export default function AIAnalystPage() {
                         {/* WELCOME SCREEN - BIGGER & BOLDER */}
                         {messages.length === 1 && (
                             <div className="flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-                                {/* Logo / Avatar */}
-                                <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center shadow-2xl shadow-blue-500/30 mb-8 border-4 border-white/50 backdrop-blur-sm">
-                                    <Bot className="w-12 h-12 text-white" />
+                                {/* AI Robot Logo */}
+                                <div className="w-32 h-32 mb-8 relative">
+                                    <img
+                                        src="/ai-robot.png"
+                                        alt="Finny AI Assistant"
+                                        className="w-full h-full object-contain drop-shadow-2xl"
+                                    />
                                 </div>
 
                                 <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Search, Loader2, TrendingUp, Sparkles, BarChart3, PieChart, ArrowUpRight, ArrowDownRight, Globe, Shield } from "lucide-react";
 import { ResponsiveContainer, Area, AreaChart } from "recharts";
 import { fetchFunds, fetchFundNav } from "@/lib/api";
+import { useMarketSafe, MARKET_CONFIGS } from "@/contexts/MarketContext";
 import clsx from "clsx";
 
 // Helpers for safety (Enterprise Standard)
@@ -18,8 +19,10 @@ const safeNumber = (val: any): number | null => {
 interface MutualFund {
     fund_id: string;
     fund_name: string;
+    fund_name_en: string | null;
     fund_type: string;
     manager_name: string;
+    manager_name_en: string | null;
     latest_nav: number | string;
     expense_ratio: number | string | null;
     minimum_investment: number | string | null;
@@ -29,6 +32,7 @@ interface MutualFund {
     five_year_return: number | string | null;
     sharpe_ratio: number | string | null;
     standard_deviation: number | string | null;
+    market_code: string | null;
 }
 
 // Mini chart component for each fund card
@@ -102,17 +106,17 @@ export default function MutualFundsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("All");
 
-    // Market Toggle: KSA (TDWL) or Egypt (EGX)
-    const [selectedMarket, setSelectedMarket] = useState<"KSA" | "EGX">("KSA");
+    // Use global MarketContext (synced with sidebar selection)
+    const { market, setMarket, config, isEgypt, isSaudi } = useMarketSafe();
 
     // Explicitly separate Sort By and Period View
     const [sortBy, setSortBy] = useState<SortOption>("performance");
     const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>("ytd");
 
-    // Fetch mutual funds with market filter
+    // Fetch mutual funds with market filter (Uses sidebar selection)
     const { data: funds = [], isLoading } = useQuery({
-        queryKey: ["funds", selectedMarket],
-        queryFn: () => fetchFunds(selectedMarket === "EGX" ? "EGX" : "TDWL"),
+        queryKey: ["funds", market],
+        queryFn: () => fetchFunds(isEgypt ? "EGX" : "TDWL"),
     });
 
     // Filter and sort funds
@@ -174,10 +178,10 @@ export default function MutualFundsPage() {
                         {/* Market Toggle */}
                         <div className="flex bg-white/10 backdrop-blur-sm p-1 rounded-xl border border-white/20">
                             <button
-                                onClick={() => setSelectedMarket("KSA")}
+                                onClick={() => setMarket("SAUDI")}
                                 className={clsx(
                                     "px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                                    selectedMarket === "KSA"
+                                    isSaudi
                                         ? "bg-white text-blue-600 shadow-md"
                                         : "text-white/80 hover:text-white hover:bg-white/10"
                                 )}
@@ -185,10 +189,10 @@ export default function MutualFundsPage() {
                                 🇸🇦 KSA
                             </button>
                             <button
-                                onClick={() => setSelectedMarket("EGX")}
+                                onClick={() => setMarket("EGX")}
                                 className={clsx(
                                     "px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                                    selectedMarket === "EGX"
+                                    isEgypt
                                         ? "bg-white text-blue-600 shadow-md"
                                         : "text-white/80 hover:text-white hover:bg-white/10"
                                 )}
@@ -216,7 +220,7 @@ export default function MutualFundsPage() {
                         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
                         <TrendingUp className="w-5 h-5 text-emerald-500 mb-2" />
                         <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Avg NAV</div>
-                        <div className="text-3xl font-black text-emerald-600 font-mono">{selectedMarket === "EGX" ? "EGP" : "SAR"} {avgNav.toFixed(2)}</div>
+                        <div className="text-3xl font-black text-emerald-600 font-mono">{config.currency} {avgNav.toFixed(2)}</div>
                         <div className="text-xs font-bold text-emerald-700 mt-1">Weighted Average</div>
                     </div>
 
@@ -342,11 +346,11 @@ export default function MutualFundsPage() {
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex-1 pr-3">
                                                 <h3 className="text-sm font-black text-slate-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight" dir="auto">
-                                                    {fund.fund_name}
+                                                    {fund.fund_name_en || fund.fund_name}
                                                 </h3>
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                                                     <Shield className="w-3 h-3" />
-                                                    {fund.manager_name}
+                                                    {fund.manager_name_en || fund.manager_name}
                                                 </div>
                                             </div>
                                             <span className={clsx(
@@ -366,7 +370,7 @@ export default function MutualFundsPage() {
                                                 <div className="text-[9px] uppercase font-bold text-slate-400 mb-1">NAV</div>
                                                 <div className="text-lg font-black text-slate-900 font-mono flex items-baseline gap-1">
                                                     {Number(fund.latest_nav).toFixed(2)}
-                                                    <span className="text-[10px] text-slate-400 font-sans">{selectedMarket === "EGX" ? "EGP" : "SAR"}</span>
+                                                    <span className="text-[10px] text-slate-400 font-sans">{config.currency}</span>
                                                 </div>
                                             </div>
                                             <div className={clsx(

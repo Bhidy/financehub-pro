@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(`[AI Route] Processing: "${message.substring(0, 50)}..."`);
+        console.log(`[AI Route v2.1-HF] Processing message: "${message.substring(0, 50)}..."`);
 
         // Proxy to HuggingFace deterministic backend
         const response = await fetch(HF_API_URL, {

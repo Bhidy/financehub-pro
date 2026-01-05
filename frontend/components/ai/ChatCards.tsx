@@ -707,6 +707,187 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 }
 
 // ============================================================
+// Technicals Card
+// ============================================================
+
+interface TechnicalsProps {
+    title?: string;
+    data: {
+        symbol: string;
+        rsi: number | null;
+        macd: { line: number; signal: number; hist: number };
+        pivot: number | null;
+        ma: { sma_50: number | null; sma_200: number | null };
+        support: number[];
+        resistance: number[];
+    };
+}
+
+export function TechnicalsCard({ title, data }: TechnicalsProps) {
+    const getSentiment = (val: number | null, type: 'rsi' | 'trend') => {
+        if (val === null) return 'text-slate-400';
+        if (type === 'rsi') return val > 70 ? 'text-red-500' : val < 30 ? 'text-emerald-500' : 'text-slate-600';
+        return val > 0 ? 'text-emerald-500' : 'text-red-500';
+    };
+
+    return (
+        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold">
+                <Activity size={18} className="text-purple-600" />
+                {title || "Technical Indicators"}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* RSI & Pivot */}
+                <div className="p-3 bg-slate-50 rounded-lg text-center">
+                    <div className="text-xs text-slate-500">RSI (14)</div>
+                    <div className={`text-lg font-bold ${getSentiment(data.rsi, 'rsi')}`}>
+                        {data.rsi?.toFixed(2) ?? "N/A"}
+                    </div>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-lg text-center">
+                    <div className="text-xs text-slate-500">Pivot Point</div>
+                    <div className="text-lg font-bold text-slate-700">
+                        {data.pivot?.toFixed(2) ?? "N/A"}
+                    </div>
+                </div>
+            </div>
+
+            {/* Support & Resistance */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-1">
+                    <div className="text-xs font-semibold text-emerald-600 mb-2">Support</div>
+                    {data.support.map((val, i) => (
+                        <div key={i} className="flex justify-between text-xs bg-emerald-50 p-1.5 rounded">
+                            <span className="text-emerald-700">S{i + 1}</span>
+                            <span className="font-mono font-medium">{val.toFixed(2)}</span>
+                        </div>
+                    ))}
+                </div>
+                <div className="space-y-1">
+                    <div className="text-xs font-semibold text-red-500 mb-2">Resistance</div>
+                    {data.resistance.map((val, i) => (
+                        <div key={i} className="flex justify-between text-xs bg-red-50 p-1.5 rounded">
+                            <span className="text-red-700">R{i + 1}</span>
+                            <span className="font-mono font-medium">{val.toFixed(2)}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// Ownership Card
+// ============================================================
+
+interface OwnershipProps {
+    title?: string;
+    data: {
+        shareholders: Array<{
+            name: string;
+            percent: number;
+            shares: number;
+            date: string;
+        }>;
+    };
+}
+
+export function OwnershipCard({ title, data }: OwnershipProps) {
+    return (
+        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold">
+                <Building2 size={18} className="text-blue-600" />
+                {title || "Major Shareholders"}
+            </div>
+            <div className="space-y-3">
+                {data.shareholders.map((holder, i) => (
+                    <div key={i} className="flex items-start justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors border-b border-slate-50 last:border-0">
+                        <div className="flex-1 mr-3">
+                            <div className="text-sm font-semibold text-slate-800">{holder.name}</div>
+                            <div className="text-[10px] text-slate-400">{new Date(holder.date).toLocaleDateString()}</div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-sm font-bold text-blue-600">
+                                {holder.percent.toFixed(2)}%
+                            </div>
+                            <div className="text-[10px] text-slate-500 font-mono">
+                                {formatNumber(holder.shares, 0)} sh
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// Fair Value Card
+// ============================================================
+
+interface FairValueProps {
+    title?: string;
+    data: {
+        current_price: number;
+        currency: string;
+        pe: number | null;
+        pb: number | null;
+        models: Array<{
+            model: string;
+            value: number;
+            upside: number;
+        }>;
+    };
+}
+
+export function FairValueCard({ title, data }: FairValueProps) {
+    return (
+        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold">
+                <Target size={18} className="text-indigo-600" />
+                {title || "Valuation Analysis"}
+            </div>
+
+            {/* Quick Ratios */}
+            <div className="flex gap-4 mb-4 pb-4 border-b border-slate-100">
+                <div className="flex-1 text-center border-r border-slate-100 last:border-0">
+                    <div className="text-xs text-slate-500 uppercase">Current Price</div>
+                    <div className="text-xl font-black text-slate-800">
+                        {formatNumber(data.current_price)} <span className="text-xs text-slate-400 font-normal">{data.currency}</span>
+                    </div>
+                </div>
+                <div className="flex-1 text-center border-r border-slate-100 last:border-0">
+                    <div className="text-xs text-slate-500 uppercase">P/E Ratio</div>
+                    <div className="text-xl font-bold text-blue-600">{data.pe?.toFixed(2) || '-'}</div>
+                </div>
+                <div className="flex-1 text-center">
+                    <div className="text-xs text-slate-500 uppercase">P/B Ratio</div>
+                    <div className="text-xl font-bold text-blue-600">{data.pb?.toFixed(2) || '-'}</div>
+                </div>
+            </div>
+
+            {/* Models Table */}
+            <div className="space-y-2">
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Fair Value Models</div>
+                {data.models.map((m, i) => (
+                    <div key={i} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <div className="text-sm font-medium text-slate-700">{m.model}</div>
+                        <div className="text-right">
+                            <div className="text-sm font-bold text-slate-800">{formatNumber(m.value)}</div>
+                            <div className={`text-xs font-bold ${m.upside > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {m.upside > 0 ? '+' : ''}{m.upside.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // Main Card Router
 // ============================================================
 
@@ -727,6 +908,12 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
             return <StatsCard title={card.title} data={card.data as any} />;
         case "ratios":
             return <RatiosCard title={card.title} data={card.data as any} />;
+        case "technicals":
+            return <TechnicalsCard title={card.title} data={card.data as any} />;
+        case "ownership":
+            return <OwnershipCard title={card.title} data={card.data as any} />;
+        case "fair_value":
+            return <FairValueCard title={card.title} data={card.data as any} />;
         case "financial_statement_table":
             return (
                 <FinancialsTableCard

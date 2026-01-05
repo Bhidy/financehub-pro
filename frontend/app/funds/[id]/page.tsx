@@ -354,6 +354,92 @@ export default function FundDetailPage() {
                     </div>
                 )}
 
+                {/* Fund Profile Info - Complete Details */}
+                <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-50 to-orange-50 rounded-full blur-2xl pointer-events-none"></div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
+                        <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-lg">📋</span>
+                        Fund Profile
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
+                        {/* Fund Manager */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1">
+                                <User className="w-3 h-3" /> Fund Manager
+                            </div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.manager_name_en || fund.manager_name || "—"}
+                            </div>
+                        </div>
+
+                        {/* Owner */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">🏛️ Owner</div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.owner_name_en || fund.owner_name || fund.manager_name_en || "—"}
+                            </div>
+                        </div>
+
+                        {/* Currency */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">💱 Currency</div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.currency || "EGP"}
+                            </div>
+                        </div>
+
+                        {/* Establishment Date */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">📅 Est. Date</div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.establishment_date ? safeDate(fund.establishment_date)?.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : "—"}
+                            </div>
+                        </div>
+
+                        {/* Eligibility */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">🌍 Eligibility</div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.eligibility || "All Nationalities"}
+                            </div>
+                        </div>
+
+                        {/* Market */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">📍 Market</div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.market_code === "EGX" ? "🇪🇬 Egyptian Exchange" : fund.market_code === "TDWL" ? "🇸🇦 Saudi Exchange" : fund.market_code || "—"}
+                            </div>
+                        </div>
+
+                        {/* Fund Type */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">📂 Classification</div>
+                            <div className="text-sm font-bold text-slate-800">
+                                {fund.classification || fund.fund_type || "Mutual Fund"}
+                            </div>
+                        </div>
+
+                        {/* Symbol */}
+                        {fund.symbol && (
+                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                <div className="text-xs font-bold text-slate-400 uppercase mb-1">🏷️ Symbol</div>
+                                <div className="text-sm font-bold text-blue-600 font-mono">
+                                    {fund.symbol}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Latest NAV */}
+                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                            <div className="text-xs font-bold text-emerald-600 uppercase mb-1">💰 Latest NAV</div>
+                            <div className="text-lg font-black text-emerald-700 font-mono">
+                                {latestNav.toFixed(4)} <span className="text-sm font-normal">{fund.currency || "EGP"}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Extended Performance Grid - Full Width */}
                 <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-full blur-2xl pointer-events-none"></div>

@@ -61,7 +61,7 @@ const NAV_SECTIONS = [
         title: "Investment Research",
         color: "green",
         items: [
-            { label: "Company Profile", icon: Building2, href: "/symbol/2222", badge: "NEW", badgeColor: "green" },
+            { label: "Company Profile", icon: Building2, href: "/symbol/2222", dynamicHref: true, badge: "NEW", badgeColor: "green" },
             { label: "Mutual Funds", icon: DollarSign, href: "/funds" },
             // HIDDEN: Shareholders - can be re-enabled later
             // { label: "Shareholders", icon: Users, href: "/shareholders" },
@@ -248,13 +248,17 @@ export default function Sidebar() {
                             )}
                             <div className="space-y-1">
                                 {section.items.map((item) => {
-                                    const isActive = pathname === item.href;
+                                    // Resolve dynamic href based on market
+                                    const resolvedHref = (item as any).dynamicHref
+                                        ? (market === 'EGX' ? '/egx/COMI' : '/symbol/2222')
+                                        : item.href;
+                                    const isActive = pathname === resolvedHref || pathname.startsWith(resolvedHref.split('/').slice(0, -1).join('/') + '/');
                                     const Icon = item.icon;
 
                                     return (
                                         <Link
-                                            key={item.href}
-                                            href={item.href}
+                                            key={item.label}
+                                            href={resolvedHref}
                                             className={clsx(
                                                 "flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group",
                                                 isActive

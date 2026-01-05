@@ -198,10 +198,10 @@ export default function FundDetailPage() {
                             </div>
                             <div>
                                 <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight" dir="auto">
-                                    {fund.fund_name}
+                                    {fund.fund_name_en || fund.fund_name}
                                 </h1>
                                 <p className="text-blue-50 font-medium text-base mt-1 opacity-90">
-                                    {fund.fund_id} • {fund.currency || 'SAR'}
+                                    {fund.symbol || fund.fund_id} • {fund.currency || 'EGP'}
                                 </p>
                             </div>
                         </div>
@@ -209,7 +209,7 @@ export default function FundDetailPage() {
                             <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Latest NAV</p>
                             <div className="text-3xl font-black font-mono tracking-tight flex items-baseline gap-1">
                                 {latestNav.toFixed(2)}
-                                <span className="text-sm font-sans font-bold opacity-70">SAR</span>
+                                <span className="text-sm font-sans font-bold opacity-70">{fund.currency || 'EGP'}</span>
                             </div>
                         </div>
                     </div>
@@ -217,14 +217,26 @@ export default function FundDetailPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
-                {/* Meta Info */}
+                {/* Meta Info with more details */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-8 flex flex-wrap gap-4 justify-between items-center">
-                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-blue-100">
-                        {fund.fund_type || "Mutual Fund"}
-                    </span>
-                    {fund.manager_name && (
+                    <div className="flex flex-wrap gap-3">
+                        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-blue-100">
+                            {fund.classification || fund.fund_type || "Mutual Fund"}
+                        </span>
+                        {fund.eligibility && (
+                            <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-emerald-100">
+                                {fund.eligibility}
+                            </span>
+                        )}
+                        {fund.establishment_date && (
+                            <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold border border-amber-100">
+                                Est. {safeDate(fund.establishment_date)?.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                            </span>
+                        )}
+                    </div>
+                    {(fund.manager_name_en || fund.manager_name) && (
                         <span className="text-slate-500 text-sm font-bold flex items-center gap-2">
-                            <User className="w-4 h-4 text-slate-400" /> {fund.manager_name}
+                            <User className="w-4 h-4 text-slate-400" /> {fund.manager_name_en || fund.manager_name}
                         </span>
                     )}
                 </div>
@@ -327,7 +339,59 @@ export default function FundDetailPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Investment Strategy Section - Full Width */}
+                {fund.investment_strategy && (
+                    <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-teal-50 rounded-full blur-2xl pointer-events-none"></div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
+                            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white text-lg">📊</span>
+                            Investment Strategy
+                        </h3>
+                        <p className="text-slate-600 leading-relaxed text-sm relative z-10">
+                            {fund.investment_strategy}
+                        </p>
+                    </div>
+                )}
+
+                {/* Extended Performance Grid - Full Width */}
+                <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-full blur-2xl pointer-events-none"></div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
+                        <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-lg">📈</span>
+                        Complete Performance Grid
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
+                        {[
+                            { label: "1 Week", val: fund.profit_week },
+                            { label: "1 Month", val: fund.profit_month },
+                            { label: "3 Months", val: fund.profit_3month },
+                            { label: "6 Months", val: fund.profit_6month },
+                            { label: "YTD", val: fund.ytd_return },
+                            { label: "1 Year", val: fund.one_year_return },
+                            { label: "3 Years", val: fund.three_year_return },
+                            { label: "5 Years", val: fund.five_year_return },
+                            { label: "52W High", val: fund.profit_52w_high },
+                            { label: "52W Low", val: fund.profit_52w_low },
+                        ].map((item, i) => {
+                            const val = safeNumber(item.val);
+                            const isPositive = val !== null && val >= 0;
+                            return (
+                                <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <div className="text-xs font-bold text-slate-400 uppercase mb-1">{item.label}</div>
+                                    <div className={clsx(
+                                        "text-lg font-black font-mono",
+                                        val === null ? "text-slate-300" : isPositive ? "text-emerald-600" : "text-red-500"
+                                    )}>
+                                        {val !== null ? `${isPositive ? '+' : ''}${val.toFixed(2)}%` : "—"}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         </main>
     );
 }
+

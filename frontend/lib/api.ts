@@ -162,8 +162,9 @@ export const fetchEconomicIndicators = async (limit: number = 365) => {
     return data;
 };
 
-export const fetchFunds = async () => {
-    const { data } = await api.get("/funds");
+export const fetchFunds = async (market?: string) => {
+    const params = market ? { market } : {};
+    const { data } = await api.get("/funds", { params });
     return data;
 };
 

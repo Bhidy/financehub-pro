@@ -102,14 +102,17 @@ export default function MutualFundsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("All");
 
+    // Market Toggle: KSA (TDWL) or Egypt (EGX)
+    const [selectedMarket, setSelectedMarket] = useState<"KSA" | "EGX">("KSA");
+
     // Explicitly separate Sort By and Period View
     const [sortBy, setSortBy] = useState<SortOption>("performance");
     const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>("ytd");
 
-    // Fetch all mutual funds
+    // Fetch mutual funds with market filter
     const { data: funds = [], isLoading } = useQuery({
-        queryKey: ["funds"],
-        queryFn: fetchFunds,
+        queryKey: ["funds", selectedMarket],
+        queryFn: () => fetchFunds(selectedMarket === "EGX" ? "EGX" : "TDWL"),
     });
 
     // Filter and sort funds
@@ -157,13 +160,41 @@ export default function MutualFundsPage() {
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
                 <div className="relative max-w-7xl mx-auto px-6 py-8">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl shadow-lg border border-white/20">
-                            💼
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl shadow-lg border border-white/20">
+                                💼
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-black tracking-tight">Mutual Funds Center</h1>
+                                <p className="text-blue-100 font-medium">{funds.length} funds • Real-time analytics</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-3xl font-black tracking-tight">Mutual Funds Center</h1>
-                            <p className="text-blue-100 font-medium">{funds.length} funds • Real-time analytics</p>
+
+                        {/* Market Toggle */}
+                        <div className="flex bg-white/10 backdrop-blur-sm p-1 rounded-xl border border-white/20">
+                            <button
+                                onClick={() => setSelectedMarket("KSA")}
+                                className={clsx(
+                                    "px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                                    selectedMarket === "KSA"
+                                        ? "bg-white text-blue-600 shadow-md"
+                                        : "text-white/80 hover:text-white hover:bg-white/10"
+                                )}
+                            >
+                                🇸🇦 KSA
+                            </button>
+                            <button
+                                onClick={() => setSelectedMarket("EGX")}
+                                className={clsx(
+                                    "px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                                    selectedMarket === "EGX"
+                                        ? "bg-white text-blue-600 shadow-md"
+                                        : "text-white/80 hover:text-white hover:bg-white/10"
+                                )}
+                            >
+                                🇪🇬 Egypt
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -185,7 +216,7 @@ export default function MutualFundsPage() {
                         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
                         <TrendingUp className="w-5 h-5 text-emerald-500 mb-2" />
                         <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Avg NAV</div>
-                        <div className="text-3xl font-black text-emerald-600 font-mono">SAR {avgNav.toFixed(2)}</div>
+                        <div className="text-3xl font-black text-emerald-600 font-mono">{selectedMarket === "EGX" ? "EGP" : "SAR"} {avgNav.toFixed(2)}</div>
                         <div className="text-xs font-bold text-emerald-700 mt-1">Weighted Average</div>
                     </div>
 
@@ -335,7 +366,7 @@ export default function MutualFundsPage() {
                                                 <div className="text-[9px] uppercase font-bold text-slate-400 mb-1">NAV</div>
                                                 <div className="text-lg font-black text-slate-900 font-mono flex items-baseline gap-1">
                                                     {Number(fund.latest_nav).toFixed(2)}
-                                                    <span className="text-[10px] text-slate-400 font-sans">SAR</span>
+                                                    <span className="text-[10px] text-slate-400 font-sans">{selectedMarket === "EGX" ? "EGP" : "SAR"}</span>
                                                 </div>
                                             </div>
                                             <div className={clsx(

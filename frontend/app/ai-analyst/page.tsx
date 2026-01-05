@@ -1,21 +1,19 @@
 "use client";
 
-import { useAIChat, Message, Action as ChatAction, ChatResponse } from "@/hooks/useAIChat";
-import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, User, Mic, Paperclip, Phone, History, ChevronLeft, BarChart3, Plus, MessageSquarePlus } from "lucide-react";
+import { useAIChat } from "@/hooks/useAIChat";
+import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, History, ChevronLeft, BarChart3, MessageSquarePlus, Paperclip, Mic, ShieldCheck, Zap, Activity, Building2 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { EvidenceCard } from "@/components/EvidenceCard";
 import { AnimatePresence, motion } from "framer-motion";
-import { PriceChart, FinancialTable, IndicatorBadge } from "@/components/ai/AnalystUI";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
-import { ChatCards, ActionsBar, Disclaimer } from "@/components/ai/ChatCards";
+import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
 import { useMarketSafe } from "@/contexts/MarketContext";
 
 export default function AIAnalystPage() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const { query, setQuery, messages, isLoading, handleSend, handleAction, clearHistory } = useAIChat();
-    const { market, config } = useMarketSafe();
+    const { query, setQuery, messages, isLoading, handleSend, handleAction } = useAIChat();
+    const { market } = useMarketSafe();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,19 +35,19 @@ export default function AIAnalystPage() {
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
         }
     }, [query]);
 
 
-    // Smart Suggestions - Market-aware
+    // =================================================================================================
+    // SMART SUGGESTIONS - EXPANDED FOR FULL DB COVERAGE (43+ Fields)
+    // =================================================================================================
     const suggestionCategories = useMemo(() => {
         const isEgypt = market === 'EGX';
-
-        // Market-specific stock names
         const stocks = isEgypt
-            ? { main: "CIB", second: "SWDY", third: "HRHO", bank: "COMI", index: "EGX30" }
-            : { main: "Aramco", second: "Al Rajhi", third: "SABIC", bank: "SNB", index: "TASI" };
+            ? { main: "CIB", second: "SWDY", bank: "COMI" }
+            : { main: "Aramco", second: "Al Rajhi", bank: "SNB" };
 
         return [
             {
@@ -58,52 +56,58 @@ export default function AIAnalystPage() {
                 suggestions: [
                     { text: `${stocks.main} price now`, icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
                     { text: "Top gainers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
-                    { text: `${stocks.index} summary`, icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
+                    { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
+                    // NEW: Technical added to popular
+                    { text: `RSI for ${stocks.second}`, icon: Activity, gradient: "from-purple-500 to-indigo-500" },
                 ]
             },
             {
-                id: 'beginner',
-                label: '📚 Starter',
+                id: 'valuation',
+                label: '💎 Valuation', // NEW CATEGORY
                 suggestions: [
-                    { text: `Tell me about ${stocks.second}`, icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
-                    { text: "Best performing sector", icon: PieChart, gradient: "from-cyan-500 to-blue-600" },
-                    { text: `${stocks.third} stock info`, icon: TrendingUp, gradient: "from-pink-500 to-rose-500" },
+                    { text: `Is ${stocks.main} overvalued? (Check PE & PB)`, icon: Sparkles, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `What is the Fair Value of ${stocks.second}?`, icon: DollarSignIcon, gradient: "from-cyan-500 to-blue-600" },
+                    { text: `Show PEG Ratio for ${stocks.bank}`, icon: Zap, gradient: "from-violet-500 to-purple-600" },
+                    { text: `EV/EBITDA for ${stocks.main}`, icon: BarChart3, gradient: "from-slate-500 to-slate-700" },
                 ]
             },
             {
-                id: 'technical',
-                label: '📊 Technical',
+                id: 'health',
+                label: '🏥 Health', // NEW CATEGORY
                 suggestions: [
-                    { text: `${stocks.main} chart`, icon: BarChart3, gradient: "from-indigo-500 to-violet-600" },
-                    { text: `${stocks.second} price history`, icon: TrendingUp, gradient: "from-blue-500 to-cyan-600" },
-                    { text: `Show ${stocks.third} chart`, icon: Newspaper, gradient: "from-slate-500 to-slate-700" },
+                    { text: `Check financial health of ${stocks.main} (Altman Z)`, icon: ShieldCheck, gradient: "from-emerald-500 to-green-600" },
+                    { text: `${stocks.second} Debt to Equity ratio`, icon: Activity, gradient: "from-red-500 to-orange-600" },
+                    { text: `Does ${stocks.bank} have enough cash? (Current Ratio)`, icon: Building2, gradient: "from-teal-500 to-cyan-600" },
+                    { text: `Piotroski F-Score for ${stocks.main}`, icon: Newspaper, gradient: "from-indigo-500 to-blue-600" },
                 ]
             },
             {
-                id: 'fundamental',
-                label: '💰 Financials',
+                id: 'growth',
+                label: '🚀 Growth', // NEW CATEGORY
                 suggestions: [
-                    { text: `${stocks.main} financials`, icon: PieChart, gradient: "from-emerald-500 to-green-600" },
-                    { text: `${stocks.bank} income statement`, icon: BarChart3, gradient: "from-teal-500 to-emerald-600" },
-                    { text: `${stocks.second} balance sheet`, icon: TrendingUp, gradient: "from-green-500 to-lime-600" },
+                    { text: `${stocks.main} revenue growth last 3 years`, icon: TrendingUp, gradient: "from-amber-500 to-orange-600" },
+                    { text: `Net Income trend for ${stocks.second}`, icon: BarChart3, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `${stocks.bank} profit margin analysis`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
+                    { text: `Compare growth: ${stocks.main} vs ${stocks.second}`, icon: Activity, gradient: "from-purple-500 to-violet-600" },
                 ]
             },
             {
                 id: 'dividends',
                 label: '💵 Dividends',
                 suggestions: [
-                    { text: `${stocks.main} dividends`, icon: Sparkles, gradient: "from-amber-500 to-orange-600" },
-                    { text: "Highest dividend stocks", icon: TrendingUp, gradient: "from-red-500 to-rose-600" },
-                    { text: `${stocks.bank} dividend history`, icon: PieChart, gradient: "from-purple-500 to-pink-600" },
+                    { text: `Show dividend history for ${stocks.main}`, icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
+                    { text: `What is the yield of ${stocks.second}?`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
+                    { text: `${stocks.bank} payout ratio`, icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
+                    { text: "Best dividend stocks in EGX30", icon: Sparkles, gradient: "from-amber-400 to-yellow-600" },
                 ]
             },
             {
-                id: 'compare',
-                label: '⚖️ Compare',
+                id: 'ownership',
+                label: '🤝 Ownership', // NEW CATEGORY
                 suggestions: [
-                    { text: `Compare ${stocks.main} vs ${stocks.second}`, icon: Newspaper, gradient: "from-pink-500 to-rose-600" },
-                    { text: `${stocks.bank} vs ${stocks.third}`, icon: BarChart3, gradient: "from-cyan-500 to-teal-600" },
-                    { text: "Top losers today", icon: Sparkles, gradient: "from-indigo-500 to-blue-600" },
+                    { text: `Who owns ${stocks.main}? (Institutional vs public)`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
+                    { text: `Insider trading in ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
+                    { text: `${stocks.bank} major shareholders`, icon: PieChart, gradient: "from-indigo-500 to-blue-600" },
                 ]
             },
         ];
@@ -114,17 +118,19 @@ export default function AIAnalystPage() {
 
     const handleSuggestionClick = (text: string) => {
         setQuery(text);
+        if (textareaRef.current) textareaRef.current.focus();
     };
 
     return (
         <div className="flex h-full bg-slate-50 relative overflow-hidden font-sans">
-            {/* Background Decor */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[120px] opacity-50 mix-blend-multiply"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-teal-100/40 rounded-full blur-[120px] opacity-50 mix-blend-multiply"></div>
+            {/* ULTRA-PREMIUM BACKGROUND DECOR */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden bg-slate-50">
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-200/30 rounded-full blur-[150px] mix-blend-multiply animate-pulse-slow"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-200/30 rounded-full blur-[150px] mix-blend-multiply animate-pulse-slow delay-700"></div>
+                <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-teal-100/30 rounded-full blur-[120px] mix-blend-multiply animate-pulse-slow delay-1000"></div>
             </div>
 
-            {/* History Drawer (Slide-out) */}
+            {/* History Drawer (Slide-out) - Kept same logic but improved style */}
             <AnimatePresence>
                 {isHistoryOpen && (
                     <>
@@ -133,19 +139,19 @@ export default function AIAnalystPage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsHistoryOpen(false)}
-                            className="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px] z-40 transition-opacity"
+                            className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm z-40 transition-opacity"
                         />
                         <motion.aside
                             initial={{ x: "-100%" }}
                             animate={{ x: 0 }}
                             exit={{ x: "-100%" }}
                             transition={{ type: "spring", stiffness: 350, damping: 35 }}
-                            className="absolute left-0 top-0 bottom-0 w-80 bg-white/95 backdrop-blur-2xl border-r border-white/50 shadow-2xl z-50 flex flex-col p-0"
+                            className="absolute left-0 top-0 bottom-0 w-80 bg-white/80 backdrop-blur-2xl border-r border-white/50 shadow-2xl z-50 flex flex-col p-0"
                         >
                             <div className="p-6 border-b border-slate-100/50">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                        <History className="w-5 h-5 text-blue-600" />
+                                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                        <History className="w-6 h-6 text-blue-600" />
                                         <span>History</span>
                                     </h2>
                                     <button
@@ -155,28 +161,17 @@ export default function AIAnalystPage() {
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
                                 </div>
-
                                 <button
-                                    onClick={() => setIsHistoryOpen(false)}
-                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl px-4 py-3.5 hover:shadow-lg hover:shadow-blue-500/25 transition-all font-semibold active:scale-[0.98]"
+                                    onClick={() => { setIsHistoryOpen(false); window.location.reload(); }}
+                                    className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl px-4 py-4 hover:shadow-xl hover:shadow-slate-900/20 transition-all font-bold text-sm active:scale-[0.98]"
                                 >
-                                    <Sparkles className="w-4 h-4" />
-                                    New Analysis
+                                    <MessageSquarePlus className="w-4 h-4" />
+                                    New Conversation
                                 </button>
                             </div>
-
-                            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                                <div>
-                                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Recent Queries</h4>
-                                    <div className="space-y-1">
-                                        {["TASI Sector Report", "Aramco Earnings Forecast", "Global Inflation Trends", "SABIC Valuation Model"].map((item, i) => (
-                                            <button key={i} className="w-full text-left px-4 py-3 rounded-lg text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition-all truncate border border-transparent hover:border-slate-100 group flex items-center gap-3">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-blue-500 transition-colors"></div>
-                                                {item}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                {/* Placeholder History Items */}
+                                <div className="text-center text-slate-400 text-sm py-10">No recent history</div>
                             </div>
                         </motion.aside>
                     </>
@@ -187,17 +182,17 @@ export default function AIAnalystPage() {
             <main className="flex-1 flex flex-col relative z-10 w-full h-full">
 
                 {/* Header Actions (Floating) */}
-                <div className="absolute top-6 left-6 z-20 flex gap-2">
+                <div className="absolute top-6 left-6 z-20 flex gap-3">
                     <button
                         onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-                        className="p-3 bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md rounded-2xl text-slate-500 hover:text-blue-600 transition-all group active:scale-95"
+                        className="p-3.5 bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm hover:shadow-lg rounded-2xl text-slate-500 hover:text-blue-600 transition-all group active:scale-95"
                         title="View History"
                     >
                         <History className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
                     </button>
                     <button
                         onClick={() => window.location.reload()}
-                        className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 backdrop-blur-md border border-white/40 shadow-md hover:shadow-lg rounded-2xl text-white transition-all group active:scale-95"
+                        className="p-3.5 bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm hover:shadow-lg rounded-2xl text-slate-500 hover:text-blue-600 transition-all group active:scale-95"
                         title="New Chat"
                     >
                         <MessageSquarePlus className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
@@ -205,30 +200,35 @@ export default function AIAnalystPage() {
                 </div>
 
                 {/* Chat Scroll Area */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto w-full scroll-smooth pb-32">
-                    <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col min-h-full">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto w-full scroll-smooth pb-48 pt-20">
+                    <div className={clsx("max-w-4xl mx-auto px-6 flex flex-col min-h-full transition-all duration-700", messages.length === 1 ? 'justify-center' : 'justify-start')}>
 
-                        {/* Welcome Screen - Compact Premium */}
+                        {/* WELCOME SCREEN - BIGGER & BOLDER */}
                         {messages.length === 1 && (
-                            <div className="flex-1 flex flex-col justify-center items-center text-center animate-in fade-in duration-500">
-                                <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2 text-slate-900">
-                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finny</span> 🤖
+                            <div className="flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+                                {/* Logo / Avatar */}
+                                <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center shadow-2xl shadow-blue-500/30 mb-8 border-4 border-white/50 backdrop-blur-sm">
+                                    <Bot className="w-12 h-12 text-white" />
+                                </div>
+
+                                <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">
+                                    Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finny</span>.
                                 </h1>
-                                <p className="text-slate-500 text-sm mb-6 max-w-md mx-auto">
-                                    Ready to analyze the market.
+                                <p className="text-slate-500 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+                                    Your personal AI financial analyst. I can analyze <span className="text-slate-800 font-bold">valuation</span>, <span className="text-slate-800 font-bold">health</span>, and <span className="text-slate-800 font-bold">growth</span> for any {market} stock.
                                 </p>
 
-                                {/* Categories - Compact */}
-                                <div className="flex flex-wrap justify-center gap-1.5 mb-6">
+                                {/* Categories - Bigger Pills */}
+                                <div className="flex flex-wrap justify-center gap-3 mb-8">
                                     {suggestionCategories.map((cat) => (
                                         <button
                                             key={cat.id}
                                             onClick={() => setActiveCategory(cat.id)}
                                             className={clsx(
-                                                "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                                                "px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 transform active:scale-95 border",
                                                 activeCategory === cat.id
-                                                    ? "bg-slate-900 text-white shadow-md"
-                                                    : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
+                                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20 border-slate-900 scale-105"
+                                                    : "bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-slate-200"
                                             )}
                                         >
                                             {cat.label}
@@ -236,70 +236,76 @@ export default function AIAnalystPage() {
                                     ))}
                                 </div>
 
-                                {/* Suggestions - Grid Compact */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full max-w-2xl">
+                                {/* Suggestions - Bigger Grid & Cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
                                     {activeSuggestions.map((s, i) => (
                                         <button
                                             key={i}
                                             onClick={() => handleSuggestionClick(s.text)}
-                                            className="group p-3 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all text-left flex items-center gap-3"
+                                            className="group p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-slate-200/60 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all text-left flex items-center gap-5 transform hover:-translate-y-1 duration-300"
                                         >
-                                            <div className={clsx("w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center shrink-0 text-white", s.gradient)}>
-                                                <s.icon className="w-4 h-4" />
+                                            <div className={clsx("w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 text-white shadow-md group-hover:scale-110 transition-transform duration-300", s.gradient)}>
+                                                <s.icon className="w-6 h-6" />
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-700 group-hover:text-blue-700 line-clamp-1">
-                                                {s.text}
-                                            </span>
+                                            <div>
+                                                <span className="text-base font-bold text-slate-800 group-hover:text-blue-700 transition-colors line-clamp-1 block mb-1">
+                                                    {s.text}
+                                                </span>
+                                                <span className="text-xs text-slate-400 font-medium group-hover:text-blue-400 transition-colors">
+                                                    Tap to ask
+                                                </span>
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Messages - Ultra Compact Pro */}
-                        <div className="space-y-6">
+                        {/* Messages - Ultra Premium Layout */}
+                        <div className="space-y-10 py-4">
                             {messages.slice(1).map((msg, idx) => (
                                 <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
+                                    initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4 }}
                                     key={idx}
-                                    className={clsx("flex gap-3", msg.role === "user" ? "justify-end" : "justify-start")}
+                                    className={clsx("flex gap-5", msg.role === "user" ? "justify-end" : "justify-start")}
                                 >
-                                    {/* Bot Avatar - Smaller */}
+                                    {/* Bot Avatar */}
                                     {msg.role === "assistant" && (
-                                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                                            <Sparkles className="w-4 h-4 text-blue-600" />
+                                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-lg mt-1">
+                                            <Sparkles className="w-5 h-5 text-blue-600" />
                                         </div>
                                     )}
 
-                                    {/* Bubble */}
+                                    {/* Message Content */}
                                     <div className={clsx(
-                                        "flex flex-col gap-2 max-w-[90%] md:max-w-2xl",
+                                        "flex flex-col gap-3 max-w-[95%] md:max-w-3xl",
                                         msg.role === "user" ? "items-end" : "items-start w-full"
                                     )}>
                                         <div className={clsx(
-                                            "text-sm leading-relaxed shadow-sm",
+                                            "text-base leading-relaxed shadow-sm",
                                             msg.role === "user"
-                                                ? "px-4 py-2.5 bg-blue-600 text-white rounded-2xl rounded-tr-sm"
-                                                : "px-0 py-0 bg-transparent text-slate-800 w-full" // Bot messages have no bubble, just content
+                                                ? "px-6 py-4 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-3xl rounded-tr-sm shadow-blue-500/20"
+                                                : "px-0 py-0 bg-transparent text-slate-800 w-full"
                                         )}>
                                             {msg.role === "user" ? (
                                                 <span className="font-medium">{msg.content}</span>
                                             ) : (
-                                                <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                                                <div className="bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl p-8 shadow-xl shadow-slate-200/50">
                                                     <PremiumMessageRenderer content={msg.content} />
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Response Cards */}
+                                        {/* Response Cards & Actions */}
                                         {msg.role === "assistant" && msg.response && (
-                                            <div className="w-full mt-1">
+                                            <div className="w-full mt-2 space-y-4">
                                                 <ChatCards
                                                     cards={msg.response.cards}
                                                     language={msg.response.language}
                                                     onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
-                                                    onExampleClick={setQuery}
+                                                    onExampleClick={(text) => handleSuggestionClick(text)}
                                                     showExport={true}
                                                 />
                                                 {msg.response.chart && <ChartCard chart={msg.response.chart} />}
@@ -313,12 +319,15 @@ export default function AIAnalystPage() {
                             ))}
 
                             {isLoading && (
-                                <div className="flex gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                                <div className="flex gap-5 items-center">
+                                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-lg">
+                                        <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
                                     </div>
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-100 shadow-sm">
-                                        <span className="text-xs font-semibold text-slate-500 animate-pulse">Processing...</span>
+                                    <div className="flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-md rounded-full border border-slate-100 shadow-md">
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75"></span>
+                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150"></span>
+                                        <span className="text-sm font-bold text-slate-500 ml-2">Analyst is thinking...</span>
                                     </div>
                                 </div>
                             )}
@@ -326,41 +335,48 @@ export default function AIAnalystPage() {
                     </div>
                 </div>
 
-                {/* Input Area - Absolute Bottom (Respects Sidebar) */}
-                <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-slate-200/50 pb-0 pt-2 px-4">
-                    <div className="max-w-2xl mx-auto w-full relative">
-                        <div className="bg-white rounded-xl ring-1 ring-slate-200 shadow-sm flex items-end gap-1.5 p-1.5 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-                            <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all" title="Attach">
-                                <Paperclip className="w-4 h-4" />
+                {/* INPUT AREA - BIGGER & FLOATING */}
+                <div className="absolute bottom-6 left-0 right-0 z-30 px-6">
+                    <div className="max-w-4xl mx-auto w-full relative">
+                        {/* Glass Container */}
+                        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/50 shadow-2xl shadow-slate-900/10 p-2 flex items-end gap-3 transition-all focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-300">
+
+                            {/* Attachment Button */}
+                            <button className="p-3 text-slate-400 hover:text-blue-600 hover:bg-white rounded-2xl transition-all h-14 w-14 flex items-center justify-center" title="Attach">
+                                <Paperclip className="w-6 h-6" />
                             </button>
 
+                            {/* TALLER Input Box */}
                             <textarea
                                 ref={textareaRef}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Message Finny..."
-                                className="flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-32 py-2 px-1 text-slate-800 placeholder:text-slate-400 text-sm font-medium leading-relaxed scrollbar-none"
+                                className="flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-48 py-4 px-2 text-slate-800 placeholder:text-slate-400 text-lg font-medium leading-relaxed scrollbar-none min-h-[3.5rem]"
                                 rows={1}
                                 disabled={isLoading}
                             />
 
-                            {/* Disclaimer integrated subtly */}
-                            <span className="text-[9px] text-slate-300 font-medium uppercase tracking-widest whitespace-nowrap mb-1.5 mr-2 select-none hidden sm:block">
-                                AI-Generated
-                            </span>
-
-                            <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all" title="Voice">
-                                <Mic className="w-4 h-4" />
+                            {/* Voice Button */}
+                            <button className="p-3 text-slate-400 hover:text-blue-600 hover:bg-white rounded-2xl transition-all h-14 w-14 flex items-center justify-center" title="Voice">
+                                <Mic className="w-6 h-6" />
                             </button>
 
+                            {/* Send Button */}
                             <button
                                 onClick={handleSend}
                                 disabled={!query.trim() || isLoading}
-                                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                                className="h-14 w-14 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
                             >
-                                <Send className="w-3.5 h-3.5" />
+                                <Send className="w-6 h-6 ml-0.5" />
                             </button>
+                        </div>
+
+                        <div className="text-center mt-3">
+                            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                                AI-Generated Content • Check Important Info
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -368,3 +384,8 @@ export default function AIAnalystPage() {
         </div>
     );
 }
+
+// Icon helper
+const DollarSignIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+);

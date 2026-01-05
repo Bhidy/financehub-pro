@@ -912,81 +912,80 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
     };
 
     return (
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden my-6 ring-1 ring-slate-100/50 w-full max-w-full">
-            {/* Premium Header */}
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-5 relative overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-sm border border-slate-200/60 overflow-hidden my-2 ring-1 ring-slate-100/50 w-full max-w-full group/card transition-all hover:shadow-md">
+            {/* Premium Header - Ultra Compact */}
+            <div className="bg-slate-900 p-2.5 relative overflow-hidden">
                 {/* Decorative background glow */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 blur-xl rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/30 flex items-center justify-center text-white font-bold text-lg border border-white/10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 relative z-10">
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-gradient-to-tr from-blue-600 to-cyan-500 shadow-sm flex items-center justify-center text-white font-bold text-xs border border-white/10">
                             {data.symbol[0]}
                         </div>
                         <div>
-                            <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-xl text-white tracking-tight">{data.symbol} Financials</h3>
-                                <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-white/70 border border-white/10 uppercase tracking-widest backdrop-blur-sm">
+                            <div className="flex items-center gap-1.5">
+                                <h3 className="font-bold text-sm text-white tracking-tight leading-none">{data.symbol} Financials</h3>
+                                <span className="px-1 py-px rounded-full bg-white/10 text-[9px] font-bold text-white/70 border border-white/10 uppercase tracking-widest backdrop-blur-sm leading-none">
                                     {data.currency}
                                 </span>
                             </div>
-                            <p className="text-slate-400 text-xs font-medium pl-0.5 mt-0.5">Enterprise Grade Data</p>
                         </div>
                     </div>
 
                     <button
                         onClick={handleExport}
-                        className="group flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-medium transition-all hover:text-white"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[10px] font-medium transition-all hover:text-white ml-auto md:ml-0"
                     >
-                        <Download className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
-                        Export Data
+                        <Download className="w-2.5 h-2.5 opacity-60" />
+                        Export
                     </button>
                 </div>
 
-                {/* Modern Pill Tabs */}
-                <div className="mt-6 flex flex-wrap gap-2">
+                {/* Modern Pill Tabs - Ultra Compact */}
+                <div className="mt-2.5 flex flex-wrap gap-1">
                     {[
                         { id: 'income', label: 'Income', icon: BarChart3 },
-                        { id: 'balance', label: 'Balance Sheet', icon: PieChart },
+                        { id: 'balance', label: 'Balance', icon: PieChart },
                         { id: 'cashflow', label: 'Cash Flow', icon: TrendingUp },
                         { id: 'ratios', label: 'Ratios', icon: Activity },
-                        { id: 'kpis', label: 'KPIs Metrics', icon: Target }
+                        { id: 'kpis', label: 'KPIs', icon: Target }
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`
-                                group relative px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all duration-300 border
+                                group relative px-2 py-0.5 rounded-md text-[9px] font-semibold flex items-center gap-1 transition-all duration-300 border
                                 ${activeTab === tab.id
-                                    ? 'bg-blue-600/90 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 border-blue-500/50'
-                                    : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border-transparent hover:border-white/10'
+                                    ? 'bg-blue-600 text-white shadow-sm border-blue-500'
+                                    : 'bg-slate-800/50 text-slate-400 hover:text-white border-transparent hover:bg-slate-700'
                                 }
                             `}
                         >
-                            <tab.icon className={`w-3.5 h-3.5 transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'text-blue-100' : 'text-slate-500 group-hover:text-blue-200'}`} />
+                            <tab.icon className={`w-2.5 h-2.5 ${activeTab === tab.id ? 'text-white' : 'text-slate-500'}`} />
                             {tab.label}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Smart Controls Bar */}
-            <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 backdrop-blur-sm">
-                <div className="text-xs font-medium text-slate-500 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Live Data Connection
+            {/* Smart Controls Bar - Ultra Compact */}
+            <div className="px-2.5 py-1.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between gap-1.5 backdrop-blur-sm">
+                <div className="text-[9px] font-medium text-slate-500 flex items-center gap-1">
+                    <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                    Live Data
                 </div>
 
-                <div className="bg-slate-200/50 p-1 rounded-lg flex items-center gap-1">
+                <div className="bg-slate-200/50 p-0.5 rounded flex items-center">
                     {['Annual', 'Quarterly', 'TTM'].map((type) => (
                         <button
                             key={type}
                             onClick={() => setDisplayType(type.toLowerCase() as any)}
                             className={`
-                                px-4 py-1.5 rounded-md text-xs font-bold transition-all duration-200 shadow-sm
+                                px-2 py-px rounded text-[9px] font-bold transition-all duration-200
                                 ${displayType === type.toLowerCase()
-                                    ? 'bg-white text-slate-900 shadow-sm ring-1 ring-black/5'
-                                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 shadow-none'
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
                                 }
                             `}
                         >
@@ -996,17 +995,17 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                 </div>
             </div>
 
-            {/* Premium Data Table */}
+            {/* Premium Data Table - Ultra Compact Density */}
             <div className="relative w-full overflow-hidden">
-                <div className="overflow-x-auto max-h-[600px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300/80">
-                    <table className="w-full text-sm border-collapse">
+                <div className="overflow-x-auto max-h-[300px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300/80">
+                    <table className="w-full text-[11px] border-collapse">
                         <thead className="sticky top-0 z-20">
                             <tr>
-                                <th className="sticky left-0 top-0 z-30 bg-slate-50/95 backdrop-blur-md px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] min-w-[300px] w-1/3">
+                                <th className="sticky left-0 top-0 z-30 bg-white/95 backdrop-blur-md px-3 py-1.5 text-left text-[9px] font-bold uppercase tracking-wider text-slate-500 border-b border-r border-slate-200 shadow-[4px_0_12px_-6px_rgba(0,0,0,0.05)] min-w-[140px] w-1/3">
                                     Line Item
                                 </th>
                                 {uniqueYears.map(year => (
-                                    <th key={year} className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 min-w-[140px]">
+                                    <th key={year} className="px-3 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/95 backdrop-blur-md border-b border-slate-200 min-w-[70px]">
                                         {year}
                                     </th>
                                 ))}
@@ -1018,24 +1017,24 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                     <tr
                                         key={idx}
                                         className={`
-                                            group transition-colors duration-150 ease-in-out
-                                            ${row.isSubtotal ? 'bg-slate-50/60 hover:bg-slate-100/80' : 'hover:bg-blue-50/30'}
+                                            group transition-colors duration-75
+                                            ${row.isSubtotal ? 'bg-slate-50/60 hover:bg-slate-100' : 'hover:bg-blue-50/20'}
                                         `}
                                     >
                                         <td
                                             className={`
-                                                px-6 py-3.5 text-sm sticky left-0 z-10 border-r border-slate-50 group-hover:border-blue-100/50 transition-colors
+                                                px-3 py-1.5 sticky left-0 z-10 border-r border-slate-50 group-hover:border-blue-100/30 transition-colors
                                                 ${row.isSubtotal
-                                                    ? 'bg-slate-50/95 group-hover:bg-slate-100/95 font-bold text-slate-800'
-                                                    : 'bg-white/95 group-hover:bg-blue-50/20 text-slate-600 font-medium'
+                                                    ? 'bg-slate-50/95 font-bold text-slate-800'
+                                                    : 'bg-white/95 text-slate-600 font-medium'
                                                 }
                                             `}
-                                            style={{ paddingLeft: `${24 + (row.indent || 0) * 20}px` }}
+                                            style={{ paddingLeft: `${12 + (row.indent || 0) * 8}px` }}
                                         >
-                                            <div className="flex items-center justify-between gap-4">
-                                                <span>{row.label}</span>
+                                            <div className="flex items-center justify-between gap-1.5">
+                                                <span className="truncate max-w-[140px]" title={row.label}>{row.label}</span>
                                                 {row.isGrowth && (
-                                                    <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-900/5 text-slate-400 uppercase tracking-wider border border-slate-900/5">
+                                                    <span className="shrink-0 text-[8px] font-bold bg-slate-100 text-slate-400 px-1 rounded uppercase tracking-wider">
                                                         YoY
                                                     </span>
                                                 )}
@@ -1043,15 +1042,14 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                         </td>
                                         {uniqueYears.map(year => {
                                             const val = row.values[year];
-                                            const isPositive = (val || 0) > 0;
                                             return (
                                                 <td
                                                     key={year}
                                                     className={`
-                                                        px-6 py-3.5 text-right font-mono tabular-nums text-sm
+                                                        px-3 py-1.5 text-right font-mono tabular-nums
                                                         ${row.isGrowth
-                                                            ? (val || 0) >= 0 ? 'text-emerald-600 font-bold bg-emerald-50/30' : 'text-rose-500 font-bold bg-rose-50/30'
-                                                            : row.isSubtotal ? 'font-bold text-slate-900' : 'text-slate-600 group-hover:text-slate-900'
+                                                            ? (val || 0) >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'
+                                                            : row.isSubtotal ? 'font-bold text-slate-900' : 'text-slate-600'
                                                         }
                                                     `}
                                                 >
@@ -1063,10 +1061,10 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={uniqueYears.length + 1} className="py-12 text-center text-slate-400">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Table className="w-8 h-8 opacity-20" />
-                                            <span>No data available for this view</span>
+                                    <td colSpan={uniqueYears.length + 1} className="py-6 text-center text-slate-400">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <Table className="w-4 h-4 opacity-20" />
+                                            <span className="text-[10px]">No data available</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -1074,9 +1072,9 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                         </tbody>
                     </table>
                 </div>
-                <div className="bg-slate-50 px-4 py-2 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between">
-                    <span>Data source: FinanceHub Enterprise DB</span>
-                    <span>{activeRows.length} rows • {uniqueYears.length} periods</span>
+                <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[9px] text-slate-400 flex justify-between">
+                    <span>Source: FinanceHub Enterprise</span>
+                    <span>{uniqueYears.length} Periods</span>
                 </div>
             </div>
         </div>

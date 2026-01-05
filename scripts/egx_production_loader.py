@@ -325,6 +325,44 @@ class EGXProductionLoader:
         logger.info("=" * 60)
 
 
+    async def run_daily_update_job(self) -> Dict:
+        """Daily update wrapper for scheduler"""
+        logger.info("=" * 60)
+        logger.info("📅 EGX DAILY JOB STARTED")
+        logger.info("=" * 60)
+        
+        await self.connect()
+        await self.ensure_schema()
+        
+        try:
+             # Update all tickers (prices change daily)
+            symbols = await self.update_tickers()
+            
+            # Only fetch new OHLC data
+            total = len(symbols)
+            for i, symbol in enumerate(symbols, 1):
+                count = await self.update_ohlc(symbol, full_refresh=False)
+                if count > 0:
+                     logger.info(f"[{i}/{total}] {symbol}: {count} new records")
+            
+            elapsed = (datetime.now() - self.stats['start_time']).total_seconds()
+            
+            return {
+                "status": "success",
+                "stats": self.stats,
+                "duration": str(timedelta(seconds=int(elapsed)))
+            }
+        except Exception as e:
+            logger.error(f"Daily job failed: {e}")
+            return {"status": "failed", "error": str(e)}
+        finally:
+            await self.close()
+
+async def run_daily_market_job():
+    """Callable entry point for scheduler"""
+    loader = EGXProductionLoader()
+    return await loader.run_daily_update_job()
+
 async def main():
     parser = argparse.ArgumentParser(description='EGX Production Data Loader')
     parser.add_argument('--full', action='store_true', help='Full sync of all data')

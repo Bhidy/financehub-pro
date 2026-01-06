@@ -32,15 +32,23 @@ import { useMarketSafe } from "@/contexts/MarketContext";
 export default function Home() {
   const { market, config, isEgypt, isSaudi } = useMarketSafe();
 
+  // Helper: Detect if symbol is EGX (3-5 letters) or Saudi (4 digits)
+  const isEgxSymbol = (symbol: string) => /^[A-Z]{3,5}$/.test(symbol?.toUpperCase() || '');
+  const isSaudiSymbol = (symbol: string) => /^\d{4}$/.test(symbol || '');
+
   // API calls with market filter
   const { data: tickers = [], isLoading } = useQuery({
     queryKey: ["tickers", market],
     queryFn: async () => {
       const allTickers = await fetchTickers();
-      // Filter tickers by current market
-      return allTickers.filter((t: Ticker) =>
-        isEgypt ? t.market_code === 'EGX' : t.market_code !== 'EGX'
-      );
+      // Filter tickers by current market using symbol patterns
+      return allTickers.filter((t: Ticker) => {
+        if (isEgypt) {
+          return isEgxSymbol(t.symbol);
+        } else {
+          return isSaudiSymbol(t.symbol);
+        }
+      });
     }
   });
   const { data: sectors = [] } = useQuery({ queryKey: ["sectors", market], queryFn: fetchSectors });

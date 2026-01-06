@@ -58,8 +58,8 @@ jobs:
             response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/prices" \
               -H "Content-Type: application/json" --max-time 120)
             echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
-              echo "✅ Price Refresh Started"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
+              echo "✅ Price Refresh OK"
               exit 0
             fi
             echo "⚠️ Retry in 20s..."
@@ -82,8 +82,8 @@ jobs:
             response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/daily" \
               -H "Content-Type: application/json" --max-time 300)
             echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
-              echo "✅ Daily Sync Started"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
+              echo "✅ Daily Sync OK"
               exit 0
             fi
             echo "⚠️ Retry in 20s..."
@@ -106,8 +106,8 @@ jobs:
             response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/egypt-funds" \
               -H "Content-Type: application/json" --max-time 180)
             echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
-              echo "✅ Egypt Funds Sync Started"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
+              echo "✅ Egypt Funds OK"
               exit 0
             fi
             echo "⚠️ Retry in 20s..."
@@ -130,8 +130,8 @@ jobs:
             response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/ingestion" \
               -H "Content-Type: application/json" --max-time 300)
             echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
-              echo "✅ AI Ingestion Started"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
+              echo "✅ AI Ingestion OK"
               exit 0
             fi
             echo "⚠️ Retry in 20s..."

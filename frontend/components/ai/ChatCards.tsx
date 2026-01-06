@@ -16,7 +16,8 @@ import {
     HelpCircle,
     ExternalLink,
     ChevronRight,
-    Target
+    Target,
+    Building2
 } from "lucide-react";
 import { Card, ChartPayload, Action } from "@/hooks/useAIChat";
 
@@ -888,8 +889,211 @@ export function FairValueCard({ title, data }: FairValueProps) {
 }
 
 // ============================================================
-// Main Card Router
+// Fund Cards (New)
 // ============================================================
+
+interface FundNavProps {
+    data: {
+        fund_id: string;
+        name: string;
+        nav: number | null;
+        currency: string;
+        aum_millions: number | null;
+        is_shariah: boolean;
+        returns_ytd: number | null;
+        returns_1y: number | null;
+        returns_3m: number | null;
+        manager: string | null;
+    };
+}
+
+export function FundNavCard({ data }: FundNavProps) {
+    return (
+        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm relative overflow-hidden">
+            {/* Background Decoration */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full opacity-50 -z-0" />
+
+            <div className="relative z-10">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
+                                Fund
+                            </span>
+                            {data.is_shariah && (
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                    <Target size={10} /> Shariah
+                                </span>
+                            )}
+                        </div>
+                        <h3 className="font-bold text-slate-800 text-lg leading-tight">{data.name}</h3>
+                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Building2 size={12} />
+                            {data.manager || "Unknown Manager"}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Stats (NAV & AUM) */}
+                <div className="flex items-end gap-6 mb-6">
+                    <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wider font-medium mb-0.5">NAV Price</div>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-black text-slate-800">
+                                {data.nav ? formatNumber(data.nav) : "N/A"}
+                            </span>
+                            <span className="text-sm font-bold text-slate-400">{data.currency}</span>
+                        </div>
+                    </div>
+                    {data.aum_millions && (
+                        <div className="pb-1">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium mb-0.5">AUM</div>
+                            <div className="text-lg font-bold text-slate-600">
+                                {formatNumber(data.aum_millions)} M
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Returns Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                    {[
+                        { label: "3 Month", value: data.returns_3m },
+                        { label: "YTD", value: data.returns_ytd },
+                        { label: "1 Year", value: data.returns_1y },
+                    ].map((item, i) => (
+                        <div key={i} className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
+                            <div className="text-[10px] text-slate-400 uppercase mb-1">{item.label}</div>
+                            <div className={`font-bold text-sm ${(item.value || 0) >= 0 ? "text-emerald-600" : "text-red-500"
+                                }`}>
+                                {item.value !== null ? `${item.value > 0 ? '+' : ''}${item.value.toFixed(1)}%` : '-'}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface FundListProps {
+    title?: string;
+    data: {
+        count: number;
+        funds: Array<{
+            fund_id: string;
+            name: string;
+            nav: number | null;
+            returns_ytd: number | null;
+            is_shariah: boolean;
+        }>;
+    };
+    onSymbolClick?: (symbol: string) => void;
+}
+
+export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
+    return (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div className="font-bold text-slate-700 flex items-center gap-2">
+                    <PieChart size={16} className="text-blue-600" />
+                    {title || "Mutual Funds"}
+                </div>
+                <div className="text-xs font-medium text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-100">
+                    {data.count} found
+                </div>
+            </div>
+
+            <div className="divide-y divide-slate-50">
+                {data.funds.map((fund, i) => (
+                    <div
+                        key={i}
+                        className="p-3 hover:bg-slate-50 transition-colors flex items-center gap-3 cursor-pointer group"
+                        onClick={() => onSymbolClick?.(`fund ${fund.fund_id}`)}
+                    >
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="font-bold text-slate-800 text-sm truncate">{fund.name}</div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                {fund.is_shariah && (
+                                    <span className="text-[9px] px-1 rounded bg-emerald-50 text-emerald-600 font-medium">Shariah</span>
+                                )}
+                                <span className="text-[10px] text-slate-400">ID: {fund.fund_id}</span>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            {fund.returns_ytd !== null && (
+                                <div className={`text-sm font-bold ${fund.returns_ytd >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                    {fund.returns_ytd > 0 ? '+' : ''}{fund.returns_ytd.toFixed(1)}%
+                                </div>
+                            )}
+                            {fund.nav && (
+                                <div className="text-[10px] text-slate-400">
+                                    NAV {fund.nav.toFixed(2)}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+            {data.count > data.funds.length && (
+                <div className="p-2 text-center text-xs text-slate-400 italic bg-slate-50/30">
+                    And {data.count - data.funds.length} more...
+                </div>
+            )}
+        </div>
+    );
+}
+
+interface FundMoversProps {
+    title?: string;
+    data: {
+        range: string;
+        funds: Array<{
+            fund_id: string;
+            name: string;
+            return: number;
+        }>;
+    };
+    onSymbolClick?: (symbol: string) => void;
+}
+
+export function FundMoversCard({ title, data, onSymbolClick }: FundMoversProps) {
+    return (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center gap-2">
+                <BarChart3 size={16} className="text-purple-600" />
+                <div className="font-bold text-slate-700">{title}</div>
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-medium ml-auto">
+                    {data.range}
+                </span>
+            </div>
+
+            <div className="divide-y divide-slate-50">
+                {data.funds.map((fund, i) => (
+                    <div
+                        key={i}
+                        className="p-3 hover:bg-purple-50/30 transition-colors flex items-center justify-between gap-3 cursor-pointer"
+                        onClick={() => onSymbolClick?.(`fund ${fund.fund_id}`)}
+                    >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <span className="text-xs font-bold text-slate-400 w-4">{i + 1}</span>
+                            <span className="text-sm font-medium text-slate-700 truncate max-w-[180px]" title={fund.name}>
+                                {fund.name}
+                            </span>
+                        </div>
+                        <div className={`text-sm font-bold ${fund.return >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                            {fund.return > 0 ? '+' : ''}{fund.return.toFixed(1)}%
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 interface ChatCardProps {
     card: Card;
@@ -914,6 +1118,12 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
             return <OwnershipCard title={card.title} data={card.data as any} />;
         case "fair_value":
             return <FairValueCard title={card.title} data={card.data as any} />;
+        case "fund_nav":
+            return <FundNavCard data={card.data as any} />;
+        case "fund_list":
+            return <FundListCard title={card.title} data={card.data as any} onSymbolClick={onSymbolClick} />;
+        case "fund_movers":
+            return <FundMoversCard title={card.title} data={card.data as any} onSymbolClick={onSymbolClick} />;
         case "financial_statement_table":
             return (
                 <FinancialsTableCard

@@ -20,6 +20,7 @@ interface StockPriceChartProps {
     symbol: string;
     change: number;
     changePercent: number;
+    lastPrice?: number;  // Live price from market_tickers
 }
 
 const PERIODS = [
@@ -59,7 +60,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-export default function StockPriceChart({ data, symbol, change, changePercent }: StockPriceChartProps) {
+export default function StockPriceChart({ data, symbol, change, changePercent, lastPrice }: StockPriceChartProps) {
     const [period, setPeriod] = useState('1Y');
     const [hoverData, setHoverData] = useState<OHLCData | null>(null);
 
@@ -103,11 +104,13 @@ export default function StockPriceChart({ data, symbol, change, changePercent }:
     const color = isPositive ? '#10b981' : '#ef4444'; // Emerald-500 or Red-500
     const gradientId = `chartGradient-${symbol}`;
 
-    const currentPrice = hoverData ? hoverData.close : last;
+    // Use live price if available, otherwise fall back to OHLC last close
+    const displayPrice = lastPrice ? Number(lastPrice) : last;
+    const currentPrice = hoverData ? hoverData.close : displayPrice;
     const priceChange = hoverData
         ? (hoverData.close - first)
-        : (last - first);
-    const priceChangePct = (priceChange / first) * 100;
+        : (displayPrice - first);
+    const priceChangePct = first > 0 ? (priceChange / first) * 100 : 0;
 
     return (
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">

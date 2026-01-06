@@ -276,6 +276,7 @@ export default function EGXStockProfilePage() {
                             symbol={symbol}
                             change={stock.change}
                             changePercent={stock.change_percent}
+                            lastPrice={stock.last_price}
                         />
 
                         {/* 2. Key Metrics Grid (Restored 8-grid plus gauges) */}

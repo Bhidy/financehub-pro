@@ -37,6 +37,16 @@ interface MutualFund {
     eligibility: string | null;
     investment_strategy: string | null;
     establishment_date: string | null;
+    // Decypha Fields
+    aum_millions: number | string | null;
+    is_shariah: boolean | null;
+    currency: string | null;
+    returns_3m: number | string | null;
+    returns_1y: number | string | null;
+    returns_ytd: number | string | null;
+    fund_type: string | null;
+    manager: string | null;
+    issuer: string | null;
 }
 
 // Mini chart component for each fund card - shows real NAV or simulated trend
@@ -107,12 +117,25 @@ function MiniNavChart({ fundId, ytdReturn }: { fundId: string; ytdReturn?: numbe
 type SortOption = "name" | "nav" | "performance";
 type PeriodOption = "3m" | "ytd" | "1y" | "3y" | "5y";
 
-const metricConfig: Record<PeriodOption, { label: string, key: keyof MutualFund }> = {
-    "3m": { label: "3 Months Return", key: "profit_3month" },
-    "ytd": { label: "YTD Return", key: "ytd_return" },
-    "1y": { label: "1 Year Return", key: "one_year_return" },
+// Metric Config (Mapped to preferred columns)
+const metricConfig: Record<PeriodOption, { label: string, key: keyof MutualFund | string }> = {
+    "3m": { label: "3 Months Return", key: "returns_3m" },
+    "ytd": { label: "YTD Return", key: "returns_ytd" },
+    "1y": { label: "1 Year Return", key: "returns_1y" },
     "3y": { label: "3 Years Return", key: "three_year_return" },
     "5y": { label: "5 Years Return", key: "five_year_return" },
+};
+
+// Helper to get metric value with fallback to legacy columns
+const getMetric = (fund: MutualFund, period: PeriodOption): number => {
+    let val: any = null;
+    if (period === "3m") val = fund.returns_3m ?? fund.profit_3month;
+    else if (period === "ytd") val = fund.returns_ytd ?? fund.ytd_return;
+    else if (period === "1y") val = fund.returns_1y ?? fund.one_year_return;
+    else if (period === "3y") val = fund.three_year_return;
+    else if (period === "5y") val = fund.five_year_return;
+
+    return safeNumber(val) || 0;
 };
 
 export default function MutualFundsPage() {
@@ -146,9 +169,8 @@ export default function MutualFundsPage() {
             if (sortBy === "nav") return (Number(b.latest_nav) || 0) - (Number(a.latest_nav) || 0);
 
             // Sort by Performance based on SELECTED PERIOD
-            const key = metricConfig[selectedPeriod].key;
-            const valA = Number(a[key] || -9999);
-            const valB = Number(b[key] || -9999);
+            const valA = getMetric(a, selectedPeriod);
+            const valB = getMetric(b, selectedPeriod);
             return valB - valA;
         });
 
@@ -158,13 +180,13 @@ export default function MutualFundsPage() {
     const currentMetricInfo = metricConfig[selectedPeriod];
 
     // Calculate Averages for the selected period across visible funds
-    const fundsWithData = funds.filter((f: MutualFund) => safeNumber(f[currentMetricInfo.key]) !== null);
+    const fundsWithData = funds.filter((f: MutualFund) => safeNumber(getMetric(f, selectedPeriod)) !== null);
     const avgReturn = fundsWithData.length > 0
-        ? fundsWithData.reduce((sum: number, f: MutualFund) => sum + (Number(f[currentMetricInfo.key]) || 0), 0) / fundsWithData.length
+        ? fundsWithData.reduce((sum: number, f: MutualFund) => sum + (getMetric(f, selectedPeriod) || 0), 0) / fundsWithData.length
         : 0;
 
-    const positiveCount = fundsWithData.filter((f: MutualFund) => (Number(f[currentMetricInfo.key]) || 0) > 0).length;
-    const negativeCount = fundsWithData.filter((f: MutualFund) => (Number(f[currentMetricInfo.key]) || 0) < 0).length;
+    const positiveCount = fundsWithData.filter((f: MutualFund) => (getMetric(f, selectedPeriod) || 0) > 0).length;
+    const negativeCount = fundsWithData.filter((f: MutualFund) => (getMetric(f, selectedPeriod) || 0) < 0).length;
 
     const avgNav = funds.length > 0
         ? funds.reduce((sum: number, f: MutualFund) => sum + (Number(f.latest_nav) || 0), 0) / funds.length
@@ -332,10 +354,8 @@ export default function MutualFundsPage() {
                         </div>
                     ) : (
                         filteredFunds?.slice(0, 30).map((fund: MutualFund) => {
-                            const returnKey = currentMetricInfo.key;
-                            const rawVal = fund[returnKey];
-                            const returnValue = safeNumber(rawVal) || 0;
-                            const hasReturnValue = rawVal !== null && rawVal !== undefined && rawVal !== '';
+                            const returnValue = getMetric(fund, selectedPeriod);
+                            const hasReturnValue = returnValue !== null && returnValue !== 0; // approximate check
                             const isPositive = returnValue >= 0;
 
                             const sharpeRatio = safeNumber(fund.sharpe_ratio);
@@ -355,18 +375,25 @@ export default function MutualFundsPage() {
                                                 </h3>
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                                                     <Shield className="w-3 h-3" />
-                                                    {fund.manager_name_en || fund.manager_name}
+                                                    {fund.manager || fund.manager_name_en || fund.manager_name}
                                                 </div>
                                             </div>
-                                            <span className={clsx(
-                                                "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0 border",
-                                                fund.fund_type?.includes("Real Estate") ? "bg-amber-50 text-amber-700 border-amber-100" :
-                                                    fund.fund_type?.includes("Equity") ? "bg-blue-50 text-blue-700 border-blue-100" :
-                                                        fund.fund_type?.includes("Money") ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                                            "bg-slate-50 text-slate-600 border-slate-100"
-                                            )}>
-                                                {fund.fund_type?.split(' ')[0] || 'Fund'}
-                                            </span>
+                                            <div className="flex flex-col gap-1 items-end">
+                                                <span className={clsx(
+                                                    "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0 border",
+                                                    fund.fund_type?.includes("Real Estate") ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                                        fund.fund_type?.includes("Equity") ? "bg-blue-50 text-blue-700 border-blue-100" :
+                                                            fund.fund_type?.includes("Money") ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                                                                "bg-slate-50 text-slate-600 border-slate-100"
+                                                )}>
+                                                    {fund.fund_type?.split(' ')[0] || 'Fund'}
+                                                </span>
+                                                {fund.is_shariah && (
+                                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                        Shariah
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Metrics Grid */}
@@ -377,6 +404,11 @@ export default function MutualFundsPage() {
                                                     {Number(fund.latest_nav).toFixed(2)}
                                                     <span className="text-[10px] text-slate-400 font-sans">{config.currency}</span>
                                                 </div>
+                                                {fund.aum_millions && (
+                                                    <div className="text-[10px] text-slate-400 font-bold mt-1">
+                                                        AUM: {(Number(fund.aum_millions) / 1000000).toFixed(1)}M
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className={clsx(
                                                 "rounded-2xl p-3 border",

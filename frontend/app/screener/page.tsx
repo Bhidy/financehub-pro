@@ -208,56 +208,62 @@ export default function ScreenerPage() {
                                         </div>
                                     </td>
                                 </tr>
-                            ) : results.map((r: any, i: number) => (
-                                <tr key={r.symbol} className={clsx(
-                                    "hover:bg-blue-50/50 transition-colors group cursor-pointer",
-                                    i % 2 === 0 ? "bg-white" : "bg-slate-50/30"
-                                )}>
-                                    <td className="px-6 py-4">
-                                        <Link href={`/symbol/${r.symbol}`} className="flex items-center gap-3">
-                                            <span className={clsx(
-                                                "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white",
-                                                Number(r.change_percent) >= 0
-                                                    ? "bg-gradient-to-br from-emerald-400 to-teal-500"
-                                                    : "bg-gradient-to-br from-red-400 to-rose-500"
-                                            )}>
-                                                {r.symbol.slice(0, 2)}
+                            ) : results.map((r: any, i: number) => {
+                                // Route EGX stocks (3-5 letters) to /egx/, Saudi (4 digits) to /symbol/
+                                const isEgxStock = /^[A-Z]{3,5}$/.test(r.symbol?.toUpperCase() || '');
+                                const profileUrl = isEgxStock ? `/egx/${r.symbol}` : `/symbol/${r.symbol}`;
+
+                                return (
+                                    <tr key={r.symbol} className={clsx(
+                                        "hover:bg-blue-50/50 transition-colors group cursor-pointer",
+                                        i % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                                    )}>
+                                        <td className="px-6 py-4">
+                                            <Link href={profileUrl} className="flex items-center gap-3">
+                                                <span className={clsx(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white",
+                                                    Number(r.change_percent) >= 0
+                                                        ? "bg-gradient-to-br from-emerald-400 to-teal-500"
+                                                        : "bg-gradient-to-br from-red-400 to-rose-500"
+                                                )}>
+                                                    {r.symbol.slice(0, 2)}
+                                                </span>
+                                                <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{r.symbol}</span>
+                                            </Link>
+                                        </td>
+                                        <td className="px-6 py-4 font-medium text-slate-700 max-w-[200px] truncate">{r.name_en}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                                {r.sector_name}
                                             </span>
-                                            <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{r.symbol}</span>
-                                        </Link>
-                                    </td>
-                                    <td className="px-6 py-4 font-medium text-slate-700 max-w-[200px] truncate">{r.name_en}</td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                                            {r.sector_name}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right font-mono font-bold text-slate-900">
-                                        {Number(r.last_price).toFixed(2)}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className={clsx(
-                                            "inline-flex items-center gap-1 font-bold",
-                                            Number(r.change_percent) >= 0 ? "text-emerald-600" : "text-red-600"
-                                        )}>
-                                            {Number(r.change_percent) >= 0
-                                                ? <ArrowUpRight className="w-4 h-4" />
-                                                : <ArrowDownRight className="w-4 h-4" />
-                                            }
-                                            {Number(r.change_percent).toFixed(2)}%
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right font-mono text-blue-600 font-bold">
-                                        {(r.volume / 1000000).toFixed(2)}M
-                                    </td>
-                                    <td className="px-6 py-4 text-right font-mono text-orange-600 font-bold">
-                                        {r.pe_ratio || "—"}
-                                    </td>
-                                    <td className="px-6 py-4 text-right font-mono text-teal-600 font-bold">
-                                        {r.market_cap_b || "—"}
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-mono font-bold text-slate-900">
+                                            {Number(r.last_price).toFixed(2)}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <span className={clsx(
+                                                "inline-flex items-center gap-1 font-bold",
+                                                Number(r.change_percent) >= 0 ? "text-emerald-600" : "text-red-600"
+                                            )}>
+                                                {Number(r.change_percent) >= 0
+                                                    ? <ArrowUpRight className="w-4 h-4" />
+                                                    : <ArrowDownRight className="w-4 h-4" />
+                                                }
+                                                {Number(r.change_percent).toFixed(2)}%
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-mono text-blue-600 font-bold">
+                                            {(r.volume / 1000000).toFixed(2)}M
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-mono text-orange-600 font-bold">
+                                            {r.pe_ratio || "—"}
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-mono text-teal-600 font-bold">
+                                            {r.market_cap_b || "—"}
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                     {results.length === 0 && !isLoading && (

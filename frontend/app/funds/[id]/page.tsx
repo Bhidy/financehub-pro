@@ -38,6 +38,53 @@ const safeNumber = (val: any): number | null => {
 
 type ChartPeriod = "1M" | "3M" | "1Y" | "3Y" | "5Y" | "ALL";
 
+interface FundDetails {
+    fund_id: string;
+    fund_name: string;
+    fund_name_en: string | null;
+    symbol: string | null;
+    market_code: string | null;
+    currency: string | null;
+    latest_nav: number;
+    last_updated: string | null;
+
+    // Classification
+    fund_type: string | null;
+    classification: string | null;
+    eligibility: string | null;
+    investment_strategy: string | null;
+    establishment_date: string | null;
+
+    // People
+    manager_name: string | null;
+    manager_name_en: string | null;
+    manager: string | null;
+    owner_name: string | null;
+    owner_name_en: string | null;
+    issuer: string | null;
+
+    // Metrics (Legacy & New)
+    ytd_return: number | null;
+    one_year_return: number | null;
+    three_year_return: number | null;
+    five_year_return: number | null;
+    profit_3month: number | null;
+    profit_6month: number | null;
+    profit_month: number | null;
+    profit_week: number | null;
+    profit_52w_high: number | null;
+    profit_52w_low: number | null;
+
+    returns_3m: number | null;
+    returns_1y: number | null;
+    returns_ytd: number | null;
+
+    aum_millions: number | null;
+    is_shariah: boolean | null;
+    sharpe_ratio: number | null;
+    standard_deviation: number | null;
+}
+
 export default function FundDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -45,7 +92,7 @@ export default function FundDetailPage() {
     const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("ALL");
 
     // 1. Fetch Fund Metadata
-    const { data: fund, isLoading: loadingFund, isError: isFundError } = useQuery({
+    const { data: fundRaw, isLoading: loadingFund, isError: isFundError } = useQuery({
         queryKey: ["fund", fundId],
         queryFn: async () => {
             if (!fundId) throw new Error("No Fund ID");
@@ -54,6 +101,8 @@ export default function FundDetailPage() {
         enabled: !!fundId,
         staleTime: 1000 * 60 * 5,
     });
+
+    const fund = fundRaw as unknown as FundDetails;
 
     // 2. Fetch Full History
     const { data: history = [], isLoading: loadingHistory } = useQuery({
@@ -290,8 +339,9 @@ export default function FundDetailPage() {
                             </h3>
                             <div className="space-y-4 relative z-10">
                                 {[
-                                    { label: "YTD", val: fund.ytd_return, isDb: true },
-                                    { label: "1 Year", val: fund.one_year_return ?? ret1Y, isDb: !!safeNumber(fund.one_year_return) },
+                                    { label: "3 Months", val: fund.returns_3m ?? fund.profit_3month, isDb: !!safeNumber(fund.returns_3m ?? fund.profit_3month) },
+                                    { label: "YTD", val: fund.returns_ytd ?? fund.ytd_return, isDb: !!safeNumber(fund.returns_ytd ?? fund.ytd_return) },
+                                    { label: "1 Year", val: fund.returns_1y ?? fund.one_year_return ?? ret1Y, isDb: !!safeNumber(fund.returns_1y ?? fund.one_year_return) },
                                     { label: "3 Years", val: fund.three_year_return ?? ret3Y, isDb: !!safeNumber(fund.three_year_return) },
                                     { label: "5 Years", val: fund.five_year_return ?? ret5Y, isDb: !!safeNumber(fund.five_year_return) },
                                 ].map((item, i) => {
@@ -354,13 +404,19 @@ export default function FundDetailPage() {
                     </div>
                 )}
 
-                {/* Fund Profile Info - Complete Details */}
                 <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-50 to-orange-50 rounded-full blur-2xl pointer-events-none"></div>
                     <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
                         <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-lg">📋</span>
                         Fund Profile
                     </h3>
+                    {fund.is_shariah && (
+                        <div className="mb-4 relative z-10">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">
+                                <Shield className="w-3.5 h-3.5" /> Shariah Compliant
+                            </span>
+                        </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
                         {/* Fund Manager */}
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
@@ -368,15 +424,23 @@ export default function FundDetailPage() {
                                 <User className="w-3 h-3" /> Fund Manager
                             </div>
                             <div className="text-sm font-bold text-slate-800">
-                                {fund.manager_name_en || fund.manager_name || "—"}
+                                {fund.manager || fund.manager_name_en || fund.manager_name || "—"}
                             </div>
                         </div>
 
-                        {/* Owner */}
+                        {/* Issuer */}
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">🏛️ Owner</div>
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">🏛️ Issuer</div>
                             <div className="text-sm font-bold text-slate-800">
-                                {fund.owner_name_en || fund.owner_name || fund.manager_name_en || "—"}
+                                {fund.issuer || fund.owner_name_en || fund.owner_name || "—"}
+                            </div>
+                        </div>
+
+                        {/* AUM */}
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">💰 AUM</div>
+                            <div className="text-sm font-bold text-slate-800 font-mono">
+                                {fund.aum_millions ? `${(Number(fund.aum_millions) / 1000000).toLocaleString()}M ${fund.currency || 'EGP'}` : "—"}
                             </div>
                         </div>
 
@@ -416,19 +480,9 @@ export default function FundDetailPage() {
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                             <div className="text-xs font-bold text-slate-400 uppercase mb-1">📂 Classification</div>
                             <div className="text-sm font-bold text-slate-800">
-                                {fund.classification || fund.fund_type || "Mutual Fund"}
+                                {fund.fund_type || fund.classification || "Mutual Fund"}
                             </div>
                         </div>
-
-                        {/* Symbol */}
-                        {fund.symbol && (
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                <div className="text-xs font-bold text-slate-400 uppercase mb-1">🏷️ Symbol</div>
-                                <div className="text-sm font-bold text-blue-600 font-mono">
-                                    {fund.symbol}
-                                </div>
-                            </div>
-                        )}
 
                         {/* Latest NAV */}
                         <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">

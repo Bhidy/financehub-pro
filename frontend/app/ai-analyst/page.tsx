@@ -110,16 +110,6 @@ export default function AIAnalystPage() {
                     { text: `${stocks.bank} major shareholders`, icon: PieChart, gradient: "from-indigo-500 to-blue-600" },
                 ]
             },
-            {
-                id: 'chat',
-                label: '💬 Chat', // NEW CONVERSATIONAL CATEGORY
-                suggestions: [
-                    { text: "Hello! Who are you?", icon: MessageCircle, gradient: "from-pink-500 to-rose-500" },
-                    { text: "What is P/E Ratio?", icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
-                    { text: "What can you do?", icon: Zap, gradient: "from-blue-500 to-cyan-500" },
-                    { text: "Explain Market Cap", icon: Activity, gradient: "from-emerald-500 to-teal-500" },
-                ]
-            },
         ];
     }, [market]);
 

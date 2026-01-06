@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
 
+// Force dynamic to prevent Vercel caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
 

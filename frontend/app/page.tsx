@@ -27,11 +27,24 @@ import {
   Building2,
   ChevronRight
 } from "lucide-react";
+import { useMarketSafe } from "@/contexts/MarketContext";
 
 export default function Home() {
-  const { data: tickers = [], isLoading } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers });
-  const { data: sectors = [] } = useQuery({ queryKey: ["sectors"], queryFn: fetchSectors });
-  const { data: marketSummary } = useQuery({ queryKey: ["market-summary"], queryFn: fetchMarketSummary });
+  const { market, config, isEgypt, isSaudi } = useMarketSafe();
+
+  // API calls with market filter
+  const { data: tickers = [], isLoading } = useQuery({
+    queryKey: ["tickers", market],
+    queryFn: async () => {
+      const allTickers = await fetchTickers();
+      // Filter tickers by current market
+      return allTickers.filter((t: Ticker) =>
+        isEgypt ? t.market_code === 'EGX' : t.market_code !== 'EGX'
+      );
+    }
+  });
+  const { data: sectors = [] } = useQuery({ queryKey: ["sectors", market], queryFn: fetchSectors });
+  const { data: marketSummary } = useQuery({ queryKey: ["market-summary", market], queryFn: fetchMarketSummary });
   const [chartPeriod, setChartPeriod] = useState("1D");
 
   // Computed Lists - wrapped with safe array handling
@@ -111,12 +124,12 @@ export default function Home() {
                 <h1 className="text-3xl font-black tracking-tight">Market Overview</h1>
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm flex items-center gap-1">
                   <Building2 className="w-3 h-3" />
-                  Saudi Exchange
+                  {isEgypt ? 'Egyptian Exchange' : 'Saudi Exchange'}
                 </span>
               </div>
               <p className="text-blue-100 font-medium flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                Real-time market data from Tadawul • <span className="text-blue-200 text-sm">Prices delayed up to 5 min</span>
+                Real-time market data from {isEgypt ? 'EGX' : 'Tadawul'} • <span className="text-blue-200 text-sm">Prices delayed up to 5 min</span>
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -187,13 +200,13 @@ export default function Home() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-6">
-          {/* TASI Index Card - Premium Design */}
+          {/* Market Index Card - Premium Design */}
           <div className="col-span-12 lg:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
             <div className="p-6 border-b border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">TASI Index</span>
+                    <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">{isEgypt ? 'EGX 30 Index' : 'TASI Index'}</span>
                     <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">DELAYED 5 MIN</span>
                   </div>
                   <div className="flex items-baseline gap-4">

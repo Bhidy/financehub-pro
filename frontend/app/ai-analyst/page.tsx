@@ -1,7 +1,7 @@
 "use client";
 
 import { useAIChat } from "@/hooks/useAIChat";
-import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, History, ChevronLeft, BarChart3, MessageSquarePlus, Paperclip, Mic, ShieldCheck, Zap, Activity, Building2 } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, History, ChevronLeft, BarChart3, MessageSquarePlus, Paperclip, Mic, ShieldCheck, Zap, Activity, Building2, MessageCircle } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -108,6 +108,16 @@ export default function AIAnalystPage() {
                     { text: `Who owns ${stocks.main}? (Institutional vs public)`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
                     { text: `Insider trading in ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
                     { text: `${stocks.bank} major shareholders`, icon: PieChart, gradient: "from-indigo-500 to-blue-600" },
+                ]
+            },
+            {
+                id: 'chat',
+                label: '💬 Chat', // NEW CONVERSATIONAL CATEGORY
+                suggestions: [
+                    { text: "Hello! Who are you?", icon: MessageCircle, gradient: "from-pink-500 to-rose-500" },
+                    { text: "What is P/E Ratio?", icon: Sparkles, gradient: "from-violet-500 to-purple-600" },
+                    { text: "What can you do?", icon: Zap, gradient: "from-blue-500 to-cyan-500" },
+                    { text: "Explain Market Cap", icon: Activity, gradient: "from-emerald-500 to-teal-500" },
                 ]
             },
         ];

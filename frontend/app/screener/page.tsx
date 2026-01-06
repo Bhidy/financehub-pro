@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchScreener, fetchSectors } from "@/lib/api";
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
     ScanLine,
@@ -17,8 +17,11 @@ import {
     ArrowUpRight,
     ArrowDownRight
 } from "lucide-react";
+import { useMarketSafe } from "@/contexts/MarketContext";
 
 export default function ScreenerPage() {
+    const { market, isEgypt } = useMarketSafe();
+
     const [filters, setFilters] = useState({
         min_price: 0,
         max_price: 500,
@@ -27,11 +30,21 @@ export default function ScreenerPage() {
         order: "desc"
     });
 
-    const { data: sectors = [] } = useQuery({ queryKey: ["sectors"], queryFn: fetchSectors });
-    const { data: results = [], isLoading } = useQuery({
-        queryKey: ["screener", filters],
+    const { data: sectors = [] } = useQuery({ queryKey: ["sectors", market], queryFn: fetchSectors });
+    const { data: allResults = [], isLoading } = useQuery({
+        queryKey: ["screener", filters, market],
         queryFn: () => fetchScreener(filters)
     });
+
+    // Filter results by selected market
+    const results = useMemo(() => {
+        if (!allResults || allResults.length === 0) return [];
+        return allResults.filter((r: any) =>
+            isEgypt
+                ? r.market_code === 'EGX' || (r.symbol && /^[A-Z]{3,5}$/.test(r.symbol))
+                : r.market_code !== 'EGX' && (r.symbol && /^\d{4}$/.test(r.symbol))
+        );
+    }, [allResults, isEgypt]);
 
     const handleFilterChange = (key: string, value: any) => {
         setFilters(prev => ({ ...prev, [key]: value }));

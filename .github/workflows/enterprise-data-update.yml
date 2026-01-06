@@ -2,270 +2,168 @@ name: Enterprise Data Update System
 
 on:
   schedule:
-    # Daily OHLC & Funds: 6:00 PM UTC (9:00 PM Saudi Time) - after market close
-    - cron: '0 18 * * 0-4'
+    # PRICES: Every 5 min during market hours (6-13 UTC = 9-16 Saudi/Cairo)
+    - cron: '*/5 6-13 * * 0-4'
     
-    # Intraday News & Actions: Every 4 hours
-    - cron: '0 */4 * * 0-4'
+    # DAILY SYNC: 6 PM Saudi (15:00 UTC)
+    - cron: '0 15 * * 0-4'
+    
+    # EGYPT FUNDS: 7 PM Saudi (16:00 UTC)
+    - cron: '0 16 * * 0-4'
+    
+    # AI INGESTION: 8 PM Saudi (17:00 UTC)
+    - cron: '0 17 * * 0-4'
     
   workflow_dispatch:
     inputs:
-      update_type:
-        description: 'Type of update to run'
+      job_type:
+        description: 'Job to Run'
         required: true
-        default: 'all'
+        default: 'prices'
         type: choice
         options:
-          - all
-          - ohlc_only
-          - funds_only
-          - actions_only
-          - news_only
-          - test_database
+          - prices
+          - daily
+          - egypt-funds
+          - ingestion
+          - backfill
 
 env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  HF_API_BASE: https://bhidy-financehub-api.hf.space/api/v1/admin
 
 jobs:
-  # =========================================================================
-  # JOB 1: DAILY OHLC HISTORY
-  # =========================================================================
-  update-daily-ohlc:
-    name: 📈 Daily OHLC Update
+  # ============================================================
+  # UNIFIED WATCHDOG - Single Job, All Updates via HF Space API
+  # ============================================================
+  watchdog:
+    name: 🐕 Enterprise Watchdog
     runs-on: ubuntu-latest
-    if: github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'ohlc_only' || github.event_name == 'schedule'
     timeout-minutes: 30
     
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Dependencies
-        run: pip install asyncpg yfinance pandas
-        
-      - name: Update Live Stock Prices
-        id: update_prices
-        run: python scripts/fetch_yahoo_data.py
-        continue-on-error: true
-        
-      - name: Update OHLC History
-        id: update_ohlc
-        run: python scripts/daily_ohlc_update.py
-        continue-on-error: true
-        
-      - name: Send Failure Email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        continue-on-error: true
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.NOTIFICATION_EMAIL }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "🚨 FinanceHub Alert: Daily OHLC Update FAILED"
-          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
-          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
-          body: |
-            ⚠️ DAILY OHLC UPDATE FAILED
-            Run ID: ${{ github.run_id }}
-            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: 🚀 Start Watchdog
+        run: echo "Enterprise Watchdog starting at $(date)"
 
-  # =========================================================================
-  # JOB 2: MUTUAL FUND NAVs
-  # =========================================================================
-  update-fund-navs:
-    name: 💼 Fund NAV Update
-    runs-on: ubuntu-latest
-    if: github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'funds_only' || github.event_name == 'schedule'
-    timeout-minutes: 20
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Dependencies
-        run: pip install asyncpg
-        
-      - name: Update Fund NAVs
-        run: python scripts/update_fund_navs.py
-        
-      - name: Send Failure Email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        continue-on-error: true
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.NOTIFICATION_EMAIL }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "🚨 FinanceHub Alert: Fund NAV Update FAILED"
-          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
-          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
-          body: |
-            ⚠️ FUND NAV UPDATE FAILED
-            Run ID: ${{ github.run_id }}
-            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # ============================================================
+      # JOB 1: PRICE REFRESH (Every 5 min during market hours)
+      # ============================================================
+      - name: 📈 Price Refresh
+        if: |
+          (github.event_name == 'schedule' && contains(github.event.schedule, '*/5')) ||
+          (github.event.inputs.job_type == 'prices')
+        run: |
+          echo "Triggering Price Refresh..."
+          for i in 1 2 3; do
+            echo "Attempt $i..."
+            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/prices" \
+              -H "Content-Type: application/json" --max-time 120)
+            echo "Response: $response"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Price Refresh Started"
+              exit 0
+            fi
+            echo "⚠️ Retry in 20s..."
+            sleep 20
+          done
+          echo "❌ Price Refresh failed after 3 attempts"
+          exit 1
 
-  # =========================================================================
-  # JOB 3: CORPORATE ACTIONS (Dividends)
-  # =========================================================================
-  update-corporate-actions:
-    name: 🎁 Corporate Actions
-    runs-on: ubuntu-latest
-    if: github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'actions_only' || github.event_name == 'schedule'
-    timeout-minutes: 20
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Dependencies
-        run: pip install asyncpg yfinance pandas
-        
-      - name: Update Corporate Actions
-        run: python scripts/update_corporate_actions.py
-        
-      - name: Send Failure Email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        continue-on-error: true
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.NOTIFICATION_EMAIL }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "🚨 FinanceHub Alert: Corporate Actions Update FAILED"
-          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
-          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
-          body: |
-            ⚠️ CORPORATE ACTIONS UPDATE FAILED
-            Run ID: ${{ github.run_id }}
-            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # ============================================================
+      # JOB 2: DAILY SYNC (6 PM Saudi - OHLC + Financials)
+      # ============================================================
+      - name: 📊 Daily EOD Sync
+        if: |
+          (github.event_name == 'schedule' && contains(github.event.schedule, '0 15')) ||
+          (github.event.inputs.job_type == 'daily')
+        run: |
+          echo "Triggering Daily EOD Sync..."
+          for i in 1 2 3; do
+            echo "Attempt $i..."
+            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/daily" \
+              -H "Content-Type: application/json" --max-time 300)
+            echo "Response: $response"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Daily Sync Started"
+              exit 0
+            fi
+            echo "⚠️ Retry in 20s..."
+            sleep 20
+          done
+          echo "❌ Daily Sync failed after 3 attempts"
+          exit 1
 
-  # =========================================================================
-  # JOB 4: MARKET NEWS
-  # =========================================================================
-  update-news:
-    name: 📰 Market News
-    runs-on: ubuntu-latest
-    if: github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'news_only' || github.event_name == 'schedule'
-    timeout-minutes: 10
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Dependencies
-        run: pip install asyncpg
-        
-      - name: Update News
-        run: python scripts/update_news.py
-        
-      - name: Send Failure Email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        continue-on-error: true
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.NOTIFICATION_EMAIL }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "🚨 FinanceHub Alert: News Update FAILED"
-          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
-          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
-          body: |
-            ⚠️ NEWS UPDATE FAILED
-            Run ID: ${{ github.run_id }}
-            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # ============================================================
+      # JOB 3: EGYPT FUNDS (7 PM Saudi)
+      # ============================================================
+      - name: 💰 Egypt Funds Sync
+        if: |
+          (github.event_name == 'schedule' && contains(github.event.schedule, '0 16')) ||
+          (github.event.inputs.job_type == 'egypt-funds')
+        run: |
+          echo "Triggering Egypt Funds Sync..."
+          for i in 1 2 3; do
+            echo "Attempt $i..."
+            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/egypt-funds" \
+              -H "Content-Type: application/json" --max-time 180)
+            echo "Response: $response"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Egypt Funds Sync Started"
+              exit 0
+            fi
+            echo "⚠️ Retry in 20s..."
+            sleep 20
+          done
+          echo "❌ Egypt Funds Sync failed after 3 attempts"
+          exit 1
 
-  # =========================================================================
-  # JOB 5: DATA HEALTH VERIFICATION
-  # =========================================================================
-  verify-data-health:
-    name: 🏥 Data Health Check
-    runs-on: ubuntu-latest
-    needs: [update-daily-ohlc, update-fund-navs, update-corporate-actions, update-news]
-    if: always()
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Dependencies
-        run: pip install asyncpg
-        
-      - name: Verify Data Integrity
-        id: health
-        run: python scripts/verify_data_integrity.py
-        continue-on-error: true
-        
-      - name: Send Daily Success Email
+      # ============================================================
+      # JOB 4: AI INGESTION (8 PM Saudi)
+      # ============================================================
+      - name: 🤖 AI Knowledge Ingestion
+        if: |
+          (github.event_name == 'schedule' && contains(github.event.schedule, '0 17')) ||
+          (github.event.inputs.job_type == 'ingestion')
+        run: |
+          echo "Triggering AI Ingestion..."
+          for i in 1 2 3; do
+            echo "Attempt $i..."
+            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/ingestion" \
+              -H "Content-Type: application/json" --max-time 300)
+            echo "Response: $response"
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ AI Ingestion Started"
+              exit 0
+            fi
+            echo "⚠️ Retry in 20s..."
+            sleep 20
+          done
+          echo "❌ AI Ingestion failed after 3 attempts"
+          exit 1
+
+      # ============================================================
+      # JOB 5: BACKFILL (Manual Only)
+      # ============================================================
+      - name: 📚 Historical Backfill
+        if: github.event.inputs.job_type == 'backfill'
+        run: |
+          echo "Triggering Historical Backfill..."
+          response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/backfill" \
+            -H "Content-Type: application/json" --max-time 1800)
+          echo "Response: $response"
+
+      # ============================================================
+      # ALERTING SYSTEM
+      # ============================================================
+      - name: ✅ Discord Success Alert
         if: success()
-        uses: dawidd6/action-send-mail@v3
-        continue-on-error: true
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.NOTIFICATION_EMAIL }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "✅ FinanceHub Daily Update Complete - All Systems Go"
-          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
-          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
-          body: |
-            ✅ DAILY DATA UPDATE COMPLETED SUCCESSFULLY
-            
-            Date: ${{ github.run_id }}
-            
-            All systems verified:
-            - OHLC History: Updated
-            - Funds: Updated
-            - Corporate Actions: Updated
-            - Market News: Updated
-            
-            View your site: https://finhub-pro.vercel.app
-            
-            — FinanceHub Pro Automation
-            
-      - name: Send Failure Alert Email
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"content": "✅ **FinanceHub Watchdog**: Auto-update cycle completed successfully at '"$(date)"'"}'
+          
+      - name: 🚨 Discord Failure Alert
         if: failure()
-        uses: dawidd6/action-send-mail@v3
-        continue-on-error: true
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.NOTIFICATION_EMAIL }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "🚨🚨 URGENT: FinanceHub Data Health Check FAILED"
-          to: "${{ secrets.NOTIFICATION_EMAIL }},m.mostafa@mubasher.net"
-          from: FinanceHub Pro <${{ secrets.NOTIFICATION_EMAIL }}>
-          body: |
-            🚨🚨 CRITICAL: DATA HEALTH CHECK FAILED 🚨🚨
-            
-            Immediate action required!
-            Run ID: ${{ github.run_id }}
-            Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"content": "🚨 **CRITICAL**: FinanceHub Watchdog FAILED! Check: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

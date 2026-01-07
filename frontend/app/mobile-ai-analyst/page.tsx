@@ -18,7 +18,7 @@ import { MobileInput } from "./components/MobileInput";
 import { MobileSuggestions } from "./components/MobileSuggestions";
 
 export default function MobileAIAnalystPage() {
-    const { query, setQuery, messages, isLoading, handleSend, handleAction } = useAIChat();
+    const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat();
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const { sessions, saveSession, loadSession, deleteSession } = useMobileChatHistory();
 
@@ -39,10 +39,9 @@ export default function MobileAIAnalystPage() {
         }
     }, [messages, saveSession]);
 
+    // Single-click auto-send for suggestions
     const handleSuggestionSelect = (text: string) => {
-        setQuery(text);
-        // Auto-send immediately
-        setTimeout(() => handleSend(), 100);
+        sendDirectMessage(text);
     };
 
     const formatTime = (timestamp: number) => {
@@ -128,8 +127,8 @@ export default function MobileAIAnalystPage() {
                         </motion.div>
                     </div>
                 ) : (
-                    /* Chat State */
-                    <div className="flex flex-col gap-5 px-4 py-4 pb-40">
+                    /* Chat State - Full Width Container */
+                    <div className="flex flex-col gap-5 px-4 py-4 pb-40 w-full max-w-full">
                         {messages.slice(1).map((msg, idx) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}

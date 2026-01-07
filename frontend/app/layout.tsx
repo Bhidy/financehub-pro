@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
-import AppSidebar from "@/components/AppSidebar";
+import ShellWrapper from "@/components/ShellWrapper";
 import { ToastProvider } from "@/components/ToastProvider";
-import ConditionalGlobalSearch from "@/components/ConditionalGlobalSearch";
 
 
 const inter = Inter({
@@ -49,18 +48,10 @@ export default function RootLayout({
         <div id="build-id" data-timestamp={new Date().toISOString()} className="hidden" />
         <Providers>
           <ToastProvider>
-            {/* Enterprise Shell Layout */}
-            <AppSidebar />
-            <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-              {/* Conditional Global Search - Hidden on /funds pages */}
-              <ConditionalGlobalSearch />
-
-              {/* Main Content Area */}
-              <div className="flex-1 overflow-auto">
-                {children}
-              </div>
-            </div>
-
+            {/* ShellWrapper conditionally renders sidebar based on route */}
+            <ShellWrapper>
+              {children}
+            </ShellWrapper>
           </ToastProvider>
         </Providers>
       </body>

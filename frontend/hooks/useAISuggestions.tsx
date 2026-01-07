@@ -1,15 +1,16 @@
 
 import { useMemo } from 'react';
-import { 
-    TrendingUp, 
-    BarChart3, 
-    PieChart, 
-    Activity, 
-    Sparkles, 
-    Zap, 
-    ShieldCheck, 
-    Building2, 
-    Newspaper 
+import {
+    TrendingUp,
+    BarChart3,
+    PieChart,
+    Activity,
+    Sparkles,
+    Zap,
+    ShieldCheck,
+    Building2,
+    Newspaper,
+    FileText
 } from 'lucide-react';
 import { useMarketSafe } from '@/contexts/MarketContext';
 
@@ -24,8 +25,8 @@ export function useAISuggestions() {
     const suggestionCategories = useMemo(() => {
         const isEgypt = market === 'EGX';
         const stocks = isEgypt
-            ? { main: "CIB", second: "SWDY", bank: "COMI" }
-            : { main: "Aramco", second: "Al Rajhi", bank: "SNB" };
+            ? { main: "CIB", second: "SWDY", bank: "COMI", pharma: "PHDC" }
+            : { main: "Aramco", second: "Al Rajhi", bank: "SNB", pharma: "2070" };
 
         return [
             {
@@ -35,60 +36,131 @@ export function useAISuggestions() {
                     { text: `${stocks.main} price now`, icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
                     { text: "Top gainers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
                     { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
-                    { text: `RSI for ${stocks.second}`, icon: Activity, gradient: "from-purple-500 to-indigo-500" },
+                    { text: `${stocks.pharma} financials`, icon: FileText, gradient: "from-purple-500 to-indigo-500" },
                 ]
             },
             {
                 id: 'valuation',
                 label: '💎 Valuation',
                 suggestions: [
-                    { text: `Is ${stocks.main} overvalued? (Check PE & PB)`, icon: Sparkles, gradient: "from-blue-500 to-indigo-600" },
-                    { text: `What is the Fair Value of ${stocks.second}?`, icon: DollarSignIcon, gradient: "from-cyan-500 to-blue-600" },
+                    { text: `Is ${stocks.main} overvalued?`, icon: Sparkles, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `PE ratio for ${stocks.second}`, icon: DollarSignIcon, gradient: "from-cyan-500 to-blue-600" },
                     { text: `Show PEG Ratio for ${stocks.bank}`, icon: Zap, gradient: "from-violet-500 to-purple-600" },
-                    { text: `EV/EBITDA for ${stocks.main}`, icon: BarChart3, gradient: "from-slate-500 to-slate-700" },
+                    { text: `Compare ${stocks.main} vs ${stocks.second}`, icon: BarChart3, gradient: "from-slate-500 to-slate-700" },
                 ]
             },
             {
                 id: 'health',
                 label: '🏥 Health',
                 suggestions: [
-                    { text: `Check financial health of ${stocks.main} (Altman Z)`, icon: ShieldCheck, gradient: "from-emerald-500 to-green-600" },
-                    { text: `${stocks.second} Debt to Equity ratio`, icon: Activity, gradient: "from-red-500 to-orange-600" },
-                    { text: `Does ${stocks.bank} have enough cash? (Current Ratio)`, icon: Building2, gradient: "from-teal-500 to-cyan-600" },
-                    { text: `Piotroski F-Score for ${stocks.main}`, icon: Newspaper, gradient: "from-indigo-500 to-blue-600" },
+                    { text: `Financial health of ${stocks.main}`, icon: ShieldCheck, gradient: "from-emerald-500 to-green-600" },
+                    { text: `${stocks.second} Debt to Equity`, icon: Activity, gradient: "from-red-500 to-orange-600" },
+                    { text: `Current ratio for ${stocks.bank}`, icon: Building2, gradient: "from-teal-500 to-cyan-600" },
+                    { text: `ROE for ${stocks.main}`, icon: Newspaper, gradient: "from-indigo-500 to-blue-600" },
                 ]
             },
             {
                 id: 'growth',
                 label: '🚀 Growth',
                 suggestions: [
-                    { text: `${stocks.main} revenue growth last 3 years`, icon: TrendingUp, gradient: "from-amber-500 to-orange-600" },
-                    { text: `Net Income trend for ${stocks.second}`, icon: BarChart3, gradient: "from-blue-500 to-indigo-600" },
-                    { text: `${stocks.bank} profit margin analysis`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
-                    { text: `Compare growth: ${stocks.main} vs ${stocks.second}`, icon: Activity, gradient: "from-purple-500 to-violet-600" },
+                    { text: `${stocks.main} revenue growth`, icon: TrendingUp, gradient: "from-amber-500 to-orange-600" },
+                    { text: `Net Income for ${stocks.second}`, icon: BarChart3, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `${stocks.bank} profit margin`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
+                    { text: `Earnings trend ${stocks.main}`, icon: Activity, gradient: "from-purple-500 to-violet-600" },
                 ]
             },
             {
                 id: 'dividends',
                 label: '💵 Dividends',
                 suggestions: [
-                    { text: `Show dividend history for ${stocks.main}`, icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
-                    { text: `What is the yield of ${stocks.second}?`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
+                    { text: `Dividend history ${stocks.main}`, icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
+                    { text: `Dividend yield ${stocks.second}`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
                     { text: `${stocks.bank} payout ratio`, icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
-                    { text: "Best dividend stocks in EGX30", icon: Sparkles, gradient: "from-amber-400 to-yellow-600" },
+                    { text: "Top dividend stocks", icon: Sparkles, gradient: "from-amber-400 to-yellow-600" },
                 ]
             },
             {
                 id: 'ownership',
                 label: '🤝 Ownership',
                 suggestions: [
-                    { text: `Who owns ${stocks.main}? (Institutional vs public)`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
-                    { text: `Insider trading in ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
-                    { text: `${stocks.bank} major shareholders`, icon: PieChart, gradient: "from-indigo-500 to-blue-600" },
+                    { text: `Who owns ${stocks.main}?`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
+                    { text: `Insider trading ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
+                    { text: `${stocks.bank} shareholders`, icon: PieChart, gradient: "from-indigo-500 to-blue-600" },
                 ]
             },
         ];
     }, [market]);
+
+    return suggestionCategories;
+}
+
+// Egypt-only suggestions for mobile (no market toggle needed)
+export function useEgyptOnlySuggestions() {
+    const suggestionCategories = useMemo(() => {
+        const stocks = { main: "CIB", second: "SWDY", bank: "COMI", pharma: "PHDC" };
+
+        return [
+            {
+                id: 'popular',
+                label: '🔥 Egypt Hot',
+                suggestions: [
+                    { text: `${stocks.main} price now`, icon: TrendingUp, gradient: "from-emerald-500 to-teal-600" },
+                    { text: "Top gainers today", icon: BarChart3, gradient: "from-orange-500 to-red-500" },
+                    { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `${stocks.pharma} financials`, icon: FileText, gradient: "from-purple-500 to-indigo-500" },
+                ]
+            },
+            {
+                id: 'valuation',
+                label: '💎 Valuation',
+                suggestions: [
+                    { text: `Is ${stocks.main} overvalued?`, icon: Sparkles, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `PE ratio for ${stocks.second}`, icon: DollarSignIcon, gradient: "from-cyan-500 to-blue-600" },
+                    { text: `Show PEG Ratio for ${stocks.bank}`, icon: Zap, gradient: "from-violet-500 to-purple-600" },
+                    { text: `Compare ${stocks.main} vs ${stocks.second}`, icon: BarChart3, gradient: "from-slate-500 to-slate-700" },
+                ]
+            },
+            {
+                id: 'health',
+                label: '🏥 Health',
+                suggestions: [
+                    { text: `Financial health of ${stocks.main}`, icon: ShieldCheck, gradient: "from-emerald-500 to-green-600" },
+                    { text: `${stocks.second} Debt to Equity`, icon: Activity, gradient: "from-red-500 to-orange-600" },
+                    { text: `Current ratio for ${stocks.bank}`, icon: Building2, gradient: "from-teal-500 to-cyan-600" },
+                    { text: `ROE for ${stocks.main}`, icon: Newspaper, gradient: "from-indigo-500 to-blue-600" },
+                ]
+            },
+            {
+                id: 'growth',
+                label: '🚀 Growth',
+                suggestions: [
+                    { text: `${stocks.main} revenue growth`, icon: TrendingUp, gradient: "from-amber-500 to-orange-600" },
+                    { text: `Net Income for ${stocks.second}`, icon: BarChart3, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `${stocks.bank} profit margin`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
+                    { text: `Earnings trend ${stocks.main}`, icon: Activity, gradient: "from-purple-500 to-violet-600" },
+                ]
+            },
+            {
+                id: 'dividends',
+                label: '💵 Dividends',
+                suggestions: [
+                    { text: `Dividend history ${stocks.main}`, icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
+                    { text: `Dividend yield ${stocks.second}`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
+                    { text: `${stocks.bank} payout ratio`, icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
+                    { text: "Top dividend stocks EGX", icon: Sparkles, gradient: "from-amber-400 to-yellow-600" },
+                ]
+            },
+            {
+                id: 'ownership',
+                label: '🤝 Ownership',
+                suggestions: [
+                    { text: `Who owns ${stocks.main}?`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
+                    { text: `Insider trading ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
+                    { text: `${stocks.bank} shareholders`, icon: PieChart, gradient: "from-indigo-500 to-blue-600" },
+                ]
+            },
+        ];
+    }, []);
 
     return suggestionCategories;
 }

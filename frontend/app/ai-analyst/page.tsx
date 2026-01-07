@@ -51,7 +51,8 @@ export default function AIAnalystPage() {
 
     const handleSuggestionClick = (text: string) => {
         setQuery(text);
-        if (textareaRef.current) textareaRef.current.focus();
+        // Auto-send immediately when suggestion is clicked
+        setTimeout(() => handleSend(), 100);
     };
 
     return (

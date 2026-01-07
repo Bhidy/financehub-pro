@@ -13,7 +13,7 @@ export function MobileHeader({ onNewChat, onOpenHistory, hasHistory = false }: M
     const { market } = useMarketSafe();
 
     return (
-        <header className="sticky top-0 z-40 px-4 pt-3 pb-2">
+        <header className="sticky top-0 z-50 px-4 pt-safe pb-2 bg-gradient-to-b from-slate-100 to-transparent" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
             {/* Glass container */}
             <div className="flex items-center justify-between bg-white/70 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg shadow-slate-900/5 border border-white/50">
 

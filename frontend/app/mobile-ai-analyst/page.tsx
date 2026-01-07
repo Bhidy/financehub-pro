@@ -4,7 +4,8 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { Loader2, Sparkles, History, X, MessageSquarePlus } from "lucide-react";
+import { Loader2, History, X, MessageSquarePlus, Trash2, Clock } from "lucide-react";
+import { useMobileChatHistory, type ChatSession } from "@/hooks/useMobileChatHistory";
 
 // Shared Components
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
@@ -19,6 +20,7 @@ import { MobileSuggestions } from "./components/MobileSuggestions";
 export default function MobileAIAnalystPage() {
     const { query, setQuery, messages, isLoading, handleSend, handleAction } = useAIChat();
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const { sessions, saveSession, loadSession, deleteSession } = useMobileChatHistory();
 
     // Auto-scroll anchor
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -30,9 +32,26 @@ export default function MobileAIAnalystPage() {
         }
     }, [messages, isLoading]);
 
+    // Save session when messages change
+    useEffect(() => {
+        if (messages.length > 1) {
+            saveSession(messages.map(m => ({ role: m.role, content: m.content })));
+        }
+    }, [messages, saveSession]);
+
     const handleSuggestionSelect = (text: string) => {
         setQuery(text);
-        // Focus will trigger send via the input
+    };
+
+    const formatTime = (timestamp: number) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        return date.toLocaleDateString();
     };
 
     return (
@@ -40,10 +59,14 @@ export default function MobileAIAnalystPage() {
 
             {/* Decorative blobs */}
             <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-200/30 rounded-full blur-[100px] -z-10" />
-            <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-purple-200/20 rounded-full blur-[80px] -z-10" />
+            <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-teal-200/20 rounded-full blur-[80px] -z-10" />
 
             {/* Header */}
-            <MobileHeader onNewChat={() => window.location.reload()} />
+            <MobileHeader
+                onNewChat={() => window.location.reload()}
+                onOpenHistory={() => setIsHistoryOpen(true)}
+                hasHistory={sessions.length > 0}
+            />
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto w-full scroll-smooth">
@@ -52,24 +75,24 @@ export default function MobileAIAnalystPage() {
                 {messages.length === 1 ? (
                     <div className="flex flex-col min-h-full pt-4">
 
-                        {/* Hero Section - Properly spaced */}
+                        {/* Hero Section */}
                         <div className="flex flex-col items-center text-center px-6 py-8">
-                            {/* Floating Robot with glow */}
+                            {/* Floating Robot - No background */}
                             <motion.div
                                 initial={{ y: 10, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ duration: 0.6 }}
                                 className="relative mb-6"
                             >
-                                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-blue-500/30">
+                                <div className="w-24 h-24 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/50">
                                     <img
                                         src="/ai-robot.png"
                                         alt="Finny AI"
-                                        className="w-14 h-14 object-contain drop-shadow-lg"
+                                        className="w-full h-full object-contain drop-shadow-lg"
                                     />
                                 </div>
-                                {/* Pulse rings */}
-                                <div className="absolute inset-0 rounded-3xl border-2 border-blue-400/30 animate-ping" />
+                                {/* Subtle pulse ring */}
+                                <div className="absolute inset-0 rounded-3xl border-2 border-blue-300/30 animate-ping" />
                             </motion.div>
 
                             {/* Title */}
@@ -79,7 +102,7 @@ export default function MobileAIAnalystPage() {
                                 transition={{ duration: 0.6, delay: 0.1 }}
                                 className="text-2xl font-black text-slate-900 mb-2"
                             >
-                                Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finny</span>
+                                Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Finny</span>
                             </motion.h1>
 
                             <motion.p
@@ -116,7 +139,7 @@ export default function MobileAIAnalystPage() {
                                 <div className={clsx(
                                     "max-w-[85%] rounded-2xl p-4 text-[15px] leading-relaxed",
                                     msg.role === "user"
-                                        ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-sm shadow-lg shadow-blue-500/20"
+                                        ? "bg-gradient-to-br from-blue-500 to-teal-500 text-white rounded-br-sm shadow-lg shadow-blue-500/20"
                                         : "bg-white text-slate-800 border border-slate-100 rounded-tl-sm shadow-lg shadow-slate-200/50"
                                 )}>
                                     {msg.role === "user" ? (
@@ -126,7 +149,7 @@ export default function MobileAIAnalystPage() {
                                     )}
                                 </div>
 
-                                {/* AI Extras (Cards, Charts, Actions) */}
+                                {/* AI Extras */}
                                 {msg.role === "assistant" && msg.response && (
                                     <div className="w-full space-y-3">
                                         <ChatCards
@@ -151,7 +174,7 @@ export default function MobileAIAnalystPage() {
                                 animate={{ opacity: 1 }}
                                 className="flex items-center gap-3"
                             >
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
                                     <Loader2 className="w-4 h-4 animate-spin text-white" />
                                 </div>
                                 <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-lg shadow-slate-200/50 border border-slate-100">
@@ -169,7 +192,7 @@ export default function MobileAIAnalystPage() {
                 )}
             </main>
 
-            {/* Input Fixed at Bottom */}
+            {/* Input */}
             <MobileInput
                 query={query}
                 setQuery={setQuery}
@@ -177,7 +200,7 @@ export default function MobileAIAnalystPage() {
                 isLoading={isLoading}
             />
 
-            {/* History Drawer (Bottom Sheet) */}
+            {/* History Drawer */}
             <AnimatePresence>
                 {isHistoryOpen && (
                     <>
@@ -193,12 +216,13 @@ export default function MobileAIAnalystPage() {
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[32px] z-50 h-[70dvh] flex flex-col shadow-2xl"
+                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[32px] z-50 h-[75dvh] flex flex-col shadow-2xl"
                         >
+                            {/* Header */}
                             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-2 font-bold text-lg text-slate-900">
                                     <History className="w-5 h-5 text-blue-600" />
-                                    History
+                                    Chat History
                                 </div>
                                 <button
                                     onClick={() => setIsHistoryOpen(false)}
@@ -208,11 +232,45 @@ export default function MobileAIAnalystPage() {
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center text-slate-400 gap-3">
-                                <History className="w-12 h-12 opacity-20" />
-                                <p className="text-sm">No history yet</p>
+                            {/* Sessions List */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                {sessions.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-3">
+                                        <History className="w-12 h-12 opacity-20" />
+                                        <p className="text-sm">No saved chats yet</p>
+                                    </div>
+                                ) : (
+                                    sessions.map((session) => (
+                                        <div
+                                            key={session.id}
+                                            className="relative group bg-slate-50 rounded-2xl p-4 border border-slate-100"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-semibold text-slate-800 text-sm truncate mb-1">
+                                                        {session.title}
+                                                    </div>
+                                                    <div className="text-xs text-slate-400 truncate mb-2">
+                                                        {session.preview}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                                                        <Clock className="w-3 h-3" />
+                                                        {formatTime(session.timestamp)}
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => deleteSession(session.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
 
+                            {/* Footer */}
                             <div className="p-4 border-t border-slate-100">
                                 <button
                                     onClick={() => { setIsHistoryOpen(false); window.location.reload(); }}

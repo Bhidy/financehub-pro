@@ -13,7 +13,7 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 
 export default function AIAnalystPage() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const { query, setQuery, messages, isLoading, handleSend, handleAction } = useAIChat();
+    const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat();
     const { market } = useMarketSafe();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -50,9 +50,7 @@ export default function AIAnalystPage() {
     const activeSuggestions = suggestionCategories.find(c => c.id === activeCategory)?.suggestions || [];
 
     const handleSuggestionClick = (text: string) => {
-        setQuery(text);
-        // Auto-send immediately when suggestion is clicked
-        setTimeout(() => handleSend(), 100);
+        sendDirectMessage(text);
     };
 
     return (

@@ -139,6 +139,13 @@ export function useAIChat() {
         setSessionId(null);
     }, []);
 
+    // Direct send - bypasses query state (for auto-send from suggestions)
+    const sendDirectMessage = useCallback((text: string) => {
+        if (!text.trim()) return;
+        setMessages(prev => [...prev, { role: "user", content: text }]);
+        mutation.mutate(text);
+    }, [mutation]);
+
     return {
         query,
         setQuery,
@@ -146,6 +153,7 @@ export function useAIChat() {
         isLoading: mutation.isPending,
         handleSend,
         handleAction,
+        sendDirectMessage,
         clearHistory,
         sessionId
     };

@@ -41,6 +41,8 @@ export default function MobileAIAnalystPage() {
 
     const handleSuggestionSelect = (text: string) => {
         setQuery(text);
+        // Auto-send immediately
+        setTimeout(() => handleSend(), 100);
     };
 
     const formatTime = (timestamp: number) => {

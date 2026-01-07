@@ -1,6 +1,6 @@
 "use client";
 
-import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { useEgyptOnlySuggestions } from "@/hooks/useAISuggestions";
 import clsx from "clsx";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ interface MobileSuggestionsProps {
 }
 
 export function MobileSuggestions({ onSelect }: MobileSuggestionsProps) {
-    const suggestionCategories = useAISuggestions();
+    const suggestionCategories = useEgyptOnlySuggestions();
     const [activeTab, setActiveTab] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [showLeftFade, setShowLeftFade] = useState(false);

@@ -56,7 +56,7 @@ export default function MobileAIAnalystPage() {
     };
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-gradient-to-b from-slate-100 via-slate-50 to-white relative overflow-hidden font-sans">
+        <div className="flex flex-col h-[100dvh] w-full bg-gradient-to-b from-slate-100 via-slate-50 to-white relative overflow-hidden font-sans">
 
             {/* Decorative blobs */}
             <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-200/30 rounded-full blur-[100px] -z-10" />

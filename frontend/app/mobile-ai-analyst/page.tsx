@@ -172,16 +172,18 @@ export default function MobileAIAnalystPage() {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex items-center gap-3"
+                                className="w-full flex items-start"
                             >
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                                </div>
-                                <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-lg shadow-slate-200/50 border border-slate-100">
-                                    <div className="flex gap-1.5">
-                                        <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                        <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                        <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-full overflow-hidden shadow-lg shadow-slate-200/50 flex-shrink-0">
+                                        <img src="/ai-robot.png" alt="Finny" className="w-full h-full object-contain" />
+                                    </div>
+                                    <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-lg shadow-slate-200/50 border border-slate-100">
+                                        <div className="flex gap-1.5">
+                                            <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                            <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                            <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>

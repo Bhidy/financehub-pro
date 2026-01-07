@@ -1,13 +1,15 @@
 "use client";
 
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, History } from "lucide-react";
 import { useMarketSafe } from "@/contexts/MarketContext";
 
 interface MobileHeaderProps {
     onNewChat: () => void;
+    onOpenHistory: () => void;
+    hasHistory?: boolean;
 }
 
-export function MobileHeader({ onNewChat }: MobileHeaderProps) {
+export function MobileHeader({ onNewChat, onOpenHistory, hasHistory = false }: MobileHeaderProps) {
     const { market } = useMarketSafe();
 
     return (
@@ -17,16 +19,13 @@ export function MobileHeader({ onNewChat }: MobileHeaderProps) {
 
                 {/* Left: Avatar + Status */}
                 <div className="flex items-center gap-3">
-                    {/* Gradient Avatar with pulse */}
+                    {/* Avatar - Robot image only */}
                     <div className="relative">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30 overflow-hidden">
+                        <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-slate-200/50">
                             <img
                                 src="/ai-robot.png"
                                 alt="Finny"
-                                className="w-8 h-8 object-contain"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                }}
+                                className="w-full h-full object-contain"
                             />
                         </div>
                         {/* Online pulse */}
@@ -45,13 +44,27 @@ export function MobileHeader({ onNewChat }: MobileHeaderProps) {
                     </div>
                 </div>
 
-                {/* Right: New Chat */}
-                <button
-                    onClick={onNewChat}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500 hover:text-blue-600 active:scale-95 transition-all border border-slate-200/50 shadow-sm"
-                >
-                    <MessageSquarePlus className="w-5 h-5" />
-                </button>
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2">
+                    {/* History Button */}
+                    <button
+                        onClick={onOpenHistory}
+                        className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500 hover:text-blue-600 active:scale-95 transition-all border border-slate-200/50 shadow-sm"
+                    >
+                        <History className="w-5 h-5" />
+                        {hasHistory && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white" />
+                        )}
+                    </button>
+
+                    {/* New Chat Button */}
+                    <button
+                        onClick={onNewChat}
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500 hover:text-blue-600 active:scale-95 transition-all border border-slate-200/50 shadow-sm"
+                    >
+                        <MessageSquarePlus className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
         </header>
     );

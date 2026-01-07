@@ -3,6 +3,8 @@
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import clsx from "clsx";
 import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import { ChevronRight, Sparkles } from "lucide-react";
 
 interface MobileSuggestionsProps {
     onSelect: (text: string) => void;
@@ -33,76 +35,96 @@ export function MobileSuggestions({ onSelect }: MobileSuggestionsProps) {
     return (
         <div className="w-full flex-1 flex flex-col">
 
-            {/* Category Tabs with fade edges */}
-            <div className="relative px-4 mb-4">
+            {/* Category Tabs - Ultra Premium */}
+            <div className="relative px-4 mb-5">
                 {/* Left fade */}
                 {showLeftFade && (
-                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent z-10 pointer-events-none" />
                 )}
                 {/* Right fade */}
                 {showRightFade && (
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50 via-slate-50/80 to-transparent z-10 pointer-events-none" />
                 )}
 
                 <div
                     ref={scrollRef}
                     onScroll={handleScroll}
-                    className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1"
+                    className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1"
                 >
                     {suggestionCategories.map((cat, idx) => (
-                        <button
+                        <motion.button
                             key={cat.id}
                             onClick={() => setActiveTab(idx)}
+                            whileTap={{ scale: 0.95 }}
                             className={clsx(
-                                "relative px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 border flex-shrink-0",
+                                "relative px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap transition-all duration-300 flex-shrink-0",
                                 activeTab === idx
-                                    ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/20 scale-105"
-                                    : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                                    ? "bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-xl shadow-slate-900/25"
+                                    : "bg-white text-slate-600 border border-slate-200 shadow-sm hover:shadow-md"
                             )}
                         >
-                            {/* Glow effect for active */}
+                            {/* Inner glow for active */}
                             {activeTab === idx && (
-                                <div className="absolute inset-0 rounded-full bg-slate-900 blur-md opacity-30 -z-10" />
+                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-teal-500/10 blur-sm" />
                             )}
-                            {cat.label}
-                        </button>
+                            <span className="relative">{cat.label}</span>
+                        </motion.button>
                     ))}
                 </div>
             </div>
 
-            {/* Suggestion Cards - Glass design */}
-            <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-3">
+            {/* Suggestion Cards - Super Ultra Premium */}
+            <div className="flex-1 overflow-y-auto px-4 pb-36 space-y-4">
                 {activeSuggestions.map((s, i) => (
-                    <button
+                    <motion.button
                         key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: i * 0.08 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => onSelect(s.text)}
-                        className="w-full group flex items-center gap-4 p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/60 shadow-lg shadow-slate-200/40 active:scale-[0.98] active:shadow-md transition-all duration-200 text-left"
+                        className="w-full group relative overflow-hidden"
                     >
-                        {/* Icon with gradient */}
-                        <div className={clsx(
-                            "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 text-white shadow-lg transition-transform duration-300 group-active:scale-95",
-                            s.gradient
-                        )}>
-                            <s.icon className="w-6 h-6" />
-                        </div>
+                        {/* Card */}
+                        <div className="relative flex items-center gap-4 p-5 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 transition-all duration-300 group-active:shadow-lg group-active:border-blue-200">
 
-                        {/* Text */}
-                        <div className="flex-1 min-w-0">
-                            <span className="font-semibold text-slate-800 text-[15px] leading-snug block truncate">
-                                {s.text}
-                            </span>
-                            <span className="text-xs text-slate-400 font-medium mt-0.5 block">
-                                Tap to ask
-                            </span>
-                        </div>
+                            {/* Subtle gradient overlay on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-blue-50/0 to-teal-50/0 group-active:from-blue-50/50 group-active:via-blue-50/30 group-active:to-teal-50/50 rounded-3xl transition-all duration-300" />
 
-                        {/* Arrow hint */}
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-active:bg-blue-100 group-active:text-blue-600 transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
+                            {/* Icon Container - Premium 3D effect */}
+                            <div className="relative">
+                                <div className={clsx(
+                                    "w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-active:scale-95",
+                                    s.gradient
+                                )}>
+                                    <s.icon className="w-7 h-7" />
+                                </div>
+                                {/* Icon glow */}
+                                <div className={clsx(
+                                    "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-40 blur-lg -z-10",
+                                    s.gradient
+                                )} />
+                            </div>
+
+                            {/* Text Content */}
+                            <div className="flex-1 min-w-0 text-left relative">
+                                <span className="font-bold text-slate-900 text-base leading-snug block mb-1">
+                                    {s.text}
+                                </span>
+                                <div className="flex items-center gap-1.5 text-slate-400">
+                                    <Sparkles className="w-3 h-3" />
+                                    <span className="text-xs font-semibold uppercase tracking-wide">
+                                        Tap to ask Finny
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Arrow with animation */}
+                            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center border border-slate-200/50 shadow-sm group-active:from-blue-100 group-active:to-blue-50 group-active:border-blue-200 transition-all duration-300">
+                                <ChevronRight className="w-5 h-5 text-slate-400 group-active:text-blue-600 transition-colors" />
+                            </div>
                         </div>
-                    </button>
+                    </motion.button>
                 ))}
             </div>
         </div>

@@ -9,7 +9,7 @@ interface ShellWrapperProps {
 }
 
 // Routes that should be completely isolated (no sidebar, no search)
-const ISOLATED_ROUTES = ["/mobile-ai-analyst"];
+const ISOLATED_ROUTES = ["/mobile-ai-analyst", "/login", "/register"];
 
 export default function ShellWrapper({ children }: ShellWrapperProps) {
     const pathname = usePathname();

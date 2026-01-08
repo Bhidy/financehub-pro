@@ -13,7 +13,8 @@ import {
     DollarSign,
     Building2,
     Newspaper,
-    Zap
+    Zap,
+    BarChart3
 } from "lucide-react";
 import { useState } from "react";
 import { useMarketSafe, MARKET_CONFIGS, type Market } from "@/contexts/MarketContext";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
     { label: "AI Advisor", icon: BrainCircuit, href: "/ai-analyst", color: "violet" },
     { label: "Company Profile", icon: Building2, href: "/symbol/2222", dynamicHref: true, color: "amber" },
     { label: "Mutual Funds", icon: DollarSign, href: "/funds", color: "emerald" },
+    { label: "Fund Statistics", icon: BarChart3, href: "/funds/statistics", color: "cyan" },
     { label: "Command Center", icon: Database, href: "/command-center", color: "slate" },
 ];
 
@@ -34,6 +36,7 @@ const colorStyles: Record<string, { iconBg: string; iconText: string; activeBg: 
     violet: { iconBg: "bg-violet-50", iconText: "text-violet-500", activeBg: "from-violet-500 to-violet-600" },
     amber: { iconBg: "bg-amber-50", iconText: "text-amber-500", activeBg: "from-amber-500 to-amber-600" },
     emerald: { iconBg: "bg-emerald-50", iconText: "text-emerald-500", activeBg: "from-emerald-500 to-emerald-600" },
+    cyan: { iconBg: "bg-cyan-50", iconText: "text-cyan-500", activeBg: "from-cyan-500 to-cyan-600" },
     slate: { iconBg: "bg-slate-100", iconText: "text-slate-500", activeBg: "from-slate-600 to-slate-700" },
 };
 

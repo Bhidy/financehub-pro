@@ -46,7 +46,9 @@ export default function EGXWatchlistPage() {
     const fetchWatchlist = async () => {
         try {
             setIsRefreshing(true);
-            const response = await fetch("/api/v1/egx-watchlist");
+            // Fetch from backend API
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space';
+            const response = await fetch(`${apiUrl}/api/v1/egx-watchlist`);
             if (!response.ok) throw new Error("Failed to fetch watchlist");
             const result: WatchlistResponse = await response.json();
             setData(result.data || []);

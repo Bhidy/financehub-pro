@@ -14,9 +14,52 @@ if (typeof window !== 'undefined') {
     console.log(`[FinanceHub Pro v1.3.1] Unified Serverless Mode: ${API_BASE_URL}`);
 }
 
+export interface UpdateProfileData {
+    full_name?: string;
+    phone?: string;
+}
+
+export interface ChangePasswordData {
+    old_password: string;
+    new_password: string;
+}
+
 export const api = axios.create({
     baseURL: API_BASE_URL,
 });
+
+// Request interceptor for API calls
+// Request interceptor for API calls
+api.interceptors.request.use(
+    (config) => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem("fh_auth_token");
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor for global error handling
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            if (typeof window !== 'undefined') {
+                // Clear storage and redirect to login
+                localStorage.removeItem("fh_auth_token");
+                localStorage.removeItem("fh_user");
+                window.location.href = "/login";
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 export type { Ticker } from "./schemas";
 
@@ -302,6 +345,26 @@ export const createAlert = async (symbol: string, target_price: number, conditio
 
 export const deleteAlert = async (id: string) => {
     const { data } = await api.delete(`/user/alerts/${id}`);
+    return data;
+};
+
+// ============================================================================
+// SETTINGS & USER MANAGEMENT
+// ============================================================================
+
+export const updateProfile = async (data: UpdateProfileData) => {
+    const response = await api.put("/auth/me", data);
+    return response.data;
+};
+
+export const changePassword = async (data: ChangePasswordData) => {
+    const response = await api.post("/auth/change-password", data);
+    return response.data;
+};
+
+export const fetchUsers = async (skip: number = 0, limit: number = 50, search?: string) => {
+    const params = { skip, limit, ...(search && { search }) };
+    const { data } = await api.get("/auth/users", { params });
     return data;
 };
 

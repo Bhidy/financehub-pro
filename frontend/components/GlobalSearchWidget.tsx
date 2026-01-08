@@ -16,6 +16,7 @@ import {
     CorporateAction,
     InsiderTransaction
 } from "@/lib/api";
+import { getCompanyProfileRoute } from "@/lib/routes";
 
 interface SearchResult {
     type: "stock" | "fund" | "action" | "insider";
@@ -25,11 +26,17 @@ interface SearchResult {
     link: string;
 }
 
-export default function GlobalSearch() {
+interface GlobalSearchProps {
+    collapsed?: boolean;
+}
+
+export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const router = useRouter();
+
+    // ... (rest of search logic remains same) ...
 
     // Open/close with Cmd+K / Ctrl+K
     useEffect(() => {
@@ -89,7 +96,7 @@ export default function GlobalSearch() {
                     id: ticker.symbol,
                     title: ticker.symbol,
                     subtitle: ticker.name_en || "",
-                    link: `/symbol/${ticker.symbol}`,
+                    link: getCompanyProfileRoute(ticker.symbol, ticker.market_code),
                 });
             }
         });
@@ -118,7 +125,7 @@ export default function GlobalSearch() {
                         id: action.id,
                         title: `${action.symbol} - ${action.action_type}`,
                         subtitle: `${action.description} (${new Date(action.ex_date).toLocaleDateString()})`,
-                        link: `/symbol/${action.symbol}?tab=events`, // Deep link to events tab
+                        link: `${getCompanyProfileRoute(action.symbol, null)}?tab=events`,
                     });
                 }
             });
@@ -166,16 +173,33 @@ export default function GlobalSearch() {
     };
 
     if (!isOpen) {
+        if (collapsed) {
+            return (
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-50 to-white hover:from-blue-50 hover:to-blue-100 text-slate-500 hover:text-blue-600 transition-all shadow-sm hover:shadow-md border border-slate-100 mx-auto"
+                    title="Search (Cmd+K)"
+                >
+                    <Search className="w-5 h-5" />
+                </button>
+            );
+        }
+
         return (
-            /* Premium Search Button */
+            /* Premium Expanded Search Button */
             <button
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md hover:bg-white transition-all border border-slate-200/60 shadow-lg shadow-slate-200/20 rounded-full group"
+                className="w-full group relative flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-slate-50/80 to-slate-100/50 hover:from-white hover:to-blue-50 border border-slate-200/60 hover:border-blue-200/60 rounded-xl transition-all shadow-sm hover:shadow-md backdrop-blur-sm overflow-hidden"
             >
-                <Search className="w-4 h-4 text-slate-600" />
-                <span className="text-sm text-slate-600 font-medium">Search</span>
-                <kbd className="hidden sm:inline-block px-2 py-0.5 text-xs font-mono font-bold text-slate-500 bg-white border border-slate-300 rounded shadow-sm">
-                    ⌘K
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+
+                <div className="flex items-center gap-2.5">
+                    <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                    <span className="text-sm font-medium text-slate-500 group-hover:text-slate-700">Analytics Search...</span>
+                </div>
+
+                <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded shadow-sm group-hover:border-blue-100 group-hover:text-blue-400">
+                    <span className="text-xs">⌘</span>K
                 </kbd>
             </button>
         );

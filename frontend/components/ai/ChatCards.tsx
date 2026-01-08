@@ -327,15 +327,18 @@ export function ActionsBar({ actions, language = "en", onAction }: ActionsBarPro
     if (!actions.length) return null;
 
     return (
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="flex flex-wrap gap-2 mt-4">
             {actions.map((action, i) => (
                 <button
                     key={i}
                     onClick={() => onAction(action)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-700 rounded-full text-sm font-medium transition-colors"
+                    className="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 text-slate-600 hover:text-blue-700 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
                 >
-                    {language === "ar" ? action.label_ar || action.label : action.label}
-                    {action.action_type === "navigate" ? <ExternalLink size={12} /> : <ChevronRight size={12} />}
+                    <span>{language === "ar" ? action.label_ar || action.label : action.label}</span>
+                    {action.action_type === "navigate" ?
+                        <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity" /> :
+                        <ChevronRight size={14} className="opacity-50 group-hover:opacity-100 transition-opacity group-hover:translate-x-0.5" />
+                    }
                 </button>
             ))}
         </div>
@@ -1095,6 +1098,54 @@ export function FundMoversCard({ title, data, onSymbolClick }: FundMoversProps) 
     );
 }
 
+// ============================================================
+// News List Card
+// ============================================================
+
+interface NewsListProps {
+    title?: string;
+    data: {
+        items: Array<{
+            title: string;
+            source?: string;
+            date?: string;
+            summary?: string;
+            url?: string;
+        }>;
+    };
+}
+
+export function NewsListCard({ title, data }: NewsListProps) {
+    if (!data.items || data.items.length === 0) return null;
+
+    return (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white flex items-center gap-2">
+                <Newspaper size={16} className="text-blue-600" />
+                <div className="font-bold text-slate-700">{title || "Latest News"}</div>
+            </div>
+
+            <div className="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+                {data.items.map((item, i) => (
+                    <div
+                        key={i}
+                        className="p-3 hover:bg-blue-50/30 transition-colors"
+                    >
+                        <div className="text-sm font-medium text-slate-800 mb-1">{item.title}</div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                            {item.source && <span className="font-medium">{item.source}</span>}
+                            {item.date && <span>• {item.date}</span>}
+                        </div>
+                        {item.summary && (
+                            <div className="text-xs text-slate-600 mt-1 line-clamp-2">{item.summary}</div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 interface ChatCardProps {
     card: Card;
     language?: "en" | "ar" | "mixed";
@@ -1178,6 +1229,8 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
             return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
         case "sector_list":
             return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
+        case "news_list":
+            return <NewsListCard title={card.title} data={card.data as any} />;
         case "financial_explorer":
             // Ultra-Premium Financial Explorer Card
             return <FinancialExplorerCard data={card.data as any} />;
@@ -1195,7 +1248,7 @@ export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick 
         default:
             // Handle new ultra-premium Financial Explorer
             if (card.type === 'financial_explorer' || (card.data?.income && card.data?.balance)) {
-                return <FinancialExplorerCard data={card.data} />;
+                return <FinancialExplorerCard data={card.data as any} />;
             }
 
             // Legacy Fallback for simple tables

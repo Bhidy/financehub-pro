@@ -151,6 +151,25 @@ export function useEgyptOnlySuggestions() {
                 ]
             },
             {
+                id: 'technicals',
+                label: '⚙️ Technicals',
+                suggestions: [
+                    { text: `Technical analysis for ${stocks.main}`, icon: Activity, gradient: "from-violet-500 to-purple-600" },
+                    { text: `RSI for ${stocks.second}`, icon: TrendingUp, gradient: "from-fuchsia-500 to-pink-600" },
+                    { text: `${stocks.bank} support and resistance`, icon: BarChart3, gradient: "from-indigo-500 to-blue-600" },
+                    { text: `Moving averages ${stocks.main}`, icon: PieChart, gradient: "from-cyan-500 to-blue-500" },
+                ]
+            },
+            {
+                id: 'news',
+                label: '📰 News',
+                suggestions: [
+                    { text: `Latest news for ${stocks.main}`, icon: Newspaper, gradient: "from-slate-600 to-slate-800" },
+                    { text: `Market news today`, icon: Sparkles, gradient: "from-red-500 to-rose-600" },
+                    { text: `${stocks.bank} announcements`, icon: Building2, gradient: "from-blue-500 to-cyan-600" },
+                ]
+            },
+            {
                 id: 'ownership',
                 label: '🤝 Ownership',
                 suggestions: [

@@ -1,15 +1,30 @@
 "use client";
 
-import { MessageSquarePlus, History } from "lucide-react";
+import { MessageSquarePlus, History, LogIn, User, LogOut } from "lucide-react";
 import { useMarketSafe } from "@/contexts/MarketContext";
 
 interface MobileHeaderProps {
     onNewChat: () => void;
     onOpenHistory: () => void;
     hasHistory?: boolean;
+    // Auth props
+    isAuthenticated?: boolean;
+    userName?: string;
+    onLogin?: () => void;
+    onLogout?: () => void;
+    remainingQuestions?: number;
 }
 
-export function MobileHeader({ onNewChat, onOpenHistory, hasHistory = false }: MobileHeaderProps) {
+export function MobileHeader({
+    onNewChat,
+    onOpenHistory,
+    hasHistory = false,
+    isAuthenticated = false,
+    userName,
+    onLogin,
+    onLogout,
+    remainingQuestions = 5,
+}: MobileHeaderProps) {
     const { market } = useMarketSafe();
 
     return (
@@ -44,8 +59,20 @@ export function MobileHeader({ onNewChat, onOpenHistory, hasHistory = false }: M
                     </div>
                 </div>
 
-                {/* Right: Actions */}
+                {/* Right: Usage + Actions */}
                 <div className="flex items-center gap-2">
+                    {/* Usage Counter Badge (guests only) */}
+                    {!isAuthenticated && remainingQuestions > 0 && (
+                        <div className="px-2 py-1 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-500">
+                            <span className="text-blue-600">{remainingQuestions}</span> left
+                        </div>
+                    )}
+                    {!isAuthenticated && remainingQuestions <= 0 && (
+                        <div className="px-2 py-1 bg-red-50 rounded-lg text-[10px] font-bold text-red-500">
+                            Limit
+                        </div>
+                    )}
+
                     {/* History Button */}
                     <button
                         onClick={onOpenHistory}
@@ -64,6 +91,24 @@ export function MobileHeader({ onNewChat, onOpenHistory, hasHistory = false }: M
                     >
                         <MessageSquarePlus className="w-5 h-5" />
                     </button>
+
+                    {/* Login/Profile Button */}
+                    {isAuthenticated ? (
+                        <button
+                            onClick={onLogout}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-teal-50 text-blue-600 active:scale-95 transition-all border border-blue-200/50 shadow-sm"
+                            title={userName || "Logout"}
+                        >
+                            <User className="w-5 h-5" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={onLogin}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-teal-600 text-white active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+                        >
+                            <LogIn className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             </div>
         </header>

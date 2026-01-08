@@ -1,7 +1,7 @@
 "use client";
 
 import { useAIChat } from "@/hooks/useAIChat";
-import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, History, ChevronLeft, BarChart3, MessageSquarePlus, Paperclip, Mic, ShieldCheck, Zap, Activity, Building2, MessageCircle } from "lucide-react";
+import { Bot, Send, Sparkles, TrendingUp, PieChart, Newspaper, Loader2, History, ChevronLeft, BarChart3, MessageSquarePlus, Paperclip, Mic, ShieldCheck, Zap, Activity, Building2, MessageCircle, User, LogIn } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,13 +10,23 @@ import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
 import { useMarketSafe } from "@/contexts/MarketContext";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { useGuestUsage } from "@/hooks/useGuestUsage";
+import { useAuth } from "@/contexts/AuthContext";
+import { UsageLimitModal } from "@/components/ai/UsageLimitModal";
+import { useRouter } from "next/navigation";
 
 export default function AIAnalystPage() {
+    const router = useRouter();
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [showUsageModal, setShowUsageModal] = useState(false);
     const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat();
     const { market } = useMarketSafe();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Auth and usage tracking
+    const { isAuthenticated, user, logout } = useAuth();
+    const { canAskQuestion, remainingQuestions, incrementUsage, deviceFingerprint } = useGuestUsage();
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -49,7 +59,26 @@ export default function AIAnalystPage() {
     const [activeCategory, setActiveCategory] = useState('popular');
     const activeSuggestions = suggestionCategories.find(c => c.id === activeCategory)?.suggestions || [];
 
+    // Enhanced send with usage check
+    const handleSendWithUsageCheck = () => {
+        if (!isAuthenticated && !canAskQuestion) {
+            setShowUsageModal(true);
+            return;
+        }
+        if (!isAuthenticated) {
+            incrementUsage();
+        }
+        handleSend();
+    };
+
     const handleSuggestionClick = (text: string) => {
+        if (!isAuthenticated && !canAskQuestion) {
+            setShowUsageModal(true);
+            return;
+        }
+        if (!isAuthenticated) {
+            incrementUsage();
+        }
         sendDirectMessage(text);
     };
 
@@ -129,6 +158,45 @@ export default function AIAnalystPage() {
                     >
                         <MessageSquarePlus className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                     </button>
+                </div>
+
+                {/* Right side: Login/Profile + Usage Counter */}
+                <div className="absolute top-6 right-6 z-20 flex gap-3 items-center">
+                    {/* Usage Counter Badge (for guests only) */}
+                    {!isAuthenticated && remainingQuestions > 0 && (
+                        <div className="px-3 py-2 bg-white/70 backdrop-blur-xl border border-white/50 rounded-xl text-sm font-medium text-slate-600">
+                            <span className="text-blue-600 font-bold">{remainingQuestions}</span> questions left
+                        </div>
+                    )}
+                    {!isAuthenticated && remainingQuestions <= 0 && (
+                        <div className="px-3 py-2 bg-red-50 border border-red-100 rounded-xl text-sm font-medium text-red-600">
+                            Limit reached
+                        </div>
+                    )}
+
+                    {/* Login/Profile Button */}
+                    {isAuthenticated ? (
+                        <div className="flex items-center gap-2">
+                            <div className="px-4 py-2 bg-white/70 backdrop-blur-xl border border-white/50 rounded-xl text-sm font-medium text-slate-700">
+                                {user?.full_name || user?.email}
+                            </div>
+                            <button
+                                onClick={logout}
+                                className="p-3 bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm hover:shadow-lg rounded-xl text-slate-500 hover:text-red-600 transition-all"
+                                title="Logout"
+                            >
+                                <LogIn className="w-5 h-5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => router.push('/login')}
+                            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-teal-600 text-white rounded-xl font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-95"
+                        >
+                            <LogIn className="w-4 h-4" />
+                            Login
+                        </button>
+                    )}
                 </div>
 
                 {/* Chat Scroll Area */}
@@ -301,7 +369,7 @@ export default function AIAnalystPage() {
 
                             {/* Send Button */}
                             <button
-                                onClick={handleSend}
+                                onClick={handleSendWithUsageCheck}
                                 disabled={!query.trim() || isLoading}
                                 className="h-14 w-14 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
                             >
@@ -317,6 +385,13 @@ export default function AIAnalystPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Usage Limit Modal */}
+            <UsageLimitModal
+                isOpen={showUsageModal}
+                onClose={() => setShowUsageModal(false)}
+                remainingQuestions={remainingQuestions}
+            />
         </div>
     );
 }

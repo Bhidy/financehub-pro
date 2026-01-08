@@ -4,8 +4,14 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { Loader2, History, X, MessageSquarePlus, Trash2, Clock } from "lucide-react";
+import { Loader2, History, X, MessageSquarePlus, Trash2, Clock, LogIn } from "lucide-react";
 import { useMobileChatHistory, type ChatSession } from "@/hooks/useMobileChatHistory";
+import { useRouter } from "next/navigation";
+
+// Auth and Usage Tracking
+import { useGuestUsage } from "@/hooks/useGuestUsage";
+import { useAuth } from "@/contexts/AuthContext";
+import { UsageLimitModal } from "@/components/ai/UsageLimitModal";
 
 // Shared Components
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
@@ -18,9 +24,15 @@ import { MobileInput } from "./components/MobileInput";
 import { MobileSuggestions } from "./components/MobileSuggestions";
 
 export default function MobileAIAnalystPage() {
+    const router = useRouter();
     const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat();
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [showUsageModal, setShowUsageModal] = useState(false);
     const { sessions, saveSession, loadSession, deleteSession } = useMobileChatHistory();
+
+    // Auth and usage tracking
+    const { isAuthenticated, user, logout } = useAuth();
+    const { canAskQuestion, remainingQuestions, incrementUsage, deviceFingerprint } = useGuestUsage();
 
     // Auto-scroll anchor
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -39,8 +51,27 @@ export default function MobileAIAnalystPage() {
         }
     }, [messages, saveSession]);
 
-    // Single-click auto-send for suggestions
+    // Enhanced send with usage check
+    const handleSendWithUsageCheck = () => {
+        if (!isAuthenticated && !canAskQuestion) {
+            setShowUsageModal(true);
+            return;
+        }
+        if (!isAuthenticated) {
+            incrementUsage();
+        }
+        handleSend();
+    };
+
+    // Single-click auto-send for suggestions with usage check
     const handleSuggestionSelect = (text: string) => {
+        if (!isAuthenticated && !canAskQuestion) {
+            setShowUsageModal(true);
+            return;
+        }
+        if (!isAuthenticated) {
+            incrementUsage();
+        }
         sendDirectMessage(text);
     };
 
@@ -67,6 +98,11 @@ export default function MobileAIAnalystPage() {
                 onNewChat={() => window.location.reload()}
                 onOpenHistory={() => setIsHistoryOpen(true)}
                 hasHistory={sessions.length > 0}
+                isAuthenticated={isAuthenticated}
+                userName={user?.full_name || user?.email}
+                onLogin={() => router.push('/login')}
+                onLogout={logout}
+                remainingQuestions={remainingQuestions}
             />
 
             {/* Main Content Area */}
@@ -199,8 +235,15 @@ export default function MobileAIAnalystPage() {
             <MobileInput
                 query={query}
                 setQuery={setQuery}
-                onSend={handleSend}
+                onSend={handleSendWithUsageCheck}
                 isLoading={isLoading}
+            />
+
+            {/* Usage Limit Modal */}
+            <UsageLimitModal
+                isOpen={showUsageModal}
+                onClose={() => setShowUsageModal(false)}
+                remainingQuestions={remainingQuestions}
             />
 
             {/* History Drawer */}

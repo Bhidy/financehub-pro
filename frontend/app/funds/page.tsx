@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Search, Loader2, TrendingUp, Sparkles, BarChart3, PieChart, ArrowUpRight, ArrowDownRight, Globe, Shield } from "lucide-react";
+import Link from "next/link";
+import { Search, Loader2, TrendingUp, Sparkles, BarChart3, PieChart, ArrowUpRight, ArrowDownRight, Globe, Shield, LayoutGrid, List, Filter } from "lucide-react";
 import { ResponsiveContainer, Area, AreaChart } from "recharts";
-import { fetchFunds, fetchFundNav } from "@/lib/api";
-import { useMarketSafe, MARKET_CONFIGS } from "@/contexts/MarketContext";
+import { fetchFunds } from "@/lib/api";
+import { useMarketSafe } from "@/contexts/MarketContext";
 import clsx from "clsx";
+import FundsTable from "@/components/funds/FundsTable";
+import MiniNavChart from "@/components/funds/MiniNavChart";
 
 // Helpers for safety (Enterprise Standard)
 const safeNumber = (val: any): number | null => {
@@ -20,9 +23,10 @@ interface MutualFund {
     fund_id: string;
     fund_name: string;
     fund_name_en: string | null;
-    fund_type: string;
+    fund_type: string | null;
     manager_name: string;
     manager_name_en: string | null;
+    manager: string | null;
     latest_nav: number | string;
     expense_ratio: number | string | null;
     minimum_investment: number | string | null;
@@ -37,6 +41,8 @@ interface MutualFund {
     eligibility: string | null;
     investment_strategy: string | null;
     establishment_date: string | null;
+    last_update_date: string | null;
+
     // Decypha Fields
     aum_millions: number | string | null;
     is_shariah: boolean | null;
@@ -44,78 +50,15 @@ interface MutualFund {
     returns_3m: number | string | null;
     returns_1y: number | string | null;
     returns_ytd: number | string | null;
-    fund_type: string | null;
-    manager: string | null;
+    returns_3y: number | string | null;
+    returns_5y: number | string | null;
     issuer: string | null;
-}
-
-// Mini chart component for each fund card - shows real NAV or simulated trend
-function MiniNavChart({ fundId, ytdReturn }: { fundId: string; ytdReturn?: number | string | null }) {
-    const { data: navHistory, isLoading } = useQuery({
-        queryKey: ["fund-nav-mini", fundId],
-        queryFn: async () => {
-            const data = await fetchFundNav(fundId, 30);
-            return Array.isArray(data) ? data.reverse() : [];
-        },
-        staleTime: 5 * 60 * 1000,
-    });
-
-    // Generate simulated sparkline data based on YTD return when no NAV history
-    const generateSparkline = (ytd: number) => {
-        const points = 15;
-        const trend = ytd > 0 ? 1 : -1;
-        const volatility = Math.abs(ytd) / 100;
-        let value = 100;
-        return Array.from({ length: points }, (_, i) => {
-            value += (trend * (Math.random() * 2 + 0.5) + (Math.random() - 0.5) * volatility * 10);
-            return { nav: value, idx: i };
-        });
-    };
-
-    if (isLoading) {
-        return (
-            <div className="h-[60px] flex items-center justify-center text-slate-300">
-                <Loader2 className="w-4 h-4 animate-spin" />
-            </div>
-        );
-    }
-
-    // Use real data or generate simulated sparkline
-    const hasRealData = navHistory && navHistory.length >= 2;
-    const ytdNum = safeNumber(ytdReturn) || 0;
-    const chartData = hasRealData ? navHistory : generateSparkline(ytdNum);
-
-    const firstVal = hasRealData ? (safeNumber(navHistory[0]?.nav) || 0) : 100;
-    const lastVal = hasRealData ? (safeNumber(navHistory[navHistory.length - 1]?.nav) || 0) : chartData[chartData.length - 1].nav;
-    const isPositive = ytdNum >= 0 || lastVal >= firstVal;
-
-    return (
-        <div className="h-[60px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id={`gradient-${fundId}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity={0.4} />
-                            <stop offset="100%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <Area
-                        type="monotone"
-                        dataKey="nav"
-                        stroke={isPositive ? "#10b981" : "#ef4444"}
-                        strokeWidth={2}
-                        fill={`url(#gradient-${fundId})`}
-                        isAnimationActive={false}
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
-        </div>
-    );
 }
 
 // Sorting & Period options
 type SortOption = "name" | "nav" | "performance";
 type PeriodOption = "3m" | "ytd" | "1y" | "3y" | "5y";
+type ViewMode = "grid" | "table";
 
 // Metric Config (Mapped to preferred columns)
 const metricConfig: Record<PeriodOption, { label: string, key: keyof MutualFund | string }> = {
@@ -132,8 +75,8 @@ const getMetric = (fund: MutualFund, period: PeriodOption): number => {
     if (period === "3m") val = fund.returns_3m ?? fund.profit_3month;
     else if (period === "ytd") val = fund.returns_ytd ?? fund.ytd_return;
     else if (period === "1y") val = fund.returns_1y ?? fund.one_year_return;
-    else if (period === "3y") val = fund.three_year_return;
-    else if (period === "5y") val = fund.five_year_return;
+    else if (period === "3y") val = fund.returns_3y ?? fund.three_year_return;
+    else if (period === "5y") val = fund.returns_5y ?? fund.five_year_return;
 
     return safeNumber(val) || 0;
 };
@@ -142,6 +85,8 @@ export default function MutualFundsPage() {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("All");
+    const [viewMode, setViewMode] = useState<ViewMode>("grid");
+    const [isShariahOnly, setIsShariahOnly] = useState(false);
 
     // Use global MarketContext (synced with sidebar selection)
     const { market, setMarket, config, isEgypt, isSaudi } = useMarketSafe();
@@ -160,9 +105,13 @@ export default function MutualFundsPage() {
     const filteredFunds = funds
         .filter((fund: MutualFund) => {
             const matchesSearch = fund.fund_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                fund.manager_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                fund.manager_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                fund.manager?.toLowerCase().includes(searchTerm.toLowerCase());
+
             const matchesType = filterType === "All" || (fund.fund_type && fund.fund_type.includes(filterType));
-            return matchesSearch && matchesType;
+            const matchesShariah = !isShariahOnly || fund.is_shariah;
+
+            return matchesSearch && matchesType && matchesShariah;
         })
         .sort((a: MutualFund, b: MutualFund) => {
             if (sortBy === "name") return a.fund_name.localeCompare(b.fund_name);
@@ -174,7 +123,7 @@ export default function MutualFundsPage() {
             return valB - valA;
         });
 
-    const fundTypes = ["All", "Equity", "Real Estate", "Mixed", "Money", "Sector"];
+    const fundTypes = ["All", "Equity", "Fixed Income", "Real Estate", "Mixed", "Money Market", "Islamic"];
 
     // Dynamic stats based on selected period
     const currentMetricInfo = metricConfig[selectedPeriod];
@@ -195,7 +144,7 @@ export default function MutualFundsPage() {
     return (
         <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pb-12">
             {/* Premium Header */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white shadow-lg">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white shadow-lg pb-12">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
@@ -212,17 +161,12 @@ export default function MutualFundsPage() {
                         </div>
 
                         <div className="flex gap-3">
-                            {/* Statistics Link */}
-                            <button
-                                onClick={() => router.push('/funds/statistics')}
-                                className="bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 text-white font-bold text-sm transition-all flex items-center gap-2 group"
-                            >
+                            <Link href='/funds/statistics' className="bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 text-white font-bold text-sm transition-all flex items-center gap-2 group">
                                 <BarChart3 className="w-4 h-4" />
                                 <span className="hidden md:inline">Market Statistics</span>
                                 <ArrowUpRight className="w-3 h-3 text-blue-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                            </button>
+                            </Link>
 
-                            {/* Market indicator badge */}
                             <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2">
                                 <span className="text-lg font-bold">{isEgypt ? "🇪🇬 Egypt" : "🇸🇦 KSA"}</span>
                             </div>
@@ -234,7 +178,7 @@ export default function MutualFundsPage() {
             <div className="max-w-7xl mx-auto px-6 py-6">
 
                 {/* Summary Statistics (Dynamic based on selected period) */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 -mt-10 relative z-20">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 -mt-16 relative z-20">
                     <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
                         <BarChart3 className="w-5 h-5 text-blue-500 mb-2" />
@@ -285,7 +229,7 @@ export default function MutualFundsPage() {
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                             <input
                                 type="text"
-                                placeholder="Search funds..."
+                                placeholder="Search funds or managers..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
@@ -295,16 +239,57 @@ export default function MutualFundsPage() {
 
                         {/* Controls */}
                         <div className="flex gap-3 overflow-x-auto max-w-full pb-1 md:pb-0 items-center">
-                            {/* Sort By */}
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 focus:outline-none bg-white text-slate-700 cursor-pointer hover:border-blue-400 transition-colors"
+
+                            {/* View Toggle */}
+                            <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
+                                <button
+                                    onClick={() => setViewMode("grid")}
+                                    className={clsx(
+                                        "p-2 rounded-lg transition-all",
+                                        viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                    title="Grid View"
+                                >
+                                    <LayoutGrid className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode("table")}
+                                    className={clsx(
+                                        "p-2 rounded-lg transition-all",
+                                        viewMode === "table" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                    title="Table View"
+                                >
+                                    <List className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* Sort By (Only for Grid) */}
+                            {viewMode === "grid" && (
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                    className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 focus:outline-none bg-white text-slate-700 cursor-pointer hover:border-blue-400 transition-colors"
+                                >
+                                    <option value="performance">Highest Return</option>
+                                    <option value="nav">Highest NAV</option>
+                                    <option value="name">Name (A-Z)</option>
+                                </select>
+                            )}
+
+                            {/* Shariah Toggle */}
+                            <button
+                                onClick={() => setIsShariahOnly(!isShariahOnly)}
+                                className={clsx(
+                                    "px-4 py-2.5 rounded-xl border text-sm font-bold flex items-center gap-2 transition-all shrink-0",
+                                    isShariahOnly
+                                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                                )}
                             >
-                                <option value="performance">Highest Return ({selectedPeriod.toUpperCase()})</option>
-                                <option value="nav">Highest NAV</option>
-                                <option value="name">Name (A-Z)</option>
-                            </select>
+                                <Shield className="w-4 h-4" />
+                                <span className="hidden sm:inline">Shariah</span>
+                            </button>
 
                             {/* Period Selector (The user request) */}
                             <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
@@ -327,7 +312,11 @@ export default function MutualFundsPage() {
                     </div>
 
                     {/* Fund Categories */}
-                    <div className="flex gap-2 overflow-x-auto mt-4 pb-2 border-t border-slate-50 pt-4 scrollbar-hide">
+                    <div className="flex gap-2 overflow-x-auto mt-4 pb-2 border-t border-slate-50 pt-4 scrollbar-hide items-center">
+                        <div className="flex items-center gap-1 text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">
+                            <Filter className="w-3 h-3" />
+                            Type
+                        </div>
                         {fundTypes.map((type) => (
                             <button
                                 key={type}
@@ -345,15 +334,31 @@ export default function MutualFundsPage() {
                     </div>
                 </div>
 
-                {/* Fund Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {isLoading ? (
-                        <div className="col-span-3 text-center py-20 flex flex-col items-center justify-center">
-                            <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-                            <p className="text-slate-500 font-bold text-lg">Loading Market Data...</p>
+                {/* Fund Content - Grid or Table */}
+                {isLoading ? (
+                    <div className="col-span-3 text-center py-20 flex flex-col items-center justify-center">
+                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+                        <p className="text-slate-500 font-bold text-lg">Loading Market Data...</p>
+                    </div>
+                ) : filteredFunds.length === 0 ? (
+                    <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-16 text-center max-w-lg mx-auto mt-12">
+                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Search className="w-8 h-8 text-slate-300" />
                         </div>
-                    ) : (
-                        filteredFunds?.slice(0, 30).map((fund: MutualFund) => {
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">No matching funds found</h3>
+                        <p className="text-slate-500 mb-6">Try adjusting your filters or search terms to find what you're looking for.</p>
+                        <button
+                            onClick={() => { setSearchTerm(""); setFilterType("All"); setIsShariahOnly(false); }}
+                            className="text-blue-600 font-bold text-sm hover:underline"
+                        >
+                            Clear all filters
+                        </button>
+                    </div>
+                ) : viewMode === "table" ? (
+                    <FundsTable funds={filteredFunds} />
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredFunds?.slice(0, 30).map((fund: MutualFund) => {
                             const returnValue = getMetric(fund, selectedPeriod);
                             const hasReturnValue = returnValue !== null && returnValue !== 0; // approximate check
                             const isPositive = returnValue >= 0;
@@ -364,127 +369,128 @@ export default function MutualFundsPage() {
                                 <div
                                     key={fund.fund_id}
                                     onClick={() => router.push(`/funds/${fund.fund_id}`)}
-                                    className="bg-white rounded-3xl transition-all cursor-pointer border border-slate-100 shadow-lg hover:shadow-2xl hover:border-blue-200/50 hover:-translate-y-1 overflow-hidden group flex flex-col"
+                                    className="group relative bg-white rounded-2xl transition-all duration-300 cursor-pointer border border-slate-200/60 shadow-lg hover:shadow-2xl hover:border-blue-300/50 hover:-translate-y-2 overflow-hidden"
                                 >
-                                    {/* Card Header */}
-                                    <div className="p-5 flex-1">
+                                    {/* Premium Gradient Header Band */}
+                                    <div className={clsx(
+                                        "h-2 w-full",
+                                        fund.fund_type?.includes("Equity") ? "bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400" :
+                                            fund.fund_type?.includes("Real Estate") ? "bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-400" :
+                                                fund.fund_type?.includes("Money") ? "bg-gradient-to-r from-emerald-500 via-green-400 to-teal-400" :
+                                                    fund.fund_type?.includes("Fixed") ? "bg-gradient-to-r from-purple-500 via-violet-400 to-indigo-400" :
+                                                        "bg-gradient-to-r from-slate-500 via-slate-400 to-slate-300"
+                                    )} />
+
+                                    {/* Card Content */}
+                                    <div className="p-5">
+                                        {/* Header Row: Name + Badges */}
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex-1 pr-3">
-                                                <h3 className="text-sm font-black text-slate-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight" dir="auto">
+                                                <h3 className="text-base font-extrabold text-slate-800 mb-1.5 line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug" dir="auto">
                                                     {fund.fund_name_en || fund.fund_name}
                                                 </h3>
-                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                                                    <Shield className="w-3 h-3" />
-                                                    {fund.manager || fund.manager_name_en || fund.manager_name}
+                                                <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                                                    <span className="truncate max-w-[140px]">{fund.manager || fund.manager_name_en || fund.manager_name || 'Unknown'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col gap-1 items-end">
+                                            <div className="flex flex-col gap-1.5 items-end shrink-0">
                                                 <span className={clsx(
-                                                    "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0 border",
-                                                    fund.fund_type?.includes("Real Estate") ? "bg-amber-50 text-amber-700 border-amber-100" :
-                                                        fund.fund_type?.includes("Equity") ? "bg-blue-50 text-blue-700 border-blue-100" :
-                                                            fund.fund_type?.includes("Money") ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                                                "bg-slate-50 text-slate-600 border-slate-100"
+                                                    "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide",
+                                                    fund.fund_type?.includes("Real Estate") ? "bg-amber-100 text-amber-700" :
+                                                        fund.fund_type?.includes("Equity") ? "bg-blue-100 text-blue-700" :
+                                                            fund.fund_type?.includes("Money") ? "bg-emerald-100 text-emerald-700" :
+                                                                fund.fund_type?.includes("Fixed") ? "bg-purple-100 text-purple-700" :
+                                                                    "bg-slate-100 text-slate-600"
                                                 )}>
                                                     {fund.fund_type?.split(' ')[0] || 'Fund'}
                                                 </span>
                                                 {fund.is_shariah && (
-                                                    <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                                        Shariah
+                                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-green-100 text-green-700 flex items-center gap-0.5">
+                                                        <Shield className="w-2.5 h-2.5" /> Shariah
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
 
-                                        {/* Metrics Grid */}
+                                        {/* Premium Metrics Glass Cards */}
                                         <div className="grid grid-cols-2 gap-3 mb-4">
-                                            <div className="bg-slate-50/50 rounded-2xl p-3 border border-slate-100">
-                                                <div className="text-[9px] uppercase font-bold text-slate-400 mb-1">NAV</div>
-                                                <div className="text-lg font-black text-slate-900 font-mono flex items-baseline gap-1">
-                                                    {Number(fund.latest_nav).toFixed(2)}
-                                                    <span className="text-[10px] text-slate-400 font-sans">{config.currency}</span>
+                                            {/* NAV Card */}
+                                            <div className="relative bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-xl p-3.5 border border-slate-200/50 overflow-hidden">
+                                                <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-200/20 rounded-full blur-xl" />
+                                                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Latest NAV</div>
+                                                <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+                                                    {Number(fund.latest_nav || 0).toFixed(2)}
                                                 </div>
-                                                {fund.aum_millions && (
-                                                    <div className="text-[10px] text-slate-400 font-bold mt-1">
-                                                        AUM: {(Number(fund.aum_millions) / 1000000).toFixed(1)}M
-                                                    </div>
-                                                )}
+                                                <div className="text-[10px] font-semibold text-slate-400 mt-0.5">{config.currency}</div>
                                             </div>
+
+                                            {/* Return Card */}
                                             <div className={clsx(
-                                                "rounded-2xl p-3 border",
-                                                isPositive ? "bg-emerald-50/30 border-emerald-100/50" : "bg-red-50/30 border-red-100/50"
+                                                "relative rounded-xl p-3.5 border overflow-hidden",
+                                                isPositive
+                                                    ? "bg-gradient-to-br from-emerald-50 to-green-50/50 border-emerald-200/50"
+                                                    : "bg-gradient-to-br from-red-50 to-rose-50/50 border-red-200/50"
                                             )}>
-                                                <div className="text-[9px] uppercase font-bold text-slate-400 mb-1">{currentMetricInfo.label}</div>
                                                 <div className={clsx(
-                                                    "text-lg font-black font-mono flex items-center gap-1",
-                                                    isPositive ? "text-emerald-600" : "text-red-500",
-                                                    !hasReturnValue && "text-slate-300"
+                                                    "absolute -top-4 -right-4 w-16 h-16 rounded-full blur-xl",
+                                                    isPositive ? "bg-emerald-200/30" : "bg-red-200/30"
+                                                )} />
+                                                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">{currentMetricInfo.label.split(' ')[0]}</div>
+                                                <div className={clsx(
+                                                    "text-2xl font-black font-mono tracking-tight flex items-center gap-1",
+                                                    hasReturnValue ? (isPositive ? "text-emerald-600" : "text-red-500") : "text-slate-300"
                                                 )}>
                                                     {hasReturnValue ? (
                                                         <>
-                                                            {isPositive ? "+" : ""}{returnValue.toFixed(2)}%
+                                                            {isPositive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                                                            {isPositive ? "+" : ""}{returnValue.toFixed(1)}%
                                                         </>
                                                     ) : (
-                                                        <span className="text-sm">—</span>
+                                                        <span className="text-lg">—</span>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* Sparkline Chart */}
+                                        <div className="mb-3">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">30-Day Performance</span>
+                                                {sharpeRatio !== null && (
+                                                    <span className={clsx(
+                                                        "text-[9px] font-bold px-2 py-0.5 rounded-full",
+                                                        sharpeRatio >= 1 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+                                                    )}>
+                                                        Sharpe {sharpeRatio.toFixed(2)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="h-12 w-full rounded-lg overflow-hidden bg-gradient-to-b from-slate-50 to-white border border-slate-100">
+                                                <MiniNavChart fundId={fund.fund_id} ytdReturn={fund.ytd_return} />
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Mini Chart */}
-                                    <div className="px-5 pb-4">
-                                        <div className="flex justify-between items-end mb-2">
-                                            <div className="text-[9px] font-bold text-slate-400 uppercase">30-Day Trend</div>
-                                            {sharpeRatio !== null && (
-                                                <div className={clsx(
-                                                    "text-[9px] font-bold px-1.5 py-0.5 rounded border",
-                                                    sharpeRatio >= 1 ? "bg-green-50 text-green-700 border-green-100" : "bg-slate-50 text-slate-500 border-slate-100"
-                                                )}>
-                                                    Sharpe: {sharpeRatio.toFixed(2)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="h-[50px] w-full rounded-xl overflow-hidden bg-slate-50/50 border border-slate-100">
-                                            <MiniNavChart fundId={fund.fund_id} ytdReturn={fund.ytd_return} />
-                                        </div>
-                                    </div>
-
-                                    {/* Action Footer */}
-                                    <div className="bg-slate-50/80 px-5 py-3 border-t border-slate-100 flex justify-between items-center group-hover:bg-blue-50/30 transition-colors">
-                                        <span className="text-[10px] font-bold text-slate-400">ID: {fund.fund_id}</span>
-                                        <span className="text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">Analysis →</span>
+                                    {/* Premium Action Footer */}
+                                    <div className="px-5 py-3.5 bg-gradient-to-r from-slate-50 via-slate-50 to-blue-50/30 border-t border-slate-100 flex justify-between items-center group-hover:from-blue-50/50 group-hover:to-cyan-50/30 transition-all">
+                                        <span className="text-[10px] font-mono font-bold text-slate-400">{fund.fund_id}</span>
+                                        <span className="text-xs font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                            View Details <ArrowUpRight className="w-3.5 h-3.5" />
+                                        </span>
                                     </div>
                                 </div>
                             );
-                        })
-                    )}
-                </div>
+                        })}
+                    </div>
+                )}
 
                 {/* Show More Info */}
-                {filteredFunds.length > 30 && (
+                {filteredFunds.length > 30 && viewMode === "grid" && (
                     <div className="text-center mt-12 mb-8">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-500 text-xs font-bold">
                             <InfoIcon className="w-3 h-3" />
                             Showing top 30 of {filteredFunds.length} funds
                         </div>
-                    </div>
-                )}
-
-                {/* Empty State */}
-                {filteredFunds.length === 0 && !isLoading && (
-                    <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-16 text-center max-w-lg mx-auto mt-12">
-                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Search className="w-8 h-8 text-slate-300" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">No matching funds found</h3>
-                        <p className="text-slate-500 mb-6">Try adjusting your filters or search terms to find what you're looking for.</p>
-                        <button
-                            onClick={() => { setSearchTerm(""); setFilterType("All"); }}
-                            className="text-blue-600 font-bold text-sm hover:underline"
-                        >
-                            Clear all filters
-                        </button>
                     </div>
                 )}
             </div>
@@ -497,5 +503,5 @@ function InfoIcon({ className }: { className?: string }) {
         <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
         </svg>
-    )
+    );
 }

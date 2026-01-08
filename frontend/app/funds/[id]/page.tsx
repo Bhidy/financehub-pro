@@ -83,7 +83,14 @@ interface FundDetails {
     is_shariah: boolean | null;
     sharpe_ratio: number | null;
     standard_deviation: number | null;
+
+    // Deep Data
+    peers?: any[];
+    actions?: any[];
 }
+
+import PeersTable from "@/components/funds/PeersTable";
+import ActionsTimeline from "@/components/funds/ActionsTimeline";
 
 export default function FundDetailPage() {
     const params = useParams();
@@ -234,125 +241,143 @@ export default function FundDetailPage() {
     return (
         <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pb-12" suppressHydrationWarning>
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white shadow-lg">
-                <div className="max-w-7xl mx-auto px-6 py-6 md:py-8">
-                    <button onClick={() => router.back()} className="flex items-center text-white/90 hover:text-white font-bold mb-6 transition-colors group">
-                        <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white shadow-lg sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+                <div className="max-w-7xl mx-auto px-6 py-4 md:py-6">
+                    <button onClick={() => router.back()} className="flex items-center text-white/90 hover:text-white font-bold mb-4 transition-colors group text-sm">
+                        <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                         Back to Funds
                     </button>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                         <div className="flex items-center gap-5">
-                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-inner">
-                                <DollarSign className="w-8 h-8 text-white" />
+                            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-inner">
+                                <DollarSign className="w-7 h-7 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight" dir="auto">
+                                <h1 className="text-2xl md:text-3xl font-black tracking-tight leading-tight" dir="auto">
                                     {fund.fund_name_en || fund.fund_name}
                                 </h1>
-                                <p className="text-blue-50 font-medium text-base mt-1 opacity-90">
-                                    {fund.symbol || fund.fund_id} • {fund.currency || 'EGP'}
+                                <p className="text-blue-50 font-medium text-sm mt-1 opacity-90 flex items-center gap-2">
+                                    <span className="bg-white/20 px-2 py-0.5 rounded text-xs">{fund.symbol || fund.fund_id}</span>
+                                    <span>•</span>
+                                    <span>{fund.currency || 'EGP'}</span>
                                 </p>
                             </div>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 min-w-[160px]">
-                            <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Latest NAV</p>
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/20 min-w-[160px] hover:bg-white/20 transition-colors cursor-default">
+                            <p className="text-blue-100 text-[10px] font-bold uppercase tracking-wider mb-1">Latest NAV</p>
                             <div className="text-3xl font-black font-mono tracking-tight flex items-baseline gap-1">
                                 {latestNav.toFixed(2)}
                                 <span className="text-sm font-sans font-bold opacity-70">{fund.currency || 'EGP'}</span>
                             </div>
+                            {chartPerformance !== null && (
+                                <div className={clsx("text-xs font-bold mt-1", chartPerformance >= 0 ? "text-emerald-300" : "text-red-300")}>
+                                    {chartPerformance >= 0 ? "▲" : "▼"} {Math.abs(chartPerformance).toFixed(2)}% ({chartPeriod})
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
-                {/* Meta Info with more details */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-8 flex flex-wrap gap-4 justify-between items-center">
-                    <div className="flex flex-wrap gap-3">
-                        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-blue-100">
-                            {fund.classification || fund.fund_type || "Mutual Fund"}
-                        </span>
-                        {fund.eligibility && (
-                            <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border border-emerald-100">
-                                {fund.eligibility}
-                            </span>
-                        )}
-                        {fund.establishment_date && (
-                            <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold border border-amber-100">
-                                Est. {safeDate(fund.establishment_date)?.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-                            </span>
-                        )}
+                {/* Meta Info Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8">
+                    <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Type</div>
+                        <div className="text-xs font-bold text-slate-800 line-clamp-1">{fund.classification || "Mutual Fund"}</div>
                     </div>
-                    {(fund.manager_name_en || fund.manager_name) && (
-                        <span className="text-slate-500 text-sm font-bold flex items-center gap-2">
-                            <User className="w-4 h-4 text-slate-400" /> {fund.manager_name_en || fund.manager_name}
-                        </span>
+                    <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Manager</div>
+                        <div className="text-xs font-bold text-slate-800 line-clamp-1">{fund.manager || fund.manager_name_en || "—"}</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Launch</div>
+                        <div className="text-xs font-bold text-slate-800">{fund.establishment_date ? safeDate(fund.establishment_date)?.getFullYear() : "—"}</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">AUM</div>
+                        <div className="text-xs font-bold text-slate-800">{fund.aum_millions ? `${(Number(fund.aum_millions) / 1000000).toFixed(1)}M` : "—"}</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Risk (Sharpe)</div>
+                        <div className="text-xs font-bold text-blue-600">{isValidSharpe ? sharpeRatio!.toFixed(2) : "—"}</div>
+                    </div>
+                    {fund.is_shariah && (
+                        <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 shadow-sm flex items-center justify-center">
+                            <span className="text-xs font-black text-emerald-700 uppercase flex items-center gap-1">
+                                <Shield className="w-3 h-3" /> Shariah
+                            </span>
+                        </div>
                     )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Chart Section */}
-                    <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden min-w-0 flex flex-col">
-                        <div className="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between gap-4">
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                    <TrendingUp className="w-5 h-5 text-blue-600" /> Performance
+                    {/* Main Chart Section */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden min-w-0 flex flex-col">
+                            <div className="p-5 border-b border-slate-50 flex flex-col sm:flex-row justify-between gap-4 items-center bg-slate-50/30">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <TrendingUp className="w-5 h-5 text-blue-600" /> NAV Performance
                                 </h3>
-                                {chartPerformance !== null && (
-                                    <p className={clsx("text-xl font-black font-mono mt-1", chartPerformance >= 0 ? "text-emerald-600" : "text-red-600")}>
-                                        {chartPerformance >= 0 ? "+" : ""}{chartPerformance.toFixed(2)}%
-                                    </p>
-                                )}
+                                <div className="flex gap-1 bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+                                    {(["1M", "3M", "1Y", "3Y", "5Y", "ALL"] as ChartPeriod[]).map((period) => (
+                                        <button
+                                            key={period}
+                                            onClick={() => setChartPeriod(period)}
+                                            className={clsx(
+                                                "px-3 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all",
+                                                chartPeriod === period ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                                            )}
+                                        >
+                                            {period}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
-                                {(["1M", "3M", "1Y", "3Y", "5Y", "ALL"] as ChartPeriod[]).map((period) => (
-                                    <button
-                                        key={period}
-                                        onClick={() => setChartPeriod(period)}
-                                        className={clsx(
-                                            "px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all",
-                                            chartPeriod === period ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                                        )}
-                                    >
-                                        {period}
-                                    </button>
-                                ))}
+
+                            <div className="h-[400px] w-full relative group bg-white">
+                                <FundChart
+                                    data={filteredChartData}
+                                    period={chartPeriod}
+                                    colorId="colorNavDetail"
+                                    dateRangeOrLabel={dateRangeLabel}
+                                />
                             </div>
                         </div>
 
-                        <div className="h-[400px] w-full relative group bg-white">
-                            <FundChart
-                                data={filteredChartData}
-                                period={chartPeriod}
-                                colorId="colorNavDetail"
-                                dateRangeOrLabel={dateRangeLabel}
-                            />
+                        {/* NEW: Competitive Landscape (Peers) */}
+                        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+                            <div className="p-5 border-b border-slate-50 bg-gradient-to-r from-slate-50 to-white">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm">🏆</span>
+                                    Competitive Landscape
+                                </h3>
+                                <p className="text-xs text-slate-400 mt-1 pl-10">Ranked by returns against comparable funds</p>
+                            </div>
+                            <div className="p-0">
+                                <PeersTable peers={fund.peers || []} currentFundId={fund.fund_id} />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Stats Section */}
+                    {/* Right Column: Stats & Actions */}
                     <div className="space-y-6">
+
+                        {/* Performance Card */}
                         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-50 rounded-full blur-2xl pointer-events-none"></div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-5 relative z-10 flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-emerald-500" /> Returns
-                            </h3>
-                            <div className="space-y-4 relative z-10">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 z-10 relative">Returns Snapshot</h3>
+                            <div className="space-y-3 relative z-10">
                                 {[
-                                    { label: "3 Months", val: fund.returns_3m ?? fund.profit_3month, isDb: !!safeNumber(fund.returns_3m ?? fund.profit_3month) },
-                                    { label: "YTD", val: fund.returns_ytd ?? fund.ytd_return, isDb: !!safeNumber(fund.returns_ytd ?? fund.ytd_return) },
-                                    { label: "1 Year", val: fund.returns_1y ?? fund.one_year_return ?? ret1Y, isDb: !!safeNumber(fund.returns_1y ?? fund.one_year_return) },
-                                    { label: "3 Years", val: fund.three_year_return ?? ret3Y, isDb: !!safeNumber(fund.three_year_return) },
-                                    { label: "5 Years", val: fund.five_year_return ?? ret5Y, isDb: !!safeNumber(fund.five_year_return) },
+                                    { label: "YTD", val: fund.returns_ytd ?? fund.ytd_return },
+                                    { label: "1 Year", val: fund.returns_1y ?? fund.one_year_return ?? ret1Y },
+                                    { label: "3 Years", val: fund.three_year_return ?? ret3Y },
+                                    { label: "5 Years", val: fund.five_year_return ?? ret5Y },
                                 ].map((item, i) => {
                                     const val = safeNumber(item.val);
                                     return (
-                                        <div key={i} className="flex justify-between items-center pb-3 border-b border-slate-50 last:border-0 last:pb-0">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-slate-600">{item.label}</span>
-                                                {item.isDb && val !== null && <span className="text-[9px] text-blue-400 font-bold uppercase">Official</span>}
-                                            </div>
-                                            <span className={clsx("font-mono font-bold text-lg", !val ? "text-slate-300" : val >= 0 ? "text-emerald-600" : "text-red-500")}>
+                                        <div key={i} className="flex justify-between items-center pb-2 border-b border-slate-50 last:border-0 last:pb-0">
+                                            <span className="text-xs font-bold text-slate-500">{item.label}</span>
+                                            <span className={clsx("font-mono font-bold", !val ? "text-slate-300" : val >= 0 ? "text-emerald-600" : "text-red-500")}>
                                                 {val !== null ? `${val > 0 ? "+" : ""}${val.toFixed(2)}%` : "—"}
                                             </span>
                                         </div>
@@ -361,189 +386,32 @@ export default function FundDetailPage() {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6">
-                            <h3 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-blue-500" /> Risk
-                            </h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-slate-50 rounded-2xl p-3">
-                                    <div className="text-xs font-bold text-slate-400 uppercase mb-1">Sharpe</div>
-                                    <div className={clsx("text-xl font-black font-mono", isValidSharpe ? "text-blue-600" : "text-slate-300")}>
-                                        {isValidSharpe ? sharpeRatio!.toFixed(2) : "—"}
-                                    </div>
-                                </div>
-                                <div className="bg-slate-50 rounded-2xl p-3">
-                                    <div className="text-xs font-bold text-slate-400 uppercase mb-1">Vol (Std)</div>
-                                    <div className={clsx("text-xl font-black font-mono", isValidStdDev ? "text-slate-900" : "text-slate-300")}>
-                                        {isValidStdDev ? `${stdDev!.toFixed(2)}%` : "—"}
-                                    </div>
-                                </div>
+                        {/* NEW: Corporate Actions Timeline */}
+                        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+                            <div className="p-5 border-b border-slate-50 bg-slate-50/30">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <span className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">💰</span>
+                                    Corporate Actions
+                                </h3>
+                            </div>
+                            <div className="p-5">
+                                <ActionsTimeline actions={fund.actions || []} />
                             </div>
                         </div>
 
-                        <div className="bg-blue-50/50 rounded-2xl border border-blue-100/50 p-4 flex gap-3 items-center">
-                            <Info className="w-4 h-4 text-blue-400" />
-                            <p className="text-xs text-blue-800/70 font-medium">
-                                {filteredChartData.length} data points. {fund.last_updated && `Updated ${safeDate(fund.last_updated)?.toLocaleDateString()}.`}
-                            </p>
-                        </div>
+                        {/* Investment Strategy (Moved to sidebar) */}
+                        {fund.investment_strategy && (
+                            <div className="bg-slate-50 rounded-3xl border border-slate-100 p-5">
+                                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Strategy</h4>
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    {fund.investment_strategy.length > 200
+                                        ? `${fund.investment_strategy.substring(0, 200)}...`
+                                        : fund.investment_strategy}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                {/* Investment Strategy Section - Full Width */}
-                {fund.investment_strategy && (
-                    <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-teal-50 rounded-full blur-2xl pointer-events-none"></div>
-                        <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
-                            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white text-lg">📊</span>
-                            Investment Strategy
-                        </h3>
-                        <p className="text-slate-600 leading-relaxed text-sm relative z-10">
-                            {fund.investment_strategy}
-                        </p>
-                    </div>
-                )}
-
-                <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-50 to-orange-50 rounded-full blur-2xl pointer-events-none"></div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
-                        <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-lg">📋</span>
-                        Fund Profile
-                    </h3>
-                    {fund.is_shariah && (
-                        <div className="mb-4 relative z-10">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">
-                                <Shield className="w-3.5 h-3.5" /> Shariah Compliant
-                            </span>
-                        </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
-                        {/* Fund Manager */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1">
-                                <User className="w-3 h-3" /> Fund Manager
-                            </div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.manager || fund.manager_name_en || fund.manager_name || "—"}
-                            </div>
-                        </div>
-
-                        {/* Issuer */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">🏛️ Issuer</div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.issuer || fund.owner_name_en || fund.owner_name || "—"}
-                            </div>
-                        </div>
-
-                        {/* AUM */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">💰 AUM</div>
-                            <div className="text-sm font-bold text-slate-800 font-mono">
-                                {fund.aum_millions ? `${(Number(fund.aum_millions) / 1000000).toLocaleString()}M ${fund.currency || 'EGP'}` : "—"}
-                            </div>
-                        </div>
-
-                        {/* Currency */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">💱 Currency</div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.currency || "EGP"}
-                            </div>
-                        </div>
-
-                        {/* Establishment Date */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">📅 Est. Date</div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.establishment_date ? safeDate(fund.establishment_date)?.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : "—"}
-                            </div>
-                        </div>
-
-                        {/* Eligibility */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">🌍 Eligibility</div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.eligibility || "All Nationalities"}
-                            </div>
-                        </div>
-
-                        {/* Market */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">📍 Market</div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.market_code === "EGX" ? "🇪🇬 Egyptian Exchange" : fund.market_code === "TDWL" ? "🇸🇦 Saudi Exchange" : fund.market_code || "—"}
-                            </div>
-                        </div>
-
-                        {/* Fund Type */}
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">📂 Classification</div>
-                            <div className="text-sm font-bold text-slate-800">
-                                {fund.fund_type || fund.classification || "Mutual Fund"}
-                            </div>
-                        </div>
-
-                        {/* Latest NAV */}
-                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-                            <div className="text-xs font-bold text-emerald-600 uppercase mb-1">💰 Latest NAV</div>
-                            <div className="text-lg font-black text-emerald-700 font-mono">
-                                {latestNav.toFixed(4)} <span className="text-sm font-normal">{fund.currency || "EGP"}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Extended Performance Grid - Full Width - Only shows fields with data */}
-                {/* Extended Performance Grid - Full Width - Only shows fields with data */}
-                {(() => {
-                    const perfData = [
-                        { label: "1 Week", val: fund.profit_week },
-                        { label: "1 Month", val: fund.profit_month },
-                        { label: "3 Months", val: fund.profit_3month },
-                        { label: "6 Months", val: fund.profit_6month },
-                        { label: "YTD", val: fund.ytd_return },
-                        { label: "1 Year", val: fund.one_year_return },
-                        { label: "3 Years", val: fund.three_year_return },
-                        { label: "5 Years", val: fund.five_year_return },
-                        { label: "52W High", val: fund.profit_52w_high },
-                        { label: "52W Low", val: fund.profit_52w_low },
-                    ].filter(item => safeNumber(item.val) !== null);
-
-                    if (perfData.length === 0) return null;
-
-                    return (
-                        <div className="mt-8 bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50 to-blue-50 rounded-full blur-2xl pointer-events-none"></div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 relative z-10">
-                                <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-lg">📈</span>
-                                Performance Overview
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
-                                {perfData.map((item, i) => {
-                                    const val = safeNumber(item.val)!;
-                                    const isPositive = val >= 0;
-                                    const isPrice = item.label.includes("High") || item.label.includes("Low");
-
-                                    return (
-                                        <div key={i} className={clsx(
-                                            "rounded-2xl p-4 border transition-all hover:bg-white hover:shadow-md",
-                                            isPrice ? "bg-slate-50 border-slate-100" : (isPositive ? "bg-emerald-50/50 border-emerald-100" : "bg-red-50/50 border-red-100")
-                                        )}>
-                                            <div className="text-xs font-bold text-slate-400 uppercase mb-1">{item.label}</div>
-                                            <div className={clsx(
-                                                "text-lg font-black font-mono",
-                                                isPrice ? "text-slate-700" : (isPositive ? "text-emerald-600" : "text-red-500")
-                                            )}>
-                                                {isPrice ? '' : (isPositive ? '+' : '')}{val.toFixed(2)}{isPrice ? '' : '%'}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    );
-                })()}
             </div>
         </main>
     );

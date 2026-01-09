@@ -17,15 +17,33 @@ interface WatchlistStock {
     symbol: string;
     description: string;
     last_price: number | null;
+    open_price: number | null;
     change: number | null;
     change_percent: number | null;
     bid: number | null;
     ask: number | null;
+    day_range_pct: string | null;
     bid_qty: number | null;
     ask_qty: number | null;
+    currency: string | null;
+    last_qty: number | null;
     volume: number | null;
-    trades: number | null;
     turnover: number | null;
+    trades: number | null;
+    bid_ask_spread: number | null;
+    day_high: number | null;
+    day_low: number | null;
+    limit_min: number | null;
+    limit_max: number | null;
+    total_bid_qty: number | null;
+    total_ask_qty: number | null;
+    week_52_range: string | null;
+    last_trade_time: string | null;
+    lt_price: number | null;
+    market: string | null;
+    vwap: number | null;
+    prev_close: number | null;
+    last_auction_price: number | null;
     updated_at: string | null;
 }
 
@@ -48,7 +66,7 @@ export default function EGXWatchlistPage() {
             setIsRefreshing(true);
             // Fetch from backend API
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space';
-            const response = await fetch(`${apiUrl}/api/v1/egx-watchlist`);
+            const response = await fetch(`${apiUrl}/api/v1/egx-watchlist?limit=300`);
             if (!response.ok) throw new Error("Failed to fetch watchlist");
             const result: WatchlistResponse = await response.json();
             setData(result.data || []);

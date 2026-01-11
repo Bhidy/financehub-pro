@@ -83,7 +83,14 @@ export default function AIAnalystPage() {
     };
 
     return (
-        <div className="flex h-full bg-slate-50 relative overflow-hidden font-sans">
+        <div className="flex flex-col h-[100dvh] bg-slate-50 relative overflow-hidden">
+            {/* ============================================================================ */}
+            {/* PROOF OF LIFE BANNER - REMOVE AFTER VERIFICATION */}
+            {/* ============================================================================ */}
+            <div className="bg-red-600 text-white text-xs font-bold text-center py-1 z-[9999]">
+                📢 ENTERPRISE BUILD v2.1.0 • {new Date().toISOString()} • IF YOU SEE THIS, DEPLOYMENT WORKED
+            </div>
+            {/* ============================================================================ */}
             {/* ULTRA-PREMIUM BACKGROUND DECOR */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden bg-slate-50">
                 <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-200/30 rounded-full blur-[150px] mix-blend-multiply animate-pulse-slow"></div>

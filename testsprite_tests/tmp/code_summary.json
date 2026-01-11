@@ -1,0 +1,50 @@
+{
+    "tech_stack": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "Supabase",
+        "Databases (Async)",
+        "SQLAlchemy",
+        "yfinance",
+        "yahooquery"
+    ],
+    "features": [
+        {
+            "name": "Yahoo Watchlist API",
+            "description": "Fetches and maps real-time stock data from market_tickers for the EGX watchlist.",
+            "files": [
+                "hf-space/app/api/v1/endpoints/yahoo.py"
+            ]
+        },
+        {
+            "name": "Stock Profile & History API",
+            "description": "Provides detailed company profile from market_tickers and historical OHLC data from ohlc_data.",
+            "files": [
+                "hf-space/app/api/v1/endpoints/yahoo.py"
+            ]
+        },
+        {
+            "name": "Deep Screener API",
+            "description": "Multi-factor filtering for stocks across sectors and valuation ratios.",
+            "files": [
+                "hf-space/app/api/v1/endpoints/market.py"
+            ]
+        },
+        {
+            "name": "Mutual Funds API",
+            "description": "Tracks NAVs, returns, and sector allocations for mutual funds.",
+            "files": [
+                "hf-space/app/api/v1/endpoints/funds.py"
+            ]
+        },
+        {
+            "name": "Database Integration Layer",
+            "description": "Asynchronous database access using Supabase and secondary connection pools.",
+            "files": [
+                "hf-space/app/db/session.py",
+                "hf-space/app/core/config.py"
+            ]
+        }
+    ]
+}

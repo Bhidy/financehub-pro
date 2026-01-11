@@ -20,3 +20,4 @@ debug_*.png
 !package.json
 !package-lock.json
 !tsconfig.json
+!testsprite_tests/**/*.json

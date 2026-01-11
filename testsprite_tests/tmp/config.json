@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8000",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "mubasher-deep-extract",
+    "projectPath": "/Users/home/Documents/Info Site/mubasher-deep-extract",
+    "testIds": [],
+    "additionalInstruction": "Validate backend API endpoints and data schema alignment.",
+    "envs": {
+      "API_KEY": "sk-user-_UPrv3F9Z2jF_F63mtdLbiX5z6bYNCd61izxGuCukdiGB73Oa_5CSV4HsC9LX1XIE3DSjbCRbYFadUcpGsXXPwDtW5Id1ubNL471Rj_w05tmkrgPa6arf6TkFeFL9RgVijk"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC001",
+    "title": "verify_yahoo_watchlist_api_real_time_data_fetch",
+    "description": "Test the Yahoo Watchlist API to ensure it correctly fetches and maps real-time stock data from the market_tickers table specifically for the EGX watchlist, verifying data accuracy and response format."
+  },
+  {
+    "id": "TC002",
+    "title": "validate_stock_profile_and_history_api_data_accuracy",
+    "description": "Test the Stock Profile & History API to verify it provides accurate and complete company profiles from market_tickers and historical OHLC data from ohlc_data, ensuring data consistency and correctness."
+  },
+  {
+    "id": "TC003",
+    "title": "test_deep_screener_api_multi_factor_filtering",
+    "description": "Test the Deep Screener API to confirm it correctly applies multi-factor filters such as sector, market capitalization, and valuation metrics, returning consistent and expected stock results based on input criteria."
+  },
+  {
+    "id": "TC004",
+    "title": "validate_mutual_funds_api_nav_and_sector_data",
+    "description": "Test the Mutual Funds API to ensure it accurately tracks NAVs, returns, and sector allocations for mutual funds, reflecting up-to-date data and correct classifications."
+  },
+  {
+    "id": "TC005",
+    "title": "test_database_integration_layer_async_access",
+    "description": "Test the asynchronous database integration layer using Supabase and secondary connection pools to verify stable and efficient database access without blocking, ensuring data integrity and performance."
+  }
+]

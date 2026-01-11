@@ -24,13 +24,15 @@ export function MobileHeader({
     onLogin,
     onLogout,
     remainingQuestions = 5,
-}: MobileHeaderProps) {
-    const { market } = useMarketSafe();
+    forceMarket
+}: MobileHeaderProps & { forceMarket?: string }) {
+    const { market: contextMarket } = useMarketSafe();
+    const displayMarket = forceMarket || contextMarket;
 
     return (
-        <header className="sticky top-0 z-50 px-4 pt-safe pb-2 bg-gradient-to-b from-slate-100 to-transparent" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-            {/* Glass container */}
-            <div className="flex items-center justify-between bg-white/70 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-lg shadow-slate-900/5 border border-white/50">
+        <header className="w-full z-50 relative flex-none px-4 pt-safe pb-2 bg-slate-50" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
+            {/* Opaque container - VISUAL DEBUG: AMBER BACKGROUND */}
+            <div className="flex items-center justify-between bg-amber-50 rounded-2xl px-4 py-3 shadow-sm border border-amber-200">
 
                 {/* Left: Avatar + Status */}
                 <div className="flex items-center gap-3">
@@ -53,8 +55,8 @@ export function MobileHeader({
                     <div>
                         <div className="font-bold text-slate-900 text-sm leading-tight">Finny AI</div>
                         <div className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-                            <span className="uppercase tracking-wider">{market === 'EGX' ? 'Egypt' : 'Saudi'}</span>
-                            <span className="text-emerald-500">• Live</span>
+                            <span className="uppercase tracking-wider">{displayMarket === 'EGX' ? 'Egypt' : 'Saudi'}</span>
+                            <span className="text-emerald-500">• Live v2.3 (Fixed)</span>
                         </div>
                     </div>
                 </div>
@@ -104,7 +106,7 @@ export function MobileHeader({
                     ) : (
                         <button
                             onClick={onLogin}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-teal-600 text-white active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-600 text-white active:scale-95 transition-all shadow-lg shadow-red-500/20"
                         >
                             <LogIn className="w-5 h-5" />
                         </button>

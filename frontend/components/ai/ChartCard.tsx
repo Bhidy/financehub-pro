@@ -19,9 +19,11 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
         }
 
         const isCandlestick = chart.type === "candlestick";
+        const isPieOrDonut = chart.type === "pie" || chart.type === "donut";
+        const isBarOrColumn = chart.type === "bar" || chart.type === "column";
 
         if (isCandlestick) {
-            // Candlestick chart
+            // Candlestick Logic (Keep existing)
             const series = [{
                 name: chart.symbol,
                 data: chart.data.map((d: any) => ({
@@ -34,86 +36,177 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 chart: {
                     type: "candlestick",
                     height,
-                    toolbar: {
-                        show: true,
-                        tools: {
-                            download: true,
-                            selection: true,
-                            zoom: true,
-                            zoomin: true,
-                            zoomout: true,
-                            pan: true,
-                            reset: true
-                        }
-                    },
-                    animations: {
-                        enabled: true,
-                        speed: 500
-                    },
+                    toolbar: { show: true },
+                    animations: { enabled: true, speed: 500 },
                     background: "transparent"
                 },
                 title: {
                     text: chart.title || `${chart.symbol} - ${chart.range}`,
                     align: "left",
-                    style: {
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        color: "#1e293b"
+                    style: { fontSize: "14px", fontWeight: 600, color: "#1e293b" }
+                },
+                xaxis: { type: "datetime" },
+                yaxis: { labels: { formatter: (val) => val.toFixed(2) } }
+            };
+            return { chartOptions: options, chartSeries: series };
+
+        } else if (isPieOrDonut) {
+            // Pie/Donut Logic
+            const series = chart.data.map((d: any) => d.value || 0);
+            const labels = chart.data.map((d: any) => d.label || "Unknown");
+
+            const options: ApexCharts.ApexOptions = {
+                chart: {
+                    type: chart.type as "pie" | "donut",
+                    height,
+                    toolbar: { show: true },
+                    animations: { enabled: true }
+                },
+                labels: labels,
+                title: {
+                    text: chart.title,
+                    align: "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: "#1e293b" }
+                },
+                legend: { position: 'bottom' },
+                dataLabels: { enabled: true },
+                colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
+            };
+            return { chartOptions: options, chartSeries: series };
+
+        } else if (isBarOrColumn) {
+            // ... existing bar logic ...
+            // (Copy existing logic here or ensure it matches view)
+            // Bar/Column Logic (Categorical)
+            const series = [{
+                name: "Value",
+                data: chart.data.map((d: any) => d.value || 0)
+            }];
+            const categories = chart.data.map((d: any) => d.label || "");
+
+            const options: ApexCharts.ApexOptions = {
+                chart: {
+                    type: "bar",
+                    height,
+                    toolbar: { show: true }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: chart.type === "bar", // Bar is horizontal, Column is vertical
+                        borderRadius: 4,
+                        columnWidth: '50%'
                     }
                 },
                 xaxis: {
-                    type: "datetime",
+                    categories: categories,
+                    labels: { style: { fontSize: "11px" } }
+                },
+                title: {
+                    text: chart.title,
+                    align: "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: "#1e293b" }
+                },
+                colors: ["#3b82f6"]
+            };
+            return { chartOptions: options, chartSeries: series };
+
+        } else if (chart.type === "radar") {
+            // Radar Chart Logic (Enhanced)
+            const series = [{
+                name: "Score",
+                data: chart.data.map((d: any) => d.value || 0)
+            }];
+            const categories = chart.data.map((d: any) => d.label || "");
+
+            const options: ApexCharts.ApexOptions = {
+                chart: {
+                    type: "radar",
+                    height,
+                    toolbar: { show: false },
+                    animations: { enabled: true }
+                },
+                xaxis: {
+                    categories: categories,
                     labels: {
-                        datetimeUTC: false,
                         style: {
-                            colors: "#64748b",
-                            fontSize: "11px"
+                            fontSize: "11px",
+                            fontFamily: "Inter, sans-serif",
+                            colors: ["#64748b"]
                         }
                     }
                 },
-                yaxis: {
-                    tooltip: {
-                        enabled: true
-                    },
-                    labels: {
-                        style: {
-                            colors: "#64748b",
-                            fontSize: "11px"
-                        },
-                        formatter: (val: number) => val.toFixed(2)
-                    }
+                yaxis: { show: false },
+                title: {
+                    text: chart.title,
+                    align: "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: "#1e293b" }
+                },
+                fill: {
+                    opacity: 0.2,
+                    colors: ["#8b5cf6"]
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ["#8b5cf6"],
+                    dashArray: 0
+                },
+                markers: {
+                    size: 4,
+                    colors: ["#8b5cf6"],
+                    strokeColors: "#fff",
+                    strokeWidth: 2
+                },
+                colors: ["#8b5cf6"]
+            };
+            return { chartOptions: options, chartSeries: series };
+
+        } else if (chart.type === "heatmap" || (chart.type as any) === "treemap") {
+            // Heatmap/Treemap Logic (New)
+            const series = [{
+                name: "Market Heatmap",
+                data: chart.data.map((d: any) => ({
+                    x: d.label || d.symbol,
+                    y: d.value || 0
+                }))
+            }];
+
+            const options: ApexCharts.ApexOptions = {
+                chart: {
+                    type: "heatmap",
+                    height,
+                    toolbar: { show: false }
                 },
                 plotOptions: {
-                    candlestick: {
-                        colors: {
-                            upward: "#10b981",
-                            downward: "#ef4444"
-                        },
-                        wick: {
-                            useFillColor: true
+                    heatmap: {
+                        shadeIntensity: 0.5,
+                        radius: 4,
+                        useFillColorAsStroke: false,
+                        colorScale: {
+                            ranges: [
+                                { from: -100, to: -2, color: '#ef4444', name: 'Loss' },
+                                { from: -2, to: 2, color: '#94a3b8', name: 'Neutral' },
+                                { from: 2, to: 100, color: '#10b981', name: 'Gain' }
+                            ]
                         }
                     }
                 },
-                grid: {
-                    borderColor: "#e2e8f0",
-                    strokeDashArray: 3
-                },
-                tooltip: {
-                    theme: "light",
-                    x: {
-                        format: "dd MMM yyyy"
-                    }
+                dataLabels: { enabled: false },
+                title: {
+                    text: chart.title,
+                    align: "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: "#1e293b" }
                 }
             };
-
             return { chartOptions: options, chartSeries: series };
+
         } else {
-            // Line chart
+            // Line/Area Logic (Fallback)
             const series = [{
                 name: "Price",
                 data: chart.data.map((d: any) => ({
                     x: new Date(d.time).getTime(),
-                    y: d.close || d.revenue || d.value || 0
+                    y: d.close || d.value || 0
                 }))
             }];
 
@@ -121,68 +214,40 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 chart: {
                     type: "area",
                     height,
-                    toolbar: {
-                        show: true
-                    },
-                    animations: {
-                        enabled: true,
-                        speed: 500
-                    },
-                    background: "transparent"
+                    toolbar: { show: false },
+                    zoom: { enabled: false }
                 },
-                title: {
-                    text: chart.title || chart.symbol,
-                    align: "left",
-                    style: {
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        color: "#1e293b"
+                title: { text: chart.title, style: { fontSize: "14px", fontWeight: 600, color: "#1e293b" } },
+                xaxis: {
+                    type: "datetime",
+                    labels: { style: { colors: '#64748b', fontSize: '11px' } },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => val.toFixed(2),
+                        style: { colors: '#64748b', fontSize: '11px' }
                     }
                 },
-                stroke: {
-                    curve: "smooth",
-                    width: 2
+                grid: {
+                    borderColor: '#f1f5f9',
+                    strokeDashArray: 4,
+                    yaxis: { lines: { show: true } },
+                    xaxis: { lines: { show: false } }
                 },
                 fill: {
                     type: "gradient",
                     gradient: {
                         shadeIntensity: 1,
                         opacityFrom: 0.4,
-                        opacityTo: 0.1,
+                        opacityTo: 0.05,
                         stops: [0, 100]
                     }
                 },
-                colors: ["#3b82f6"],
-                xaxis: {
-                    type: "datetime",
-                    labels: {
-                        style: {
-                            colors: "#64748b",
-                            fontSize: "11px"
-                        }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: "#64748b",
-                            fontSize: "11px"
-                        },
-                        formatter: (val: number) => val.toFixed(2)
-                    }
-                },
-                grid: {
-                    borderColor: "#e2e8f0",
-                    strokeDashArray: 3
-                },
-                tooltip: {
-                    theme: "light",
-                    x: {
-                        format: "dd MMM yyyy"
-                    }
-                }
+                stroke: { curve: "smooth", width: 2 },
+                colors: ["#3b82f6"]
             };
-
             return { chartOptions: options, chartSeries: series };
         }
     }, [chart, height]);
@@ -201,7 +266,12 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 <Chart
                     options={chartOptions}
                     series={chartSeries}
-                    type={chart.type === "candlestick" ? "candlestick" : "area"}
+                    type={chart.type === "candlestick" ? "candlestick" :
+                        chart.type === "donut" ? "donut" :
+                            chart.type === "pie" ? "pie" :
+                                chart.type === "bar" ? "bar" :
+                                    chart.type === "radar" ? "radar" :
+                                        chart.type === "heatmap" ? "heatmap" : "area"}
                     height={height}
                 />
             </div>

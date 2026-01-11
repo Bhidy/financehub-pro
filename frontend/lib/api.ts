@@ -8,10 +8,14 @@ import { TickerResponseSchema, Ticker } from "./schemas";
 // This eliminates any dependency on external backends (Railway, HuggingFace, etc.)
 // The API routes are co-located with the frontend at /api/v1/*
 // =============================================================================
-const API_BASE_URL = "/api/v1";
+// =============================================================================
+// UNIFIED ARCHITECTURE - PYTHON BACKEND
+// =============================================================================
+// Pointing directly to the HuggingFace Python Backend
+const API_BASE_URL = "https://bhidy-financehub-api.hf.space/api/v1";
 
 if (typeof window !== 'undefined') {
-    console.log(`[FinanceHub Pro v1.3.1] Unified Serverless Mode: ${API_BASE_URL}`);
+    console.log(`[FinanceHub Pro] Connected to Backend: ${API_BASE_URL}`);
 }
 
 export interface UpdateProfileData {
@@ -272,19 +276,15 @@ export const fetchOrderBook = async (symbol: string) => {
 export const sendChatMessage = async (
     message: string,
     history: any[],
-    session_id?: string | null
+    session_id?: string | null,
+    market?: string // Add market parameter
 ) => {
-    // UNIFIED SERVERLESS: Use internal Next.js API route (no external backend)
-    const response = await fetch("/api/v1/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, session_id })
-    });
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || "AI request failed");
-    }
-    return response.json();
+    // UNIFIED ARCHITECTURE: Use Python Backend directly
+    // This uses the 'api' instance which has the correct Base URL and Auth Headers
+    // ENTERPRISE FIX: Inject Market Context via Header for robustness
+    const config = market ? { headers: { 'X-Market-Context': market } } : {};
+    const { data } = await api.post("/ai/chat", { message, history, session_id, market }, config);
+    return data;
 };
 
 export const fetchEarnings = async (symbol?: string, limit: number = 200) => {
@@ -409,5 +409,17 @@ export const fetchCompanyNews = async (symbol: string) => {
 
 export const fetchCompanyInsiderTransactions = async (symbol: string) => {
     const { data } = await api.get(`/company/${symbol}/insider-transactions`);
+    return data;
+};
+
+// ============================================================================
+// DIRECT BACKEND ACCESS (Enterprise Fix)
+// ============================================================================
+
+export const fetchYahooProfile = async (symbol: string) => {
+    // Direct call to verified Python endpoint (HF Spaces)
+    // This bypasses the faulty Next.js Proxy layer
+    // Endpoint: /api/v1/yahoo/stock/{symbol}
+    const { data } = await api.get(`/yahoo/stock/${symbol}`);
     return data;
 };

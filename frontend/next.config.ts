@@ -28,6 +28,12 @@ const nextConfig = {
   // Output standalone build for Docker/Railway deployment
   output: 'standalone',
 
+  // Inject Build Metadata
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+    NEXT_PUBLIC_GIT_COMMIT: process.env.VERCEL_GIT_COMMIT_SHA || 'local-dev',
+  },
+
   // Environment variables are handled automatically by Next.js (NEXT_PUBLIC_*)
   typescript: {
     ignoreBuildErrors: true,

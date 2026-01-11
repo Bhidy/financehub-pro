@@ -8,9 +8,10 @@ interface UsageLimitModalProps {
     isOpen: boolean;
     onClose?: () => void;
     remainingQuestions?: number;
+    isMobile?: boolean;
 }
 
-export function UsageLimitModal({ isOpen, onClose, remainingQuestions = 0 }: UsageLimitModalProps) {
+export function UsageLimitModal({ isOpen, onClose, remainingQuestions = 0, isMobile = false }: UsageLimitModalProps) {
     const router = useRouter();
 
     const benefits = [
@@ -87,7 +88,7 @@ export function UsageLimitModal({ isOpen, onClose, remainingQuestions = 0 }: Usa
                                 {/* CTA Buttons */}
                                 <div className="space-y-3">
                                     <button
-                                        onClick={() => router.push("/register")}
+                                        onClick={() => router.push(isMobile ? "/mobile-ai-analyst/register" : "/register")}
                                         className="w-full py-4 bg-gradient-to-r from-blue-600 to-teal-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-[0.98] group"
                                     >
                                         <Sparkles className="w-5 h-5" />
@@ -96,7 +97,7 @@ export function UsageLimitModal({ isOpen, onClose, remainingQuestions = 0 }: Usa
                                     </button>
 
                                     <button
-                                        onClick={() => router.push("/login")}
+                                        onClick={() => router.push(isMobile ? "/mobile-ai-analyst/login" : "/login")}
                                         className="w-full py-4 bg-slate-100 text-slate-700 rounded-2xl font-semibold hover:bg-slate-200 transition-all active:scale-[0.98]"
                                     >
                                         Already have an account? Login

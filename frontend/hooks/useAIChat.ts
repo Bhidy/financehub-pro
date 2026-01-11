@@ -15,11 +15,13 @@ export interface Card {
 }
 
 export interface ChartPayload {
-    type: "candlestick" | "line" | "bar";
+    type: "candlestick" | "line" | "bar" | "pie" | "donut" | "column" | "radar" | "area" | "heatmap" | "treemap";
     symbol: string;
     title: string;
     data: Array<{
-        time: string;
+        time?: string;
+        label?: string;
+        value?: number;
         open?: number;
         high?: number;
         low?: number;
@@ -67,25 +69,66 @@ export interface Message {
 // Hook
 // ============================================================
 
-export function useAIChat() {
+export function useAIChat(config?: { market?: string }) {
     const [query, setQuery] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "assistant",
-            content: "Hello! I'm your financial assistant. Ask me about stock prices, charts, financials, or dividends."
+            content: "Hello! I'm your Ultra Premium AI Financial Analyst. Here's what I can help you with:",
+            response: {
+                message_text: "Hello! I'm your Ultra Premium AI Financial Analyst. Here's what I can help you with:",
+                language: "en",
+                cards: [
+                    {
+                        type: "help",
+                        data: {
+                            categories: [
+                                { title: "💰 Stock Prices", examples: ["Price of COMI", "Aramco stock price", "Quote for 2222"] },
+                                { title: "📊 Charts & Technicals", examples: ["Show COMI chart", "SWDY 1 year chart", "ADIB technical analysis"] },
+                                { title: "🛡️ Safety Analysis (NEW)", examples: ["Is COMI safe?", "ADIB risk analysis", "Financial health of EFIH"] },
+                                { title: "💎 Valuation Analysis (NEW)", examples: ["Is SWDY cheap?", "TMGH valuation", "Is Aramco overvalued?"] },
+                                { title: "📈 Growth & Efficiency (NEW)", examples: ["COMI growth rate", "ADIB efficiency", "Revenue CAGR of EFIH"] },
+                                { title: "🔍 Market Screening", examples: ["Top gainers today", "High dividend stocks", "Undervalued stocks in EGX"] },
+                                { title: "📰 News & Events", examples: ["COMI news", "Latest market news", "Dividend announcements"] },
+                                { title: "⚖️ Comparisons", examples: ["Compare COMI vs SWDY", "TMGH versus PHDC", "Banks comparison"] }
+                            ]
+                        }
+                    }
+                ],
+                actions: [
+                    { label: "🛡️ Safety Check", action_type: "query", payload: "Is COMI safe?" },
+                    { label: "💎 Valuation", action_type: "query", payload: "Is SWDY cheap?" },
+                    { label: "📈 Growth", action_type: "query", payload: "ADIB growth rate" },
+                    { label: "🔝 Top Gainers", action_type: "query", payload: "Show top gainers" }
+                ],
+                meta: {
+                    intent: "WELCOME",
+                    confidence: 1.0,
+                    entities: {},
+                    latency_ms: 0,
+                    cached: true
+                }
+            }
         }
     ]);
 
     const mutation = useMutation({
         mutationFn: async (text: string) => {
             const history = messages.map(m => ({ role: m.role, content: m.content }));
-            return await sendChatMessage(text, history, sessionId);
+            return await sendChatMessage(text, history, sessionId, config?.market);
         },
         onSuccess: (data: ChatResponse) => {
             // Store session ID for context
             if (!sessionId && data.meta?.entities?.session_id) {
                 setSessionId(data.meta.entities.session_id);
+            }
+
+            // Client-side filter: Remove "Technical" actions as per user request
+            if (data.actions) {
+                data.actions = data.actions.filter(action =>
+                    !action.label.toLowerCase().includes('technical')
+                );
             }
 
             setMessages(prev => [

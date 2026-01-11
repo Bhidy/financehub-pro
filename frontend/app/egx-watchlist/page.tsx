@@ -1,229 +1,182 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from 'react';
 import {
-    RefreshCw,
-    Clock,
-    ArrowUpRight,
-    ArrowDownRight,
-    Minus,
-    Eye,
-    Activity
-} from "lucide-react";
-import WatchlistTable from "@/components/watchlist/WatchlistTable";
+    Search, Filter, ArrowUpRight, ArrowDownRight, MoreHorizontal, Download, Eye, TrendingUp
+} from 'lucide-react';
+import Link from 'next/link';
+import clsx from 'clsx';
 
-interface WatchlistStock {
-    symbol: string;
-    description: string;
-    last_price: number | null;
-    open_price: number | null;
-    change: number | null;
-    change_percent: number | null;
-    bid: number | null;
-    ask: number | null;
-    day_range_pct: string | null;
-    bid_qty: number | null;
-    ask_qty: number | null;
-    currency: string | null;
-    last_qty: number | null;
-    volume: number | null;
-    turnover: number | null;
-    trades: number | null;
-    bid_ask_spread: number | null;
-    day_high: number | null;
-    day_low: number | null;
-    limit_min: number | null;
-    limit_max: number | null;
-    total_bid_qty: number | null;
-    total_ask_qty: number | null;
-    week_52_range: string | null;
-    last_trade_time: string | null;
-    lt_price: number | null;
-    market: string | null;
-    vwap: number | null;
-    prev_close: number | null;
-    last_auction_price: number | null;
-    updated_at: string | null;
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const fmt = (n: any, d = 2) => (n == null || isNaN(n)) ? '-' : Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtLarge = (n: any) => {
+    if (!n || isNaN(n)) return '-';
+    if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+    if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
+    return Number(n).toLocaleString();
+};
 
-interface WatchlistResponse {
-    status: string;
-    count: number;
-    data: WatchlistStock[];
-    last_updated: string | null;
-}
-
-export default function EGXWatchlistPage() {
-    const [data, setData] = useState<WatchlistStock[]>([]);
+export default function WatchlistPage() {
+    const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const fetchWatchlist = async () => {
-        try {
-            setIsRefreshing(true);
-            // Fetch from backend API
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space';
-            const response = await fetch(`${apiUrl}/api/v1/egx-watchlist?limit=300`);
-            if (!response.ok) throw new Error("Failed to fetch watchlist");
-            const result: WatchlistResponse = await response.json();
-            setData(result.data || []);
-            setLastUpdated(result.last_updated);
-            setError(null);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Unknown error");
-        } finally {
-            setLoading(false);
-            setIsRefreshing(false);
-        }
-    };
+    const [search, setSearch] = useState('');
+    const [sort, setSort] = useState({ key: 'volume', asc: false });
 
     useEffect(() => {
-        fetchWatchlist();
-        // Auto-refresh every 60 seconds
-        const interval = setInterval(fetchWatchlist, 60000);
-        return () => clearInterval(interval);
+        fetch(`${API_BASE}/api/v1/yahoo/watchlist`)
+            .then(res => res.json())
+            .then(res => {
+                setData(res.data || []);
+            })
+            .catch(e => console.error(e))
+            .finally(() => setLoading(false));
     }, []);
 
-    // Calculate summary stats
-    const gainers = data.filter(d => (d.change ?? 0) > 0).length;
-    const losers = data.filter(d => (d.change ?? 0) < 0).length;
-    const unchanged = data.filter(d => d.change === 0 || d.change === null).length;
-    const totalVolume = data.reduce((sum, d) => sum + (d.volume ?? 0), 0);
+    const filtered = useMemo(() => {
+        let res = data.filter(d =>
+            d.symbol.toLowerCase().includes(search.toLowerCase()) ||
+            (d.name_en && d.name_en.toLowerCase().includes(search.toLowerCase()))
+        );
+
+        return res.sort((a, b) => {
+            const va = a[sort.key] || 0;
+            const vb = b[sort.key] || 0;
+            return sort.asc ? va - vb : vb - va;
+        });
+    }, [data, search, sort]);
+
+    const handleSort = (key: string) => {
+        setSort(prev => ({ key, asc: prev.key === key ? !prev.asc : false }));
+    };
+
+    if (loading) return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Syncing Live Feed...</p>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6">
-            {/* Header */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-8"
-            >
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-200/50">
-                            <Eye className="w-7 h-7 text-white" />
-                        </div>
+        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
+            {/* HEADER */}
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-4 py-6">
+                    <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                                EGX Watchlist
+                            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                <Eye className="w-8 h-8 text-blue-600" />
+                                Smart Watchlist
                             </h1>
-                            <p className="text-slate-500 text-sm mt-0.5">
-                                Real-time Egyptian Stock Exchange data • {data.length} stocks
+                            <p className="text-slate-500 font-medium mt-1">
+                                Real-time monitoring of {data.length} EGX securities
                             </p>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                        {lastUpdated && (
-                            <div className="flex items-center gap-2 text-sm text-slate-500 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
-                                <Clock className="w-4 h-4" />
-                                <span>Updated: {new Date(lastUpdated).toLocaleTimeString()}</span>
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <div className="relative group w-full md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search Ticker..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 rounded-xl text-sm font-bold transition-all outline-none"
+                                />
                             </div>
-                        )}
-                        <button
-                            onClick={fetchWatchlist}
-                            disabled={isRefreshing}
-                            className="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-rose-200/50 disabled:opacity-50"
-                        >
-                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                            Refresh
-                        </button>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Quick Stats */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-            >
-                <div className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-100/50 border border-slate-100">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                            <ArrowUpRight className="w-5 h-5 text-emerald-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-emerald-600">{gainers}</p>
-                            <p className="text-xs text-slate-500 font-medium">Gainers</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-100/50 border border-slate-100">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
-                            <ArrowDownRight className="w-5 h-5 text-rose-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-rose-600">{losers}</p>
-                            <p className="text-xs text-slate-500 font-medium">Losers</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-100/50 border border-slate-100">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
-                            <Minus className="w-5 h-5 text-slate-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-slate-600">{unchanged}</p>
-                            <p className="text-xs text-slate-500 font-medium">Unchanged</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-100/50 border border-slate-100">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                            <Activity className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-blue-600">
-                                {(totalVolume / 1_000_000).toFixed(1)}M
-                            </p>
-                            <p className="text-xs text-slate-500 font-medium">Total Volume</p>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Watchlist Table */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden"
-            >
-                {loading ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin" />
-                            <p className="text-slate-500 font-medium">Loading watchlist...</p>
-                        </div>
-                    </div>
-                ) : error ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="text-center">
-                            <p className="text-rose-500 font-medium mb-2">Error loading data</p>
-                            <p className="text-slate-500 text-sm">{error}</p>
-                            <button
-                                onClick={fetchWatchlist}
-                                className="mt-4 px-4 py-2 bg-rose-500 text-white rounded-lg"
-                            >
-                                Retry
+                            <button className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                                <Filter className="w-4 h-4 text-slate-600" />
                             </button>
                         </div>
                     </div>
-                ) : (
-                    <WatchlistTable data={data} />
-                )}
-            </motion.div>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 py-8 animate-in fade-in duration-500">
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                    <th className="p-5 cursor-pointer hover:text-slate-700 transition-colors" onClick={() => handleSort('symbol')}>Symbol</th>
+                                    <th className="p-5 text-right cursor-pointer hover:text-slate-700 transition-colors" onClick={() => handleSort('last_price')}>Price</th>
+                                    <th className="p-5 text-right cursor-pointer hover:text-slate-700 transition-colors" onClick={() => handleSort('change_pct')}>Change</th>
+                                    <th className="p-5 text-right cursor-pointer hover:text-slate-700 transition-colors" onClick={() => handleSort('volume')}>Volume</th>
+                                    <th className="p-5 text-right hidden lg:table-cell cursor-pointer hover:text-slate-700 transition-colors" onClick={() => handleSort('market_cap')}>Mkt Cap</th>
+                                    <th className="p-5 text-right hidden md:table-cell">Day Range</th>
+                                    <th className="p-5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="p-12 text-center text-slate-400 font-bold">
+                                            No stocks found matching "{search}"
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filtered.map((stock, i) => {
+                                        const isPos = (stock.change_pct || 0) >= 0;
+                                        return (
+                                            <tr key={stock.isin} className="border-b border-slate-50 hover:bg-slate-50/80 transition-colors group">
+                                                <td className="p-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-700 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                                                            {stock.symbol ? stock.symbol.substring(0, 2) : '??'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{stock.symbol}</div>
+                                                            <div className="text-xs text-slate-500 font-medium truncate max-w-[140px]">{stock.name_en}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className="font-bold text-slate-900">{fmt(stock.last_price)}</div>
+                                                    <div className="text-xs font-bold text-slate-400">EGP</div>
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className={clsx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold", isPos ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
+                                                        {isPos ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                        {fmt(Math.abs(stock.change_pct))}%
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-right font-mono text-slate-600 font-medium text-sm">
+                                                    {fmtLarge(stock.volume)}
+                                                </td>
+                                                <td className="p-5 text-right font-mono text-slate-600 font-medium text-sm hidden lg:table-cell">
+                                                    {fmtLarge(stock.market_cap)}
+                                                </td>
+                                                <td className="p-5 text-right hidden md:table-cell">
+                                                    <div className="flex items-center justify-end gap-2 text-xs font-bold text-slate-400">
+                                                        <span>{fmt(stock.day_low)}</span>
+                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden relative">
+                                                            {/* Simple Range Bar */}
+                                                            <div
+                                                                className="absolute top-0 bottom-0 bg-slate-300 rounded-full"
+                                                                style={{
+                                                                    left: `${Math.min(100, Math.max(0, ((stock.last_price - stock.day_low) / (stock.day_high - stock.day_low)) * 100))}%`,
+                                                                    width: '20%'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span>{fmt(stock.day_high)}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center">
+                                                    <Link href={`/egx/${stock.symbol}`} className="inline-flex p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                                        <TrendingUp className="w-4 h-4" />
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }

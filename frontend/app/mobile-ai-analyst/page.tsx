@@ -25,7 +25,16 @@ import { MobileSuggestions } from "./components/MobileSuggestions";
 
 export default function MobileAIAnalystPage() {
     const router = useRouter();
-    const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat();
+    // AI Chat Hook - Enforce Egypt Market
+    const {
+        messages,
+        query,
+        setQuery,
+        handleSend,
+        handleAction,
+        isLoading,
+        sendDirectMessage
+    } = useAIChat({ market: 'EGX' });
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [showUsageModal, setShowUsageModal] = useState(false);
     const { sessions, saveSession, loadSession, deleteSession } = useMobileChatHistory();
@@ -75,6 +84,18 @@ export default function MobileAIAnalystPage() {
         sendDirectMessage(text);
     };
 
+    // Unified usage check for direct actions (chips, cards, etc)
+    const handleDirectSendWithCheck = (text: string) => {
+        if (!isAuthenticated && !canAskQuestion) {
+            setShowUsageModal(true);
+            return;
+        }
+        if (!isAuthenticated) {
+            incrementUsage();
+        }
+        sendDirectMessage(text);
+    };
+
     const formatTime = (timestamp: number) => {
         const date = new Date(timestamp);
         const now = new Date();
@@ -100,13 +121,14 @@ export default function MobileAIAnalystPage() {
                 hasHistory={sessions.length > 0}
                 isAuthenticated={isAuthenticated}
                 userName={user?.full_name || user?.email}
-                onLogin={() => router.push('/login')}
+                onLogin={() => router.push('/mobile-ai-analyst/login')}
                 onLogout={logout}
                 remainingQuestions={remainingQuestions}
+                forceMarket="EGX"
             />
 
-            {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto w-full scroll-smooth">
+            {/* Main Content Area - Flex layout handles spacing */}
+            <main className="flex-1 overflow-y-auto w-full scroll-smooth pt-2">
 
                 {/* Welcome State */}
                 {messages.length === 1 ? (
@@ -124,7 +146,7 @@ export default function MobileAIAnalystPage() {
                                 <div className="w-24 h-24 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/50">
                                     <img
                                         src="/ai-robot.png"
-                                        alt="Finny AI"
+                                        alt="Finny"
                                         className="w-full h-full object-contain drop-shadow-lg"
                                     />
                                 </div>
@@ -192,8 +214,8 @@ export default function MobileAIAnalystPage() {
                                         <ChatCards
                                             cards={msg.response.cards}
                                             language={msg.response.language}
-                                            onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
-                                            onExampleClick={(text) => { setQuery(text); }}
+                                            onSymbolClick={(s) => handleDirectSendWithCheck(`Price of ${s}`)}
+                                            onExampleClick={(text) => handleDirectSendWithCheck(text)}
                                             showExport={false}
                                         />
                                         {msg.response.chart && <ChartCard chart={msg.response.chart} />}
@@ -244,6 +266,7 @@ export default function MobileAIAnalystPage() {
                 isOpen={showUsageModal}
                 onClose={() => setShowUsageModal(false)}
                 remainingQuestions={remainingQuestions}
+                isMobile={true}
             />
 
             {/* History Drawer */}

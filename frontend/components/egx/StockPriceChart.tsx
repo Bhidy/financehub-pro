@@ -2,12 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
-import { format, subDays, isAfter, parseISO } from 'date-fns';
+import { format, subDays, isAfter, parseISO, isValid } from 'date-fns';
 import clsx from 'clsx';
 import { Loader2, TrendingUp, TrendingDown, Maximize2 } from 'lucide-react';
 
 interface OHLCData {
-    date: string;
+    date: string;  // Essential for the chart
     open: number;
     high: number;
     low: number;
@@ -16,11 +16,11 @@ interface OHLCData {
 }
 
 interface StockPriceChartProps {
-    data: OHLCData[];
+    data: any[]; // Relaxed to handle potentially bad data gracefully
     symbol: string;
     change: number;
     changePercent: number;
-    lastPrice?: number;  // Live price from market_tickers
+    lastPrice?: number;
 }
 
 const PERIODS = [
@@ -28,12 +28,15 @@ const PERIODS = [
     { label: '3M', days: 90 },
     { label: '6M', days: 180 },
     { label: '1Y', days: 365 },
-    { label: 'YTD', days: 0 }, // Special handling
+    { label: 'YTD', days: 0 },
 ];
 
 const formatDate = (dateStr: string) => {
     try {
-        return format(parseISO(dateStr), 'MMM d');
+        if (!dateStr) return '';
+        const d = parseISO(dateStr);
+        if (!isValid(d)) return dateStr;
+        return format(d, 'MMM d');
     } catch (e) {
         return dateStr;
     }
@@ -42,11 +45,19 @@ const formatDate = (dateStr: string) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
+        let dateLabel = label;
+        try {
+            if (data.date) {
+                const d = parseISO(data.date);
+                if (isValid(d)) dateLabel = `${format(d, 'MMM d')} ${d.getFullYear()}`;
+            }
+        } catch (e) { }
+
         return (
             <div className="bg-white/90 backdrop-blur-md border border-slate-100 p-4 rounded-xl shadow-xl">
-                <p className="text-slate-500 text-xs font-semibold mb-1">{formatDate(data.date)} {new Date(data.date).getFullYear()}</p>
+                <p className="text-slate-500 text-xs font-semibold mb-1">{dateLabel}</p>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-black text-slate-900">{data.close.toLocaleString()}</span>
+                    <span className="text-lg font-black text-slate-900">{Number(data.close).toLocaleString()}</span>
                     <span className="text-xs text-slate-500 font-bold">EGP</span>
                 </div>
                 <div className="mt-2 text-xs space-y-1 text-slate-500">
@@ -64,12 +75,27 @@ export default function StockPriceChart({ data, symbol, change, changePercent, l
     const [period, setPeriod] = useState('1Y');
     const [hoverData, setHoverData] = useState<OHLCData | null>(null);
 
-    // Filter data based on period
+    // Filter & Sort Data Robustly
     const filteredData = useMemo(() => {
-        if (!data || data.length === 0) return [];
+        if (!Array.isArray(data) || data.length === 0) return [];
 
-        // Sort by date ascending (oldest first) for the chart
-        const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        // 1. Sanitize: Ensure item has 'date' (or 'time' fallback) and valid close price
+        const cleanData = data.map(item => ({
+            ...item,
+            date: item.date || item.time, // Fallback support for old API
+            close: Number(item.close || 0)
+        })).filter(item => item.date);
+
+        if (cleanData.length === 0) return [];
+
+        // 2. Sort by date ascending
+        const sortedData = [...cleanData].sort((a, b) => {
+            const da = new Date(a.date).getTime();
+            const db = new Date(b.date).getTime();
+            if (isNaN(da)) return -1;
+            if (isNaN(db)) return 1;
+            return da - db;
+        });
 
         const now = new Date();
         const selectedPeriod = PERIODS.find(p => p.label === period);
@@ -83,14 +109,22 @@ export default function StockPriceChart({ data, symbol, change, changePercent, l
             startDate = subDays(now, selectedPeriod.days);
         }
 
-        return sortedData.filter(item => isAfter(parseISO(item.date), startDate));
+        return sortedData.filter(item => {
+            try {
+                const d = parseISO(item.date);
+                return isValid(d) && isAfter(d, startDate);
+            } catch {
+                return true; // Keep if can't parse, barely safer
+            }
+        });
     }, [data, period]);
 
-    if (!data || data.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
         return (
             <div className="h-[400px] flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-3xl border border-slate-100">
                 <TrendingUp className="w-12 h-12 mb-4 opacity-20" />
                 <p>No chart data available</p>
+                <p className="text-xs opacity-50 mt-2">Try refreshing later</p>
             </div>
         );
     }
@@ -101,10 +135,9 @@ export default function StockPriceChart({ data, symbol, change, changePercent, l
     const isPositive = last >= first;
 
     // Gradients
-    const color = isPositive ? '#10b981' : '#ef4444'; // Emerald-500 or Red-500
+    const color = isPositive ? '#10b981' : '#ef4444';
     const gradientId = `chartGradient-${symbol}`;
 
-    // Use live price if available, otherwise fall back to OHLC last close
     const displayPrice = lastPrice ? Number(lastPrice) : last;
     const currentPrice = hoverData ? hoverData.close : displayPrice;
     const priceChange = hoverData

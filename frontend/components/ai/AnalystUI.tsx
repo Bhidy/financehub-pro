@@ -1,5 +1,14 @@
 "use client";
 
+// ============================================================================
+// PROOF OF LIFE: VERSION BANNER
+// ============================================================================
+// This banner MUST be visible on production to confirm deployment success.
+// Build Timestamp: 2026-01-11 23:00
+// ============================================================================
+const PROOF_OF_LIFE_VERSION = "v2.1.0-ENTERPRISE";
+
+
 import React from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { TrendingUp, TrendingDown, Target, ShieldCheck, Activity, BarChart3, Zap, DollarSign, Users, Clock, ArrowUpRight, ArrowDownRight, Sparkles, Flame, AlertCircle } from "lucide-react";

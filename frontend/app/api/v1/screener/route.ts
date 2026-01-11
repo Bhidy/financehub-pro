@@ -25,7 +25,7 @@ export async function GET(request: Request) {
         let paramIndex = 1;
 
         // Sector Filter
-        if (sector && sector !== 'All') {
+        if (sector && sector !== 'All' && sector !== 'All Sectors') {
             query += ` AND sector_name = $${paramIndex}`;
             params.push(sector);
             paramIndex++;

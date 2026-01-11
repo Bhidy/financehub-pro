@@ -17,9 +17,12 @@ import {
     ExternalLink,
     ChevronRight,
     Target,
-    Building2
+    Building2,
+    Zap,
+    Newspaper
 } from "lucide-react";
 import { Card, ChartPayload, Action } from "@/hooks/useAIChat";
+import { FinancialTable } from "./AnalystUI";
 
 // ============================================================
 // Stock Header Card
@@ -798,6 +801,295 @@ interface OwnershipProps {
     };
 }
 
+// ============================================================
+// DEEP HEALTH CARD (Z-Score, F-Score) - Ultra Premium
+// ============================================================
+interface DeepHealthProps {
+    data: {
+        symbol: string;
+        z_score: number;
+        f_score: number;
+        status: string;
+        metrics: Record<string, number | null>;
+    };
+}
+
+export function DeepHealthCard({ data }: DeepHealthProps) {
+    const isSafe = data.z_score > 2.99;
+    const isDistress = data.z_score < 1.81;
+    const color = isSafe ? "text-emerald-600" : isDistress ? "text-red-500" : "text-amber-500";
+    const bg = isSafe ? "bg-emerald-50" : isDistress ? "bg-red-50" : "bg-amber-50";
+    const gradientId = `gauge-${data.symbol || 'default'}`;
+
+    // Calculate gauge percentage (Z-Score typically 0-4 range, capped)
+    const gaugePercent = Math.min(Math.max(data.z_score / 4, 0), 1) * 100;
+    const strokeDasharray = `${gaugePercent * 2.51} 251`; // 251 = circumference of r=40
+
+    return (
+        <div className="p-5 bg-gradient-to-br from-white to-slate-50 rounded-2xl border border-slate-200 shadow-lg">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 font-bold text-slate-800">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                        <Activity className="text-blue-600 w-5 h-5" />
+                    </div>
+                    🛡️ Financial Health Analysis
+                </div>
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${bg} ${color} shadow-sm`}>
+                    {data.status}
+                </span>
+            </div>
+
+            {/* SVG Gauge Visualization */}
+            <div className="flex items-center justify-center py-6">
+                <div className="relative">
+                    <svg width="160" height="100" viewBox="0 0 160 100">
+                        <defs>
+                            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#ef4444" />
+                                <stop offset="45%" stopColor="#f59e0b" />
+                                <stop offset="100%" stopColor="#10b981" />
+                            </linearGradient>
+                        </defs>
+                        {/* Background Arc */}
+                        <path
+                            d="M 20 90 A 60 60 0 0 1 140 90"
+                            fill="none"
+                            stroke="#e2e8f0"
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                        />
+                        {/* Colored Arc */}
+                        <path
+                            d="M 20 90 A 60 60 0 0 1 140 90"
+                            fill="none"
+                            stroke={`url(#${gradientId})`}
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                            strokeDasharray={`${gaugePercent * 1.88} 188`}
+                            className="transition-all duration-1000 ease-out"
+                        />
+                        {/* Needle */}
+                        <circle
+                            cx={20 + (gaugePercent / 100) * 120}
+                            cy={90 - Math.sin(gaugePercent / 100 * Math.PI) * 60}
+                            r="6"
+                            fill="white"
+                            stroke="#1e293b"
+                            strokeWidth="3"
+                            className="drop-shadow-md"
+                        />
+                    </svg>
+                    {/* Center Value */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
+                        <div className={`text-3xl font-black ${color}`}>{data.z_score.toFixed(2)}</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-widest">Altman Z-Score</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-3 gap-3 mt-4">
+                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl text-center shadow-sm">
+                    <div className="text-xs text-blue-600 font-medium mb-1">F-Score</div>
+                    <div className="text-xl font-bold text-blue-800">{data.f_score}<span className="text-sm text-blue-500">/9</span></div>
+                </div>
+                {Object.entries(data.metrics).slice(0, 4).map(([key, val]) => (
+                    <div key={key} className="p-3 bg-white rounded-xl text-center border border-slate-100 shadow-sm">
+                        <div className="text-xs text-slate-500 mb-1 truncate">{key}</div>
+                        <div className="font-bold text-slate-800">{val !== null ? (typeof val === 'number' ? val.toFixed(2) : val) : "N/A"}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Risk Scale Legend */}
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-xs text-slate-500">Distress (&lt;1.81)</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <span className="text-xs text-slate-500">Grey Zone</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span className="text-xs text-slate-500">Safe (&gt;2.99)</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// DEEP VALUATION CARD
+// ============================================================
+interface DeepValuationProps {
+    data: {
+        symbol: string;
+        verdict: string;
+        multiples: Record<string, number | null>;
+    };
+}
+
+export function DeepValuationCard({ data }: DeepValuationProps) {
+    // Color based on verdict
+    const isUndervalued = data.verdict?.toLowerCase().includes('under');
+    const isOvervalued = data.verdict?.toLowerCase().includes('over');
+    const verdictColor = isUndervalued ? 'text-emerald-600 bg-emerald-50' : isOvervalued ? 'text-red-600 bg-red-50' : 'text-purple-600 bg-purple-50';
+
+    // Get max value for bar scaling
+    const values = Object.values(data.multiples).filter(v => v !== null) as number[];
+    const maxVal = Math.max(...values, 1);
+
+    return (
+        <div className="p-5 bg-gradient-to-br from-white to-purple-50/30 rounded-2xl border border-slate-200 shadow-lg">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2 font-bold text-slate-800">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                        <Target className="text-purple-600 w-5 h-5" />
+                    </div>
+                    💎 Valuation Analysis
+                </div>
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${verdictColor}`}>
+                    {data.verdict}
+                </span>
+            </div>
+
+            {/* Horizontal Bar Chart */}
+            <div className="space-y-3 mb-4">
+                {Object.entries(data.multiples).slice(0, 6).map(([key, val]) => {
+                    const barWidth = val !== null ? Math.min((val / maxVal) * 100, 100) : 0;
+                    const isHigh = val !== null && val > maxVal * 0.7;
+                    const barColor = isHigh ? 'bg-gradient-to-r from-purple-400 to-purple-600' : 'bg-gradient-to-r from-blue-400 to-blue-600';
+
+                    return (
+                        <div key={key} className="group">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs font-medium text-slate-600">{key}</span>
+                                <span className="text-sm font-bold text-slate-800">
+                                    {val !== null ? val.toFixed(2) : "N/A"}
+                                </span>
+                            </div>
+                            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`}
+                                    style={{ width: `${barWidth}%` }}
+                                />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Legend / Interpretation */}
+            <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    <span className="text-xs text-slate-500">Undervalued</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                    <span className="text-xs text-slate-500">Fair Value</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span className="text-xs text-slate-500">Overvalued</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
+// DEEP EFFICIENCY/GROWTH CARD (Generic Metrics)
+// ============================================================
+interface DeepMetricsProps {
+    title: string;
+    data: {
+        symbol: string;
+        verdict?: string;
+        roce?: number;
+        metrics: Record<string, string | number | null>;
+    };
+    icon?: React.ReactNode;
+}
+
+export function DeepMetricsCard({ title, data, icon }: DeepMetricsProps) {
+    // Determine card theme based on title
+    const isGrowth = title?.toLowerCase().includes('growth');
+    const isEfficiency = title?.toLowerCase().includes('efficiency');
+    const bgGradient = isGrowth
+        ? 'from-white to-emerald-50/30'
+        : isEfficiency
+            ? 'from-white to-blue-50/30'
+            : 'from-white to-slate-50';
+    const accentColor = isGrowth ? 'emerald' : isEfficiency ? 'blue' : 'slate';
+
+    return (
+        <div className={`p-5 bg-gradient-to-br ${bgGradient} rounded-2xl border border-slate-200 shadow-lg`}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2 font-bold text-slate-800">
+                    <div className={`p-2 bg-${accentColor}-100 rounded-lg`}>
+                        {icon || <Activity className={`text-${accentColor}-600 w-5 h-5`} />}
+                    </div>
+                    {isGrowth ? '📈' : isEfficiency ? '⚡' : '📊'} {title}
+                </div>
+                {data.verdict && (
+                    <span className={`px-3 py-1.5 bg-${accentColor}-50 text-${accentColor}-700 rounded-full text-xs font-bold shadow-sm`}>
+                        {data.verdict}
+                    </span>
+                )}
+            </div>
+
+            {/* Metric Cards with Mini Progress */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {Object.entries(data.metrics).slice(0, 6).map(([key, val]) => {
+                    const numVal = typeof val === 'number' ? val : parseFloat(String(val)) || 0;
+                    const isPercent = String(val).includes('%') || Math.abs(numVal) <= 1;
+                    const displayVal = isPercent ? `${(numVal * (Math.abs(numVal) <= 1 ? 100 : 1)).toFixed(1)}%` : String(val);
+                    const isPositive = numVal > 0;
+
+                    return (
+                        <div key={key} className="p-3 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs text-slate-500 truncate pr-2">{key}</span>
+                                {isGrowth && (
+                                    <span className={`text-xs ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        {isPositive ? '↑' : '↓'}
+                                    </span>
+                                )}
+                            </div>
+                            <div className={`text-lg font-bold ${isPositive && isGrowth ? 'text-emerald-600' : 'text-slate-800'}`}>
+                                {val !== null && val !== undefined ? displayVal : "N/A"}
+                            </div>
+                            {/* Mini progress bar for percentage values */}
+                            {isPercent && numVal !== 0 && (
+                                <div className="h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-500 ${isPositive ? 'bg-emerald-400' : 'bg-red-400'}`}
+                                        style={{ width: `${Math.min(Math.abs(numVal * (Math.abs(numVal) <= 1 ? 100 : 1)), 100)}%` }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Summary Footer */}
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                <span className="text-xs text-slate-500">
+                    {isGrowth ? '📊 Growth metrics TTM' : isEfficiency ? '⚙️ Efficiency ratios' : '📈 Key metrics'}
+                </span>
+                <span className="text-xs text-slate-400">{data.symbol}</span>
+            </div>
+        </div>
+    );
+}
+
 export function OwnershipCard({ title, data }: OwnershipProps) {
     return (
         <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
@@ -1098,186 +1390,7 @@ export function FundMoversCard({ title, data, onSymbolClick }: FundMoversProps) 
     );
 }
 
-// ============================================================
-// News List Card
-// ============================================================
-
-interface NewsListProps {
-    title?: string;
-    data: {
-        items: Array<{
-            title: string;
-            source?: string;
-            date?: string;
-            summary?: string;
-            url?: string;
-        }>;
-    };
-}
-
-export function NewsListCard({ title, data }: NewsListProps) {
-    if (!data.items || data.items.length === 0) return null;
-
-    return (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white flex items-center gap-2">
-                <Newspaper size={16} className="text-blue-600" />
-                <div className="font-bold text-slate-700">{title || "Latest News"}</div>
-            </div>
-
-            <div className="divide-y divide-slate-50 max-h-80 overflow-y-auto">
-                {data.items.map((item, i) => (
-                    <div
-                        key={i}
-                        className="p-3 hover:bg-blue-50/30 transition-colors"
-                    >
-                        <div className="text-sm font-medium text-slate-800 mb-1">{item.title}</div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                            {item.source && <span className="font-medium">{item.source}</span>}
-                            {item.date && <span>• {item.date}</span>}
-                        </div>
-                        {item.summary && (
-                            <div className="text-xs text-slate-600 mt-1 line-clamp-2">{item.summary}</div>
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-interface ChatCardProps {
-    card: Card;
-    language?: "en" | "ar" | "mixed";
-    onSymbolClick?: (symbol: string) => void;
-    onExampleClick?: (text: string) => void;
-}
-
-export function ChatCard({ card, language = "en", onSymbolClick, onExampleClick }: ChatCardProps) {
-    switch (card.type) {
-        case "stock_header":
-            return <StockHeaderCard data={card.data as any} />;
-        case "snapshot":
-            return <SnapshotCard data={card.data as any} />;
-        case "stats":
-            return <StatsCard title={card.title} data={card.data as any} />;
-        case "ratios":
-            return <RatiosCard title={card.title} data={card.data as any} />;
-        case "technicals":
-            return <TechnicalsCard title={card.title} data={card.data as any} />;
-        case "ownership":
-            return <OwnershipCard title={card.title} data={card.data as any} />;
-        case "fair_value":
-            return <FairValueCard title={card.title} data={card.data as any} />;
-        case "fund_nav":
-            return <FundNavCard data={card.data as any} />;
-        case "fund_list":
-            return <FundListCard title={card.title} data={card.data as any} onSymbolClick={onSymbolClick} />;
-        case "fund_movers":
-            return <FundMoversCard title={card.title} data={card.data as any} onSymbolClick={onSymbolClick} />;
-        case "financial_statement_table":
-            return (
-                <FinancialsTableCard
-                    title={card.data.title}
-                    subtitle={card.data.subtitle}
-                    years={card.data.years}
-                    rows={card.data.rows}
-                    currency={card.data.currency}
-                />
-            );
-        case "financials":
-            // Adapter for legacy data format
-            // Transform array of periods into rows
-            const periods = card.data.periods || [];
-            if (periods.length === 0) return null;
-
-            const years = periods.map((p: any) => p.period);
-            const legacyRows: StatementRow[] = [
-                { label: "Revenue", values: {} },
-                { label: "Gross Profit", values: {} },
-                { label: "Operating Income", values: {} },
-                { label: "Net Income", values: {} },
-                { label: "EPS", values: {} },
-            ];
-
-            // Populate values
-            periods.forEach((p: any) => {
-                const y = p.period;
-                legacyRows[0].values[y] = p.revenue;
-                legacyRows[1].values[y] = p.gross_profit;
-                legacyRows[2].values[y] = p.operating_income;
-                legacyRows[3].values[y] = p.net_income;
-                legacyRows[4].values[y] = p.eps;
-            });
-
-            return (
-                <FinancialsTableCard
-                    title="Financial Summary"
-                    subtitle={card.data.statement_type}
-                    years={years}
-                    rows={legacyRows}
-                    currency={card.data.currency}
-                />
-            );
-        case "movers_table":
-            return <MoversTable title={card.title} data={card.data as any} onSymbolClick={onSymbolClick} />;
-        case "compare_table":
-            return <CompareTable title={card.title} data={card.data as any} />;
-        case "help":
-            return <HelpCard data={card.data as any} onExampleClick={onExampleClick} />;
-        case "screener_results":
-            return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
-        case "sector_list":
-            return <MoversTable title={card.title} data={{ movers: card.data.stocks, direction: "up" }} onSymbolClick={onSymbolClick} />;
-        case "news_list":
-            return <NewsListCard title={card.title} data={card.data as any} />;
-        case "financial_explorer":
-            // Ultra-Premium Financial Explorer Card
-            return <FinancialExplorerCard data={card.data as any} />;
-        case "financial_statement_table":
-            // Legacy Financial Table
-            return (
-                <FinancialsTableCard
-                    title={card.data?.title || "Financial Statement"}
-                    subtitle={card.data?.subtitle}
-                    years={card.data?.years || []}
-                    rows={card.data?.rows || []}
-                    currency={card.data?.currency}
-                />
-            );
-        default:
-            // Handle new ultra-premium Financial Explorer
-            if (card.type === 'financial_explorer' || (card.data?.income && card.data?.balance)) {
-                return <FinancialExplorerCard data={card.data as any} />;
-            }
-
-            // Legacy Fallback for simple tables
-            if (card.data?.rows && Array.isArray(card.data.rows) && card.data?.years) {
-                return (
-                    <FinancialsTableCard
-                        title={card.data.title || card.type}
-                        subtitle={card.data.subtitle}
-                        years={card.data.years}
-                        rows={card.data.rows}
-                        currency={card.data.currency}
-                    />
-                );
-            }
-
-            // Hide unknown in production
-            if (process.env.NODE_ENV === 'development') {
-                return (
-                    <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-                        <div className="text-xs text-slate-500 mb-2">📋 {card.type}</div>
-                        <pre className="text-xs text-slate-600 overflow-auto max-h-40">
-                            {JSON.stringify(card.data, null, 2)}
-                        </pre>
-                    </div>
-                );
-            }
-            return null;
-    }
-}
+// [Cleaned]
 
 // ============================================================
 // Financial Explorer Card (Ultra Premium)
@@ -1536,6 +1649,54 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
 // ============================================================
 
 // ============================================================
+// News List Card
+// ============================================================
+
+interface NewsListProps {
+    title?: string;
+    data: {
+        items: Array<{
+            title: string;
+            source?: string;
+            date?: string;
+            summary?: string;
+            url?: string;
+        }>;
+    };
+}
+
+export function NewsListCard({ title, data }: NewsListProps) {
+    if (!data.items || data.items.length === 0) return null;
+
+    return (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white flex items-center gap-2">
+                <Newspaper size={16} className="text-blue-600" />
+                <div className="font-bold text-slate-700">{title || "Latest News"}</div>
+            </div>
+
+            <div className="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+                {data.items.map((item, i) => (
+                    <div
+                        key={i}
+                        className="p-3 hover:bg-blue-50/30 transition-colors"
+                    >
+                        <div className="text-sm font-medium text-slate-800 mb-1">{item.title}</div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                            {item.source && <span className="font-medium">{item.source}</span>}
+                            {item.date && <span>• {item.date}</span>}
+                        </div>
+                        {item.summary && (
+                            <div className="text-xs text-slate-600 mt-1 line-clamp-2">{item.summary}</div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // Chat Cards Container
 // ============================================================
 
@@ -1548,6 +1709,13 @@ interface ChatCardsProps {
 }
 
 export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClick, showExport = false }: ChatCardsProps) {
+    // Integrity Tracer - Professional Verification
+    console.log("💎 FinanceHub Pro v3.7-ULTRA-PRD Loaded", {
+        timestamp: new Date().toISOString(),
+        engine: "Ultra-Premium-v7",
+        cards: cards.length
+    });
+
     if (!cards.length) return null;
 
     return (
@@ -1569,6 +1737,62 @@ export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClic
             )}
         </div>
     );
+}
+
+function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
+    switch (card.type) {
+        case "stock_header":
+            return <StockHeaderCard data={card.data} />;
+        case "snapshot":
+            return <SnapshotCard data={card.data} />;
+        case "stats":
+            return <StatsCard title={card.title} data={card.data} />;
+        case "movers":
+            return <MoversTable title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+        case "compare":
+            return <CompareTable title={card.title} data={card.data} />;
+        case "help":
+            return <HelpCard data={card.data} onExampleClick={onExampleClick} />;
+        case "ratios":
+            return <RatiosCard title={card.title} data={card.data} />;
+        // Ultra Premium Deep Cards
+        case "deep_health":
+            return <DeepHealthCard data={card.data} />;
+        case "deep_valuation":
+            return <DeepValuationCard data={card.data} />;
+        case "deep_efficiency":
+            return <DeepMetricsCard title={card.title} data={card.data} icon={<Zap className="text-blue-500" />} />;
+        case "deep_growth":
+            return <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} />;
+        case "ownership":
+            return <OwnershipCard title={card.title} data={card.data} />;
+        case "technicals":
+            // Explicitly hidden as per user request
+            return null;
+        case "financials":
+            // Handle both legacy and new structure
+            if (card.data.rows) {
+                return (
+                    <FinancialsTableCard
+                        title={card.title}
+                        rows={card.data.rows}
+                        years={card.data.years}
+                        subtitle={card.data.subtitle}
+                        currency={card.data.currency}
+                    />
+                );
+            }
+            return <FinancialTable financials={card.data} />;
+        case "news_list":
+            return <NewsListCard title={card.title} data={card.data as any} />;
+        default:
+            // Fallback for unknown cards
+            return (
+                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-500">
+                    Unsupported card type: {card.type}
+                </div>
+            );
+    }
 }
 
 // ============================================================

@@ -33,7 +33,11 @@ export default function ScreenerPage() {
     const { data: sectors = [] } = useQuery({ queryKey: ["sectors", market], queryFn: fetchSectors });
     const { data: allResults = [], isLoading } = useQuery({
         queryKey: ["screener", filters, market],
-        queryFn: () => fetchScreener(filters)
+        queryFn: () => fetchScreener({
+            ...filters,
+            // Pass market context to Backend to fix pagination/filtering
+            market_code: isEgypt ? 'EGX' : 'TDWL'
+        })
     });
 
     // Filter results by selected market
@@ -42,7 +46,7 @@ export default function ScreenerPage() {
         return allResults.filter((r: any) =>
             isEgypt
                 ? r.market_code === 'EGX' || (r.symbol && /^[A-Z]{3,5}$/.test(r.symbol))
-                : r.market_code !== 'EGX' && (r.symbol && /^\d{4}$/.test(r.symbol))
+                : r.market_code !== 'EGX' // Permissive: Include NULL (Saudi) and TASI
         );
     }, [allResults, isEgypt]);
 

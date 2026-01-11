@@ -35,6 +35,11 @@ export const metadata: Metadata = {
   }
 };
 
+import { Suspense } from "react";
+import { BuildInfo } from "@/components/BuildInfo";
+
+// ... existing imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,6 +51,9 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-slate-50 flex h-screen overflow-hidden`}
       >
         <div id="build-id" data-timestamp={new Date().toISOString()} className="hidden" />
+        <Suspense fallback={null}>
+          <BuildInfo />
+        </Suspense>
         <Providers>
           <ToastProvider>
             {/* ShellWrapper conditionally renders sidebar based on route */}

@@ -17,6 +17,7 @@ interface HealthKPIs {
     total_chats: number;
     total_messages: number;
     unique_users: number;
+    guest_sessions: number;
     success_rate: number;
     failure_rate: number;
     out_of_scope_count: number;
@@ -268,7 +269,7 @@ export default function ChatbotAnalyticsPage() {
                     />
                     <KPICard
                         icon={Users}
-                        label="Unique Users"
+                        label="Active Users"
                         value={healthKPIs?.unique_users ?? 0}
                         color="purple"
                     />
@@ -285,9 +286,9 @@ export default function ChatbotAnalyticsPage() {
                         color="red"
                     />
                     <KPICard
-                        icon={AlertTriangle}
-                        label="Out of Scope"
-                        value={healthKPIs?.out_of_scope_count ?? 0}
+                        icon={Globe}
+                        label="Guest Sessions"
+                        value={healthKPIs?.guest_sessions ?? 0}
                         color="orange"
                     />
                     <KPICard

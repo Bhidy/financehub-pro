@@ -277,13 +277,36 @@ export const sendChatMessage = async (
     message: string,
     history: any[],
     session_id?: string | null,
-    market?: string // Add market parameter
+    market?: string,
+    deviceFingerprint?: string  // CRITICAL: For guest usage tracking
 ) => {
     // UNIFIED ARCHITECTURE: Use Python Backend directly
     // This uses the 'api' instance which has the correct Base URL and Auth Headers
-    // ENTERPRISE FIX: Inject Market Context via Header for robustness
-    const config = market ? { headers: { 'X-Market-Context': market } } : {};
+    // ENTERPRISE FIX: Include both Market Context and Device Fingerprint for proper tracking
+    const headers: Record<string, string> = {};
+
+    if (market) {
+        headers['X-Market-Context'] = market;
+    }
+
+    // CRITICAL: Send device fingerprint for guest tracking
+    // This enables the backend to enforce the 5-question limit for guests
+    if (deviceFingerprint) {
+        headers['X-Device-Fingerprint'] = deviceFingerprint;
+    }
+
+    const config = Object.keys(headers).length > 0 ? { headers } : {};
     const { data } = await api.post("/ai/chat", { message, history, session_id, market }, config);
+    return data;
+};
+
+export const fetchChatHistory = async (): Promise<any[]> => {
+    const { data } = await api.get("/ai/history");
+    return data;
+};
+
+export const fetchSessionMessages = async (sessionId: string): Promise<any[]> => {
+    const { data } = await api.get(`/ai/history/${sessionId}`);
     return data;
 };
 
@@ -365,6 +388,11 @@ export const changePassword = async (data: ChangePasswordData) => {
 export const fetchUsers = async (skip: number = 0, limit: number = 50, search?: string) => {
     const params = { skip, limit, ...(search && { search }) };
     const { data } = await api.get("/auth/users", { params });
+    return data;
+};
+
+export const adminResetUserPassword = async (userId: number, newPassword: string) => {
+    const { data } = await api.post("/auth/admin/reset-user-password", { user_id: userId, new_password: newPassword });
     return data;
 };
 

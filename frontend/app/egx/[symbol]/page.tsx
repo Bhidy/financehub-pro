@@ -10,7 +10,8 @@ import {
 } from 'recharts';
 import {
     ArrowUpRight, ArrowDownRight, TrendingUp, Activity, BarChart2, DollarSign, PieChart as PieIcon,
-    List, Building2, Calendar, FileText, CheckCircle2, AlertCircle, ShieldCheck, Zap, Globe, MapPin, Users
+    List, Building2, Calendar, FileText, CheckCircle2, AlertCircle, ShieldCheck, Zap, Globe, MapPin, Users,
+    Plus, Minus, Bookmark, Star
 } from 'lucide-react';
 import clsx from 'clsx';
 // Component imports assumed to exist or we use inline for now to ensure robustness
@@ -95,6 +96,29 @@ export default function EGXStockProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [tab, setTab] = useState('overview');
+    const [isWatched, setIsWatched] = useState(false);
+
+    // Initial check for watchlist
+    useEffect(() => {
+        const saved = localStorage.getItem('egx_watchlist');
+        if (saved) {
+            const list = JSON.parse(saved);
+            setIsWatched(list.includes(id));
+        }
+    }, [id]);
+
+    const toggleWatchlist = () => {
+        const saved = localStorage.getItem('egx_watchlist');
+        let list = saved ? JSON.parse(saved) : [];
+        if (list.includes(id)) {
+            list = list.filter((s: string) => s !== id);
+            setIsWatched(false);
+        } else {
+            list.push(id);
+            setIsWatched(true);
+        }
+        localStorage.setItem('egx_watchlist', JSON.stringify(list));
+    };
 
     useEffect(() => {
         if (!id) return;
@@ -164,14 +188,28 @@ export default function EGXStockProfilePage() {
                             </div>
                         </div>
 
-                        <div className="text-right">
-                            <div className="flex items-baseline justify-end gap-2">
-                                <span className="text-4xl font-black tracking-tighter text-slate-900">{fmt(p.last_price)}</span>
-                                <span className="text-sm font-bold text-slate-400">EGP</span>
-                            </div>
-                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                {isPositive ? <TrendingUp className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                {isPositive ? '+' : ''}{fmt(p.change)} ({fmt(p.change_pct)}%)
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={toggleWatchlist}
+                                className={clsx(
+                                    "px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg",
+                                    isWatched
+                                        ? "bg-amber-100 text-amber-700 border border-amber-200 shadow-amber-100"
+                                        : "bg-blue-600 text-white border border-blue-500 shadow-blue-200 hover:bg-blue-700"
+                                )}
+                            >
+                                {isWatched ? <Star className="w-4 h-4 fill-amber-500" /> : <Plus className="w-4 h-4" />}
+                                {isWatched ? "Watched" : "Watchlist"}
+                            </button>
+                            <div className="text-right">
+                                <div className="flex items-baseline justify-end gap-2">
+                                    <span className="text-4xl font-black tracking-tighter text-slate-900">{fmt(p.last_price)}</span>
+                                    <span className="text-sm font-bold text-slate-400">EGP</span>
+                                </div>
+                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                    {isPositive ? <TrendingUp className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                    {isPositive ? '+' : ''}{fmt(p.change)} ({fmt(p.change_pct)}%)
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -276,7 +314,7 @@ export default function EGXStockProfilePage() {
                 )}
 
                 {tab === 'financials' && (
-                    <FinancialStatements data={data.financials_full} currency={p.currency} />
+                    <FinancialsTab symbol={id} />
                 )}
 
                 {tab === 'profile' && (

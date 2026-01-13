@@ -1,0 +1,29 @@
+name: Production Watchdog
+
+on:
+  schedule:
+    # Run every 6 hours (Check 4 times a day)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check FinanceHub API Health
+        id: health_check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bhidy-financehub-api.hf.space/health)
+          echo "Status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::API is DOWN (Status: $STATUS)"
+            exit 1
+          fi
+          echo "API is Healthy ✅"
+
+      - name: Notify Discord on Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "🚨 **CRITICAL ALERT**\nFinanceHub API is DOWN!\nURL: https://bhidy-financehub-api.hf.space\nCheck HuggingFace Spaces immediately."

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEgyptOnlySuggestions } from "@/hooks/useAISuggestions";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
 import clsx from "clsx";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ interface MobileSuggestionsProps {
 }
 
 export function MobileSuggestions({ onSelect }: MobileSuggestionsProps) {
-    const suggestionCategories = useEgyptOnlySuggestions();
+    const suggestionCategories = useAISuggestions();
     const [activeTab, setActiveTab] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [showLeftFade, setShowLeftFade] = useState(false);
@@ -36,20 +36,20 @@ export function MobileSuggestions({ onSelect }: MobileSuggestionsProps) {
         <div className="w-full flex-1 flex flex-col">
 
             {/* Category Tabs - Ultra Premium */}
-            <div className="relative px-4 mb-5">
+            <div className="relative px-0 mb-4 overflow-hidden">
                 {/* Left fade */}
                 {showLeftFade && (
-                    <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 via-slate-50/80 dark:from-[#0B1121] dark:via-[#0B1121]/80 to-transparent z-10 pointer-events-none" />
                 )}
                 {/* Right fade */}
                 {showRightFade && (
-                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50 via-slate-50/80 to-transparent z-10 pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 via-slate-50/80 dark:from-[#0B1121] dark:via-[#0B1121]/80 to-transparent z-10 pointer-events-none" />
                 )}
 
                 <div
                     ref={scrollRef}
                     onScroll={handleScroll}
-                    className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1"
+                    className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 px-4"
                 >
                     {suggestionCategories.map((cat, idx) => (
                         <motion.button
@@ -57,72 +57,62 @@ export function MobileSuggestions({ onSelect }: MobileSuggestionsProps) {
                             onClick={() => setActiveTab(idx)}
                             whileTap={{ scale: 0.95 }}
                             className={clsx(
-                                "relative px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap transition-all duration-300 flex-shrink-0",
+                                "relative px-4 py-2.5 rounded-xl text-[13px] font-bold whitespace-nowrap transition-all duration-300 flex-shrink-0",
                                 activeTab === idx
-                                    ? "bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-xl shadow-slate-900/25"
-                                    : "bg-white text-slate-600 border border-slate-200 shadow-sm hover:shadow-md"
+                                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/20 dark:shadow-white/10"
+                                    : "bg-white dark:bg-[#1A1F2E]/40 text-slate-500 dark:text-slate-400 border border-slate-200/60 dark:border-white/5"
                             )}
                         >
-                            {/* Inner glow for active */}
-                            {activeTab === idx && (
-                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-teal-500/10 blur-sm" />
-                            )}
-                            <span className="relative">{cat.label}</span>
+                            <span className="relative z-10">{cat.label}</span>
                         </motion.button>
                     ))}
                 </div>
             </div>
 
             {/* Suggestion Cards - Super Ultra Premium */}
-            <div className="flex-1 overflow-y-auto px-4 pb-36 space-y-4">
+            <div className="flex-1 space-y-3 px-0">
                 {activeSuggestions.map((s, i) => (
                     <motion.button
                         key={i}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.08 }}
+                        transition={{ duration: 0.4, delay: i * 0.05 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => onSelect(s.text)}
-                        className="w-full group relative overflow-hidden"
+                        className="w-full group"
                     >
                         {/* Card */}
-                        <div className="relative flex items-center gap-4 p-5 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 transition-all duration-300 group-active:shadow-lg group-active:border-blue-200">
+                        <div className="relative flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-[#1A1F2E]/40 border border-slate-100 dark:border-white/5 shadow-sm dark:shadow-none transition-all duration-300 group-active:scale-[0.98] group-hover:border-blue-500/30 dark:group-hover:border-blue-500/20">
 
-                            {/* Subtle gradient overlay on hover */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-blue-50/0 to-teal-50/0 group-active:from-blue-50/50 group-active:via-blue-50/30 group-active:to-teal-50/50 rounded-3xl transition-all duration-300" />
-
-                            {/* Icon Container - Premium 3D effect */}
-                            <div className="relative">
+                            {/* Icon Container - Premium and Compact */}
+                            <div className="relative flex-none">
                                 <div className={clsx(
-                                    "w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-active:scale-95",
+                                    "w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-md transition-transform duration-300 group-active:scale-90",
                                     s.gradient
                                 )}>
-                                    <s.icon className="w-7 h-7" />
+                                    <s.icon className="w-5.5 h-5.5" />
                                 </div>
-                                {/* Icon glow */}
                                 <div className={clsx(
-                                    "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-40 blur-lg -z-10",
+                                    "absolute inset-0 rounded-xl bg-gradient-to-br opacity-20 blur-md -z-10",
                                     s.gradient
                                 )} />
                             </div>
 
                             {/* Text Content */}
                             <div className="flex-1 min-w-0 text-left relative">
-                                <span className="font-bold text-slate-900 text-base leading-snug block mb-1">
+                                <span className="font-bold text-slate-900 dark:text-slate-100 text-[14px] leading-tight block mb-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                     {s.text}
                                 </span>
-                                <div className="flex items-center gap-1.5 text-slate-400">
+                                <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
                                     <Sparkles className="w-3 h-3" />
-                                    <span className="text-xs font-semibold uppercase tracking-wide">
-                                        Tap to ask Finny
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                                        Ask Starta
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Arrow with animation */}
-                            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center border border-slate-200/50 shadow-sm group-active:from-blue-100 group-active:to-blue-50 group-active:border-blue-200 transition-all duration-300">
-                                <ChevronRight className="w-5 h-5 text-slate-400 group-active:text-blue-600 transition-colors" />
-                            </div>
+                            {/* Minimal Arrow */}
+                            <ChevronRight className="flex-none w-5 h-5 text-slate-300 dark:text-slate-600 group-active:text-blue-500 transition-colors" />
                         </div>
                     </motion.button>
                 ))}

@@ -118,16 +118,17 @@ export default function ChatbotAnalyticsPage() {
         setIsLoading(true);
         try {
             const headers = { 'Content-Type': 'application/json' };
+            const ts = Date.now();
 
             const [health, questions, unresolved, intents, resolver, funnel, perf, lang] = await Promise.all([
-                fetch(`${API_BASE}/health?period=${period}`, { headers }).then(r => r.json()).catch(() => null),
-                fetch(`${API_BASE}/questions?period=${period}&limit=20`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/unresolved?status=pending&limit=50`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/intents?period=${period}`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/resolver?period=${period}`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/sessions/funnel?period=${period}`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/performance?period=${period}`, { headers }).then(r => r.json()).catch(() => null),
-                fetch(`${API_BASE}/language?period=${period}`, { headers }).then(r => r.json()).catch(() => [])
+                fetch(`${API_BASE}/health?period=${period}&t=${ts}`, { headers }).then(r => r.json()).catch(() => null),
+                fetch(`${API_BASE}/questions?period=${period}&limit=20&t=${ts}`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/unresolved?status=pending&limit=50&t=${ts}`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/intents?period=${period}&t=${ts}`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/resolver?period=${period}&t=${ts}`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/sessions/funnel?period=${period}&t=${ts}`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/performance?period=${period}&t=${ts}`, { headers }).then(r => r.json()).catch(() => null),
+                fetch(`${API_BASE}/language?period=${period}&t=${ts}`, { headers }).then(r => r.json()).catch(() => [])
             ]);
 
             setHealthKPIs(health);
@@ -220,8 +221,8 @@ export default function ChatbotAnalyticsPage() {
                                         key={p}
                                         onClick={() => setPeriod(p)}
                                         className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${period === p
-                                                ? 'bg-white text-blue-600 shadow-sm'
-                                                : 'text-slate-600 hover:text-slate-900'
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-slate-600 hover:text-slate-900'
                                             }`}
                                     >
                                         {p === 'today' ? 'Today' : p.toUpperCase()}

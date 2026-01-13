@@ -179,7 +179,32 @@ export default function ScreenerPage() {
                             >
                                 {filters.order === "desc" ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
                             </button>
-                            <button className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-200/50 hover:shadow-xl transition-all flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    if (!results.length) return;
+                                    const headers = ["Symbol", "Name", "Sector", "Price", "Change %", "Volume", "P/E", "Market Cap"];
+                                    const csvRows = [
+                                        headers.join(","),
+                                        ...results.map((r: any) => [
+                                            r.symbol,
+                                            `"${r.name_en}"`,
+                                            `"${r.sector_name}"`,
+                                            r.last_price,
+                                            r.change_percent,
+                                            r.volume,
+                                            r.pe_ratio || "",
+                                            r.market_cap_b || ""
+                                        ].join(","))
+                                    ];
+                                    const blob = new Blob([csvRows.join("\n")], { type: 'text/csv' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `screener_export_${new Date().toISOString().split('T')[0]}.csv`;
+                                    a.click();
+                                }}
+                                className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-200/50 hover:shadow-xl transition-all flex items-center gap-2"
+                            >
                                 <Download className="w-4 h-4" />
                                 Export
                             </button>

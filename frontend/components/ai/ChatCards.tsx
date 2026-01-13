@@ -13,6 +13,7 @@ import {
     BarChart3,
     Table,
     Download,
+    Clock,
     HelpCircle,
     ExternalLink,
     ChevronRight,
@@ -21,6 +22,12 @@ import {
     Zap,
     Newspaper
 } from "lucide-react";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
 import { Card, ChartPayload, Action } from "@/hooks/useAIChat";
 import { FinancialTable } from "./AnalystUI";
 
@@ -40,19 +47,19 @@ interface StockHeaderProps {
 
 export function StockHeaderCard({ data }: StockHeaderProps) {
     return (
-        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl border border-blue-100">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+        <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl transition-all duration-300">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-500/20">
                 {data.symbol.slice(0, 2)}
             </div>
-            <div className="flex-1">
-                <div className="font-bold text-slate-800">{data.name}</div>
-                <div className="text-sm text-slate-500">
-                    {data.symbol} • {data.market_code} • {data.currency}
+            <div className="flex-1 min-w-0">
+                <div className="font-black text-slate-800 dark:text-white text-base truncate">{data.name}</div>
+                <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    {data.symbol} <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.market_code} <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.currency}
                 </div>
             </div>
             {data.as_of && (
-                <div className="text-xs text-slate-400">
-                    As of {new Date(data.as_of).toLocaleTimeString()}
+                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-right uppercase tracking-tighter opacity-60">
+                    {new Date(data.as_of).toLocaleTimeString()}
                 </div>
             )}
         </div>
@@ -81,35 +88,57 @@ export function SnapshotCard({ data }: SnapshotProps) {
     const isPositive = data.change >= 0;
 
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-baseline gap-3 mb-4">
-                <span className="text-3xl font-black text-slate-800">
-                    {formatNumber(data.last_price)}
-                </span>
-                <span className="text-sm text-slate-500">{data.currency}</span>
-                <span className={`flex items-center gap-1 text-lg font-bold ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {isPositive ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
-                    {formatPercent(data.change_percent)}
-                </span>
+        <div className="relative p-6 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden group">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+
+            <div className="flex items-baseline justify-between mb-8 relative z-10">
+                <div className="flex flex-col">
+                    <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                        {formatNumber(data.last_price)}
+                    </span>
+                    <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        Market Price <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">{data.currency}</span>
+                    </span>
+                </div>
+                <div className={clsx(
+                    "flex flex-col items-end px-4 py-2 rounded-2xl border backdrop-blur-md transition-all duration-500",
+                    isPositive
+                        ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/10"
+                        : "bg-red-500/5 border-red-500/10 text-red-500 dark:text-red-400 shadow-lg shadow-red-500/10"
+                )}>
+                    <div className="flex items-center gap-1.5">
+                        {isPositive ? <TrendingUp size={22} className="stroke-[3]" /> : <TrendingDown size={22} className="stroke-[3]" />}
+                        <span className="text-2xl font-black">{formatPercent(data.change_percent)}</span>
+                    </div>
+                    <span className="text-xs font-black mt-1 opacity-70">{data.change > 0 ? '+' : ''}{data.change.toFixed(2)}</span>
+                </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3 text-center">
-                <div className="p-2 bg-slate-50 rounded-lg">
-                    <div className="text-xs text-slate-500">Open</div>
-                    <div className="font-semibold text-slate-700">{formatNumber(data.open)}</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded-lg">
-                    <div className="text-xs text-slate-500">High</div>
-                    <div className="font-semibold text-emerald-600">{formatNumber(data.high)}</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded-lg">
-                    <div className="text-xs text-slate-500">Low</div>
-                    <div className="font-semibold text-red-500">{formatNumber(data.low)}</div>
-                </div>
-                <div className="p-2 bg-slate-50 rounded-lg">
-                    <div className="text-xs text-slate-500">Volume</div>
-                    <div className="font-semibold text-slate-700">{formatNumber(data.volume, 0)}</div>
-                </div>
+            <div className="grid grid-cols-4 gap-2 relative z-10 w-full">
+                {data.open !== null && data.open !== undefined && (
+                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all">
+                        <div className="text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-black mb-1">Open</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.open)}</div>
+                    </div>
+                )}
+                {data.high !== null && data.high !== undefined && (
+                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-emerald-200/50 dark:hover:border-emerald-500/20 transition-all">
+                        <div className="text-[9px] uppercase tracking-widest text-emerald-600 dark:text-emerald-500 font-black mb-1">High</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.high)}</div>
+                    </div>
+                )}
+                {data.low !== null && data.low !== undefined && (
+                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-red-200/50 dark:hover:border-red-500/20 transition-all">
+                        <div className="text-[9px] uppercase tracking-widest text-red-500 dark:text-red-400 font-black mb-1">Low</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.low)}</div>
+                    </div>
+                )}
+                {data.volume !== null && data.volume !== undefined && data.volume > 0 && (
+                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20 transition-all">
+                        <div className="text-[9px] uppercase tracking-widest text-blue-500 dark:text-blue-400 font-black mb-1">Volume</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.volume, 0)}</div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -122,6 +151,7 @@ export function SnapshotCard({ data }: SnapshotProps) {
 interface StatsProps {
     title?: string;
     data: {
+        [key: string]: any; // Allow dynamic keys
         pe_ratio?: number;
         pb_ratio?: number;
         dividend_yield?: number;
@@ -134,31 +164,69 @@ interface StatsProps {
 }
 
 export function StatsCard({ title, data }: StatsProps) {
-    const stats = [
-        { label: "P/E Ratio", value: data.pe_ratio, format: (v: number) => v.toFixed(2) },
-        { label: "P/B Ratio", value: data.pb_ratio, format: (v: number) => v.toFixed(2) },
-        { label: "Div Yield", value: data.dividend_yield, format: (v: number) => `${v.toFixed(2)}%` },
-        { label: "Market Cap", value: data.market_cap, format: formatNumber },
-        { label: "52W High", value: data.high_52w, format: (v: number) => v.toFixed(2) },
-        { label: "52W Low", value: data.low_52w, format: (v: number) => v.toFixed(2) },
-        { label: "Beta", value: data.beta, format: (v: number) => v.toFixed(2) },
-        { label: "EPS", value: data.eps, format: (v: number) => v.toFixed(2) },
-    ].filter(s => s.value !== null && s.value !== undefined);
+    // Legacy mapping for known keys
+    const knownStats: Record<string, any> = {
+        pe_ratio: { label: "P/E", icon: Target, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => v.toFixed(2) },
+        pb_ratio: { label: "P/B", icon: BarChart3, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => v.toFixed(2) },
+        dividend_yield: { label: "Yield", icon: DollarSign, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
+        beta: { label: "Beta", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
+        eps: { label: "EPS", icon: TrendingUp, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-500/10", format: (v: number) => v.toFixed(2) },
+        high_52w: { label: "High", icon: ArrowUpRight, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => v.toFixed(2) },
+        low_52w: { label: "Low", icon: ArrowDownRight, color: "text-red-500 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/10", format: (v: number) => v.toFixed(2) },
+        market_cap: { label: "Cap", icon: Building2, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", format: formatNumber },
+    };
+
+    // Process all data keys (both legacy and dynamic)
+    const stats = Object.entries(data).map(([key, value]) => {
+        if (value === null || value === undefined || value === "N/A" || value === "") return null;
+
+        const config = knownStats[key] || {
+            label: key, // Use key as label for dynamic stats (e.g. "Gross Margin")
+            icon: Activity, // Default icon
+            color: "text-slate-700 dark:text-slate-300",
+            bg: "bg-slate-50 dark:bg-slate-800",
+            format: (v: any) => v // Default no-op format
+        };
+
+        const displayValue = (typeof value === 'number' && config.format) ? config.format(value) : value;
+        // Strict Check: If formatter returns null/undefined or empty string (our new logic), hide it.
+        if (displayValue === null || displayValue === undefined) return null;
+        if (String(displayValue) === "" || String(displayValue) === "N/A" || String(displayValue) === "—") return null;
+
+        return {
+            ...config,
+            value: value,
+            displayValue: displayValue
+        };
+    }).filter(Boolean);
+
+    if (stats.length === 0) return null;
 
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-            {title && (
-                <div className="flex items-center gap-2 mb-3 text-slate-700 font-semibold">
-                    <BarChart3 size={16} />
-                    {title}
+        <div className="p-5 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none">
+            <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <Activity className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title || "Market Stats"}</h4>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Financial Metrics</div>
+                    </div>
                 </div>
-            )}
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {stats.map(stat => (
-                    <div key={stat.label} className="p-2 bg-slate-50 rounded-lg text-center">
-                        <div className="text-xs text-slate-500">{stat.label}</div>
-                        <div className="font-semibold text-slate-800">
-                            {stat.value !== undefined ? stat.format(stat.value as number) : "N/A"}
+                {stats.map((stat: any) => (
+                    <div key={stat.label} className="group p-3 bg-slate-50/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-100 dark:border-white/5 hover:border-blue-200 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5 hover:-translate-y-1">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate max-w-[80%]">{stat.label}</span>
+                            <div className={`p-1.5 rounded-lg ${stat.bg} ${stat.color} transition-transform group-hover:scale-110 shrink-0`}>
+                                <stat.icon size={12} />
+                            </div>
+                        </div>
+                        <div className="font-black text-slate-800 dark:text-white text-lg tracking-tight truncate" title={String(stat.displayValue)}>
+                            {stat.displayValue}
                         </div>
                     </div>
                 ))}
@@ -188,37 +256,49 @@ interface MoversProps {
 
 export function MoversTable({ title, data, onSymbolClick }: MoversProps) {
     const isUp = data.direction === "up";
+    const gradient = isUp ? "from-emerald-500 to-teal-600" : "from-red-500 to-rose-600";
+    const bgGlow = isUp ? "bg-emerald-500/5" : "bg-red-500/5";
 
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-            {title && (
-                <div className={`flex items-center gap-2 mb-3 font-semibold ${isUp ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {isUp ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                    {title}
+        <div className={`p-5 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden relative ${bgGlow}`}>
+            <div className="flex items-center justify-between mb-6 relative z-10">
+                <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-lg ${data.direction === 'up' ? 'from-emerald-500 to-teal-600 shadow-emerald-500/20' : 'from-red-500 to-rose-600 shadow-red-500/20'}`}>
+                        {data.direction === 'up' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title || (data.direction === 'up' ? 'Top Gainers' : 'Top Losers')}</h4>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Market Dynamics</div>
+                    </div>
                 </div>
-            )}
+            </div>
             <div className="space-y-2">
-                {data.movers.slice(0, 10).map((stock, i) => (
-                    <div
-                        key={stock.symbol}
-                        className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
-                        onClick={() => onSymbolClick?.(stock.symbol)}
-                    >
-                        <div className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-xs font-medium text-slate-600">
-                            {i + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="font-medium text-slate-800 truncate">{stock.symbol}</div>
-                            <div className="text-xs text-slate-500 truncate">{stock.name}</div>
-                        </div>
-                        <div className="text-right">
-                            <div className="font-medium text-slate-800">{formatNumber(stock.price)}</div>
-                            <div className={`text-sm font-medium ${isUp ? 'text-emerald-600' : 'text-red-500'}`}>
-                                {formatPercent(stock.change_percent)}
+                {data.movers.slice(0, 10).map((stock, i) => {
+                    const rankColor = i === 0 ? "bg-yellow-400 text-yellow-900" :
+                        i === 1 ? "bg-slate-300 text-slate-800" :
+                            i === 2 ? "bg-amber-600 text-amber-100" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400";
+                    return (
+                        <div
+                            key={stock.symbol}
+                            className="group flex items-center gap-4 p-3 hover:bg-white dark:hover:bg-white/5 hover:shadow-lg rounded-xl border border-transparent hover:border-slate-100 dark:hover:border-white/10 transition-all duration-300 cursor-pointer active:scale-98"
+                            onClick={() => onSymbolClick?.(stock.symbol)}
+                        >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-sm ${rankColor}`}>
+                                {i + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="font-bold text-slate-800 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
+                                <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate">{stock.name}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="font-bold text-slate-900 dark:text-white">{formatNumber(stock.price)}</div>
+                                <div className={`text-xs font-black px-2 py-0.5 rounded-full inline-block mt-0.5 ${isUp ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'}`}>
+                                    {formatPercent(stock.change_percent)}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -238,30 +318,28 @@ interface CompareProps {
 
 export function CompareTable({ title, data }: CompareProps) {
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm overflow-x-auto">
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-x-auto">
             {title && (
-                <div className="flex items-center gap-2 mb-3 text-slate-700 font-semibold">
+                <div className="flex items-center gap-2 mb-3 text-slate-700 dark:text-slate-300 font-semibold">
                     <BarChart3 size={16} />
                     {title}
                 </div>
             )}
             <table className="w-full text-sm">
                 <thead>
-                    <tr className="border-b border-slate-100">
-                        <th className="text-left p-2 font-medium text-slate-500">Metric</th>
-                        {data.stocks.map(stock => (
-                            <th key={stock.symbol} className="text-right p-2 font-bold text-slate-800">
-                                {stock.symbol}
-                            </th>
+                    <tr className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                        <th className="px-3 py-2 text-left bg-slate-50 dark:bg-white/5 rounded-l-lg">Stock</th>
+                        {data.metrics.map(m => (
+                            <th key={m.key} className="px-3 py-2 text-right bg-slate-50 dark:bg-white/5 last:rounded-r-lg">{m.label}</th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
                     {data.metrics.map(metric => (
-                        <tr key={metric.key} className="border-b border-slate-50 hover:bg-slate-50">
-                            <td className="p-2 text-slate-600">{metric.label}</td>
+                        <tr key={metric.key} className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5">
+                            <td className="p-2 text-slate-600 dark:text-slate-400">{metric.label}</td>
                             {data.stocks.map(stock => (
-                                <td key={stock.symbol} className="text-right p-2 font-medium text-slate-800">
+                                <td key={stock.symbol} className="text-right p-2 font-medium text-slate-800 dark:text-slate-200">
                                     {formatNumber(stock[metric.key])}
                                 </td>
                             ))}
@@ -289,21 +367,21 @@ interface HelpProps {
 
 export function HelpCard({ data, onExampleClick }: HelpProps) {
     return (
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-teal-50 rounded-xl border border-blue-100">
-            <div className="flex items-center gap-2 mb-4 text-blue-700 font-semibold">
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-teal-50 dark:from-blue-500/10 dark:to-teal-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+            <div className="flex items-center gap-2 mb-4 text-blue-700 dark:text-blue-400 font-semibold">
                 <HelpCircle size={18} />
                 What I Can Help With
             </div>
             <div className="space-y-4">
                 {data.categories.map(cat => (
                     <div key={cat.title}>
-                        <div className="font-medium text-slate-700 mb-2">{cat.title}</div>
+                        <div className="font-medium text-slate-700 dark:text-slate-300 mb-2">{cat.title}</div>
                         <div className="flex flex-wrap gap-2">
                             {cat.examples.map(ex => (
                                 <button
                                     key={ex}
                                     onClick={() => onExampleClick?.(ex)}
-                                    className="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-sm text-slate-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                                    className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
                                 >
                                     {ex}
                                 </button>
@@ -335,7 +413,7 @@ export function ActionsBar({ actions, language = "en", onAction }: ActionsBarPro
                 <button
                     key={i}
                     onClick={() => onAction(action)}
-                    className="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 text-slate-600 hover:text-blue-700 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
+                    className="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1A1F2E]/60 border border-slate-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 dark:hover:from-blue-500/10 dark:hover:to-teal-500/10 text-slate-600 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-400 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
                 >
                     <span>{language === "ar" ? action.label_ar || action.label : action.label}</span>
                     {action.action_type === "navigate" ?
@@ -388,38 +466,38 @@ export function RatiosCard({ title, data }: RatiosProps) {
     const formatPct = (v: number | null | undefined) => v !== null && v !== undefined ? `${(v * 100).toFixed(1)}%` : "N/A";
 
     const ratios = [
-        { label: "P/E", value: formatRatio(data.pe), color: "text-blue-600" },
-        { label: "P/B", value: formatRatio(data.pb), color: "text-blue-600" },
-        { label: "P/S", value: formatRatio(data.ps), color: "text-blue-600" },
-        { label: "ROE", value: formatPct(data.roe), color: "text-emerald-600" },
-        { label: "ROA", value: formatPct(data.roa), color: "text-emerald-600" },
-        { label: "D/E", value: formatRatio(data.debt_equity), color: "text-amber-600" },
-        { label: "PEG", value: formatRatio(data.peg_ratio), color: "text-purple-600" },
-        { label: "Yield", value: formatPct(data.earnings_yield), color: "text-teal-600" },
+        { label: "P/E", value: formatRatio(data.pe), color: "text-blue-600 dark:text-blue-400" },
+        { label: "P/B", value: formatRatio(data.pb), color: "text-blue-600 dark:text-blue-400" },
+        { label: "P/S", value: formatRatio(data.ps), color: "text-blue-600 dark:text-blue-400" },
+        { label: "ROE", value: formatPct(data.roe), color: "text-emerald-600 dark:text-emerald-400" },
+        { label: "ROA", value: formatPct(data.roa), color: "text-emerald-600 dark:text-emerald-400" },
+        { label: "D/E", value: formatRatio(data.debt_equity), color: "text-amber-600 dark:text-amber-400" },
+        { label: "PEG", value: formatRatio(data.peg_ratio), color: "text-cyan-600 dark:text-cyan-400" },
+        { label: "Yield", value: formatPct(data.earnings_yield), color: "text-teal-600 dark:text-teal-400" },
     ].filter(r => r.value !== "N/A");
 
     if (!ratios.length) return null;
 
     return (
-        <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-slate-100 shadow-sm">
+        <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm">
             {title && (
-                <div className="flex items-center gap-2 mb-3 text-slate-700 font-semibold">
+                <div className="flex items-center gap-2 mb-3 text-slate-700 dark:text-slate-300 font-semibold">
                     <BarChart3 size={16} />
                     {title}
                 </div>
             )}
             <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                 {ratios.map(r => (
-                    <div key={r.label} className="text-center p-2 bg-white rounded-lg shadow-sm">
-                        <div className="text-xs text-slate-500">{r.label}</div>
+                    <div key={r.label} className="text-center p-2 bg-white dark:bg-[#1A1F2E] rounded-lg shadow-sm border dark:border-white/5">
+                        <div className="text-xs text-slate-500 dark:text-slate-500">{r.label}</div>
                         <div className={`font-bold text-sm ${r.color}`}>{r.value}</div>
                     </div>
                 ))}
             </div>
             {data.marketcap && (
-                <div className="mt-3 pt-3 border-t border-slate-200 text-center">
-                    <span className="text-xs text-slate-500">Market Cap: </span>
-                    <span className="font-bold text-slate-800">{formatNumber(data.marketcap)}</span>
+                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10 text-center">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Market Cap: </span>
+                    <span className="font-bold text-slate-800 dark:text-white">{formatNumber(data.marketcap)}</span>
                 </div>
             )}
         </div>
@@ -480,19 +558,19 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
     // Row styling based on type
     const getRowClass = (row: StatementRow): string => {
         if (row.isSubtotal) {
-            return "bg-gradient-to-r from-blue-50 to-slate-50 font-bold border-y border-blue-100";
+            return "bg-gradient-to-r from-blue-50 to-slate-50 dark:from-blue-500/10 dark:to-slate-800/10 font-bold border-y border-blue-100 dark:border-blue-500/20";
         }
-        return "border-b border-slate-100/50 hover:bg-blue-50/30 transition-colors";
+        return "border-b border-slate-100/50 dark:border-white/5 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-colors";
     };
 
     // Value color based on growth
     const getValueColor = (row: StatementRow, val: number | null): string => {
-        if (val === null) return "text-slate-400";
+        if (val === null) return "text-slate-400 dark:text-slate-500";
         if (row.isGrowth) {
-            return val >= 0 ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold";
+            return val >= 0 ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "text-red-500 dark:text-red-400 font-semibold";
         }
-        if (row.isSubtotal) return "text-slate-800 font-bold";
-        return "text-slate-700";
+        if (row.isSubtotal) return "text-slate-800 dark:text-white font-bold";
+        return "text-slate-700 dark:text-slate-300";
     };
 
     // Export to CSV
@@ -534,19 +612,25 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
         URL.revokeObjectURL(url);
     };
 
-    // Empty state handling
-    if (!rows || rows.length === 0) {
+    // Filter out rows where ALL values are null (Strict Policy)
+    const validRows = rows.filter(row => {
+        // If it's a subtotal, we might keep it, but only if there's data in the block? 
+        // Safer: Keep subtotal only if it has values.
+        const values = Object.values(row.values);
+        return values.some(v => v !== null && v !== undefined);
+    });
+
+    if (!validRows || validRows.length === 0) {
         return (
-            <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-8 border border-slate-200 text-center">
-                <Table className="w-12 h-12 mx-auto text-slate-400 mb-3" />
-                <div className="text-slate-600 font-medium">No financial data available</div>
-                <div className="text-slate-400 text-sm mt-1">Data may still be loading...</div>
+            <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-2xl p-8 border border-slate-200 dark:border-white/10 text-center">
+                <Table className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500 mb-3" />
+                <div className="text-slate-600 dark:text-slate-300 font-medium">No detailed financial data available</div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden my-4">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-colors duration-300">
             {/* Premium Header */}
             <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 px-5 py-4">
                 <div className="flex items-center justify-between">
@@ -581,17 +665,16 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
                 </div>
             </div>
 
-            {/* Data Table */}
             <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-[13px] border-collapse">
                     {/* Header Row */}
                     <thead>
-                        <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className="px-5 py-3 text-left font-semibold text-slate-600 sticky left-0 bg-slate-50 z-10 min-w-[200px]">
+                        <tr className="bg-slate-50/80 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 backdrop-blur-md">
+                            <th className="px-5 py-3 text-left font-black text-slate-500 dark:text-slate-400 sticky left-0 bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-md z-10 min-w-[200px] uppercase tracking-widest text-[10px]">
                                 Line Item
                             </th>
                             {uniqueYears.map(year => (
-                                <th key={year} className="px-4 py-3 text-right font-semibold text-slate-600 min-w-[100px]">
+                                <th key={year} className="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-400 min-w-[100px]">
                                     {year}
                                 </th>
                             ))}
@@ -599,13 +682,13 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
                     </thead>
                     {/* Data Rows */}
                     <tbody>
-                        {rows.map((row, idx) => (
+                        {validRows.map((row, idx) => (
                             <tr key={idx} className={getRowClass(row)}>
                                 <td
-                                    className="px-5 py-3 text-slate-700 sticky left-0 bg-white z-10 border-r border-slate-100"
+                                    className="px-5 py-3 text-slate-700 dark:text-slate-300 sticky left-0 bg-white dark:bg-[#1A1F2E] z-10 border-r border-slate-100 dark:border-white/5"
                                     style={{ paddingLeft: `${20 + (row.indent || 0) * 16}px` }}
                                 >
-                                    <span className={row.isSubtotal ? "font-bold" : ""}>{row.label}</span>
+                                    <span className={row.isSubtotal ? "font-bold text-slate-900 dark:text-white" : ""}>{row.label}</span>
                                 </td>
                                 {uniqueYears.map(year => {
                                     const val = row.values[year];
@@ -625,11 +708,11 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
             </div>
 
             {/* Footer with disclaimer */}
-            <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                <div className="text-xs text-slate-500">
+            <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
                     All values in {currency} • Data source: StockAnalysis.com
                 </div>
-                <div className="text-xs text-slate-400">
+                <div className="text-xs text-slate-400 dark:text-slate-500">
                     {rows.length} items • {uniqueYears.length} years
                 </div>
             </div>
@@ -738,49 +821,59 @@ export function TechnicalsCard({ title, data }: TechnicalsProps) {
     };
 
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold">
-                <Activity size={18} className="text-purple-600" />
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold">
+                <Activity size={18} className="text-cyan-600 dark:text-cyan-400" />
                 {title || "Technical Indicators"}
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
                 {/* RSI & Pivot */}
-                <div className="p-3 bg-slate-50 rounded-lg text-center">
-                    <div className="text-xs text-slate-500">RSI (14)</div>
-                    <div className={`text-lg font-bold ${getSentiment(data.rsi, 'rsi')}`}>
-                        {data.rsi?.toFixed(2) ?? "N/A"}
+                {data.rsi !== null && data.rsi !== undefined && (
+                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg text-center">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">RSI (14)</div>
+                        <div className={`text-lg font-bold ${getSentiment(data.rsi, 'rsi')} dark:text-white`}>
+                            {data.rsi.toFixed(2)}
+                        </div>
                     </div>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-lg text-center">
-                    <div className="text-xs text-slate-500">Pivot Point</div>
-                    <div className="text-lg font-bold text-slate-700">
-                        {data.pivot?.toFixed(2) ?? "N/A"}
+                )}
+                {data.pivot !== null && data.pivot !== undefined && (
+                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg text-center">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Pivot Point</div>
+                        <div className="text-lg font-bold text-slate-700 dark:text-white">
+                            {data.pivot.toFixed(2)}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Support & Resistance */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="space-y-1">
-                    <div className="text-xs font-semibold text-emerald-600 mb-2">Support</div>
-                    {data.support.map((val, i) => (
-                        <div key={i} className="flex justify-between text-xs bg-emerald-50 p-1.5 rounded">
-                            <span className="text-emerald-700">S{i + 1}</span>
-                            <span className="font-mono font-medium">{val.toFixed(2)}</span>
+            {(data.support?.length > 0 || data.resistance?.length > 0) && (
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    {data.support?.length > 0 && (
+                        <div className="space-y-1">
+                            <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-2">Support</div>
+                            {data.support.map((val, i) => (
+                                <div key={i} className="flex justify-between text-xs bg-emerald-50 dark:bg-emerald-500/10 p-1.5 rounded">
+                                    <span className="text-emerald-700 dark:text-emerald-300">S{i + 1}</span>
+                                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{val.toFixed(2)}</span>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-                <div className="space-y-1">
-                    <div className="text-xs font-semibold text-red-500 mb-2">Resistance</div>
-                    {data.resistance.map((val, i) => (
-                        <div key={i} className="flex justify-between text-xs bg-red-50 p-1.5 rounded">
-                            <span className="text-red-700">R{i + 1}</span>
-                            <span className="font-mono font-medium">{val.toFixed(2)}</span>
+                    )}
+                    {data.resistance?.length > 0 && (
+                        <div className="space-y-1">
+                            <div className="text-xs font-semibold text-red-500 dark:text-red-400 mb-2">Resistance</div>
+                            {data.resistance.map((val, i) => (
+                                <div key={i} className="flex justify-between text-xs bg-red-50 dark:bg-red-500/10 p-1.5 rounded">
+                                    <span className="text-red-700 dark:text-red-300">R{i + 1}</span>
+                                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{val.toFixed(2)}</span>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }
@@ -826,12 +919,12 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
     const strokeDasharray = `${gaugePercent * 2.51} 251`; // 251 = circumference of r=40
 
     return (
-        <div className="p-5 bg-gradient-to-br from-white to-slate-50 rounded-2xl border border-slate-200 shadow-lg">
+        <div className="p-5 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900/40 dark:to-slate-800/40 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 font-bold text-slate-800">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                        <Activity className="text-blue-600 w-5 h-5" />
+                <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                        <Activity className="text-blue-600 dark:text-blue-400 w-5 h-5" />
                     </div>
                     🛡️ Financial Health Analysis
                 </div>
@@ -883,38 +976,41 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
                     {/* Center Value */}
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
                         <div className={`text-3xl font-black ${color}`}>{data.z_score.toFixed(2)}</div>
-                        <div className="text-xs text-slate-500 uppercase tracking-widest">Altman Z-Score</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">Altman Z-Score</div>
                     </div>
                 </div>
             </div>
 
             {/* Metrics Grid */}
             <div className="grid grid-cols-3 gap-3 mt-4">
-                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl text-center shadow-sm">
-                    <div className="text-xs text-blue-600 font-medium mb-1">F-Score</div>
-                    <div className="text-xl font-bold text-blue-800">{data.f_score}<span className="text-sm text-blue-500">/9</span></div>
+                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-500/10 dark:to-blue-500/20 rounded-xl text-center shadow-sm">
+                    <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">F-Score</div>
+                    <div className="text-xl font-bold text-blue-800 dark:text-blue-200">{data.f_score}<span className="text-sm text-blue-500 dark:text-blue-400">/9</span></div>
                 </div>
-                {Object.entries(data.metrics).slice(0, 4).map(([key, val]) => (
-                    <div key={key} className="p-3 bg-white rounded-xl text-center border border-slate-100 shadow-sm">
-                        <div className="text-xs text-slate-500 mb-1 truncate">{key}</div>
-                        <div className="font-bold text-slate-800">{val !== null ? (typeof val === 'number' ? val.toFixed(2) : val) : "N/A"}</div>
-                    </div>
-                ))}
+                {Object.entries(data.metrics).slice(0, 4).map(([key, val]) => {
+                    if (val === null || val === undefined || val === "N/A") return null;
+                    return (
+                        <div key={key} className="p-3 bg-white dark:bg-white/5 rounded-xl text-center border border-slate-100 dark:border-white/10 shadow-sm">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 truncate">{key}</div>
+                            <div className="font-bold text-slate-800 dark:text-white">{typeof val === 'number' ? val.toFixed(2) : val}</div>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Risk Scale Legend */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs text-slate-500">Distress (&lt;1.81)</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Distress (&lt;1.81)</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-xs text-slate-500">Grey Zone</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Grey Zone</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs text-slate-500">Safe (&gt;2.99)</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Safe (&gt;2.99)</span>
                 </div>
             </div>
         </div>
@@ -936,19 +1032,19 @@ export function DeepValuationCard({ data }: DeepValuationProps) {
     // Color based on verdict
     const isUndervalued = data.verdict?.toLowerCase().includes('under');
     const isOvervalued = data.verdict?.toLowerCase().includes('over');
-    const verdictColor = isUndervalued ? 'text-emerald-600 bg-emerald-50' : isOvervalued ? 'text-red-600 bg-red-50' : 'text-purple-600 bg-purple-50';
+    const verdictColor = isUndervalued ? 'text-emerald-600 bg-emerald-50' : isOvervalued ? 'text-red-600 bg-red-50' : 'text-cyan-600 bg-cyan-50';
 
     // Get max value for bar scaling
     const values = Object.values(data.multiples).filter(v => v !== null) as number[];
     const maxVal = Math.max(...values, 1);
 
     return (
-        <div className="p-5 bg-gradient-to-br from-white to-purple-50/30 rounded-2xl border border-slate-200 shadow-lg">
+        <div className="p-5 bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900/40 dark:to-cyan-900/20 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2 font-bold text-slate-800">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                        <Target className="text-purple-600 w-5 h-5" />
+                <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
+                    <div className="p-2 bg-cyan-100 dark:bg-cyan-500/20 rounded-lg">
+                        <Target className="text-cyan-600 dark:text-cyan-400 w-5 h-5" />
                     </div>
                     💎 Valuation Analysis
                 </div>
@@ -960,19 +1056,21 @@ export function DeepValuationCard({ data }: DeepValuationProps) {
             {/* Horizontal Bar Chart */}
             <div className="space-y-3 mb-4">
                 {Object.entries(data.multiples).slice(0, 6).map(([key, val]) => {
-                    const barWidth = val !== null ? Math.min((val / maxVal) * 100, 100) : 0;
-                    const isHigh = val !== null && val > maxVal * 0.7;
-                    const barColor = isHigh ? 'bg-gradient-to-r from-purple-400 to-purple-600' : 'bg-gradient-to-r from-blue-400 to-blue-600';
+                    if (val === null || val === undefined) return null; // Hide if missing
+
+                    const barWidth = Math.min((val / maxVal) * 100, 100);
+                    const isHigh = val > maxVal * 0.7;
+                    const barColor = isHigh ? 'bg-gradient-to-r from-cyan-400 to-cyan-600' : 'bg-gradient-to-r from-blue-400 to-blue-600';
 
                     return (
                         <div key={key} className="group">
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-xs font-medium text-slate-600">{key}</span>
-                                <span className="text-sm font-bold text-slate-800">
-                                    {val !== null ? val.toFixed(2) : "N/A"}
+                                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{key}</span>
+                                <span className="text-sm font-bold text-slate-800 dark:text-white">
+                                    {val.toFixed(2)}
                                 </span>
                             </div>
-                            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div
                                     className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`}
                                     style={{ width: `${barWidth}%` }}
@@ -984,18 +1082,18 @@ export function DeepValuationCard({ data }: DeepValuationProps) {
             </div>
 
             {/* Legend / Interpretation */}
-            <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
+            <div className="flex items-center gap-4 pt-3 border-t border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs text-slate-500">Undervalued</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Undervalued</span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                    <span className="text-xs text-slate-500">Fair Value</span>
+                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Fair Value</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                    <span className="text-xs text-slate-500">Overvalued</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Overvalued</span>
                 </div>
             </div>
         </div>
@@ -1014,62 +1112,76 @@ interface DeepMetricsProps {
         metrics: Record<string, string | number | null>;
     };
     icon?: React.ReactNode;
+    accentColor?: "blue" | "emerald" | "slate";
 }
 
-export function DeepMetricsCard({ title, data, icon }: DeepMetricsProps) {
-    // Determine card theme based on title
-    const isGrowth = title?.toLowerCase().includes('growth');
-    const isEfficiency = title?.toLowerCase().includes('efficiency');
-    const bgGradient = isGrowth
-        ? 'from-white to-emerald-50/30'
-        : isEfficiency
-            ? 'from-white to-blue-50/30'
-            : 'from-white to-slate-50';
-    const accentColor = isGrowth ? 'emerald' : isEfficiency ? 'blue' : 'slate';
+export function DeepMetricsCard({ title, data, icon, accentColor = "blue" }: DeepMetricsProps) {
+    const isGrowth = title?.toLowerCase().includes("growth");
+    const isEfficiency = title?.toLowerCase().includes("efficiency");
 
     return (
-        <div className={`p-5 bg-gradient-to-br ${bgGradient} rounded-2xl border border-slate-200 shadow-lg`}>
+        <div className="p-5 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl transition-all duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2 font-bold text-slate-800">
-                    <div className={`p-2 bg-${accentColor}-100 rounded-lg`}>
-                        {icon || <Activity className={`text-${accentColor}-600 w-5 h-5`} />}
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black text-lg tracking-tight">
+                    <div className={clsx(
+                        "p-2 rounded-xl border shadow-sm",
+                        accentColor === 'blue' ? "bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20 text-blue-600 dark:text-blue-400" :
+                            accentColor === 'emerald' ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400" :
+                                "bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/10 text-slate-600 dark:text-slate-400"
+                    )}>
+                        {icon || <Activity className="w-5 h-5" />}
                     </div>
-                    {isGrowth ? '📈' : isEfficiency ? '⚡' : '📊'} {title}
+                    {title}
                 </div>
                 {data.verdict && (
-                    <span className={`px-3 py-1.5 bg-${accentColor}-50 text-${accentColor}-700 rounded-full text-xs font-bold shadow-sm`}>
+                    <span className={clsx(
+                        "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm",
+                        accentColor === 'blue' ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/20" :
+                            accentColor === 'emerald' ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20" :
+                                "bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-400 border-slate-100 dark:border-white/10"
+                    )}>
                         {data.verdict}
                     </span>
                 )}
             </div>
 
-            {/* Metric Cards with Mini Progress */}
+            {/* Metric Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {Object.entries(data.metrics).slice(0, 6).map(([key, val]) => {
+                    if (val === null || val === undefined || val === "N/A") return null; // STRICT HIDE
+
                     const numVal = typeof val === 'number' ? val : parseFloat(String(val)) || 0;
                     const isPercent = String(val).includes('%') || Math.abs(numVal) <= 1;
                     const displayVal = isPercent ? `${(numVal * (Math.abs(numVal) <= 1 ? 100 : 1)).toFixed(1)}%` : String(val);
                     const isPositive = numVal > 0;
 
                     return (
-                        <div key={key} className="p-3 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs text-slate-500 truncate pr-2">{key}</span>
+                        <div key={key} className="p-3.5 bg-slate-50/50 dark:bg-white/[0.03] rounded-2xl border border-slate-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10 transition-all">
+                            <div className="flex items-center justify-between mb-2.5">
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate pr-2">{key.replace(/_/g, ' ')}</span>
                                 {isGrowth && (
-                                    <span className={`text-xs ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        {isPositive ? '↑' : '↓'}
-                                    </span>
+                                    <div className={clsx(
+                                        "w-4 h-4 rounded-full flex items-center justify-center",
+                                        isPositive ? "text-emerald-500 bg-emerald-500/10" : "text-red-500 bg-red-500/10"
+                                    )}>
+                                        {isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                                    </div>
                                 )}
                             </div>
-                            <div className={`text-lg font-bold ${isPositive && isGrowth ? 'text-emerald-600' : 'text-slate-800'}`}>
-                                {val !== null && val !== undefined ? displayVal : "N/A"}
+                            <div className={clsx(
+                                "text-lg font-black tracking-tighter",
+                                isPositive && isGrowth ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'
+                            )}>
+                                {displayVal}
                             </div>
-                            {/* Mini progress bar for percentage values */}
                             {isPercent && numVal !== 0 && (
-                                <div className="h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                                <div className="h-1 bg-slate-100 dark:bg-white/5 rounded-full mt-3 overflow-hidden">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-500 ${isPositive ? 'bg-emerald-400' : 'bg-red-400'}`}
+                                        className={clsx(
+                                            "h-full rounded-full transition-all duration-700",
+                                            isPositive ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-red-500 dark:bg-red-400'
+                                        )}
                                         style={{ width: `${Math.min(Math.abs(numVal * (Math.abs(numVal) <= 1 ? 100 : 1)), 100)}%` }}
                                     />
                                 </div>
@@ -1079,12 +1191,12 @@ export function DeepMetricsCard({ title, data, icon }: DeepMetricsProps) {
                 })}
             </div>
 
-            {/* Summary Footer */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
-                <span className="text-xs text-slate-500">
-                    {isGrowth ? '📊 Growth metrics TTM' : isEfficiency ? '⚙️ Efficiency ratios' : '📈 Key metrics'}
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    {isGrowth ? '📊 Analysis TTM' : '⚙️ Performance Ratios'}
+                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                    {data.symbol}
                 </span>
-                <span className="text-xs text-slate-400">{data.symbol}</span>
             </div>
         </div>
     );
@@ -1092,23 +1204,23 @@ export function DeepMetricsCard({ title, data, icon }: DeepMetricsProps) {
 
 export function OwnershipCard({ title, data }: OwnershipProps) {
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold">
-                <Building2 size={18} className="text-blue-600" />
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold">
+                <Building2 size={18} className="text-blue-600 dark:text-blue-400" />
                 {title || "Major Shareholders"}
             </div>
             <div className="space-y-3">
                 {data.shareholders.map((holder, i) => (
-                    <div key={i} className="flex items-start justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors border-b border-slate-50 last:border-0">
+                    <div key={i} className="flex items-start justify-between p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors border-b border-slate-50 dark:border-white/5 last:border-0">
                         <div className="flex-1 mr-3">
-                            <div className="text-sm font-semibold text-slate-800">{holder.name}</div>
-                            <div className="text-[10px] text-slate-400">{new Date(holder.date).toLocaleDateString()}</div>
+                            <div className="text-sm font-semibold text-slate-800 dark:text-white">{holder.name}</div>
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(holder.date).toLocaleDateString()}</div>
                         </div>
                         <div className="text-right">
-                            <div className="text-sm font-bold text-blue-600">
+                            <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
                                 {holder.percent.toFixed(2)}%
                             </div>
-                            <div className="text-[10px] text-slate-500 font-mono">
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                                 {formatNumber(holder.shares, 0)} sh
                             </div>
                         </div>
@@ -1140,38 +1252,38 @@ interface FairValueProps {
 
 export function FairValueCard({ title, data }: FairValueProps) {
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold">
-                <Target size={18} className="text-indigo-600" />
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold">
+                <Target size={18} className="text-blue-600 dark:text-blue-400" />
                 {title || "Valuation Analysis"}
             </div>
 
             {/* Quick Ratios */}
-            <div className="flex gap-4 mb-4 pb-4 border-b border-slate-100">
-                <div className="flex-1 text-center border-r border-slate-100 last:border-0">
-                    <div className="text-xs text-slate-500 uppercase">Current Price</div>
-                    <div className="text-xl font-black text-slate-800">
-                        {formatNumber(data.current_price)} <span className="text-xs text-slate-400 font-normal">{data.currency}</span>
+            <div className="flex gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-white/10">
+                <div className="flex-1 text-center border-r border-slate-100 dark:border-white/10 last:border-0">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">Current Price</div>
+                    <div className="text-xl font-black text-slate-800 dark:text-white">
+                        {formatNumber(data.current_price)} <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">{data.currency}</span>
                     </div>
                 </div>
-                <div className="flex-1 text-center border-r border-slate-100 last:border-0">
-                    <div className="text-xs text-slate-500 uppercase">P/E Ratio</div>
-                    <div className="text-xl font-bold text-blue-600">{data.pe?.toFixed(2) || '-'}</div>
+                <div className="flex-1 text-center border-r border-slate-100 dark:border-white/10 last:border-0">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">P/E Ratio</div>
+                    <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{data.pe?.toFixed(2) || '-'}</div>
                 </div>
                 <div className="flex-1 text-center">
-                    <div className="text-xs text-slate-500 uppercase">P/B Ratio</div>
-                    <div className="text-xl font-bold text-blue-600">{data.pb?.toFixed(2) || '-'}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">P/B Ratio</div>
+                    <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{data.pb?.toFixed(2) || '-'}</div>
                 </div>
             </div>
 
             {/* Models Table */}
             <div className="space-y-2">
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Fair Value Models</div>
+                <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Fair Value Models</div>
                 {data.models.map((m, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                        <div className="text-sm font-medium text-slate-700">{m.model}</div>
+                    <div key={i} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-white/5 rounded-lg">
+                        <div className="text-sm font-medium text-slate-700 dark:text-slate-300">{m.model}</div>
                         <div className="text-right">
-                            <div className="text-sm font-bold text-slate-800">{formatNumber(m.value)}</div>
+                            <div className="text-sm font-bold text-slate-800 dark:text-white">{formatNumber(m.value)}</div>
                             <div className={`text-xs font-bold ${m.upside > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                                 {m.upside > 0 ? '+' : ''}{m.upside.toFixed(1)}%
                             </div>
@@ -1204,26 +1316,26 @@ interface FundNavProps {
 
 export function FundNavCard({ data }: FundNavProps) {
     return (
-        <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm relative overflow-hidden">
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden">
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full opacity-50 -z-0" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-500/10 rounded-bl-full opacity-50 -z-0" />
 
             <div className="relative z-10">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
+                            <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">
                                 Fund
                             </span>
                             {data.is_shariah && (
-                                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
                                     <Target size={10} /> Shariah
                                 </span>
                             )}
                         </div>
-                        <h3 className="font-bold text-slate-800 text-lg leading-tight">{data.name}</h3>
-                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                        <h3 className="font-bold text-slate-800 dark:text-white text-lg leading-tight">{data.name}</h3>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
                             <Building2 size={12} />
                             {data.manager || "Unknown Manager"}
                         </div>
@@ -1233,18 +1345,18 @@ export function FundNavCard({ data }: FundNavProps) {
                 {/* Main Stats (NAV & AUM) */}
                 <div className="flex items-end gap-6 mb-6">
                     <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wider font-medium mb-0.5">NAV Price</div>
+                        <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-0.5">NAV Price</div>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black text-slate-800">
+                            <span className="text-3xl font-black text-slate-800 dark:text-white">
                                 {data.nav ? formatNumber(data.nav) : "N/A"}
                             </span>
-                            <span className="text-sm font-bold text-slate-400">{data.currency}</span>
+                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500">{data.currency}</span>
                         </div>
                     </div>
                     {data.aum_millions && (
                         <div className="pb-1">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium mb-0.5">AUM</div>
-                            <div className="text-lg font-bold text-slate-600">
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-0.5">AUM</div>
+                            <div className="text-lg font-bold text-slate-600 dark:text-slate-300">
                                 {formatNumber(data.aum_millions)} M
                             </div>
                         </div>
@@ -1258,9 +1370,9 @@ export function FundNavCard({ data }: FundNavProps) {
                         { label: "YTD", value: data.returns_ytd },
                         { label: "1 Year", value: data.returns_1y },
                     ].map((item, i) => (
-                        <div key={i} className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
-                            <div className="text-[10px] text-slate-400 uppercase mb-1">{item.label}</div>
-                            <div className={`font-bold text-sm ${(item.value || 0) >= 0 ? "text-emerald-600" : "text-red-500"
+                        <div key={i} className="bg-slate-50 dark:bg-white/5 rounded-lg p-2 text-center border border-slate-100 dark:border-white/10">
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase mb-1">{item.label}</div>
+                            <div className={`font-bold text-sm ${(item.value || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"
                                 }`}>
                                 {item.value !== null ? `${item.value > 0 ? '+' : ''}${item.value.toFixed(1)}%` : '-'}
                             </div>
@@ -1289,44 +1401,44 @@ interface FundListProps {
 
 export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
     return (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <div className="font-bold text-slate-700 flex items-center gap-2">
-                    <PieChart size={16} className="text-blue-600" />
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 flex items-center justify-between">
+                <div className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                    <PieChart size={16} className="text-blue-600 dark:text-blue-400" />
                     {title || "Mutual Funds"}
                 </div>
-                <div className="text-xs font-medium text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-100">
+                <div className="text-xs font-medium text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-100 dark:border-white/10">
                     {data.count} found
                 </div>
             </div>
 
-            <div className="divide-y divide-slate-50">
+            <div className="divide-y divide-slate-50 dark:divide-white/5">
                 {data.funds.map((fund, i) => (
                     <div
                         key={i}
-                        className="p-3 hover:bg-slate-50 transition-colors flex items-center gap-3 cursor-pointer group"
+                        className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center gap-3 cursor-pointer group"
                         onClick={() => onSymbolClick?.(`fund ${fund.fund_id}`)}
                     >
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                             {i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="font-bold text-slate-800 text-sm truncate">{fund.name}</div>
+                            <div className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">{fund.name}</div>
                             <div className="flex items-center gap-2 mt-0.5">
                                 {fund.is_shariah && (
-                                    <span className="text-[9px] px-1 rounded bg-emerald-50 text-emerald-600 font-medium">Shariah</span>
+                                    <span className="text-[9px] px-1 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium">Shariah</span>
                                 )}
-                                <span className="text-[10px] text-slate-400">ID: {fund.fund_id}</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500">ID: {fund.fund_id}</span>
                             </div>
                         </div>
                         <div className="text-right">
                             {fund.returns_ytd !== null && (
-                                <div className={`text-sm font-bold ${fund.returns_ytd >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                <div className={`text-sm font-bold ${fund.returns_ytd >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                                     {fund.returns_ytd > 0 ? '+' : ''}{fund.returns_ytd.toFixed(1)}%
                                 </div>
                             )}
                             {fund.nav && (
-                                <div className="text-[10px] text-slate-400">
+                                <div className="text-[10px] text-slate-400 dark:text-slate-500">
                                     NAV {fund.nav.toFixed(2)}
                                 </div>
                             )}
@@ -1335,7 +1447,7 @@ export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
                 ))}
             </div>
             {data.count > data.funds.length && (
-                <div className="p-2 text-center text-xs text-slate-400 italic bg-slate-50/30">
+                <div className="p-2 text-center text-xs text-slate-400 italic bg-slate-50/30 dark:bg-slate-800/30">
                     And {data.count - data.funds.length} more...
                 </div>
             )}
@@ -1358,29 +1470,29 @@ interface FundMoversProps {
 
 export function FundMoversCard({ title, data, onSymbolClick }: FundMoversProps) {
     return (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center gap-2">
-                <BarChart3 size={16} className="text-purple-600" />
-                <div className="font-bold text-slate-700">{title}</div>
-                <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-medium ml-auto">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 flex items-center gap-2">
+                <BarChart3 size={16} className="text-cyan-600 dark:text-cyan-400" />
+                <div className="font-bold text-slate-700 dark:text-slate-200">{title}</div>
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded font-medium ml-auto">
                     {data.range}
                 </span>
             </div>
 
-            <div className="divide-y divide-slate-50">
+            <div className="divide-y divide-slate-50 dark:divide-white/5">
                 {data.funds.map((fund, i) => (
                     <div
                         key={i}
-                        className="p-3 hover:bg-purple-50/30 transition-colors flex items-center justify-between gap-3 cursor-pointer"
+                        className="p-3 hover:bg-cyan-50/30 dark:hover:bg-cyan-900/20 transition-colors flex items-center justify-between gap-3 cursor-pointer"
                         onClick={() => onSymbolClick?.(`fund ${fund.fund_id}`)}
                     >
                         <div className="flex items-center gap-3 overflow-hidden">
-                            <span className="text-xs font-bold text-slate-400 w-4">{i + 1}</span>
-                            <span className="text-sm font-medium text-slate-700 truncate max-w-[180px]" title={fund.name}>
+                            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-4">{i + 1}</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate max-w-[180px]" title={fund.name}>
                                 {fund.name}
                             </span>
                         </div>
-                        <div className={`text-sm font-bold ${fund.return >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                        <div className={`text-sm font-bold ${fund.return >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                             {fund.return > 0 ? '+' : ''}{fund.return.toFixed(1)}%
                         </div>
                     </div>
@@ -1475,7 +1587,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
     };
 
     return (
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-sm border border-slate-200/60 overflow-hidden my-2 ring-1 ring-slate-100/50 w-full max-w-full group/card transition-all hover:shadow-md">
+        <div className="bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-xl rounded-xl shadow-sm border border-slate-200/60 dark:border-white/10 overflow-hidden my-2 ring-1 ring-slate-100/50 dark:ring-white/5 w-full max-w-full group/card transition-all hover:shadow-md">
             {/* Premium Header - Ultra Compact */}
             <div className="bg-slate-900 p-2.5 relative overflow-hidden">
                 {/* Decorative background glow */}
@@ -1669,28 +1781,52 @@ export function NewsListCard({ title, data }: NewsListProps) {
     if (!data.items || data.items.length === 0) return null;
 
     return (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white flex items-center gap-2">
-                <Newspaper size={16} className="text-blue-600" />
-                <div className="font-bold text-slate-700">{title || "Latest News"}</div>
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden transition-all duration-300">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-transparent flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm">
+                        <Newspaper size={20} className="stroke-[2.5]" />
+                    </div>
+                    <span className="font-black text-slate-900 dark:text-white text-lg tracking-tight">{title || "Latest Headlines"}</span>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">Real-time</span>
             </div>
 
-            <div className="divide-y divide-slate-50 max-h-80 overflow-y-auto">
+            <div className="divide-y divide-slate-50 dark:divide-white/5 max-h-[450px] overflow-y-auto scrollbar-hide">
                 {data.items.map((item, i) => (
-                    <div
+                    <a
                         key={i}
-                        className="p-3 hover:bg-blue-50/30 transition-colors"
+                        href={item.url || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group block p-6 hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-300"
                     >
-                        <div className="text-sm font-medium text-slate-800 mb-1">{item.title}</div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                            {item.source && <span className="font-medium">{item.source}</span>}
-                            {item.date && <span>• {item.date}</span>}
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
+                                {item.source || "Market News"}
+                            </span>
+                            {item.date && (
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <Clock size={12} className="stroke-[2.5]" />
+                                    {item.date}
+                                </span>
+                            )}
                         </div>
+                        <h4 className="text-[15px] font-black text-slate-900 dark:text-white leading-snug mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {item.title}
+                        </h4>
                         {item.summary && (
-                            <div className="text-xs text-slate-600 mt-1 line-clamp-2">{item.summary}</div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
+                                {item.summary}
+                            </p>
                         )}
-                    </div>
+                    </a>
                 ))}
+            </div>
+            <div className="px-6 py-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 text-center">
+                <button className="text-[11px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all flex items-center justify-center gap-2 select-none uppercase tracking-widest mx-auto group">
+                    Explore All Insights <ArrowUpRight size={14} className="stroke-[3] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
             </div>
         </div>
     );
@@ -1699,6 +1835,68 @@ export function NewsListCard({ title, data }: NewsListProps) {
 // ============================================================
 // Chat Cards Container
 // ============================================================
+
+// ============================================================
+// Screener Results Card (New for Phase 6)
+// ============================================================
+
+interface ScreenerResultsProps {
+    title?: string;
+    data: {
+        stocks: Array<{
+            symbol: string;
+            name: string;
+            price: number;
+            value: number;
+            market_code: string;
+        }>;
+        metric: string;
+    };
+    onSymbolClick?: (symbol: string) => void;
+}
+
+export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResultsProps) {
+    return (
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden mt-2 transition-colors">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/20 dark:to-slate-900 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                        <Target size={18} />
+                    </div>
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title || "Screener Results"}</span>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 px-2 py-1 rounded-lg">
+                    {data.metric?.replace(/_/g, " ")}
+                </span>
+            </div>
+
+            <div className="divide-y divide-slate-50 dark:divide-white/5">
+                {data.stocks.slice(0, 10).map((stock, i) => (
+                    <div
+                        key={stock.symbol}
+                        className="group flex items-center gap-4 p-4 hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer"
+                        onClick={() => onSymbolClick?.(stock.symbol)}
+                    >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-sm ${i < 3 ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400"}`}>
+                            {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
+                            <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate">{stock.name}</div>
+                        </div>
+                        <div className="text-right">
+                            <div className="font-black text-slate-900 dark:text-white">{formatNumber(stock.value)}</div>
+                            <div className="text-xs font-medium text-slate-400 dark:text-slate-500">Value</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="bg-slate-50 dark:bg-white/5 px-4 py-2 text-[10px] text-slate-400 dark:text-slate-500 text-center tracking-wide uppercase font-bold">
+                Top 10 Matches based on {data.metric?.replace(/_/g, " ")}
+            </div>
+        </div>
+    );
+}
 
 interface ChatCardsProps {
     cards: Card[];
@@ -1739,19 +1937,109 @@ export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClic
     );
 }
 
+// ============================================================
+// Dividends Table Card
+// ============================================================
+
+interface DividendsTableProps {
+    title?: string;
+    data: {
+        dividends: Array<{
+            ex_date: string;
+            amount: number;
+            currency: string;
+        }>;
+        current_yield?: number;
+        total_annual?: number;
+        currency: string;
+    };
+}
+
+export function DividendsTableCard({ title, data }: DividendsTableProps) {
+    if (!data.dividends || data.dividends.length === 0) return null;
+
+    return (
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/20 dark:to-slate-900 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                        <DollarSign size={18} />
+                    </div>
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title || "Dividend History"}</span>
+                </div>
+                {data.current_yield && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 px-2 py-1 rounded-lg">
+                        Yield: {data.current_yield.toFixed(2)}%
+                    </span>
+                )}
+            </div>
+
+            <div className="max-h-[350px] overflow-y-auto scrollbar-hide">
+                <table className="w-full text-sm">
+                    <thead className="bg-slate-50 dark:bg-white/5 sticky top-0 backdrop-blur-sm z-10">
+                        <tr>
+                            <th className="px-5 py-3 text-left font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider">Ex-Date</th>
+                            <th className="px-5 py-3 text-right font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider">Amount ({data.currency})</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                        {data.dividends.map((div, i) => (
+                            <tr key={i} className="group hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                                <td className="px-5 py-3 font-bold text-slate-700 dark:text-slate-300 font-mono">
+                                    {div.ex_date ? new Date(div.ex_date).toLocaleDateString() : 'N/A'}
+                                </td>
+                                <td className="px-5 py-3 text-right font-black text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    {formatNumber(div.amount)}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {data.total_annual && (
+                <div className="px-5 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border-t border-emerald-100 dark:border-emerald-900/20 flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Last 12 Months Total</span>
+                    <span className="font-black text-emerald-700 dark:text-emerald-400 text-base">{formatNumber(data.total_annual)} <span className="text-xs opacity-50">{data.currency}</span></span>
+                </div>
+            )}
+        </div>
+    );
+}
+
 function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
-    switch (card.type) {
+    const type = (card.type || "").toLowerCase().trim();
+
+    // Handle error cards robustly, even if type is not explicitly "error"
+    if (card.data?.error) {
+        return (
+            <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+                <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
+                    <AlertTriangle size={14} />
+                    System Debug Entry
+                </div>
+                <div className="text-sm font-medium">{card.data.error || "Unknown system failure"}</div>
+            </div>
+        );
+    }
+
+    switch (type) {
         case "stock_header":
             return <StockHeaderCard data={card.data} />;
         case "snapshot":
             return <SnapshotCard data={card.data} />;
         case "stats":
+        case "statistics": // Alias
+        case "metric": // Alias
             return <StatsCard title={card.title} data={card.data} />;
         case "movers":
+        case "movers_table":
             return <MoversTable title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
         case "compare":
+        case "compare_table":
             return <CompareTable title={card.title} data={card.data} />;
         case "help":
+        case "suggestions": // Alias
             return <HelpCard data={card.data} onExampleClick={onExampleClick} />;
         case "ratios":
             return <RatiosCard title={card.title} data={card.data} />;
@@ -1766,11 +2054,23 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             return <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} />;
         case "ownership":
             return <OwnershipCard title={card.title} data={card.data} />;
+        // Fund & Fair Value Cards (Enterprise)
+        case "fund_nav":
+            return <FundNavCard data={card.data} />;
+        case "fund_list":
+            return <FundListCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+        case "fund_movers":
+            return <FundMoversCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+        case "fair_value":
+            return <FairValueCard title={card.title} data={card.data} />;
         case "technicals":
             // Explicitly hidden as per user request
             return null;
+        case "financial_explorer":
+            // Ultra-Premium Financial Explorer (Tabbed Interface)
+            return <FinancialExplorerCard data={card.data} />;
         case "financials":
-            // Handle both legacy and new structure
+            // Handle legacy structures
             if (card.data.rows) {
                 return (
                     <FinancialsTableCard
@@ -1782,14 +2082,39 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
                     />
                 );
             }
+            // Fallback for FinancialExplorer data sent as 'financials' intent
+            if (card.data.annual_data || card.data.income) {
+                return <FinancialExplorerCard data={card.data} />;
+            }
             return <FinancialTable financials={card.data} />;
+        case "dividends_table":
+            return <DividendsTableCard title={card.title} data={card.data} />;
         case "news_list":
             return <NewsListCard title={card.title} data={card.data as any} />;
+        case "screener_results":
+        case "sector_list": // Reuse screener card or fallback?
+            // Sector list data usually different. Fallback to screener if compatible or TODO. 
+            // ScreenerResultsCard expects { stocks: [], metric: str }
+            // Let's assume sector_list maps closely or default to fallback for now to avoid crash.
+            // Actually, handle_screener sends { sectors: [{name, ...}], metric } for sector_list.
+            // ScreenerResults expects `stocks`. It might break.
+            // Safest is to handle "dividends_table" which is THE user error.
+            return <ScreenerResultsCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+        case "error":
+            return (
+                <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+                    <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
+                        <AlertTriangle size={14} />
+                        System Error
+                    </div>
+                    <div className="text-sm font-medium">{card.data?.error || "An unknown error occurred."}</div>
+                </div>
+            );
         default:
             // Fallback for unknown cards
             return (
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-500">
-                    Unsupported card type: {card.type}
+                <div className="p-4 bg-slate-50 dark:bg-slate-500/10 border border-slate-100 dark:border-slate-500/20 rounded-xl text-xs text-slate-500">
+                    Unsupported card type: {type}
                 </div>
             );
     }
@@ -1799,8 +2124,11 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
 // Utilities
 // ============================================================
 
+// Utilities
+// ============================================================
+
 function formatNumber(value: number | null | undefined, decimals = 2): string {
-    if (value === null || value === undefined) return "N/A";
+    if (value === null || value === undefined) return "";
     if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(1)} B`;
     if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(1)} M`;
     if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(1)} K`;
@@ -1808,13 +2136,13 @@ function formatNumber(value: number | null | undefined, decimals = 2): string {
 }
 
 function formatPercent(value: number | null | undefined): string {
-    if (value === null || value === undefined) return "N/A";
+    if (value === null || value === undefined) return "";
     const sign = value >= 0 ? "+" : "";
     return `${sign}${value.toFixed(2)}%`;
 }
 
 function formatValue(val: any, format?: string) {
-    if (val === null || val === undefined) return "-";
+    if (val === null || val === undefined) return "";
     if (format === 'percent') return formatPercent(val);
     return formatNumber(val);
 }

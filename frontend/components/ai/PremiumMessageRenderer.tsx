@@ -21,7 +21,7 @@ interface PremiumMessageProps {
 function StatLine({ text }: { text: string }) {
     // Extract the stat label and value
     const match = text.match(/\[STAT\]\s*([^:]+):\s*(.+)/);
-    if (!match) return <p className="text-slate-700">{text}</p>;
+    if (!match) return <p className="text-slate-700 dark:text-slate-300">{text}</p>;
 
     const label = match[1].trim();
     const value = match[2].trim();
@@ -29,8 +29,8 @@ function StatLine({ text }: { text: string }) {
     // Determine icon based on label
     const getIcon = (label: string) => {
         const lower = label.toLowerCase();
-        if (lower.includes('change')) return { icon: TrendingUp, gradient: "from-blue-400 to-indigo-500" };
-        if (lower.includes('volume')) return { icon: BarChart3, gradient: "from-violet-400 to-purple-500" };
+        if (lower.includes('change')) return { icon: TrendingUp, gradient: "from-blue-400 to-blue-500" };
+        if (lower.includes('volume')) return { icon: BarChart3, gradient: "from-teal-400 to-cyan-500" };
         if (lower.includes('range')) return { icon: Activity, gradient: "from-emerald-400 to-teal-500" };
         if (lower.includes('rsi')) return { icon: Zap, gradient: "from-amber-400 to-orange-500" };
         if (lower.includes('macd')) return { icon: TrendingUp, gradient: "from-cyan-400 to-blue-500" };
@@ -44,17 +44,20 @@ function StatLine({ text }: { text: string }) {
     const isNegative = value.includes('-') || value.toLowerCase().includes('down') || value.toLowerCase().includes('bearish');
 
     return (
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/80 border border-slate-100 mb-2">
+        <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 mb-3 shadow-sm hover:shadow-md transition-all duration-300 group">
             <div className={clsx(
-                "w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg",
+                "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform",
                 gradient
             )}>
-                <Icon className="w-4 h-4 text-white" />
+                <Icon className="w-5 h-5 text-white" />
             </div>
-            <span className="text-sm text-slate-500 min-w-[70px]">{label}</span>
-            <span className="text-sm font-bold text-slate-900 flex-1">{value}</span>
-            {isPositive && <ArrowUpRight className="w-4 h-4 text-emerald-500" />}
-            {isNegative && !isPositive && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+            <div className="flex flex-col min-w-[80px]">
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">{label}</span>
+                <span className="text-sm font-black text-slate-900 dark:text-white leading-none truncate">{value}</span>
+            </div>
+            <div className="flex-1" />
+            {isPositive && <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500"><ArrowUpRight size={16} className="stroke-[3]" /></div>}
+            {isNegative && !isPositive && <div className="p-1.5 rounded-lg bg-red-500/10 text-red-500"><ArrowDownRight size={16} className="stroke-[3]" /></div>}
         </div>
     );
 }
@@ -62,7 +65,7 @@ function StatLine({ text }: { text: string }) {
 // Parse [VERDICT:type] tags
 function VerdictBadge({ text }: { text: string }) {
     const match = text.match(/\[VERDICT:(\w+)\]\s*(.*)/);
-    if (!match) return <p className="text-slate-700">{text}</p>;
+    if (!match) return <p className="text-slate-700 dark:text-slate-300">{text}</p>;
 
     const type = match[1].toLowerCase();
     const message = match[2].trim();
@@ -96,7 +99,7 @@ function VerdictBadge({ text }: { text: string }) {
 // Parse [RANK:N] tags
 function RankLine({ text }: { text: string }) {
     const match = text.match(/\[RANK:(\d+)\]\s*(.*)/);
-    if (!match) return <p className="text-slate-700">{text}</p>;
+    if (!match) return <p className="text-slate-700 dark:text-slate-300">{text}</p>;
 
     const rank = parseInt(match[1]);
     const content = match[2].trim();
@@ -108,15 +111,15 @@ function RankLine({ text }: { text: string }) {
     const gradient = rankColors[Math.min(rank - 1, 2)];
 
     return (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg mb-2">
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-lg mb-2">
             <div className={clsx(
                 "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg",
                 gradient
             )}>
                 <Icon className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xs font-bold text-slate-400 w-8">#{rank}</span>
-            <span className="text-sm font-semibold text-slate-800 flex-1">{content}</span>
+            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-8">#{rank}</span>
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex-1">{content}</span>
         </div>
     );
 }
@@ -127,9 +130,11 @@ function UpdatedLine({ text }: { text: string }) {
     if (!match) return null;
 
     return (
-        <div className="flex items-center gap-2 text-xs text-slate-400 mt-4 pt-4 border-t border-slate-100">
-            <Clock className="w-3.5 h-3.5" />
-            <span>Updated {match[1]}</span>
+        <div className="flex items-center gap-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 mt-6 pt-5 border-t border-slate-100 dark:border-white/5 uppercase tracking-widest">
+            <div className="p-1 rounded bg-slate-100 dark:bg-white/5">
+                <Clock size={12} className="stroke-[2.5]" />
+            </div>
+            <span>Market Intelligence Updated {match[1]}</span>
         </div>
     );
 }
@@ -169,14 +174,14 @@ export function PremiumMessageRenderer({ content }: PremiumMessageProps) {
 
                 // Regular text - apply basic markdown
                 if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-                    return <h3 key={i} className="text-lg font-bold text-slate-900 mt-2">{trimmed.replace(/\*\*/g, '')}</h3>;
+                    return <h3 key={i} className="text-lg font-bold text-slate-900 dark:text-white mt-2">{trimmed.replace(/\*\*/g, '')}</h3>;
                 }
 
                 if (trimmed.startsWith('- ')) {
                     return (
-                        <div key={i} className="flex items-center gap-2 pl-2 text-sm text-slate-600">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                            <span>{trimmed.substring(2)}</span>
+                        <div key={i} className="flex items-start gap-3 pl-2 py-1 text-sm text-slate-700 dark:text-slate-300 group">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shadow-[0_0_8px_rgba(59,130,246,0.5)] flex-shrink-0" />
+                            <span className="font-medium leading-relaxed">{trimmed.substring(2)}</span>
                         </div>
                     );
                 }
@@ -184,10 +189,10 @@ export function PremiumMessageRenderer({ content }: PremiumMessageProps) {
                 // Default paragraph with bold handling
                 const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
                 return (
-                    <p key={i} className="text-sm text-slate-700 leading-relaxed">
+                    <p key={i} className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                         {parts.map((part, j) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
-                                return <strong key={j} className="font-bold text-slate-900">{part.replace(/\*\*/g, '')}</strong>;
+                                return <strong key={j} className="font-bold text-slate-900 dark:text-white">{part.replace(/\*\*/g, '')}</strong>;
                             }
                             return part;
                         })}

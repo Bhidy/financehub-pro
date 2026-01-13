@@ -1,358 +1,323 @@
 "use client";
 
-import { useAIChat } from "@/hooks/useAIChat";
-import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import clsx from "clsx";
-import { Loader2, History, X, MessageSquarePlus, Trash2, Clock, LogIn } from "lucide-react";
-import { useMobileChatHistory, type ChatSession } from "@/hooks/useMobileChatHistory";
-import { useRouter } from "next/navigation";
-
-// Auth and Usage Tracking
-import { useGuestUsage } from "@/hooks/useGuestUsage";
-import { useAuth } from "@/contexts/AuthContext";
-import { UsageLimitModal } from "@/components/ai/UsageLimitModal";
-
-// Shared Components
-import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
-import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
-import { ChartCard } from "@/components/ai/ChartCard";
-
-// Mobile Specific Components
+import { useState, useRef, useEffect } from "react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAIChat, Action } from "@/hooks/useAIChat";
 import { MobileHeader } from "./components/MobileHeader";
 import { MobileInput } from "./components/MobileInput";
 import { MobileSuggestions } from "./components/MobileSuggestions";
+import { HistoryDrawer } from "./components/HistoryDrawer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGuestUsage } from "@/hooks/useGuestUsage";
+import UsageLimitModal from "@/components/ai/UsageLimitModal";
+import { useMarketSafe } from "@/contexts/MarketContext";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { clsx } from "clsx";
+
+// Premium UI Components (Parity with Desktop)
+import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
+import { ChartCard } from "@/components/ai/ChartCard";
+import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
+
+/**
+ * Mobile-specific AI Analyst Page
+ * Centered layout for "Mobile App" feel even on desktop
+ */
 
 export default function MobileAIAnalystPage() {
     const router = useRouter();
-    // AI Chat Hook - Enforce Egypt Market
+    const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const { market } = useMarketSafe();
+    const [showUsageModal, setShowUsageModal] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const mainRef = useRef<HTMLElement>(null);
+
+    // Guest usage tracking for counter display
+    const { remainingQuestions, incrementUsage } = useGuestUsage();
+
+    // Custom state for market context
+    const [contextMarket, setContextMarket] = useState<string>(market);
+
+    // Sync local state when global market changes
+    useEffect(() => {
+        setContextMarket(market);
+    }, [market]);
+
     const {
         messages,
         query,
         setQuery,
         handleSend,
-        handleAction,
         isLoading,
-        sendDirectMessage
-    } = useAIChat({ market: 'EGX' });
-    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [showUsageModal, setShowUsageModal] = useState(false);
-    const { sessions, saveSession, loadSession, deleteSession } = useMobileChatHistory();
+        sendDirectMessage,
+        clearHistory,
+        loadSession,
+        sessionId
+    } = useAIChat({
+        market: contextMarket,
+        onUsageLimitReached: () => setShowUsageModal(true)  // Show popup when guest limit reached
+    });
 
-    // Auth and usage tracking
-    const { isAuthenticated, user, logout } = useAuth();
-    const { canAskQuestion, remainingQuestions, incrementUsage, deviceFingerprint } = useGuestUsage();
-
-    // Auto-scroll anchor
-    const bottomRef = useRef<HTMLDivElement>(null);
-
-    // Scroll to bottom on new messages
+    // Increment local counter when a message is successfully sent (for guest users)
+    // We track message count to detect new assistant responses
+    const prevMessageCount = useRef(messages.length);
     useEffect(() => {
-        if (messages.length > 1) {
-            bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        // Check if a new assistant message was added (successful response)
+        if (messages.length > prevMessageCount.current) {
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage.role === 'assistant' && !isAuthenticated) {
+                // Only increment if it's a real response, not the limit message
+                if (lastMessage.response?.meta?.intent !== 'USAGE_LIMIT_REACHED') {
+                    incrementUsage();
+                }
+            }
         }
-    }, [messages, isLoading]);
+        prevMessageCount.current = messages.length;
+    }, [messages.length, isAuthenticated, incrementUsage]);
 
-    // Save session when messages change
-    useEffect(() => {
-        if (messages.length > 1) {
-            saveSession(messages.map(m => ({ role: m.role, content: m.content })));
-        }
-    }, [messages, saveSession]);
+    // Language detection (simplified)
+    const language = "en";
 
-    // Enhanced send with usage check
-    const handleSendWithUsageCheck = () => {
-        if (!isAuthenticated && !canAskQuestion) {
-            setShowUsageModal(true);
-            return;
+    // Scroll to bottom helper
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
         }
-        if (!isAuthenticated) {
-            incrementUsage();
-        }
-        handleSend();
     };
 
-    // Single-click auto-send for suggestions with usage check
-    const handleSuggestionSelect = (text: string) => {
-        if (!isAuthenticated && !canAskQuestion) {
-            setShowUsageModal(true);
+    // Human-centric scrolling: When a new bot message arrives, scroll so the user question is visible
+    useEffect(() => {
+        if (!isLoading && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage.role === 'assistant') {
+                if (mainRef.current) {
+                    const messageItems = mainRef.current.querySelectorAll('.message-item');
+                    if (messageItems.length >= 2) {
+                        const questionElement = messageItems[messageItems.length - 2];
+                        // Scroll to 20px above the question to ensure it's not flush with the header
+                        const mainElement = mainRef.current;
+                        const topPos = (questionElement as HTMLElement).offsetTop - 20;
+                        mainElement.scrollTo({
+                            top: topPos,
+                            behavior: 'smooth'
+                        });
+                        return;
+                    }
+                }
+            }
+            scrollToBottom();
+        }
+    }, [messages.length, isLoading]);
+
+    // Handle Follow-up Actions
+    // Handle Follow-up Actions
+    const handleAction = (action: Action) => {
+        // PRIORITY 1: Navigation
+        if (action.action_type === "navigate" && action.payload) {
+            router.push(action.payload);
             return;
         }
-        if (!isAuthenticated) {
-            incrementUsage();
+
+        // PRIORITY 2: Explicit Payload (e.g. "CIB Financials")
+        // This is critical for preventing "context loss" by sending the full intent
+        if (action.payload) {
+            sendDirectMessage(action.payload);
+            return;
         }
+
+        // PRIORITY 3: Fallback to Label (e.g. "Financials")
+        // Not ideal but better than nothing
+        if (action.label) {
+            sendDirectMessage(action.label);
+        }
+    };
+
+    const handleSymbolClick = (symbol: string) => {
+        sendDirectMessage(`Analyze ${symbol}`);
+    };
+
+    const handleExampleClick = (text: string) => {
         sendDirectMessage(text);
     };
 
-    // Unified usage check for direct actions (chips, cards, etc)
-    const handleDirectSendWithCheck = (text: string) => {
-        if (!isAuthenticated && !canAskQuestion) {
-            setShowUsageModal(true);
-            return;
-        }
-        if (!isAuthenticated) {
-            incrementUsage();
-        }
-        sendDirectMessage(text);
-    };
+    if (isAuthLoading) {
+        return (
+            <div className="h-[100dvh] w-full flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+                <Loader2 className="w-8 h-8 animate-spin text-teal-600 dark:text-teal-500" />
+            </div>
+        );
+    }
 
-    const formatTime = (timestamp: number) => {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-
-        if (diff < 60000) return 'Just now';
-        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-        return date.toLocaleDateString();
-    };
+    // Filter out the system "Chat initialized" message for mobile view
+    const visibleMessages = messages.filter(m => m.content !== "Chat initialized. Ready to assist.");
+    const showWelcome = visibleMessages.length === 0;
 
     return (
-        <div className="flex flex-col h-[100dvh] w-full bg-gradient-to-b from-slate-100 via-slate-50 to-white relative overflow-hidden font-sans">
+        <div className="fixed inset-0 w-full h-[100dvh] bg-slate-100 dark:bg-[#080B14] flex flex-col items-center justify-center overflow-hidden">
+            <div className="flex flex-col h-full w-full max-w-[500px] bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white font-sans transition-colors duration-300 relative shadow-2xl md:border-x border-slate-200/60 dark:border-white/10 overflow-hidden">
+                {/* Background Gradient for Ultra Premium Look */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent dark:from-blue-900/10 dark:via-transparent dark:to-transparent pointer-events-none" />
 
-            {/* Decorative blobs */}
-            <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-200/30 rounded-full blur-[100px] -z-10" />
-            <div className="absolute bottom-1/4 right-0 w-48 h-48 bg-teal-200/20 rounded-full blur-[80px] -z-10" />
+                <HistoryDrawer
+                    isOpen={isHistoryOpen}
+                    onClose={() => setIsHistoryOpen(false)}
+                    onSelectSession={loadSession}
+                    onNewChat={clearHistory}
+                    currentSessionId={sessionId}
+                />
 
-            {/* Header */}
-            <MobileHeader
-                onNewChat={() => window.location.reload()}
-                onOpenHistory={() => setIsHistoryOpen(true)}
-                hasHistory={sessions.length > 0}
-                isAuthenticated={isAuthenticated}
-                userName={user?.full_name || user?.email}
-                onLogin={() => router.push('/mobile-ai-analyst/login')}
-                onLogout={logout}
-                remainingQuestions={remainingQuestions}
-                forceMarket="EGX"
-            />
+                {/* Usage Limit Modal */}
+                <AnimatePresence>
+                    {showUsageModal && (
+                        <UsageLimitModal
+                            isOpen={showUsageModal}
+                            onClose={() => setShowUsageModal(false)}
+                            isMobile={true}
+                        />
+                    )}
+                </AnimatePresence>
 
-            {/* Main Content Area - Flex layout handles spacing */}
-            <main className="flex-1 overflow-y-auto w-full scroll-smooth pt-2">
+                {/* Header (Stay fixed at top of flex-col) */}
+                <MobileHeader
+                    forceMarket={contextMarket}
+                    onNewChat={clearHistory}
+                    onOpenHistory={() => setIsHistoryOpen(true)}
+                    isAuthenticated={isAuthenticated}
+                    hasHistory={isAuthenticated}
+                    remainingQuestions={remainingQuestions}
+                    onLogin={() => router.push('/mobile-ai-analyst/login')}
+                />
 
-                {/* Welcome State */}
-                {messages.length === 1 ? (
-                    <div className="flex flex-col min-h-full pt-4">
+                {/* Chat Area */}
+                <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth overscroll-contain px-0 w-full scrollbar-transparent relative">
+                    <div className="w-full space-y-6 px-4 py-4">
+                        {showWelcome ? (
+                            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 pt-2 pb-8">
+                                {/* Hero Section */}
+                                <div className="flex-none pb-6 px-4 text-center space-y-4">
+                                    <div className="relative w-32 h-32 mx-auto mb-4">
+                                        <div className="absolute -inset-4 bg-teal-500/20 rounded-full blur-2xl animate-pulse opacity-50"></div>
+                                        <div className="relative w-full h-full p-2 filter drop-shadow-xl">
+                                            <Image
+                                                src="/assets/chatbot-icon.png"
+                                                alt="Starta AI"
+                                                fill
+                                                className="object-contain"
+                                                priority
+                                            />
+                                        </div>
+                                    </div>
 
-                        {/* Hero Section */}
-                        <div className="flex flex-col items-center text-center px-6 py-8">
-                            {/* Floating Robot - No background */}
-                            <motion.div
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ duration: 0.6 }}
-                                className="relative mb-6"
-                            >
-                                <div className="w-24 h-24 rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/50">
-                                    <img
-                                        src="/ai-robot.png"
-                                        alt="Finny"
-                                        className="w-full h-full object-contain drop-shadow-lg"
-                                    />
-                                </div>
-                                {/* Subtle pulse ring */}
-                                <div className="absolute inset-0 rounded-3xl border-2 border-blue-300/30 animate-ping" />
-                            </motion.div>
-
-                            {/* Title */}
-                            <motion.h1
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ duration: 0.6, delay: 0.1 }}
-                                className="text-2xl font-black text-slate-900 mb-2"
-                            >
-                                Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Finny</span>
-                            </motion.h1>
-
-                            <motion.p
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ duration: 0.6, delay: 0.2 }}
-                                className="text-slate-500 text-base leading-relaxed max-w-[280px]"
-                            >
-                                Your AI financial analyst, right in your pocket.
-                            </motion.p>
-                        </div>
-
-                        {/* Suggestions */}
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ duration: 0.6, delay: 0.3 }}
-                            className="flex-1"
-                        >
-                            <MobileSuggestions onSelect={handleSuggestionSelect} />
-                        </motion.div>
-                    </div>
-                ) : (
-                    /* Chat State - Full Width Container */
-                    <div className="flex flex-col gap-5 px-4 py-4 pb-40 w-full max-w-full">
-                        {messages.slice(1).map((msg, idx) => (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                key={idx}
-                                className={clsx("flex flex-col gap-2", msg.role === "user" ? "items-end" : "items-start")}
-                            >
-                                {/* Message Bubble */}
-                                <div className={clsx(
-                                    "max-w-[85%] rounded-2xl p-4 text-[15px] leading-relaxed",
-                                    msg.role === "user"
-                                        ? "bg-gradient-to-br from-blue-500 to-teal-500 text-white rounded-br-sm shadow-lg shadow-blue-500/20"
-                                        : "bg-white text-slate-800 border border-slate-100 rounded-tl-sm shadow-lg shadow-slate-200/50"
-                                )}>
-                                    {msg.role === "user" ? (
-                                        <span className="font-medium">{msg.content}</span>
-                                    ) : (
-                                        <PremiumMessageRenderer content={msg.content} />
-                                    )}
+                                    <div className="space-y-2">
+                                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900 dark:from-white dark:via-blue-200 dark:to-white tracking-tight leading-tight">
+                                            Hello, {user?.full_name?.split(' ')[0] || "Trader"}
+                                        </h2>
+                                        <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-sm max-w-[280px] mx-auto font-medium">
+                                            I'm Starta. Ask me anything about {contextMarket === 'EGX' ? 'Egyptian' : 'Saudi'} stocks.
+                                        </p>
+                                    </div>
                                 </div>
 
-                                {/* AI Extras */}
-                                {msg.role === "assistant" && msg.response && (
-                                    <div className="w-full space-y-3">
-                                        <ChatCards
-                                            cards={msg.response.cards}
-                                            language={msg.response.language}
-                                            onSymbolClick={(s) => handleDirectSendWithCheck(`Price of ${s}`)}
-                                            onExampleClick={(text) => handleDirectSendWithCheck(text)}
-                                            showExport={false}
-                                        />
-                                        {msg.response.chart && <ChartCard chart={msg.response.chart} />}
-                                        {msg.response.actions?.length > 0 && (
-                                            <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />
+                                {/* Suggestions */}
+                                <div className="w-full flex-1">
+                                    <MobileSuggestions onSelect={sendDirectMessage} />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-6 pt-2">
+                                {visibleMessages.map((m, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={clsx(
+                                            "flex flex-col w-full message-item",
+                                            m.role === 'user' ? "items-end" : "items-start"
+                                        )}
+                                    >
+                                        {m.role === 'user' ? (
+                                            <div className="bg-emerald-500 text-white rounded-[20px] rounded-tr-none px-4 py-2.5 max-w-[85%] shadow-md shadow-emerald-500/10 text-[15px] font-medium leading-normal animate-in zoom-in-95 slide-in-from-right-2 duration-300">
+                                                {m.content}
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col gap-3 w-full max-w-[95%] animate-in zoom-in-95 slide-in-from-left-2 duration-300">
+
+                                                {/* Specialized UI Components (Chart & Cards FIRST) */}
+                                                {m.response?.chart && (
+                                                    <div className="mb-2">
+                                                        <ChartCard chart={m.response.chart} />
+                                                    </div>
+                                                )}
+
+                                                {m.response?.cards && m.response.cards.length > 0 && (
+                                                    <ChatCards
+                                                        cards={m.response.cards}
+                                                        language={language}
+                                                        onSymbolClick={handleSymbolClick}
+                                                        onExampleClick={handleExampleClick}
+                                                    />
+                                                )}
+
+                                                {/* Premium Text Message Renderer (NOW SECOND) with Enhanced Design */}
+                                                <div className="bg-gradient-to-br from-white to-slate-50 dark:from-[#1A1F2E] dark:to-[#151925] rounded-2xl p-5 shadow-lg shadow-slate-200/50 dark:shadow-black/20 border border-blue-100 dark:border-blue-900/30 backdrop-blur-sm relative overflow-hidden group">
+                                                    {/* Decorative Elements */}
+                                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-indigo-600 opacity-80 rounded-l-2xl" />
+                                                    <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors" />
+
+                                                    {/* Header */}
+                                                    <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100 dark:border-white/5">
+                                                        <div className="p-1.5 rounded-lg bg-blue-100/50 dark:bg-blue-900/20">
+                                                            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                                        </div>
+                                                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Analysis Summary</span>
+                                                    </div>
+
+                                                    <PremiumMessageRenderer content={m.content} />
+                                                </div>
+
+                                                {/* Follow-up Actions */}
+                                                {m.response?.actions && m.response.actions.length > 0 && (
+                                                    <div className="pt-1">
+                                                        <ActionsBar
+                                                            actions={m.response.actions}
+                                                            onAction={handleAction}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
-                                )}
-                            </motion.div>
-                        ))}
+                                ))}
 
-                        {isLoading && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex flex-col gap-2 items-start"
-                            >
-                                <div className="max-w-[85%] flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full overflow-hidden shadow-lg shadow-slate-200/50 flex-shrink-0 bg-white">
-                                        <img src="/ai-robot.png" alt="Finny" className="w-full h-full object-contain" />
-                                    </div>
-                                    <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-lg shadow-slate-200/50 border border-slate-100">
-                                        <div className="flex gap-1.5">
-                                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        <div ref={bottomRef} className="h-4" />
-                    </div>
-                )}
-            </main>
-
-            {/* Input */}
-            <MobileInput
-                query={query}
-                setQuery={setQuery}
-                onSend={handleSendWithUsageCheck}
-                isLoading={isLoading}
-            />
-
-            {/* Usage Limit Modal */}
-            <UsageLimitModal
-                isOpen={showUsageModal}
-                onClose={() => setShowUsageModal(false)}
-                remainingQuestions={remainingQuestions}
-                isMobile={true}
-            />
-
-            {/* History Drawer */}
-            <AnimatePresence>
-                {isHistoryOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsHistoryOpen(false)}
-                            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50"
-                        />
-                        <motion.div
-                            initial={{ y: "100%" }}
-                            animate={{ y: 0 }}
-                            exit={{ y: "100%" }}
-                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[32px] z-50 h-[75dvh] flex flex-col shadow-2xl"
-                        >
-                            {/* Header */}
-                            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                                <div className="flex items-center gap-2 font-bold text-lg text-slate-900">
-                                    <History className="w-5 h-5 text-blue-600" />
-                                    Chat History
-                                </div>
-                                <button
-                                    onClick={() => setIsHistoryOpen(false)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            {/* Sessions List */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                                {sessions.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-3">
-                                        <History className="w-12 h-12 opacity-20" />
-                                        <p className="text-sm">No saved chats yet</p>
-                                    </div>
-                                ) : (
-                                    sessions.map((session) => (
-                                        <div
-                                            key={session.id}
-                                            className="relative group bg-slate-50 rounded-2xl p-4 border border-slate-100"
-                                        >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="font-semibold text-slate-800 text-sm truncate mb-1">
-                                                        {session.title}
-                                                    </div>
-                                                    <div className="text-xs text-slate-400 truncate mb-2">
-                                                        {session.preview}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-400">
-                                                        <Clock className="w-3 h-3" />
-                                                        {formatTime(session.timestamp)}
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={() => deleteSession(session.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                {isLoading && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white dark:bg-[#1A1F2E] border border-slate-200 dark:border-white/5 rounded-2xl p-4 flex items-center gap-3 shadow-sm backdrop-blur-sm">
+                                            <div className="flex gap-1">
+                                                <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                                <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                                <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce"></span>
                                             </div>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium animate-pulse">Analyzing market data...</span>
                                         </div>
-                                    ))
+                                    </div>
                                 )}
+                                <div ref={messagesEndRef} className="h-4" />
                             </div>
+                        )}
+                    </div>
+                </main>
 
-                            {/* Footer */}
-                            <div className="p-4 border-t border-slate-100">
-                                <button
-                                    onClick={() => { setIsHistoryOpen(false); window.location.reload(); }}
-                                    className="w-full py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-slate-900/20"
-                                >
-                                    <MessageSquarePlus className="w-5 h-5" />
-                                    Start New Chat
-                                </button>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                {/* Input Area */}
+                <div className="flex-none w-full bg-slate-50 dark:bg-[#0B1121] border-t border-slate-200/60 dark:border-white/10 z-10">
+                    <MobileInput
+                        query={query}
+                        setQuery={setQuery}
+                        onSend={handleSend}
+                        isLoading={isLoading}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

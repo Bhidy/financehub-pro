@@ -111,7 +111,7 @@ function flattenForAI(obj: any, prefix: string = ''): Record<string, string | nu
 }
 
 // System Prompt - MINIMAL FOR SPEED
-const SYSTEM_PROMPT = `You are Finny, a Saudi stock market AI. Be brief and friendly.
+const SYSTEM_PROMPT = `You are Starta, a Saudi stock market AI. Be brief and friendly.
 
 RESPONSE FORMAT:
 - For prices: **[Name]** ([Symbol]) at **[Price] SAR** | [STAT] Change: X% | [STAT] Volume: X | [VERDICT:bullish/bearish/neutral] summary

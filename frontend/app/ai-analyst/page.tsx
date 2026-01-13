@@ -12,14 +12,16 @@ import { useMarketSafe } from "@/contexts/MarketContext";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { useGuestUsage } from "@/hooks/useGuestUsage";
 import { useAuth } from "@/contexts/AuthContext";
-import { UsageLimitModal } from "@/components/ai/UsageLimitModal";
+import UsageLimitModal from "@/components/ai/UsageLimitModal";
 import { useRouter } from "next/navigation";
 
 export default function AIAnalystPage() {
     const router = useRouter();
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [showUsageModal, setShowUsageModal] = useState(false);
-    const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat();
+    const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat({
+        onUsageLimitReached: () => setShowUsageModal(true)  // Show popup when guest limit reached
+    });
     const { market } = useMarketSafe();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -84,12 +86,7 @@ export default function AIAnalystPage() {
 
     return (
         <div className="flex flex-col h-[100dvh] bg-slate-50 relative overflow-hidden">
-            {/* ============================================================================ */}
-            {/* PROOF OF LIFE BANNER - REMOVE AFTER VERIFICATION */}
-            {/* ============================================================================ */}
-            <div className="bg-red-600 text-white text-xs font-bold text-center py-1 z-[9999]">
-                📢 ENTERPRISE BUILD v2.1.0 • {new Date().toISOString()} • IF YOU SEE THIS, DEPLOYMENT WORKED
-            </div>
+
             {/* ============================================================================ */}
             {/* ULTRA-PREMIUM BACKGROUND DECOR */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden bg-slate-50">
@@ -217,13 +214,13 @@ export default function AIAnalystPage() {
                                 <div className="w-32 h-32 mb-8 relative">
                                     <img
                                         src="/ai-robot.png"
-                                        alt="Finny AI Assistant"
+                                        alt="Starta AI Assistant"
                                         className="w-full h-full object-contain drop-shadow-2xl"
                                     />
                                 </div>
 
                                 <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">
-                                    Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finny</span>.
+                                    Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Starta</span>.
                                 </h1>
                                 <p className="text-slate-500 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
                                     Your personal AI financial analyst. I can analyze <span className="text-slate-800 font-bold">valuation</span>, <span className="text-slate-800 font-bold">health</span>, and <span className="text-slate-800 font-bold">growth</span> for any {market} stock.
@@ -294,33 +291,41 @@ export default function AIAnalystPage() {
                                         "flex flex-col gap-3 max-w-[95%] md:max-w-3xl",
                                         msg.role === "user" ? "items-end" : "items-start w-full"
                                     )}>
-                                        <div className={clsx(
-                                            "text-base leading-relaxed shadow-sm",
-                                            msg.role === "user"
-                                                ? "px-6 py-4 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-3xl rounded-tr-sm shadow-blue-500/20"
-                                                : "px-0 py-0 bg-transparent text-slate-800 w-full"
-                                        )}>
-                                            {msg.role === "user" ? (
-                                                <span className="font-medium">{msg.content}</span>
-                                            ) : (
-                                                <div className="bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl p-8 shadow-xl shadow-slate-200/50">
+                                        {msg.role === "user" ? (
+                                            <div className="px-6 py-4 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-3xl rounded-tr-sm shadow-blue-500/20 text-base leading-relaxed shadow-sm font-medium">
+                                                {msg.content}
+                                            </div>
+                                        ) : (
+                                            <div className="w-full space-y-4">
+                                                {/* 1. Charts & Cards (Top Priority as requested) */}
+                                                {msg.response && (
+                                                    <>
+                                                        {msg.response.chart && <ChartCard chart={msg.response.chart} />}
+
+                                                        {msg.response.cards && msg.response.cards.length > 0 && (
+                                                            <ChatCards
+                                                                cards={msg.response.cards}
+                                                                language={msg.response.language}
+                                                                onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
+                                                                onExampleClick={(text) => handleSuggestionClick(text)}
+                                                                showExport={true}
+                                                            />
+                                                        )}
+                                                    </>
+                                                )}
+
+                                                {/* 2. Text Summary (Enhanced Design) */}
+                                                <div className="bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+                                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-teal-500 opacity-80" />
+                                                    <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-100">
+                                                        <Sparkles className="w-4 h-4 text-blue-600" />
+                                                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Analysis Summary</span>
+                                                    </div>
                                                     <PremiumMessageRenderer content={msg.content} />
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        {/* Response Cards & Actions */}
-                                        {msg.role === "assistant" && msg.response && (
-                                            <div className="w-full mt-2 space-y-4">
-                                                <ChatCards
-                                                    cards={msg.response.cards}
-                                                    language={msg.response.language}
-                                                    onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
-                                                    onExampleClick={(text) => handleSuggestionClick(text)}
-                                                    showExport={true}
-                                                />
-                                                {msg.response.chart && <ChartCard chart={msg.response.chart} />}
-                                                {msg.response.actions?.length > 0 && (
+                                                {/* 3. Actions */}
+                                                {msg.response?.actions && msg.response.actions.length > 0 && (
                                                     <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />
                                                 )}
                                             </div>
@@ -363,7 +368,7 @@ export default function AIAnalystPage() {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Message Finny..."
+                                placeholder="Message Starta..."
                                 className="flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-48 py-4 px-2 text-slate-800 placeholder:text-slate-400 text-lg font-medium leading-relaxed scrollbar-none min-h-[3.5rem]"
                                 rows={1}
                                 disabled={isLoading}

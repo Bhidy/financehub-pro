@@ -23,52 +23,47 @@ export default function SettingsLayout({ activeTab, onTabChange, isAdmin, childr
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 min-h-[600px]">
-            {/* Sidebar Navigation */}
-            <div className="w-full lg:w-64 flex-shrink-0 space-y-2">
-                <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Settings</h2>
-                    <nav className="space-y-1">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            const isActive = activeTab === tab.id;
+        <div className="flex flex-col gap-6">
+            {/* Horizontal Premium Tabs */}
+            <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 sticky top-0 z-30 pt-2 px-2">
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
 
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => onTabChange(tab.id)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative group
-                                        ${isActive
-                                            ? "text-blue-600 bg-blue-50/50"
-                                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                        }`}
-                                >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="activeTabBg"
-                                            className="absolute inset-0 bg-blue-50/50 rounded-xl"
-                                            initial={false}
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
-                                    <Icon className={`w-4 h-4 relative z-10 ${isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`} />
-                                    <span className="relative z-10">{tab.label}</span>
-                                </button>
-                            );
-                        })}
-                    </nav>
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => onTabChange(tab.id)}
+                                className={`relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors whitespace-nowrap outline-none
+                                    ${isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}
+                                `}
+                            >
+                                <Icon className={`w-4 h-4 ${isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`} />
+                                <span className="relative z-10">{tab.label}</span>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeTabUnderline"
+                                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 rounded-t-full"
+                                        initial={false}
+                                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1">
+            {/* Main Content Area - Full Width */}
+            <div className="w-full">
                 <motion.div
                     key={activeTab}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:p-8 min-h-full"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="bg-white rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-200/40 p-6 lg:p-8 min-h-[600px] w-full"
                 >
                     {children}
                 </motion.div>

@@ -76,8 +76,8 @@ export default function RegisterPage() {
     };
 
     const benefits = [
-        { icon: Sparkles, text: "Unlimited AI-powered analysis" },
-        { icon: TrendingUp, text: "Real-time MENA market data" },
+        { icon: Sparkles, text: "AI-powered analysis" },
+        { icon: TrendingUp, text: "Real-time Egypt market data" },
         { icon: Shield, text: "Custom watchlists & alerts" },
     ];
 
@@ -100,291 +100,226 @@ export default function RegisterPage() {
     const passwordStrength = getPasswordStrength();
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden">
-            {/* Animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
+        <div className="min-h-screen w-full flex bg-[#0B1121] text-white overflow-hidden font-sans selection:bg-teal-500/30">
 
-            {/* Animated orbs */}
-            <div className="absolute inset-0 overflow-hidden">
+            {/* Left Panel - Visual/Brand */}
+            <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-slate-950 items-center justify-center p-16">
+                {/* Background Effects */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,_#0f766e_0%,_#0f172a_50%,_#020617_100%)]" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
+
+                {/* Abstract Shapes */}
+                <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-teal-500/20 rounded-full blur-[100px] opacity-40 animate-pulse duration-[8s]" />
+
                 <motion.div
-                    animate={{
-                        x: [0, 80, 0],
-                        y: [0, -40, 0],
-                        scale: [1, 1.2, 1],
-                    }}
-                    transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-teal-500/15 rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        x: [0, -60, 0],
-                        y: [0, 60, 0],
-                        scale: [1, 1.3, 1],
-                    }}
-                    transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-                    className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        x: [0, 40, 0],
-                        y: [0, -40, 0],
-                        scale: [1, 1.15, 1],
-                    }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl"
-                />
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="relative z-20 max-w-md"
+                >
+                    <div className="flex items-center gap-3 mb-10">
+                        <div className="w-16 h-16 relative flex items-center justify-center">
+                            <div className="absolute inset-0 bg-teal-500/20 rounded-2xl blur-xl" />
+                            <img src="/app-icon.png" alt="Starta" className="w-16 h-16 object-contain relative z-10 drop-shadow-2xl" />
+                        </div>
+                        <span className="text-2xl font-bold tracking-tight text-white">Starta</span>
+                    </div>
+
+                    <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
+                        Unlock Full <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">AI Analysis</span>
+                    </h1>
+
+                    <p className="text-lg text-slate-400 leading-relaxed mb-10">
+                        Create your free account to ask Starta questions about the Egypt Stock Market.
+                    </p>
+
+                    <div className="space-y-6 mb-12">
+                        {[
+                            { icon: Sparkles, text: "Advanced AI Conversations" },
+                            { icon: TrendingUp, text: "Deep Dive Fundamentals" },
+                            { icon: Shield, text: "Daily Market Updates" }
+                        ].map((benefit, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 + idx * 0.1 }}
+                                className="flex items-center gap-4 group"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-teal-500/20 group-hover:border-teal-500/30 transition-all">
+                                    <benefit.icon className="w-5 h-5 text-teal-400" />
+                                </div>
+                                <span className="text-lg text-slate-300 font-medium">{benefit.text}</span>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Social Proof */}
+
+                </motion.div>
             </div>
 
-            {/* Shiny grid overlay */}
-            <div
-                className="absolute inset-0 opacity-[0.02]"
-                style={{
-                    backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                                     linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                    backgroundSize: '60px 60px'
-                }}
-            />
-
-            {/* Glowing line at top */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
-
-            {/* Content */}
-            <div className="relative z-10 min-h-screen flex">
-                {/* Left side - Form */}
-                <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="w-full max-w-lg"
-                    >
-                        {/* Glassmorphism card */}
-                        <div className="relative">
-                            {/* Shiny border effect */}
-                            <div className="absolute -inset-px bg-gradient-to-b from-teal-500/50 via-transparent to-blue-500/50 rounded-3xl opacity-50" />
-
-                            <div className="relative bg-slate-900/80 backdrop-blur-xl rounded-3xl p-8 lg:p-10 border border-white/10 shadow-2xl">
-                                {/* Header */}
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/30">
-                                        <TrendingUp className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-xl font-bold text-white">FinanceHub Pro</h1>
-                                        <p className="text-sm text-slate-400">Create your account</p>
-                                    </div>
-                                </div>
-
-                                {/* Error message */}
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400"
-                                    >
-                                        <AlertCircle className="w-5 h-5 shrink-0" />
-                                        <span className="text-sm">{error}</span>
-                                    </motion.div>
-                                )}
-
-                                {/* Form */}
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    {/* Full Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
-                                        <div className="relative group">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
-                                            <input
-                                                type="text"
-                                                value={formData.full_name}
-                                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                                                placeholder="John Doe"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                                        <div className="relative group">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
-                                            <input
-                                                type="email"
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                                                placeholder="name@company.com"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Phone */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">
-                                            Phone <span className="text-slate-500">(optional)</span>
-                                        </label>
-                                        <div className="relative group">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
-                                            <input
-                                                type="tel"
-                                                value={formData.phone}
-                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                                                placeholder="+966 50 123 4567"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Password */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                value={formData.password}
-                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                                className="w-full pl-12 pr-12 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                                                placeholder="Min 8 chars, 1 uppercase, 1 number"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                                            >
-                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                            </button>
-                                        </div>
-                                        {/* Password strength */}
-                                        {formData.password && (
-                                            <div className="mt-2 flex items-center gap-2">
-                                                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${passwordStrength.strength}%` }}
-                                                        className={`h-full ${passwordStrength.color} rounded-full`}
-                                                    />
-                                                </div>
-                                                <span className="text-xs text-slate-400">{passwordStrength.label}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Confirm Password */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">Confirm Password</label>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                value={formData.confirmPassword}
-                                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-                                                placeholder="Confirm your password"
-                                            />
-                                            {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                                                <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Submit Button */}
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="w-full py-4 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:from-teal-500 hover:to-blue-500 hover:shadow-xl hover:shadow-teal-500/25 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-6 group relative overflow-hidden"
-                                    >
-                                        {/* Shiny effect */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-
-                                        {isLoading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <>
-                                                <span className="relative">Create Account</span>
-                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
-                                            </>
-                                        )}
-                                    </button>
-                                </form>
-
-                                {/* Login link */}
-                                <p className="text-center text-slate-400 mt-6">
-                                    Already have an account?{" "}
-                                    <Link href="/login" className="text-teal-400 font-semibold hover:text-teal-300 transition-colors">
-                                        Sign in
-                                    </Link>
-                                </p>
-                            </div>
-                        </div>
-                    </motion.div>
+            {/* Right Panel - Form */}
+            <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10 overflow-y-auto w-full">
+                {/* Mobile Background */}
+                <div className="lg:hidden absolute inset-0 bg-[#0B1121]">
+                    <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-teal-900/20 to-transparent" />
                 </div>
 
-                {/* Right side - Branding (hidden on mobile) */}
-                <div className="hidden lg:flex flex-1 items-center justify-center p-12">
-                    <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="max-w-lg text-center"
-                    >
-                        {/* AI Robot illustration */}
-                        <div className="relative mb-8">
-                            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-blue-500/30 rounded-full blur-3xl scale-75" />
-                            <motion.div
-                                animate={{ y: [0, -10, 0] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                className="relative w-32 h-32 mx-auto bg-gradient-to-br from-teal-500/20 to-blue-500/20 backdrop-blur-xl rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl"
-                            >
-                                <img src="/ai-robot.png" alt="Finny AI" className="w-20 h-20" />
-                            </motion.div>
-                        </div>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full max-w-lg space-y-6 relative z-10 my-auto py-10"
+                >
+                    <div className="text-center lg:text-left">
+                        <h2 className="text-3xl font-bold tracking-tight text-white">Create Account</h2>
+                        <p className="mt-2 text-slate-400">Start your journey with Starta today</p>
+                    </div>
 
-                        <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-                            Join <span className="bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">Thousands</span> of Traders
-                        </h2>
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3"
+                        >
+                            <AlertCircle className="w-5 h-5 shrink-0" />
+                            {error}
+                        </motion.div>
+                    )}
 
-                        <p className="text-lg text-slate-400 mb-10">
-                            Get unlimited access to Finny, your personal AI financial analyst for MENA markets.
-                        </p>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Full Name</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={formData.full_name}
+                                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="John Doe"
+                                    />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                </div>
+                            </div>
 
-                        {/* Benefits */}
-                        <div className="space-y-4">
-                            {benefits.map((benefit, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 + idx * 0.1 }}
-                                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500/20 to-blue-500/20 flex items-center justify-center">
-                                        <benefit.icon className="w-5 h-5 text-teal-400" />
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+                                <div className="relative">
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="name@company.com"
+                                    />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                                    Phone Number <span className="text-slate-500 text-xs font-normal ml-1">(Optional)</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="tel"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="+966 50 123 4567"
+                                    />
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                                <div className="relative group">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-12 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="Min 8 chars, 1 uppercase, 1 number"
+                                    />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                                {/* Password Strength Meter */}
+                                {formData.password && (
+                                    <div className="mt-2.5 flex items-center gap-3">
+                                        <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className={`h-full ${passwordStrength.color}`}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${passwordStrength.strength}%` }}
+                                                transition={{ duration: 0.3 }}
+                                            />
+                                        </div>
+                                        <span className={`text-xs font-medium ${passwordStrength.color.replace('bg-', 'text-')}`}>
+                                            {passwordStrength.label}
+                                        </span>
                                     </div>
-                                    <span className="text-white font-medium">{benefit.text}</span>
-                                </motion.div>
-                            ))}
+                                )}
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Confirm Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={formData.confirmPassword}
+                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-10 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="Retype password"
+                                    />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                                        <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Social proof */}
-                        <div className="mt-10 flex items-center justify-center gap-6">
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-white">10K+</div>
-                                <div className="text-sm text-slate-400">Active Users</div>
-                            </div>
-                            <div className="w-px h-10 bg-slate-700" />
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-white">500+</div>
-                                <div className="text-sm text-slate-400">Stocks Covered</div>
-                            </div>
-                            <div className="w-px h-10 bg-slate-700" />
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-white">24/7</div>
-                                <div className="text-sm text-slate-400">AI Available</div>
-                            </div>
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl py-4 font-bold text-base shadow-lg shadow-teal-900/20 ring-1 ring-white/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <>
+                                        Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
                         </div>
-                    </motion.div>
+                    </form>
+
+                    <div className="pt-6 text-center border-t border-slate-800">
+                        <p className="text-slate-500">
+                            Already have an account?{' '}
+                            <Link href="/login" className="font-semibold text-teal-400 hover:text-teal-300 transition-colors">
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
+                </motion.div>
+
+                {/* Footer simple mobile only */}
+                <div className="lg:hidden mt-8 text-center pb-6">
+                    <p className="text-xs text-slate-600">© 2026 Starta</p>
                 </div>
             </div>
         </div>

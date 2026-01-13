@@ -47,244 +47,169 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden">
-            {/* Animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
+        <div className="min-h-screen w-full flex bg-[#0B1121] text-white overflow-hidden font-sans selection:bg-teal-500/30">
 
-            {/* Animated orbs */}
-            <div className="absolute inset-0 overflow-hidden">
+            {/* Left Panel - Visual/Brand */}
+            <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-slate-950 items-center justify-center p-16">
+                {/* Background Effects */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,_#0f766e_0%,_#0f172a_100%)]" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
+
+                {/* Abstract Shapes */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-500/20 rounded-full blur-[120px] opacity-40 animate-pulse duration-[10s]" />
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-slate-950 to-transparent z-10" />
+
                 <motion.div
-                    animate={{
-                        x: [0, 100, 0],
-                        y: [0, -50, 0],
-                        scale: [1, 1.2, 1],
-                    }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-1/4 -left-32 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        x: [0, -80, 0],
-                        y: [0, 80, 0],
-                        scale: [1, 1.3, 1],
-                    }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className="absolute bottom-1/4 -right-32 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        x: [0, 60, 0],
-                        y: [0, 60, 0],
-                        scale: [1, 1.1, 1],
-                    }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl"
-                />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="relative z-20 max-w-md"
+                >
+                    <div className="flex items-center gap-3 mb-10">
+                        <div className="w-16 h-16 relative flex items-center justify-center">
+                            <div className="absolute inset-0 bg-teal-500/20 rounded-2xl blur-xl" />
+                            <img src="/app-icon.png" alt="Starta" className="w-16 h-16 object-contain relative z-10 drop-shadow-2xl" />
+                        </div>
+                        <span className="text-2xl font-bold tracking-tight text-white">Starta</span>
+                    </div>
+
+                    <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
+                        Meet Starta, Your <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">AI Market Analyst</span>
+                    </h1>
+
+                    <p className="text-lg text-slate-400 leading-relaxed mb-10">
+                        The first AI specialized in Egypt Stock Market. Get instant answers, analyze stocks, and spot opportunities in seconds.
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-4">
+                        {[
+                            { icon: Zap, label: "Instant Market Answers" },
+                            { icon: Sparkles, label: "Egypt Market Intelligence" },
+                            { icon: Shield, label: "Unbiased AI Insights" }
+                        ].map((item, i) => (
+                            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                                <div className="p-2 bg-white/5 rounded-lg">
+                                    <item.icon className="w-5 h-5 text-teal-400" />
+                                </div>
+                                <span className="font-medium text-slate-200">{item.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
             </div>
 
-            {/* Shiny grid overlay */}
-            <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{
-                    backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                                     linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                    backgroundSize: '50px 50px'
-                }}
-            />
-
-            {/* Glowing line at top */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-
-            {/* Content */}
-            <div className="relative z-10 min-h-screen flex">
-                {/* Left side - Branding (hidden on mobile) */}
-                <div className="hidden lg:flex flex-1 items-center justify-center p-12">
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="max-w-lg"
-                    >
-                        {/* Logo */}
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                                <TrendingUp className="w-7 h-7 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-white">FinanceHub</h1>
-                                <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Pro Edition</span>
-                            </div>
-                        </div>
-
-                        <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                            Unlock the Power of
-                            <span className="bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent"> AI-Driven </span>
-                            Market Intelligence
-                        </h2>
-
-                        <p className="text-lg text-slate-400 mb-10">
-                            Access real-time analytics, AI-powered insights, and comprehensive market data for MENA region stocks.
-                        </p>
-
-                        {/* Feature cards */}
-                        <div className="space-y-4">
-                            {[
-                                { icon: Zap, title: "Real-time Data", desc: "Live market updates & quotes" },
-                                { icon: Sparkles, title: "AI Analysis", desc: "Powered by Finny AI assistant" },
-                                { icon: Shield, title: "Enterprise Security", desc: "Bank-grade data protection" },
-                            ].map((feature, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.3 + idx * 0.1 }}
-                                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10"
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-teal-500/20 flex items-center justify-center">
-                                        <feature.icon className="w-5 h-5 text-blue-400" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-white">{feature.title}</h3>
-                                        <p className="text-sm text-slate-400">{feature.desc}</p>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
+            {/* Right Panel - Form */}
+            <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-24 relative z-10">
+                {/* Mobile Background */}
+                <div className="lg:hidden absolute inset-0 bg-[#0B1121]">
+                    <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-teal-900/20 to-transparent" />
                 </div>
 
-                {/* Right side - Login Form */}
-                <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="w-full max-w-md"
-                    >
-                        {/* Glassmorphism card */}
-                        <div className="relative">
-                            {/* Shiny border effect */}
-                            <div className="absolute -inset-px bg-gradient-to-b from-blue-500/50 via-transparent to-teal-500/50 rounded-3xl opacity-50" />
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full max-w-md space-y-8 relative z-10"
+                >
+                    <div className="text-center lg:text-left">
+                        <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back</h2>
+                        <p className="mt-2 text-slate-400">Sign in to your account to continue</p>
+                    </div>
 
-                            <div className="relative bg-slate-900/80 backdrop-blur-xl rounded-3xl p-8 lg:p-10 border border-white/10 shadow-2xl">
-                                {/* Mobile logo */}
-                                <div className="lg:hidden flex items-center gap-3 mb-8">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                                        <TrendingUp className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-xl font-bold text-white">FinanceHub Pro</h1>
-                                    </div>
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3"
+                        >
+                            <AlertCircle className="w-5 h-5 shrink-0" />
+                            {error}
+                        </motion.div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+                                <div className="relative">
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="name@company.com"
+                                    />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                 </div>
+                            </div>
 
-                                {/* Header */}
-                                <div className="text-center mb-8">
-                                    <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">Welcome back</h2>
-                                    <p className="text-slate-400">Sign in to continue to your dashboard</p>
-                                </div>
-
-                                {/* Error message */}
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400"
-                                    >
-                                        <AlertCircle className="w-5 h-5 shrink-0" />
-                                        <span className="text-sm">{error}</span>
-                                    </motion.div>
-                                )}
-
-                                {/* Form */}
-                                <form onSubmit={handleSubmit} className="space-y-5">
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">Email address</label>
-                                        <div className="relative group">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-                                            <input
-                                                type="email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                                placeholder="name@company.com"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Password */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                className="w-full pl-12 pr-12 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                                placeholder="••••••••"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                                            >
-                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Remember me & Forgot password */}
-                                    <div className="flex items-center justify-between">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={rememberMe}
-                                                onChange={(e) => setRememberMe(e.target.checked)}
-                                                className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
-                                            />
-                                            <span className="text-sm text-slate-400">Remember me</span>
-                                        </label>
-                                        <button type="button" className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors">
-                                            Forgot password?
-                                        </button>
-                                    </div>
-
-                                    {/* Submit Button */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-12 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        placeholder="Enter your password"
+                                    />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                                     <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="w-full py-4 bg-gradient-to-r from-blue-600 to-teal-600 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:from-blue-500 hover:to-teal-500 hover:shadow-xl hover:shadow-blue-500/25 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-8 group relative overflow-hidden"
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
                                     >
-                                        {/* Shiny effect */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-
-                                        {isLoading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <>
-                                                <span className="relative">Sign In</span>
-                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
-                                            </>
-                                        )}
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
-                                </form>
-
-                                {/* Register link */}
-                                <p className="text-center text-slate-400 mt-8">
-                                    Don't have an account?{" "}
-                                    <Link href="/register" className="text-blue-400 font-semibold hover:text-blue-300 transition-colors">
-                                        Create account
-                                    </Link>
-                                </p>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Footer */}
-                        <p className="text-center text-sm text-slate-500 mt-8">
-                            © 2026 FinanceHub Pro. All rights reserved.
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-teal-600 border-teal-600' : 'bg-slate-900 border-slate-700 group-hover:border-slate-600'}`}>
+                                    {rememberMe && <ArrowRight className="w-3 h-3 text-white rotate-[-45deg]" />}
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="hidden"
+                                />
+                                <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Remember me</span>
+                            </label>
+                            <button type="button" className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors">
+                                Forgot password?
+                            </button>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl py-4 font-bold text-base shadow-lg shadow-teal-900/20 ring-1 ring-white/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                "Sign In"
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="pt-6 text-center border-t border-slate-800">
+                        <p className="text-slate-500">
+                            Don't have an account?{' '}
+                            <Link href="/register" className="font-semibold text-teal-400 hover:text-teal-300 transition-colors">
+                                Create free account
+                            </Link>
                         </p>
-                    </motion.div>
+                    </div>
+                </motion.div>
+
+                {/* Footer simple */}
+                <div className="absolute bottom-6 left-0 right-0 text-center">
+                    <p className="text-xs text-slate-600">© 2026 Starta. Secure & Encrypted.</p>
                 </div>
             </div>
         </div>

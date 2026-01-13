@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { sendChatMessage } from "@/lib/api";
+import { sendChatMessage, fetchSessionMessages } from "@/lib/api";
 
 // ============================================================
 // Types matching backend ChatResponse schema
@@ -15,7 +15,7 @@ export interface Card {
 }
 
 export interface ChartPayload {
-    type: "candlestick" | "line" | "bar" | "pie" | "donut" | "column" | "radar" | "area" | "heatmap" | "treemap";
+    type: "candlestick" | "line" | "bar" | "pie" | "donut" | "column" | "radar" | "area" | "heatmap" | "treemap" | "radialBar" | "gauge";
     symbol: string;
     title: string;
     data: Array<{
@@ -56,6 +56,7 @@ export interface ChatResponse {
     actions: Action[];
     disclaimer?: string;
     meta: ResponseMeta;
+    session_id?: string; // Top-level or from meta
 }
 
 export interface Message {
@@ -69,59 +70,101 @@ export interface Message {
 // Hook
 // ============================================================
 
-export function useAIChat(config?: { market?: string }) {
+// Helper to get or create device fingerprint (same logic as useGuestUsage)
+function getDeviceFingerprint(): string {
+    if (typeof window === 'undefined') return '';
+
+    const stored = localStorage.getItem("fh_device_fp");
+    if (stored) return stored;
+
+    // Generate a new fingerprint using available browser data
+    const components = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width,
+        screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0,
+        (navigator as any).deviceMemory || 0,
+    ];
+
+    const str = components.join("|");
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+
+    const fingerprint = `${Math.abs(hash).toString(36)}-${Math.random().toString(36).substring(2, 10)}`;
+    localStorage.setItem("fh_device_fp", fingerprint);
+    return fingerprint;
+}
+
+export function useAIChat(config?: {
+    market?: string;
+    onUsageLimitReached?: () => void;  // Callback when guest limit is exceeded
+}) {
     const [query, setQuery] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: "assistant",
-            content: "Hello! I'm your Ultra Premium AI Financial Analyst. Here's what I can help you with:",
-            response: {
-                message_text: "Hello! I'm your Ultra Premium AI Financial Analyst. Here's what I can help you with:",
-                language: "en",
-                cards: [
-                    {
-                        type: "help",
-                        data: {
-                            categories: [
-                                { title: "💰 Stock Prices", examples: ["Price of COMI", "Aramco stock price", "Quote for 2222"] },
-                                { title: "📊 Charts & Technicals", examples: ["Show COMI chart", "SWDY 1 year chart", "ADIB technical analysis"] },
-                                { title: "🛡️ Safety Analysis (NEW)", examples: ["Is COMI safe?", "ADIB risk analysis", "Financial health of EFIH"] },
-                                { title: "💎 Valuation Analysis (NEW)", examples: ["Is SWDY cheap?", "TMGH valuation", "Is Aramco overvalued?"] },
-                                { title: "📈 Growth & Efficiency (NEW)", examples: ["COMI growth rate", "ADIB efficiency", "Revenue CAGR of EFIH"] },
-                                { title: "🔍 Market Screening", examples: ["Top gainers today", "High dividend stocks", "Undervalued stocks in EGX"] },
-                                { title: "📰 News & Events", examples: ["COMI news", "Latest market news", "Dividend announcements"] },
-                                { title: "⚖️ Comparisons", examples: ["Compare COMI vs SWDY", "TMGH versus PHDC", "Banks comparison"] }
-                            ]
-                        }
-                    }
-                ],
-                actions: [
-                    { label: "🛡️ Safety Check", action_type: "query", payload: "Is COMI safe?" },
-                    { label: "💎 Valuation", action_type: "query", payload: "Is SWDY cheap?" },
-                    { label: "📈 Growth", action_type: "query", payload: "ADIB growth rate" },
-                    { label: "🔝 Top Gainers", action_type: "query", payload: "Show top gainers" }
-                ],
-                meta: {
-                    intent: "WELCOME",
-                    confidence: 1.0,
-                    entities: {},
-                    latency_ms: 0,
-                    cached: true
-                }
-            }
+    const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+    const [usageLimitReached, setUsageLimitReached] = useState(false);  // Track limit status
+    const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
+
+    // Initialize device fingerprint on mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setDeviceFingerprint(getDeviceFingerprint());
         }
-    ]);
+    }, []);
+
+    // Constant for the system initialization message
+    const SYSTEM_WELCOME_MESSAGE: Message = {
+        role: "assistant",
+        content: "Chat initialized. Ready to assist."
+    };
+
+    // Initialize with system message to satisfy Desktop "Hero" view requirements (length === 1)
+    const [messages, setMessages] = useState<Message[]>([SYSTEM_WELCOME_MESSAGE]);
 
     const mutation = useMutation({
         mutationFn: async (text: string) => {
-            const history = messages.map(m => ({ role: m.role, content: m.content }));
-            return await sendChatMessage(text, history, sessionId, config?.market);
+            const history = messages
+                .filter(m => m.role !== 'assistant' || m.content !== SYSTEM_WELCOME_MESSAGE.content)
+                .map(m => ({ role: m.role, content: m.content }));
+
+            // CRITICAL: Pass device fingerprint for guest tracking
+            return await sendChatMessage(text, history, sessionId, config?.market, deviceFingerprint);
         },
         onSuccess: (data: ChatResponse) => {
+            // =====================================================================
+            // USAGE LIMIT CHECK - Detect backend's "limit reached" response
+            // This should ONLY happen for guest users, never for authenticated users
+            // =====================================================================
+            if (data.meta?.intent === "USAGE_LIMIT_REACHED") {
+                console.log("[useAIChat] 🚫 Guest usage limit reached - triggering modal");
+                setUsageLimitReached(true);
+
+                // Trigger callback if provided (for showing modal)
+                if (config?.onUsageLimitReached) {
+                    config.onUsageLimitReached();
+                }
+
+                // Remove the user's question that triggered the limit 
+                // (they shouldn't see a failed attempt in their history)
+                setMessages(prev => prev.slice(0, -1));
+                return;  // Don't add the "limit reached" message to chat
+            }
+
+            // Reset limit flag on successful responses
+            setUsageLimitReached(false);
+
             // Store session ID for context
-            if (!sessionId && data.meta?.entities?.session_id) {
-                setSessionId(data.meta.entities.session_id);
+            // Backend now returns session_id at top level, but fallback to meta just in case
+            const newSessionId = data.session_id || data.meta?.entities?.session_id;
+            if (newSessionId && sessionId !== newSessionId) {
+                setSessionId(newSessionId);
             }
 
             // Client-side filter: Remove "Technical" actions as per user request
@@ -175,11 +218,61 @@ export function useAIChat(config?: { market?: string }) {
     }, [mutation]);
 
     const clearHistory = useCallback(() => {
-        setMessages([{
-            role: "assistant",
-            content: "Chat cleared. How can I help you?"
-        }]);
+        setMessages([SYSTEM_WELCOME_MESSAGE]);
         setSessionId(null);
+    }, []);
+
+    const loadSession = useCallback(async (id: string) => {
+        setIsHistoryLoading(true);
+        try {
+            const history = await fetchSessionMessages(id);
+            if (!history || history.length === 0) {
+                setMessages([SYSTEM_WELCOME_MESSAGE]);
+                setSessionId(id);
+                return;
+            }
+
+            const newMessages: Message[] = history.map((msg: any) => {
+                let response = undefined;
+                try {
+                    // Parse rich metadata for assistants
+                    if (msg.role === 'assistant' && msg.meta) {
+                        // Ensure meta is object
+                        const meta = typeof msg.meta === 'string' ? JSON.parse(msg.meta) : msg.meta;
+
+                        response = {
+                            message_text: msg.content,
+                            language: "en",
+                            cards: meta.cards || [],
+                            chart: meta.chart,
+                            actions: meta.actions || [],
+                            meta: {
+                                intent: meta.intent || "UNKNOWN",
+                                confidence: meta.confidence || 1.0,
+                                entities: {}, // Not fully preserved in simple migration
+                                latency_ms: 0,
+                                cached: true
+                            }
+                        } as ChatResponse;
+                    }
+                } catch (e) {
+                    console.warn("Failed to parse message meta", e);
+                }
+
+                return {
+                    role: msg.role,
+                    content: msg.content,
+                    response: response
+                };
+            });
+
+            setMessages(newMessages);
+            setSessionId(id);
+        } catch (e) {
+            console.error("Failed to load session", e);
+        } finally {
+            setIsHistoryLoading(false);
+        }
     }, []);
 
     // Direct send - bypasses query state (for auto-send from suggestions)
@@ -193,11 +286,13 @@ export function useAIChat(config?: { market?: string }) {
         query,
         setQuery,
         messages,
-        isLoading: mutation.isPending,
+        isLoading: mutation.isPending || isHistoryLoading,
         handleSend,
         handleAction,
         sendDirectMessage,
-        clearHistory,
-        sessionId
+        clearHistory, // Acts as "New Chat"
+        sessionId,
+        loadSession, // Exported!
+        usageLimitReached  // Exposed for external monitoring
     };
 }

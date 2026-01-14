@@ -103,22 +103,22 @@ const AuroraGradients = () => (
     </defs>
 );
 
-// Ultra-Premium Radial Gauge Component
+// Premium Radial Gauge - Dark Theme Optimized
 const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: any) => {
     const safeValue = Math.min(Math.max(value || 0, 0), max);
     const percentage = (safeValue / max) * 100;
-    const strokeWidth = size * 0.08;
+    const strokeWidth = size * 0.06;
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     const colors: any = {
-        cyan: { stroke: '#00d4ff', glow: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.6))' },
-        teal: { stroke: '#14b8a6', glow: 'drop-shadow(0 0 8px rgba(20, 184, 166, 0.6))' },
-        emerald: { stroke: '#10b981', glow: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' },
-        rose: { stroke: '#f43f5e', glow: 'drop-shadow(0 0 8px rgba(244, 63, 94, 0.6))' },
-        amber: { stroke: '#f59e0b', glow: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))' },
-        blue: { stroke: '#3b82f6', glow: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' },
+        cyan: { stroke: '#22d3ee', track: '#164e63' },
+        teal: { stroke: '#14b8a6', track: '#134e4a' },
+        emerald: { stroke: '#10b981', track: '#064e3b' },
+        rose: { stroke: '#f43f5e', track: '#4c0519' },
+        amber: { stroke: '#f59e0b', track: '#451a03' },
+        blue: { stroke: '#3b82f6', track: '#1e3a5f' },
     };
 
     return (
@@ -130,9 +130,8 @@ const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: an
                     cy={size / 2}
                     r={radius}
                     fill="none"
-                    stroke="currentColor"
+                    stroke={colors[color]?.track || '#1e293b'}
                     strokeWidth={strokeWidth}
-                    className="text-slate-200 dark:text-slate-700"
                 />
                 {/* Progress Arc */}
                 <circle
@@ -145,7 +144,7 @@ const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: an
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
-                    style={{ filter: colors[color]?.glow || colors.cyan.glow, transition: 'stroke-dashoffset 1s ease-out' }}
+                    style={{ transition: 'stroke-dashoffset 1s ease-out' }}
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -196,22 +195,20 @@ const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
     );
 };
 
-// Enhanced Glass Card with Aurora Border
-const GlassCard = ({ children, className = '', noPadding = false, aurora = false }: any) => (
+// Premium Card Component - Dark Theme Optimized
+const GlassCard = ({ children, className = '', noPadding = false, premium = false }: any) => (
     <div className={clsx(
-        "relative overflow-hidden rounded-3xl",
-        "bg-white/80 dark:bg-slate-900/80",
-        "backdrop-blur-xl",
-        aurora
-            ? "border border-transparent bg-clip-padding"
-            : "border border-slate-200/50 dark:border-slate-700/50",
-        "shadow-xl shadow-slate-900/5 dark:shadow-black/30",
+        "relative overflow-hidden rounded-2xl",
+        premium
+            ? "bg-[#151925] border border-slate-700/50"
+            : "bg-white/80 dark:bg-[#151925]",
+        "border border-slate-200/50 dark:border-slate-700/30",
+        "shadow-lg dark:shadow-black/20",
         !noPadding && "p-6",
-        "transition-all duration-500 hover:shadow-2xl",
         className
     )}>
-        {aurora && (
-            <div className="absolute inset-0 -z-10 rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500 via-teal-500 to-emerald-500 opacity-50" />
+        {premium && (
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
         )}
         {children}
     </div>
@@ -660,7 +657,7 @@ export default function EnterpriseStockProfile() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
                             {/* Performance Gauges */}
-                            <GlassCard aurora className="flex flex-col">
+                            <GlassCard premium className="flex flex-col">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Activity className="w-5 h-5 text-cyan-500" />
                                     Performance Momentum
@@ -1004,7 +1001,7 @@ export default function EnterpriseStockProfile() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                             {/* Margin Waterfall Chart */}
-                            <GlassCard aurora>
+                            <GlassCard premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <BarChart3 className="w-5 h-5 text-cyan-500" />
                                     Margin Analysis
@@ -1067,7 +1064,7 @@ export default function EnterpriseStockProfile() {
                             </GlassCard>
 
                             {/* Returns Comparison */}
-                            <GlassCard aurora>
+                            <GlassCard premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-emerald-500" />
                                     Returns Profile
@@ -1254,7 +1251,7 @@ export default function EnterpriseStockProfile() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
 
                             {/* Volume Distribution Chart */}
-                            <GlassCard aurora className="lg:col-span-2">
+                            <GlassCard premium className="lg:col-span-2">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <BarChart3 className="w-5 h-5 text-cyan-500" />
                                     Volume History (Last 30 Days)
@@ -1307,7 +1304,7 @@ export default function EnterpriseStockProfile() {
                             </GlassCard>
 
                             {/* Moving Averages Comparison */}
-                            <GlassCard aurora>
+                            <GlassCard premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <ChartLine className="w-5 h-5 text-teal-500" />
                                     Price vs Moving Averages
@@ -1390,7 +1387,7 @@ export default function EnterpriseStockProfile() {
                             </GlassCard>
 
                             {/* Price Range Gauge */}
-                            <GlassCard aurora>
+                            <GlassCard premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Activity className="w-5 h-5 text-emerald-500" />
                                     52-Week Position

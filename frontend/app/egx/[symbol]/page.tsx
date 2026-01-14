@@ -51,7 +51,7 @@ const formatDate = (timestamp: number) => {
     });
 };
 
-// Aurora Gradient SVG Definitions for Charts
+// Aurora Gradient SVG Definitions for Charts (Theme-Matched)
 const AuroraGradients = () => (
     <defs>
         {/* Cyan Aurora */}
@@ -60,11 +60,11 @@ const AuroraGradients = () => (
             <stop offset="50%" stopColor="#0ea5e9" stopOpacity={0.4} />
             <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
         </linearGradient>
-        {/* Purple Aurora */}
-        <linearGradient id="auroraPurple" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#a855f7" stopOpacity={0.8} />
-            <stop offset="50%" stopColor="#8b5cf6" stopOpacity={0.4} />
-            <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
+        {/* Teal Aurora (replacing Purple) */}
+        <linearGradient id="auroraTeal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.8} />
+            <stop offset="50%" stopColor="#0d9488" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#0f766e" stopOpacity={0} />
         </linearGradient>
         {/* Emerald Aurora */}
         <linearGradient id="auroraEmerald" x1="0" y1="0" x2="0" y2="1">
@@ -78,13 +78,19 @@ const AuroraGradients = () => (
             <stop offset="50%" stopColor="#e11d48" stopOpacity={0.4} />
             <stop offset="100%" stopColor="#be123c" stopOpacity={0} />
         </linearGradient>
-        {/* Horizontal Spectrum */}
+        {/* Amber Aurora */}
+        <linearGradient id="auroraAmber" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} />
+            <stop offset="50%" stopColor="#d97706" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#b45309" stopOpacity={0} />
+        </linearGradient>
+        {/* Horizontal Spectrum - Theme Matched (no purple) */}
         <linearGradient id="auroraSpectrum" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#f43f5e" />
             <stop offset="25%" stopColor="#f59e0b" />
             <stop offset="50%" stopColor="#10b981" />
-            <stop offset="75%" stopColor="#0ea5e9" />
-            <stop offset="100%" stopColor="#8b5cf6" />
+            <stop offset="75%" stopColor="#14b8a6" />
+            <stop offset="100%" stopColor="#0ea5e9" />
         </linearGradient>
         {/* Glow Filter */}
         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -108,10 +114,11 @@ const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: an
 
     const colors: any = {
         cyan: { stroke: '#00d4ff', glow: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.6))' },
-        purple: { stroke: '#a855f7', glow: 'drop-shadow(0 0 8px rgba(168, 85, 247, 0.6))' },
+        teal: { stroke: '#14b8a6', glow: 'drop-shadow(0 0 8px rgba(20, 184, 166, 0.6))' },
         emerald: { stroke: '#10b981', glow: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' },
         rose: { stroke: '#f43f5e', glow: 'drop-shadow(0 0 8px rgba(244, 63, 94, 0.6))' },
         amber: { stroke: '#f59e0b', glow: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))' },
+        blue: { stroke: '#3b82f6', glow: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' },
     };
 
     return (
@@ -204,7 +211,7 @@ const GlassCard = ({ children, className = '', noPadding = false, aurora = false
         className
     )}>
         {aurora && (
-            <div className="absolute inset-0 -z-10 rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 opacity-50" />
+            <div className="absolute inset-0 -z-10 rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500 via-teal-500 to-emerald-500 opacity-50" />
         )}
         {children}
     </div>
@@ -216,7 +223,7 @@ const StatCard = ({ label, value, subValue, icon: Icon, trend, color = 'default'
         green: 'from-emerald-500/10 to-transparent',
         red: 'from-rose-500/10 to-transparent',
         blue: 'from-blue-500/10 to-transparent',
-        purple: 'from-violet-500/10 to-transparent',
+        teal: 'from-teal-500/10 to-transparent',
     };
 
     return (
@@ -685,7 +692,7 @@ export default function EnterpriseStockProfile() {
                             {/* Valuation Radar */}
                             <GlassCard className="flex flex-col">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <Scale className="w-5 h-5 text-purple-500" />
+                                    <Scale className="w-5 h-5 text-teal-500" />
                                     Valuation Profile
                                 </h3>
                                 <div className="flex-1 min-h-[250px]">
@@ -706,11 +713,11 @@ export default function EnterpriseStockProfile() {
                                             <Radar
                                                 name="Score"
                                                 dataKey="value"
-                                                stroke="#8b5cf6"
-                                                fill="url(#auroraPurple)"
+                                                stroke="#14b8a6"
+                                                fill="url(#auroraTeal)"
                                                 fillOpacity={0.6}
                                                 strokeWidth={2}
-                                                dot={{ fill: '#8b5cf6', strokeWidth: 0, r: 4 }}
+                                                dot={{ fill: '#14b8a6', strokeWidth: 0, r: 4 }}
                                             />
                                             <Tooltip
                                                 contentStyle={{
@@ -739,8 +746,8 @@ export default function EnterpriseStockProfile() {
                                             {formatPercent(f.profit_margin)}
                                         </p>
                                     </div>
-                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20">
-                                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">ROE</p>
+                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-500/10 to-transparent border border-teal-500/20">
+                                        <p className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">ROE</p>
                                         <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
                                             {formatPercent(f.return_on_equity)}
                                         </p>
@@ -944,7 +951,7 @@ export default function EnterpriseStockProfile() {
                             {/* Balance Sheet */}
                             <GlassCard>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                    <BarChart3 className="w-5 h-5 text-violet-500" /> Balance Sheet
+                                    <BarChart3 className="w-5 h-5 text-teal-500" /> Balance Sheet
                                 </h3>
                                 <div className="space-y-1">
                                     <DataRow label="Total Cash" value={formatLarge(f.total_cash)} />
@@ -1007,8 +1014,8 @@ export default function EnterpriseStockProfile() {
                                         <BarChart
                                             data={[
                                                 { name: 'Gross', value: (f.gross_margin || 0) * 100, fill: '#00d4ff' },
-                                                { name: 'Operating', value: (f.operating_margin || 0) * 100, fill: '#8b5cf6' },
-                                                { name: 'EBITDA', value: (f.ebitda_margin || 0) * 100, fill: '#a855f7' },
+                                                { name: 'Operating', value: (f.operating_margin || 0) * 100, fill: '#14b8a6' },
+                                                { name: 'EBITDA', value: (f.ebitda_margin || 0) * 100, fill: '#0d9488' },
                                                 { name: 'Net', value: (f.profit_margin || 0) * 100, fill: '#10b981' },
                                             ]}
                                             layout="vertical"
@@ -1047,8 +1054,8 @@ export default function EnterpriseStockProfile() {
                                             >
                                                 {[
                                                     { fill: '#00d4ff' },
-                                                    { fill: '#8b5cf6' },
-                                                    { fill: '#a855f7' },
+                                                    { fill: '#14b8a6' },
+                                                    { fill: '#0d9488' },
                                                     { fill: '#10b981' },
                                                 ].map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={entry.fill} style={{ filter: `drop-shadow(0 0 6px ${entry.fill}60)` }} />
@@ -1302,7 +1309,7 @@ export default function EnterpriseStockProfile() {
                             {/* Moving Averages Comparison */}
                             <GlassCard aurora>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                    <ChartLine className="w-5 h-5 text-purple-500" />
+                                    <ChartLine className="w-5 h-5 text-teal-500" />
                                     Price vs Moving Averages
                                 </h3>
                                 <div className="space-y-6">

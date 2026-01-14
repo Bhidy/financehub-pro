@@ -22,134 +22,47 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Robust Session Factory
+# Robust Session Factory (Chrome Impersonation)
 def get_yahoo_session():
-    import requests
-    session = requests.Session()
-    session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-    })
-    return session
+    try:
+        from curl_cffi import requests as crequests
+        # Impersonate Chrome 120+ to look exactly like a real user
+        session = crequests.Session(impersonate="chrome")
+        session.headers.update({
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Upgrade-Insecure-Requests': '1',
+        })
+        return session
+    except ImportError:
+        logger.error("curl_cffi not installed. Falling back to simple requests (High Risk of Block).")
+        import requests
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        })
+        return session
 
 def fetch_yfinance_data(symbol):
     """
-    Fetched data using yfinance with an enhanced session to bypass blocks.
+    Fetched data using yfinance with Smart Session (Chrome Impersonation).
+    Captures ALL available data points.
     """
     y_sym = symbol
     if not y_sym.endswith(".CA") and not y_sym.endswith(".SR"):
         y_sym = f"{y_sym}.CA"
         
-    logger.info(f"Fetching {y_sym} via yfinance (Enhanced)...")
+    logger.info(f"Fetching {y_sym} via Smart-Agent...")
     
     try:
-        # 1. Initialize Ticker with Custom Session
-        # This is critical for cloud environments
+        # 1. Initialize Ticker with Chrome Session
         session = get_yahoo_session()
         t = yf.Ticker(y_sym, session=session)
         
-        # 2. Force a handshake (history fetch often sets the cookie/crumb)
-        # We fetch a tiny amount of history first to "prime" the session
-        try:
-             _ = t.history(period="5d", interval="1d")
-        except Exception:
-             pass 
-
-        # 3. Access Info (this triggers the main API call)
-        info = t.info
-        
-        # --- 1. CORE PROFILE & MARKET DATA ---
-        y_prof = {
-            "sector": info.get('sector'),
-            "industry": info.get('industry'),
-            "description": info.get('longBusinessSummary') or info.get('description'),
-            "website": info.get('website'),
-            "headquarters_city": info.get('city'),
-            "employees": info.get('fullTimeEmployees'),
-            "phone": info.get('phone'),
-            "address": info.get('address1'),
-            
-            "market_cap": info.get('marketCap'),
-            "currency": info.get('currency', 'EGP'),
-            "price": info.get('currentPrice') or info.get('regularMarketPrice'),
-            "volume": info.get('volume'),
-            "avg_vol_10d": info.get('averageVolume10days'),
-            "avg_vol_3m": info.get('averageVolume'),
-            "open": info.get('open'),
-            "prev_close": info.get('previousClose'),
-            "day_high": info.get('dayHigh'),
-            "day_low": info.get('dayLow'),
-            "year_high": info.get('fiftyTwoWeekHigh'),
-            "year_low": info.get('fiftyTwoWeekLow'),
-            "bid": info.get('bid'),
-            "ask": info.get('ask'),
-            "bid_size": info.get('bidSize'),
-            "ask_size": info.get('askSize'),
-            
-            "shares_outstanding": info.get('sharesOutstanding'),
-            "float_shares": info.get('floatShares'),
-            "implied_shares": info.get('impliedSharesOutstanding'),
-            "short_ratio": info.get('shortRatio'),
-        }
-
-        # --- 2. FUNDAMENTALS, RISK & OWNERSHIP ---
-        y_fund = {
-            "pe_ratio": info.get('trailingPE') or info.get('forwardPE'),
-            "forward_pe": info.get('forwardPE'),
-            "peg_ratio": info.get('pegRatio'),
-            "price_to_book": info.get('priceToBook'),
-            "price_to_sales": info.get('priceToSalesTrailing12Months'),
-            "enterprise_value": info.get('enterpriseValue'),
-            "enterprise_to_revenue": info.get('enterpriseToRevenue'),
-            "enterprise_to_ebitda": info.get('enterpriseToEbitda'),
-            
-            "profit_margin": info.get('profitMargins'),
-            "operating_margin": info.get('operatingMargins'),
-            "gross_margin": info.get('grossMargins'),
-            "ebitda_margin": info.get('ebitdaMargins'),
-            "return_on_assets": info.get('returnOnAssets'),
-            "return_on_equity": info.get('returnOnEquity'),
-            
-            "total_cash": info.get('totalCash'),
-            "total_debt": info.get('totalDebt'),
-            "total_revenue": info.get('totalRevenue'),
-            "debt_to_equity": info.get('debtToEquity'),
-            "current_ratio": info.get('currentRatio'),
-            "quick_ratio": info.get('quickRatio'),
-            "free_cash_flow": info.get('freeCashflow'),
-            "operating_cash_flow": info.get('operatingCashflow'),
-            
-            "trailing_eps": info.get('trailingEps'),
-            "forward_eps": info.get('forwardEps'),
-            "book_value": info.get('bookValue'),
-            "revenue_per_share": info.get('revenuePerShare'),
-            
-            "dividend_rate": info.get('dividendRate'),
-            "dividend_yield": (info.get('dividendYield') or 0) * 100 if info.get('dividendYield') else None,
-            "payout_ratio": info.get('payoutRatio'),
-            "ex_dividend_date": info.get('exDividendDate'),
-            
-            "target_price": info.get('targetMeanPrice'),
-            "recommendation": info.get('recommendationKey'),
-            "beta": info.get('beta'),
-            
-            "insider_percent": info.get('heldPercentInsiders'),
-            "institution_percent": info.get('heldPercentInstitutions'),
-            "audit_risk": info.get('auditRisk'),
-            "board_risk": info.get('boardRisk'),
-            "compensation_risk": info.get('compensationRisk'),
-            "shareholder_rights_risk": info.get('shareHolderRightsRisk'),
-            "overall_risk": info.get('overallRisk'),
-        }
-
-        # API 2: History (Time Series)
+        # 2. History Fetch (Primary Source for Price/Volume reliability)
         y_hist = []
         try:
-             # Re-use ticker with session
+             # Fetch 1 year of daily history
              df = t.history(period="1y", interval="1d")
              if isinstance(df, pd.DataFrame) and not df.empty:
                  df = df.reset_index()
@@ -162,7 +75,8 @@ def fetch_yfinance_data(symbol):
                              dt_str = dt.strftime('%Y-%m-%dT%H:%M:%S+00:00')
                          else:
                              dt_str = str(dt)
-
+                         
+                         # Basic OHLCV
                          item = {
                              "date": dt_str,
                              "open": row.get('open'),
@@ -171,14 +85,39 @@ def fetch_yfinance_data(symbol):
                              "close": row.get('close'),
                              "volume": row.get('volume')
                          }
-                         if 'dividends' in row and row['dividends'] > 0:
-                             item['dividend'] = row['dividends']
-                         if 'stock splits' in row and row['stock splits'] != 0:
-                             item['split'] = row['stock splits']
-                             
                          y_hist.append(item)
         except Exception as eh:
             logger.warning(f"History fetch error for {y_sym}: {eh}")
+
+        # 3. Info Fetch (Deep Metadata)
+        # We capture everything to ensure NO data point is lost
+        info = t.info
+        
+        # We start with the full raw info dump
+        y_prof = info.copy()
+        
+        # Add standardized keys for frontend compatibility
+        # (This ensures existing UI components still work while new ones use the raw keys)
+        std_prof = {
+            "sector": info.get('sector'),
+            "industry": info.get('industry'),
+            "description": info.get('longBusinessSummary') or info.get('description'),
+            "market_cap": info.get('marketCap'),
+            "price": info.get('currentPrice') or info.get('regularMarketPrice'),
+            "volume": info.get('volume'),
+            "prev_close": info.get('previousClose'),
+            "year_high": info.get('fiftyTwoWeekHigh'),
+            "year_low": info.get('fiftyTwoWeekLow'),
+        }
+        y_prof.update(std_prof) # Overlay standardized keys
+        
+        # Same for fundamentals - dump everything
+        y_fund = info.copy()
+        std_fund = {
+             "pe_ratio": info.get('trailingPE') or info.get('forwardPE'),
+             "dividend_yield": (info.get('dividendYield') or 0) * 100 if info.get('dividendYield') else None,
+        }
+        y_fund.update(std_fund)
 
         return y_prof, y_fund, y_hist
 

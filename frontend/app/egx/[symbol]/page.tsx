@@ -103,7 +103,7 @@ const AuroraGradients = () => (
     </defs>
 );
 
-// Premium Radial Gauge - Dark Theme Optimized
+// Premium Radial Gauge - Dual Theme Optimized
 const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: any) => {
     const safeValue = Math.min(Math.max(value || 0, 0), max);
     const percentage = (safeValue / max) * 100;
@@ -113,24 +113,24 @@ const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: an
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     const colors: any = {
-        cyan: { stroke: '#22d3ee', track: '#164e63' },
-        teal: { stroke: '#14b8a6', track: '#134e4a' },
-        emerald: { stroke: '#10b981', track: '#064e3b' },
-        rose: { stroke: '#f43f5e', track: '#4c0519' },
-        amber: { stroke: '#f59e0b', track: '#451a03' },
-        blue: { stroke: '#3b82f6', track: '#1e3a5f' },
+        cyan: { stroke: '#0891b2', trackLight: '#e0f2fe', trackDark: '#164e63' },
+        teal: { stroke: '#0d9488', trackLight: '#ccfbf1', trackDark: '#134e4a' },
+        emerald: { stroke: '#059669', trackLight: '#d1fae5', trackDark: '#064e3b' },
+        rose: { stroke: '#e11d48', trackLight: '#ffe4e6', trackDark: '#4c0519' },
+        amber: { stroke: '#d97706', trackLight: '#fef3c7', trackDark: '#451a03' },
+        blue: { stroke: '#2563eb', trackLight: '#dbeafe', trackDark: '#1e3a5f' },
     };
 
     return (
         <div className="relative flex flex-col items-center">
             <svg width={size} height={size} className="transform -rotate-90">
-                {/* Background Track */}
+                {/* Background Track - Light/Dark */}
                 <circle
                     cx={size / 2}
                     cy={size / 2}
                     r={radius}
                     fill="none"
-                    stroke={colors[color]?.track || '#1e293b'}
+                    className="stroke-slate-200 dark:stroke-slate-700"
                     strokeWidth={strokeWidth}
                 />
                 {/* Progress Arc */}
@@ -195,20 +195,19 @@ const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
     );
 };
 
-// Premium Card Component - Dark Theme Optimized
+// Premium Card Component - Dual Theme Optimized
 const GlassCard = ({ children, className = '', noPadding = false, premium = false }: any) => (
     <div className={clsx(
         "relative overflow-hidden rounded-2xl",
         premium
-            ? "bg-[#151925] border border-slate-700/50"
-            : "bg-white/80 dark:bg-[#151925]",
-        "border border-slate-200/50 dark:border-slate-700/30",
-        "shadow-lg dark:shadow-black/20",
+            ? "bg-slate-50 dark:bg-[#151925] border border-slate-200 dark:border-slate-700/50"
+            : "bg-white dark:bg-[#151925] border border-slate-200 dark:border-slate-700/30",
+        "shadow-sm dark:shadow-black/20",
         !noPadding && "p-6",
         className
     )}>
         {premium && (
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-teal-500/[0.03] dark:from-cyan-500/5 dark:via-transparent dark:to-emerald-500/5 pointer-events-none" />
         )}
         {children}
     </div>
@@ -656,33 +655,73 @@ export default function EnterpriseStockProfile() {
                         {/* === 2026 ULTRA-PREMIUM VISUALIZATION SECTION === */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
-                            {/* Performance Gauges */}
+                            {/* Performance Momentum - Ultra Premium Redesign */}
                             <GlassCard premium className="flex flex-col">
-                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                    <Activity className="w-5 h-5 text-cyan-500" />
-                                    Performance Momentum
-                                </h3>
-                                <div className="flex-1 flex items-center justify-around">
-                                    <RadialGauge
-                                        value={Math.min(100, Math.max(-100, p.fiftyTwoWeekChangePercent || 0))}
-                                        max={100}
-                                        label="52W Return"
-                                        color={(p.fiftyTwoWeekChangePercent || 0) >= 0 ? 'emerald' : 'rose'}
-                                        size={110}
-                                    />
-                                    <RadialGauge
-                                        value={Math.min(100, Math.max(-100, (p.fiftyDayAverageChangePercent || 0) * 100))}
-                                        max={100}
-                                        label="vs 50D MA"
-                                        color={(p.fiftyDayAverageChangePercent || 0) >= 0 ? 'cyan' : 'amber'}
-                                        size={110}
-                                    />
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                        <Activity className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                                        Performance Momentum
+                                    </h3>
+                                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                                        YTD
+                                    </span>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-                                    <div className="text-center">
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">Volume Trend (20D)</span>
-                                        <MiniSparkline data={chartData} color="#00d4ff" height={50} />
+
+                                {/* Gauge Grid */}
+                                <div className="grid grid-cols-2 gap-6 flex-1">
+                                    {/* 52W Return Gauge */}
+                                    <div className="flex flex-col items-center">
+                                        <RadialGauge
+                                            value={Math.min(100, Math.max(0, Math.abs(p.fiftyTwoWeekChangePercent || 0)))}
+                                            max={100}
+                                            label=""
+                                            color={(p.fiftyTwoWeekChangePercent || 0) >= 0 ? 'emerald' : 'rose'}
+                                            size={100}
+                                        />
+                                        <div className="text-center mt-3">
+                                            <p className={clsx(
+                                                "text-lg font-bold font-mono",
+                                                (p.fiftyTwoWeekChangePercent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                                            )}>
+                                                {formatPercent(p.fiftyTwoWeekChangePercent, true)}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">52W Return</p>
+                                        </div>
                                     </div>
+
+                                    {/* 50D MA Gauge */}
+                                    <div className="flex flex-col items-center">
+                                        <RadialGauge
+                                            value={Math.min(100, Math.max(0, Math.abs((p.fiftyDayAverageChangePercent || 0) * 100)))}
+                                            max={100}
+                                            label=""
+                                            color={(p.fiftyDayAverageChangePercent || 0) >= 0 ? 'cyan' : 'amber'}
+                                            size={100}
+                                        />
+                                        <div className="text-center mt-3">
+                                            <p className={clsx(
+                                                "text-lg font-bold font-mono",
+                                                (p.fiftyDayAverageChangePercent || 0) >= 0 ? "text-cyan-600 dark:text-cyan-400" : "text-amber-600 dark:text-amber-400"
+                                            )}>
+                                                {formatPercent(p.fiftyDayAverageChangePercent)}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">vs 50D MA</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Volume Trend Section */}
+                                <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Volume Trend (20D)</span>
+                                        <span className={clsx(
+                                            "text-xs font-bold",
+                                            ((p.volume || 0) / (p.averageDailyVolume3Month || 1)) >= 1 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"
+                                        )}>
+                                            {(((p.volume || 0) / (p.averageDailyVolume3Month || 1)) * 100).toFixed(0)}% of Avg
+                                        </span>
+                                    </div>
+                                    <MiniSparkline data={chartData} color="#0891b2" height={45} />
                                 </div>
                             </GlassCard>
 

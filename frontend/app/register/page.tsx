@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
     User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight,
     Sparkles, CheckCircle, Loader2, AlertCircle, TrendingUp, Shield, Zap
 } from "lucide-react";
 import Link from "next/link";
+import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 
-export default function RegisterPage() {
+function RegisterPageContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { register } = useAuth();
 
     const [formData, setFormData] = useState({
@@ -24,6 +26,30 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Handle Google OAuth callback
+    useEffect(() => {
+        const token = searchParams.get("token");
+        const userStr = searchParams.get("user");
+        const googleAuth = searchParams.get("google_auth");
+        const errorParam = searchParams.get("error");
+
+        if (errorParam) {
+            setError("Google sign-up failed. Please try again.");
+            return;
+        }
+
+        if (googleAuth === "success" && token && userStr) {
+            try {
+                const user = JSON.parse(decodeURIComponent(userStr));
+                localStorage.setItem("fh_auth_token", token);
+                localStorage.setItem("fh_user", JSON.stringify(user));
+                router.push("/ai-analyst");
+            } catch (e) {
+                console.error("Failed to parse Google auth response", e);
+            }
+        }
+    }, [searchParams, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,7 +126,7 @@ export default function RegisterPage() {
     const passwordStrength = getPasswordStrength();
 
     return (
-        <div className="min-h-screen w-full flex bg-[#0B1121] text-white overflow-hidden font-sans selection:bg-teal-500/30">
+        <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white overflow-hidden font-sans selection:bg-teal-500/30">
 
             {/* Left Panel - Visual/Brand */}
             <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-slate-950 items-center justify-center p-16">
@@ -163,8 +189,8 @@ export default function RegisterPage() {
             {/* Right Panel - Form */}
             <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10 overflow-y-auto w-full">
                 {/* Mobile Background */}
-                <div className="lg:hidden absolute inset-0 bg-[#0B1121]">
-                    <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-teal-900/20 to-transparent" />
+                <div className="lg:hidden absolute inset-0 bg-slate-50 dark:bg-[#0B1121]">
+                    <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-teal-500/10 dark:from-teal-900/20 to-transparent" />
                 </div>
 
                 <motion.div
@@ -174,8 +200,8 @@ export default function RegisterPage() {
                     className="w-full max-w-lg space-y-6 relative z-10 my-auto py-10"
                 >
                     <div className="text-center lg:text-left">
-                        <h2 className="text-3xl font-bold tracking-tight text-white">Create Account</h2>
-                        <p className="mt-2 text-slate-400">Start your journey with Starta today</p>
+                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create Account</h2>
+                        <p className="mt-2 text-slate-600 dark:text-slate-400">Start your journey with Starta today</p>
                     </div>
 
                     {error && (
@@ -192,64 +218,64 @@ export default function RegisterPage() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Full Name</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
                                 <div className="relative">
                                     <input
                                         type="text"
                                         value={formData.full_name}
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
                                         placeholder="John Doe"
                                     />
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 </div>
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Email address</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email address</label>
                                 <div className="relative">
                                     <input
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
                                         placeholder="name@company.com"
                                     />
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 </div>
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                                    Phone Number <span className="text-slate-500 text-xs font-normal ml-1">(Optional)</span>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                                    Phone Number <span className="text-slate-500 dark:text-slate-500 text-xs font-normal ml-1">(Optional)</span>
                                 </label>
                                 <div className="relative">
                                     <input
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
                                         placeholder="+966 50 123 4567"
                                     />
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 </div>
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
                                 <div className="relative group">
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-12 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
                                         placeholder="Min 8 chars, 1 uppercase, 1 number"
                                     />
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -257,7 +283,7 @@ export default function RegisterPage() {
                                 {/* Password Strength Meter */}
                                 {formData.password && (
                                     <div className="mt-2.5 flex items-center gap-3">
-                                        <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className="flex-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                                             <motion.div
                                                 className={`h-full ${passwordStrength.color}`}
                                                 initial={{ width: 0 }}
@@ -273,16 +299,16 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Confirm Password</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Confirm Password</label>
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         value={formData.confirmPassword}
                                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-10 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
                                         placeholder="Retype password"
                                     />
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                                     {formData.confirmPassword && formData.password === formData.confirmPassword && (
                                         <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
                                     )}
@@ -307,10 +333,17 @@ export default function RegisterPage() {
                         </div>
                     </form>
 
-                    <div className="pt-6 text-center border-t border-slate-800">
-                        <p className="text-slate-500">
+                    {/* Google Sign Up */}
+                    <OrDivider />
+                    <GoogleLoginButton
+                        mode="register"
+                        onError={(err) => setError(err)}
+                    />
+
+                    <div className="pt-6 text-center border-t border-slate-200 dark:border-slate-800">
+                        <p className="text-slate-500 dark:text-slate-500">
                             Already have an account?{' '}
-                            <Link href="/login" className="font-semibold text-teal-400 hover:text-teal-300 transition-colors">
+                            <Link href="/login" className="font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 transition-colors">
                                 Sign in
                             </Link>
                         </p>
@@ -323,5 +356,17 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+            </div>
+        }>
+            <RegisterPageContent />
+        </Suspense>
     );
 }

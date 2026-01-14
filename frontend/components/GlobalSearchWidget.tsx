@@ -62,7 +62,7 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
 
     const { data: funds } = useQuery({
         queryKey: ["funds"],
-        queryFn: fetchFunds,
+        queryFn: () => fetchFunds(),
     });
 
     const { data: actions } = useQuery({
@@ -177,7 +177,7 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
             return (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-50 to-white hover:from-blue-50 hover:to-blue-100 text-slate-500 hover:text-blue-600 transition-all shadow-sm hover:shadow-md border border-slate-100 mx-auto"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-slate-50 to-white dark:from-[#151925] dark:to-[#0B1121] hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-900/20 dark:hover:to-blue-800/20 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm hover:shadow-md border border-slate-100 dark:border-white/5 mx-auto"
                     title="Search (Cmd+K)"
                 >
                     <Search className="w-5 h-5" />
@@ -189,16 +189,16 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
             /* Premium Expanded Search Button */
             <button
                 onClick={() => setIsOpen(true)}
-                className="w-full group relative flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-slate-50/80 to-slate-100/50 hover:from-white hover:to-blue-50 border border-slate-200/60 hover:border-blue-200/60 rounded-xl transition-all shadow-sm hover:shadow-md backdrop-blur-sm overflow-hidden"
+                className="w-full group relative flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-slate-50/80 to-slate-100/50 dark:from-white/5 dark:to-white/5 hover:from-white hover:to-blue-50 dark:hover:from-white/10 dark:hover:to-blue-900/20 border border-slate-200/60 dark:border-white/10 hover:border-blue-200/60 dark:hover:border-blue-500/30 rounded-xl transition-all shadow-sm hover:shadow-md backdrop-blur-sm overflow-hidden"
             >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
 
                 <div className="flex items-center gap-2.5">
-                    <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
-                    <span className="text-sm font-medium text-slate-500 group-hover:text-slate-700">Analytics Search...</span>
+                    <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200">Analytics Search...</span>
                 </div>
 
-                <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded shadow-sm group-hover:border-blue-100 group-hover:text-blue-400">
+                <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded shadow-sm group-hover:border-blue-100 dark:group-hover:border-blue-800 group-hover:text-blue-400">
                     <span className="text-xs">⌘</span>K
                 </kbd>
             </button>
@@ -217,23 +217,23 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
             {/* Search Modal - centered on screen */}
             <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[10vh] px-4 pointer-events-none">
                 <div className="w-full max-w-2xl pointer-events-auto">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-2xl dark:shadow-black/50 border border-slate-200 dark:border-white/10 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
                         {/* Search Input */}
-                        <div className="flex items-center gap-3 p-4 border-b border-slate-100">
-                            <Search className="w-5 h-5 text-slate-400" />
+                        <div className="flex items-center gap-3 p-4 border-b border-slate-100 dark:border-white/5">
+                            <Search className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             <input
                                 type="text"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search stocks, funds, events, insiders..."
-                                className="flex-1 text-lg outline-none text-slate-900 placeholder:text-slate-400 font-medium bg-transparent"
+                                className="flex-1 text-lg outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 font-medium bg-transparent"
                                 autoFocus
                             />
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
                             >
-                                <X className="w-5 h-5 text-slate-400" />
+                                <X className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             </button>
                         </div>
 
@@ -259,16 +259,16 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
                                 <button
                                     key={`${result.type}-${result.id}-${idx}`}
                                     onClick={() => handleSelect(result.link)}
-                                    className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors text-left border-b border-slate-50 last:border-0 group"
+                                    className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left border-b border-slate-50 dark:border-white/5 last:border-0 group"
                                 >
-                                    <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm group-hover:border-slate-200 group-hover:shadow-md transition-all">
+                                    <div className="p-2 bg-white dark:bg-white/5 rounded-lg border border-slate-100 dark:border-white/5 shadow-sm group-hover:border-slate-200 dark:group-hover:border-white/10 group-hover:shadow-md transition-all">
                                         {getIcon(result.type)}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-bold text-slate-900">{result.title}</div>
-                                        <div className="text-sm text-slate-500 font-medium">{result.subtitle}</div>
+                                        <div className="font-bold text-slate-900 dark:text-white">{result.title}</div>
+                                        <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{result.subtitle}</div>
                                     </div>
-                                    <div className="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold text-slate-500 uppercase tracking-wide group-hover:bg-slate-200 transition-colors">
+                                    <div className="px-2 py-1 bg-slate-100 dark:bg-white/10 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide group-hover:bg-slate-200 dark:group-hover:bg-white/20 transition-colors">
                                         {result.type}
                                     </div>
                                 </button>
@@ -276,12 +276,12 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-500">
+                        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                             <div className="flex gap-4">
-                                <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-sm">↑↓</kbd> Navigate</span>
-                                <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-sm">↵</kbd> Select</span>
+                                <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-white dark:bg-white/10 border border-slate-300 dark:border-white/10 rounded shadow-sm">↑↓</kbd> Navigate</span>
+                                <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-white dark:bg-white/10 border border-slate-300 dark:border-white/10 rounded shadow-sm">↵</kbd> Select</span>
                             </div>
-                            <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-sm">ESC</kbd> Close</span>
+                            <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-white dark:bg-white/10 border border-slate-300 dark:border-white/10 rounded shadow-sm">ESC</kbd> Close</span>
                         </div>
                     </div>
                 </div>

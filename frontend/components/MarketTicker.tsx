@@ -22,7 +22,7 @@ export default function MarketTicker() {
     const duration = Math.max(displayTickers.length * 8, 40);
 
     return (
-        <div className="w-full bg-white border-b border-slate-200 py-3 overflow-hidden flex items-center shadow-sm z-50">
+        <div className="w-full bg-white dark:bg-[#151925] border-b border-slate-200 dark:border-white/5 py-3 overflow-hidden flex items-center shadow-sm z-50 transition-colors duration-300">
             <div className="flex whitespace-nowrap">
                 <motion.div
                     key={displayTickers.length} // Force re-render when data loads to update duration
@@ -37,13 +37,13 @@ export default function MarketTicker() {
                 // Given 'Best Practice', we prioritize smooth constant speed here.
                 >
                     {duplicatedTickers.map((item, index) => (
-                        <div key={`${item.symbol}-${index}`} className="flex items-center space-x-3 px-6 border-r border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer transition-colors group">
-                            <span className="font-bold text-sm text-slate-800 font-sans group-hover:text-blue-600 transition-colors">{item.symbol}</span>
+                        <div key={`${item.symbol}-${index}`} className="flex items-center space-x-3 px-6 border-r border-slate-100 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
+                            <span className="font-bold text-sm text-slate-800 dark:text-white font-sans group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.symbol}</span>
                             <div className="flex flex-col leading-none">
-                                <span className={clsx("font-bold text-xs font-mono", (item.change || 0) >= 0 ? "text-emerald-600" : "text-red-600")}>
+                                <span className={clsx("font-bold text-xs font-mono", (item.change || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
                                     {Number(item.last_price || 0).toFixed(2)}
                                 </span>
-                                <span className={clsx("text-[10px] font-bold font-mono", (item.change || 0) >= 0 ? "text-emerald-600" : "text-red-600")}>
+                                <span className={clsx("text-[10px] font-bold font-mono", (item.change || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
                                     {(item.change || 0) >= 0 ? "+" : ""}{Number(item.change_percent || 0).toFixed(2)}%
                                 </span>
                             </div>

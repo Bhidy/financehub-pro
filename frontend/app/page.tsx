@@ -115,7 +115,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pb-12">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] pb-12">
       {/* Premium Ticker Tape */}
       <MarketTicker />
 
@@ -209,8 +209,8 @@ export default function Home() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-6">
           {/* Market Index Card - Premium Design */}
-          <div className="col-span-12 lg:col-span-8 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
+          <div className="col-span-12 lg:col-span-8 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-black/20 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -218,7 +218,7 @@ export default function Home() {
                     <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">DELAYED 5 MIN</span>
                   </div>
                   <div className="flex items-baseline gap-4">
-                    <span className="text-5xl font-black text-slate-900 tracking-tight font-mono">
+                    <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tight font-mono">
                       {indexValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <div className={clsx(
@@ -234,15 +234,15 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <div className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold text-slate-600 flex items-center gap-2">
+                  <div className="px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700">Live History</span>
+                    <span className="text-emerald-700 dark:text-emerald-500">Live History</span>
                   </div>
                 </div>
               </div>
             </div>
             {/* TASI Index Chart - Premium Real-Time */}
-            <div className="p-6 bg-gradient-to-b from-white to-blue-50/10 min-h-[320px]">
+            <div className="p-6 bg-gradient-to-b from-white to-blue-50/10 dark:from-white/5 dark:to-transparent min-h-[320px]">
               <TasiIndexChart />
             </div>
           </div>
@@ -250,10 +250,10 @@ export default function Home() {
           {/* Side Stats */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
             {/* Sector Performance - Real Data */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-100/50 p-5">
+            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-100/50 dark:shadow-black/20 p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-blue-500" />
-                <h3 className="font-bold text-slate-800">Sector Leaders</h3>
+                <h3 className="font-bold text-slate-800 dark:text-white">Sector Leaders</h3>
               </div>
               <div className="space-y-3">
                 {topSectors.length > 0 ? topSectors.map((sector: any, i: number) => (
@@ -261,11 +261,11 @@ export default function Home() {
                     <div className="flex items-center gap-2">
                       <span className={clsx(
                         "w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center",
-                        sector.performance >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                        sector.performance >= 0 ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"
                       )}>
                         {i + 1}
                       </span>
-                      <span className="text-sm font-medium text-slate-700 truncate max-w-[100px]">{sector.sector_name}</span>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate max-w-[100px]">{sector.sector_name}</span>
                     </div>
                     <span className={clsx(
                       "text-sm font-bold font-mono",
@@ -306,20 +306,20 @@ export default function Home() {
           </div>
 
           {/* Market Intelligence Section - Real Sector Data */}
-          <div className="col-span-12 bg-white rounded-2xl border border-slate-100 shadow-lg p-5">
+          <div className="col-span-12 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/50 dark:shadow-black/20 p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <PieChart className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm">Market Intelligence</h3>
-                <p className="text-xs text-slate-500">Breadth & Sector Performance</p>
+                <h3 className="font-bold text-slate-800 dark:text-white text-sm">Market Intelligence</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Breadth & Sector Performance</p>
               </div>
             </div>
 
             {/* Market Breadth Bar - Real Data */}
             <div className="mb-4">
-              <div className="flex items-center gap-2 h-8 rounded-full overflow-hidden bg-slate-100">
+              <div className="flex items-center gap-2 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-white/5">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 flex items-center justify-center text-[11px] font-bold text-white transition-all duration-500"
                   style={{ width: `${(gainersCount / (totalStocks || 1)) * 100}%` }}
@@ -327,7 +327,7 @@ export default function Home() {
                   {gainersCount > 0 && `${gainersCount} Up`}
                 </div>
                 <div
-                  className="h-full bg-slate-300 flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-500"
+                  className="h-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-[11px] font-bold text-slate-600 dark:text-slate-300 transition-all duration-500"
                   style={{ width: `${(unchangedCount / (totalStocks || 1)) * 100}%` }}
                 >
                   {unchangedCount > 0 && `${unchangedCount} Flat`}
@@ -351,21 +351,21 @@ export default function Home() {
                     className={clsx(
                       "p-3 rounded-xl border transition-all hover:shadow-md cursor-pointer text-center",
                       perf > 0
-                        ? "bg-emerald-50 border-emerald-100 hover:border-emerald-200"
+                        ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 hover:border-emerald-200 dark:hover:border-emerald-500/40"
                         : perf < 0
-                          ? "bg-red-50 border-red-100 hover:border-red-200"
-                          : "bg-slate-50 border-slate-100 hover:border-slate-200"
+                          ? "bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20 hover:border-red-200 dark:hover:border-red-500/40"
+                          : "bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/10 hover:border-slate-200 dark:hover:border-white/20"
                     )}
                   >
-                    <div className="text-xs font-bold text-slate-700 truncate">{s.sector_name}</div>
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{s.sector_name}</div>
                     <div className={clsx(
                       "text-sm font-black font-mono mt-1",
-                      perf > 0 ? "text-emerald-600" : perf < 0 ? "text-red-600" : "text-slate-500"
+                      perf > 0 ? "text-emerald-600 dark:text-emerald-400" : perf < 0 ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-500"
                     )}>
                       {perf > 0 ? "+" : ""}{perf.toFixed(2)}%
                     </div>
                     {s.stock_count && (
-                      <div className="text-[10px] text-slate-400 mt-0.5">{s.stock_count} stocks</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{s.stock_count} stocks</div>
                     )}
                   </div>
                 );
@@ -377,7 +377,7 @@ export default function Home() {
         {/* Stock Lists Row - Premium Design */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           {/* Top Gainers */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-emerald-100/30 overflow-hidden">
+          <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-emerald-100/30 dark:shadow-black/20 overflow-hidden">
             <div className="p-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
@@ -393,20 +393,20 @@ export default function Home() {
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-emerald-50 transition-all group"
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center justify-center">
                           {i + 1}
                         </span>
                         <div>
-                          <div className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{stock.symbol}</div>
-                          <div className="text-xs text-slate-400 truncate max-w-[120px]">{stock.name_en}</div>
+                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">{stock.symbol}</div>
+                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold font-mono text-slate-900">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-emerald-600 flex items-center gap-1">
+                        <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
+                        <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                           <ArrowUpRight className="w-3 h-3" />
                           +{Number(stock.change_percent).toFixed(2)}%
                         </div>
@@ -419,7 +419,7 @@ export default function Home() {
           </div>
 
           {/* Top Losers */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-red-100/30 overflow-hidden">
+          <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-red-100/30 dark:shadow-black/20 overflow-hidden">
             <div className="p-4 bg-gradient-to-r from-red-500 to-rose-500 text-white">
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5" />
@@ -435,20 +435,20 @@ export default function Home() {
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-red-50 transition-all group"
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-red-100 text-red-700 text-xs font-bold flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-bold flex items-center justify-center">
                           {i + 1}
                         </span>
                         <div>
-                          <div className="font-bold text-slate-900 group-hover:text-red-700 transition-colors">{stock.symbol}</div>
-                          <div className="text-xs text-slate-400 truncate max-w-[120px]">{stock.name_en}</div>
+                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400 transition-colors">{stock.symbol}</div>
+                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold font-mono text-slate-900">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-red-600 flex items-center gap-1">
+                        <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
+                        <div className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
                           <ArrowDownRight className="w-3 h-3" />
                           {Number(stock.change_percent).toFixed(2)}%
                         </div>
@@ -461,7 +461,7 @@ export default function Home() {
           </div>
 
           {/* Most Active */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-lg shadow-blue-100/30 overflow-hidden">
+          <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-blue-100/30 dark:shadow-black/20 overflow-hidden">
             <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
               <div className="flex items-center gap-2">
                 <Activity className="w-5 h-5" />
@@ -477,20 +477,20 @@ export default function Home() {
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 transition-all group"
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
                           {i + 1}
                         </span>
                         <div>
-                          <div className="font-bold text-slate-900 group-hover:text-blue-700 transition-colors">{stock.symbol}</div>
-                          <div className="text-xs text-slate-400 truncate max-w-[120px]">{stock.name_en}</div>
+                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
+                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold font-mono text-slate-900">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-blue-600">
+                        <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
+                        <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
                           {(Number(stock.volume) / 1000000).toFixed(2)}M
                         </div>
                       </div>

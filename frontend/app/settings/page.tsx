@@ -24,8 +24,8 @@ export default function SettingsPage() {
 
     if (isLoading) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-slate-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <div className="h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-500" />
             </div>
         );
     }
@@ -37,8 +37,8 @@ export default function SettingsPage() {
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-                <p className="text-slate-500">Manage your account preferences and system settings.</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
+                <p className="text-slate-500 dark:text-slate-400">Manage your account preferences and system settings.</p>
             </div>
 
             <SettingsLayout

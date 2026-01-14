@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestUsage } from "@/hooks/useGuestUsage";
 import UsageLimitModal from "@/components/ai/UsageLimitModal";
 import { useMarketSafe } from "@/contexts/MarketContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { clsx } from "clsx";
 
@@ -26,8 +26,9 @@ import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
  * Centered layout for "Mobile App" feel even on desktop
  */
 
-export default function MobileAIAnalystPage() {
+function MobileAIAnalystPageContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { market } = useMarketSafe();
     const [showUsageModal, setShowUsageModal] = useState(false);
@@ -40,6 +41,28 @@ export default function MobileAIAnalystPage() {
 
     // Custom state for market context
     const [contextMarket, setContextMarket] = useState<string>(market);
+
+    // Handle Google OAuth callback - CRITICAL: Store token from URL params
+    useEffect(() => {
+        const token = searchParams.get("token");
+        const userStr = searchParams.get("user");
+        const googleAuth = searchParams.get("google_auth");
+
+        if (googleAuth === "success" && token && userStr) {
+            try {
+                const userData = JSON.parse(decodeURIComponent(userStr));
+                // Store in localStorage - same keys as AuthContext
+                localStorage.setItem("fh_auth_token", token);
+                localStorage.setItem("fh_user", JSON.stringify(userData));
+                // Clean up URL params
+                router.replace("/mobile-ai-analyst");
+                // Force page reload to pick up new auth state
+                window.location.reload();
+            } catch (e) {
+                console.error("Failed to parse Google auth response:", e);
+            }
+        }
+    }, [searchParams, router]);
 
     // Sync local state when global market changes
     useEffect(() => {
@@ -319,5 +342,17 @@ export default function MobileAIAnalystPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function MobileAIAnalystPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+            </div>
+        }>
+            <MobileAIAnalystPageContent />
+        </Suspense>
     );
 }

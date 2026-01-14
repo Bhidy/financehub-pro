@@ -44,13 +44,13 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
     const colors = colorMap[section.color] || colorMap.blue;
 
     return (
-        <div className={`bg-white rounded-2xl border-2 ${colors.border} shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group`}>
+        <div className={`bg-white dark:bg-[#1A1F2E] rounded-2xl border-2 ${colors.border} dark:border-white/5 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group`}>
             {/* Header */}
             <div className={`${colors.light} px-5 py-4 border-b ${colors.border}`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <span className="text-2xl">{section.icon}</span>
-                        <h3 className="font-bold text-gray-800">{section.title}</h3>
+                        <h3 className="font-bold text-gray-800 dark:text-white">{section.title}</h3>
                     </div>
                     <div className={`${colors.bg} text-white text-xs px-3 py-1 rounded-full font-semibold`}>
                         LIVE
@@ -62,10 +62,10 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
             <div className="p-5 space-y-4">
                 {/* Main Metric */}
                 <div className="text-center py-3">
-                    <div className={`text-4xl font-black ${colors.text}`}>
+                    <div className={`text-4xl font-black ${colors.text} dark:text-white`}>
                         {formatNumber(section.total_rows || section.total || 0)}
                     </div>
-                    <div className="text-gray-500 text-sm mt-1">
+                    <div className="text-gray-500 dark:text-slate-400 text-sm mt-1">
                         {section.total_rows !== undefined ? 'Total Rows' : 'Total Items'}
                     </div>
                 </div>
@@ -73,39 +73,39 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
                 {/* Sub Metrics */}
                 <div className="grid grid-cols-2 gap-3">
                     {section.data_points && (
-                        <div className={`${colors.light} rounded-xl p-3 text-center`}>
-                            <div className={`font-bold ${colors.text}`}>{formatNumber(section.data_points)}</div>
-                            <div className="text-xs text-gray-500">Data Points</div>
+                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                            <div className={`font-bold ${colors.text} dark:text-white`}>{formatNumber(section.data_points)}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">Data Points</div>
                         </div>
                     )}
                     {section.unique_symbols && (
-                        <div className={`${colors.light} rounded-xl p-3 text-center`}>
-                            <div className={`font-bold ${colors.text}`}>{section.unique_symbols}</div>
-                            <div className="text-xs text-gray-500">Symbols</div>
+                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                            <div className={`font-bold ${colors.text} dark:text-white`}>{section.unique_symbols}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">Symbols</div>
                         </div>
                     )}
                     {section.unique_stocks && (
-                        <div className={`${colors.light} rounded-xl p-3 text-center`}>
-                            <div className={`font-bold ${colors.text}`}>{section.unique_stocks}</div>
-                            <div className="text-xs text-gray-500">Stocks</div>
+                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                            <div className={`font-bold ${colors.text} dark:text-white`}>{section.unique_stocks}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">Stocks</div>
                         </div>
                     )}
                     {section.with_data && (
-                        <div className={`${colors.light} rounded-xl p-3 text-center`}>
-                            <div className={`font-bold ${colors.text}`}>{section.with_data}</div>
-                            <div className="text-xs text-gray-500">With Data</div>
+                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                            <div className={`font-bold ${colors.text} dark:text-white`}>{section.with_data}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">With Data</div>
                         </div>
                     )}
                     {section.with_risk_metrics && (
-                        <div className={`${colors.light} rounded-xl p-3 text-center`}>
-                            <div className={`font-bold ${colors.text}`}>{section.with_risk_metrics}</div>
-                            <div className="text-xs text-gray-500">With Metrics</div>
+                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                            <div className={`font-bold ${colors.text} dark:text-white`}>{section.with_risk_metrics}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">With Metrics</div>
                         </div>
                     )}
                     {section.coverage !== undefined && (
-                        <div className={`${colors.light} rounded-xl p-3 text-center`}>
-                            <div className={`font-bold ${colors.text}`}>{section.coverage}%</div>
-                            <div className="text-xs text-gray-500">Coverage</div>
+                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                            <div className={`font-bold ${colors.text} dark:text-white`}>{section.coverage}%</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">Coverage</div>
                         </div>
                     )}
                 </div>
@@ -238,7 +238,7 @@ export default function CommandCenterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121]">
             {/* Hero Header */}
             <div className="bg-gradient-to-r from-blue-600 via-teal-500 to-cyan-500 text-white">
                 <div className="max-w-7xl mx-auto px-6 py-8">
@@ -273,7 +273,7 @@ export default function CommandCenterPage() {
                             <button
                                 onClick={fetchData}
                                 disabled={loading}
-                                className="flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 bg-white dark:bg-white/10 text-blue-600 dark:text-blue-400 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                             >
                                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                                 Refresh Data
@@ -296,12 +296,12 @@ export default function CommandCenterPage() {
                 {data?.aggregate && (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                         {/* Total Data Points */}
-                        <div className="bg-white rounded-2xl shadow-lg p-5 border-2 border-blue-100">
+                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-blue-100 dark:border-white/5">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="bg-blue-100 p-2 rounded-xl">
-                                    <Layers className="w-6 h-6 text-blue-600" />
+                                <div className="bg-blue-100 dark:bg-blue-500/20 p-2 rounded-xl">
+                                    <Layers className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <span className="text-gray-500 text-sm font-medium">Total Data Points</span>
+                                <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">Total Data Points</span>
                             </div>
                             <div className="text-3xl font-black text-blue-600">
                                 {formatNumber(data.aggregate.total_data_points)}
@@ -309,12 +309,12 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Total Stocks */}
-                        <div className="bg-white rounded-2xl shadow-lg p-5 border-2 border-emerald-100">
+                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-emerald-100 dark:border-white/5">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="bg-emerald-100 p-2 rounded-xl">
-                                    <TrendingUp className="w-6 h-6 text-emerald-600" />
+                                <div className="bg-emerald-100 dark:bg-emerald-500/20 p-2 rounded-xl">
+                                    <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                                 </div>
-                                <span className="text-gray-500 text-sm font-medium">Stock Tickers</span>
+                                <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">Stock Tickers</span>
                             </div>
                             <div className="text-3xl font-black text-emerald-600">
                                 {data.aggregate.total_stocks}
@@ -322,12 +322,12 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Total Funds */}
-                        <div className="bg-white rounded-2xl shadow-lg p-5 border-2 border-teal-100">
+                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-teal-100 dark:border-white/5">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="bg-teal-100 p-2 rounded-xl">
-                                    <PieChart className="w-6 h-6 text-teal-600" />
+                                <div className="bg-teal-100 dark:bg-teal-500/20 p-2 rounded-xl">
+                                    <PieChart className="w-6 h-6 text-teal-600 dark:text-teal-400" />
                                 </div>
-                                <span className="text-gray-500 text-sm font-medium">Mutual Funds</span>
+                                <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">Mutual Funds</span>
                             </div>
                             <div className="text-3xl font-black text-teal-600">
                                 {data.aggregate.total_funds}
@@ -335,12 +335,12 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Total Tables */}
-                        <div className="bg-white rounded-2xl shadow-lg p-5 border-2 border-orange-100">
+                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-orange-100 dark:border-white/5">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="bg-orange-100 p-2 rounded-xl">
-                                    <Server className="w-6 h-6 text-orange-600" />
+                                <div className="bg-orange-100 dark:bg-orange-500/20 p-2 rounded-xl">
+                                    <Server className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                                 </div>
-                                <span className="text-gray-500 text-sm font-medium">Data Tables</span>
+                                <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">Data Tables</span>
                             </div>
                             <div className="text-3xl font-black text-orange-600">
                                 {data.aggregate.total_tables}
@@ -365,7 +365,7 @@ export default function CommandCenterPage() {
                     <div className="bg-gradient-to-r from-blue-600 to-teal-500 p-2 rounded-xl">
                         <BarChart3 className="w-6 h-6 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800">Data Inventory by Category</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Data Inventory by Category</h2>
                 </div>
 
                 {/* Data Cards Grid */}
@@ -400,10 +400,10 @@ export default function CommandCenterPage() {
                                     <BrainCircuit className="w-7 h-7 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-800">AI Advisor Cloud Status</h3>
+                                    <h3 className="text-xl font-bold text-gray-800 dark:text-slate-800">AI Advisor Cloud Status</h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <div className={`w-2 h-2 rounded-full ${aiStatus?.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
-                                        <p className="text-gray-500 text-sm font-medium">System {aiStatus?.status === 'online' ? 'Operational' : 'Issues Detected'}</p>
+                                        <p className="text-gray-500 dark:text-slate-600 text-sm font-medium">System {aiStatus?.status === 'online' ? 'Operational' : 'Issues Detected'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -542,18 +542,18 @@ export default function CommandCenterPage() {
                 </div>
 
                 {/* Footer Stats */}
-                <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-100">
+                <div className="mt-8 bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-6 border-2 border-gray-100 dark:border-white/5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <Globe className="w-8 h-8 text-blue-500" />
                             <div>
-                                <h3 className="font-bold text-gray-800">FinanceHub Pro Enterprise Database</h3>
-                                <p className="text-gray-500 text-sm">Made with ❤️ by Bhidy • <span className="font-mono bg-blue-50 text-blue-600 px-1 py-0.5 rounded text-xs font-bold">v1.1.1</span></p>
+                                <h3 className="font-bold text-gray-800 dark:text-white">FinanceHub Pro Enterprise Database</h3>
+                                <p className="text-gray-500 dark:text-slate-400 text-sm">Made with ❤️ by Bhidy • <span className="font-mono bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded text-xs font-bold">v1.1.1</span></p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className="text-sm text-gray-500">Generated at</div>
-                            <div className="font-mono text-gray-700">{data?.generated_at ? new Date(data.generated_at).toLocaleString() : '-'}</div>
+                            <div className="text-sm text-gray-500 dark:text-slate-400">Generated at</div>
+                            <div className="font-mono text-gray-700 dark:text-slate-300">{data?.generated_at ? new Date(data.generated_at).toLocaleString() : '-'}</div>
                         </div>
                     </div>
                 </div>            </div>

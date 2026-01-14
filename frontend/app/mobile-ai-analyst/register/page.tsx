@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, ArrowLeft, CheckCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 
-export default function MobileRegisterPage() {
+function MobileRegisterPageContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { register } = useAuth();
 
     const [formData, setFormData] = useState({
@@ -20,6 +22,30 @@ export default function MobileRegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Handle Google OAuth callback
+    useEffect(() => {
+        const token = searchParams.get("token");
+        const userStr = searchParams.get("user");
+        const googleAuth = searchParams.get("google_auth");
+        const errorParam = searchParams.get("error");
+
+        if (errorParam) {
+            setError("Google sign-up failed. Please try again.");
+            return;
+        }
+
+        if (googleAuth === "success" && token && userStr) {
+            try {
+                const user = JSON.parse(decodeURIComponent(userStr));
+                localStorage.setItem("fh_auth_token", token);
+                localStorage.setItem("fh_user", JSON.stringify(user));
+                router.push("/mobile-ai-analyst");
+            } catch (e) {
+                console.error("Failed to parse Google auth response", e);
+            }
+        }
+    }, [searchParams, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -242,6 +268,13 @@ export default function MobileRegisterPage() {
                         </button>
                     </form>
 
+                    {/* Google Sign Up */}
+                    <OrDivider />
+                    <GoogleLoginButton
+                        mode="register"
+                        onError={(err) => setError(err)}
+                    />
+
                     {/* Login link */}
                     <div className="pt-6 text-center mt-4">
                         <p className="text-slate-500 dark:text-slate-500 text-sm">
@@ -254,5 +287,17 @@ export default function MobileRegisterPage() {
                 </motion.div>
             </main>
         </div>
+    );
+}
+
+export default function MobileRegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+            </div>
+        }>
+            <MobileRegisterPageContent />
+        </Suspense>
     );
 }

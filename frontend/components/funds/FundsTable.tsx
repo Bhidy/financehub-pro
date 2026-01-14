@@ -106,10 +106,10 @@ export default function FundsTable({ funds }: FundsTableProps) {
     };
 
     return (
-        <div className="overflow-x-auto bg-white rounded-2xl shadow-xl border border-slate-200">
+        <div className="overflow-x-auto bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/5">
             <table className="w-full border-collapse min-w-[900px]">
                 <thead>
-                    <tr className="bg-gradient-to-r from-blue-600 to-blue-700">
+                    <tr className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-[#0f172a] dark:to-[#1e293b]">
                         <HeaderCell label="Fund Name" keyName="name" />
                         <HeaderCell label="Market" keyName="market" align="center" />
                         <HeaderCell label="Manager" keyName="manager" />
@@ -119,7 +119,7 @@ export default function FundsTable({ funds }: FundsTableProps) {
                         <HeaderCell label="Last Update" keyName="updated" align="right" />
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {sortedFunds.map((fund) => {
                         const profit = safeNumber(fund.returns_ytd ?? fund.ytd_return);
                         const managerName = fund.manager_name_en || fund.manager_name || fund.manager || "—";
@@ -129,15 +129,15 @@ export default function FundsTable({ funds }: FundsTableProps) {
                             <tr
                                 key={fund.fund_id}
                                 onClick={() => router.push(`/funds/${fund.fund_id}`)}
-                                className="group hover:bg-blue-50/50 transition-colors cursor-pointer text-sm"
+                                className="group hover:bg-blue-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer text-sm"
                             >
                                 {/* Fund Name */}
                                 <td className="py-4 px-4">
-                                    <div className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                                    <div className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                                         {fund.fund_name_en || fund.fund_name}
                                     </div>
                                     {fund.is_shariah && (
-                                        <span className="inline-flex items-center gap-0.5 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border border-emerald-100 mt-1">
+                                        <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border border-emerald-100 dark:border-emerald-500/20 mt-1">
                                             <Shield className="w-2.5 h-2.5" /> Shariah
                                         </span>
                                     )}
@@ -145,37 +145,37 @@ export default function FundsTable({ funds }: FundsTableProps) {
 
                                 {/* Market */}
                                 <td className="py-4 px-4 text-center">
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400">
                                         {fund.market_code || "EGX"}
                                     </span>
                                 </td>
 
                                 {/* Manager */}
-                                <td className="py-4 px-4 text-slate-700 text-sm max-w-[200px] truncate" title={managerName}>
+                                <td className="py-4 px-4 text-slate-700 dark:text-slate-300 text-sm max-w-[200px] truncate" title={managerName}>
                                     {managerName}
                                 </td>
 
                                 {/* Owner (using manager for now - same data source) */}
-                                <td className="py-4 px-4 text-slate-600 text-sm max-w-[180px] truncate" title={managerName}>
+                                <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm max-w-[180px] truncate" title={managerName}>
                                     {managerName}
                                 </td>
 
                                 {/* Current Price (NAV) */}
-                                <td className="py-4 px-4 text-right font-mono font-bold text-slate-800">
+                                <td className="py-4 px-4 text-right font-mono font-bold text-slate-800 dark:text-white">
                                     {Number(fund.latest_nav).toFixed(2)}
-                                    <span className="text-[10px] text-slate-400 ml-1 font-sans">{fund.currency || 'EGP'}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1 font-sans">{fund.currency || 'EGP'}</span>
                                 </td>
 
                                 {/* Profit % */}
                                 <td className={clsx(
                                     "py-4 px-4 text-right font-mono font-semibold",
-                                    profit !== null && (profit >= 0 ? "text-emerald-600" : "text-red-500")
+                                    profit !== null && (profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400")
                                 )}>
                                     {profit !== null ? `${profit > 0 ? "+" : ""}${profit.toFixed(2)}%` : "—"}
                                 </td>
 
                                 {/* Last Update */}
-                                <td className="py-4 px-4 text-right text-slate-500 text-sm">
+                                <td className="py-4 px-4 text-right text-slate-500 dark:text-slate-400 text-sm">
                                     {formatDate(lastUpdate)}
                                 </td>
                             </tr>

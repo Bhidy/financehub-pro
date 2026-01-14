@@ -70,14 +70,14 @@ export default function ProfileTab() {
     return (
         <div className="space-y-8 max-w-2xl">
             <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">Personal Information</h3>
-                <p className="text-sm text-slate-500 mb-6">Update your personal details here.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Personal Information</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Update your personal details here.</p>
 
                 {successMsg && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 p-4 bg-emerald-50 text-emerald-600 rounded-xl flex items-center gap-2 text-sm font-medium border border-emerald-100"
+                        className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center gap-2 text-sm font-medium border border-emerald-100 dark:border-emerald-500/20 backdrop-blur-sm"
                     >
                         <Check className="w-4 h-4" />
                         {successMsg}
@@ -88,7 +88,7 @@ export default function ProfileTab() {
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 text-sm font-medium border border-red-100"
+                        className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl flex items-center gap-2 text-sm font-medium border border-red-100 dark:border-red-500/20 backdrop-blur-sm"
                     >
                         <AlertCircle className="w-4 h-4" />
                         {errorMsg}
@@ -98,27 +98,27 @@ export default function ProfileTab() {
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</label>
+                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Full Name</label>
                             <div className="relative">
-                                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                                 <input
                                     type="text"
                                     value={formData.full_name}
                                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                                     placeholder="John Doe"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Phone Number</label>
+                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
                             <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                                     placeholder="+1 234 567 890"
                                 />
                             </div>
@@ -126,14 +126,14 @@ export default function ProfileTab() {
                     </div>
 
                     <div className="space-y-2 opacity-60 cursor-not-allowed">
-                        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email Address</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Address</label>
                         <input
                             type="email"
                             value={user?.email || ""}
                             disabled
-                            className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-sm"
+                            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-slate-400 text-sm"
                         />
-                        <p className="text-xs text-slate-400">Email address cannot be changed.</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">Email address cannot be changed.</p>
                     </div>
 
                     <div className="flex justify-end">
@@ -148,39 +148,39 @@ export default function ProfileTab() {
                 </form>
             </div>
 
-            <hr className="border-slate-100" />
+            <hr className="border-slate-100 dark:border-white/5" />
 
             <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">Security</h3>
-                <p className="text-sm text-slate-500 mb-6">Manage your password and account security.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Security</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Manage your password and account security.</p>
 
                 <form onSubmit={handlePasswordChange} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Password</label>
+                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Current Password</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                                 <input
                                     type="password"
                                     value={passData.old_password}
                                     onChange={(e) => setPassData({ ...passData, old_password: e.target.value })}
                                     required
-                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                                     placeholder="••••••••"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">New Password</label>
+                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">New Password</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                                 <input
                                     type="password"
                                     value={passData.new_password}
                                     onChange={(e) => setPassData({ ...passData, new_password: e.target.value })}
                                     required
                                     minLength={8}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -191,7 +191,7 @@ export default function ProfileTab() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-6 py-2.5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update Password"}
                         </button>

@@ -19,8 +19,8 @@ export default function NotificationsTab() {
     return (
         <div className="max-w-2xl space-y-8">
             <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">Notification Preferences</h3>
-                <p className="text-sm text-slate-500 mb-6">Control when and how we contact you.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Notification Preferences</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Control when and how we contact you.</p>
 
                 <div className="space-y-4">
                     <NotificationItem
@@ -59,21 +59,21 @@ export default function NotificationsTab() {
 
 function NotificationItem({ icon: Icon, title, description, isOn, onToggle }: any) {
     return (
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
             <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-white rounded-lg shadow-sm text-slate-600">
+                <div className="p-2.5 bg-white dark:bg-white/10 rounded-lg shadow-sm text-slate-600 dark:text-slate-300">
                     <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                    <h4 className="text-sm font-bold text-slate-900">{title}</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>
                 </div>
             </div>
 
             <button
                 onClick={onToggle}
                 className={`relative w-11 h-6 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                    ${isOn ? 'bg-blue-600' : 'bg-slate-200'}`}
+                    ${isOn ? 'bg-blue-600' : 'bg-slate-200 dark:bg-white/10'}`}
             >
                 <motion.span
                     layout

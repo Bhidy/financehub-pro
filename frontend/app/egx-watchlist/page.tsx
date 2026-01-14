@@ -119,9 +119,13 @@ export default function WatchlistPage() {
                                     filtered.map((stock, i) => {
                                         const isPos = (stock.change_pct || 0) >= 0;
                                         return (
-                                            <tr key={stock.isin} className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50/80 dark:hover:bg-white/5 transition-colors group">
+                                            <tr
+                                                key={stock.isin}
+                                                className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50/80 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                                                onClick={() => window.location.href = `/egx/${stock.symbol}`}
+                                            >
                                                 <td className="p-5">
-                                                    <div className="flex items-center gap-3">
+                                                    <Link href={`/egx/${stock.symbol}`} className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                                                         <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-xs font-black text-slate-700 dark:text-white group-hover:bg-slate-900 group-hover:text-white transition-colors">
                                                             {stock.symbol ? stock.symbol.substring(0, 2) : '??'}
                                                         </div>
@@ -129,7 +133,7 @@ export default function WatchlistPage() {
                                                             <div className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
                                                             <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[140px]">{stock.name_en}</div>
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 </td>
                                                 <td className="p-5 text-right">
                                                     <div className="font-bold text-slate-900 dark:text-white">{fmt(stock.last_price)}</div>

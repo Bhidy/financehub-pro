@@ -1,0 +1,39 @@
+name: Enterprise Data Reservoir Sync
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Run every 4 hours (Free tier allows this comfortably)
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  fill-reservoir:
+    name: "Ingest Deep Financial Data"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v3
+        
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          
+      - name: Install Enterprise Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install yfinance asyncpg pandas requests beautifulsoup4 httpx python-dotenv
+          
+      - name: Run Primary Ingestion (Yahoo Finance)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python ingestion/populate_yahoo_reservoir.py
+          
+      - name: Run Gap-Fill Ingestion (StockAnalysis)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python ingestion/populate_from_stockanalysis.py

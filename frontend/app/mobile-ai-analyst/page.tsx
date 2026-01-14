@@ -54,15 +54,14 @@ function MobileAIAnalystPageContent() {
                 // Store in localStorage - same keys as AuthContext
                 localStorage.setItem("fh_auth_token", token);
                 localStorage.setItem("fh_user", JSON.stringify(userData));
-                // Clean up URL params
-                router.replace("/mobile-ai-analyst");
-                // Force page reload to pick up new auth state
-                window.location.reload();
+
+                // Force navigation to clean URL (prevents infinite reload loop)
+                window.location.href = "/mobile-ai-analyst";
             } catch (e) {
                 console.error("Failed to parse Google auth response:", e);
             }
         }
-    }, [searchParams, router]);
+    }, [searchParams]);
 
     // Sync local state when global market changes
     useEffect(() => {

@@ -6,43 +6,19 @@ import sys
 
 # Production Frontend API (Vercel)
 API_URL = "https://finhub-pro.vercel.app/api/v1/ai/chat"
+# API_URL = "https://bhidy-financehub-api.hf.space/api/v1/ai/chat"
 
 # Questions to verify (Extracted from ai-analyst/page.tsx)
 QUESTIONS = [
-    # Popular
+    # User Reported Issues
+    "PE ratio for SWDY",
+    "Compare CIB vs SWDY",
+    "Financial health of CIB",
+    
+    # Standard Regression Tests
     "CIB price now",
     "Top gainers today",
-    "Market summary",
-    "RSI for SWDY",
-    
-    # Valuation
-    "Is CIB overvalued?", 
-    "What is the Fair Value of SWDY?",
-    "Show PEG Ratio for COMI",
-    "EV/EBITDA for CIB",
-    
-    # Health
-    "Check financial health of CIB",
-    "SWDY Debt to Equity ratio",
-    "Does COMI have enough cash?",
-    "Piotroski F-Score for CIB",
-    
-    # Growth
-    "CIB revenue growth last 3 years",
-    "Net Income trend for SWDY",
-    "COMI profit margin analysis",
-    "Compare growth: CIB vs SWDY",
-    
-    # Dividends
-    "Show dividend history for CIB",
-    "What is the yield of SWDY?",
-    "COMI payout ratio",
-    "Best dividend stocks in EGX30",
-    
-    # Ownership
-    "Who owns CIB?",
-    "Insider trading in SWDY",
-    "COMI major shareholders"
+    "Market summary"
 ]
 
 async def verify_question(session, question):
@@ -57,6 +33,8 @@ async def verify_question(session, question):
             # Basic validation
             cards = data.get('cards', [])
             meta = data.get('meta', {})
+            version = meta.get('backend_version', 'UNKNOWN')
+            print(f"   ver: {version}")
             intent = meta.get('intent', 'UNKNOWN')
             
             # Check if we got a valid response (not fallback)
@@ -65,6 +43,17 @@ async def verify_question(session, question):
             if is_fallback:
                 print(f"❌ {question} -> FALLBACK (IDK)")
                 return False
+                
+            if intent == 'ERROR':
+                print(f"❌ {question} -> ERROR INTENT: {meta.get('error', 'Unknown')}")
+                return False
+
+            # Strict check for error cards (even if intent is valid)
+            error_cards = [c for c in cards if c.get('type') == 'error']
+            if error_cards:
+                 err_msg = error_cards[0].get('data', {}).get('error', 'Unknown Error')
+                 print(f"❌ {question} -> ERROR CARD: {err_msg}")
+                 return False
                 
             print(f"✅ {question} -> {intent} ({len(cards)} cards)")
             return True

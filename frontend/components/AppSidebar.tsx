@@ -62,7 +62,7 @@ export default function Sidebar() {
     return (
         <aside
             className={clsx(
-                "h-screen flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 bg-white shadow-2xl shadow-slate-200/20 z-50",
+                "h-screen flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#0B1121] shadow-2xl shadow-slate-200/20 dark:shadow-black/20 z-50",
                 widthClass
             )}
         >
@@ -78,8 +78,8 @@ export default function Sidebar() {
 
                     {!collapsed && (
                         <div className="flex flex-col">
-                            <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">
-                                Finance<span className="text-blue-600">Hub</span>
+                            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+                                Finance<span className="text-blue-600 dark:text-blue-500">Hub</span>
                             </span>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
                                 Pro Terminal
@@ -95,14 +95,14 @@ export default function Sidebar() {
                     <GlobalSearch collapsed={collapsed} />
                 </div>
                 {collapsed && (
-                    <button className="w-10 h-10 mx-auto rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <button className="w-10 h-10 mx-auto rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
                         <ScanLine className="w-5 h-5" />
                     </button>
                 )}
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200">
+            <nav className="flex-1 overflow-y-auto px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10">
                 {NAV_ITEMS.map((item) => {
                     const resolvedHref = (item as any).dynamicHref
                         ? (market === 'EGX' ? '/egx/COMI' : '/symbol/2222')
@@ -126,8 +126,8 @@ export default function Sidebar() {
                                 "group relative flex items-center py-3 rounded-xl font-medium text-[13px] transition-all duration-300 ease-out",
                                 collapsed ? "justify-center px-0" : "px-4 gap-3.5",
                                 reallyActive
-                                    ? "bg-slate-50 text-slate-900"
-                                    : "text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-lg hover:shadow-slate-100/50"
+                                    ? "bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white"
+                                    : "text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white hover:shadow-lg hover:shadow-slate-100/50 dark:hover:shadow-none"
                             )}
                         >
                             {/* Active Indicator Line */}
@@ -141,7 +141,7 @@ export default function Sidebar() {
                             {/* Icon Box */}
                             <div className={clsx(
                                 "relative w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-300",
-                                reallyActive ? colors.activeBg : `bg-white ${colors.iconText} group-hover:scale-110 shadow-sm shadow-slate-100 border border-slate-100`
+                                reallyActive ? colors.activeBg : `bg-white dark:bg-[#151925] ${colors.iconText} dark:text-slate-400 group-hover:scale-110 shadow-sm shadow-slate-100 dark:shadow-none border border-slate-100 dark:border-white/5`
                             )}>
                                 <Icon className={clsx(
                                     "w-[18px] h-[18px] transition-colors",
@@ -152,7 +152,7 @@ export default function Sidebar() {
                             {!collapsed && (
                                 <span className={clsx(
                                     "font-semibold tracking-wide",
-                                    reallyActive ? "text-slate-900" : "text-slate-500 group-hover:text-slate-700"
+                                    reallyActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
                                 )}>
                                     {item.label}
                                 </span>
@@ -170,7 +170,7 @@ export default function Sidebar() {
             </nav>
 
             {/* Footer Control Panel */}
-            <div className="p-4 border-t border-slate-100">
+            <div className="p-4 border-t border-slate-100 dark:border-white/5">
                 <div className={clsx(
                     "flex items-center gap-2",
                     collapsed ? "flex-col" : "justify-between"
@@ -180,7 +180,7 @@ export default function Sidebar() {
                         onClick={logout}
                         className={clsx(
                             "flex items-center justify-center rounded-xl transition-all duration-200 group relative",
-                            collapsed ? "w-10 h-10 hover:bg-rose-50 text-slate-400 hover:text-rose-600" : "flex-1 py-2.5 px-3 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 gap-2"
+                            collapsed ? "w-10 h-10 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400" : "flex-1 py-2.5 px-3 bg-slate-50 dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 gap-2"
                         )}
                         title="Logout"
                     >
@@ -195,7 +195,7 @@ export default function Sidebar() {
                     <button
                         onClick={() => setCollapsed(!collapsed)}
                         className={clsx(
-                            "flex items-center justify-center rounded-xl transition-all duration-200 hover:bg-slate-100 text-slate-400 hover:text-slate-900",
+                            "flex items-center justify-center rounded-xl transition-all duration-200 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white",
                             collapsed ? "w-10 h-10" : "w-10 h-10"
                         )}
                         title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}

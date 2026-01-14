@@ -174,6 +174,20 @@ export default function EnterpriseStockProfile() {
     const [isWatched, setIsWatched] = useState(false);
     const [chartRange, setChartRange] = useState('1Y');
 
+    // Chart Data Preparation - MUST be before any conditional returns
+    const chartData = useMemo(() => {
+        const h = data?.history || [];
+        if (!h?.length) return [];
+        return h.slice(-252).map((item: any) => ({
+            date: item.date?.split('T')[0] || item.date,
+            price: item.close,
+            volume: item.volume,
+            open: item.open,
+            high: item.high,
+            low: item.low
+        }));
+    }, [data?.history]);
+
     // Data Fetching (Hybrid System)
     useEffect(() => {
         if (!symbol) return;
@@ -266,25 +280,12 @@ export default function EnterpriseStockProfile() {
 
     const p = data.profile;
     const f = data.fundamentals || {};
-    const h = data.history || [];
+    const h = data?.history || [];
 
     const isPositive = (p.regularMarketChange || p.change || 0) >= 0;
     const currentPrice = p.regularMarketPrice || p.price || p.last_price;
     const priceChange = p.regularMarketChange || p.change || 0;
     const priceChangePct = p.regularMarketChangePercent || p.change_pct || 0;
-
-    // Chart Data Preparation
-    const chartData = useMemo(() => {
-        if (!h?.length) return [];
-        return h.slice(-252).map((item: any) => ({
-            date: item.date?.split('T')[0] || item.date,
-            price: item.close,
-            volume: item.volume,
-            open: item.open,
-            high: item.high,
-            low: item.low
-        }));
-    }, [h]);
 
     const tabs = [
         { id: 'summary', label: 'Summary', icon: LayoutDashboard },

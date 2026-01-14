@@ -19,7 +19,7 @@ import {
 import clsx from 'clsx';
 
 // ============================================================================
-// PREMIUM DESIGN SYSTEM
+// 2026 ULTRA-PREMIUM DESIGN SYSTEM
 // ============================================================================
 
 const formatNumber = (n: any, decimals = 2) => {
@@ -51,20 +51,161 @@ const formatDate = (timestamp: number) => {
     });
 };
 
-// ============================================================================
-// PREMIUM COMPONENTS
-// ============================================================================
+// Aurora Gradient SVG Definitions for Charts
+const AuroraGradients = () => (
+    <defs>
+        {/* Cyan Aurora */}
+        <linearGradient id="auroraCyan" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#00d4ff" stopOpacity={0.8} />
+            <stop offset="50%" stopColor="#0ea5e9" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
+        </linearGradient>
+        {/* Purple Aurora */}
+        <linearGradient id="auroraPurple" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a855f7" stopOpacity={0.8} />
+            <stop offset="50%" stopColor="#8b5cf6" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#7c3aed" stopOpacity={0} />
+        </linearGradient>
+        {/* Emerald Aurora */}
+        <linearGradient id="auroraEmerald" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity={0.8} />
+            <stop offset="50%" stopColor="#059669" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#047857" stopOpacity={0} />
+        </linearGradient>
+        {/* Rose Aurora */}
+        <linearGradient id="auroraRose" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.8} />
+            <stop offset="50%" stopColor="#e11d48" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#be123c" stopOpacity={0} />
+        </linearGradient>
+        {/* Horizontal Spectrum */}
+        <linearGradient id="auroraSpectrum" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#f43f5e" />
+            <stop offset="25%" stopColor="#f59e0b" />
+            <stop offset="50%" stopColor="#10b981" />
+            <stop offset="75%" stopColor="#0ea5e9" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+        </linearGradient>
+        {/* Glow Filter */}
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+    </defs>
+);
 
-const GlassCard = ({ children, className = '', noPadding = false }: any) => (
+// Ultra-Premium Radial Gauge Component
+const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: any) => {
+    const safeValue = Math.min(Math.max(value || 0, 0), max);
+    const percentage = (safeValue / max) * 100;
+    const strokeWidth = size * 0.08;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+    const colors: any = {
+        cyan: { stroke: '#00d4ff', glow: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.6))' },
+        purple: { stroke: '#a855f7', glow: 'drop-shadow(0 0 8px rgba(168, 85, 247, 0.6))' },
+        emerald: { stroke: '#10b981', glow: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' },
+        rose: { stroke: '#f43f5e', glow: 'drop-shadow(0 0 8px rgba(244, 63, 94, 0.6))' },
+        amber: { stroke: '#f59e0b', glow: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))' },
+    };
+
+    return (
+        <div className="relative flex flex-col items-center">
+            <svg width={size} height={size} className="transform -rotate-90">
+                {/* Background Track */}
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    className="text-slate-200 dark:text-slate-700"
+                />
+                {/* Progress Arc */}
+                <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    fill="none"
+                    stroke={colors[color]?.stroke || colors.cyan.stroke}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    style={{ filter: colors[color]?.glow || colors.cyan.glow, transition: 'stroke-dashoffset 1s ease-out' }}
+                />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{formatPercent(value, true)}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</span>
+            </div>
+        </div>
+    );
+};
+
+// Mini Sparkline for KPI Cards
+const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
+    if (!data?.length) return null;
+    const values = data.slice(-20).map((d: any) => d.close || d.price || d.value || 0);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const width = 100;
+
+    const points = values.map((v: number, i: number) => {
+        const x = (i / (values.length - 1)) * width;
+        const y = height - ((v - min) / range) * height;
+        return `${x},${y}`;
+    }).join(' ');
+
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ height }}>
+            <defs>
+                <linearGradient id={`spark-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={color} stopOpacity={0} />
+                </linearGradient>
+            </defs>
+            <polygon
+                points={`0,${height} ${points} ${width},${height}`}
+                fill={`url(#spark-${color.replace('#', '')})`}
+            />
+            <polyline
+                points={points}
+                fill="none"
+                stroke={color}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ filter: `drop-shadow(0 0 4px ${color}80)` }}
+            />
+        </svg>
+    );
+};
+
+// Enhanced Glass Card with Aurora Border
+const GlassCard = ({ children, className = '', noPadding = false, aurora = false }: any) => (
     <div className={clsx(
         "relative overflow-hidden rounded-3xl",
-        "bg-white/70 dark:bg-slate-900/70",
+        "bg-white/80 dark:bg-slate-900/80",
         "backdrop-blur-xl",
-        "border border-slate-200/50 dark:border-slate-700/50",
-        "shadow-xl shadow-slate-900/5 dark:shadow-black/20",
+        aurora
+            ? "border border-transparent bg-clip-padding"
+            : "border border-slate-200/50 dark:border-slate-700/50",
+        "shadow-xl shadow-slate-900/5 dark:shadow-black/30",
         !noPadding && "p-6",
+        "transition-all duration-500 hover:shadow-2xl",
         className
     )}>
+        {aurora && (
+            <div className="absolute inset-0 -z-10 rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 opacity-50" />
+        )}
         {children}
     </div>
 );
@@ -507,6 +648,136 @@ export default function EnterpriseStockProfile() {
                                 color={(p.fiftyTwoWeekChangePercent || 0) >= 0 ? 'green' : 'red'}
                             />
                         </div>
+
+                        {/* === 2026 ULTRA-PREMIUM VISUALIZATION SECTION === */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+
+                            {/* Performance Gauges */}
+                            <GlassCard aurora className="flex flex-col">
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-cyan-500" />
+                                    Performance Momentum
+                                </h3>
+                                <div className="flex-1 flex items-center justify-around">
+                                    <RadialGauge
+                                        value={Math.min(100, Math.max(-100, p.fiftyTwoWeekChangePercent || 0))}
+                                        max={100}
+                                        label="52W Return"
+                                        color={(p.fiftyTwoWeekChangePercent || 0) >= 0 ? 'emerald' : 'rose'}
+                                        size={110}
+                                    />
+                                    <RadialGauge
+                                        value={Math.min(100, Math.max(-100, (p.fiftyDayAverageChangePercent || 0) * 100))}
+                                        max={100}
+                                        label="vs 50D MA"
+                                        color={(p.fiftyDayAverageChangePercent || 0) >= 0 ? 'cyan' : 'amber'}
+                                        size={110}
+                                    />
+                                </div>
+                                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                    <div className="text-center">
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">Volume Trend (20D)</span>
+                                        <MiniSparkline data={chartData} color="#00d4ff" height={50} />
+                                    </div>
+                                </div>
+                            </GlassCard>
+
+                            {/* Valuation Radar */}
+                            <GlassCard className="flex flex-col">
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <Scale className="w-5 h-5 text-purple-500" />
+                                    Valuation Profile
+                                </h3>
+                                <div className="flex-1 min-h-[250px]">
+                                    <ResponsiveContainer>
+                                        <RadarChart data={[
+                                            { metric: 'P/E', value: Math.min(100, ((p.trailingPE || f.pe_ratio || 15) / 30) * 100), fullMark: 100 },
+                                            { metric: 'P/B', value: Math.min(100, ((p.priceToBook || f.price_to_book || 1) / 5) * 100), fullMark: 100 },
+                                            { metric: 'Div Yield', value: Math.min(100, ((p.trailingAnnualDividendYield || f.dividend_yield || 0) * 100) * 10), fullMark: 100 },
+                                            { metric: 'ROE', value: Math.min(100, (f.return_on_equity || 0) * 100), fullMark: 100 },
+                                            { metric: 'Margin', value: Math.min(100, (f.profit_margin || 0) * 100), fullMark: 100 },
+                                        ]}>
+                                            <PolarGrid stroke="#334155" strokeOpacity={0.3} />
+                                            <PolarAngleAxis
+                                                dataKey="metric"
+                                                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
+                                            />
+                                            <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} axisLine={false} />
+                                            <Radar
+                                                name="Score"
+                                                dataKey="value"
+                                                stroke="#8b5cf6"
+                                                fill="url(#auroraPurple)"
+                                                fillOpacity={0.6}
+                                                strokeWidth={2}
+                                                dot={{ fill: '#8b5cf6', strokeWidth: 0, r: 4 }}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: '#0f172a',
+                                                    border: '1px solid #334155',
+                                                    borderRadius: 12,
+                                                    color: '#fff',
+                                                    boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)'
+                                                }}
+                                            />
+                                        </RadarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </GlassCard>
+
+                            {/* Financial Health Cards */}
+                            <GlassCard className="flex flex-col">
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-emerald-500" />
+                                    Financial Highlights
+                                </h3>
+                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20">
+                                        <p className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Profit Margin</p>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
+                                            {formatPercent(f.profit_margin)}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20">
+                                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">ROE</p>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
+                                            {formatPercent(f.return_on_equity)}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20">
+                                        <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Div Yield</p>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
+                                            {formatPercent(p.trailingAnnualDividendYield || f.dividend_yield)}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/20">
+                                        <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Beta</p>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">
+                                            {formatNumber(f.beta || p.beta, 2)}
+                                        </p>
+                                    </div>
+                                </div>
+                                {/* Volume Comparison Bar */}
+                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                    <div className="flex justify-between text-xs font-medium mb-2">
+                                        <span className="text-slate-500">Today vs Avg Volume</span>
+                                        <span className={clsx(
+                                            "font-bold",
+                                            ((p.volume || 0) / (p.averageDailyVolume3Month || 1)) >= 1 ? "text-emerald-500" : "text-slate-400"
+                                        )}>
+                                            {(((p.volume || 0) / (p.averageDailyVolume3Month || 1)) * 100).toFixed(0)}%
+                                        </span>
+                                    </div>
+                                    <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all duration-1000"
+                                            style={{ width: `${Math.min(100, ((p.volume || 0) / (p.averageDailyVolume3Month || 1)) * 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        </div>
                     </div>
                 )}
 
@@ -721,6 +992,131 @@ export default function EnterpriseStockProfile() {
                                 </div>
                             </GlassCard>
                         )}
+
+                        {/* === 2026 ULTRA-PREMIUM FINANCIAL VISUALIZATIONS === */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                            {/* Margin Waterfall Chart */}
+                            <GlassCard aurora>
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <BarChart3 className="w-5 h-5 text-cyan-500" />
+                                    Margin Analysis
+                                </h3>
+                                <div className="h-[280px]">
+                                    <ResponsiveContainer>
+                                        <BarChart
+                                            data={[
+                                                { name: 'Gross', value: (f.gross_margin || 0) * 100, fill: '#00d4ff' },
+                                                { name: 'Operating', value: (f.operating_margin || 0) * 100, fill: '#8b5cf6' },
+                                                { name: 'EBITDA', value: (f.ebitda_margin || 0) * 100, fill: '#a855f7' },
+                                                { name: 'Net', value: (f.profit_margin || 0) * 100, fill: '#10b981' },
+                                            ]}
+                                            layout="vertical"
+                                            margin={{ left: 10, right: 30 }}
+                                        >
+                                            <defs>
+                                                <AuroraGradients />
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} horizontal={false} />
+                                            <XAxis
+                                                type="number"
+                                                domain={[0, 100]}
+                                                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                                tickFormatter={(v) => `${v}%`}
+                                            />
+                                            <YAxis
+                                                type="category"
+                                                dataKey="name"
+                                                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                                                width={80}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: '#0f172a',
+                                                    border: '1px solid #334155',
+                                                    borderRadius: 12,
+                                                    color: '#fff',
+                                                    boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)'
+                                                }}
+                                                formatter={(value: any) => [`${value.toFixed(2)}%`, 'Margin']}
+                                            />
+                                            <Bar
+                                                dataKey="value"
+                                                radius={[0, 8, 8, 0]}
+                                                fill="url(#auroraCyan)"
+                                            >
+                                                {[
+                                                    { fill: '#00d4ff' },
+                                                    { fill: '#8b5cf6' },
+                                                    { fill: '#a855f7' },
+                                                    { fill: '#10b981' },
+                                                ].map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.fill} style={{ filter: `drop-shadow(0 0 6px ${entry.fill}60)` }} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </GlassCard>
+
+                            {/* Returns Comparison */}
+                            <GlassCard aurora>
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <TrendingUp className="w-5 h-5 text-emerald-500" />
+                                    Returns Profile
+                                </h3>
+                                <div className="h-[280px]">
+                                    <ResponsiveContainer>
+                                        <BarChart
+                                            data={[
+                                                { name: 'ROA', value: (f.return_on_assets || 0) * 100 },
+                                                { name: 'ROE', value: (f.return_on_equity || 0) * 100 },
+                                            ]}
+                                            margin={{ top: 20, bottom: 20 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                                            />
+                                            <YAxis
+                                                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                                tickFormatter={(v) => `${v}%`}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: '#0f172a',
+                                                    border: '1px solid #334155',
+                                                    borderRadius: 12,
+                                                    color: '#fff',
+                                                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)'
+                                                }}
+                                                formatter={(value: any) => [`${value.toFixed(2)}%`, 'Return']}
+                                            />
+                                            <Bar
+                                                dataKey="value"
+                                                radius={[8, 8, 0, 0]}
+                                                maxBarSize={80}
+                                            >
+                                                <Cell fill="#00d4ff" style={{ filter: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.5))' }} />
+                                                <Cell fill="#10b981" style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                {/* Additional Return Metrics */}
+                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
+                                    <div className="text-center p-3 rounded-xl bg-gradient-to-br from-cyan-500/10 to-transparent">
+                                        <p className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase">Total Cash</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatLarge(f.total_cash)}</p>
+                                    </div>
+                                    <div className="text-center p-3 rounded-xl bg-gradient-to-br from-emerald-500/10 to-transparent">
+                                        <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Free Cash Flow</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatLarge(f.free_cash_flow)}</p>
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        </div>
                     </div>
                 )}
 
@@ -843,6 +1239,177 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Exchange Delay" value={p.exchangeDataDelayedBy ? `${p.exchangeDataDelayedBy} min` : '—'} />
                                     <DataRow label="Source Interval" value={p.sourceInterval ? `${p.sourceInterval} min` : '—'} />
                                     <DataRow label="First Trade Date" value={p.firstTradeDateMilliseconds ? formatDate(p.firstTradeDateMilliseconds / 1000) : '—'} />
+                                </div>
+                            </GlassCard>
+                        </div>
+
+                        {/* === 2026 ULTRA-PREMIUM STATISTICS VISUALIZATIONS === */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+
+                            {/* Volume Distribution Chart */}
+                            <GlassCard aurora className="lg:col-span-2">
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <BarChart3 className="w-5 h-5 text-cyan-500" />
+                                    Volume History (Last 30 Days)
+                                </h3>
+                                <div className="h-[200px]">
+                                    <ResponsiveContainer>
+                                        <BarChart data={chartData.slice(-30)}>
+                                            <defs>
+                                                <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#00d4ff" stopOpacity={0.8} />
+                                                    <stop offset="100%" stopColor="#00d4ff" stopOpacity={0.2} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
+                                            <XAxis
+                                                dataKey="date"
+                                                tick={{ fill: '#94a3b8', fontSize: 10 }}
+                                                tickFormatter={(v) => v?.split('-').slice(1).join('/')}
+                                            />
+                                            <YAxis
+                                                tick={{ fill: '#94a3b8', fontSize: 10 }}
+                                                tickFormatter={(v) => formatLarge(v)}
+                                                width={60}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: '#0f172a',
+                                                    border: '1px solid #334155',
+                                                    borderRadius: 12,
+                                                    color: '#fff',
+                                                    boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)'
+                                                }}
+                                                formatter={(value: any) => [formatLarge(value), 'Volume']}
+                                                labelFormatter={(label) => `Date: ${label}`}
+                                            />
+                                            <Bar
+                                                dataKey="volume"
+                                                fill="url(#volumeGradient)"
+                                                radius={[4, 4, 0, 0]}
+                                            />
+                                            <ReferenceLine
+                                                y={p.averageDailyVolume3Month || 0}
+                                                stroke="#f59e0b"
+                                                strokeDasharray="5 5"
+                                                label={{ value: '3M Avg', fill: '#f59e0b', fontSize: 10 }}
+                                            />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </GlassCard>
+
+                            {/* Moving Averages Comparison */}
+                            <GlassCard aurora>
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <ChartLine className="w-5 h-5 text-purple-500" />
+                                    Price vs Moving Averages
+                                </h3>
+                                <div className="space-y-6">
+                                    {/* Current Price vs 50D MA */}
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">vs 50-Day MA</span>
+                                            <span className={clsx(
+                                                "text-sm font-bold",
+                                                (currentPrice > (p.fiftyDayAverage || 0)) ? "text-emerald-500" : "text-rose-500"
+                                            )}>
+                                                {currentPrice > (p.fiftyDayAverage || 0) ? 'ABOVE' : 'BELOW'}
+                                            </span>
+                                        </div>
+                                        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+                                            <div
+                                                className="absolute left-1/2 top-0 h-full w-1 bg-white dark:bg-slate-600 z-10"
+                                            />
+                                            <div
+                                                className={clsx(
+                                                    "h-full rounded-full transition-all duration-1000",
+                                                    currentPrice > (p.fiftyDayAverage || 0)
+                                                        ? "bg-gradient-to-r from-emerald-400 to-emerald-500 ml-[50%]"
+                                                        : "bg-gradient-to-l from-rose-400 to-rose-500 mr-[50%] float-right"
+                                                )}
+                                                style={{
+                                                    width: `${Math.min(50, Math.abs((p.fiftyDayAverageChangePercent || 0) * 500))}%`,
+                                                    filter: currentPrice > (p.fiftyDayAverage || 0)
+                                                        ? 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.6))'
+                                                        : 'drop-shadow(0 0 6px rgba(244, 63, 94, 0.6))'
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex justify-between text-xs text-slate-500 mt-1">
+                                            <span>-5%</span>
+                                            <span>{formatPercent(p.fiftyDayAverageChangePercent)} ({formatNumber(p.fiftyDayAverage)})</span>
+                                            <span>+5%</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Current Price vs 200D MA */}
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">vs 200-Day MA</span>
+                                            <span className={clsx(
+                                                "text-sm font-bold",
+                                                (currentPrice > (p.twoHundredDayAverage || 0)) ? "text-emerald-500" : "text-rose-500"
+                                            )}>
+                                                {currentPrice > (p.twoHundredDayAverage || 0) ? 'ABOVE' : 'BELOW'}
+                                            </span>
+                                        </div>
+                                        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+                                            <div
+                                                className="absolute left-1/2 top-0 h-full w-1 bg-white dark:bg-slate-600 z-10"
+                                            />
+                                            <div
+                                                className={clsx(
+                                                    "h-full rounded-full transition-all duration-1000",
+                                                    currentPrice > (p.twoHundredDayAverage || 0)
+                                                        ? "bg-gradient-to-r from-cyan-400 to-cyan-500 ml-[50%]"
+                                                        : "bg-gradient-to-l from-amber-400 to-amber-500 mr-[50%] float-right"
+                                                )}
+                                                style={{
+                                                    width: `${Math.min(50, Math.abs((p.twoHundredDayAverageChangePercent || 0) * 500))}%`,
+                                                    filter: currentPrice > (p.twoHundredDayAverage || 0)
+                                                        ? 'drop-shadow(0 0 6px rgba(0, 212, 255, 0.6))'
+                                                        : 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.6))'
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex justify-between text-xs text-slate-500 mt-1">
+                                            <span>-10%</span>
+                                            <span>{formatPercent(p.twoHundredDayAverageChangePercent)} ({formatNumber(p.twoHundredDayAverage)})</span>
+                                            <span>+10%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </GlassCard>
+
+                            {/* Price Range Gauge */}
+                            <GlassCard aurora>
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-emerald-500" />
+                                    52-Week Position
+                                </h3>
+                                <div className="flex flex-col items-center justify-center py-4">
+                                    <RadialGauge
+                                        value={((currentPrice - (p.fiftyTwoWeekLow || 0)) / ((p.fiftyTwoWeekHigh || 1) - (p.fiftyTwoWeekLow || 0))) * 100}
+                                        max={100}
+                                        label="52W Range"
+                                        color="cyan"
+                                        size={150}
+                                    />
+                                    <div className="mt-6 grid grid-cols-3 gap-4 w-full text-center">
+                                        <div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">52W Low</p>
+                                            <p className="text-lg font-bold text-rose-500 font-mono">{formatNumber(p.fiftyTwoWeekLow)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Current</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatNumber(currentPrice)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">52W High</p>
+                                            <p className="text-lg font-bold text-emerald-500 font-mono">{formatNumber(p.fiftyTwoWeekHigh)}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </GlassCard>
                         </div>

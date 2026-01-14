@@ -347,7 +347,8 @@ export default function EGXStockProfilePage() {
                             { id: 'overview', icon: Activity, label: 'Overview' },
                             { id: 'financials', icon: DollarSign, label: 'Financials' },
                             { id: 'ownership', icon: ShieldCheck, label: 'Ownership & Risk' },
-                            { id: 'profile', icon: Building2, label: 'Profile' }
+                            { id: 'profile', icon: Building2, label: 'Profile' },
+                            { id: 'inspector', icon: List, label: 'Deep Data' }
                         ].map(t => <TabButton key={t.id} {...t} active={tab === t.id} onClick={() => setTab(t.id)} />)}
                     </div>
                 </div>
@@ -664,6 +665,62 @@ export default function EGXStockProfilePage() {
                                         </div>
                                     </li>
                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ======================= INSPECTOR TAB (DEEP DATA) ======================= */}
+                {tab === 'inspector' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4">
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                                <List className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-blue-900">Chief Expert Data Inspector</h3>
+                                <p className="text-blue-700 mt-1 leading-relaxed">
+                                    Displaying all raw data points extracted from the Enterprise Data Reservoir.
+                                    This view bypasses standard filters to show the complete dataset available for deep analysis.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Profile Raw Data */}
+                        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+                            <SectionHeader icon={Building2} title="Full Profile Metadata" subtitle="Raw Attributes" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {Object.entries(p).map(([key, value]) => (
+                                    <div key={key} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 break-all hover:bg-slate-50 transition-colors">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                            {key.replace(/_/g, ' ')}
+                                        </p>
+                                        <p className="text-sm font-semibold text-slate-800 font-mono leading-relaxed">
+                                            {value === null || value === undefined ? <span className="text-slate-300 italic">null</span> :
+                                                typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Fundamentals Raw Data */}
+                        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+                            <SectionHeader icon={Activity} title="Financial Indicators" subtitle="Raw Metrics" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {Object.entries(f).map(([key, value]) => (
+                                    <div key={key} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 break-all hover:bg-slate-50 transition-colors">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-300"></div>
+                                            {key.replace(/_/g, ' ')}
+                                        </p>
+                                        <p className="text-sm font-semibold text-slate-800 font-mono leading-relaxed">
+                                            {value === null || value === undefined ? <span className="text-slate-300 italic">null</span> :
+                                                typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>

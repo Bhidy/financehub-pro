@@ -44,15 +44,14 @@ function AIAnalystPageContent() {
                 // Store in localStorage - same keys as AuthContext
                 localStorage.setItem("fh_auth_token", token);
                 localStorage.setItem("fh_user", JSON.stringify(userData));
-                // Clean up URL params
-                router.replace("/ai-analyst");
-                // Force page reload to pick up new auth state
-                window.location.reload();
+
+                // Force navigation to clean URL (prevents infinite reload loop)
+                window.location.href = "/ai-analyst";
             } catch (e) {
                 console.error("Failed to parse Google auth response:", e);
             }
         }
-    }, [searchParams, router]);
+    }, [searchParams]);
 
     // Auto-scroll to bottom
     useEffect(() => {

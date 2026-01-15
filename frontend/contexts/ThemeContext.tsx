@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type Theme = "light" | "dark";
 
@@ -15,12 +16,20 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>("dark"); // Default to dark as per original design
     const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         setMounted(true);
         // Check local storage or system preference
         const savedTheme = localStorage.getItem("theme") as Theme;
-        const initialTheme = savedTheme || "dark";
+
+        // Mobile version defaults to light, others dark
+        let defaultTheme: Theme = "dark";
+        if (pathname?.startsWith("/mobile-ai-analyst")) {
+            defaultTheme = "light";
+        }
+
+        const initialTheme = savedTheme || defaultTheme;
 
         setTheme(initialTheme);
         document.documentElement.classList.remove("light", "dark");

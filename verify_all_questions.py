@@ -6,7 +6,7 @@ import sys
 
 # Production Frontend API (Vercel)
 API_URL = "https://finhub-pro.vercel.app/api/v1/ai/chat"
-# API_URL = "https://bhidy-financehub-api.hf.space/api/v1/ai/chat"
+# API_URL = "https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
 
 # Questions to verify (Extracted from ai-analyst/page.tsx)
 QUESTIONS = [

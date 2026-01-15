@@ -8,7 +8,7 @@ import { useMarketSafe } from "@/contexts/MarketContext";
 
 // Fetch full statistics from new endpoint
 const fetchFundStats = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space'}/api/v1/funds/stats/summary`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io'}/api/v1/funds/stats/summary`);
     if (!res.ok) throw new Error("Failed to fetch statistics");
     return res.json();
 };

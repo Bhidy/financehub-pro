@@ -41,16 +41,28 @@ async def main():
     # 2. Upsert Tickers
     logger.info("Updating Market Tickers...")
     for t in tickers:
-        await conn.execute("""
-            INSERT INTO market_tickers (symbol, name_en, sector_name, market_code, currency, last_updated)
-            VALUES ($1, $2, $3, $4, $5, NOW())
-            ON CONFLICT (symbol) DO UPDATE SET
-                name_en = EXCLUDED.name_en,
-                sector_name = EXCLUDED.sector_name,
-                market_code = EXCLUDED.market_code,
-                currency = EXCLUDED.currency,
-                last_updated = NOW();
-        """, t['symbol'], t['name_en'], t['sector_name'], t['market_code'], t['currency'])
+        try:
+            await conn.execute("""
+                INSERT INTO market_tickers (
+                    symbol, name_en, sector_name, market_code, currency, 
+                    last_price, change, change_percent, volume, last_updated
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+                ON CONFLICT (symbol) DO UPDATE SET
+                    name_en = EXCLUDED.name_en,
+                    sector_name = EXCLUDED.sector_name,
+                    market_code = EXCLUDED.market_code,
+                    currency = EXCLUDED.currency,
+                    last_price = EXCLUDED.last_price,
+                    change = EXCLUDED.change,
+                    change_percent = EXCLUDED.change_percent,
+                    volume = EXCLUDED.volume,
+                    last_updated = NOW();
+            """, 
+            t['symbol'], t['name_en'], t['sector_name'], t['market_code'], t['currency'],
+            t.get('last_price', 0), t.get('change', 0), t.get('change_percent', 0), t.get('volume', 0))
+        except Exception as e:
+            logger.error(f"Failed to update ticker {t['symbol']}: {e} | Values: Price={t.get('last_price')}, Change={t.get('change')}, Pct={t.get('change_percent')}")
         
     # 3. Deep Dive Loop
     logger.info("Starting Deep Data Extraction...")

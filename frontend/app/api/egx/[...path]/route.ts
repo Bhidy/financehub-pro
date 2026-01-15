@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Backend API URL - use environment variable or fall back to production
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://financehub-pro-production.up.railway.app";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://starta.46-224-223-172.sslip.io";
 
 export async function GET(
     req: NextRequest,

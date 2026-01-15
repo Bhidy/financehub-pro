@@ -72,7 +72,7 @@ We will enforce a "Return Null" policy for all sub-components if their primary d
     *   Update `ChatCards.tsx` to apply strict filtering to *all* remaining card types (`Stats`, `Snapshot`, `Technicals`).
 
 3.  **Phase 3: Production Deployment**
-    *   Deploy Backend to HuggingFace.
+    *   Deploy Backend to Hetzner VPS.
     *   Deploy Frontend to Vercel (Production).
 
 4.  **Phase 4: Final QA**

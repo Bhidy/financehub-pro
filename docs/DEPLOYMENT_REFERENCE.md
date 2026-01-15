@@ -9,7 +9,7 @@
 | Component | URL | Platform |
 |-----------|-----|----------|
 | **Frontend** | https://finhub-pro.vercel.app | Vercel |
-| **Backend API** | HuggingFace Spaces | HuggingFace |
+| **Backend API** | Hetzner VPS | Hetzner |
 
 ---
 
@@ -74,7 +74,7 @@ mubasher-deep-extract/           ← DEPLOY FROM HERE
 │   ├── components/              ← React components
 │   └── package.json
 ├── backend/                     ← FastAPI backend
-└── hf-space/                    ← HuggingFace Spaces deployment
+└── backend-core/               ← Backend API (Dockerized on Hetzner)
 ```
 
 ---
@@ -113,7 +113,7 @@ Use these slash commands in the AI assistant:
 | Command | Description |
 |---------|-------------|
 | `/deploy-frontend` | Deploy frontend to Vercel production |
-| `/deploy-backend` | Deploy backend to HuggingFace Spaces |
+| `/deploy-backend` | Deploy backend to Hetzner VPS |
 | `/deploy-and-verify` | Full deployment with verification |
 
 ---

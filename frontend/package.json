@@ -9,7 +9,7 @@
     "lint": "eslint",
     "check-types": "tsc --noEmit",
     "format": "prettier --write .",
-    "prepare": "husky",
+    "format": "prettier --write .",
     "pull-env": "vercel env pull .env.local",
     "verify": "npx tsx scripts/verify-prod.ts"
   },

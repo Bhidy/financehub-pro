@@ -246,8 +246,7 @@ async def lifespan(app: FastAPI):
     # This block is no longer needed here.
     is_production = (
         os.environ.get("RAILWAY_ENVIRONMENT") is not None or 
-        os.environ.get("RAILWAY_SERVICE_NAME") is not None or
-        os.environ.get("SPACE_ID") is not None  # HF Spaces
+        os.environ.get("RAILWAY_SERVICE_NAME") is not None
     )
     
     # if not is_production:
@@ -281,8 +280,8 @@ async def lifespan(app: FastAPI):
                     # Correct path logic:
                     script_path = os.path.join(base_dir, '..', 'scripts', 'prod_seeder.py')
                     if not os.path.exists(script_path):
-                        # Try flat layout (hf-space root)
-                        script_path = os.path.join(base_dir, '..', 'hf-space', 'scripts', 'prod_seeder.py')
+                        # Try flat layout (backend-core root)
+                        script_path = os.path.join(base_dir, '..', 'backend-core', 'scripts', 'prod_seeder.py')
                     
                     if not os.path.exists(script_path):
                         # Try fallback for local
@@ -332,7 +331,6 @@ app.add_middleware(
         "http://localhost:3000",                # Local Dev
         "http://localhost:3001",
         "http://localhost:3001",
-        # HF Removed as per user request
     ],
     allow_credentials=True, # Critical for Auth Headers
     allow_methods=["*"],
@@ -405,6 +403,21 @@ async def root():
         "version": app.version, 
         "build_timestamp": "2026-01-14 15:50:00 UTC",
         "db": "connected" if db._pool else "disconnected"
+    }
+
+@app.get("/debug/oauth-config")
+async def debug_oauth_config():
+    """Debug endpoint to check Google OAuth configuration (safe - only shows partial values)."""
+    from app.core.config import settings
+    client_id = settings.GOOGLE_CLIENT_ID
+    client_secret = settings.GOOGLE_CLIENT_SECRET
+    
+    return {
+        "client_id_set": bool(client_id),
+        "client_id_preview": client_id[:20] + "..." if client_id and len(client_id) > 20 else client_id,
+        "client_secret_set": bool(client_secret),
+        "client_secret_preview": client_secret[:10] + "..." if client_secret and len(client_secret) > 10 else "[EMPTY]",
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI
     }
 
 @app.get("/debug/funds")

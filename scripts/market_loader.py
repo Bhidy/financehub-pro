@@ -46,7 +46,7 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 
 class StockAnalysisClient:
     """
-    Self-contained client for hf-space
+    Self-contained client for backend
     Updated to use tls_client to bypass Cloudflare protection
     """
     BASE_URL = "https://stockanalysis.com"

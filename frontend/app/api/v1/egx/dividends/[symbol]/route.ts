@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://bhidy-financehub-api.hf.space';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
 
 export async function GET(
     request: NextRequest,

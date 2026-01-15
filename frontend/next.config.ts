@@ -26,7 +26,9 @@ if (process.env.VERCEL) {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Output standalone build for Docker/Railway deployment
-  output: 'standalone',
+  // Output standalone build for Docker/Railway deployment
+  // REMOVED for Vercel Optimization
+  // output: 'standalone',
 
   // Inject Build Metadata
   env: {

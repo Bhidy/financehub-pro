@@ -12,7 +12,7 @@ import os
 from datetime import datetime
 
 # API configuration
-API_BASE = os.environ.get("API_BASE_URL", "https://bhidy-financehub-api.hf.space/api/v1")
+API_BASE = os.environ.get("API_BASE_URL", "https://starta.46-224-223-172.sslip.io/api/v1")
 TIMEOUT = 30.0
 
 

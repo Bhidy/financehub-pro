@@ -5,15 +5,15 @@ import os
 import glob
 from datetime import datetime
 
-# In Production (HF), DATABASE_URL is set in the environment secrets.
+# In Production (Hetzner), DATABASE_URL is set in the environment secrets.
 DB_URL = os.getenv("DATABASE_URL")
 
 async def apply_schema(conn):
     print("📜 Applying Schema Updates...")
     schemas = [
-        'hf-space/scripts/yahoo_schema.sql',
-        'hf-space/scripts/gap_fill.sql',
-        'hf-space/scripts/gap_fill_v2.sql'
+        'backend-core/scripts/yahoo_schema.sql',
+        'backend-core/scripts/gap_fill.sql',
+        'backend-core/scripts/gap_fill_v2.sql'
     ]
     for param in schemas:
         if os.path.exists(param):
@@ -93,7 +93,7 @@ async def main():
         data_dir = os.path.join(base_dir, "data")
         if not os.path.exists(data_dir):
             # Fallback for local dev if running from project root
-            data_dir = os.path.join(base_dir, "hf-space", "data")
+            data_dir = os.path.join(base_dir, "backend-core", "data")
             
         print(f"📂 Seeder Data Directory: {data_dir}")
         

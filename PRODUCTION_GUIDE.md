@@ -15,7 +15,7 @@
 │                                                                              │
 │   ┌──────────────┐         ┌──────────────────────────────────────────┐     │
 │   │   FRONTEND   │         │              BACKEND                     │     │
-│   │   (Vercel)   │  ────▶  │         (HuggingFace Spaces)             │     │
+│   │   (Vercel)   │  ────▶  │         (Hetzner VPS)                    │     │
 │   │              │  HTTPS  │                                          │     │
 │   │  Next.js 16  │         │  FastAPI + PostgreSQL (Supabase)         │     │
 │   └──────────────┘         └──────────────────────────────────────────┘     │
@@ -37,21 +37,21 @@
 ### Frontend (Vercel)
 | Environment | URL | Status |
 |-------------|-----|--------|
-| **Production** | https://frontend-five-black-90.vercel.app | ✅ LIVE |
+| **Production** | https://finhub-pro.vercel.app | ✅ LIVE |
 | Deployment Method | Vercel CLI (`vercel --prod`) | Manual |
 
-### Backend API (HuggingFace Spaces)
+### Backend API (Hetzner VPS)
 | Environment | URL | Status |
 |-------------|-----|--------|
-| **Production** | https://bhidy-financehub-api.hf.space | ✅ LIVE |
-| Health Check | https://bhidy-financehub-api.hf.space/health | ✅ |
-| API Docs | https://bhidy-financehub-api.hf.space/docs | ✅ |
+| **Production** | https://starta.46-224-223-172.sslip.io | ✅ LIVE |
+| Health Check | https://starta.46-224-223-172.sslip.io/health | ✅ |
+| API Docs | https://starta.46-224-223-172.sslip.io/docs | ✅ |
 
 ### Database (Supabase)
 | Component | Details |
 |-----------|---------|
 | Provider | Supabase PostgreSQL |
-| Region | Configured in HF Space secrets |
+| Region | Configured in Secrets |
 | Connection | Via `DATABASE_URL` environment variable |
 
 ---
@@ -69,14 +69,14 @@ financehub-pro/
 │   ├── .env.example            # Environment template
 │   └── vercel.json             # Vercel configuration
 │
-├── hf-space/                   # Backend API (Deployed to HuggingFace)
+├── backend-core/               # Backend API (Dockerized on Hetzner)
 │   ├── app/
 │   │   ├── api/v1/             # API endpoints
 │   │   ├── core/               # Configuration
 │   │   ├── db/                 # Database connection
 │   │   └── main.py             # FastAPI entry point
 │   ├── Dockerfile              # Container configuration
-│   └── README.md               # HF Space metadata
+│   └── README.md               # Backend metadata
 │
 ├── backend/                    # Legacy (DO NOT USE)
 │
@@ -101,21 +101,19 @@ npx vercel --prod
 
 # Expected output:
 # ✅ Production: https://frontend-xxxxx.vercel.app
-# 🔗 Aliased: https://frontend-five-black-90.vercel.app
+# 🔗 Aliased: https://finhub-pro.vercel.app
 ```
 
-### Backend Deployment (HuggingFace Spaces)
+### Backend Deployment (Hetzner VPS)
 
-The backend auto-deploys when you push to the HF Spaces repository:
+The backend is deployed via Docker on Hetzner. Use the deployment script:
 
 ```bash
-cd /Users/home/Documents/Info\ Site/mubasher-deep-extract/hf-space
-
-# Push to HuggingFace
-git push origin main
+# Deploy to Hetzner
+./deploy_to_hetzner.sh
 
 # Verify deployment
-curl https://bhidy-financehub-api.hf.space/health
+curl https://starta.46-224-223-172.sslip.io/health
 ```
 
 ---
@@ -126,7 +124,7 @@ curl https://bhidy-financehub-api.hf.space/health
 
 ```typescript
 // ⚠️ PRODUCTION CONFIGURATION - DO NOT MODIFY WITHOUT APPROVAL
-const PRODUCTION_API = "https://bhidy-financehub-api.hf.space";
+const PRODUCTION_API = "https://starta.46-224-223-172.sslip.io";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
     ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
@@ -141,11 +139,11 @@ Set in Vercel Dashboard → Settings → Environment Variables:
 
 | Variable | Value | Scope |
 |----------|-------|-------|
-| `NEXT_PUBLIC_API_URL` | `https://bhidy-financehub-api.hf.space` | Production, Preview |
+| `NEXT_PUBLIC_API_URL` | `https://starta.46-224-223-172.sslip.io` | Production, Preview |
 
-### 3. HuggingFace Secrets
+### 3. Backend Secrets
 
-Set in HF Space → Settings → Repository secrets:
+Set in `.env` file on Hetzner (managed via `deploy_to_hetzner.sh`):
 
 | Secret | Description |
 |--------|-------------|
@@ -162,24 +160,24 @@ Set in HF Space → Settings → Repository secrets:
 **Prevention:**
 1. ALWAYS deploy via `vercel --prod` from local machine
 2. NEVER rely on Vercel's "Redeploy" button (it uses cached code)
-3. Verify deployment with: `curl -s https://frontend-five-black-90.vercel.app/ | grep "bhidy-financehub-api"`
+3. Verify deployment with: `curl -s https://finhub-pro.vercel.app/ | grep "bhidy-financehub-api"`
 
 ### Issue 2: Backend API Returns 500 Errors
 
 **Root Cause:** Database connection issues or missing environment variables.
 
 **Prevention:**
-1. Check HF Space logs at: https://huggingface.co/spaces/Bhidy/financehub-api/logs
-2. Verify DATABASE_URL is set in HF secrets
-3. Test database: `curl https://bhidy-financehub-api.hf.space/api/v1/stats`
+1. Check Hetzner logs via Docker: `docker logs backend`
+2. Verify DATABASE_URL is set in `.env`
+3. Test database: `curl https://starta.46-224-223-172.sslip.io/api/v1/stats`
 
 ### Issue 3: Changes Not Reflected After Push
 
-**Root Cause:** Pushing to GitHub doesn't deploy (Vercel not connected).
+**Root Cause:** Changes not pushed to GitHub or not deployed to Hetzner.
 
 **Prevention:**
 1. Frontend: Use `vercel --prod` command
-2. Backend: Push to HuggingFace remote, not GitHub
+2. Backend: Use `./deploy_to_hetzner.sh`
 
 ---
 
@@ -189,13 +187,13 @@ Set in HF Space → Settings → Repository secrets:
 
 ```bash
 # Frontend Status
-curl -I https://frontend-five-black-90.vercel.app/
+curl -I https://finhub-pro.vercel.app/
 
 # Backend Health
-curl https://bhidy-financehub-api.hf.space/health
+curl https://starta.46-224-223-172.sslip.io/health
 
 # Database Stats
-curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
+curl https://starta.46-224-223-172.sslip.io/api/v1/dashboard/summary
 
 # Expected Response:
 # {"stocks":453,"funds":582,"shareholders":1009,"earnings":2659...}
@@ -218,13 +216,13 @@ curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
 
 1. **Check Backend:**
    ```bash
-   curl https://bhidy-financehub-api.hf.space/health
+   curl https://starta.46-224-223-172.sslip.io/health
    ```
-   If failing → Check HF Space logs
+   If failing → SSH into Hetzner and check Docker logs
 
 2. **Check Frontend:**
    ```bash
-   curl -I https://frontend-five-black-90.vercel.app/
+   curl -I https://finhub-pro.vercel.app/
    ```
    If failing → Check Vercel dashboard
 
@@ -239,7 +237,7 @@ curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
 
 ### Before Making Any Changes:
 
-1. ✅ Verify you're in the correct directory (`frontend/` or `hf-space/`)
+1. ✅ Verify you're in the correct directory (`frontend/` or `backend-core/`)
 2. ✅ Check current production status is healthy
 3. ✅ Create a backup or note current commit SHA
 4. ✅ Test changes locally first
@@ -248,7 +246,7 @@ curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
 ### After Deployment:
 
 1. ✅ Verify health endpoints return 200
-2. ✅ Check console for API URL (should show `bhidy-financehub-api.hf.space`)
+2. ✅ Check console for API URL (should show `starta...sslip.io`)
 3. ✅ Verify data is loading on key pages (Home, Screener, Command Center)
 4. ✅ Document any issues encountered
 
@@ -258,9 +256,9 @@ curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
 
 | Role | Responsibility |
 |------|---------------|
-| Infrastructure | Vercel (Frontend), HuggingFace (Backend), Supabase (DB) |
+| Infrastructure | Vercel (Frontend), Hetzner VPS (Backend), Supabase (DB) |
 | Repository | https://github.com/Bhidy/financehub-pro |
-| Primary Domain | https://frontend-five-black-90.vercel.app |
+| Primary Domain | https://finhub-pro.vercel.app |
 
 ---
 

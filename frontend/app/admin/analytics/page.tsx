@@ -83,7 +83,7 @@ interface LanguageStats {
 // API BASE
 // ============================================================
 
-const API_BASE = "https://bhidy-financehub-api.hf.space/api/v1/admin/analytics";
+const API_BASE = "https://starta.46-224-223-172.sslip.io/api/v1/admin/analytics";
 
 // ============================================================
 // MAIN COMPONENT

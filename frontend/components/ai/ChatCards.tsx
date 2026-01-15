@@ -85,7 +85,7 @@ interface SnapshotProps {
 }
 
 export function SnapshotCard({ data }: SnapshotProps) {
-    const isPositive = data.change >= 0;
+    const isPositive = (data.change_percent || 0) >= 0;
 
     return (
         <div className="relative p-6 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden group">
@@ -548,9 +548,7 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
         if (absVal >= 1_000_000) {
             return `${(val / 1_000_000).toFixed(2)}M`;
         }
-        if (absVal >= 1_000) {
-            return `${(val / 1_000).toFixed(2)}K`;
-        }
+
 
         return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
@@ -1562,7 +1560,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
         const absVal = Math.abs(val);
         if (absVal >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(2)} B`;
         if (absVal >= 1_000_000) return `${(val / 1_000_000).toFixed(2)} M`;
-        if (absVal >= 1_000) return `${(val / 1_000).toFixed(2)} K`;
+
         return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
@@ -1605,6 +1603,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                     {data.currency}
                                 </span>
                             </div>
+                            <div className="text-[10px] text-blue-200/80 font-medium mt-1">Numbers by Millions - Fiscal Year is Jan - Dec.</div>
                         </div>
                     </div>
 
@@ -1748,7 +1747,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                     </table>
                 </div>
                 <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[9px] text-slate-400 flex justify-between">
-                    <span>Source: FinanceHub Enterprise</span>
+                    <span></span>
                     <span>{uniqueYears.length} Periods</span>
                 </div>
             </div>

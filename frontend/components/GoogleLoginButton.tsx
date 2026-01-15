@@ -53,25 +53,37 @@ export default function GoogleLoginButton({
             const currentPath = window.location.pathname;
             const isMobileFlow = isMobile ?? currentPath.includes("/mobile-ai-analyst");
 
-            // Get the Google OAuth URL from our backend
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || "https://bhidy-financehub-api.hf.space";
-            const callbackUrl = redirectUri || `${window.location.origin}/api/auth/google/callback`;
+            // 1. ENTERPRISE FIX: Use internal Next.js Proxy to avoid CORS/Network issues
+            // This calls our local route /api/auth/google/url/route.ts service-side
+            const proxyUrl = `/api/auth/google/url`;
 
             // Create state parameter to track mobile vs desktop
             const stateParam = encodeURIComponent(JSON.stringify({ mobile: isMobileFlow }));
+            const callbackUrl = redirectUri || `${window.location.origin}/api/auth/google/callback`;
 
+            // 2. Fetch from our own secure proxy (Bypasses Client Network Blocks)
             const response = await fetch(
-                `${baseUrl}/api/v1/auth/google/url?redirect_uri=${encodeURIComponent(callbackUrl)}&state=${stateParam}`
+                `${proxyUrl}?redirect_uri=${encodeURIComponent(callbackUrl)}&state=${stateParam}`
             );
 
+            // 3. Handle Proxy Responses (JSON guaranteed)
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                throw new Error("Failed to get Google auth URL");
+                // The Proxy middleware catches "Sleeping Backend" HTML and returns JSON 503
+                if (response.status === 503 || data.error?.includes("waking up")) {
+                    throw new Error("System is initializing. Please try again in 10 seconds.");
+                }
+                throw new Error(data.error || "Failed to connect to login service");
             }
 
-            const data = await response.json();
+            // 4. Redirect to Google
+            if (data.auth_url) {
+                window.location.href = data.auth_url;
+            } else {
+                throw new Error("Invalid response from server");
+            }
 
-            // Redirect to Google OAuth
-            window.location.href = data.auth_url;
         } catch (error: any) {
             console.error("Google login error:", error);
             onError?.(error.message || "Failed to initiate Google login");

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // API Base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://bhidy-financehub-api.hf.space";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://starta.46-224-223-172.sslip.io";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "User-Agent": "FinanceHub-Pro-Vercel-Proxy", // Identifying header
             },
             body: JSON.stringify({
                 code,
@@ -51,15 +52,32 @@ export async function GET(request: NextRequest) {
             }),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error("Backend OAuth error:", errorData);
+        // Robust Parsing: Handle HTML (Sleeping Backend) or JSON
+        const responseText = await response.text();
+        let data;
+
+        try {
+            if (!responseText || responseText.trim().startsWith("<")) {
+                console.warn("Backend Callback HTML/Empty:", responseText.substring(0, 50));
+                // Return to login with specific "waking up" error
+                return NextResponse.redirect(
+                    new URL(`${loginRedirect}?error=${encodeURIComponent("System is initializing. Please try again.")}`, request.url)
+                );
+            }
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error("Backend Callback JSON Parse Error:", e);
             return NextResponse.redirect(
-                new URL(`${loginRedirect}?error=${encodeURIComponent(errorData.detail || "auth_failed")}`, request.url)
+                new URL(`${loginRedirect}?error=backend_invalid_response`, request.url)
             );
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+            console.error("Backend OAuth error:", data);
+            return NextResponse.redirect(
+                new URL(`${loginRedirect}?error=${encodeURIComponent(data.detail || "auth_failed")}`, request.url)
+            );
+        }
 
         // Create a response that will set cookies/localStorage on client side
         // We'll use a redirect with token in query params (temporary, handled by client)
@@ -72,7 +90,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error("Google callback error:", error);
         return NextResponse.redirect(
-            new URL(`${loginRedirect}?error=server_error`, request.url)
+            new URL(`${loginRedirect}?error=server_connection_error`, request.url)
         );
     }
 }

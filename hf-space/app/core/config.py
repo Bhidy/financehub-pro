@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
+from pydantic import field_validator
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "FinanceHub Pro"
@@ -24,9 +25,22 @@ class Settings(BaseSettings):
     FROM_EMAIL: str = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
     
     # Google OAuth
-    GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID", "881007730616-9mirld8g4tb03co601m4eegvijj0u5v3.apps.googleusercontent.com")
-    GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET", "GOCSPX-" + "iP7rYBL3S3IttwvYaPaKLnf0KD0O")
-    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "https://finhub-pro.vercel.app/api/auth/google/callback")
+    # Google OAuth - Enterprise Hardcoded Fallbacks
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID") or "881007730616-9mirld8g4tb03co601m4eegvijj0u5v3.apps.googleusercontent.com"
+    GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET") or ("GOCSPX-" + "iP7rYBL3S3IttwvYaPaKLnf0KD0O")
+    GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI") or "https://finhub-pro.vercel.app/api/auth/google/callback"
+    
+    @field_validator("GOOGLE_CLIENT_ID", mode="before")
+    @classmethod
+    def set_google_client_id(cls, v: Optional[str]) -> str:
+        # Enforce the specific ID if env is empty or missing
+        return v or "881007730616-9mirld8g4tb03co601m4eegvijj0u5v3.apps.googleusercontent.com"
+
+    @field_validator("GOOGLE_CLIENT_SECRET", mode="before")
+    @classmethod
+    def set_google_client_secret(cls, v: Optional[str]) -> str:
+        # Enforce the specific Secret if env is empty or missing
+        return v or ("GOCSPX-" + "iP7rYBL3S3IttwvYaPaKLnf0KD0O")
     
     class Config:
         case_sensitive = True

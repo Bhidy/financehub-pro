@@ -405,21 +405,6 @@ async def root():
         "db": "connected" if db._pool else "disconnected"
     }
 
-@app.get("/debug/oauth-config")
-async def debug_oauth_config():
-    """Debug endpoint to check Google OAuth configuration (safe - only shows partial values)."""
-    from app.core.config import settings
-    client_id = settings.GOOGLE_CLIENT_ID
-    client_secret = settings.GOOGLE_CLIENT_SECRET
-    
-    return {
-        "client_id_set": bool(client_id),
-        "client_id_preview": client_id[:20] + "..." if client_id and len(client_id) > 20 else client_id,
-        "client_secret_set": bool(client_secret),
-        "client_secret_preview": client_secret[:10] + "..." if client_secret and len(client_secret) > 10 else "[EMPTY]",
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI
-    }
-
 @app.get("/debug/funds")
 async def debug_funds_endpoint():
     import traceback

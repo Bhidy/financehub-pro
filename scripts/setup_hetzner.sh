@@ -183,7 +183,7 @@ ufw --force enable
 
 # 9. Launch
 echo -e "${GREEN}--> Launching Containers...${NC}"
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build --force-recreate
 
 echo -e "${BLUE}============================================================${NC}"
 echo -e "${GREEN}       ✅ DEPLOYMENT COMPLETE!                              ${NC}"

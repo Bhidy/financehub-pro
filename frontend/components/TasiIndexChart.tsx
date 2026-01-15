@@ -7,10 +7,12 @@ import { format } from 'date-fns';
 import clsx from 'clsx';
 import { Loader2 } from 'lucide-react';
 
+import { fetchHistory } from '@/lib/api';
+
 async function fetchTasiHistory() {
-    const res = await fetch('/api/v1/history/TASI');
-    if (!res.ok) throw new Error('Failed to fetch TASI history');
-    return res.json();
+    // improved: use the centralized API client which points to Hetzner
+    const data = await fetchHistory('TASI');
+    return data;
 }
 
 export default function TasiIndexChart() {

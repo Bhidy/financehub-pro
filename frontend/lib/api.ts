@@ -2,17 +2,10 @@ import axios from "axios";
 import { TickerResponseSchema, Ticker } from "./schemas";
 
 // =============================================================================
-// UNIFIED SERVERLESS ARCHITECTURE - ENTERPRISE FIX
+// UNIFIED SERVERLESS ARCHITECTURE - HETZNER PRODUCTION
 // =============================================================================
-// CRITICAL: We ALWAYS use internal Next.js API routes.
-// This eliminates any dependency on external backends (Railway, HuggingFace, etc.)
-// The API routes are co-located with the frontend at /api/v1/*
-// =============================================================================
-// =============================================================================
-// UNIFIED ARCHITECTURE - PYTHON BACKEND
-// =============================================================================
-// Pointing directly to the HuggingFace Python Backend
-const API_BASE_URL = "https://bhidy-financehub-api.hf.space/api/v1";
+// Pointing to Hetzner VPS (Primary Production) via HTTPS
+const API_BASE_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
 
 if (typeof window !== 'undefined') {
     console.log(`[FinanceHub Pro] Connected to Backend: ${API_BASE_URL}`);
@@ -445,7 +438,7 @@ export const fetchCompanyInsiderTransactions = async (symbol: string) => {
 // ============================================================================
 
 export const fetchYahooProfile = async (symbol: string) => {
-    // Direct call to verified Python endpoint (HF Spaces)
+    // Direct call to verified Python endpoint (Hetzner VPS)
     // This bypasses the faulty Next.js Proxy layer
     // Endpoint: /api/v1/yahoo/stock/{symbol}
     const { data } = await api.get(`/yahoo/stock/${symbol}`);

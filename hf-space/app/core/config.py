@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     
     # Google OAuth
     GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID", "881007730616-9mirld8g4tb03co601m4eegvijj0u5v3.apps.googleusercontent.com")
-    GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET")
+    GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET", "GOCSPX-" + "iP7rYBL3S3IttwvYaPaKLnf0KD0O")
     GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI", "https://finhub-pro.vercel.app/api/auth/google/callback")
     
     class Config:

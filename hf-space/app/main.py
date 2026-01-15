@@ -331,7 +331,8 @@ app.add_middleware(
         "https://finhub-pro.vercel.app",        # Production
         "http://localhost:3000",                # Local Dev
         "http://localhost:3001",
-        "https://huggingface.co",               # HF Spaces UI
+        "http://localhost:3001",
+        # HF Removed as per user request
     ],
     allow_credentials=True, # Critical for Auth Headers
     allow_methods=["*"],

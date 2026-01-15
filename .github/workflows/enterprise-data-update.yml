@@ -38,7 +38,7 @@ jobs:
   watchdog:
     name: 🐕 Enterprise Watchdog
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     
     steps:
       - name: 🚀 Start Watchdog
@@ -53,19 +53,23 @@ jobs:
           (github.event.inputs.job_type == 'prices')
         run: |
           echo "Triggering Price Refresh..."
-          for i in 1 2 3; do
-            echo "Attempt $i..."
+          DELAYS=(10 30 60 120)
+          for i in 0 1 2 3; do
+            attempt=$((i+1))
+            echo "Attempt $attempt/4..."
             response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/prices" \
-              -H "Content-Type: application/json" --max-time 120)
+              -H "Content-Type: application/json" --max-time 300 2>&1 | tee /tmp/refresh_prices.log)
             echo "Response: $response"
             if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
               echo "✅ Price Refresh OK"
               exit 0
             fi
-            echo "⚠️ Retry in 20s..."
-            sleep 20
+            if [ $i -lt 3 ]; then
+              echo "⚠️ Retry in ${DELAYS[$i]}s (exponential backoff)..."
+              sleep ${DELAYS[$i]}
+            fi
           done
-          echo "❌ Price Refresh failed after 3 attempts"
+          echo "❌ Price Refresh failed after 4 attempts"
           exit 1
 
       # ============================================================
@@ -164,6 +168,7 @@ jobs:
       - name: 🚨 Discord Failure Alert
         if: failure()
         run: |
+          ERROR_LOG=$(cat /tmp/refresh_*.log 2>/dev/null | tail -c 400 || echo "No logs available")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d '{"content": "🚨 **CRITICAL**: FinanceHub Watchdog FAILED! Check: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
+            -d '{"content": "🚨 **CRITICAL**: FinanceHub Watchdog FAILED!\n**Run:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n**Error:** '"$(echo $ERROR_LOG | tr '"' "'" | head -c 300)"'"}'

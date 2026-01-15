@@ -1,0 +1,17 @@
+# Rasa Endpoints Configuration
+
+# Action Server
+action_endpoint:
+  url: "http://action-server:5055/webhook"
+
+# Tracker Store (optional - for persistence)
+# tracker_store:
+#   type: sql
+#   dialect: postgresql
+#   url: ${DATABASE_URL}
+#   db: rasa
+
+# Event Broker (optional - for Kafka/RabbitMQ)
+# event_broker:
+#   type: pika
+#   url: ${RABBITMQ_URL}

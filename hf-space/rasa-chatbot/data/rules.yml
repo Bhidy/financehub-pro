@@ -1,0 +1,159 @@
+version: "3.1"
+
+rules:
+
+# ============================================================
+# GREETING RULES
+# ============================================================
+
+- rule: Respond to greeting
+  steps:
+    - intent: greet
+    - action: utter_greet
+
+- rule: Respond to goodbye
+  steps:
+    - intent: goodbye
+    - action: utter_goodbye
+
+- rule: Respond to help
+  steps:
+    - intent: help
+    - action: utter_help
+
+# ============================================================
+# STOCK RULES (Direct Actions)
+# ============================================================
+
+- rule: Stock price
+  steps:
+    - intent: stock_price
+    - action: action_stock_price
+
+- rule: Stock chart
+  steps:
+    - intent: stock_chart
+    - action: action_stock_chart
+
+- rule: Stock snapshot
+  steps:
+    - intent: stock_snapshot
+    - action: action_stock_snapshot
+
+- rule: Stock statistics
+  steps:
+    - intent: stock_stat
+    - action: action_stock_stat
+
+- rule: Financials
+  steps:
+    - intent: financials
+    - action: action_financials
+
+- rule: Dividends
+  steps:
+    - intent: dividends
+    - action: action_dividends
+
+- rule: Compare stocks
+  steps:
+    - intent: compare_stocks
+    - action: action_compare_stocks
+
+- rule: Top gainers
+  steps:
+    - intent: top_gainers
+    - action: action_top_gainers
+
+- rule: Top losers
+  steps:
+    - intent: top_losers
+    - action: action_top_losers
+
+- rule: Sector stocks
+  steps:
+    - intent: sector_stocks
+    - action: action_sector_stocks
+
+- rule: Dividend leaders
+  steps:
+    - intent: dividend_leaders
+    - action: action_dividend_leaders
+
+- rule: Screener PE
+  steps:
+    - intent: screener_pe
+    - action: action_screener_pe
+
+- rule: Ownership
+  steps:
+    - intent: ownership
+    - action: action_ownership
+
+- rule: Fair value
+  steps:
+    - intent: fair_value
+    - action: action_fair_value
+
+- rule: Technical indicators
+  steps:
+    - intent: technical_indicators
+    - action: action_technical_indicators
+
+- rule: Financial health
+  steps:
+    - intent: financial_health
+    - action: action_financial_health
+
+- rule: Market summary
+  steps:
+    - intent: market_summary
+    - action: action_market_summary
+
+# ============================================================
+# FUND RULES (NEW)
+# ============================================================
+
+- rule: Fund NAV
+  steps:
+    - intent: fund_nav
+    - action: action_fund_nav
+
+- rule: Fund profile
+  steps:
+    - intent: fund_profile
+    - action: action_fund_profile
+
+- rule: Fund performance
+  steps:
+    - intent: fund_performance
+    - action: action_fund_performance
+
+- rule: Fund compare
+  steps:
+    - intent: fund_compare
+    - action: action_fund_compare
+
+- rule: Fund search
+  steps:
+    - intent: fund_search
+    - action: action_fund_search
+
+- rule: Fund movers
+  steps:
+    - intent: fund_movers
+    - action: action_fund_movers
+
+# ============================================================
+# FALLBACK RULES
+# ============================================================
+
+- rule: Ask clarification on low confidence
+  steps:
+    - intent: nlu_fallback
+    - action: action_default_fallback
+
+- rule: Out of scope
+  steps:
+    - intent: nlu_fallback
+    - action: utter_default

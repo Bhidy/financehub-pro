@@ -1,0 +1,14 @@
+DEBUG 1: Intent=STOCK_PRICE
+DEBUG 2: Intent=FINANCIALS
+DEBUG 3: Intent=ERROR
+FULL RESPONSE 3: {'message_text': "I'm having trouble processing your request. Please try again.", 'message_text_ar': 'أواجه مشكلة في معالجة طلبك. يرجى المحاولة مرة أخرى.', 'language': 'en', 'cards': [], 'chart': None, 'actions': [], 'disclaimer': None, 'meta': {'intent': 'ERROR', 'confidence': 0, 'entities': {}, 'latency_ms': 0, 'error': 'column "revenue_growth" does not exist'}}
+Traceback (most recent call last):
+  File "/Users/home/Documents/Info Site/mubasher-deep-extract/hf-space/testsprite_tests/TC003_ai_analyst_chatbot_financial_insights_relevance.py", line 64, in <module>
+    test_ai_analyst_chatbot_financial_insights_relevance()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/home/Documents/Info Site/mubasher-deep-extract/hf-space/testsprite_tests/TC003_ai_analyst_chatbot_financial_insights_relevance.py", line 62, in test_ai_analyst_chatbot_financial_insights_relevance
+    raise e
+  File "/Users/home/Documents/Info Site/mubasher-deep-extract/hf-space/testsprite_tests/TC003_ai_analyst_chatbot_financial_insights_relevance.py", line 50, in test_ai_analyst_chatbot_financial_insights_relevance
+    assert intent_3 == "TECHNICAL_INDICATORS"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

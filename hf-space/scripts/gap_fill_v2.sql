@@ -1,0 +1,1 @@
+ALTER TABLE yahoo_realtime ADD COLUMN IF NOT EXISTS year_high DECIMAL; ALTER TABLE yahoo_realtime ADD COLUMN IF NOT EXISTS year_low DECIMAL; ALTER TABLE yahoo_realtime ADD COLUMN IF NOT EXISTS price_hint INT;

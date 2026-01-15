@@ -1,0 +1,4 @@
+# Rasa Chatbot Dependencies
+rasa==3.6.11
+rasa-sdk==3.6.0
+httpx==0.24.1

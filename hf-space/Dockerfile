@@ -3,7 +3,7 @@
 FROM python:3.11-slim
 
 # Cache bust - change this to force rebuild
-ARG CACHEBUST=20260114-1925-Final
+ARG CACHEBUST=20260116-0110-EnterpriseFix
 
 WORKDIR /app
 

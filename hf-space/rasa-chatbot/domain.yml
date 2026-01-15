@@ -1,0 +1,280 @@
+version: "3.1"
+
+# ============================================================
+# INTENTS
+# ============================================================
+intents:
+  # Stock Intents (16)
+  - stock_price
+  - stock_chart
+  - stock_snapshot
+  - stock_stat
+  - company_profile
+  - financials
+  - revenue_trend
+  - dividends
+  - compare_stocks
+  - top_gainers
+  - top_losers
+  - sector_stocks
+  - dividend_leaders
+  - screener_pe
+  - ownership
+  - fair_value
+  - technical_indicators
+  - financial_health
+  - market_summary
+  
+  # Fund Intents (6) - NEW
+  - fund_nav
+  - fund_profile
+  - fund_performance
+  - fund_compare
+  - fund_search
+  - fund_movers
+  
+  # System Intents
+  - help
+  - switch_market
+  - greet
+  - goodbye
+  - nlu_fallback
+
+# ============================================================
+# ENTITIES
+# ============================================================
+entities:
+  # Stock entities
+  - stock_symbol
+  - stock_name
+  - market_code
+  - metric
+  - range
+  - statement_type
+  - sector
+  - threshold
+  - operator
+  
+  # Fund entities - NEW
+  - fund_id
+  - fund_name
+  - fund_category
+  - fund_manager
+  - shariah_filter
+
+# ============================================================
+# SLOTS
+# ============================================================
+slots:
+  stock_symbol:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: stock_symbol
+      - type: from_entity
+        entity: stock_name
+        
+  fund_id:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: fund_id
+      - type: from_entity
+        entity: fund_name
+        
+  market_code:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: market_code
+        
+  range:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: range
+        
+  sector:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: sector
+        
+  metric:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: metric
+        
+  statement_type:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: statement_type
+        
+  fund_category:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: fund_category
+        
+  shariah_filter:
+    type: bool
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: shariah_filter
+        
+  # Context slots (set by actions)
+  last_symbol:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: custom
+      
+  last_fund_id:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: custom
+      
+  last_intent:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
+      
+  language:
+    type: categorical
+    values:
+      - ar
+      - en
+    mappings:
+      - type: custom
+
+# ============================================================
+# RESPONSES
+# ============================================================
+responses:
+  utter_greet:
+    - text: "Hello! I'm Starta, your financial assistant. How can I help you today?"
+    - text: "مرحباً! أنا ستارتا، مساعدك المالي. كيف يمكنني مساعدتك؟"
+    
+  utter_goodbye:
+    - text: "Goodbye! Happy investing!"
+    - text: "وداعاً! استثمار موفق!"
+    
+  utter_ask_stock_symbol:
+    - text: "Which stock are you interested in? Please provide a symbol (e.g., COMI) or company name."
+    - text: "أي سهم تريد معرفة معلومات عنه؟ يرجى ذكر الرمز (مثل COMI) أو اسم الشركة."
+    
+  utter_ask_fund_id:
+    - text: "Which fund are you looking for? Please provide the fund name or ID."
+    - text: "أي صندوق تبحث عنه؟ يرجى ذكر اسم الصندوق أو رقمه."
+    
+  utter_clarify_intent:
+    - text: "I'm not sure what you're looking for. Would you like to see:\n1. 📊 Price\n2. 📈 Chart\n3. 📋 Financials\n4. 💰 Dividends\n5. 🏦 Fund NAV"
+    - text: "لست متأكداً ماذا تريد. هل تريد:\n1. 📊 السعر\n2. 📈 الرسم البياني\n3. 📋 القوائم المالية\n4. 💰 التوزيعات\n5. 🏦 صافي قيمة الأصول"
+    
+  utter_default:
+    - text: "I didn't quite understand that. Could you rephrase? Try asking about a specific stock or fund."
+    - text: "لم أفهم طلبك. هل يمكنك إعادة صياغته؟ جرب السؤال عن سهم أو صندوق محدد."
+    
+  utter_help:
+    - text: |
+        I can help you with:
+        
+        **Stocks:**
+        • Price: "What's the price of COMI?"
+        • Chart: "Show COMI chart 1Y"
+        • Financials: "COMI financials"
+        • Compare: "Compare COMI vs SWDY"
+        • Top Gainers/Losers
+        
+        **Funds:**
+        • NAV: "Fund 2742 NAV"
+        • Performance: "Fund performance 1Y"
+        • Search: "Shariah compliant funds"
+        
+        Just type your question!
+    - text: |
+        يمكنني مساعدتك في:
+        
+        **الأسهم:**
+        • السعر: "سعر COMI"
+        • الرسم البياني: "شارت COMI سنة"
+        • القوائم المالية: "القوائم المالية لـ COMI"
+        • المقارنة: "قارن بين COMI و SWDY"
+        • الأكثر ارتفاعاً/انخفاضاً
+        
+        **الصناديق:**
+        • صافي قيمة الأصول: "سعر صندوق 2742"
+        • الأداء: "أداء الصندوق سنة"
+        • البحث: "صناديق متوافقة مع الشريعة"
+        
+        اكتب سؤالك!
+
+# ============================================================
+# ACTIONS
+# ============================================================
+actions:
+  # Stock Actions
+  - action_stock_price
+  - action_stock_chart
+  - action_stock_snapshot
+  - action_stock_stat
+  - action_financials
+  - action_dividends
+  - action_compare_stocks
+  - action_top_gainers
+  - action_top_losers
+  - action_sector_stocks
+  - action_dividend_leaders
+  - action_screener_pe
+  - action_ownership
+  - action_fair_value
+  - action_technical_indicators
+  - action_financial_health
+  - action_market_summary
+  
+  # Fund Actions - NEW
+  - action_fund_nav
+  - action_fund_profile
+  - action_fund_performance
+  - action_fund_compare
+  - action_fund_search
+  - action_fund_movers
+  
+  # System Actions
+  - action_clarify_symbol
+  - action_clarify_fund
+  - action_default_fallback
+  - action_set_language
+  - action_log_analytics
+
+# ============================================================
+# FORMS
+# ============================================================
+forms:
+  stock_form:
+    required_slots:
+      - stock_symbol
+      
+  fund_form:
+    required_slots:
+      - fund_id
+
+# ============================================================
+# SESSION CONFIG
+# ============================================================
+session_config:
+  session_expiration_time: 60  # minutes
+  carry_over_slots_to_new_session: true

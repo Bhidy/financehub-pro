@@ -1,0 +1,1 @@
+ALTER TABLE yahoo_realtime ADD COLUMN IF NOT EXISTS avg_vol_10d BIGINT; ALTER TABLE yahoo_realtime ADD COLUMN IF NOT EXISTS avg_vol_3m BIGINT; ALTER TABLE yahoo_realtime ADD COLUMN IF NOT EXISTS last_trade_time TIMESTAMPTZ;

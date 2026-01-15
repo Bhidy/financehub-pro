@@ -151,7 +151,7 @@
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | https://frontend-five-black-90.vercel.app |
+| **Frontend** | https://finhub-pro.vercel.app |
 | **Backend API** | https://bhidy-financehub-api.hf.space |
 | **API Docs** | https://bhidy-financehub-api.hf.space/docs |
 

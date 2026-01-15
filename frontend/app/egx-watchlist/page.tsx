@@ -7,7 +7,7 @@ import {
 import Link from 'next/link';
 import clsx from 'clsx';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
 const fmt = (n: any, d = 2) => (n == null || isNaN(n)) ? '-' : Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtLarge = (n: any) => {
     if (!n || isNaN(n)) return '-';

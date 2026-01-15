@@ -3,7 +3,7 @@ import { z } from "zod";
 const envSchema = z.object({
     // Unified Serverless: AI is now internal, no external backend needed
     // This is kept for other API calls if any, but AI uses /api/v1/ai/chat directly
-    NEXT_PUBLIC_API_URL: z.string().url().default("https://finhub-pro.vercel.app/api/v1"),
+    NEXT_PUBLIC_API_URL: z.string().url().default("https://starta.46-224-223-172.sslip.io"),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

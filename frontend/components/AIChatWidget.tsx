@@ -37,10 +37,9 @@ export default function AIChatWidget() {
         setLoading(true);
 
         try {
-            // UNIFIED SERVERLESS: Use internal Next.js API route
-            console.log("Sending message to AI:", userMsg);
-
-            const res = await fetch("/api/v1/ai/chat", {
+            // Use Hetzner backend API directly
+            const API_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+            const res = await fetch(`${API_URL}/ai/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

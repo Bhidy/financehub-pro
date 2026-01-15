@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = "https://financehub-pro-production.up.railway.app/api/v1";
+const BACKEND_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
 
 export async function GET(
     req: NextRequest,

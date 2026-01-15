@@ -155,11 +155,7 @@ function MobileLoginPageContent() {
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
-                            <div className="flex justify-end mt-2">
-                                <Link href="/mobile-ai-analyst/forgot-password" className="text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 transition-colors">
-                                    Forgot password?
-                                </Link>
-                            </div>
+
                         </div>
 
                         {/* Submit */}

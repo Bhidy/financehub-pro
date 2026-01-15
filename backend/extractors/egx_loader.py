@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class EGXExtractor:
     BASE_URL = "https://stockanalysis.com"
     HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
     }
 
     def _get_soup(self, url: str) -> Optional[BeautifulSoup]:
@@ -72,30 +72,84 @@ class EGXExtractor:
             logger.error("No stock table found on list page")
             return []
 
+        # Identify headers to map columns
+        headers = [th.text.strip() for th in table.find('thead').find_all('th')]
+        logger.info(f"DEBUG: Found Headers: {headers}")
+        
+        # Map indices
+        idx_map = {
+            'symbol': 0, # Default
+            'name': 1,   # Default
+            'sector': -1,
+            'price': -1,
+            'change': -1,
+            'pct_change': -1,
+            'volume': -1,
+            'market_cap': -1
+        }
+        
+        for i, h in enumerate(headers):
+            h_lower = h.lower()
+            if 'symbol' in h_lower: idx_map['symbol'] = i
+            elif 'company' in h_lower or 'name' in h_lower: idx_map['name'] = i
+            elif 'sector' in h_lower: idx_map['sector'] = i
+            elif 'price' in h_lower: idx_map['price'] = i
+            elif 'change' in h_lower:
+                if '%' in h_lower: idx_map['pct_change'] = i
+                else: idx_map['change'] = i
+            elif 'volume' in h_lower: idx_map['volume'] = i
+            elif 'market cap' in h_lower: idx_map['market_cap'] = i
+        
+        logger.info(f"DEBUG: Column Map: {idx_map}")
+        
+        # Iterate rows
         rows = table.find('tbody').find_all('tr')
+        logger.info(f"DEBUG: Found {len(rows)} rows")
+        
         for row in rows:
             cols = row.find_all('td')
             if len(cols) < 3:
                 continue
-                
-            symbol_tag = cols[0].find('a')
-            if not symbol_tag:
+            
+            # Extract Symbol and Name from their mapped or default columns
+            # Symbol is usually a link in the first column
+            symbol_col_idx = idx_map['symbol'] if idx_map['symbol'] != -1 else 0
+            if symbol_col_idx >= len(cols):
+                 logger.warning(f"DEBUG: Row has only {len(cols)} columns, need {symbol_col_idx}")
                  continue
                  
+            symbol_col = cols[symbol_col_idx]
+            symbol_tag = symbol_col.find('a')
+            if not symbol_tag:
+                 # logger.warning(f"DEBUG: No link in symbol column {symbol_col}")
+                 continue
             symbol = symbol_tag.text.strip()
-            name = cols[1].text.strip()
             
-            # Identify Sector if available (column index varies)
-            # Usually: Symbol, Name, Price, ..., Sector is often last or near end
-            # Let's try to find 'Sector' header index
-            headers = [th.text for th in table.find('thead').find_all('th')]
-            sector_idx = -1
-            for i, h in enumerate(headers):
-                if 'Sector' in h:
-                    sector_idx = i
-                    break
+            name_col = cols[idx_map['name']] if idx_map['name'] != -1 and len(cols) > idx_map['name'] else cols[1]
+            name = name_col.text.strip()
             
-            sector = cols[sector_idx].text.strip() if sector_idx != -1 and len(cols) > sector_idx else None
+            # Extract Metrics
+            sector = cols[idx_map['sector']].text.strip() if idx_map['sector'] != -1 and len(cols) > idx_map['sector'] else None
+            
+            # Safe extraction helper
+            def get_col_val(idx):
+                if idx != -1 and idx < len(cols):
+                    return self._parse_number(cols[idx].text) or 0.0
+                return 0.0
+
+            price = get_col_val(idx_map['price'])
+            change = get_col_val(idx_map['change'])
+            pct_change = get_col_val(idx_map['pct_change'])
+            volume = int(get_col_val(idx_map['volume']))
+            
+            # Calculate absolute change if missing but we have price and %
+            if change == 0.0 and price != 0.0 and pct_change != 0.0:
+                # Current = Prev * (1 + pct/100)
+                # Prev = Current / (1 + pct/100)
+                # Change = Current - Prev
+                prev = price / (1 + (pct_change / 100))
+                change = price - prev
+                change = round(change, 3) # Keep clean
             
             tickers.append({
                 "symbol": symbol,
@@ -103,10 +157,14 @@ class EGXExtractor:
                 "sector_name": sector,
                 "market_code": "EGX",
                 "currency": "EGP",
-                "active": True
+                "active": True,
+                "last_price": price,
+                "change": change,
+                "change_percent": pct_change,
+                "volume": int(volume) if volume else 0
             })
-            
-        logger.info(f"Found {len(tickers)} EGX tickers")
+        
+        logger.info(f"Found {len(tickers)} EGX tickers with price data")
         return tickers
 
     def get_company_profile(self, symbol: str) -> Dict:

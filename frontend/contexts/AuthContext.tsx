@@ -76,7 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             formData.append("username", email);
             formData.append("password", password);
 
-            const response = await fetch("/api/v1/auth/token", {
+            // CRITICAL FIX: Use backend API URL, not relative Next.js route
+            const API_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+            const response = await fetch(`${API_URL}/auth/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData.toString(),
@@ -102,7 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const register = useCallback(async (data: RegisterData): Promise<{ success: boolean; error?: string }> => {
         try {
-            const response = await fetch("/api/v1/auth/signup", {
+            // CRITICAL FIX: Use backend API URL, not relative Next.js route
+            const API_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+            const response = await fetch(`${API_URL}/auth/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),

@@ -3,7 +3,7 @@ import subprocess
 import os
 import datetime
 
-SCANNER_SCRIPT = "hf-space/scripts/yahoo_scanner.py"
+SCANNER_SCRIPT = "backend-core/scripts/yahoo_scanner.py"
 INTERVAL = 600  # 10 minutes
 
 def run_scanner():

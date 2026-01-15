@@ -4,8 +4,8 @@ import json
 import sys
 import time
 
-API_URL = "https://bhidy-financehub-api.hf.space/api/v1/ai/chat"
-DEBUG_NLU_URL = "https://bhidy-financehub-api.hf.space/debug/nlu"
+API_URL = "https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
+DEBUG_NLU_URL = "https://starta.46-224-223-172.sslip.io/debug/nlu"
 
 # Predefined questions covering a wide range of intents
 QUESTIONS = [

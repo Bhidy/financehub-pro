@@ -130,8 +130,8 @@ Data Health Monitor:    ✅ SUCCESS (18s)
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | https://frontend-five-black-90.vercel.app |
-| **Command Center** | https://frontend-five-black-90.vercel.app/command-center |
+| **Frontend** | https://finhub-pro.vercel.app |
+| **Command Center** | https://finhub-pro.vercel.app/command-center |
 | **Backend API** | https://bhidy-financehub-api.hf.space |
 | **API Docs** | https://bhidy-financehub-api.hf.space/docs |
 | **Data Health API** | https://bhidy-financehub-api.hf.space/api/v1/dashboard/data-health |

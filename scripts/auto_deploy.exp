@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set ip [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ./scripts/deploy_to_hetzner.sh $ip
+
+expect {
+    "*password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "Permission denied" {
+        send_user "\nERROR: Password denied\n"
+        exit 1
+    }
+    eof
+}

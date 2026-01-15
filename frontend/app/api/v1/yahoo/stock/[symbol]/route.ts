@@ -9,9 +9,9 @@ export async function GET(
 ) {
     const { symbol } = await params;
 
-    // Proxy to Fixed Python Backend on HuggingFace Spaces
+    // Proxy to Fixed Python Backend on Hetzner VPS
     // This backend has the robust suffix handling (COMI -> COMI.CA)
-    const targetUrl = `https://bhidy-financehub-api.hf.space/api/v1/yahoo/stock/${symbol}`;
+    const targetUrl = `https://starta.46-224-223-172.sslip.io/api/v1/yahoo/stock/${symbol}`;
 
     try {
         const res = await fetch(targetUrl, {

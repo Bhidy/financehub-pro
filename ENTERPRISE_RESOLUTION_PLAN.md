@@ -41,7 +41,7 @@ Instead of relying solely on fragile environment variables, we have hardcoded "F
 ### 2.2 Implementation Steps (Executed)
 
 1.  **Code Hardening:**
-    -  Modified `hf-space/app/core/config.py` to strictly enforce Google Credentials if they are missing.
+    -  Modified `backend/app/core/config.py` (located in `hf-space` dir) to strictly enforce Google Credentials if they are missing.
     -  Added Pydantic Validators to override empty strings.
 
 2.  **Deployment Force-Push:**

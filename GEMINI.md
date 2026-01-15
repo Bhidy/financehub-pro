@@ -5,7 +5,7 @@
 FinanceHub Pro is an enterprise-grade financial intelligence platform for extracting, processing, and visualizing stock market data from Middle Eastern and North African markets (primarily Saudi Arabia, Egypt, and GCC).
 
 **Author:** Bhidy
-**Status:** Production
+**Status:** Production (Hetzner)
 
 ---
 
@@ -18,29 +18,26 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 - **State:** TanStack Query (React Query)
 - **Language:** TypeScript 5
 
-### Backend (`hf-space/` - Primary, `backend/` - Legacy)
+### Backend (`hf-space/` - Dockerized on Hetzner)
 - **Framework:** FastAPI (Python 3.10+)
 - **Database:** PostgreSQL via Supabase
-- **Deployment:** HuggingFace Spaces (Docker)
+- **Deployment:** Hetzner VPS (Docker via Coolify)
+- **Base URL:** `https://starta.46-224-223-172.sslip.io`
 - **Data Extraction:** Custom scrapers in `extractors/`
 
 ### Deployment
 - **Frontend:** Vercel (CLI deploy: `vercel --prod`)
-- **Backend:** HuggingFace Spaces (git push to `hf-space/`)
+- **Backend:** Hetzner VPS (Auto-deployed via Docker)
 - **Database:** Supabase PostgreSQL
 
 ---
 
 ## Critical Rules
 
-1. **API URL:** The production API URL is `https://bhidy-financehub-api.hf.space`. Hardcode this as a fallback in `frontend/lib/api.ts`. Never use `localhost` in production builds.
-
+1. **API URL:** The production API URL is `https://starta.46-224-223-172.sslip.io/api/v1`. Hardcode this in `frontend/lib/api.ts`.
 2. **Deployment:** Vercel is NOT connected to GitHub. Always deploy frontend manually using `npx vercel --prod` from the `frontend/` directory.
-
 3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
-
 4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
-
 5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
 
 ---
@@ -53,7 +50,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 | `frontend/app/` | App Router pages |
 | `frontend/components/` | Reusable React components |
 | `frontend/lib/api.ts` | API client configuration |
-| `hf-space/` | FastAPI backend deployed to HuggingFace Spaces |
+| `hf-space/` | FastAPI backend (Dockerized on Hetzner) |
 | `hf-space/app/api/v1/` | API endpoints |
 | `hf-space/scripts/` | Data extraction and maintenance scripts |
 | `backend/` | Legacy backend (do not use for production) |
@@ -74,20 +71,13 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 cd frontend && npx vercel --prod
 ```
 
-### Deploy Backend to Production
-```bash
-cd hf-space && git push origin main
-```
-
 ### Check Production Health
 ```bash
-curl https://bhidy-financehub-api.hf.space/health
+curl https://starta.46-224-223-172.sslip.io/health
 ```
 
----
-
-## Debugging Tips
-
-- **Data Issues:** Check `ingestion.log` and correlate with `backend/extractors/` or `hf-space/scripts/`.
-- **Frontend Errors:** Look at browser console and `frontend/lib/api.ts` for request failures.
-- **Backend Errors:** Check HuggingFace Spaces logs at `https://huggingface.co/spaces/Bhidy/financehub-api/logs`.
+### Deploy Backend to Hetzner
+```bash
+git push origin main
+# Coolify automatically rebuilds on push
+```

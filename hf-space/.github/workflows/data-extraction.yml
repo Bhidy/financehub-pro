@@ -1,0 +1,184 @@
+name: Enterprise Data Pipeline (Watchdog)
+
+on:
+  schedule:
+    # 1. PRICE REFRESH (Saudi) - Every 5 mins
+    - cron: '*/5 7-12 * * 0-4'
+    # 2. INDICES REFRESH - Every 15 mins
+    - cron: '*/15 7-12 * * 0-4'
+    # 3. DAILY SYNC (Saudi EOD) - 6 PM
+    - cron: '0 15 * * 0-4'
+    # 4. FUNDS SYNC (Egypt) - 7 PM
+    - cron: '0 16 * * 0-4'
+    # 5. CHATBOT INGESTION - 8 PM
+    - cron: '0 17 * * 0-4'
+  
+  workflow_dispatch:
+    inputs:
+      job_type:
+        description: 'Job to Run'
+        required: true
+        default: 'prices'
+        type: choice
+        options:
+          - prices
+          - indices
+          - daily
+          - egypt-funds
+          - nav-charts
+          - ingestion
+          - backfill # Added backfill option for manual trigger
+
+jobs:
+  # ============================================================
+  # WATCHDOG ORCHESTRATOR
+  # ============================================================
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Watchdog
+        run: echo "🐕 Enterprise Watchdog starting..."
+
+      # JOB 1: PRICES
+      - name: Saudi Prices Refresh
+        if: (github.event_name == 'schedule' && contains(github.event.schedule, '*/5')) || (github.event.inputs.job_type == 'prices')
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i: Triggering Saudi Prices..."
+            response=$(curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/prices" \
+              -H "Content-Type: application/json" --max-time 60)
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Saudi Prices Started: $response"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i failed. Retrying in 15s..."
+            sleep 15
+          done
+          echo "❌ Saudi Prices failed after 3 retries"
+          exit 1
+
+      # JOB 2: INDICES
+      - name: Indices Refresh
+        if: (github.event_name == 'schedule' && contains(github.event.schedule, '*/15')) || (github.event.inputs.job_type == 'indices')
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i: Triggering Market Indices..."
+            response=$(curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/indices" \
+              -H "Content-Type: application/json" --max-time 60)
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Market Indices Started: $response"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i failed. Retrying in 15s..."
+            sleep 15
+          done
+          echo "❌ Market Indices failed after 3 retries"
+          exit 1
+
+      # JOB 3: DAILY SYNC
+      - name: Daily EOD Sync
+        if: (github.event_name == 'schedule' && contains(github.event.schedule, '0 15')) || (github.event.inputs.job_type == 'daily')
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i: Triggering Daily EOD Sync..."
+            response=$(curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/daily" \
+              -H "Content-Type: application/json" --max-time 120)
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Daily EOD Sync Started: $response"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i failed. Retrying in 15s..."
+            sleep 15
+          done
+          echo "❌ Daily EOD Sync failed after 3 retries"
+          exit 1
+
+      # JOB 4: EGYPT FUNDS
+      - name: Egypt Funds Sync
+        if: (github.event_name == 'schedule' && contains(github.event.schedule, '0 16')) || (github.event.inputs.job_type == 'egypt-funds')
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i: Triggering Egypt Funds..."
+            response=$(curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/egypt-funds" \
+              -H "Content-Type: application/json" --max-time 120)
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Egypt Funds Started: $response"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i failed. Retrying in 15s..."
+            sleep 15
+          done
+          echo "❌ Egypt Funds failed after 3 retries"
+          exit 1
+
+      # JOB 5: CHATBOT INGESTION
+      - name: Chatbot Ingestion
+        if: (github.event_name == 'schedule' && contains(github.event.schedule, '0 17')) || (github.event.inputs.job_type == 'ingestion')
+        run: |
+          for i in 1 2 3; do
+            echo "Attempt $i: Triggering Chatbot Ingestion..."
+            response=$(curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/ingestion" \
+              -H "Content-Type: application/json" --max-time 120)
+            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]]; then
+              echo "✅ Chatbot Ingestion Started: $response"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i failed. Retrying in 15s..."
+            sleep 15
+          done
+          echo "❌ Chatbot Ingestion failed after 3 retries"
+          exit 1
+
+      # ============================================================
+      # ALERTING SYSTEM (Discord)
+      # ============================================================
+      - name: Alert Success
+        if: success()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "✅ **FinanceHub Watchdog**: Auto-update cycle completed successfully. All systems nominal."
+          
+      - name: Alert Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: "🚨 **CRITICAL FAILURE**: FinanceHub Watchdog Failed! Immediate attention required."
+
+  # ============================================================
+  # MANUAL TRIGGER HANDLERS (for jobs not part of watchdog schedule)
+  # ============================================================
+  manual-nav-charts:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'nav-charts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Manual NAV Charts Sync
+        run: |
+          echo "📈 Manual NAV charts sync..."
+          curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/nav-charts" | jq .
+
+  manual-backfill:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.job_type == 'backfill'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Historical Data Backfill
+        run: |
+          echo "📚 Running historical backfill (6+ years)..."
+          echo "This will collect and save ALL historical data."
+          echo "NO OVERWRITE: Existing data is preserved."
+          
+          curl -s -X POST "https://bhidy-financehub-api.hf.space/api/v1/admin/refresh/backfill" | jq .
+          
+          echo ""
+          echo "📈 Final data statistics:"
+          curl -s "https://bhidy-financehub-api.hf.space/api/v1/admin/data/stats" | jq .

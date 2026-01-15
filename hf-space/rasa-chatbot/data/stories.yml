@@ -1,0 +1,173 @@
+version: "3.1"
+
+stories:
+
+# ============================================================
+# STOCK STORIES
+# ============================================================
+
+- story: stock price direct
+  steps:
+    - intent: stock_price
+    - action: action_stock_price
+
+- story: stock price then chart
+  steps:
+    - intent: stock_price
+    - action: action_stock_price
+    - intent: stock_chart
+    - action: action_stock_chart
+
+- story: stock snapshot then financials
+  steps:
+    - intent: stock_snapshot
+    - action: action_stock_snapshot
+    - intent: financials
+    - action: action_financials
+
+- story: stock chart with range
+  steps:
+    - intent: stock_chart
+    - action: action_stock_chart
+
+- story: financials then dividends
+  steps:
+    - intent: financials
+    - action: action_financials
+    - intent: dividends
+    - action: action_dividends
+
+- story: compare stocks
+  steps:
+    - intent: compare_stocks
+    - action: action_compare_stocks
+
+- story: top gainers then sector
+  steps:
+    - intent: top_gainers
+    - action: action_top_gainers
+    - intent: sector_stocks
+    - action: action_sector_stocks
+
+- story: dividend leaders
+  steps:
+    - intent: dividend_leaders
+    - action: action_dividend_leaders
+
+- story: sector stocks
+  steps:
+    - intent: sector_stocks
+    - action: action_sector_stocks
+
+# ============================================================
+# FUND STORIES (NEW)
+# ============================================================
+
+- story: fund nav direct
+  steps:
+    - intent: fund_nav
+    - action: action_fund_nav
+
+- story: fund nav then performance
+  steps:
+    - intent: fund_nav
+    - action: action_fund_nav
+    - intent: fund_performance
+    - action: action_fund_performance
+
+- story: fund search
+  steps:
+    - intent: fund_search
+    - action: action_fund_search
+
+- story: fund search then nav
+  steps:
+    - intent: fund_search
+    - action: action_fund_search
+    - intent: fund_nav
+    - action: action_fund_nav
+
+- story: fund compare
+  steps:
+    - intent: fund_compare
+    - action: action_fund_compare
+
+- story: fund movers then nav
+  steps:
+    - intent: fund_movers
+    - action: action_fund_movers
+    - intent: fund_nav
+    - action: action_fund_nav
+
+# ============================================================
+# MARKET STORIES
+# ============================================================
+
+- story: market summary then gainers
+  steps:
+    - intent: market_summary
+    - action: action_market_summary
+    - intent: top_gainers
+    - action: action_top_gainers
+
+- story: market summary then sector
+  steps:
+    - intent: market_summary
+    - action: action_market_summary
+    - intent: sector_stocks
+    - action: action_sector_stocks
+
+# ============================================================
+# SYSTEM STORIES
+# ============================================================
+
+- story: greeting
+  steps:
+    - intent: greet
+    - action: utter_greet
+
+- story: goodbye
+  steps:
+    - intent: goodbye
+    - action: utter_goodbye
+
+- story: help
+  steps:
+    - intent: help
+    - action: utter_help
+
+- story: greet then stock price
+  steps:
+    - intent: greet
+    - action: utter_greet
+    - intent: stock_price
+    - action: action_stock_price
+
+- story: greet then fund nav
+  steps:
+    - intent: greet
+    - action: utter_greet
+    - intent: fund_nav
+    - action: action_fund_nav
+
+# ============================================================
+# CLARIFICATION STORIES
+# ============================================================
+
+- story: clarify symbol then action
+  steps:
+    - intent: stock_price
+      entities:
+        - stock_symbol: null
+    - action: action_clarify_symbol
+    - intent: stock_price
+    - action: action_stock_price
+
+- story: clarify fund then action
+  steps:
+    - intent: fund_nav
+      entities:
+        - fund_id: null
+    - action: action_clarify_fund
+    - intent: fund_nav
+    - action: action_fund_nav

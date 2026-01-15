@@ -1,0 +1,541 @@
+version: "3.1"
+
+nlu:
+
+# ============================================================
+# STOCK INTENTS
+# ============================================================
+
+# ---------- STOCK_PRICE ----------
+- intent: stock_price
+  examples: |
+    - what is the price of [COMI](stock_symbol)?
+    - [2222](stock_symbol) price
+    - how much is [aramco](stock_name) trading at?
+    - give me the current price for [SWDY](stock_symbol)
+    - [commercial international bank](stock_name) stock price
+    - price of [CIB](stock_name)
+    - what's [COMI](stock_symbol) at?
+    - [COMI](stock_symbol) now
+    - current price [2222](stock_symbol)
+    - [TMGH](stock_symbol) trading price
+    - how much is [sidi kerir](stock_name)?
+    - [SKPC](stock_symbol) quote
+    - what is [egyptian iron](stock_name) price?
+    - [SWDY](stock_symbol) stock price today
+    - price for [orascom](stock_name)
+    - كم سعر [ارامكو](stock_name)؟
+    - سعر سهم [COMI](stock_symbol)
+    - بكم يتداول [البنك التجاري](stock_name)؟
+    - ما هو سعر [2222](stock_symbol) الان؟
+    - سعر [COMI](stock_symbol) اليوم
+    - كم سعر [سويدي](stock_name)؟
+    - سعر [طلعت مصطفى](stock_name)
+    - بكم [اوراسكوم](stock_name)؟
+    - سعر سهم [الحديد والصلب](stock_name)
+    - ما سعر [SKPC](stock_symbol)؟
+    - سعر [SWDY](stock_symbol) الحالي
+    - كم يتداول [TMGH](stock_symbol)؟
+    - اعطني سعر [COMI](stock_symbol)
+    - سعر [2222](stock_symbol) كم؟
+    - what is [COMI](stock_symbol) price today
+    - [COMI](stock_symbol) سعر
+
+# ---------- STOCK_CHART ----------
+- intent: stock_chart
+  examples: |
+    - show me [COMI](stock_symbol) chart
+    - [2222](stock_symbol) chart [1Y](range)
+    - show chart for [aramco](stock_name)
+    - [SWDY](stock_symbol) price chart [3M](range)
+    - candlestick chart [COMI](stock_symbol)
+    - [TMGH](stock_symbol) [1M](range) chart
+    - graph of [CIB](stock_name)
+    - show [COMI](stock_symbol) [5Y](range) chart
+    - technical chart [2222](stock_symbol)
+    - [SKPC](stock_symbol) price history
+    - chart [SWDY](stock_symbol) [6M](range)
+    - show me the chart
+    - شارت [COMI](stock_symbol)
+    - رسم بياني [ارامكو](stock_name)
+    - شارت [سويدي](stock_name) [سنة](range)
+    - الشارت [2222](stock_symbol)
+    - شارت السعر [TMGH](stock_symbol)
+    - رسم [COMI](stock_symbol) [شهر](range)
+    - اعرض شارت [طلعت مصطفى](stock_name)
+    - شارت [SWDY](stock_symbol) [3 شهور](range)
+    - الرسم البياني لـ [COMI](stock_symbol)
+    - شارت [COMI](stock_symbol) [1Y](range)
+    - [COMI](stock_symbol) chart
+
+# ---------- STOCK_SNAPSHOT ----------
+- intent: stock_snapshot
+  examples: |
+    - tell me about [COMI](stock_symbol)
+    - [2222](stock_symbol) overview
+    - give me a summary of [aramco](stock_name)
+    - [SWDY](stock_symbol) stock info
+    - quick look at [TMGH](stock_symbol)
+    - what is [CIB](stock_name)?
+    - info on [COMI](stock_symbol)
+    - [SKPC](stock_symbol) snapshot
+    - overview of [orascom](stock_name)
+    - ملخص [COMI](stock_symbol)
+    - نظرة عامة [ارامكو](stock_name)
+    - اخبرني عن [سويدي](stock_name)
+    - معلومات [2222](stock_symbol)
+    - نبذة عن [طلعت مصطفى](stock_name)
+    - ماذا تعرف عن [COMI](stock_symbol)؟
+    - معلومات سهم [SWDY](stock_symbol)
+    - ملخص سهم [TMGH](stock_symbol)
+
+# ---------- STOCK_STAT ----------
+- intent: stock_stat
+  examples: |
+    - what is the [PE ratio](metric) of [COMI](stock_symbol)?
+    - [2222](stock_symbol) [market cap](metric)
+    - [SWDY](stock_symbol) [EPS](metric)
+    - show me [COMI](stock_symbol) [52 week high](metric)
+    - [TMGH](stock_symbol) [beta](metric)
+    - [CIB](stock_name) valuation metrics
+    - [COMI](stock_symbol) [ROE](metric)
+    - what's the [P/E](metric) for [2222](stock_symbol)?
+    - [SKPC](stock_symbol) statistics
+    - [SWDY](stock_symbol) financial metrics
+    - [COMI](stock_symbol) [current ratio](metric)
+    - show statistics for [aramco](stock_name)
+    - [COMI](stock_symbol) stats
+    - مضاعف الربحية [COMI](stock_symbol)
+    - [ارامكو](stock_name) [القيمة السوقية](metric)
+    - ما هو [مضاعف](metric) [2222](stock_symbol)؟
+    - [SWDY](stock_symbol) [ربحية السهم](metric)
+    - احصائيات [COMI](stock_symbol)
+    - نسب مالية [طلعت مصطفى](stock_name)
+    - [COMI](stock_symbol) [اعلى سعر](metric)
+    - معدل [العائد على حقوق الملكية](metric) [COMI](stock_symbol)
+
+# ---------- FINANCIALS ----------
+- intent: financials
+  examples: |
+    - [COMI](stock_symbol) financials
+    - show me [2222](stock_symbol) [income statement](statement_type)
+    - [SWDY](stock_symbol) [balance sheet](statement_type)
+    - [aramco](stock_name) financial statements
+    - [COMI](stock_symbol) [cash flow](statement_type)
+    - [TMGH](stock_symbol) quarterly financials
+    - annual financials for [CIB](stock_name)
+    - [SKPC](stock_symbol) [income](statement_type)
+    - financial data [COMI](stock_symbol)
+    - [2222](stock_symbol) [balance](statement_type)
+    - القوائم المالية [COMI](stock_symbol)
+    - [قائمة الدخل](statement_type) [ارامكو](stock_name)
+    - [الميزانية](statement_type) [2222](stock_symbol)
+    - البيانات المالية [سويدي](stock_name)
+    - [التدفقات النقدية](statement_type) [COMI](stock_symbol)
+    - القوائم المالية السنوية [طلعت مصطفى](stock_name)
+    - [SWDY](stock_symbol) [الميزانية العمومية](statement_type)
+
+# ---------- DIVIDENDS ----------
+- intent: dividends
+  examples: |
+    - [COMI](stock_symbol) dividends
+    - dividend history for [2222](stock_symbol)
+    - [SWDY](stock_symbol) dividend yield
+    - when is [aramco](stock_name) next dividend?
+    - [TMGH](stock_symbol) payout
+    - [CIB](stock_name) dividend distribution
+    - show dividends [COMI](stock_symbol)
+    - [SKPC](stock_symbol) dividend dates
+    - التوزيعات [COMI](stock_symbol)
+    - توزيعات الارباح [ارامكو](stock_name)
+    - عائد التوزيع [2222](stock_symbol)
+    - موعد توزيعات [سويدي](stock_name)
+    - الارباح الموزعة [TMGH](stock_symbol)
+    - توزيعات نقدية [COMI](stock_symbol)
+    - متى توزيعات [طلعت مصطفى](stock_name)؟
+
+# ---------- COMPARE_STOCKS ----------
+- intent: compare_stocks
+  examples: |
+    - compare [COMI](stock_symbol) with [SWDY](stock_symbol)
+    - [2222](stock_symbol) vs [2020](stock_symbol)
+    - [COMI](stock_symbol) versus [TMGH](stock_symbol)
+    - what's the difference between [CIB](stock_name) and [SWDY](stock_symbol)?
+    - compare [aramco](stock_name) and [sabic](stock_name)
+    - [COMI](stock_symbol) vs [SKPC](stock_symbol)
+    - comparison [2222](stock_symbol) [2010](stock_symbol)
+    - which is better [COMI](stock_symbol) or [SWDY](stock_symbol)?
+    - قارن بين [COMI](stock_symbol) و [SWDY](stock_symbol)
+    - [ارامكو](stock_name) مقابل [سابك](stock_name)
+    - مقارنة [2222](stock_symbol) و [2020](stock_symbol)
+    - الفرق بين [COMI](stock_symbol) و [TMGH](stock_symbol)
+    - ايهما افضل [سويدي](stock_name) ام [طلعت مصطفى](stock_name)؟
+    - قارن [COMI](stock_symbol) مع [SKPC](stock_symbol)
+
+# ---------- TOP_GAINERS ----------
+- intent: top_gainers
+  examples: |
+    - top gainers
+    - biggest gainers today
+    - what stocks are up?
+    - show me winners
+    - most gaining stocks
+    - green stocks today
+    - top 10 gainers
+    - highest gain stocks
+    - what's up today?
+    - stocks going up
+    - الاكثر ارتفاعا
+    - الاسهم الرابحة
+    - الاسهم الخضراء
+    - اعلى ارتفاع اليوم
+    - الرابحين اليوم
+    - اكثر الاسهم ارتفاعا
+    - الاسهم الصاعدة
+
+# ---------- TOP_LOSERS ----------
+- intent: top_losers
+  examples: |
+    - top losers
+    - biggest losers today
+    - what stocks are down?
+    - falling stocks
+    - most losing stocks
+    - red stocks today
+    - top 10 losers
+    - highest loss stocks
+    - what's down today?
+    - stocks going down
+    - الاكثر انخفاضا
+    - الاسهم الخاسرة
+    - الاسهم الحمراء
+    - اكبر خسارة اليوم
+    - الخاسرين اليوم
+    - اكثر الاسهم انخفاضا
+    - الاسهم الهابطة
+
+# ---------- SECTOR_STOCKS ----------
+- intent: sector_stocks
+  examples: |
+    - [banking](sector) stocks
+    - show me [bank](sector) stocks
+    - [real estate](sector) sector
+    - stocks in [financial](sector) sector
+    - [industrial](sector) stocks
+    - list [telecom](sector) companies
+    - [healthcare](sector) sector stocks
+    - [energy](sector) stocks
+    - [technology](sector) companies
+    - best [banking](sector) stocks
+    - اسهم [البنوك](sector)
+    - قطاع [البنوك](sector)
+    - اسهم [العقارات](sector)
+    - [القطاع المالي](sector)
+    - اسهم [الصناعة](sector)
+    - قطاع [الاتصالات](sector)
+    - اسهم [الطاقة](sector)
+    - [القطاع الصحي](sector)
+
+# ---------- DIVIDEND_LEADERS ----------
+- intent: dividend_leaders
+  examples: |
+    - highest dividend stocks
+    - best dividend yield
+    - top dividend payers
+    - stocks with highest dividends
+    - dividend champions
+    - best yield stocks
+    - high yield stocks
+    - top dividend stocks
+    - اعلى توزيعات
+    - افضل عائد توزيعات
+    - اكبر توزيعات
+    - اعلى عائد
+    - الاسهم ذات اعلى توزيعات
+    - افضل توزيعات نقدية
+
+# ---------- SCREENER_PE ----------
+- intent: screener_pe
+  examples: |
+    - stocks with [PE](metric) [below](operator) [10](threshold)
+    - [PE](metric) [under](operator) [15](threshold)
+    - [low PE](metric) stocks
+    - cheap stocks [PE](metric) [less than](operator) [8](threshold)
+    - find stocks [P/E](metric) [<](operator) [12](threshold)
+    - value stocks [PE](metric) [below](operator) [10](threshold)
+    - اسهم [مضاعف](metric) [اقل من](operator) [10](threshold)
+    - [مضاعف ربحية](metric) [منخفض](operator)
+    - اسهم رخيصة [PE](metric) [اقل](operator) [15](threshold)
+
+# ============================================================
+# FUND INTENTS (NEW)
+# ============================================================
+
+# ---------- FUND_NAV ----------
+- intent: fund_nav
+  examples: |
+    - what is the NAV of fund [2742](fund_id)?
+    - [Pharos Investment Fund](fund_name) price
+    - show me NAV for fund [6120](fund_id)
+    - fund [2734](fund_id) current price
+    - [CI Equity Fund](fund_name) NAV
+    - what's [Beltone Fund](fund_name) trading at?
+    - [2756](fund_id) fund price
+    - NAV of [HC Fund](fund_name)
+    - [Hermes Fund](fund_name) unit price
+    - fund [2742](fund_id) value
+    - كم سعر صندوق [فاروس](fund_name)؟
+    - سعر الوحدة لـ [2742](fund_id)
+    - NAV صندوق [6120](fund_id)
+    - سعر صندوق [بلتون](fund_name)
+    - صافي قيمة الاصول [2734](fund_id)
+    - سعر وحدة صندوق [هيرميس](fund_name)
+    - كم سعر صندوق [سي اي](fund_name)؟
+    - صندوق [2742](fund_id) سعر
+
+# ---------- FUND_PROFILE ----------
+- intent: fund_profile
+  examples: |
+    - tell me about fund [2742](fund_id)
+    - [Pharos Fund](fund_name) details
+    - fund [6120](fund_id) information
+    - who manages [Beltone Fund](fund_name)?
+    - [2734](fund_id) fund profile
+    - info on [CI Equity Fund](fund_name)
+    - [Hermes Fund](fund_name) overview
+    - معلومات صندوق [2742](fund_id)
+    - نبذة عن صندوق [فاروس](fund_name)
+    - من يدير صندوق [بلتون](fund_name)؟
+    - معلومات [هيرميس](fund_name)
+    - تفاصيل صندوق [6120](fund_id)
+
+# ---------- FUND_PERFORMANCE ----------
+- intent: fund_performance
+  examples: |
+    - [2742](fund_id) performance [1Y](range)
+    - show [Pharos Fund](fund_name) returns
+    - fund [6120](fund_id) [YTD](range) return
+    - how is [Beltone Fund](fund_name) doing?
+    - [2734](fund_id) [3Y](range) performance
+    - [CI Fund](fund_name) historical returns
+    - fund [2742](fund_id) chart
+    - [Hermes Fund](fund_name) [5Y](range) return
+    - اداء صندوق [2742](fund_id) [سنة](range)
+    - عوائد صندوق [فاروس](fund_name)
+    - عائد [بلتون](fund_name) [من بداية السنة](range)
+    - اداء [2734](fund_id) [3 سنوات](range)
+    - كم عائد صندوق [هيرميس](fund_name)؟
+
+# ---------- FUND_COMPARE ----------
+- intent: fund_compare
+  examples: |
+    - compare fund [2742](fund_id) with [2734](fund_id)
+    - [Pharos Fund](fund_name) vs [Beltone Fund](fund_name)
+    - which fund is better [2742](fund_id) or [6120](fund_id)?
+    - compare [CI Fund](fund_name) and [Hermes Fund](fund_name)
+    - قارن بين صندوق [2742](fund_id) و [2734](fund_id)
+    - [فاروس](fund_name) مقابل [بلتون](fund_name)
+    - ايهما افضل [سي اي](fund_name) ام [هيرميس](fund_name)؟
+
+# ---------- FUND_SEARCH ----------
+- intent: fund_search
+  examples: |
+    - show me [islamic](shariah_filter) funds
+    - find [shariah compliant](shariah_filter) funds
+    - list [equity](fund_category) funds
+    - [money market](fund_category) funds
+    - available [real estate](fund_category) funds
+    - show [fixed income](fund_category) funds
+    - all mutual funds
+    - list all funds
+    - صناديق [متوافقة مع الشريعة](shariah_filter)
+    - صناديق [اسهم](fund_category)
+    - صناديق [نقدية](fund_category)
+    - صناديق [اسلامية](shariah_filter)
+    - صناديق [شرعية](shariah_filter)
+    - قائمة الصناديق
+    - اعرض الصناديق المتاحة
+    - صناديق [عقارية](fund_category)
+
+# ---------- FUND_MOVERS ----------
+- intent: fund_movers
+  examples: |
+    - top performing funds
+    - best funds [YTD](range)
+    - worst performing funds
+    - top fund gainers
+    - fund losers
+    - highest return funds [1Y](range)
+    - افضل الصناديق اداء
+    - اعلى عوائد [سنة](range)
+    - اسوأ الصناديق
+    - الصناديق الرابحة
+    - اكثر الصناديق ارتفاعا
+
+# ============================================================
+# MARKET INTENTS
+# ============================================================
+
+# ---------- MARKET_SUMMARY ----------
+- intent: market_summary
+  examples: |
+    - how is the market today?
+    - [EGX30](market_code) summary
+    - market overview
+    - [Egypt](market_code) market performance
+    - stock market today
+    - market index
+    - [EGX](market_code) today
+    - how is [Egyptian](market_code) market?
+    - market status
+    - كيف السوق اليوم؟
+    - ملخص [البورصة المصرية](market_code)
+    - اداء السوق
+    - [المؤشر](market_code) اليوم
+    - ايه اخبار [السوق](market_code)؟
+    - السوق المصري
+    - مؤشر [EGX30](market_code)
+
+# ============================================================
+# SYSTEM INTENTS
+# ============================================================
+
+# ---------- HELP ----------
+- intent: help
+  examples: |
+    - help
+    - what can you do?
+    - how to use
+    - commands
+    - options
+    - guide
+    - show me examples
+    - what do you support?
+    - مساعدة
+    - ماذا تفعل؟
+    - كيف استخدمك؟
+    - الاوامر
+    - دليل
+    - اعطني امثلة
+    - ايش تقدر تسوي؟
+
+# ---------- GREET ----------
+- intent: greet
+  examples: |
+    - hello
+    - hi
+    - hey
+    - good morning
+    - good evening
+    - مرحبا
+    - اهلا
+    - السلام عليكم
+    - صباح الخير
+    - مساء الخير
+
+# ---------- GOODBYE ----------
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you
+    - thanks bye
+    - مع السلامة
+    - وداعا
+    - شكرا
+    - باي
+
+# ---------- SWITCH_MARKET ----------
+- intent: switch_market
+  examples: |
+    - switch to [Egypt](market_code) market
+    - show [Saudi](market_code) stocks
+    - change to [EGX](market_code)
+    - [KSA](market_code) market
+    - السوق [المصري](market_code)
+    - غير الى [السعودية](market_code)
+    - [البورصة المصرية](market_code)
+    - سوق [السعودية](market_code)
+
+# ============================================================
+# LOOKUP TABLES
+# ============================================================
+
+- lookup: stock_symbol
+  examples: |
+    - COMI
+    - SWDY
+    - TMGH
+    - SKPC
+    - ORWE
+    - EFIH
+    - HELI
+    - ETEL
+    - OCDI
+    - ESRS
+    - AMOC
+    - CIEB
+    - 2222
+    - 2020
+    - 2010
+    - 1120
+    - 4001
+    - 4002
+
+- lookup: fund_id
+  examples: |
+    - 2734
+    - 2742
+    - 2756
+    - 6120
+    - 2751
+    - 2760
+    - 2770
+    - 2780
+
+# ============================================================
+# SYNONYMS
+# ============================================================
+
+- synonym: COMI
+  examples: |
+    - CIB
+    - البنك التجاري الدولي
+    - commercial international bank
+    - cib bank
+
+- synonym: 2222
+  examples: |
+    - aramco
+    - ارامكو
+    - saudi aramco
+    - ارامكو السعودية
+
+- synonym: shariah
+  examples: |
+    - islamic
+    - shariah compliant
+    - متوافق مع الشريعة
+    - اسلامي
+    - شرعي
+
+- synonym: equity
+  examples: |
+    - stocks
+    - اسهم
+    - equity fund
+    - صندوق اسهم
+
+- synonym: 1Y
+  examples: |
+    - 1 year
+    - one year
+    - سنة
+    - عام
+    - 12 months
+
+- synonym: YTD
+  examples: |
+    - year to date
+    - من بداية السنة
+    - منذ بداية العام

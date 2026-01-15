@@ -1,0 +1,62 @@
+# Rasa Configuration for FinanceHub Pro
+# Bilingual (Arabic + English) NLU Pipeline
+
+recipe: default.v1
+language: ar  # Primary language - handles Arabic with English entities
+
+pipeline:
+  # Tokenization
+  - name: WhitespaceTokenizer
+    intent_tokenization_flag: false
+    intent_split_symbol: "_"
+  
+  # Feature extraction
+  - name: RegexFeaturizer
+  - name: LexicalSyntacticFeaturizer
+  
+  # Count-based features
+  - name: CountVectorsFeaturizer
+    analyzer: word
+    min_ngram: 1
+    max_ngram: 1
+  
+  # Character n-grams (critical for Arabic/mixed text)
+  - name: CountVectorsFeaturizer
+    analyzer: char_wb
+    min_ngram: 1
+    max_ngram: 4
+  
+  # Intent and Entity classifier
+  - name: DIETClassifier
+    epochs: 100
+    constrain_similarities: true
+    model_confidence: softmax
+    
+  # Entity synonyms
+  - name: EntitySynonymMapper
+  
+  # Response selection (for FAQ-style responses)
+  - name: ResponseSelector
+    epochs: 100
+    
+  # Fallback classification
+  - name: FallbackClassifier
+    threshold: 0.4
+    ambiguity_threshold: 0.1
+
+policies:
+  # Remember exact conversation paths
+  - name: MemoizationPolicy
+    max_history: 5
+  
+  # Rule-based responses (high priority)
+  - name: RulePolicy
+    core_fallback_threshold: 0.4
+    core_fallback_action_name: action_default_fallback
+    enable_fallback_prediction: true
+  
+  # Learned policy for complex dialogues
+  - name: TEDPolicy
+    max_history: 5
+    epochs: 100
+    constrain_similarities: true

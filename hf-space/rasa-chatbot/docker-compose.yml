@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  # Rasa Server (NLU + Core)
+  rasa:
+    image: rasa/rasa:3.6.11
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./:/app
+    command:
+      - run
+      - --enable-api
+      - --cors
+      - "*"
+      - --debug
+    environment:
+      - RASA_MODEL_DIR=/app/models
+    depends_on:
+      - action-server
+    networks:
+      - rasa-network
+
+  # Action Server
+  action-server:
+    build:
+      context: ./actions
+      dockerfile: Dockerfile
+    ports:
+      - "5055:5055"
+    environment:
+      - API_BASE_URL=https://bhidy-financehub-api.hf.space/api/v1
+    volumes:
+      - ./actions:/app/actions
+    networks:
+      - rasa-network
+
+  # Optional: Duckling for entity extraction
+  duckling:
+    image: rasa/duckling:0.2.0.0
+    ports:
+      - "8000:8000"
+    networks:
+      - rasa-network
+
+networks:
+  rasa-network:
+    driver: bridge

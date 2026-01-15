@@ -16,8 +16,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # URLs
-FRONTEND_URL="https://frontend-five-black-90.vercel.app"
-BACKEND_URL="https://bhidy-financehub-api.hf.space"
+FRONTEND_URL="https://finhub-pro.vercel.app"
+BACKEND_URL="https://starta.46-224-223-172.sslip.io"
 
 # Check Frontend
 echo -n "🌐 Frontend (Vercel)............ "
@@ -29,7 +29,7 @@ else
 fi
 
 # Check Backend Health
-echo -n "🔌 Backend API (HuggingFace).... "
+echo -n "🔌 Backend API (Hetzner VPS).... "
 BACKEND_HEALTH=$(curl -s "$BACKEND_URL/health" 2>/dev/null || echo '{"status":"error"}')
 if echo "$BACKEND_HEALTH" | grep -q '"healthy"'; then
     echo -e "${GREEN}✅ HEALTHY${NC}"

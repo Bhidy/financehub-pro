@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge'; // Use Edge for faster response times
 export const dynamic = 'force-dynamic'; // Disable caching
 
-const HF_API_URL = 'https://bhidy-financehub-api.hf.space/api/v1/ai/chat';
+const BACKEND_AI_URL = 'https://starta.46-224-223-172.sslip.io/api/v1/ai/chat';
 
 export async function POST(request: NextRequest) {
     try {
@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(`[AI Route v2.1-HF] Processing message: "${message.substring(0, 50)}..."`);
+        console.log(`[AI Route v2.2] Processing message: "${message.substring(0, 50)}..."`);
 
-        // Proxy to HuggingFace deterministic backend
-        const response = await fetch(HF_API_URL, {
+        // Proxy to Hetzner deterministic backend
+        const response = await fetch(BACKEND_AI_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, history, session_id })
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('[AI Route] HuggingFace error:', errorText);
+            console.error('[AI Route] Backend error:', errorText);
             return NextResponse.json(
                 {
                     message_text: "I'm having trouble connecting to the service. Please try again.",
@@ -72,6 +72,6 @@ export async function GET() {
     return NextResponse.json({
         status: 'healthy',
         service: 'ai-chat',
-        backend: 'huggingface-deterministic'
+        backend: 'hetzner-vps-deterministic'
     });
 }

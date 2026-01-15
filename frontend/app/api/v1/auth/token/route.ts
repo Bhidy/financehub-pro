@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-const HF_API_URL = 'https://bhidy-financehub-api.hf.space/api/v1/auth';
+const HF_API_URL = 'https://starta.46-224-223-172.sslip.io/api/v1/auth';
 
 // Auth token endpoint
 export async function POST(request: NextRequest) {

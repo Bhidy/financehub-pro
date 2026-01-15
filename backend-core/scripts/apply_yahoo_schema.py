@@ -10,7 +10,7 @@ async def main():
     try:
         conn = await asyncpg.connect(DB_URL)
         
-        with open("hf-space/scripts/yahoo_schema.sql", "r") as f:
+        with open("backend-core/scripts/yahoo_schema.sql", "r") as f:
             sql = f.read()
             
         print("⚡ Executing Schema Update...")

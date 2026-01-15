@@ -36,11 +36,16 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 
 1. **API URL:** The production API URL is `https://starta.46-224-223-172.sslip.io/api/v1`. Hardcode this in `frontend/lib/api.ts`.
 2. **Deployment:** Vercel is NOT connected to GitHub. Always deploy frontend manually using `npx vercel --prod` from the `frontend/` directory.
-3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
-4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
-5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
+  3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
+  4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
+  5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
 
----
+  ## STRICT ARCHITECTURE RULES (CRITICAL)
+  > [!IMPORTANT]
+  > **NO HUGGINGFACE**: HuggingFace is **completely banned**. Do not use `hf.space`, `huggingface.co`, or any related domains. The backend is **ONLY** on Hetzner.
+  > **BACKEND LOCATION**: The real backend code is in `backend-core/`. Do not assume `hf-space/` exists (it has been renamed).
+
+  ---
 
 ## Directory Map
 
@@ -49,13 +54,13 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 | `frontend/` | Next.js application deployed to Vercel |
 | `frontend/app/` | App Router pages |
 | `frontend/components/` | Reusable React components |
-| `frontend/lib/api.ts` | API client configuration |
-| `hf-space/` | FastAPI backend (Dockerized on Hetzner) |
-| `hf-space/app/api/v1/` | API endpoints |
-| `hf-space/scripts/` | Data extraction and maintenance scripts |
-| `backend/` | Legacy backend (do not use for production) |
-| `scripts/` | Root-level utility scripts |
-| `.agent/workflows/` | Deployment and verification workflows |
+  | `frontend/lib/api.ts` | API client configuration |
+  | `backend-core/` | FastAPI backend (Dockerized on Hetzner) - WAS `hf-space` |
+  | `backend-core/app/api/v1/` | API endpoints |
+  | `backend-core/scripts/` | Data extraction and maintenance scripts |
+  | `backend/` | Legacy backend (do not use for production) |
+  | `scripts/` | Root-level utility scripts |
+  | `.agent/workflows/` | Deployment and verification workflows |
 
 ---
 

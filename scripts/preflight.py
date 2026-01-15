@@ -25,16 +25,16 @@ def check_frontend_config():
     with open(api_ts_path, 'r') as f:
         content = f.read()
     
-    # Check 1: API_BASE_URL must be Production HF Space
-    # Regex for const API_BASE_URL = "https://.*hf.space/api/v1";
+    # Check 1: API_BASE_URL must be Production Hetzner
+    # Regex for const API_BASE_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
     # or similar
-    if 'https://bhidy-financehub-api.hf.space/api/v1' not in content:
-        fail("Frontend api.ts is NOT pointing to Production Backend (bhidy-financehub-api.hf.space)")
+    if 'https://starta.46-224-223-172.sslip.io/api/v1' not in content:
+        fail("Frontend api.ts is NOT pointing to Production Backend (Hetzner)")
     
     pass_check("Frontend Config (api.ts) points to Production Backend")
 
 def check_backend_deps():
-    req_path = "hf-space/requirements.txt"
+    req_path = "backend-core/requirements.txt"
     if not os.path.exists(req_path):
         fail(f"Missing {req_path}")
         
@@ -49,7 +49,7 @@ def check_backend_deps():
     pass_check("Backend Dependencies (requirements.txt) validated")
 
 def check_backend_cors_strictness():
-    main_path = "hf-space/app/main.py"
+    main_path = "backend-core/app/main.py"
     with open(main_path, 'r') as f:
         content = f.read()
     
@@ -64,7 +64,7 @@ def check_backend_cors_strictness():
     pass_check("Backend CORS Policy is STRICT and SECURE")
 
 def check_run_script():
-    run_path = "hf-space/run.sh"
+    run_path = "backend-core/run.sh"
     with open(run_path, 'r') as f:
         content = f.read()
         

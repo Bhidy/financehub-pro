@@ -149,7 +149,7 @@ export default function CommandCenterPage() {
     // Check AI status
     const checkAIStatus = useCallback(async () => {
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://financehub-pro-production.up.railway.app';
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
             const res = await fetch(`${API_URL}/api/v1/ai/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -175,7 +175,7 @@ export default function CommandCenterPage() {
         setLoading(true);
         try {
             // Use production HuggingFace API
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://financehub-pro-production.up.railway.app';
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
             const res = await fetch(`${API_URL}/api/v1/dashboard/summary`);
             const summary = await res.json();
 

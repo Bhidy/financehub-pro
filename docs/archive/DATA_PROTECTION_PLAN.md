@@ -154,7 +154,7 @@ Actions:
 | Resource | URL |
 |----------|-----|
 | **GitHub Actions** | https://github.com/Bhidy/financehub-pro/actions |
-| **Production Frontend** | https://frontend-five-black-90.vercel.app |
+| **Production Frontend** | https://finhub-pro.vercel.app |
 | **Production API** | https://bhidy-financehub-api.hf.space |
 | **Data Health API** | https://bhidy-financehub-api.hf.space/api/v1/dashboard/data-health |
 | **API Documentation** | https://bhidy-financehub-api.hf.space/docs |

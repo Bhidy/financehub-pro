@@ -205,4 +205,30 @@ async def main():
     logger.info("Ingestion Complete.")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test-symbol", help="Run in debug mode for a single symbol (No DB write)")
+    args = parser.parse_args()
+
+    if args.test_symbol:
+        # DEBUG MODE: Fetch and Dump
+        print(f"--- DEBUG MODE: Fetching {args.test_symbol} ---")
+        res = fetch_yfinance_data(args.test_symbol)
+        if res:
+            prof, fund, hist = res
+            print("\n[SUCCESS] Data Extracted!")
+            print(f"Profile Keys: {len(prof)} extracted")
+            print(f"Financial Keys: {len(fund)} extracted")
+            print(f"History Rows: {len(hist)}")
+            
+            print("\n--- SAMPLE PROFILE DATA (Full Dump) ---")
+            print(json.dumps(prof, indent=2, default=str))
+            
+            print("\n--- SAMPLE HISTORY (Last 1) ---")
+            if hist:
+                print(hist[-1])
+        else:
+            print("[FAIL] No data returned.")
+    else:
+        # PRODUCTION MODE
+        asyncio.run(main())

@@ -152,6 +152,7 @@ class ChartType(str, Enum):
     COLUMN = "column"
     RADAR = "radar"
     AREA = "area"
+    FINANCIAL_GROWTH = "financial_growth"
 
 
 class ChatRequest(BaseModel):

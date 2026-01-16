@@ -1160,8 +1160,21 @@ async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
     if refresh_status["is_running"]:
         return {"status": "already_running"}
     
+    async def _run_funds():
+        global refresh_status
+        refresh_status["is_running"] = True
+        refresh_status["last_status"] = "Updating Egypt Funds..."
+        try:
+            await egypt_market_service.update_all_navs()
+            refresh_status["last_status"] = "egypt_funds_success"
+        except Exception as e:
+            logger.error(f"Egypt Funds Sync failed: {e}")
+            refresh_status["last_status"] = f"egypt_funds_error: {e}"
+        finally:
+            refresh_status["is_running"] = False
+    
     # Run in background
-    background_tasks.add_task(egypt_market_service.update_all_navs)
+    background_tasks.add_task(_run_funds)
     
     return {
         "status": "started",

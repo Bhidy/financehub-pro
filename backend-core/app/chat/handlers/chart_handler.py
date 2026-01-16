@@ -33,7 +33,7 @@ async def fetch_ohlc_live(symbol: str, limit: int = 200) -> Optional[List[Dict]]
     url = f"https://stockanalysis.com/quote/egx/{symbol.lower()}/history/"
     
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(url, headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
             })
@@ -101,10 +101,7 @@ async def handle_stock_chart(
     """
     Handle STOCK_CHART intent.
     
-    Enhanced with live data fallback:
-    - First tries database for OHLC data
-    - If data is stale (>2 days old), fetches live from StockAnalysis.com
-    - This ensures charts are always current even when scheduler misses updates
+    Prioritized to database data. Live fallback only used if DB is empty.
     
     Args:
         conn: Database connection
@@ -143,21 +140,8 @@ async def handle_stock_chart(
     
     chart_data = []
     data_source = "database"
-    is_data_stale = False
     
     if rows:
-        # Check if data is stale (last date > 2 days old)
-        # Account for weekends - EGX closed Fri/Sat
-        last_date = rows[-1]['date']
-        today = datetime.now().date()
-        days_since_last = (today - last_date).days
-        
-        # Consider stale if > 2 trading days (accounting for weekend)
-        is_data_stale = days_since_last > 3  # More than Thu-Sun gap
-        
-        if is_data_stale:
-            logger.warning(f"[CHART] DB data for {symbol} is {days_since_last} days old - using live fallback")
-        
         # Format database data
         for row in rows:
             chart_data.append({
@@ -169,12 +153,12 @@ async def handle_stock_chart(
                 'volume': int(row['volume']) if row['volume'] else 0
             })
     
-    # If no data or data is stale, try live fallback for EGX stocks
+    # If no data in DB, try live fallback for EGX stocks
     market_code = name_row['market_code']
     is_egx = market_code == 'EGX'
     
-    if is_egx and (not chart_data or is_data_stale):
-        logger.info(f"[CHART] Attempting live fetch for {symbol} (stale={is_data_stale}, empty={not chart_data})")
+    if is_egx and not chart_data:
+        logger.info(f"[CHART] DB empty for {symbol} - Attempting live fetch")
         
         live_data = await fetch_ohlc_live(symbol, limit=min(days + 30, 500))
         

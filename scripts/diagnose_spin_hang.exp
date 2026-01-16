@@ -1,0 +1,63 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set ip "46.224.223.172"
+set password "StartaProd2026!"
+set prompt "#"
+
+spawn ssh -o StrictHostKeyChecking=no root@$ip
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "$prompt" {
+        send "cat <<EOF > /tmp/debug_spin.py\r"
+        send "import sys\r"
+        send "import asyncio\r"
+        send "import traceback\r"
+        send "sys.path.append('/app')\r"
+        send "try:\r"
+        send "    from app.db.session import db as app_db\r"
+        send "    from app.chat.handlers.chart_handler import handle_stock_chart\r"
+        send "except ImportError as e:\r"
+        send "    print(f'IMPORT ERROR: {e}')\r"
+        send "    sys.exit(1)\r"
+        send "async def test_spin():\r"
+        send "    print('--- STARTING SPIN DIAGNOSIS ---')\r"
+        send "    try:\r"
+        send "        await app_db.connect()\r"
+        send "        if not app_db._pool:\r"
+        send "            print('ERROR: Could not connect to DB')\r"
+        send "            sys.exit(1)\r"
+        send "        async with app_db._pool.acquire() as conn:\r"
+        send "            print('1. DB Connection: OK')\r"
+        send "            print('2. Calling handle_stock_chart(SPIN, EGX)...')\r"
+        send "            payload = await handle_stock_chart(conn, 'SPIN', 'EGX')\r"
+        send "            print('3. Call returned!')\r"
+        send "            if payload:\r"
+        send "                chart = payload.get('chart', {})\r"
+        send "                data = chart.get('data', \[\]) if chart else \[\]\r"
+        send "                print(f'   Payload success: {payload.get(\"success\")}')\r"
+        send "                print(f'   Chart data points: {len(data)}')\r"
+        send "            else:\r"
+        send "                print('   Payload is None')\r"
+        send "    except Exception as e:\r"
+        send "        print(f'ERROR: {e}')\r"
+        send "        traceback.print_exc()\r"
+        send "    finally:\r"
+        send "        await app_db.close()\r"
+        send "    print('--- FINISHED ---')\r"
+        send "if __name__ == '__main__':\r"
+        send "    asyncio.run(test_spin())\r"
+        send "EOF\r"
+    }
+}
+
+expect "$prompt"
+send "docker cp /tmp/debug_spin.py starta-backend-1:/app/debug_spin.py\r"
+expect "$prompt"
+send "docker exec starta-backend-1 python3 /app/debug_spin.py\r"
+expect "$prompt"
+send "exit\r"
+expect eof

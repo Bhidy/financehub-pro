@@ -1,47 +1,32 @@
 ---
-description: Deploy backend API to HuggingFace Spaces
+description: How to deploy the backend to Hetzner production safely (Nuclear Option).
 ---
 
-# Deploy Backend to HuggingFace Spaces
+# Deploy Backend to Hetzner (Immutable Strategy)
 
-This workflow deploys the backend API to HuggingFace Spaces.
+This workflow enforces the "Nuclear" immutable deployment strategy to prevent state drift and caching issues.
 
+## 1. Prerequisites
+- SSH Access to Hetzner (Root)
+- `scripts/restore_production.exp` exists locally
+
+## 2. Execute Deployment
+Run the automated expect script which handles:
+- Stopping all containers
+- Pruning Docker system (images, volumes, networks)
+- Pulling fresh code
+- Rebuilding with `CACHEBUST` (CPU-only PyTorch)
+- Restarting services (Backend + Caddy)
+
+```bash
+# Wait 10s before auto-running to allow user to check args
+./scripts/restore_production.exp 46.224.223.172 'StartaProd2026!'
+```
 // turbo-all
 
-## Steps
+## 3. Verify Deployment
+After the script completes, verify SSL and Logic.
 
-1. Navigate to hf-space directory:
 ```bash
-cd /Users/home/Documents/Info\ Site/mubasher-deep-extract/hf-space
+python3 scripts/verify_full_system.py
 ```
-
-2. Stage all changes:
-```bash
-git add -A
-```
-
-3. Commit changes (skip if nothing to commit):
-```bash
-git commit -m "deploy: $(date +%Y%m%d-%H%M%S)" || echo "Nothing to commit"
-```
-
-4. Push to HuggingFace:
-```bash
-git push origin main
-```
-
-5. Wait for deployment (60 seconds):
-```bash
-echo "Waiting 60 seconds for HuggingFace to rebuild..." && sleep 60
-```
-
-6. Verify health:
-```bash
-curl -s https://bhidy-financehub-api.hf.space/health | jq
-```
-
-## Notes
-
-- HuggingFace Spaces takes 1-3 minutes to rebuild after push
-- The `/health` endpoint returns version, database status, and environment
-- If deployment fails, check logs at https://huggingface.co/spaces/Bhidy/financehub-api

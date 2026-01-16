@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "echo '--- FREEING SPACE ---' && docker system prune -af --volumes && rm -rf /root/.cache/pip && apt-get clean && echo '--- SPACE STATUS ---' && df -h / && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout freeing space"
+        exit 1
+    }
+    eof
+}

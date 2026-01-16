@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- HOST ENV CHECK ---' && grep GOOGLE backend-core/.env || echo 'GOOGLE vars missing in .env' && echo '--- DOCKER CONTAINER ENV ---' && docker exec \$(docker ps -qf name=backend) env | grep GOOGLE || echo 'GOOGLE vars missing in container'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- HOST ENV CHECK ---" {
+        exp_continue
+    }
+    eof
+}

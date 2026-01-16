@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout 600
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- NUKING DOCKER ---' && docker compose -f docker-compose.prod.yml down && docker system prune -af --volumes && echo '--- PULLING ---' && git pull origin main && echo '--- REBUILDING ---' && docker compose -f docker-compose.prod.yml up -d --build --force-recreate backend && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout waiting for nuke rebuild"
+        exit 1
+    }
+    eof
+}

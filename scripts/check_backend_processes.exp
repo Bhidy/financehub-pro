@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set ip "46.224.223.172"
+set password "StartaProd2026!"
+set prompt "#"
+
+spawn ssh -o StrictHostKeyChecking=no root@$ip
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "$prompt" {
+        send "docker exec starta-backend-1 ps aux\r"
+        expect "$prompt"
+        send "exit\r"
+        expect eof
+    }
+}

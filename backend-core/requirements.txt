@@ -1,3 +1,8 @@
+# ⛔️ STRICT CPU-ONLY REQUIREMENT ⛔️
+# FAILURE TO USE CPU-ONLY TORCH WILL CRASH THE SERVER (DISK EXHAUSTION)
+# DO NOT REMOVE THE --extra-index-url FLAG BELOW
+# =========================================================================
+
 aiohttp==3.9.1
 cffi==1.16.0
 beautifulsoup4==4.12.2

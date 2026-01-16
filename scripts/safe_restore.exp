@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- CHECKING COMPOSE ---' && ls -l docker-compose.prod.yml && echo '--- RESTARTING SERVICES ---' && docker compose -f docker-compose.prod.yml up -d --force-recreate && echo '--- WAITING FOR HEALTH ---' && sleep 10 && docker ps && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout waiting for service restore"
+        exit 1
+    }
+    eof
+}

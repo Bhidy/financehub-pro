@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "echo '--- STOPPING CADDY ---' && cd /opt/starta && docker compose -f docker-compose.prod.yml stop caddy && docker compose -f docker-compose.prod.yml rm -f caddy && echo '--- WIPING CERT STORAGE ---' && docker volume rm starta_caddy_data && echo '--- STARTING CADDY ---' && docker compose -f docker-compose.prod.yml up -d caddy && echo '--- LOGS ---' && sleep 5 && docker logs starta-caddy-1 --tail 50 && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout resetting caddy"
+        exit 1
+    }
+    eof
+}

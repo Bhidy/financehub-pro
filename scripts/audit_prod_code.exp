@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "46.224.223.172"
+set user "root"
+set pass "StartaProd2026!"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$pass\r"
+expect "#"
+
+send "grep -C 2 \"repr(e)\" /opt/starta/backend-core/app/api/v1/endpoints/ai.py\r"
+expect "#"
+
+send "docker logs starta-backend-1 --tail 50\r"
+expect "#"
+
+send "exit\r"
+expect eof

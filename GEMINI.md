@@ -39,11 +39,13 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
   3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
   4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
   5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
+  6. **Configuration Updates:** When updating environment variables (like secrets) on Hetzner, Docker containers MUST be restarted with `--force-recreate` to pick up the changes. The `setup_hetzner.sh` script handles this automatically.
 
   ## STRICT ARCHITECTURE RULES (CRITICAL)
   > [!IMPORTANT]
   > **NO HUGGINGFACE**: HuggingFace is **completely banned**. Do not use `hf.space`, `huggingface.co`, or any related domains. The backend is **ONLY** on Hetzner.
-  > **BACKEND LOCATION**: The real backend code is in `backend-core/`. Do not assume `hf-space/` exists (it has been renamed).
+  > **BACKEND LOCATION**: The real backend code is in `backend-core/`. **NEVER USE `backend/`**. The `backend/` folder is legacy and should be ignored for all deployment and development purposes.
+  > **DEPLOYMENT**: The `Dockerfile` MUST copy from `backend-core/`. Always verify this before deploying.
 
   ---
 
@@ -55,10 +57,10 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 | `frontend/app/` | App Router pages |
 | `frontend/components/` | Reusable React components |
   | `frontend/lib/api.ts` | API client configuration |
-  | `backend-core/` | FastAPI backend (Dockerized on Hetzner) - WAS `hf-space` |
+  | `backend-core/` | **PRODUCTION BACKEND** (FastAPI on Hetzner) |
   | `backend-core/app/api/v1/` | API endpoints |
   | `backend-core/scripts/` | Data extraction and maintenance scripts |
-  | `backend/` | Legacy backend (do not use for production) |
+  | `backend/` | **LEGACY/DEPRECATED** (Do not use) |
   | `scripts/` | Root-level utility scripts |
   | `.agent/workflows/` | Deployment and verification workflows |
 
@@ -86,3 +88,29 @@ curl https://starta.46-224-223-172.sslip.io/health
 git push origin main
 # Coolify automatically rebuilds on push
 ```
+
+## AI & DEPLOYMENT PROTOCOLS (STRICT ENFORCEMENT)
+> [!CAUTION]
+> **VIOLATION OF THESE RULES CAUSES SYSTEM FAILURE.**
+> Future Agents: You MUST follow these protocols accurately.
+
+### 1. The "Nuclear" Deployment Strategy
+**NEVER** attempt to "patch" the running server with `git pull` and `docker compose up`. The state will desync.
+**ALWAYS** use the Immutable Strategy:
+1.  **Stop & Prune:** `docker compose down` AND `docker system prune -af` (Free disk space).
+2.  **Rebuild:** `docker compose build --build-arg CACHEBUST=$(date +%s)` (Force fresh code).
+3.  **Start:** `docker compose up -d --force-recreate`.
+4.  **Reference Script:** Use `scripts/restore_production.exp`.
+
+### 2. Infrastructure Constraints (Disk & CPU)
+-   **NO GPU/CUDA:** The server is a standard VPS. Installing default `torch` will fill the disk (2.5GB+).
+-   **REQUIREMENT:** Always use `torch --index-url https://download.pytorch.org/whl/cpu`.
+-   **MONITORING:** running `df -h` is mandatory before and after large builds.
+
+### 3. Connectivity & SSL
+-   **NO GENERIC BINDINGS:** Caddy MUST use the explicit domain (e.g., `starta.46-224-223-172.sslip.io`) to trigger ACME.
+-   **VERIFICATION:** After deployment, run `scripts/verify_full_system.py` to prove SSL and Logic are healthy.
+
+### 4. Code & Context
+-   **Backend:** Always uses `backend-core/`. The `backend/` folder is a decoy/legacy.
+-   **Context:** `Dockerfile` COPY command must be `COPY . .` from within `backend-core` context, NOT root.

@@ -12,14 +12,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements from backend folder
-COPY backend/requirements.txt .
+COPY backend-core/requirements.txt .
 
 # Install Python packages
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application code
-COPY backend/app ./app
-COPY backend/engine ./engine
+COPY backend-core/app ./app
+COPY backend-core/engine ./engine
 
 # Set python path
 ENV PYTHONPATH=/app

@@ -164,10 +164,12 @@ async def get_health_kpis(
                 WHERE created_at >= $1 AND created_at <= $2
             """, start, end) or 0
             
-            # Registered Users (Authenticated)
+            # Registered Users (Authenticated) - Active in period
+            # Count users who logged in OR signed up during the window
             registered_users = await conn.fetchval("""
-                SELECT COUNT(DISTINCT user_id) FROM chat_interactions 
-                WHERE created_at >= $1 AND created_at <= $2 AND user_id IS NOT NULL
+                SELECT COUNT(*) FROM users 
+                WHERE (last_login >= $1 AND last_login <= $2) 
+                   OR (created_at >= $1 AND created_at <= $2)
             """, start, end) or 0
             
             # Guest Sessions (Unauthenticated)

@@ -277,7 +277,7 @@ async def ai_chat_endpoint(
                 req.message, 
                 response.meta.intent, 
                 response.meta.confidence, 
-                str(response.meta.entities),
+                json.dumps(response.meta.entities),
                 int((time.time() - start_time) * 1000),
                 response.language)
             except Exception as le:

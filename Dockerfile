@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
+# Cache bust - change this to force rebuild
+ARG CACHEBUST=20260116-1120-ForceRootRebuild
+
 # Copy requirements from backend folder
 COPY backend-core/requirements.txt .
 

@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+# Caddyfile content with explicit domain
+set caddyfile {
+{
+    email admin@finhub.pro
+}
+
+starta.46-224-223-172.sslip.io {
+    reverse_proxy backend:7860
+}
+}
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "echo '--- UPDATING CADDYFILE ---' && echo '$caddyfile' > /opt/starta/Caddyfile && echo '--- RELOADING CADDY ---' && cd /opt/starta && docker compose -f docker-compose.prod.yml restart caddy && echo '--- TAILING LOGS ---' && sleep 5 && docker logs starta-caddy-1 --tail 50 && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout updating Caddyfile"
+        exit 1
+    }
+    eof
+}

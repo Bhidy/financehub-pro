@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+
+set timeout 60
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- FORCING BACKEND RECREATION ---' && docker compose -f docker-compose.prod.yml up -d --force-recreate backend && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exp_continue
+    }
+    eof
+}

@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "echo '--- CHECKING PORT 80 ---' && netstat -tulpn | grep :80 && echo '--- KILLING PROCESS ---' && fuser -k 80/tcp || echo 'No process killed' && echo '--- RESTARTING CADDY ---' && cd /opt/starta && docker compose -f docker-compose.prod.yml up -d caddy && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout resolving port conflict"
+        exit 1
+    }
+    eof
+}

@@ -117,6 +117,16 @@ async def debug_screener():
         return {"status": "error", "error": str(e)}
 # ============================================================
 
+@router.post("/debug/reset_status")
+async def debug_reset_status():
+    """Force reset the ingestion status lock"""
+    global refresh_status
+    refresh_status["is_running"] = False
+    refresh_status["last_status"] = "forced_reset"
+    refresh_status["errors"] = []
+    refresh_status["stats"] = {}
+    return {"status": "success", "message": "Status lock forced open"}
+
 refresh_status = {
     "is_running": False,
     "last_run": None,

@@ -15,7 +15,7 @@ export interface Card {
 }
 
 export interface ChartPayload {
-    type: "candlestick" | "line" | "bar" | "pie" | "donut" | "column" | "radar" | "area" | "heatmap" | "treemap" | "radialBar" | "gauge";
+    type: "candlestick" | "line" | "bar" | "pie" | "donut" | "column" | "radar" | "area" | "heatmap" | "treemap" | "radialBar" | "gauge" | "financial_growth";
     symbol: string;
     title: string;
     data: Array<{
@@ -27,6 +27,9 @@ export interface ChartPayload {
         low?: number;
         close?: number;
         volume?: number;
+        revenue?: number;
+        net_income?: number;
+        operating_income?: number;
     }>;
     range: string;
 }

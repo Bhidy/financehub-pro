@@ -295,7 +295,7 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
             }
         ] + explorer_cards,
         'chart': {
-            'type': 'line',
+            'type': 'financial_growth',
             'symbol': symbol,
             'title': 'Revenue & Net Income' if language == 'en' else 'الإيرادات وصافي الدخل',
             'data': chart_data,

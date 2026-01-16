@@ -25,6 +25,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
         const isCandlestick = chart.type === "candlestick";
         const isPieOrDonut = chart.type === "pie" || chart.type === "donut";
         const isBarOrColumn = chart.type === "bar" || chart.type === "column";
+        const isFinancialGrowth = chart.type === "financial_growth";
 
         const primaryTextColor = isDark ? "#f8fafc" : "#1e293b";
         const secondaryTextColor = isDark ? "#94a3b8" : "#64748b";
@@ -279,6 +280,93 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
             };
             return { chartOptions: options, chartSeries: series };
 
+        } else if (isFinancialGrowth) {
+            const series = [
+                {
+                    name: "Revenue",
+                    data: chart.data.map((d: any) => ({
+                        x: d.time || d.label,
+                        y: d.revenue || 0
+                    }))
+                },
+                {
+                    name: "Net Income",
+                    data: chart.data.map((d: any) => ({
+                        x: d.time || d.label,
+                        y: d.net_income || 0
+                    }))
+                }
+            ];
+
+            const options: ApexCharts.ApexOptions = {
+                chart: {
+                    type: "area",
+                    height,
+                    toolbar: { show: true },
+                    zoom: { enabled: false },
+                    background: "transparent",
+                    stacked: false
+                },
+                theme: { mode: isDark ? 'dark' : 'light' },
+                title: {
+                    text: chart.title,
+                    align: "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                },
+                xaxis: {
+                    categories: chart.data.map((d: any) => d.time || d.label),
+                    labels: { style: { fontSize: "11px", colors: secondaryTextColor } },
+                    tooltip: { enabled: false }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => {
+                            if (val >= 1000000000) return (val / 1000000000).toFixed(2) + "B";
+                            if (val >= 1000000) return (val / 1000000).toFixed(2) + "M";
+                            if (val >= 1000) return (val / 1000).toFixed(2) + "K";
+                            return val.toFixed(0);
+                        },
+                        style: { colors: secondaryTextColor, fontSize: "10px" }
+                    }
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    curve: 'smooth',
+                    width: [3, 3]
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.6,
+                        opacityTo: 0.1,
+                        stops: [0, 90, 100]
+                    }
+                },
+                colors: ["#3b82f6", "#10b981"], // Blue for Revenue, Green (Profit) for Net Income
+                grid: {
+                    borderColor: borderColor,
+                    strokeDashArray: 4,
+                    yaxis: { lines: { show: true } }
+                },
+                tooltip: {
+                    theme: isDark ? 'dark' : 'light',
+                    y: {
+                        formatter: function (val: number) {
+                            if (val >= 1000000000) return (val / 1000000000).toFixed(2) + " Billion";
+                            if (val >= 1000000) return (val / 1000000).toFixed(2) + " Million";
+                            return val.toLocaleString();
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    labels: { colors: primaryTextColor }
+                }
+            };
+            return { chartOptions: options, chartSeries: series };
+
         } else {
             const series = [{
                 name: "Price",
@@ -352,7 +440,8 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                                 chart.type === "bar" ? "bar" :
                                     chart.type === "radar" ? "radar" :
                                         chart.type === "heatmap" ? "heatmap" :
-                                            chart.type === "radialBar" ? "radialBar" : "area"}
+                                            chart.type === "radialBar" ? "radialBar" :
+                                                chart.type === "financial_growth" ? "area" : "area"}
                     height={height}
                 />
             </div>

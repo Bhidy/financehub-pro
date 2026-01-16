@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+
+# Set timeout to 20 minutes (1200 seconds) to handle large Docker builds
+set timeout 1200
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+# Command Explanation:
+# 1. cd /opt/starta: Go to app dir
+# 2. docker compose down: Stop everything cleanly
+# 3. docker system prune -f: Remove unused containers/networks (keep volumes/images to speed up if possible, or use -a for nuclear)
+# 4. git pull origin main: Ensure code is fresh
+# 5. docker compose up -d --build --force-recreate: Rebuild and start
+# 6. docker ps: Show status
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- STOPPING ---' && docker compose -f docker-compose.prod.yml down && echo '--- PULLING ---' && git pull origin main && echo '--- STARTING ---' && docker compose -f docker-compose.prod.yml up -d --build --force-recreate && echo '--- HEALTH CHECK ---' && sleep 10 && docker ps && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        send_user "\n✅ Deployment Sequence Completed.\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ Timeout waiting for deployment.\n"
+        exit 1
+    }
+    eof
+}

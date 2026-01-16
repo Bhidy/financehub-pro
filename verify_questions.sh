@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # API Endpoint
-API_URL="https://bhidy-financehub-api.hf.space/api/v1/ai/chat"
+API_URL="https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0

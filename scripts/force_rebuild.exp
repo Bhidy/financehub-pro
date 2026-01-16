@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout 1200
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git pull origin main && echo '--- REBUILDING ---' && docker compose -f docker-compose.prod.yml up -d --build --force-recreate backend && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        exit 0
+    }
+    timeout {
+        puts "Timeout waiting for rebuild"
+        exit 1
+    }
+    eof
+}

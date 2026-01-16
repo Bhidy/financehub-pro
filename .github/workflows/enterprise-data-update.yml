@@ -29,7 +29,7 @@ on:
           - backfill
 
 env:
-  HF_API_BASE: https://bhidy-financehub-api.hf.space/api/v1/admin
+  HF_API_BASE: https://starta.46-224-223-172.sslip.io/api/v1/admin
 
 jobs:
   # ============================================================

@@ -179,6 +179,19 @@ Set in `.env` file on Hetzner (managed via `deploy_to_hetzner.sh`):
 1. Frontend: Use `vercel --prod` command
 2. Backend: Use `./deploy_to_hetzner.sh`
 
+### Issue 4: Environment Variables (Secrets) Not Updating
+
+**Root Cause:** Docker caching prevents running containers from seeing new `.env` file changes.
+
+**Prevention (Enterprise Fix):**
+1. **Always Force Recreate:** When deploying secrets, use:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d --force-recreate
+   ```
+   *(Note: The `setup_hetzner.sh` script now enforces this automatically)*
+2. **Verify on Server:**
+   Run `scripts/diagnose_remote.exp` to prove secrets exist in the running container.
+
 ---
 
 ## 📊 MONITORING & HEALTH CHECKS

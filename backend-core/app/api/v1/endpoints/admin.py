@@ -798,8 +798,12 @@ async def refresh_daily_data():
             # Let's call the robust ingestion job wrapper
             if run_ingestion_job:
                 logger.info("Triggering StockAnalysis ingestion for Egypt stocks...")
+                # Define callback for visibility
+                async def _ingest_cb(data):
+                    refresh_status["last_status"] = f"Daily Sync: Egypt {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
+                
                 # run_ingestion_job handles its own DB connection and iteration
-                ingest_result = await run_ingestion_job()
+                ingest_result = await run_ingestion_job(status_callback=_ingest_cb)
                 if ingest_result.get("status") == "failed":
                     refresh_status["errors"].append(f"Egypt Ingestion Failed: {ingest_result.get('error')}")
             else:
@@ -1218,8 +1222,12 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
     async def _run_wrapper():
         global refresh_status
         refresh_status["is_running"] = True
+        async def _progress_cb(data):
+             refresh_status["last_status"] = f"Ingesting {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
+             refresh_status["stats"] = data
+
         try:
-            await run_ingestion_job()
+            await run_ingestion_job(status_callback=_progress_cb)
             refresh_status["last_status"] = "ingestion_success"
         except Exception as e:
             logger.error(f"Ingestion failed: {e}")

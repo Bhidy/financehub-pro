@@ -234,7 +234,7 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
     rows = await conn.fetch("""
         SELECT fiscal_year, revenue, net_income
         FROM income_statements
-        WHERE symbol = $1 AND period_type = 'annual'
+        WHERE symbol = $1 AND period_type = 'annual' AND revenue > 0
         ORDER BY fiscal_year ASC
         LIMIT 10
     """, symbol)

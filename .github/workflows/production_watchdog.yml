@@ -11,14 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check FinanceHub API Health
+        # CRITICAL: Push to GitHub to update the URL in GitHub Actions
         id: health_check
-          run: |
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://starta.46-224-223-172.sslip.io/health)
-            echo "Status: $STATUS"
-            if [ "$STATUS" != "200" ]; then
-              echo "::error::API is DOWN (Status: $STATUS)"
-              exit 1
-            fi
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://starta.46-224-223-172.sslip.io/health)
+          echo "Status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::API is DOWN (Status: $STATUS)"
+            exit 1
+          fi
             echo "API is Healthy ✅"
 
       - name: Notify Discord on Failure

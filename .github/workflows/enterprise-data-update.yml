@@ -28,8 +28,9 @@ on:
           - ingestion
           - backfill
 
+# CRITICAL: This workflow must be pushed to GitHub to take effect!
 env:
-  HF_API_BASE: https://starta.46-224-223-172.sslip.io/api/v1/admin
+  FINHUB_API_BASE: https://starta.46-224-223-172.sslip.io/api/v1/admin
 
 jobs:
   # ============================================================
@@ -57,7 +58,7 @@ jobs:
           for i in 0 1 2 3; do
             attempt=$((i+1))
             echo "Attempt $attempt/4..."
-            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/prices" \
+            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/prices" \
               -H "Content-Type: application/json" --max-time 300 2>&1 | tee /tmp/refresh_prices.log)
             echo "Response: $response"
             if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
@@ -83,7 +84,7 @@ jobs:
           echo "Triggering Daily EOD Sync..."
           for i in 1 2 3; do
             echo "Attempt $i..."
-            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/daily" \
+            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/daily" \
               -H "Content-Type: application/json" --max-time 300)
             echo "Response: $response"
             if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
@@ -107,7 +108,7 @@ jobs:
           echo "Triggering Egypt Funds Sync..."
           for i in 1 2 3; do
             echo "Attempt $i..."
-            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/egypt-funds" \
+            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/egypt-funds" \
               -H "Content-Type: application/json" --max-time 180)
             echo "Response: $response"
             if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
@@ -131,7 +132,7 @@ jobs:
           echo "Triggering AI Ingestion..."
           for i in 1 2 3; do
             echo "Attempt $i..."
-            response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/ingestion" \
+            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/ingestion" \
               -H "Content-Type: application/json" --max-time 300)
             echo "Response: $response"
             if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
@@ -151,7 +152,7 @@ jobs:
         if: github.event.inputs.job_type == 'backfill'
         run: |
           echo "Triggering Historical Backfill..."
-          response=$(curl -s -X POST "${{ env.HF_API_BASE }}/refresh/backfill" \
+          response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/backfill" \
             -H "Content-Type: application/json" --max-time 1800)
           echo "Response: $response"
 

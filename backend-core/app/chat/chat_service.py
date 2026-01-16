@@ -267,7 +267,7 @@ class ChatService:
             result = {
                 'success': False,
                 'message': "I encountered a system error while processing your request. Please try again or specify a stock symbol." if language == 'en' else "حدث خطأ في النظام أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.",
-                'cards': [{'type': 'error', 'title': 'System Error', 'data': {'error': str(e)}}]
+                'cards': [{'type': 'error', 'title': 'System Error', 'data': {'error': repr(e)}}]
             }
         
         # 6. Update context
@@ -359,7 +359,20 @@ class ChatService:
         import json
         
         try:
-            # Insert into chat_interactions with user_id
+            # Resolve user_id to integer if it's an email
+            resolved_user_id = None
+            if user_id and '@' in str(user_id):
+                try:
+                    resolved_user_id = await self.conn.fetchval("SELECT id FROM users WHERE email = $1", str(user_id))
+                except:
+                    resolved_user_id = None
+            elif user_id:
+                try:
+                    resolved_user_id = int(str(user_id))
+                except:
+                    resolved_user_id = None
+
+            # Insert into chat_interactions with integer id
             await self.conn.execute("""
                 INSERT INTO chat_interactions (
                     session_id, user_id, language_detected, raw_text, normalized_text,
@@ -372,7 +385,7 @@ class ChatService:
                 )
             """,
                 session_id,
-                user_id,
+                resolved_user_id,
                 language,
                 raw_text[:1000],  # Limit text size
                 normalized_text[:1000] if normalized_text else None,

@@ -478,6 +478,17 @@ class IntentRouter:
                     missing_fields=[]
                 )
             
+        # 7. Chart Overrides (The "Visual Fix")
+        # Explicitly routes "Chart [Symbol]" to STOCK_CHART with 1.0 confidence
+        if any(w in merged_text for w in ["chart", "graph", "price history", "شارت", "رسم بياني"]):
+             if entities.get('symbol') or (context and context.get('last_symbol')):
+                  return IntentResult(
+                     intent=Intent.STOCK_CHART,
+                     confidence=1.0,
+                     entities=entities,
+                     missing_fields=[]
+                 )
+            
         # ---------------------------------------------------------
         
         # Check for comparison (special handling)

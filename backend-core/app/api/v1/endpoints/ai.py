@@ -298,12 +298,12 @@ async def ai_chat_endpoint(
         # Return structured error
         return {
             "message_text": "I encountered a system error. Please try again.",
-            "message_text_ar": None,
+            "message_text_ar": "عذراً، حدث خطأ في النظام. يرجى المحاولة مرة أخرى.",
             "language": "en",
             "cards": [{
                 "type": "error", 
                 "title": "System Error", 
-                "data": {"error": f"BACKEND_ERROR: {str(e)}"}
+                "data": {"error": f"BACKEND_ERROR: {repr(e)}"}
             }],
             "chart": None,
             "actions": [],

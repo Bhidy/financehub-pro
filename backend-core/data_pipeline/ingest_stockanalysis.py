@@ -754,8 +754,11 @@ async def main():
         await pool.close()
 
 
-async def run_ingestion_job():
-    """Callable entry point for the scheduler."""
+async def run_ingestion_job(status_callback=None):
+    """
+    Callable entry point for the scheduler.
+    :param status_callback: Optional async function(dict) to update progress
+    """
     logger.info("Starting scheduled ingestion job...")
     db_url = os.environ.get("DATABASE_URL")
     if not db_url:
@@ -789,6 +792,18 @@ async def run_ingestion_job():
                 logger.error(f"Failed {symbol}: {e}")
                 errors.append(symbol)
             await asyncio.sleep(2)
+            
+            # Update progress via callback if provided
+            if status_callback:
+                try:
+                    await status_callback({
+                        "current_index": i + 1,
+                        "total_symbols": len(symbols),
+                        "last_symbol": symbol,
+                        "percent_complete": round(((i + 1) / len(symbols)) * 100, 1)
+                    })
+                except Exception as e:
+                    logger.error(f"Callback error: {e}")
             
         duration = datetime.now() - start_time
         return {

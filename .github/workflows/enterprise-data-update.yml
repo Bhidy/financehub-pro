@@ -34,7 +34,7 @@ env:
 
 jobs:
   # ============================================================
-  # UNIFIED WATCHDOG - Single Job, All Updates via HF Space API
+  # UNIFIED WATCHDOG - Single Job, All Updates via Backend API
   # ============================================================
   watchdog:
     name: 🐕 Enterprise Watchdog
@@ -45,6 +45,9 @@ jobs:
       - name: 🚀 Start Watchdog
         run: echo "Enterprise Watchdog starting at $(date)"
 
+      - name: Set up jq
+        run: sudo apt-get install -y jq
+
       # ============================================================
       # JOB 1: PRICE REFRESH (Every 5 min during market hours)
       # ============================================================
@@ -53,25 +56,29 @@ jobs:
           (github.event_name == 'schedule' && contains(github.event.schedule, '*/5')) ||
           (github.event.inputs.job_type == 'prices')
         run: |
-          echo "Triggering Price Refresh..."
-          DELAYS=(10 30 60 120)
-          for i in 0 1 2 3; do
-            attempt=$((i+1))
-            echo "Attempt $attempt/4..."
-            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/prices" \
-              -H "Content-Type: application/json" --max-time 300 2>&1 | tee /tmp/refresh_prices.log)
-            echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
-              echo "✅ Price Refresh OK"
-              exit 0
+          ENDPOINT="/refresh/prices"
+          echo "🚀 Triggering Price Refresh..."
+          RESPONSE=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" --max-time 30)
+          echo "Trigger Response: $RESPONSE"
+
+          # Start Polling
+          echo "⏳ Polling for completion..."
+          START_TIME=$(date +%s)
+          while true; do
+            STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
+            IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
+            LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
+            UPDATED=$(echo "$STATUS_JSON" | jq -r '.tickers_updated')
+            
+            echo "Status: $LAST_STATUS | Running: $IS_RUNNING | Updated: $UPDATED"
+            
+            if [ "$IS_RUNNING" == "false" ]; then
+              echo "✅ Job Completed!"
+              break
             fi
-            if [ $i -lt 3 ]; then
-              echo "⚠️ Retry in ${DELAYS[$i]}s (exponential backoff)..."
-              sleep ${DELAYS[$i]}
-            fi
+            sleep 5
+            if [ $(($(date +%s) - START_TIME)) -gt 300 ]; then echo "❌ Timeout"; exit 1; fi
           done
-          echo "❌ Price Refresh failed after 4 attempts"
-          exit 1
 
       # ============================================================
       # JOB 2: DAILY SYNC (6 PM Saudi - OHLC + Financials)
@@ -81,21 +88,27 @@ jobs:
           (github.event_name == 'schedule' && contains(github.event.schedule, '0 15')) ||
           (github.event.inputs.job_type == 'daily')
         run: |
-          echo "Triggering Daily EOD Sync..."
-          for i in 1 2 3; do
-            echo "Attempt $i..."
-            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/daily" \
-              -H "Content-Type: application/json" --max-time 300)
-            echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
-              echo "✅ Daily Sync OK"
-              exit 0
+          ENDPOINT="/refresh/daily"
+          echo "🚀 Triggering Daily Sync..."
+          curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" --max-time 30
+          
+          # Start Polling
+          echo "⏳ Polling for completion..."
+          START_TIME=$(date +%s)
+          while true; do
+            STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
+            IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
+            LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
+            
+            echo "Status: $LAST_STATUS"
+            
+            if [ "$IS_RUNNING" == "false" ]; then
+              echo "✅ Daily Sync Completed!"
+              break
             fi
-            echo "⚠️ Retry in 20s..."
-            sleep 20
+            sleep 10
+            if [ $(($(date +%s) - START_TIME)) -gt 3000 ]; then echo "❌ Timeout"; exit 1; fi
           done
-          echo "❌ Daily Sync failed after 3 attempts"
-          exit 1
 
       # ============================================================
       # JOB 3: EGYPT FUNDS (7 PM Saudi)
@@ -105,21 +118,20 @@ jobs:
           (github.event_name == 'schedule' && contains(github.event.schedule, '0 16')) ||
           (github.event.inputs.job_type == 'egypt-funds')
         run: |
-          echo "Triggering Egypt Funds Sync..."
-          for i in 1 2 3; do
-            echo "Attempt $i..."
-            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/egypt-funds" \
-              -H "Content-Type: application/json" --max-time 180)
-            echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
-              echo "✅ Egypt Funds OK"
-              exit 0
-            fi
-            echo "⚠️ Retry in 20s..."
-            sleep 20
+          ENDPOINT="/refresh/egypt-funds"
+          echo "🚀 Triggering Egypt Funds..."
+          curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" --max-time 30
+          
+          # Poll
+          START_TIME=$(date +%s)
+          while true; do
+            STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
+            IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
+            echo "Running: $IS_RUNNING"
+            if [ "$IS_RUNNING" == "false" ]; then echo "✅ Done"; break; fi
+            sleep 10
+            if [ $(($(date +%s) - START_TIME)) -gt 600 ]; then echo "❌ Timeout"; exit 1; fi
           done
-          echo "❌ Egypt Funds Sync failed after 3 attempts"
-          exit 1
 
       # ============================================================
       # JOB 4: AI INGESTION (8 PM Saudi)
@@ -129,21 +141,28 @@ jobs:
           (github.event_name == 'schedule' && contains(github.event.schedule, '0 17')) ||
           (github.event.inputs.job_type == 'ingestion')
         run: |
-          echo "Triggering AI Ingestion..."
-          for i in 1 2 3; do
-            echo "Attempt $i..."
-            response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/ingestion" \
-              -H "Content-Type: application/json" --max-time 300)
-            echo "Response: $response"
-            if [[ $response == *"started"* ]] || [[ $response == *"success"* ]] || [[ $response == *"already_running"* ]]; then
-              echo "✅ AI Ingestion OK"
-              exit 0
+          ENDPOINT="/refresh/ingestion"
+          echo "🚀 Triggering AI Ingestion..."
+          curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" --max-time 30
+          
+          # Poll - This is the long one!
+          echo "⏳ Polling for completion (May take 30 mins)..."
+          START_TIME=$(date +%s)
+          while true; do
+            STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
+            IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
+            LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
+            
+            # Print nice status line
+            echo "Status: $LAST_STATUS"
+            
+            if [ "$IS_RUNNING" == "false" ]; then
+              echo "✅ AI Ingestion Completed!"
+              break
             fi
-            echo "⚠️ Retry in 20s..."
-            sleep 20
+            sleep 10
+            if [ $(($(date +%s) - START_TIME)) -gt 3500 ]; then echo "❌ Timeout"; exit 1; fi
           done
-          echo "❌ AI Ingestion failed after 3 attempts"
-          exit 1
 
       # ============================================================
       # JOB 5: BACKFILL (Manual Only)
@@ -151,10 +170,19 @@ jobs:
       - name: 📚 Historical Backfill
         if: github.event.inputs.job_type == 'backfill'
         run: |
-          echo "Triggering Historical Backfill..."
-          response=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/backfill" \
-            -H "Content-Type: application/json" --max-time 1800)
-          echo "Response: $response"
+          echo "Triggering Backfill..."
+          curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/backfill" -H "Content-Type: application/json"
+          echo "Polling..."
+          START_TIME=$(date +%s)
+          while true; do
+            STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
+            IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
+            LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
+            echo "$LAST_STATUS"
+            if [ "$IS_RUNNING" == "false" ]; then echo "✅ Done"; break; fi
+            sleep 10
+            if [ $(($(date +%s) - START_TIME)) -gt 3500 ]; then echo "❌ Timeout"; exit 1; fi
+          done
 
       # ============================================================
       # ALERTING SYSTEM
@@ -169,7 +197,6 @@ jobs:
       - name: 🚨 Discord Failure Alert
         if: failure()
         run: |
-          ERROR_LOG=$(cat /tmp/refresh_*.log 2>/dev/null | tail -c 400 || echo "No logs available")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d '{"content": "🚨 **CRITICAL**: FinanceHub Watchdog FAILED!\n**Run:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n**Error:** '"$(echo $ERROR_LOG | tr '"' "'" | head -c 300)"'"}'
+            -d '{"content": "🚨 **CRITICAL**: FinanceHub Watchdog FAILED!\n**Run:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

@@ -269,7 +269,7 @@ export default function ChatbotAnalyticsPage() {
                     />
                     <KPICard
                         icon={Users}
-                        label="Active Users"
+                        label="Active Sessions"
                         value={healthKPIs?.unique_users ?? 0}
                         color="purple"
                     />

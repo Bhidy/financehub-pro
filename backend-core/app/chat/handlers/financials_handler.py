@@ -72,6 +72,10 @@ INCOME_DISPLAY = {
     "eps_diluted": "EPS (Diluted)",
     "shares_outstanding": "Shares Outstanding",
     "shares_diluted": "Shares Diluted",
+    "ebitda": "EBITDA",
+    "ebitda_margin": "EBITDA Margin",
+    "ebit": "EBIT",
+    "ebit_margin": "EBIT Margin",
 }
 
 BALANCE_DISPLAY = {
@@ -164,15 +168,22 @@ RATIOS_DISPLAY = {
     "pfcf_ratio": "Pfcf Ratio",
     "pocf_ratio": "Pocf Ratio",
     "ev_ebitda": "EV/EBITDA",
+    "debt_ebitda": "Debt / EBITDA Ratio",
+    "debt_fcf": "Debt / FCF Ratio",
     # Profitability
-    "roe": "Roe",
-    "roa": "Roa",
-    "roic": "Roic",
+    "roe": "Return on Equity (ROE)",
+    "roa": "Return on Assets (ROA)",
+    "roce": "Return on Capital Employed (ROCE)",
+    "roic": "Return on Capital (ROIC)",
+    "earnings_yield": "Earnings Yield",
+    "fcf_yield": "FCF Yield",
     "gross_margin": "Gross Margin",
     "operating_margin": "Operating Margin",
     "net_margin": "Net Margin",
+    "asset_turnover": "Asset Turnover",
+    "inventory_turnover": "Inventory Turnover",
     # Leverage
-    "debt_equity": "Debt / Equity",
+    "debt_equity": "Debt / Equity Ratio",
     "debt_assets": "Debt / Assets",
     "current_ratio": "Current Ratio",
     "quick_ratio": "Quick Ratio",

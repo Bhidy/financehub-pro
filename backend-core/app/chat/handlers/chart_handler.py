@@ -25,66 +25,62 @@ RANGE_DAYS = {
 }
 
 
+import tls_client
+
 async def fetch_ohlc_live(symbol: str, limit: int = 200) -> Optional[List[Dict]]:
     """
-    Fetch OHLC data directly from StockAnalysis.com.
-    Used as fallback when database data is stale.
+    Fetch OHLC data directly from StockAnalysis.com Internal API.
+    Bypasses Cloudflare and HTML limit (returns ~128+ rows instead of 50).
     """
-    url = f"https://stockanalysis.com/quote/egx/{symbol.lower()}/history/"
+    url = f"https://stockanalysis.com/api/symbol/a/EGX-{symbol}/history?type=full"
     
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(url, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            })
-            if resp.status_code != 200:
-                logger.warning(f"[CHART LIVE] HTTP {resp.status_code} for {symbol}")
-                return None
+        # Use tls_client to mimic a real browser to bypass protection
+        session = tls_client.Session(
+            client_identifier="chrome_120",
+            random_tls_extension_order=True
+        )
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": f"https://stockanalysis.com/quote/egx/{symbol.lower()}/history/",
+            "Accept": "application/json"
+        }
+        
+        # Run blocking request in executor
+        loop = asyncio.get_running_loop()
+        resp = await loop.run_in_executor(
+            None,
+            lambda: session.get(url, headers=headers)
+        )
+        
+        if resp.status_code != 200:
+            logger.warning(f"[CHART LIVE] API HTTP {resp.status_code} for {symbol}")
+            return None
             
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            table = soup.find('table')
-            if not table:
-                logger.warning(f"[CHART LIVE] No table found for {symbol}")
-                return None
-            
-            rows = table.find_all('tr')[1:]  # Skip header
-            history = []
-            
-            def parse_num(s):
-                s = s.replace(',', '').replace('$', '').strip()
-                if s in ['-', 'N/A', '']:
-                    return 0
+        data = resp.json()
+        history = []
+        
+        if 'data' in data and 'data' in data['data']:
+            for row in data['data']['data']:
                 try:
-                    return float(s)
-                except:
-                    return 0
-            
-            for row in rows[:limit]:
-                cells = row.find_all('td')
-                if len(cells) >= 6:
-                    try:
-                        date_str = cells[0].get_text(strip=True)
-                        try:
-                            date_obj = datetime.strptime(date_str, "%b %d, %Y")
-                            date = date_obj.strftime("%Y-%m-%d")
-                        except:
-                            date = date_str
-                        
-                        history.append({
-                            "time": date,
-                            "open": parse_num(cells[1].get_text(strip=True)),
-                            "high": parse_num(cells[2].get_text(strip=True)),
-                            "low": parse_num(cells[3].get_text(strip=True)),
-                            "close": parse_num(cells[4].get_text(strip=True)),
-                            "volume": int(parse_num(cells[5].get_text(strip=True)))
-                        })
-                    except Exception as e:
-                        continue
-            
-            # Reverse to get chronological order (oldest first)
-            history.reverse()
-            logger.info(f"[CHART LIVE] Fetched {len(history)} points for {symbol}")
-            return history
+                    history.append({
+                        "time": row.get('t'), # Format YYYY-MM-DD
+                        "open": float(row.get('o', 0)),
+                        "high": float(row.get('h', 0)),
+                        "low": float(row.get('l', 0)),
+                        "close": float(row.get('c', 0)),
+                        "volume": int(row.get('v', 0))
+                    })
+                except Exception as e:
+                    continue
+        
+        # API returns oldest first, no reverse needed usually, but let's verify sorting
+        # Sort by date just to be safe
+        history.sort(key=lambda x: x['time'])
+        
+        logger.info(f"[CHART LIVE] API Fetched {len(history)} points for {symbol}")
+        return history
             
     except Exception as e:
         logger.error(f"[CHART LIVE] Error fetching {symbol}: {e}")

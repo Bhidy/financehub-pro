@@ -33,18 +33,13 @@ export function useAISuggestions() {
         return [
             {
                 id: 'beginner',
-                label: '🆕 Start Here',
+                label: '✨ Start Here',
                 suggestions: [
                     { text: "Top gainers today in EGX", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
-                    { text: "Top losers today in EGX", icon: Zap, gradient: "from-red-500 to-rose-600" },
-                    { text: "Most active stocks today by volume", icon: Activity, gradient: "from-blue-500 to-indigo-600" },
                     { text: `Show me a full snapshot of ${stocks.main}`, icon: LayoutDashboard, gradient: "from-purple-500 to-violet-600" },
-                    { text: `What is the price of ${stocks.second} today?`, icon: DollarSignIcon, gradient: "from-cyan-500 to-teal-600" },
-                    { text: `What is the market cap of ${stocks.bank}?`, icon: PieChart, gradient: "from-orange-500 to-amber-600" },
-                    { text: `Show me annual financials for ${stocks.main}`, icon: FileText, gradient: "from-slate-500 to-slate-700" },
-                    { text: `Show me dividend history for ${stocks.second}`, icon: Sparkles, gradient: "from-yellow-500 to-amber-500" },
-                    { text: "Which stocks have the highest dividend yield in EGX?", icon: Gift, gradient: "from-emerald-400 to-green-600" },
-                    { text: "Show me banking sector stocks", icon: Building2, gradient: "from-blue-600 to-blue-800" },
+                    { text: "Which stocks have the highest dividend yield?", icon: Gift, gradient: "from-emerald-400 to-green-600" },
+                    { text: `Is ${stocks.main} overvalued?`, icon: Sparkles, gradient: "from-blue-500 to-blue-600" },
+                    { text: "Show me banking sector stocks", icon: Building2, gradient: "from-slate-500 to-slate-700" },
                 ]
             },
             {
@@ -79,11 +74,13 @@ export function useAISuggestions() {
             },
             {
                 id: 'growth',
-                label: '🚀 Growth',
+                label: '🚀 Growth & Ownership',
                 suggestions: [
-
                     { text: `${stocks.bank} profit margin`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
                     { text: `Earnings trend ${stocks.main}`, icon: Activity, gradient: "from-cyan-500 to-teal-600" },
+                    { text: `Who owns ${stocks.main}?`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
+                    { text: `Insider trading ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
+                    { text: `${stocks.bank} shareholders`, icon: PieChart, gradient: "from-blue-500 to-blue-600" },
                 ]
             },
             {
@@ -94,15 +91,6 @@ export function useAISuggestions() {
                     { text: `Dividend yield ${stocks.second}`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
                     { text: "Top 5 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-400 to-yellow-600" },
                     { text: `${stocks.bank} payout ratio`, icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
-                ]
-            },
-            {
-                id: 'ownership',
-                label: '🤝 Ownership',
-                suggestions: [
-                    { text: `Who owns ${stocks.main}?`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
-                    { text: `Insider trading ${stocks.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
-                    { text: `${stocks.bank} shareholders`, icon: PieChart, gradient: "from-blue-500 to-blue-600" },
                 ]
             },
         ];

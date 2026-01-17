@@ -16,7 +16,7 @@ import os
 import sys
 import logging
 from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime
+from datetime import datetime, date
 
 logging.basicConfig(
     level=logging.INFO,
@@ -122,6 +122,7 @@ CASHFLOW_MAPPING = {
 RATIOS_MAPPING = {
     "Market Capitalization": "market_cap",
     "Market Cap Growth": "market_cap_growth",
+    "Enterprise Value": "enterprise_value",
     "Last Close Price": "last_close_price",
     "PE Ratio": "pe_ratio",
     "Forward PE": "pe_forward",
@@ -145,6 +146,35 @@ RATIOS_MAPPING = {
 }
 
 
+def parse_date(date_str: str) -> Optional[date]:
+    """Parse date strings like '2023-12-31' or 'Dec 31, 2023' or 'Sep '25Sep 30, 2025'."""
+    if not date_str or date_str == 'n/a':
+        return None
+    try:
+        # 1. Try ISO format
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+    
+    try:
+        # 2. Try standard format "Dec 31, 2023"
+        return datetime.strptime(date_str, "%b %d, %Y").date()
+    except ValueError:
+        pass
+
+    # 3. Try to find date pattern in messy text (e.g. "Sep '25Sep 30, 2025")
+    # Regex for "Mmm D, YYYY" or "Mmm DD, YYYY"
+    match = re.search(r'([A-Za-z]{3}\s+\d{1,2},\s+\d{4})', date_str)
+    if match:
+        clean_date = match.group(1)
+        try:
+            return datetime.strptime(clean_date, "%b %d, %Y").date()
+        except ValueError:
+            pass
+            
+    return None
+
+
 def parse_value(value_str: str) -> Optional[float]:
     """Parse numeric value from string."""
     if not value_str or value_str in ['-', 'N/A', 'n/a', '—', '', 'Upgrade']:
@@ -162,8 +192,6 @@ def parse_value(value_str: str) -> Optional[float]:
     
     try:
         value = float(cleaned)
-        if is_percent:
-            value = value / 100
         return value
     except ValueError:
         return None
@@ -177,6 +205,9 @@ def parse_year(header: str) -> Optional[int]:
         # Skip years before 2015 (often grouped)
         if year >= 2015:
             return year
+    return None
+
+
     return None
 
 
@@ -219,29 +250,39 @@ async def fetch_page(client: httpx.AsyncClient, symbol: str, path: str, max_retr
     return None
 
 
-def parse_table(soup: BeautifulSoup) -> Tuple[List[int], Dict[str, List[Optional[float]]]]:
+def parse_table(soup: BeautifulSoup) -> Tuple[List[int], Dict[str, List[Optional[float]]], Dict[int, str]]:
     """Parse financial table from page."""
     years = []
     data = {}
+    period_endings = {} # Map year -> date string (YYYY-MM-DD)
     
     table = soup.find('table', class_='financials-table')
     if not table:
         table = soup.find('table')
     
     if not table:
-        return years, data
+        return years, data, period_endings
     
     rows = table.find_all('tr')
     if not rows:
-        return years, data
+        return years, data, period_endings
     
-    # Parse headers from first row
+    # Parse headers and identify valid year columns by index
     header_cells = rows[0].find_all('th')
-    for cell in header_cells[1:]:  # Skip label column
+    valid_indices = [] # Indices of columns that contain valid years
+    
+    # cell 0 is label, start from 1
+    for i, cell in enumerate(header_cells[1:], start=1):
         text = cell.get_text(strip=True)
-        year = parse_year(text)
-        if year:
-            years.append(year)
+        if 'Current' in text or 'TTM' in text:
+             current_year = datetime.now().year + 1 # 2027 (Synthetic future year for display sorting)
+             years.append(current_year)
+             valid_indices.append(i)
+        else:
+            year = parse_year(text)
+            if year:
+                years.append(year)
+                valid_indices.append(i)
     
     # Parse data rows
     for row in rows[1:]:
@@ -250,29 +291,44 @@ def parse_table(soup: BeautifulSoup) -> Tuple[List[int], Dict[str, List[Optional
             continue
         
         line_item = cells[0].get_text(strip=True)
+        logger.info(f"Found row: '{line_item}'")
         
+        # Handle Period Ending Row explicitly
+        if line_item == 'Period Ending':
+            logger.info("Processing Period Ending row")
+            for year_idx, col_idx in enumerate(valid_indices):
+                if col_idx < len(cells):
+                    date_text = cells[col_idx].get_text(strip=True)
+                    parsed_date = parse_date(date_text)
+                    if year_idx < len(years):
+                        logger.info(f"Period Ending: Year={years[year_idx]}, Text='{date_text}', Parsed={parsed_date}")
+                        if parsed_date:
+                            period_endings[years[year_idx]] = parsed_date
+            continue
+
         # Skip non-data rows
-        if not line_item or line_item in ['Period Ending', 'Fiscal Year', '']:
+        if not line_item or line_item in ['Fiscal Year', '']:
             continue
         if 'Upgrade' in line_item:
             continue
         
-        # Parse values
+        # Parse values only for valid year indices
         values = []
-        for cell in cells[1:]:
-            text = cell.get_text(strip=True)
-            if 'Upgrade' in text:
-                continue
-            values.append(parse_value(text))
-        
-        # Trim to match years
-        if len(values) > len(years):
-            values = values[:len(years)]
+        # Check if row has enough cells
+        for idx in valid_indices:
+            if idx < len(cells):
+                text = cells[idx].get_text(strip=True)
+                if 'Upgrade' in text:
+                    values.append(None)
+                else:
+                    values.append(parse_value(text))
+            else:
+                values.append(None)
         
         if values:
             data[line_item] = values
     
-    return years, data
+    return years, data, period_endings
 
 
 async def scrape_and_insert(
@@ -289,12 +345,15 @@ async def scrape_and_insert(
     if not soup:
         return 0
     
-    years, data = parse_table(soup)
+    years, data, period_endings = parse_table(soup)
     if not years or not data:
         return 0
     
     inserted = 0
     async with pool.acquire() as conn:
+        # Clear existing data for this symbol/table to prevent pollution/duplicates
+        await conn.execute(f"DELETE FROM {table_name} WHERE symbol = $1", symbol)
+        
         for i, year in enumerate(years):
             row = {
                 "symbol": symbol.upper(),
@@ -303,11 +362,23 @@ async def scrape_and_insert(
                 "currency": "EGP",
             }
             
+            # Insert period_ending if we found it
+            # Insert period_ending if we found it
+            if year in period_endings:
+                # Value is already a date object (or string in legacy, but we fixed parse_date)
+                # But let's handle if it is a date object
+                val = period_endings[year]
+                if isinstance(val, (date, datetime)):
+                     row["period_ending"] = val
+                else:
+                     row["period_ending"] = val # hope it's valid string or None
+
             if "fiscal_quarter" in unique_cols:
                 row["fiscal_quarter"] = None
             
             for sa_name, db_col in mapping.items():
                 if sa_name in data and i < len(data[sa_name]):
+                    # Check for None explicitly
                     val = data[sa_name][i]
                     if val is not None:
                         row[db_col] = val
@@ -316,12 +387,10 @@ async def scrape_and_insert(
             vals = list(row.values())
             placeholders = ", ".join(f"${i+1}" for i in range(len(cols)))
             
-            update_cols = [c for c in cols if c not in unique_cols]
-            if update_cols:
-                update_clause = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_cols)
-                conflict_clause = f"ON CONFLICT ({', '.join(unique_cols)}) DO UPDATE SET {update_clause}"
-            else:
-                conflict_clause = f"ON CONFLICT ({', '.join(unique_cols)}) DO NOTHING"
+            # Since we deleted first, conflict shouldn't theoretically happen on the same run,
+            # but good to keep safe for race conditions (though we are sequential here).
+            # We used DELETE, so just INSERT is fine. But let's keep ON CONFLICT DO NOTHING just in case.
+            conflict_clause = f"ON CONFLICT ({', '.join(unique_cols)}) DO NOTHING"
             
             query = f"""
                 INSERT INTO {table_name} ({', '.join(cols)})

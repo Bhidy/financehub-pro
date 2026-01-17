@@ -527,31 +527,9 @@ interface FinancialsTableProps {
 
 export function FinancialsTableCard({ title, subtitle, years, rows, currency = "EGP" }: FinancialsTableProps) {
     // Deduplicate years (handle backend sending duplicate years)
-    const uniqueYears = [...new Set(years.map(y => String(y)))].slice(0, 6);
-
-    // Format large numbers with proper scaling
-    const formatValue = (val: number | null | undefined, fmt?: string): string => {
-        if (val === null || val === undefined) return "—";
-
-        // Percentage formatting
-        if (fmt === 'percent' || (val !== 0 && Math.abs(val) < 1 && !Number.isInteger(val))) {
-            const pct = Math.abs(val) < 1 ? val * 100 : val;
-            const formatted = pct.toFixed(1);
-            return `${pct >= 0 ? '+' : ''}${formatted}%`;
-        }
-
-        // Large number formatting (millions/billions)
-        const absVal = Math.abs(val);
-        if (absVal >= 1_000_000_000) {
-            return `${(val / 1_000_000_000).toFixed(2)}B`;
-        }
-        if (absVal >= 1_000_000) {
-            return `${(val / 1_000_000).toFixed(2)}M`;
-        }
+    const uniqueYears = [...new Set(years.map(y => String(y)))].slice(0, 7);
 
 
-        return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
 
     // Row styling based on type
     const getRowClass = (row: StatementRow): string => {
@@ -671,11 +649,14 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
                             <th className="px-5 py-3 text-left font-black text-slate-500 dark:text-slate-400 sticky left-0 bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-md z-10 min-w-[200px] uppercase tracking-widest text-[10px]">
                                 Line Item
                             </th>
-                            {uniqueYears.map(year => (
-                                <th key={year} className="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-400 min-w-[100px]">
-                                    {year}
-                                </th>
-                            ))}
+                            {uniqueYears.map(year => {
+                                const isFuture = Number(year) > new Date().getFullYear();
+                                return (
+                                    <th key={year} className="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-400 min-w-[100px]">
+                                        {isFuture ? "TTM" : year}
+                                    </th>
+                                );
+                            })}
                         </tr>
                     </thead>
                     {/* Data Rows */}
@@ -695,7 +676,7 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
                                             key={year}
                                             className={`px-4 py-3 text-right font-mono tabular-nums ${getValueColor(row, val)}`}
                                         >
-                                            {formatValue(val, row.format)}
+                                            {formatValue(val, row.format, row.label)}
                                         </td>
                                     );
                                 })}
@@ -986,7 +967,7 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
                     <div className="text-xl font-bold text-blue-800 dark:text-blue-200">{data.f_score}<span className="text-sm text-blue-500 dark:text-blue-400">/9</span></div>
                 </div>
                 {Object.entries(data.metrics).slice(0, 4).map(([key, val]) => {
-                    if (val === null || val === undefined || val === "N/A") return null;
+                    if (val === null || val === undefined || (val as any) === "N/A") return null;
                     return (
                         <div key={key} className="p-3 bg-white dark:bg-white/5 rounded-xl text-center border border-slate-100 dark:border-white/10 shadow-sm">
                             <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 truncate">{key}</div>
@@ -1551,12 +1532,25 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
     const uniqueYears = currentDataset.years || data.years || [];
 
     // Format large numbers
-    const formatValue = (val: number | null | undefined, fmt?: string): string => {
+    const formatValue = (val: number | string | null | undefined, fmt?: string, label?: string): string => {
         if (val === null || val === undefined) return "—";
-        if (fmt === 'percent' || (val !== 0 && Math.abs(val) < 1 && !Number.isInteger(val))) {
-            const pct = Math.abs(val) <= 1 ? val * 100 : val;
-            return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% `;
+        if (typeof val === 'string') return val;
+
+        // Heuristic: Check for percentage keywords in label
+        const isPercentMetric = label && (
+            label.toLowerCase().includes("growth") ||
+            label.toLowerCase().includes("margin") ||
+            label.toLowerCase().includes("yield") ||
+            label.toLowerCase().includes("return") ||
+            label.toLowerCase().includes("tax rate") ||
+            label.toLowerCase().includes("payout")
+        );
+
+        if (fmt === 'percent' || isPercentMetric || (val !== 0 && Math.abs(val) < 1 && !Number.isInteger(val))) {
+            const pct = val;
+            return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
         }
+
         const absVal = Math.abs(val);
         if (absVal >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(2)} B`;
         if (absVal >= 1_000_000) return `${(val / 1_000_000).toFixed(2)} M`;
@@ -1678,11 +1672,26 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                 <th className="sticky left-0 top-0 z-30 bg-white/95 backdrop-blur-md px-3 py-1.5 text-left text-[9px] font-bold uppercase tracking-wider text-slate-500 border-b border-r border-slate-200 shadow-[4px_0_12px_-6px_rgba(0,0,0,0.05)] min-w-[140px] w-1/3">
                                     Line Item
                                 </th>
-                                {uniqueYears.map(year => (
-                                    <th key={year} className="px-3 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/95 backdrop-blur-md border-b border-slate-200 min-w-[70px]">
-                                        {year}
-                                    </th>
-                                ))}
+                                {uniqueYears.map(year => {
+                                    // Logic to display TTM if year is current year + 1 (synthetic) or explicitly "TTM"
+                                    // Assuming backend sends 2027 for TTM (or current year + 1)
+                                    const currentYear = new Date().getFullYear();
+                                    const isTTM = parseInt(year) > currentYear || year.includes('TTM');
+                                    let displayYear = year;
+
+                                    if (isTTM && !year.includes('TTM')) {
+                                        displayYear = 'TTM';
+                                    } else if (!isNaN(parseInt(year)) && !year.includes('Q')) {
+                                        // Prefix FY for annual years strictly
+                                        displayYear = `FY ${year}`;
+                                    }
+
+                                    return (
+                                        <th key={year} className="px-3 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/95 backdrop-blur-md border-b border-slate-200 min-w-[70px]">
+                                            {displayYear}
+                                        </th>
+                                    );
+                                })}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white">
@@ -1692,12 +1701,14 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                         key={idx}
                                         className={`
                                             group transition-colors duration-75
+                                            ${row.label === 'Period Ending' ? '!bg-slate-50' : ''}
                                             ${row.isSubtotal ? 'bg-slate-50/60 hover:bg-slate-100' : 'hover:bg-blue-50/20'}
                                         `}
                                     >
                                         <td
                                             className={`
                                                 px-3 py-1.5 sticky left-0 z-10 border-r border-slate-50 group-hover:border-blue-100/30 transition-colors
+                                                ${row.label === 'Period Ending' ? '!bg-slate-100/90 text-[10px]' : ''}
                                                 ${row.isSubtotal
                                                     ? 'bg-slate-50/95 font-bold text-slate-800'
                                                     : 'bg-white/95 text-slate-600 font-medium'
@@ -1706,7 +1717,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                             style={{ paddingLeft: `${12 + (row.indent || 0) * 8}px` }}
                                         >
                                             <div className="flex items-center justify-between gap-1.5">
-                                                <span className="truncate max-w-[140px]" title={row.label}>{row.label}</span>
+                                                <span className={`truncate max-w-[140px] ${row.label === 'Period Ending' ? 'font-bold text-slate-700' : ''}`} title={row.label}>{row.label}</span>
                                                 {row.isGrowth && (
                                                     <span className="shrink-0 text-[8px] font-bold bg-slate-100 text-slate-400 px-1 rounded uppercase tracking-wider">
                                                         YoY
@@ -1721,13 +1732,14 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                                     key={year}
                                                     className={`
                                                         px-3 py-1.5 text-right font-mono tabular-nums
+                                                        ${row.label === 'Period Ending' ? 'text-[10px] font-bold text-slate-800' : ''}
                                                         ${row.isGrowth
-                                                            ? (val || 0) >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'
+                                                            ? (typeof val === 'number' && val >= 0) ? 'text-emerald-600 font-bold' : (typeof val === 'number' ? 'text-rose-500 font-bold' : '')
                                                             : row.isSubtotal ? 'font-bold text-slate-900' : 'text-slate-600'
                                                         }
                                                     `}
                                                 >
-                                                    {formatValue(val, row.format)}
+                                                    {formatValue(val, row.format, row.label)}
                                                 </td>
                                             );
                                         })}
@@ -1855,6 +1867,13 @@ interface ScreenerResultsProps {
 }
 
 export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResultsProps) {
+    const isPercentage = data.metric?.toLowerCase().includes("yield") ||
+        data.metric?.toLowerCase().includes("percent") ||
+        data.metric?.toLowerCase().includes("growth") ||
+        data.metric?.toLowerCase().includes("margin") ||
+        data.metric?.toLowerCase().includes("return") ||
+        title?.toLowerCase().includes("dividend");
+
     return (
         <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden mt-2 transition-colors">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/20 dark:to-slate-900 flex items-center justify-between">
@@ -1884,8 +1903,12 @@ export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResu
                             <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate">{stock.name}</div>
                         </div>
                         <div className="text-right">
-                            <div className="font-black text-slate-900 dark:text-white">{formatNumber(stock.value)}</div>
-                            <div className="text-xs font-medium text-slate-400 dark:text-slate-500">Value</div>
+                            <div className="font-black text-slate-900 dark:text-white">
+                                {isPercentage ? `${stock.value.toFixed(2)}%` : formatNumber(stock.value)}
+                            </div>
+                            {!isPercentage && (
+                                <div className="text-xs font-medium text-slate-400 dark:text-slate-500">Value</div>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -2140,9 +2163,20 @@ function formatPercent(value: number | null | undefined): string {
     return `${sign}${value.toFixed(2)}%`;
 }
 
-function formatValue(val: any, format?: string) {
+function formatValue(val: any, format?: string, label?: string) {
     if (val === null || val === undefined) return "";
-    if (format === 'percent') return formatPercent(val);
+
+    // Check for percentage keywords in label
+    const isPercentMetric = label && (
+        label.toLowerCase().includes("growth") ||
+        label.toLowerCase().includes("margin") ||
+        label.toLowerCase().includes("yield") ||
+        label.toLowerCase().includes("return") ||
+        label.toLowerCase().includes("tax rate") ||
+        label.toLowerCase().includes("payout")
+    );
+
+    if (format === 'percent' || isPercentMetric) return formatPercent(val);
     return formatNumber(val);
 }
 

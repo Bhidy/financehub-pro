@@ -156,11 +156,14 @@ RATIOS_DISPLAY = {
     "last_close_price": "Last Close Price",
     "market_cap": "Market Cap",
     "market_cap_growth": "Market Cap Growth",
+    "enterprise_value": "Enterprise Value",
     "pe_ratio": "Pe Ratio",
+    "pe_forward": "Forward PE",
     "ps_ratio": "Ps Ratio",
     "pb_ratio": "Pb Ratio",
     "pfcf_ratio": "Pfcf Ratio",
     "pocf_ratio": "Pocf Ratio",
+    "ev_ebitda": "EV/EBITDA",
     # Profitability
     "roe": "Roe",
     "roa": "Roa",
@@ -184,7 +187,7 @@ async def handle_financials(
     symbol: str,
     statement_type: str = 'income',
     period_type: str = 'annual',
-    limit: int = 5,
+    limit: int = 7,
     language: str = 'en'
 ) -> Dict[str, Any]:
     """
@@ -564,6 +567,41 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str]) -> Li
             data_by_year[y] = dict(r)
 
     processed = []
+    
+    # 1. Inject "Period Ending" row if available
+    period_ending_row = {
+        'label': 'Period Ending',
+        'values': {},
+        'isGrowth': False,
+        'isSubtotal': False,
+        'indent': 0,
+        'format': 'string' # Hint for frontend
+    }
+    has_period = False
+    for y in years:
+        # Check for period_ending in the raw row data
+        raw_date = data_by_year.get(y, {}).get('period_ending')
+        if raw_date:
+            # Format: 2026-01-14 -> Jan 14, 2026
+            try:
+                # If it's a date object
+                if hasattr(raw_date, 'strftime'):
+                    val_str = raw_date.strftime("%b %d, %Y")
+                # If it's a string (YYYY-MM-DD)
+                else:
+                    val_str = datetime.strptime(str(raw_date), "%Y-%m-%d").strftime("%b %d, %Y")
+                
+                period_ending_row['values'][y] = val_str
+                has_period = True
+            except:
+                period_ending_row['values'][y] = None
+        else:
+            period_ending_row['values'][y] = None
+            
+    if has_period:
+        processed.append(period_ending_row)
+
+    # 2. Process standard columns
     for col, label in display_map.items():
         row_obj = {
             'label': label,

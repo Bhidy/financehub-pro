@@ -35,11 +35,12 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 ## Critical Rules
 
 1. **API URL:** The production API URL is `https://starta.46-224-223-172.sslip.io/api/v1`. Hardcode this in `frontend/lib/api.ts`.
-2. **Deployment:** Vercel is NOT connected to GitHub. Always deploy frontend manually using `npx vercel --prod` from the `frontend/` directory.
+2. **Deployment:** Vercel is NOT connected to GitHub. Always deploy frontend manually using `npx vercel --prod` from the **PROJECT ROOT** (`mubasher-deep-extract/`). **NEVER** run it from inside `frontend/` or it will fail with a path error.
   3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
   4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
   5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
   6. **Configuration Updates:** When updating environment variables (like secrets) on Hetzner, Docker containers MUST be restarted with `--force-recreate` to pick up the changes. The `setup_hetzner.sh` script handles this automatically.
+  7. **CLOUD-ONLY MANDATE:** All automated processes (schedulers, scrapers, data sync) MUST run on the Cloud Infrastructure (Hetzner + GitHub Actions). **Local execution of automated workflows is STRICTLY PROHIBITED** to prevent data corruption and IP bans. The local machine is for development only.
 
   ## STRICT ARCHITECTURE RULES (CRITICAL)
   > [!IMPORTANT]
@@ -114,3 +115,30 @@ git push origin main
 ### 4. Code & Context
 -   **Backend:** Always uses `backend-core/`. The `backend/` folder is a decoy/legacy.
 -   **Context:** `Dockerfile` COPY command must be `COPY . .` from within `backend-core` context, NOT root.
+
+### 5. CLOUD-ONLY OPERATIONS (MANDATORY)
+-   **NO LOCAL CRON:** Do not set up cron jobs or scheduled tasks on the local development machine.
+-   **HEADLESS SCRAPERS:** All extraction scripts must run in `headless=True` mode on the server.
+-   **GITHUB ACTIONS:** Use GitHub Actions for external triggers (Watchdog).
+-   **INTERNAL SCHEDULER:** Use the internal FastAPI scheduler (active on server startup) for continuous tasks.
+-   **VERIFICATION:** Use `CLOUD_VERIFICATION_CERTIFICATE.md` as the standard for audit compliance.
+
+### 6. AUTOMATED UPDATE PROTOCOLS (SYNC POLLING)
+> [!IMPORTANT]
+> **FAILURE TO FOLLOW THIS PROTOCOL WILL CAUSE "FALSE SUCCESS" AND DATA STALENESS.**
+
+1.  **SYNCHRONOUS POLLING (MANDATORY)**:
+    -   GitHub Actions (Workflows) MUST NOT just "trigger" an API endpoint.
+    -   They MUST **trigger + poll**.
+    -   **Pattern**: Trigger API -> Loop `while status.is_running == true` -> Sleep 10s -> Check again.
+    -   **Exit Condition**: Only exit when status is `success` or `failure`.
+
+2.  **BACKEND TRANSPARENCY**:
+    -   All long-running backend functions (`ingestion`, `backfill`, `sync`) MUST use a global lock/status tracker (`refresh_status`).
+    -   They MUST provide **live callbacks** or updates to this tracker (e.g., `Ingesting 15/223...`).
+    -   Never use "fire-and-forget" background tasks without a way to track them.
+
+3.  **ALL CLOUD, ZERO LOCAL**:
+    -   All scheduling is handled by GitHub Actions (Watchdog) or the internal FastAPI Scheduler.
+    -   Your local machine is **NEVER** the runner.
+    -   Verification of these processes must be done by inspecting **server logs** (`docker logs starta-backend-1`), not local output.

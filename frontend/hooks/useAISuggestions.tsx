@@ -81,8 +81,7 @@ export function useAISuggestions() {
                 id: 'growth',
                 label: '🚀 Growth',
                 suggestions: [
-                    { text: `Compare ${stocks.bank} vs ${stocks.growth} growth`, icon: TrendingUp, gradient: "from-amber-500 to-orange-600" },
-                    { text: `What's the CAGR for ${stocks.cagr}?`, icon: BarChart3, gradient: "from-blue-500 to-blue-600" },
+
                     { text: `${stocks.bank} profit margin`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
                     { text: `Earnings trend ${stocks.main}`, icon: Activity, gradient: "from-cyan-500 to-teal-600" },
                 ]

@@ -2150,33 +2150,44 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
 // ============================================================
 
 function formatNumber(value: number | null | undefined, decimals = 2): string {
-    if (value === null || value === undefined) return "";
-    if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(1)} B`;
-    if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(1)} M`;
-    if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(1)} K`;
-    return value.toFixed(decimals);
+    if (value === null || value === undefined) return "-";
+    if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(decimals)}B`;
+    if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(decimals)}M`;
+    if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(decimals)}K`;
+    return value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
-function formatPercent(value: number | null | undefined): string {
-    if (value === null || value === undefined) return "";
-    const sign = value >= 0 ? "+" : "";
+function formatPercent(value: number | null | undefined, forceSign = false): string {
+    if (value === null || value === undefined) return "-";
+    const sign = (value >= 0 && forceSign) ? "+" : "";
     return `${sign}${value.toFixed(2)}%`;
 }
 
 function formatValue(val: any, format?: string, label?: string) {
-    if (val === null || val === undefined) return "";
+    if (val === null || val === undefined) return "-";
+    if (typeof val === 'string') return val;
 
-    // Check for percentage keywords in label
-    const isPercentMetric = label && (
-        label.toLowerCase().includes("growth") ||
-        label.toLowerCase().includes("margin") ||
-        label.toLowerCase().includes("yield") ||
-        label.toLowerCase().includes("return") ||
-        label.toLowerCase().includes("tax rate") ||
-        label.toLowerCase().includes("payout")
-    );
+    const lowerLabel = label?.toLowerCase() || "";
+    const isGrowth = lowerLabel.includes("growth") || lowerLabel.includes("change");
 
-    if (format === 'percent' || isPercentMetric) return formatPercent(val);
-    return formatNumber(val);
+    const isPercentMetric = isGrowth ||
+        lowerLabel.includes("margin") ||
+        lowerLabel.includes("yield") ||
+        lowerLabel.includes("return") ||
+        lowerLabel.includes("tax rate") ||
+        lowerLabel.includes("payout");
+
+    if (format === 'percent' || isPercentMetric) {
+        return formatPercent(Number(val), isGrowth);
+    }
+
+    // Ratios usually 2 decimals, formatting handles >1000
+    // But Market Cap / Enterprise Value / Revenue need abbreviations
+    // We can assume large numbers > 1M are monetary
+    if (Math.abs(val) >= 1e6) {
+        return formatNumber(val);
+    }
+
+    return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 

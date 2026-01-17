@@ -25,6 +25,10 @@ cd frontend && npm install && cd ..
 npx vercel --prod --yes
 ```
 
+> [!CAUTION]
+> If you see `Error: The provided path .../frontend/frontend does not exist`, it means you ran the command from inside the `frontend` folder.
+> **FIX:** `cd ..` to the project root and run the command again.
+
 4. Verify deployment is live:
 ```bash
 curl -s -o /dev/null -w "%{http_code}" https://finhub-pro.vercel.app/

@@ -62,6 +62,10 @@ INCOME_MAPPING = {
     "Profit Margin": "net_margin",
     "EPS (Basic)": "eps",
     "EPS (Diluted)": "eps_diluted",
+    "EBITDA": "ebitda",
+    "EBITDA Margin": "ebitda_margin",
+    "EBIT": "ebit",
+    "EBIT Margin": "ebit_margin",
 }
 
 BALANCE_MAPPING = {
@@ -143,6 +147,15 @@ RATIOS_MAPPING = {
     "Profit Margin": "net_margin",
     "Dividend Yield": "dividend_yield",
     "Payout Ratio": "payout_ratio",
+    "Debt / EBITDA Ratio": "debt_ebitda",
+    "Debt / FCF Ratio": "debt_fcf",
+    "Asset Turnover": "asset_turnover",
+    "Inventory Turnover": "inventory_turnover",
+    "Quick Ratio": "quick_ratio",
+    "Current Ratio": "current_ratio",
+    "Return on Capital Employed (ROCE)": "roce",
+    "Earnings Yield": "earnings_yield",
+    "FCF Yield": "fcf_yield",
 }
 
 

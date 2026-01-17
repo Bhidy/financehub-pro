@@ -20,6 +20,7 @@ Run the automated expect script which handles:
 
 ```bash
 # Wait 10s before auto-running to allow user to check args
+# This script is the MANDATORY fix for "stale code" or "false success" deployments.
 ./scripts/restore_production.exp 46.224.223.172 'StartaProd2026!'
 ```
 // turbo-all

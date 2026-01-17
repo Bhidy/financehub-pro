@@ -13,7 +13,7 @@
 ```
 This starts both the backend API and frontend automatically.
 
-### Option 2: Manual Startup
+### Option 2: Manual Startup (Development Only)
 ```bash
 # Terminal 1 - Backend API
 cd backend
@@ -125,6 +125,26 @@ brew services start postgresql  # macOS
 | nav_history | Fund NAV history | 615K+ |
 | major_shareholders | Ownership data | 900+ |
 | earnings_calendar | EPS announcements | 2.5K+ |
+
+---
+
+## ☁️ Cloud Automation Architecture
+
+The system is designed to run **100% autonomously** on the cloud.
+
+### 1. Internal Scheduler (Hetzner)
+- **Location**: `backend-core/app/services/scheduler.py`
+- **Function**: Runs continuously on the VPS.
+- **Tasks**: Intraday prices, Fund NAVs, Weekly sweeps.
+
+### 2. External Watchdog (GitHub Actions)
+- **Location**: `.github/workflows/enterprise-data-update.yml`
+- **Function**: External triggers to ensure reliability.
+- **Tasks**: Redundant health checks and heavy batch triggers.
+- **Protocol**: **Synchronous Polling**. Triggers API -> Waits for "Success" signal. NEVER fire-and-forget.
+
+**⚠️ NOTE: DO NOT RUN AUTOMATED EXTRACTION SCRIPTS LOCALLY.**
+Local execution may cause IP bans or data conflict with the production server.
 
 ---
 

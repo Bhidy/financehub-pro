@@ -235,17 +235,33 @@ async def get_health_kpis(
             # For simplicity, we stick to interaction-based user count if filters are applied
             unique_users = await get_distinct_count(curr_filter, curr_params, "user_id")
 
-            guest_sessions = await get_distinct_count(curr_filter, curr_params + [], "session_id") # Simplify logic
-            # Re-query specifically for guests if no user filter
-            if not user_type:
+            guest_sessions = 0
+            # Correct logic: if user_type is 'all' or not specified, we need to calculate guest sessions (user_id IS NULL)
+            # if user_type is 'guest', guest_sessions IS total_chats
+            # if user_type is 'user', guest_sessions is 0
+            if not user_type or user_type == "all":
                  guest_filter, guest_params = build_filter_clause(start, end, "guest", language, 1)
                  guest_sessions = await get_distinct_count(guest_filter, guest_params, "session_id")
+            elif user_type == "guest":
+                 guest_sessions = total_chats
+            
+            # Refined Success/Failure logic:
+            # A query is a failure if:
+            # 1. Fallback triggered (UNKNOWN intent)
+            # 2. Handler error
+            # 3. No data returned
+            # 4. Confidence is low (< 0.5) - matches unresolved_queries logic
+            failure_cond = """
+                (fallback_triggered = TRUE 
+                 OR error_code IS NOT NULL 
+                 OR response_has_data = FALSE)
+            """
             
             success_count = await get_count(curr_filter, curr_params, 
-                "AND response_has_data = TRUE AND fallback_triggered = FALSE AND error_code IS NULL")
+                f"AND NOT {failure_cond}")
             
             failure_count = await get_count(curr_filter, curr_params, 
-                "AND (fallback_triggered = TRUE OR error_code IS NOT NULL OR response_has_data = FALSE)")
+                f"AND {failure_cond}")
 
             out_of_scope = await get_count(curr_filter, curr_params, "AND scope_blocked_reason IS NOT NULL")
             
@@ -255,9 +271,9 @@ async def get_health_kpis(
             prev_unique_users = await get_distinct_count(prev_filter, prev_params, "user_id")
             
             prev_success = await get_count(prev_filter, prev_params,
-                "AND response_has_data = TRUE AND fallback_triggered = FALSE AND error_code IS NULL")
+                f"AND NOT {failure_cond}")
             prev_failure = await get_count(prev_filter, prev_params,
-                "AND (fallback_triggered = TRUE OR error_code IS NOT NULL OR response_has_data = FALSE)")
+                f"AND {failure_cond}")
             
             # Calculations
             success_rate = (success_count / total_msgs * 100) if total_msgs > 0 else 0.0

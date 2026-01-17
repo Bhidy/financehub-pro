@@ -187,6 +187,17 @@ RATIOS_DISPLAY = {
     "debt_assets": "Debt / Assets",
     "current_ratio": "Current Ratio",
     "quick_ratio": "Quick Ratio",
+    "interest_coverage": "Interest Coverage",
+    # Per Share
+    "revenue_per_share": "Revenue Per Share",
+    "fcf_per_share": "FCF Per Share",
+    "book_value_per_share": "Book Value Per Share",
+    # Activity
+    "asset_turnover": "Asset Turnover",
+    "inventory_turnover": "Inventory Turnover",
+    "receivables_turnover": "Receivables Turnover",
+    # Others
+    "ev_sales": "EV/Sales",
     # Dividends
     "dividend_yield": "Dividend Yield",
     "payout_ratio": "Payout Ratio",

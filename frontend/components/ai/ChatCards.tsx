@@ -110,7 +110,13 @@ export function SnapshotCard({ data }: SnapshotProps) {
                         {isPositive ? <TrendingUp size={22} className="stroke-[3]" /> : <TrendingDown size={22} className="stroke-[3]" />}
                         <span className="text-2xl font-black">{formatPercent(data.change_percent)}</span>
                     </div>
-                    <span className="text-xs font-black mt-1 opacity-70">{data.change > 0 ? '+' : ''}{data.change.toFixed(2)}</span>
+                    <span className="text-xs font-black mt-1 opacity-70">
+                        {data.change !== null && data.change !== undefined ? (
+                            <>
+                                {data.change > 0 ? '+' : ''}{data.change.toFixed(2)}
+                            </>
+                        ) : '0.00'}
+                    </span>
                 </div>
             </div>
 

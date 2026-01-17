@@ -195,8 +195,8 @@ async def handle_stock_chart(
         {'label': '1D', 'action_type': 'query', 'payload': f'Chart {symbol} 1D'},
         {'label': '1W', 'action_type': 'query', 'payload': f'Chart {symbol} 1W'},
         {'label': '1M', 'action_type': 'query', 'payload': f'Chart {symbol} 1M'},
-        {'label': '1Y', 'action_type': 'query', 'payload': f'Chart {symbol} 1Y'},
-        {'label': 'MAX', 'action_type': 'query', 'payload': f'Chart {symbol} MAX'},
+        {'label': '3M', 'action_type': 'query', 'payload': f'Chart {symbol} 3M'},
+        {'label': '6M', 'action_type': 'query', 'payload': f'Chart {symbol} 6M'},
     ]
 
     # Add Egypt-specific suggestions

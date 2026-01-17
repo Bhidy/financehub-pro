@@ -445,21 +445,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height={height}
                 />
             </div>
-            {/* Range selector buttons */}
-            <div className="flex items-center gap-2 px-4 pb-4">
-                {["1D", "1W", "1M", "1Y", "MAX"].map((range) => (
-                    <button
-                        key={range}
-                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors
-                            ${chart.range === range
-                                ? "bg-blue-500 text-white"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                            }`}
-                    >
-                        {range}
-                    </button>
-                ))}
-            </div>
+
         </div>
     );
 }

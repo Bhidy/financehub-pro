@@ -275,21 +275,21 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
 # Patterns for entity extraction
 RANGE_PATTERNS = {
     # English
-    r'\\b1\\s*d(ay)?\\b': '1D',
-    r'\\b1\\s*w(eek)?\\b': '1W',
-    r'\\b1\\s*m(onth)?\\b': '1M',
-    r'\\b3\\s*m(onths?)?\\b': '3M',
-    r'\\b6\\s*m(onths?)?\\b': '6M',
-    r'\\b1\\s*y(ear)?\\b': '1Y',
-    r'\\b5\\s*y(ears?)?\\b': '5Y',
-    r'\\bmax\\b': 'MAX',
-    r'\\ball\\s*time\\b': 'MAX',
+    r'\b1\s*d(ay)?\b': '1D',
+    r'\b1\s*w(eek)?\b': '1W',
+    r'\b1\s*m(onth)?\b': '1M',
+    r'\b3\s*m(onths?)?\b': '3M',
+    r'\b6\s*m(onths?)?\b': '6M',
+    r'\b1\s*y(ear)?\b': '1Y',
+    r'\b5\s*y(ears?)?\b': '5Y',
+    r'\bmax\b': 'MAX',
+    r'\ball\s*time\b': 'MAX',
     # Arabic
-    r'يوم(\\s*واحد)?': '1D',
+    r'يوم(\s*واحد)?': '1D',
     r'اسبوع': '1W',
-    r'شهر(\\s*واحد)?': '1M',
-    r'[٣3]\\s*شهور': '3M',
-    r'[٦6]\\s*شهور': '6M',
+    r'شهر(\s*واحد)?': '1M',
+    r'[٣3]\s*شهور': '3M',
+    r'[٦6]\s*شهور': '6M',
     r'سنه|عام': '1Y',
     r'من البدايه|تاريخ كامل': 'MAX',
 }
@@ -308,7 +308,7 @@ COMPARE_PATTERN = re.compile(
 )
 
 # Fund ID pattern (4 consecutive digits like 2742, 6120) when accompanied by fund keywords
-FUND_ID_PATTERN = re.compile(r'\\b(\\d{4})\\b')
+FUND_ID_PATTERN = re.compile(r'\b(\d{4})\b')
 
 
 class IntentRouter:

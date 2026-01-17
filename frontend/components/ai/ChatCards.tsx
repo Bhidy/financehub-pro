@@ -413,9 +413,36 @@ interface ActionsBarProps {
 export function ActionsBar({ actions, language = "en", onAction }: ActionsBarProps) {
     if (!actions.length) return null;
 
+    // Client-side override: 
+    // 1. Hide 1Y/MAX (Data unavailable)
+    // 2. Inject 3M/6M (Data available, but backend buttons might be stale during deploy)
+    let processedActions = actions.filter(a => a.label !== '1Y' && a.label !== 'MAX');
+
+    // Check if this is a chart context (has "1M")
+    const has1M = processedActions.some(a => a.label === '1M');
+    const has6M = processedActions.some(a => a.label === '6M');
+
+    if (has1M && !has6M) {
+        // Find the 1M action to clone its payload structure
+        const oneMAction = processedActions.find(a => a.label === '1M');
+        if (oneMAction && oneMAction.payload) {
+            // Inject 3M and 6M after 1M
+            const idx = processedActions.findIndex(a => a.label === '1M');
+            const basePayload = oneMAction.payload.replace(' 1M', ''); // remove 1M suffix
+
+            const newButtons = [
+                { ...oneMAction, label: '3M', payload: `${basePayload} 3M` },
+                { ...oneMAction, label: '6M', payload: `${basePayload} 6M` }
+            ];
+
+            // Insert after 1M
+            processedActions.splice(idx + 1, 0, ...newButtons);
+        }
+    }
+
     return (
         <div className="flex flex-wrap gap-2 mt-4">
-            {actions.map((action, i) => (
+            {processedActions.map((action, i) => (
                 <button
                     key={i}
                     onClick={() => onAction(action)}

@@ -157,10 +157,13 @@ async def handle_stock_chart(
     market_code = name_row['market_code']
     is_egx = market_code == 'EGX'
     
-    if is_egx and not chart_data:
-        logger.info(f"[CHART] DB empty for {symbol} - Attempting live fetch")
+    if is_egx and (not chart_data or len(chart_data) < 20):
+        logger.info(f"[CHART] DB sparse/empty for {symbol} ({len(chart_data)} points) - Attempting live fetch")
         
-        live_data = await fetch_ohlc_live(symbol, limit=min(days + 30, 500))
+        # Determine strict limit based on days requested
+        # 3M = 90 days, 6M = 180 days. Using days directly ensures we ask for enough.
+        limit_req = max(days + 20, 150) # minimum 150 rows
+        live_data = await fetch_ohlc_live(symbol, limit=limit_req)
         
         if live_data and len(live_data) > 0:
             # Filter by date range

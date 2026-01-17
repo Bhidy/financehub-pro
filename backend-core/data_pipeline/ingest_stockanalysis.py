@@ -156,6 +156,12 @@ RATIOS_MAPPING = {
     "Return on Capital Employed (ROCE)": "roce",
     "Earnings Yield": "earnings_yield",
     "FCF Yield": "fcf_yield",
+    "Interest Coverage": "interest_coverage",
+    "Receivables Turnover": "receivables_turnover",
+    "Revenue Per Share": "revenue_per_share",
+    "Free Cash Flow Per Share": "fcf_per_share",
+    "Book Value Per Share": "book_value_per_share",
+    "EV/Sales": "ev_sales",
 }
 
 

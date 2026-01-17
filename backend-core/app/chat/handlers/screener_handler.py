@@ -238,7 +238,8 @@ async def handle_sector_stocks(
             'price': float(row['last_price']) if row['last_price'] else 0,
             'change_percent': float(row['change_percent']) if row['change_percent'] is not None else 0,
             'market_cap': int(row['market_cap']) if row['market_cap'] else 0,
-            'value': float(row['change_percent']) if row['change_percent'] is not None else 0  # Map for ScreenerResultsCard
+            'value': float(row['last_price']) if row['last_price'] else 0,
+            'metric': 'last_price'
         })
     
     # Use the requested sector name for the title if generic, or the first match
@@ -257,7 +258,7 @@ async def handle_sector_stocks(
             {
                 'type': 'sector_list',
                 'title': sector_display,
-                'data': {'stocks': stocks, 'sector': sector_display}
+                'data': {'stocks': stocks, 'sector': sector_display, 'metric': 'Price'}
             }
         ],
         'actions': [

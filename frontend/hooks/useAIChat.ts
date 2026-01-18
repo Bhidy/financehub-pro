@@ -151,7 +151,13 @@ export function useAIChat(config?: {
                 const hasToken = typeof window !== 'undefined' && !!localStorage.getItem("fh_auth_token");
 
                 if (hasToken) {
-                    console.warn("[useAIChat] ⚠️ Backend reported limit reached but user has token. Ignoring.");
+                    console.warn("[useAIChat] ⚠️ Backend rejected auth (Limit Reached). Token likely invalid. Forcing logout.");
+                    // Force cleanup and redirect
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem("fh_auth_token");
+                        localStorage.removeItem("fh_user");
+                        window.location.href = "/login?reason=session_expired";
+                    }
                     return;
                 }
 

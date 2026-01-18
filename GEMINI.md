@@ -35,7 +35,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 ## Critical Rules
 
 1. **API URL:** The production API URL is `https://starta.46-224-223-172.sslip.io/api/v1`. Hardcode this in `frontend/lib/api.ts`.
-2. **Deployment:** Vercel is NOT connected to GitHub. Always deploy frontend manually using `npx vercel --prod` from the **PROJECT ROOT** (`mubasher-deep-extract/`). **NEVER** run it from inside `frontend/` or it will fail with a path error.
+2. **Deployment:** ALWAYS use the unified script: `./scripts/deploy_production.sh`. **NEVER** run `npx vercel` or `git push` manually for production updates. This script enforces the critical "Frontend Root Execution" rule.
   3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
   4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
   5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
@@ -76,8 +76,9 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 
 ### Deploy Frontend to Production
 ```bash
+### Deploy Frontend to Production
 ```bash
-npx vercel --prod
+./scripts/deploy_production.sh frontend
 ```
 
 ### Check Production Health
@@ -87,8 +88,9 @@ curl https://starta.46-224-223-172.sslip.io/health
 
 ### Deploy Backend to Hetzner
 ```bash
-git push origin main
-# Coolify automatically rebuilds on push
+### Deploy Backend to Hetzner
+```bash
+./scripts/deploy_production.sh backend
 ```
 
 ## AI & DEPLOYMENT PROTOCOLS (STRICT ENFORCEMENT)

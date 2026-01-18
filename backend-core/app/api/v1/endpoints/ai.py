@@ -51,6 +51,7 @@ async def verify_access(
     # =========================================================================
     auth_debug = {"has_auth_header": bool(authorization), "token_valid": False, "error": None}
     
+    
     if authorization:
         if authorization.startswith("Bearer "):
             token = authorization[7:]
@@ -71,13 +72,18 @@ async def verify_access(
                 else:
                     auth_debug["error"] = "Token valid but no 'sub' claim"
                     print(f"[AI Chat] ⚠️ JWT valid but missing 'sub': {payload}")
+                    # CRITICAL: Do NOT fallback to guest if token is presented but invalid structure
+                    return {"authenticated": False, "can_ask": False, "error": "INVALID_TOKEN", "auth_debug": auth_debug}
             except JWTError as e:
                 # Log the specific JWT error for debugging
                 auth_debug["error"] = str(e)
                 print(f"[AI Chat] ⚠️ JWT validation failed: {str(e)}")
+                # CRITICAL: Token was attempted but failed. Report this back so frontend can logout.
+                return {"authenticated": False, "can_ask": False, "error": "TOKEN_EXPIRED", "auth_debug": auth_debug}
             except Exception as e:
                 auth_debug["error"] = f"Unexpected: {str(e)}"
                 print(f"[AI Chat] ⚠️ Unexpected auth error: {str(e)}")
+                return {"authenticated": False, "can_ask": False, "error": "AUTH_ERROR", "auth_debug": auth_debug}
         else:
             auth_debug["error"] = "Invalid Authorization format (expected 'Bearer <token>')"
             print(f"[AI Chat] ⚠️ Invalid auth header format")
@@ -146,6 +152,12 @@ async def ai_chat_endpoint(
         # Verify access (authenticated or guest with remaining questions)
         access = await verify_access(authorization, x_device_fingerprint)
         
+        if access.get("error"):
+            # CRITICAL: If auth failed explicitly (invalid token), do NOT fallback to guest
+            # Return 401 to trigger frontend logout
+            print(f"[AI Chat] ⛔ Auth error: {access.get('error')}")
+            raise HTTPException(status_code=401, detail=access.get("error"))
+
         if not access.get("can_ask"):
             # Log this case for debugging - this should ONLY happen for guests
             print(f"[AI Chat] ⛔ Rate limit triggered - access: {access}")

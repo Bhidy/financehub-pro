@@ -22,7 +22,12 @@ function AIAnalystPageContent() {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [showUsageModal, setShowUsageModal] = useState(false);
     const { query, setQuery, messages, isLoading, handleSend, handleAction, sendDirectMessage } = useAIChat({
-        onUsageLimitReached: () => setShowUsageModal(true)  // Show popup when guest limit reached
+        // Double safety: Only show modal if NOT authenticated
+        onUsageLimitReached: () => {
+            if (!isAuthenticated) {
+                setShowUsageModal(true);
+            }
+        }
     });
     const { market } = useMarketSafe();
     const scrollRef = useRef<HTMLDivElement>(null);

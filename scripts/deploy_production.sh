@@ -1,0 +1,85 @@
+#!/bin/bash
+set -e
+
+# ==============================================================================
+# FinanceHub Pro - Strict Production Deployment Script
+# ==============================================================================
+# This script enforces all Critical Rules from GEMINI.md to prevent deployment failures.
+# 
+# Usage: ./scripts/deploy_production.sh [all|frontend|backend]
+# Default: all
+# ==============================================================================
+
+# 1. ENFORCE ROOT DIRECTORY EXECUTION
+# ------------------------------------------------------------------------------
+# We must be at the project root. Check for key files.
+if [[ ! -f "GEMINI.md" || ! -d "backend-core" || ! -d "frontend" ]]; then
+    echo "❌ ERROR: You must run this script from the PROJECT ROOT."
+    echo "Correct usage: ./scripts/deploy_production.sh"
+    exit 1
+fi
+
+MODE=${1:-all}
+
+echo "🚀 Starting FinanceHub Pro Deployment ($MODE)..."
+
+# 2. BACKEND DEPLOYMENT (Hetzner via Git)
+# ------------------------------------------------------------------------------
+if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
+    echo "----------------------------------------------------------------"
+    echo "📦 Deploying Backend to Hetzner (Nuclear Strategy via Git)..."
+    echo "----------------------------------------------------------------"
+    
+    # Check if we have uncommitted changes
+    if [[ -n $(git status -s) ]]; then
+        echo "⚠️  You have uncommitted changes."
+        read -p "Do you want to commit and push them now? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            read -p "Enter commit message: " COMMIT_MSG
+            git add .
+            git commit -m "$COMMIT_MSG"
+            git push origin main
+            echo "✅ Backend code pushed to GitHub (Coolify will auto-deploy)."
+        else
+            echo "⛔ Backend deployment aborted (Changes must be pushed for Coolify)."
+            exit 1
+        fi
+    else
+        echo "✅ No local changes. Pushing current main..."
+        git push origin main
+    fi
+fi
+
+# 3. FRONTEND DEPLOYMENT (Vercel)
+# ------------------------------------------------------------------------------
+if [[ "$MODE" == "all" || "$MODE" == "frontend" ]]; then
+    echo "----------------------------------------------------------------"
+    echo "🎨 Deploying Frontend to Vercel..."
+    echo "----------------------------------------------------------------"
+    
+    # CRITICAL RULE ENFORCEMENT:
+    # Run from ROOT, but target the Vercel project correctly.
+    # We do NOT cd into frontend/. We run `vercel --prod` from root which picks up 
+    # the project configuration or user must ensure vercel.json is correct.
+    # WAIT - The user rule says: "Always deploy frontend manually using `npx vercel --prod` from the PROJECT ROOT (`mubasher-deep-extract/`). NEVER run it from inside `frontend/`"
+    
+    # Let's verify we are NOT in frontend/ (already checked above, but double check pwd)
+    CURRENT_DIR=$(pwd)
+    if [[ "$CURRENT_DIR" == *"frontend"* ]]; then
+         echo "❌ CRITICAL ERROR: Detected execution inside 'frontend' directory."
+         echo "This violates Deployment Protocol #2."
+         exit 1
+    fi
+
+    echo "✅ Directory Context Verified: $CURRENT_DIR (Project Root)"
+    
+    # Execute Vercel Deployment
+    # We use 'npx vercel --prod' and let interactive mode handle it or use pre-configured settings
+    echo "🚀 Executing: npx vercel --prod"
+    npx vercel --prod
+fi
+
+echo "----------------------------------------------------------------"
+echo "✅ Deployment Process Complete."
+echo "----------------------------------------------------------------"

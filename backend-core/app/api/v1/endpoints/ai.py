@@ -87,6 +87,7 @@ async def verify_access(
         else:
             auth_debug["error"] = "Invalid Authorization format (expected 'Bearer <token>')"
             print(f"[AI Chat] ⚠️ Invalid auth header format")
+            return {"authenticated": False, "can_ask": False, "error": "INVALID_AUTH_HEADER", "auth_debug": auth_debug}
     
     # =========================================================================
     # GUEST USER PATH - Only reached if authentication failed/missing

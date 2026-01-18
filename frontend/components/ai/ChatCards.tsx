@@ -559,8 +559,19 @@ interface FinancialsTableProps {
 }
 
 export function FinancialsTableCard({ title, subtitle, years, rows, currency = "EGP" }: FinancialsTableProps) {
-    // Deduplicate years (handle backend sending duplicate years)
-    const uniqueYears = [...new Set(years.map(y => String(y)))].slice(0, 7);
+    // Initial raw years
+    const rawYears = [...new Set(years.map(y => String(y)))].slice(0, 7);
+
+    // Filter out rows where ALL values are null (Strict Policy)
+    const validRows = rows.filter(row => {
+        const values = Object.values(row.values);
+        return values.some(v => v !== null && v !== undefined);
+    });
+
+    // Final years: Only those that have at least one non-null value in validRows
+    const uniqueYears = rawYears.filter(year =>
+        validRows.some(row => row.values[year] !== null && row.values[year] !== undefined)
+    );
 
 
 
@@ -621,13 +632,7 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
         URL.revokeObjectURL(url);
     };
 
-    // Filter out rows where ALL values are null (Strict Policy)
-    const validRows = rows.filter(row => {
-        // If it's a subtotal, we might keep it, but only if there's data in the block? 
-        // Safer: Keep subtotal only if it has values.
-        const values = Object.values(row.values);
-        return values.some(v => v !== null && v !== undefined);
-    });
+    // validRows already calculated above for uniqueYears filtering
 
     if (!validRows || validRows.length === 0) {
         return (
@@ -1562,7 +1567,15 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
     }
 
     const activeRows = currentDataset[activeTab] || [];
-    const uniqueYears = currentDataset.years || data.years || [];
+    const rawYears = currentDataset.years || data.years || [];
+
+    // Filter uniqueYears to only include those with actual data in activeRows
+    const uniqueYears = rawYears.filter(year =>
+        activeRows.some(row => {
+            const v = row.values[year];
+            return v !== null && v !== undefined;
+        })
+    );
 
     // Format large numbers
     const formatValue = (val: number | string | null | undefined, fmt?: string, label?: string): string => {
@@ -1892,6 +1905,7 @@ interface ScreenerResultsProps {
             name: string;
             price: number;
             value: number;
+            change_percent?: number;
             market_code: string;
         }>;
         metric: string;
@@ -1935,12 +1949,25 @@ export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResu
                             <div className="font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
                             <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate">{stock.name}</div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end">
                             <div className="font-black text-slate-900 dark:text-white">
-                                {isPercentage ? `${stock.value.toFixed(2)}%` : formatNumber(stock.value)}
+                                {stock.change_percent !== undefined
+                                    ? formatNumber(stock.price || stock.value)
+                                    : (isPercentage ? `${stock.value.toFixed(2)}%` : formatNumber(stock.value))}
                             </div>
-                            {!isPercentage && (
-                                <div className="text-xs font-medium text-slate-400 dark:text-slate-500">Value</div>
+                            {stock.change_percent !== undefined ? (
+                                <div className={cn(
+                                    "text-[10px] font-black px-2 py-0.5 rounded-md inline-block mt-0.5",
+                                    stock.change_percent >= 0
+                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                        : "bg-red-500/10 text-red-500 dark:text-red-400"
+                                )}>
+                                    {formatPercent(stock.change_percent)}
+                                </div>
+                            ) : (
+                                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter mt-1">
+                                    {data.metric?.replace(/_/g, " ") || "Value"}
+                                </div>
                             )}
                         </div>
                     </div>

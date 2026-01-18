@@ -27,7 +27,7 @@ export function useAISuggestions() {
     const suggestionCategories = useMemo(() => {
         const isEgypt = market === 'EGX';
         const stocks = isEgypt
-            ? { main: "CIB", second: "SWDY", bank: "COMI", pharma: "PHDC", growth: "EKHO", efficient: "ADIB", cagr: "EFIH" }
+            ? { main: "TMGH", second: "SWDY", bank: "COMI", pharma: "PHDC", growth: "EKHO", efficient: "ADIB", cagr: "EFIH" }
             : { main: "Aramco", second: "Al Rajhi", bank: "SNB", pharma: "2070", growth: "4030", efficient: "1120", cagr: "7010" };
 
         return [
@@ -37,8 +37,8 @@ export function useAISuggestions() {
                 suggestions: [
                     { text: "Top gainers today in EGX", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
                     { text: `Show me a full snapshot of ${stocks.main}`, icon: LayoutDashboard, gradient: "from-purple-500 to-violet-600" },
-                    { text: "Which stocks have the highest dividend yield?", icon: Gift, gradient: "from-emerald-400 to-green-600" },
-                    { text: `Is ${stocks.main} overvalued?`, icon: Sparkles, gradient: "from-blue-500 to-blue-600" },
+                    { text: "Show me CIB Financials", icon: FileText, gradient: "from-blue-500 to-indigo-600" },
+                    { text: `What is the fair value of ${stocks.main}?`, icon: Sparkles, gradient: "from-pink-500 to-rose-600" },
                     { text: "Show me banking sector stocks", icon: Building2, gradient: "from-slate-500 to-slate-700" },
                 ]
             },
@@ -47,7 +47,7 @@ export function useAISuggestions() {
                 label: `🔥 ${isEgypt ? 'Egypt' : 'KSA'} Hot`,
                 suggestions: [
                     { text: "Show me the safest stocks in EGX", icon: ShieldCheck, gradient: "from-emerald-500 to-teal-600" },
-                    { text: "Top 5 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-500 to-yellow-600" },
+                    { text: "Top 10 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-500 to-yellow-600" },
                     { text: "Which stocks are undervalued?", icon: Sparkles, gradient: "from-cyan-500 to-teal-600" },
                     { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-blue-600" },
                 ]
@@ -89,7 +89,7 @@ export function useAISuggestions() {
                 suggestions: [
                     { text: `Dividend history ${stocks.main}`, icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
                     { text: `Dividend yield ${stocks.second}`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
-                    { text: "Top 5 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-400 to-yellow-600" },
+                    { text: "Top 10 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-400 to-yellow-600" },
                     { text: `${stocks.bank} payout ratio`, icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
                 ]
             },
@@ -102,7 +102,7 @@ export function useAISuggestions() {
 // Egypt-only suggestions for mobile (no market toggle needed)
 export function useEgyptOnlySuggestions() {
     const suggestionCategories = useMemo(() => {
-        const stocks = { main: "CIB", second: "SWDY", bank: "COMI", pharma: "PHDC" };
+        const stocks = { main: "TMGH", second: "SWDY", bank: "COMI", pharma: "PHDC" };
 
         return [
             {

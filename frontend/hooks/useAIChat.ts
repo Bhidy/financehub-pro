@@ -146,6 +146,15 @@ export function useAIChat(config?: {
             // This should ONLY happen for guest users, never for authenticated users
             // =====================================================================
             if (data.meta?.intent === "USAGE_LIMIT_REACHED") {
+                // Client-side Safety Check: If user has token, IGNORE this specific error
+                // This prevents logged-in users from seeing the guest popup
+                const hasToken = typeof window !== 'undefined' && !!localStorage.getItem("fh_auth_token");
+
+                if (hasToken) {
+                    console.warn("[useAIChat] ⚠️ Backend reported limit reached but user has token. Ignoring.");
+                    return;
+                }
+
                 console.log("[useAIChat] 🚫 Guest usage limit reached - triggering modal");
                 setUsageLimitReached(true);
 

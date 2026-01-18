@@ -80,7 +80,12 @@ function MobileAIAnalystPageContent() {
         sessionId
     } = useAIChat({
         market: contextMarket,
-        onUsageLimitReached: () => setShowUsageModal(true)  // Show popup when guest limit reached
+        // Double safety: Only show modal if NOT authenticated
+        onUsageLimitReached: () => {
+            if (!isAuthenticated) {
+                setShowUsageModal(true);
+            }
+        }
     });
 
     // Increment local counter when a message is successfully sent (for guest users)

@@ -60,6 +60,23 @@ async def verify():
         await run_test(service, "What is PE ratio?", "Education/Definition")
         await run_test(service, "What is Bitcoin price?", "EGX Only (Refusal)")
         
+        # 9. DIVIDEND SCREENER ACCURACY (Fix for hallucination)
+        print("\n--- Test 9: Dividend Screener Accuracy ---")
+        # Passing user_id=1 (assuming Admin User exists in local DB)
+        resp9 = await service.process_message("Top 10 dividend stocks in Egypt", user_id="1")
+        print(f"Personalized Voice: {resp9.conversational_text}")
+        
+        # Assertions
+        if not resp9.conversational_text or "Trader" in resp9.conversational_text:
+             print("⚠️  Warning: Personalized name not found (might be using default 'Trader')")
+        
+        hallucination_phrases = ["no data", "couldn't find", "not available", "لم يتم العثور"]
+        is_hallucinating = any(phrase in resp9.conversational_text.lower() for phrase in hallucination_phrases)
+        if is_hallucinating:
+            print("❌ FAIL: Narrative claims no data found despite cards being present!")
+        else:
+            print("✅ SUCCESS: Narrative correctly discussed retrieved dividend data.")
+            
         await conn.close()
         print("\n✅ Verification Complete!")
         

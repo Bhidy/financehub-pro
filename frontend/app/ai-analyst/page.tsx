@@ -335,24 +335,7 @@ function AIAnalystPageContent() {
                                             </div>
                                         ) : (
                                             <div className="w-full space-y-4">
-                                                {/* 1. Charts & Cards (Top Priority as requested) */}
-                                                {msg.response && (
-                                                    <>
-                                                        {msg.response.chart && <ChartCard chart={msg.response.chart} />}
-
-                                                        {msg.response.cards && msg.response.cards.length > 0 && (
-                                                            <ChatCards
-                                                                cards={msg.response.cards}
-                                                                language={msg.response.language}
-                                                                onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
-                                                                onExampleClick={(text) => handleSuggestionClick(text)}
-                                                                showExport={true}
-                                                            />
-                                                        )}
-                                                    </>
-                                                )}
-
-                                                {/* 2. Text Summary (Enhanced Design - Matches Mobile) */}
+                                                {/* 1. Text Summary (The "Starta Voice" - NOW FIRST) */}
                                                 <div className="bg-gradient-to-br from-white to-slate-50 dark:from-[#1A1F2E] dark:to-[#151925] rounded-3xl p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/20 border border-blue-100 dark:border-blue-900/30 backdrop-blur-sm relative overflow-hidden group">
                                                     {/* Decorative Elements */}
                                                     <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-indigo-600 opacity-80" />
@@ -368,13 +351,30 @@ function AIAnalystPageContent() {
 
                                                     <PremiumMessageRenderer content={msg.response?.conversational_text || msg.content} />
 
-                                                    {/* Fact Explanations (Definitions) */}
+                                                    {/* Fact Explanations (Definitions - Expanded by default in component) */}
                                                     {msg.response?.fact_explanations && (
                                                         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
                                                             <FactExplanations explanations={msg.response.fact_explanations} />
                                                         </div>
                                                     )}
                                                 </div>
+
+                                                {/* 2. Charts & Cards (Secondary Data) */}
+                                                {msg.response && (
+                                                    <>
+                                                        {msg.response.chart && <ChartCard chart={msg.response.chart} />}
+
+                                                        {msg.response.cards && msg.response.cards.length > 0 && (
+                                                            <ChatCards
+                                                                cards={msg.response.cards}
+                                                                language={msg.response.language}
+                                                                onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
+                                                                onExampleClick={(text) => handleSuggestionClick(text)}
+                                                                showExport={true}
+                                                            />
+                                                        )}
+                                                    </>
+                                                )}
 
                                                 {/* 3. Actions */}
                                                 {msg.response?.actions && msg.response.actions.length > 0 && (

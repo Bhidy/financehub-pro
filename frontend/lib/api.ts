@@ -48,10 +48,17 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             if (typeof window !== 'undefined') {
-                // Clear storage and redirect to login
+                // Clear storage
                 localStorage.removeItem("fh_auth_token");
                 localStorage.removeItem("fh_user");
-                window.location.href = "/login";
+
+                // CRITICAL FIX: Mobile-aware redirect
+                // Detect if user is on a mobile route and redirect to mobile login
+                const currentPath = window.location.pathname;
+                const isMobilePath = currentPath.startsWith('/mobile-ai-analyst');
+                const loginPath = isMobilePath ? '/mobile-ai-analyst/login' : '/login';
+
+                window.location.href = loginPath;
             }
         }
         return Promise.reject(error);

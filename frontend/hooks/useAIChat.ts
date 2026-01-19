@@ -156,7 +156,16 @@ export function useAIChat(config?: {
                     if (typeof window !== 'undefined') {
                         localStorage.removeItem("fh_auth_token");
                         localStorage.removeItem("fh_user");
-                        window.location.href = "/login?reason=session_expired";
+
+                        // CRITICAL FIX: Mobile-aware redirect
+                        // Detect if user is on a mobile route and redirect to mobile login
+                        const currentPath = window.location.pathname;
+                        const isMobilePath = currentPath.startsWith('/mobile-ai-analyst');
+                        const loginPath = isMobilePath
+                            ? '/mobile-ai-analyst/login?reason=session_expired'
+                            : '/login?reason=session_expired';
+
+                        window.location.href = loginPath;
                     }
                     return;
                 }

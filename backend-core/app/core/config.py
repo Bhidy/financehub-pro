@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: Optional[str] = "temporary-secret-key-for-build"  # Fallback for build phase
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # CRITICAL: Extended to 7 days (10080 mins) for mobile UX - prevents daily logouts\n    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
     
     # Database
     DATABASE_URL: Optional[str] = None

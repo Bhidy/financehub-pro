@@ -21,3 +21,4 @@ debug_*.png
 !package-lock.json
 !tsconfig.json
 !testsprite_tests/**/*.json
+system_backup_*

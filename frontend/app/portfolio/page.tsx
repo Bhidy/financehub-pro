@@ -518,11 +518,12 @@ export default function PortfolioPage() {
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
     // Fetch portfolio
-    const { data: portfolio, isLoading, refetch } = useQuery({
+    const { data: portfolio, isLoading, refetch, isError, error } = useQuery({
         queryKey: ["portfolio-full"],
         queryFn: fetchPortfolio,
         refetchInterval: 10000,
-        enabled: true
+        enabled: true,
+        retry: 1
     });
 
     // Fetch history
@@ -589,6 +590,30 @@ export default function PortfolioPage() {
                         className="px-8 py-4 rounded-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-xl shadow-blue-500/25 transition-all"
                     >
                         Sign In to Continue
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Error State
+    if (isError) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121] flex items-center justify-center p-6">
+                <div className="text-center max-w-md bg-white dark:bg-[#151925] p-8 rounded-3xl border border-red-100 dark:border-red-900/30 shadow-2xl">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                        <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Unable to Load Portfolio</h2>
+                    <p className="text-slate-500 dark:text-slate-400 mb-6">
+                        {error instanceof Error ? error.message : "We couldn't connect to the server. Please check your connection."}
+                    </p>
+                    <button
+                        onClick={() => refetch()}
+                        className="px-6 py-3 rounded-xl font-bold bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition-colors flex items-center gap-2 mx-auto"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        Try Again
                     </button>
                 </div>
             </div>

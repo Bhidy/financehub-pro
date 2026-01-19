@@ -202,7 +202,7 @@ async def ai_chat_endpoint(
         final_market = market_header if market_header else req.market
 
         # Debug Logging for Market Context
-        print(f"DEBUG: Chat Request - Header: {market_header}, Body: {req.market}, Final: {final_market}")
+        print(f"DEBUG: Chat Request - SessionID: {session_id} | Header: {market_header} | Body: {req.market}")
         
         async with db._pool.acquire() as conn:
             # Get user context if authenticated

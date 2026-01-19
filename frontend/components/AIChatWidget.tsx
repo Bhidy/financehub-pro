@@ -17,6 +17,7 @@ export default function AIChatWidget() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const [sessionId, setSessionId] = useState<string>("");
+    const sessionIdRef = useRef<string>(""); // Ref to ensure current value access
 
     // Connection Sentinel
     const health = useBackendHealth();
@@ -30,27 +31,34 @@ export default function AIChatWidget() {
         scrollToBottom();
     }, [messages]);
 
-    // Session Management
+    // Session Management & Debugging
     useEffect(() => {
         const storedSession = localStorage.getItem("fh_chat_session_id");
-        if (storedSession) {
-            setSessionId(storedSession);
-        } else {
-            const newSession = `sess_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-            localStorage.setItem("fh_chat_session_id", newSession);
-            setSessionId(newSession);
+        let activeSession = storedSession;
+
+        if (!activeSession) {
+            activeSession = `sess_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            localStorage.setItem("fh_chat_session_id", activeSession);
         }
+
+        setSessionId(activeSession);
+        sessionIdRef.current = activeSession;
+        console.log(`[AIChatWidget] 🟢 Session Initialized: ${activeSession}`);
     }, []);
 
     const handleSend = async () => {
         if (!input.trim()) return;
 
         const userMsg = input;
+        const currentSessionId = sessionIdRef.current || sessionId; // Fallback
+
+        console.log(`[AIChatWidget] 🚀 Sending Message: "${userMsg.substring(0, 10)}..." | SessionID: ${currentSessionId}`);
+
         setInput("");
 
         // Optimistic Update
         const newUserMsgObj = { role: 'user' as const, content: userMsg };
-        const currentHistory = [...messages, newUserMsgObj]; // Capture exact history for API
+        const currentHistory = [...messages, newUserMsgObj];
 
         setMessages(prev => [...prev, newUserMsgObj]);
         setLoading(true);
@@ -63,14 +71,15 @@ export default function AIChatWidget() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     message: userMsg,
-                    history: currentHistory, // Send updated history
-                    session_id: sessionId // Persist session
+                    history: currentHistory,
+                    session_id: currentSessionId // Use the REF to be sure
                 })
             });
 
             if (!res.ok) throw new Error("API Error");
 
             const data = await res.json();
+            console.log(`[AIChatWidget] ✅ Received Reply from Session: ${data.session_id || 'N/A'}`);
 
             setMessages(prev => [...prev, {
                 role: 'ai',
@@ -184,7 +193,7 @@ export default function AIChatWidget() {
                                     </button>
                                 </div>
                                 <div className="text-[10px] text-center mt-2 text-slate-500 flex items-center justify-center gap-1">
-                                    Powered by <span className="font-bold text-slate-400">FinanceHub AI</span> • Not financial advice
+                                    Powered by <span className="font-bold text-slate-400">FinanceHub AI</span> • v2.2-Fix
                                 </div>
                             </div>
                         </motion.div>

@@ -4,7 +4,7 @@ import json
 import time
 
 API_URL = "https://starta.46-224-223-172.sslip.io/api/v1"
-SESSION_ID = f"verify_sess_{int(time.time())}"
+SESSION_ID = f"verify_det_{int(time.time())}"
 
 def test_chat():
     print(f"🧪 Starting Chat Verification (Session: {SESSION_ID})")

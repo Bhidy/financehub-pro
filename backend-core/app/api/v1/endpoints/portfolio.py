@@ -121,7 +121,7 @@ async def get_holdings_with_prices(portfolio_id: int):
             h.average_price,
             h.purchase_date,
             t.name_en as company_name,
-            t.sector,
+            t.sector_name as sector,
             COALESCE(t.last_price, h.average_price) as current_price,
             COALESCE(t.change_percent, 0) as daily_change_percent,
             COALESCE((t.last_price - h.average_price) / NULLIF(h.average_price, 0) * 100, 0) as pnl_percent,

@@ -11,7 +11,7 @@ Provides comprehensive portfolio management including:
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 import csv
 import io
@@ -112,7 +112,10 @@ async def create_portfolio_snapshot(portfolio_id: int, total_value: float, cash_
         print(f"Error creating snapshot: {e}")
 
 async def get_holdings_with_prices(portfolio_id: int):
-    """Fetch holdings with live prices and calculations"""
+    """Fetch holdings with live prices, calculations, and 7-day sparklines"""
+    start_date = date.today() - timedelta(days=7)
+    
+    # 1. Fetch base holdings with live data
     query = """
         SELECT 
             h.id,
@@ -133,7 +136,35 @@ async def get_holdings_with_prices(portfolio_id: int):
         WHERE h.portfolio_id = $1
         ORDER BY current_value DESC
     """
-    return await db.fetch_all(query, portfolio_id)
+    holdings = [dict(h) for h in await db.fetch_all(query, portfolio_id)]
+    
+    if not holdings:
+        return []
+
+    # 2. Fetch sparkline data (Bulk Query)
+    symbols = [h['symbol'] for h in holdings]
+    if symbols:
+        ohlc_query = """
+            SELECT symbol, close 
+            FROM ohlc_data 
+            WHERE symbol = ANY($1) AND date >= $2 
+            ORDER BY date ASC
+        """
+        sparkline_rows = await db.fetch_all(ohlc_query, symbols, start_date)
+        
+        # Group by symbol
+        sparkline_map = {}
+        for row in sparkline_rows:
+            sym = row['symbol']
+            if sym not in sparkline_map:
+                sparkline_map[sym] = []
+            sparkline_map[sym].append(float(row['close'] or 0))
+            
+        # Attach to holdings
+        for h in holdings:
+            h['sparkline_data'] = sparkline_map.get(h['symbol'], [])
+            
+    return holdings
 
 def parse_date(date_str: Optional[str]) -> Optional[date]:
     """Parse various date formats"""

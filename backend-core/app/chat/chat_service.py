@@ -61,6 +61,29 @@ class ChatService:
         self.resolver = SymbolResolver(conn)
         self.context_store = get_context_store()
     
+    async def _get_user_name(self, user_id: Optional[str]) -> str:
+        """Fetch the full name of the user from the database."""
+        if not user_id:
+            return "Trader"
+            
+        try:
+            # Handle both string and int user_ids
+            uid = int(user_id) if str(user_id).isdigit() else None
+            if not uid:
+                return "Trader"
+
+            query = "SELECT full_name FROM users WHERE id = $1"
+            row = await self.conn.fetchrow(query, uid)
+            
+            if row and row['full_name']:
+                # Extract first name for a more friendly tone
+                name = row['full_name'].strip().split(' ')[0]
+                return name
+        except Exception as e:
+            print(f"[ChatService] Error fetching user name: {e}")
+            
+        return "Trader"
+
     async def process_message(
         self,
         message: str,
@@ -187,16 +210,18 @@ class ChatService:
             # Important: ensure result is a dict and has success
             result_data = result if isinstance(result, dict) else {}
             
-            if result_data.get('success', True):
+            if result_data.get('success', True) and intent not in NO_NARRATIVE_INTENTS:
                 try:
+                    # Fetch real user name for personalization
+                    real_user_name = await self._get_user_name(user_id)
+                    
                     # 1. Generate Narrative (Conversational Text)
-                    # Pass "Bhidy" as the default user name for the persona
                     conversational_text = await explainer.generate_narrative(
-                        query=message, # Give LLM the ORIGINAL user voice for context
+                        query=message, 
                         intent=intent.value,
                         data=result_data.get('cards', []),
                         language=language,
-                        user_name="Bhidy"
+                        user_name=real_user_name
                     )
                     
                     # 2. Extract Fact Explanations (Definitions)

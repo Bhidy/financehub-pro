@@ -142,8 +142,14 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
     """
     try:
         user_id = current_user['email']
+        print(f"Stats: Fetching portfolio for {user_id}", flush=True) # DEBUG LOG
         portfolio = await get_or_create_portfolio(user_id)
+        if not portfolio:
+             print(f"Error: Could not create/get portfolio for {user_id}", flush=True) # DEBUG LOG
+             raise HTTPException(status_code=500, detail="Failed to initialize portfolio")
+        
         holdings = await get_holdings_with_prices(portfolio['id'])
+        print(f"Stats: Portfolio {portfolio['id']} has {len(holdings)} holdings", flush=True) # DEBUG LOG
         
         # Calculate aggregates
         total_cost = sum(float(h['cost_basis'] or 0) for h in holdings)

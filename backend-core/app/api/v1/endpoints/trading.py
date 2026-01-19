@@ -26,47 +26,47 @@ DEMO_PORTFOLIO = {
     "holdings": []
 }
 
-@router.get("/portfolio/demo")
-async def get_demo_portfolio():
-    """Get demo portfolio for paper trading without authentication"""
-    return DEMO_PORTFOLIO
+# @router.get("/portfolio/demo")
+# async def get_demo_portfolio():
+#     """Get demo portfolio for paper trading without authentication"""
+#     return DEMO_PORTFOLIO
 
-@router.get("/portfolio")
-async def get_portfolio(current_user: dict = Depends(get_current_active_user)):
-    try:
-        # Fetch Portfolio
-        user_id = current_user['email'] # Using email as user_id for demo
-        portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
-        if not portfolio:
-            # Create default if not exists
-            await db.execute("INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, 1000000.00)", user_id)
-            portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
-            
-        # Fetch Holdings with Live Prices
-        query = """
-            SELECT 
-                h.symbol, h.quantity, h.average_price, 
-                COALESCE(t.last_price, h.average_price) as current_price,
-                COALESCE((t.last_price - h.average_price) / NULLIF(h.average_price, 0) * 100, 0) as pnl_percent,
-                COALESCE((t.last_price - h.average_price) * h.quantity, 0) as pnl_value,
-                COALESCE(t.last_price * h.quantity, h.average_price * h.quantity) as current_value
-            FROM portfolio_holdings h
-            LEFT JOIN market_tickers t ON h.symbol = t.symbol
-            WHERE h.portfolio_id = $1
-        """
-        holdings = await db.fetch_all(query, portfolio['id'])
-        
-        total_market_value = sum([float(h['current_value'] or 0) for h in holdings]) if holdings else 0
-        total_equity = float(portfolio['cash_balance'] or 0) + total_market_value
-        
-        return {
-            "cash_balance": portfolio['cash_balance'],
-            "market_value": total_market_value,
-            "total_equity": total_equity,
-            "holdings": holdings
-        }
-    except Exception as e:
-        return {"error": str(e), "cash_balance": 0, "market_value": 0, "total_equity": 0, "holdings": []}
+# @router.get("/portfolio")
+# async def get_portfolio(current_user: dict = Depends(get_current_active_user)):
+#     try:
+#         # Fetch Portfolio
+#         user_id = current_user['email'] # Using email as user_id for demo
+#         portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
+#         if not portfolio:
+#             # Create default if not exists
+#             await db.execute("INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, 1000000.00)", user_id)
+#             portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
+#             
+#         # Fetch Holdings with Live Prices
+#         query = """
+#             SELECT 
+#                 h.symbol, h.quantity, h.average_price, 
+#                 COALESCE(t.last_price, h.average_price) as current_price,
+#                 COALESCE((t.last_price - h.average_price) / NULLIF(h.average_price, 0) * 100, 0) as pnl_percent,
+#                 COALESCE((t.last_price - h.average_price) * h.quantity, 0) as pnl_value,
+#                 COALESCE(t.last_price * h.quantity, h.average_price * h.quantity) as current_value
+#             FROM portfolio_holdings h
+#             LEFT JOIN market_tickers t ON h.symbol = t.symbol
+#             WHERE h.portfolio_id = $1
+#         """
+#         holdings = await db.fetch_all(query, portfolio['id'])
+#         
+#         total_market_value = sum([float(h['current_value'] or 0) for h in holdings]) if holdings else 0
+#         total_equity = float(portfolio['cash_balance'] or 0) + total_market_value
+#         
+#         return {
+#             "cash_balance": portfolio['cash_balance'],
+#             "market_value": total_market_value,
+#             "total_equity": total_equity,
+#             "holdings": holdings
+#         }
+#     except Exception as e:
+#         return {"error": str(e), "cash_balance": 0, "market_value": 0, "total_equity": 0, "holdings": []}
 
 @router.post("/trade")
 async def execute_trade(trade: TradeRequest, current_user: dict = Depends(get_current_active_user)):

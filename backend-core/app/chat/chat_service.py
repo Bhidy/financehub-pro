@@ -725,7 +725,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="3.9-HYBRID-CHAT" # DEPLOYMENT VERIFICATION
+                backend_version="3.9.1-STARTA-VOICE" # DEPLOYMENT VERIFICATION
             )
         )
 

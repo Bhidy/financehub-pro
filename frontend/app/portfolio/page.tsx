@@ -483,11 +483,13 @@ function AllocationChart({ data }: { data: { sector: string; percent: number }[]
 // ASSET CARD (NEW ULTRA PREMIUM COMPONENT)
 // ============================================================================
 
-function AssetCard({ holding, onDelete }: { holding: PortfolioHolding, onDelete: (id: number) => void }) {
+function AssetCard({ holding, onDelete }: { holding: PortfolioHolding & { sparkline_data?: number[] }, onDelete: (id: number) => void }) {
     const isProfitable = holding.pnl_percent >= 0;
 
-    // Fake sparkline data until real one is connected
-    const mockSparkline = Array.from({ length: 10 }, () => holding.current_price * (1 + (Math.random() - 0.5) * 0.1));
+    // Use real sparkline data if available, otherwise fallback to details
+    const sparklineData = (holding.sparkline_data && holding.sparkline_data.length > 0)
+        ? holding.sparkline_data
+        : [holding.current_price, holding.current_price];
 
     return (
         <motion.div
@@ -526,7 +528,7 @@ function AssetCard({ holding, onDelete }: { holding: PortfolioHolding, onDelete:
             {/* Mini Sparkline Area */}
             <div className="h-16 -mx-2 mb-4">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mockSparkline.map((v, i) => ({ v, i }))}>
+                    <AreaChart data={sparklineData.map((v, i) => ({ v, i }))}>
                         <defs>
                             <linearGradient id={`grad-${holding.id}`} x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor={isProfitable ? "#10B981" : "#EF4444"} stopOpacity={0.1} />

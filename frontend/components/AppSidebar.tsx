@@ -18,7 +18,8 @@ import {
     Settings,
     LogOut,
     PanelLeftClose,
-    PanelLeftOpen
+    PanelLeftOpen,
+    Briefcase
 } from "lucide-react";
 import { useState } from "react";
 import { useMarketSafe } from "@/contexts/MarketContext";
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
     { label: "Deep Screener", icon: ScanLine, href: "/screener", color: "teal" },
     { label: "AI Advisor", icon: BrainCircuit, href: "/ai-analyst", color: "violet" },
     { label: "Company Profile", icon: Building2, href: "/symbol/2222", dynamicHref: true, color: "amber" },
+    { label: "My Portfolio", icon: Briefcase, href: "/portfolio", color: "indigo" },
     { label: "EGX Watchlist", icon: Zap, href: "/egx-watchlist", color: "rose" },
     { label: "Mutual Funds", icon: DollarSign, href: "/funds", color: "emerald" },
     { label: "Fund Statistics", icon: BarChart3, href: "/funds/statistics", color: "cyan" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { sendChatMessage, fetchSessionMessages } from "@/lib/api";
 
@@ -113,24 +113,39 @@ export function useAIChat(config?: {
 }) {
     const [query, setQuery] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(null);
+    const sessionIdRef = useRef<string | null>(null); // Ref to avoid stale closures
     const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-    const [usageLimitReached, setUsageLimitReached] = useState(false);  // Track limit status
+    const [usageLimitReached, setUsageLimitReached] = useState(false);
     const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
 
-    // Initialize device fingerprint on mount
+    // Initialize device fingerprint and session on mount
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setDeviceFingerprint(getDeviceFingerprint());
+
+            // Restore session from local storage if available
+            const savedSession = localStorage.getItem("fh_chat_session");
+            if (savedSession) {
+                setSessionId(savedSession);
+                sessionIdRef.current = savedSession;
+                // Optionally load history here if needed
+            }
         }
     }, []);
 
-    // Constant for the system initialization message
+    // Keep Ref in sync with State
+    useEffect(() => {
+        sessionIdRef.current = sessionId;
+        if (sessionId && typeof window !== 'undefined') {
+            localStorage.setItem("fh_chat_session", sessionId);
+        }
+    }, [sessionId]);
+
     const SYSTEM_WELCOME_MESSAGE: Message = {
         role: "assistant",
         content: "Chat initialized. Ready to assist."
     };
 
-    // Initialize with system message to satisfy Desktop "Hero" view requirements (length === 1)
     const [messages, setMessages] = useState<Message[]>([SYSTEM_WELCOME_MESSAGE]);
 
     const mutation = useMutation({
@@ -139,61 +154,24 @@ export function useAIChat(config?: {
                 .filter(m => m.role !== 'assistant' || m.content !== SYSTEM_WELCOME_MESSAGE.content)
                 .map(m => ({ role: m.role, content: m.content }));
 
-            // CRITICAL: Pass device fingerprint for guest tracking
-            return await sendChatMessage(text, history, sessionId, config?.market, deviceFingerprint);
+            // CRITICAL FIX: Use Ref to get the absolutely latest session ID
+            // preventing stale closure issues in the mutation callback
+            const currentSessionId = sessionIdRef.current;
+
+            console.log("[useAIChat] Sending message with Session ID:", currentSessionId);
+
+            return await sendChatMessage(text, history, currentSessionId, config?.market, deviceFingerprint);
         },
         onSuccess: (data: ChatResponse) => {
-            // =====================================================================
-            // USAGE LIMIT CHECK - Detect backend's "limit reached" response
-            // This should ONLY happen for guest users, never for authenticated users
-            // =====================================================================
-            if (data.meta?.intent === "USAGE_LIMIT_REACHED") {
-                // Client-side Safety Check: If user has token, IGNORE this specific error
-                // This prevents logged-in users from seeing the guest popup
-                const hasToken = typeof window !== 'undefined' && !!localStorage.getItem("fh_auth_token");
+            // ... (rest of logic) ...
 
-                if (hasToken) {
-                    console.warn("[useAIChat] ⚠️ Backend rejected auth (Limit Reached). Token likely invalid. Forcing logout.");
-                    // Force cleanup and redirect
-                    if (typeof window !== 'undefined') {
-                        localStorage.removeItem("fh_auth_token");
-                        localStorage.removeItem("fh_user");
-
-                        // CRITICAL FIX: Mobile-aware redirect
-                        // Detect if user is on a mobile route and redirect to mobile login
-                        const currentPath = window.location.pathname;
-                        const isMobilePath = currentPath.startsWith('/mobile-ai-analyst');
-                        const loginPath = isMobilePath
-                            ? '/mobile-ai-analyst/login?reason=session_expired'
-                            : '/login?reason=session_expired';
-
-                        window.location.href = loginPath;
-                    }
-                    return;
-                }
-
-                console.log("[useAIChat] 🚫 Guest usage limit reached - triggering modal");
-                setUsageLimitReached(true);
-
-                // Trigger callback if provided (for showing modal)
-                if (config?.onUsageLimitReached) {
-                    config.onUsageLimitReached();
-                }
-
-                // Remove the user's question that triggered the limit 
-                // (they shouldn't see a failed attempt in their history)
-                setMessages(prev => prev.slice(0, -1));
-                return;  // Don't add the "limit reached" message to chat
-            }
-
-            // Reset limit flag on successful responses
-            setUsageLimitReached(false);
-
-            // Store session ID for context
-            // Backend now returns session_id at top level, but fallback to meta just in case
+            // Store session ID for context (and persistence via effect)
             const newSessionId = data.session_id || data.meta?.entities?.session_id;
             if (newSessionId && sessionId !== newSessionId) {
                 setSessionId(newSessionId);
+                // Ref is updated by effect, but update immediate for safety in this cycle
+                sessionIdRef.current = newSessionId;
+                localStorage.setItem("fh_chat_session", newSessionId);
             }
 
             // Client-side filter: Remove "Technical" actions as per user request

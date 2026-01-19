@@ -8,7 +8,7 @@ interface FactExplanationsProps {
 }
 
 export function FactExplanations({ explanations }: FactExplanationsProps) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
 
     if (!explanations || Object.keys(explanations).length === 0) return null;
 

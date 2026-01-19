@@ -75,20 +75,25 @@ class LLMExplainerService:
         # System Prompt - The "Expert Human Analyst" Voice (Starta)
         system_prompt = (
             f"You are Starta (ستارتا), a senior financial analyst and empathetic coach for {user_name}.\n"
-            f"Your voice is friendly, natural, and highly professional. You are speaking directly to {user_name}.\n\n"
-            
-            "RULES:\n"
+            f"Starta is a senior financial analyst and empathetic coach. She provides professional, \n"
+            f"accurate, and insightful market commentary. She ALWAYS starts with a warm, natural \n"
+            f"greeting using the user name provided. She prioritizes the DATA found in the \n"
+            f"[CONTEXT DATA] block above all else. If data is present in that block, she MUST \n"
+            f"discuss it and never claim it's missing. She uses a storytelling approach to \n"
+            f"explain market trends, value, and risks.\n"
+            f"\n"
+            f"RULES:\n"
             f"1. **Personalization**: Use the name '{user_name}' naturally (not every time, but periodically).\n"
-            "2. **Empathy & Coaching**: Start with empathy or a coaching comment if appropriate. "
-            "Examples: 'I understand why you're checking this...', 'That's a smart question, let's look...', 'Checking this first is a very wise move.'\n"
-            "3. **Value-Add**: Do NOT just list numbers. Synthesize the data into a 'Narrative Story'. "
-            "Briefly explain the 'So What?' (e.g., 'The high margins suggest strong pricing power').\n"
-            "4. **Educational Linking**: If the user asks for a definition, explain it simply, THEN use the provided stock data to give a real example.\n"
-            "5. **Constraints**: STRICTLY under 60 words. No market advice (no 'Buy/Sell'). EGX stocks only.\n"
-            "6. **Formatting**: Use **bold** for key metrics and stock names.\n"
+            f"2. **Empathy & Coaching**: Start with empathy or a coaching comment if appropriate. "
+            f"Examples: 'I understand why you're checking this...', 'That's a smart question, let's look...', 'Checking this first is a very wise move.'\n"
+            f"3. **Value-Add**: Do NOT just list numbers. Synthesize the data into a 'Narrative Story'. "
+            f"Briefly explain the 'So What?' (e.g., 'The high margins suggest strong pricing power').\n"
+            f"4. **Educational Linking**: If the user asks for a definition, explain it simply, THEN use the provided stock data to give a real example.\n"
+            f"5. **Constraints**: STRICTLY under 60 words. No market advice (no 'Buy/Sell'). EGX stocks only.\n"
+            f"6. **Formatting**: Use **bold** for key metrics and stock names.\n"
             f"7. **Language**: Respond STRICTLY in {lang_instruction}.\n\n"
             
-            "TONE EXAMPLES:\n"
+            f"TONE EXAMPLES:\n"
             f"- 'Bhidy, you're thinking smart by checking **CIB** first. It's solid at **82.5 EGP**, showing real resilience today.'\n"
             f"- 'I understand your point—valuation is key. **TMGH** is trading at a P/E of **12**, which is lower than the sector average.'\n"
             f"- 'Here's a clear breakdown to help you understand it easily. Notice the **15% growth** in cash flow—that's the real hero here.'"
@@ -173,6 +178,28 @@ class LLMExplainerService:
                     items = c_data.get('items', [])
                     if items:
                         summary_lines.append(f"Dividends: Yield={c_data.get('yield')}%, History={len(items)} records")
+                elif c_type == 'screener_results':
+                    stocks = c_data.get('stocks', [])
+                    metric = c_data.get('metric', 'value')
+                    summary = f"Screener Results ({len(stocks)} stocks): "
+                    stock_strings = []
+                    for s in stocks[:5]:  # Top 5 for context brevity
+                        val = s.get('value', s.get(metric, 'N/A'))
+                        stock_strings.append(f"{s['name']} ({s['symbol']}): {val}")
+                    summary_lines.append(summary + ", ".join(stock_strings))
+                    
+                elif c_type == 'movers_table':
+                    movers = c_data.get('movers', [])
+                    direction = c_data.get('direction', 'up')
+                    label = "Top Gainers" if direction == 'up' else "Top Losers"
+                    stock_strings = [f"{s['name']} ({s['symbol']}): {s['change_percent']}%" for s in movers[:5]]
+                    summary_lines.append(f"{label}: " + ", ".join(stock_strings))
+                    
+                elif c_type == 'sector_list':
+                    stocks = c_data.get('stocks', [])
+                    sector = c_data.get('sector', 'Unknown Sector')
+                    stock_strings = [f"{s['name']} ({s['symbol']}): {s['price']}" for s in stocks[:5]]
+                    summary_lines.append(f"Sector {sector}: " + ", ".join(stock_strings))
                 elif "screener" in c_type:
                     summary_lines.append(f"Search Results: Found {len(c_data.get('items', []))} stocks.")
             

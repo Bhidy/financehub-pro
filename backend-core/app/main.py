@@ -274,6 +274,12 @@ async def lifespan(app: FastAPI):
                     )
                 """)
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_portfolio_date ON portfolio_snapshots(portfolio_id, snapshot_date)")
+                
+                # Fix: Add total_pnl if missing
+                await conn.execute("""
+                    ALTER TABLE portfolio_snapshots 
+                    ADD COLUMN IF NOT EXISTS total_pnl DECIMAL(18,2)
+                """)
 
                 print("Enterprise Analytics tables verified/created.")
                 print("Chatbot tables verified/created.")

@@ -210,6 +210,25 @@ class ChatService:
             handler_name = intent.value
             result = await self._dispatch_handler(intent, entities, language, routing_text)
             
+            # CRITICAL CHECK: Force Data Card if missing for data intents
+            result_data = result if isinstance(result, dict) else {}
+            DATA_INTENTS = [
+                Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, 
+                Intent.DIVIDENDS, Intent.TECHNICAL_INDICATORS, Intent.NEWS
+            ]
+            
+            if intent in DATA_INTENTS and result_data.get('success', True) and not result_data.get('cards'):
+                print(f"⚠️ NO DATA DETECTED for {intent}. Injecting Fallback Card.")
+                msg_title = "Data Unavailable" if language == 'en' else "البيانات غير متاحة"
+                msg_body = "We could not retrieve the latest data for this specific request. Please try another stock." if language == 'en' else "تعذر الحصول على أحدث البيانات لهذا الطلب. يرجى تجربة سهم آخر."
+                
+                result_data['cards'] = [{
+                    'type': 'error',
+                    'title': msg_title,
+                    'data': {'content': f"### ⚠️ {msg_body}"}
+                }]
+                result = result_data # Ensure it propagates
+            
             # -------------------------------------------------------------
             # PHASE 2: HYBRID CONVERSATIONAL LAYER (The "Starta" Voice)
             # -------------------------------------------------------------
@@ -233,6 +252,7 @@ class ChatService:
                     is_first_message = (history is None or len(history) == 0)
                     is_returning_user = user_id is not None
                     
+                    
                     # 1. Generate Narrative (Conversational Text)
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
@@ -255,6 +275,11 @@ class ChatService:
             # -------------------------------------------------------------
             
             # 7. Update context
+            # CRITICAL FIX: Mark history has content to prevent future "First Message" flags in this session
+            if history is None:
+                 history = []
+            history.append({'role': 'assistant', 'content': '...'})
+            
             self.context_store.set(session_id, 
                 last_symbol=actual_symbol,
                 last_intent=intent,

@@ -2,7 +2,7 @@ import asyncio
 import httpx
 
 async def verify_tmgh_fix():
-    url = "http://localhost:7860/api/v1/ai/chat"
+    url = "https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
     
     # Test case 1: Slang with TMGH
     payload = {
@@ -37,7 +37,9 @@ async def verify_tmgh_fix():
                  print(f"⚠️  NOTE: Word count is {len(conv_text.split())} (Expected 70-100)")
 
     except Exception as e:
+        import traceback
         print(f"Error testing TMGH: {e}")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     asyncio.run(verify_tmgh_fix())

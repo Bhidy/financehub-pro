@@ -50,7 +50,15 @@ class LLMExplainerService:
             "debt_to_equity": ("Debt-to-Equity", "Ratio of total debt to shareholder equity. High ratio implies higher financial risk."),
             "free_cash_flow": ("Free Cash Flow", "Cash generated after accounting for capital expenditures. Vital for paying dividends or expansion."),
             "z_score": ("Altman Z-Score", "Predicts bankruptcy risk. Score > 3 is safe, < 1.8 is in distress."),
-             "f_score": ("Piotroski F-Score", "Score of 0-9 assessing financial strength. 9 is perfect, 0-2 is weak.")
+            "f_score": ("Piotroski F-Score", "Score of 0-9 assessing financial strength. 9 is perfect, 0-2 is weak."),
+            "ebitda": ("EBITDA", "Earnings Before Interest, Taxes, Depreciation, and Amortization. A measure of a company's overall financial performance."),
+            "pb_ratio": ("P/B Ratio", "Price-to-Book Ratio. Compares market value to book value. Lower P/B could mean the stock is undervalued."),
+            "current_ratio": ("Current Ratio", "Measures a company's ability to pay short-term obligations or those due within one year."),
+            "quick_ratio": ("Quick Ratio", "Indicator of a company's short-term liquidity position, also known as the acid-test ratio."),
+            "operating_margin": ("Operating Margin", "Measures how much profit a company makes on a dollar of sales after paying for variable costs of production."),
+            "roe": ("Return on Equity", "Measures a corporation's profitability in relation to stockholders' equity."),
+            "roa": ("Return on Assets", "Indicator of how profitable a company is relative to its total assets."),
+            "peg_ratio": ("PEG Ratio", "Price/Earnings-to-Growth ratio. Determines a stock's value while taking the company's earnings growth into account.")
         }
 
     async def generate_narrative(
@@ -106,12 +114,14 @@ class LLMExplainerService:
             "3. Keep tone professional, friendly, and calm. ZERO exaggerated emotions.\n"
             "4. NO buy/sell advice. NO marketing/sales language.\n"
             "5. NO GREETING again in the middle of the same conversation. Only focus on the data/query.\n"
-            f"6. Respond ONLY in {lang_instruction}.\n\n"
+            f"6. Respond ONLY in {lang_instruction}.\n"
+            "7. STRICT LENGTH LIMIT: 50-70 words maximum. Be concise.\n\n"
 
             "DATA INSTRUCTION:\n"
-            "- Discuss [CONTEXT DATA] with detailed and comprehensive analysis (70-100 words).\n"
+            "- Discuss [CONTEXT DATA] with detailed and comprehensive analysis (50-70 words max).\n"
             "- Provide insights, coaching, and clear explanations for symbols.\n"
             "- Use strict BOLD for metrics/symbols.\n"
+            "- IF DATA IS MISSING: Explain what you are looking for and what might be the issue, or offer general advice.\n"
             f"Current State: is_first_message={is_first_message}, is_returning_user={is_returning_user}."
         )
 
@@ -146,6 +156,7 @@ class LLMExplainerService:
         data_str = str(data).lower()
         
         # Extended bilingual dictionary
+        # Extended bilingual dictionary
         FACTS = {
             "pe_ratio": {
                 "en": ("P/E Ratio", "Price-to-Earnings Ratio. It shows how much investors pay for $1 of profit."),
@@ -170,6 +181,22 @@ class LLMExplainerService:
             "roe": {
                 "en": ("ROE", "Return on Equity. Measures a corporation's profitability in relation to stockholders' equity."),
                 "ar": ("العائد على حقوق الملكية", "يقيس ربحية الشركة بالنسبة لحقوق المساهمين.")
+            },
+            "pb_ratio": {
+                "en": ("P/B Ratio", "Price-to-Book Ratio. Compares market value to book value. Lower P/B could mean the stock is undervalued."),
+                "ar": ("مضاعف القيمة الدفترية", "يقارن القيمة السوقية بالقيمة الدفترية. انخفاضه قد يعني أن السهم مقيم بأقل من قيمته.")
+            },
+            "ebitda": {
+                "en": ("EBITDA", "Earnings Before Interest, Taxes, Depreciation, and Amortization."),
+                "ar": ("الأرباح قبل الفوائد والضرائب", "مقياس لأداء الشركة المالي العام.")
+            },
+            "current_ratio": {
+                "en": ("Current Ratio", "Ability to pay short-term obligations."),
+                "ar": ("النسبة الحالية", "قدرة الشركة على سداد التزاماتها قصيرة الأجل.")
+            },
+            "operating_margin": {
+                "en": ("Operating Margin", "Profit on a dollar of sales after variable costs."),
+                "ar": ("هامش التشغيل", "الربح من كل دولار مبيعات بعد تغطية تكاليف الإنتاج.")
             }
         }
         

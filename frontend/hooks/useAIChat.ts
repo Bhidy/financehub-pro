@@ -271,6 +271,8 @@ export function useAIChat(config?: {
 
                         response = {
                             message_text: msg.content,
+                            conversational_text: meta.conversational_text,
+                            fact_explanations: meta.fact_explanations,
                             language: "en",
                             cards: meta.cards || [],
                             chart: meta.chart,

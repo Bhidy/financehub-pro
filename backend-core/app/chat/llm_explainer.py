@@ -58,47 +58,57 @@ class LLMExplainerService:
         query: str, 
         intent: str,
         data: List[Dict[str, Any]], 
-        language: str = "en"
+        language: str = "en",
+        user_name: str = "Bhidy"
     ) -> Optional[str]:
         """
         Generates the 'Conversational Voice' (Narrative) layer.
-        This is ADDITIVE to the data cards.
+        This is the "Human Analyst" upgrade that provides empathy, coaching, and summaries.
         """
-        if not self.client or not data:
+        if not self.client:
             return None
 
-        # Build Context
+        # Build Data Context Summary
         context_str = self._format_data_for_context(data)
-        lang_instruction = "Arabic (Modern Standard + Friendly)" if language == 'ar' else "English"
+        lang_instruction = "Arabic (Modern Standard with friendly Egyptian warmth)" if language == 'ar' else "English"
         
-        # System Prompt - The "Expert Hybrid Voice"
+        # System Prompt - The "Expert Human Analyst" Voice (Starta)
         system_prompt = (
-            "You are Starta (ستارتا), a senior financial analyst.\n"
-            "Your goal is to provide a BRIEF, engaging summary that introduces the data shown below.\n\n"
+            f"You are Starta (ستارتا), a senior financial analyst and empathetic coach for {user_name}.\n"
+            f"Your voice is friendly, natural, and highly professional. You are speaking directly to {user_name}.\n\n"
             
             "RULES:\n"
-            "1. **Additive Nature**: The user sees the charts/tables below. Do NOT repeat every number. Just highlight the ONE most key insight.\n"
-            "2. **Tone**: Conversational, confident, and direct. (Like a text from a smart friend).\n"
-            "3. **Length**: STRICTLY under 40 words. 2 sentences MAX.\n"
-            "4. **Formatting**: Use **bold** for the single most important number.\n"
-            f"5. **Language**: Respond STRICTLY in {lang_instruction}.\n\n"
+            f"1. **Personalization**: Use the name '{user_name}' naturally (not every time, but periodically).\n"
+            "2. **Empathy & Coaching**: Start with empathy or a coaching comment if appropriate. "
+            "Examples: 'I understand why you're checking this...', 'That's a smart question, let's look...', 'Checking this first is a very wise move.'\n"
+            "3. **Value-Add**: Do NOT just list numbers. Synthesize the data into a 'Narrative Story'. "
+            "Briefly explain the 'So What?' (e.g., 'The high margins suggest strong pricing power').\n"
+            "4. **Educational Linking**: If the user asks for a definition, explain it simply, THEN use the provided stock data to give a real example.\n"
+            "5. **Constraints**: STRICTLY under 60 words. No market advice (no 'Buy/Sell'). EGX stocks only.\n"
+            "6. **Formatting**: Use **bold** for key metrics and stock names.\n"
+            f"7. **Language**: Respond STRICTLY in {lang_instruction}.\n\n"
             
-            "EXAMPLES:\n"
-            "- 'CIB is trading strong today at **82.5 EGP**, bucking the market trend.'\n"
-            "- 'I found 5 stocks matching your criteria. **Fawry** looks interesting with its high ROE.'\n"
-            "- 'Here is the income statement. Notice the **20% revenue jump**—that's the key takeaway.'"
+            "TONE EXAMPLES:\n"
+            f"- 'Bhidy, you're thinking smart by checking **CIB** first. It's solid at **82.5 EGP**, showing real resilience today.'\n"
+            f"- 'I understand your point—valuation is key. **TMGH** is trading at a P/E of **12**, which is lower than the sector average.'\n"
+            f"- 'Here's a clear breakdown to help you understand it easily. Notice the **15% growth** in cash flow—that's the real hero here.'"
         )
 
         try:
+            # If no data exists (e.g., small talk or unknown), we still want a conversational response
+            user_content = f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"
+            if not data:
+                user_content = f"Query: {query}\nIntent: {intent}\n(No data found. Provide a polite help/guidance response for {user_name}.)"
+
             chat_completion = await self.client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"}
+                    {"role": "user", "content": user_content}
                 ],
                 model=MODEL_NAME,
-                max_tokens=100, # Strict limit for speed
-                temperature=0.4,
-                timeout=3.0 # Fast timeout
+                max_tokens=150, # Slightly more for storytelling
+                temperature=0.6, # A bit more creative for "human" feel
+                timeout=4.0
             )
             return chat_completion.choices[0].message.content.strip()
             
@@ -109,26 +119,35 @@ class LLMExplainerService:
     def extract_fact_explanations(self, data: List[Dict[str, Any]], language: str = 'en') -> Dict[str, str]:
         """
         Scans response data for technical terms and providing definitions.
-        Uses local dictionary for zero-latency.
         """
         explanations = {}
-        
-        # Flatten data to string for searching
         data_str = str(data).lower()
         
-        for key, (title, definition) in self.FACT_DEFINITIONS.items():
-            # Check if term key or title exists in data
-            if key in data_str or title.lower() in data_str:
-                # Localize if needed (Simple static mapping for now, can expand later)
-                if language == 'ar':
-                    # Basic Arabic placeholders - ideal would be a full bilingual dict
-                    pass 
-                
+        # Extended bilingual dictionary
+        FACTS = {
+            "pe_ratio": {
+                "en": ("P/E Ratio", "Price-to-Earnings Ratio. It shows how much investors pay for $1 of profit."),
+                "ar": ("مضاعف الربحية", "يقيس السعر الذي يدفعه المستثمر مقابل كل جنيه من أرباح الشركة.")
+            },
+            "market_cap": {
+                "en": ("Market Cap", "Total market value of the company's shares."),
+                "ar": ("القيمة السوقية", "إجمالي قيمة أسهم الشركة في السوق.")
+            },
+            "dividend_yield": {
+                "en": ("Dividend Yield", "Annual dividend payment divided by the stock price."),
+                "ar": ("عائد التوزيعات", "الربح النقدي السنوي الموزع مقارنة بسعر السهم.")
+            },
+            "z_score": {
+                "en": ("Z-Score", "A measure of financial health. Above 3.0 is safe, below 1.8 is risky."),
+                "ar": ("مؤشر ألتمان", "مقياس للصحة المالية. فوق 3.0 آمن، وتحت 1.8 يعبر عن وجود مخاطر.")
+            }
+        }
+        
+        for key, lang_data in FACTS.items():
+            title, definition = lang_data.get(language, lang_data['en'])
+            if key in data_str:
                 explanations[title] = definition
-                
-                # Limit to 3 definitions to avoid clutter
-                if len(explanations) >= 3:
-                    break
+                if len(explanations) >= 3: break
                     
         return explanations
 
@@ -143,21 +162,24 @@ class LLMExplainerService:
                 if c_type == "stock_header":
                     summary_lines.append(f"Stock: {c_data.get('symbol')} ({c_data.get('name')})")
                 elif c_type == "snapshot":
-                    summary_lines.append(f"Price: {c_data.get('last_price')} {c_data.get('currency')} (Change: {c_data.get('change_percent')}%)")
-                elif c_type == "stats":
-                    summary_lines.append(f"Valuation: PE={c_data.get('pe_ratio')}, Yield={c_data.get('dividend_yield')}%, Cap={c_data.get('market_cap_formatted')}")
-                elif c_type == "screener_results":
-                     # Summarize first 3 results
-                     items = c_data.get('items', [])[:3]
-                     names = [i.get('symbol') for i in items]
-                     summary_lines.append(f"List: Found {len(c_data.get('items', []))} companies. Top: {', '.join(names)}")
-                else:
-                    # Generic fallback for other card types
-                    summary_lines.append(f"[{c_type}] Data available.")
+                    summary_lines.append(f"Price: {c_data.get('last_price')} (Change: {c_data.get('change_percent')}%)")
+                    summary_lines.append(f"Metrics: PE={c_data.get('pe_ratio')}, PB={c_data.get('pb_ratio')}, Cap={c_data.get('market_cap_formatted')}")
+                elif c_type == "financial_trend":
+                    items = c_data.get('items', [])
+                    if items:
+                        last = items[-1]
+                        summary_lines.append(f"Growth: {last.get('label')} Revenue={last.get('revenue')} ({last.get('growth')}%)")
+                elif c_type == "dividends":
+                    items = c_data.get('items', [])
+                    if items:
+                        summary_lines.append(f"Dividends: Yield={c_data.get('yield')}%, History={len(items)} records")
+                elif "screener" in c_type:
+                    summary_lines.append(f"Search Results: Found {len(c_data.get('items', []))} stocks.")
             
-            return "\n".join(summary_lines) or "No structured data found."
+            return "\n".join(summary_lines) or "No specific metrics found."
         except Exception as e:
             return f"Data extraction error: {e}"
+
 
 # Singleton
 _explainer = LLMExplainerService()

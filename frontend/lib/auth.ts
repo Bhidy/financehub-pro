@@ -55,7 +55,13 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             auth.removeToken();
             if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-                window.location.href = "/login";
+                // CRITICAL FIX: Mobile-aware redirect
+                // Detect if user is on a mobile route and redirect to mobile login
+                const currentPath = window.location.pathname;
+                const isMobilePath = currentPath.startsWith('/mobile-ai-analyst');
+                const loginPath = isMobilePath ? '/mobile-ai-analyst/login' : '/login';
+
+                window.location.href = loginPath;
             }
         }
         return Promise.reject(error);

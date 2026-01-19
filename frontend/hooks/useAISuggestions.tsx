@@ -12,7 +12,10 @@ import {
     Newspaper,
     FileText,
     LayoutDashboard,
-    Gift
+    Gift,
+    Scale,
+    Target,
+    Rocket
 } from 'lucide-react';
 import { useMarketSafe } from '@/contexts/MarketContext';
 
@@ -32,14 +35,13 @@ export function useAISuggestions() {
 
         return [
             {
-                id: 'beginner',
-                label: '✨ Start Here',
+                id: 'smart_insights',
+                label: '🧠 Smart Insights',
                 suggestions: [
-                    { text: "Top gainers today in EGX", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
-                    { text: `Show me a full snapshot of ${stocks.main}`, icon: LayoutDashboard, gradient: "from-purple-500 to-violet-600" },
-                    { text: "Show me CIB Financials", icon: FileText, gradient: "from-blue-500 to-indigo-600" },
-                    { text: `What is the fair value of ${stocks.main}?`, icon: Sparkles, gradient: "from-pink-500 to-rose-600" },
-                    { text: "Show me banking sector stocks", icon: Building2, gradient: "from-slate-500 to-slate-700" },
+                    { text: `Is ${stocks.main} undervalued or overvalued?`, icon: Scale, gradient: "from-violet-600 to-indigo-600" },
+                    { text: `What is the fair value of ${stocks.second}?`, icon: Target, gradient: "from-blue-600 to-cyan-600" },
+                    { text: `Is ${stocks.bank} financially safe?`, icon: ShieldCheck, gradient: "from-emerald-600 to-teal-600" },
+                    { text: `Does ${stocks.growth} have high growth potential?`, icon: Rocket, gradient: "from-fuchsia-600 to-purple-600" },
                 ]
             },
             {

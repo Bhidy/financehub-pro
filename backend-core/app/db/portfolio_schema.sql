@@ -41,7 +41,22 @@ CREATE TABLE IF NOT EXISTS portfolio_snapshots (
     UNIQUE(portfolio_id, snapshot_date)
 );
 
+-- 4. Portfolio Transactions (Realized P&L)
+CREATE TABLE IF NOT EXISTS portfolio_transactions (
+    id SERIAL PRIMARY KEY,
+    portfolio_id INTEGER REFERENCES portfolios(id) ON DELETE CASCADE,
+    symbol VARCHAR(20) NOT NULL,
+    transaction_type VARCHAR(10) NOT NULL, -- 'BUY' or 'SELL'
+    quantity INTEGER NOT NULL,
+    price DECIMAL(12, 4) NOT NULL,
+    transaction_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    realized_pnl DECIMAL(15, 2), -- Only for SELL
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_holdings_portfolio_id ON portfolio_holdings(portfolio_id);
 CREATE INDEX IF NOT EXISTS idx_holdings_symbol ON portfolio_holdings(symbol);
 CREATE INDEX IF NOT EXISTS idx_snapshots_portfolio_date ON portfolio_snapshots(portfolio_id, snapshot_date DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_portfolio ON portfolio_transactions(portfolio_id, transaction_date DESC);

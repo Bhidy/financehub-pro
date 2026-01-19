@@ -69,9 +69,15 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
     
     Intent.DEEP_SAFETY: (
-        ["safety", "risk", "safe to buy", "bankruptcy", "financial health", "solvency", "z-score", "altman", "f-score", "piotroski", "distress", "credit risk", "leverage risk"],
-        ["امان", "مخاطر", "هل السهم امن", "افلاس", "صحة مالية", "ملاءة", "مؤشر التمان", "قوة مالية", "تعثر مالي", "تحليل المخاطر"],
+        ["safety", "risk", "safe", "financially safe", "financial safety", "bankruptcy", "financial health", "solvency", "z-score", "altman", "f-score", "piotroski", "distress", "credit risk", "leverage risk"],
+        ["امان", "مخاطر", "هل السهم امن", "امن ماليا", "افلاس", "صحة مالية", "ملاءة", "مؤشر التمان", "قوة مالية", "تعثر مالي", "تحليل المخاطر"],
         2.0
+    ),
+    
+    Intent.FAIR_VALUE: (
+        ["fair value", "intrinsic value", "target price", "upside", "downside", "valuation model", "dcf", "discounted cash flow"],
+        ["قيمة عادلة", "سعر عادل", "سعر مستهدف", "نموذج تقييم", "قيمة حقيقية", "سعر السهم الحقيقي"],
+        2.5
     ),
 
     Intent.DEEP_GROWTH: (

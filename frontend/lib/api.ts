@@ -177,9 +177,115 @@ export const fetchScreener = async (params: Record<string, string | number>) => 
     return data;
 };
 
-export const fetchPortfolio = async () => {
-    // Use demo portfolio endpoint (no auth required for paper trading)
-    const { data } = await api.get("/portfolio/demo");
+// ============================================================================
+// ENTERPRISE PORTFOLIO MANAGEMENT
+// ============================================================================
+
+export interface PortfolioHolding {
+    id: number;
+    symbol: string;
+    quantity: number;
+    average_price: number;
+    purchase_date: string | null;
+    company_name: string | null;
+    sector: string | null;
+    current_price: number;
+    daily_change_percent: number;
+    pnl_percent: number;
+    pnl_value: number;
+    cost_basis: number;
+    current_value: number;
+}
+
+export interface PortfolioInsights {
+    total_cost: number;
+    total_value: number;
+    total_pnl: number;
+    total_pnl_percent: number;
+    daily_pnl: number;
+    daily_pnl_percent: number;
+    num_holdings: number;
+    top_gainer: PortfolioHolding | null;
+    top_loser: PortfolioHolding | null;
+    concentration_risk: number;
+    sector_allocation: { sector: string; value: number; percent: number }[];
+}
+
+export interface FullPortfolio {
+    portfolio_id: number;
+    cash_balance: number;
+    market_value: number;
+    total_equity: number;
+    holdings: PortfolioHolding[];
+    insights: PortfolioInsights;
+}
+
+export interface HoldingImport {
+    symbol: string;
+    quantity: number;
+    purchase_price: number;
+    purchase_date?: string;
+}
+
+export const fetchPortfolio = async (): Promise<FullPortfolio> => {
+    // Use demo portfolio for unauthenticated users
+    const token = typeof window !== 'undefined' ? localStorage.getItem("fh_auth_token") : null;
+    if (!token) {
+        // Return empty portfolio structure for demo
+        return {
+            portfolio_id: 0,
+            cash_balance: 1000000,
+            market_value: 0,
+            total_equity: 1000000,
+            holdings: [],
+            insights: {
+                total_cost: 0,
+                total_value: 0,
+                total_pnl: 0,
+                total_pnl_percent: 0,
+                daily_pnl: 0,
+                daily_pnl_percent: 0,
+                num_holdings: 0,
+                top_gainer: null,
+                top_loser: null,
+                concentration_risk: 0,
+                sector_allocation: []
+            }
+        };
+    }
+    const { data } = await api.get("/portfolio/full");
+    return data;
+};
+
+export const importPortfolio = async (holdings: HoldingImport[], replaceExisting: boolean = false) => {
+    const { data } = await api.post("/portfolio/import", {
+        holdings,
+        replace_existing: replaceExisting
+    });
+    return data;
+};
+
+export const addHolding = async (holding: {
+    symbol: string;
+    quantity: number;
+    purchase_price: number;
+    purchase_date?: string;
+}) => {
+    const { data } = await api.post("/portfolio/holdings", holding);
+    return data;
+};
+
+export const updateHolding = async (holdingId: number, updates: {
+    quantity?: number;
+    purchase_price?: number;
+    purchase_date?: string;
+}) => {
+    const { data } = await api.put(`/portfolio/holdings/${holdingId}`, updates);
+    return data;
+};
+
+export const deleteHolding = async (holdingId: number) => {
+    const { data } = await api.delete(`/portfolio/holdings/${holdingId}`);
     return data;
 };
 

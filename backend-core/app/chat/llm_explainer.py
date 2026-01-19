@@ -68,12 +68,12 @@ class LLMExplainerService:
         data: List[Dict[str, Any]], 
         language: str = "en",
         user_name: str = "Trader",
-        is_first_message: bool = False,
+        allow_greeting: bool = False, # CHANGED FROM is_first_message
         is_returning_user: bool = False
     ) -> Optional[str]:
         """
         Generates the 'Conversational Voice' (Narrative) layer.
-        This is the "Human Analyst" upgrade that provides empathy, coaching, and summaries.
+        Uses Split-Prompt Architecture to enforce strictly no greetings in ongoing chats.
         """
         if not self.client:
             return None
@@ -82,42 +82,44 @@ class LLMExplainerService:
         context_str = self._format_data_for_context(data)
         lang_instruction = "Arabic (Modern Standard)" if language == 'ar' else "English"
         
-        # AGGRESSIVE GREETING CONTROL
-        # Logic: If it's NOT the first message of a fresh session, we BANNED greetings entirely.
+        # SPLIT PROMPT ARCHITECTURE
+        # =========================
         
-        if is_first_message:
-            greeting_section = (
-                "GREETING STRATEGY (CHOOSE ONE):\n"
-                "1. If New User: 'Welcome [Name] 👋 I’m Starta. I’ll help you understand Egyptian stocks.'\n"
-                "2. If Returning: 'Welcome back [Name] 👋 Ready to analyze?'\n"
+        if allow_greeting:
+            # --- PROMPT A: NEW SESSION (Greetings Allowed) ---
+            greeting_instruction = (
+                "GREETING STRATEGY:\n"
+                f"1. New User: 'Welcome {user_name} 👋 I’m Starta. I’ll help you understand Egyptian stocks.'\n"
+                f"2. Returning: 'Welcome back {user_name} 👋 Ready to analyze?'\n"
+                "You MAY strictly use one of the above greetings."
             )
+            tone_instruction = "Your tone is professional, welcoming, and expert."
+            
         else:
-            greeting_section = (
-                "STRICT RESPONSIVENESS RULES - NO GREETINGS ALLOWED:\n"
-                " - You are in mid-conversation.\n"
-                " - DO NOT say 'Welcome', 'Hello', 'Hi', 'Welcome back', or 'Greetings'.\n"
-                " - DO NOT use the user's name again.\n"
+            # --- PROMPT B: ONGOING CONVERSATION (Greetings PHYSICALLY REMOVED) ---
+            greeting_instruction = (
+                "CRITICAL INSTRUCTION: ALREADY IN CONVERSATION.\n"
+                " - DO NOT say 'Welcome', 'Welcome back', 'Hello', 'Hi'.\n"
+                " - DO NOT use the user's name.\n"
+                " - START DIRECTLY with your analysis.\n"
                 " - START DIRECTLY with the answer.\n"
-                " - VIOLATION: Saying 'Welcome back' is a critical error.\n"
             )
+            tone_instruction = "Your tone is extremely direct, concise, and purely data-focused."
 
         # Core Persona & Instruction (CHIEF EXPERT UPGRADE)
         system_prompt = (
-            f"You are Starta (ستارتا), an expert Financial Analyst. You are speaking to {user_name}.\n"
-            f"Your tone is professional, extremely direct, and data-focused.\n\n"
+            f"You are Starta (ستارتا), an expert Financial Analyst.\n"
+            f"{tone_instruction}\n\n"
 
-            f"{greeting_section}\n"
+            f"{greeting_instruction}\n\n"
 
             "STRICT OUTPUT STRUCTURE & GUIDELINES:\n"
-            "1. **STRUCTURE**: You produce ONLY the text reply. (The system adds Cards & Definitions later).\n"
+            "1. **STRUCTURE**: Produce ONLY the text reply. (Stats/Cards are added separately).\n"
             f"2. **LANGUAGE**: Respond ONLY in {lang_instruction}.\n"
             "3. **LENGTH**: 20-40 words MAXIMUM. Be extremely concise.\n"
             "4. **STYLE**: Real conversational reply, like ChatGPT/Gemini but shorter.\n"
-            "5. NO buy/sell advice.\n"
-            "6. NO fluff. NO 'I hope this helps'. NO 'Let me know if you need more'.\n"
-            "7. **DATA**: Interpret the data immediately. If data is missing, say so clearly.\n\n"
-
-            f"Current Context: is_first_message={is_first_message}, is_returning_user={is_returning_user}."
+            "5. NO fluff. NO 'I hope this helps'. NO 'Let me know if you need more'.\n"
+            "6. **DATA**: Interpret the data immediately.\n\n"
         )
 
         try:

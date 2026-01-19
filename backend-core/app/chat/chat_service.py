@@ -261,23 +261,29 @@ class ChatService:
                     # Fetch real user name for personalization
                     real_user_name = await self._get_user_name(user_id)
                     
-                    # Session state detection for intelligent greetings
-                    # Logic Update: Frontend sends current message in history.
-                    # First message = history (user msg) + no prior context
-                    # If history > 1 item, it's definitely NOT first message.
-                    is_first_message = (history is None or len(history) <= 1) and (not session_id or await self.conn.fetchval("SELECT count(*) FROM chat_messages WHERE session_id = $1", session_id) <= 1)
+                    # DETERMINISTIC STATE CONTROL (The "Starta" Fix)
+                    # 1. Check DB for EXACT message count for this session
+                    # If count > 0, it is PHYSICALLY IMPOSSIBLE to be the first message.
+                    # We check for USER messages specifically to see if the user has spoken before.
                     
-                    is_returning_user = user_id is not None
+                    msg_count = 0
+                    if session_id:
+                        msg_count = await self.conn.fetchval("SELECT count(*) FROM chat_messages WHERE session_id = $1 AND role = 'user'", session_id)
                     
+                    # 2. Strict Boolean Flag
+                    is_new_session = (msg_count == 0)
                     
-                    # 1. Generate Narrative (Conversational Text)
+                    # 3. Log the decision for debugging
+                    print(f"[ChatService] Session '{session_id}' | Msg Count: {msg_count} | New Session? {is_new_session}")
+
+                    # 4. Generate Narrative
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
                         intent=intent.value,
                         data=result_data.get('cards', []),
                         language=language,
                         user_name=real_user_name,
-                        is_first_message=is_first_message,
+                        allow_greeting=is_new_session, # PASS THE STRICT FLAG
                         is_returning_user=is_returning_user
                     )
                     

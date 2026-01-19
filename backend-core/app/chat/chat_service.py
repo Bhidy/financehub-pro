@@ -182,7 +182,7 @@ class ChatService:
             fact_explanations = None
             
             # Trigger Narrative for most intents except system ones
-            NO_NARRATIVE_INTENTS = [Intent.UNKNOWN, Intent.BLOCKED, Intent.HELP, Intent.GREETING]
+            NO_NARRATIVE_INTENTS = [Intent.UNKNOWN, Intent.BLOCKED, Intent.HELP]
             
             # Important: ensure result is a dict and has success
             result_data = result if isinstance(result, dict) else {}

@@ -109,8 +109,9 @@ class LLMExplainerService:
             f"6. Respond ONLY in {lang_instruction}.\n\n"
 
             "DATA INSTRUCTION:\n"
-            "- Discuss [CONTEXT DATA] accurately (Screener/Movers/Sectors/Financials).\n"
-            "- Limit response to under 60 words. Strict BOLD for metrics/symbols.\n"
+            "- Discuss [CONTEXT DATA] with detailed and comprehensive analysis (70-100 words).\n"
+            "- Provide insights, coaching, and clear explanations for symbols.\n"
+            "- Use strict BOLD for metrics/symbols.\n"
             f"Current State: is_first_message={is_first_message}, is_returning_user={is_returning_user}."
         )
 
@@ -118,7 +119,7 @@ class LLMExplainerService:
             # If no data exists (e.g., small talk or unknown), we still want a conversational response
             user_content = f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"
             if not data:
-                user_content = f"Query: {query}\nIntent: {intent}\n(No data found. Provide a polite help/guidance response for {user_name}.)"
+                user_content = f"Query: {query}\nIntent: {intent}\n(No specific stock data found. Provide a detailed, helpful, and comprehensive analytical guide for {user_name} on how to use Starta.)"
 
             chat_completion = await self.client.chat.completions.create(
                 messages=[
@@ -126,9 +127,9 @@ class LLMExplainerService:
                     {"role": "user", "content": user_content}
                 ],
                 model=MODEL_NAME,
-                max_tokens=150, # Slightly more for storytelling
-                temperature=0.6, # A bit more creative for "human" feel
-                timeout=4.0
+                max_tokens=500, # Increased for longer responses
+                temperature=0.7, # More variety
+                timeout=4.5
             )
             return chat_completion.choices[0].message.content.strip()
             
@@ -139,6 +140,7 @@ class LLMExplainerService:
     def extract_fact_explanations(self, data: List[Dict[str, Any]], language: str = 'en') -> Dict[str, str]:
         """
         Scans response data for technical terms and providing definitions.
+        ENSURES at least some definitions are present if data cards exist.
         """
         explanations = {}
         data_str = str(data).lower()
@@ -160,13 +162,31 @@ class LLMExplainerService:
             "z_score": {
                 "en": ("Z-Score", "A measure of financial health. Above 3.0 is safe, below 1.8 is risky."),
                 "ar": ("مؤشر ألتمان", "مقياس للصحة المالية. فوق 3.0 آمن، وتحت 1.8 يعبر عن وجود مخاطر.")
+            },
+            "eps": {
+                "en": ("EPS", "Earnings Per Share. The portion of a company's profit allocated to each outstanding share of common stock."),
+                "ar": ("ربحية السهم", "نصيب السهم الواحد من صافي أرباح الشركة.")
+            },
+            "roe": {
+                "en": ("ROE", "Return on Equity. Measures a corporation's profitability in relation to stockholders' equity."),
+                "ar": ("العائد على حقوق الملكية", "يقيس ربحية الشركة بالنسبة لحقوق المساهمين.")
             }
         }
         
+        # Priority 1: Match terms found in data
         for key, lang_data in FACTS.items():
-            title, definition = lang_data.get(language, lang_data['en'])
             if key in data_str:
+                title, definition = lang_data.get(language, lang_data['en'])
                 explanations[title] = definition
+                if len(explanations) >= 4: break
+
+        # Priority 2: Fallback to common metrics if we have data cards but few definitions
+        if data and len(explanations) < 2:
+            defaults = ["pe_ratio", "market_cap"] if language == 'en' else ["pe_ratio", "market_cap"]
+            for key in defaults:
+                title, definition = FACTS[key].get(language, FACTS[key]['en'])
+                if title not in explanations:
+                    explanations[title] = definition
                 if len(explanations) >= 3: break
                     
         return explanations

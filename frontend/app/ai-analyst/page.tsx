@@ -340,35 +340,35 @@ function AIAnalystPageContent() {
 
                                                     <PremiumMessageRenderer content={msg.response?.conversational_text || msg.content} />
 
-                                                    {/* Fact Explanations (Definitions - Simplified Flat Display) */}
+                                                    {/* 2. Charts & Cards (Secondary Data) */}
+                                                    {msg.response && (
+                                                        <>
+                                                            {msg.response.chart && <ChartCard chart={msg.response.chart} />}
+
+                                                            {msg.response.cards && msg.response.cards.length > 0 && (
+                                                                <ChatCards
+                                                                    cards={msg.response.cards}
+                                                                    language={msg.response.language}
+                                                                    onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
+                                                                    onExampleClick={(text) => handleSuggestionClick(text)}
+                                                                    showExport={true}
+                                                                />
+                                                            )}
+                                                        </>
+                                                    )}
+
+                                                    {/* 3. Fact Explanations (Definitions - NOW AFTER CARDS) */}
                                                     {msg.response?.fact_explanations && (
-                                                        <div className="mt-2 border-t border-slate-100 dark:border-white/5 pt-4">
+                                                        <div className="mt-2 border-t border-slate-100 dark:border-white/5 pt-4 px-2">
                                                             <FactExplanations explanations={msg.response.fact_explanations} />
                                                         </div>
                                                     )}
+
+                                                    {/* 3. Actions */}
+                                                    {msg.response?.actions && msg.response.actions.length > 0 && (
+                                                        <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />
+                                                    )}
                                                 </div>
-
-                                                {/* 2. Charts & Cards (Secondary Data) */}
-                                                {msg.response && (
-                                                    <>
-                                                        {msg.response.chart && <ChartCard chart={msg.response.chart} />}
-
-                                                        {msg.response.cards && msg.response.cards.length > 0 && (
-                                                            <ChatCards
-                                                                cards={msg.response.cards}
-                                                                language={msg.response.language}
-                                                                onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }}
-                                                                onExampleClick={(text) => handleSuggestionClick(text)}
-                                                                showExport={true}
-                                                            />
-                                                        )}
-                                                    </>
-                                                )}
-
-                                                {/* 3. Actions */}
-                                                {msg.response?.actions && msg.response.actions.length > 0 && (
-                                                    <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />
-                                                )}
                                             </div>
                                         )}
                                     </div>

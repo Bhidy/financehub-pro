@@ -229,8 +229,9 @@ class ChatService:
                     real_user_name = await self._get_user_name(user_id)
                     
                     # Session state detection for intelligent greetings
-                    is_first_message = len(history or []) == 0
-                    is_returning_user = user_id is not None # Placeholder logic for returning user check
+                    # If history has content, it's NOT the first message of the session
+                    is_first_message = (history is None or len(history) == 0)
+                    is_returning_user = user_id is not None
                     
                     # 1. Generate Narrative (Conversational Text)
                     conversational_text = await explainer.generate_narrative(
@@ -769,7 +770,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="3.9.8-CHIEF-EXPERT" # DEPLOYMENT VERIFICATION
+                backend_version="3.9.9-CHIEF-EXPERT-V2" # DEPLOYMENT VERIFICATION
             )
         )
 

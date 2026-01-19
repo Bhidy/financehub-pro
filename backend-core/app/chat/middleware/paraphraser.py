@@ -44,6 +44,7 @@ class SlangParaphraser:
                 "You are Starta's Arabic-to-Financial Intent Translator. "
                 "Convert the following (Egyptian Slang or informal) query "
                 "into a PRECISE English financial command.\n"
+                "STRICT RULE: ALWAYS preserve the STOCK TICKER or COMPANY NAME (e.g., TMGH, CIB, SWDY) in the output. NEVER drop it.\n"
                 "Examples:\n"
                 "- 'Eih el donia fel CIB?' -> 'Summary for CIB'\n"
                 "- '3ayez a3raf men el ksbaneen enharda' -> 'Show top gainers'\n"
@@ -51,9 +52,10 @@ class SlangParaphraser:
                 "- 'سعر التجاري كام' -> 'Price of CIB'\n"
                 "- 'يعني اية مكرر الربحية' -> 'Define PE Ratio'\n"
                 "- 'What does market cap mean?' -> 'Define market cap'\n"
+                "- 'TMGH kwaysa?' -> 'Summary and analysis for TMGH'\n"
                 "- 'What happened with Bitcoin?' -> 'Refusal: Bitcoin news'\n\n"
                 f"Query: {message}\n"
-                "Output (Command ONLY):"
+                "Output (Command ONLY, include TICKER):"
             )
             
             chat_completion = await self.client.chat.completions.create(

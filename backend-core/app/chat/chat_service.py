@@ -147,8 +147,8 @@ class ChatService:
             symbol = entities.get('symbol')
             potential_symbols = extract_potential_symbols(routing_text)
             
-            # Candidate selection logic
-            candidate = symbol if symbol else (potential_symbols[0] if potential_symbols else None)
+            # Candidate selection logic: Prefer extraction (better alias/stopword support)
+            candidate = potential_symbols[0] if potential_symbols else symbol
             
             # Resolve if candidate exists
             resolved_symbol = None

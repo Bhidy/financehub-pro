@@ -780,7 +780,7 @@ class IntentRouter:
              for word in split_text:
                  # Check against a known "safe" list or strict regex
                  # (Common EGX tickers are 4 chars usually)
-                 if re.match(r'^[A-Z]{3,5}$', word.upper()) and word.upper() not in ["THE", "FOR", "AND", "EST", "NOW", "BUY", "SELL", "HOW", "WHAT", "WHEN", "WHY", "WHO", "YES", "NOT"]:
+                  if re.match(r'^[A-Z]{3,5}$', word.upper()) and word.upper() not in ["THE", "FOR", "AND", "EST", "NOW", "BUY", "SELL", "HOW", "WHAT", "WHEN", "WHY", "WHO", "YES", "NOT", "PRICE"]:
                       entities['symbol'] = word.upper()
                       break
 

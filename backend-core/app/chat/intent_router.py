@@ -53,8 +53,8 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
     
     Intent.STOCK_SNAPSHOT: (
-        ["snapshot", "quick look", "stock info", "brief", "dashboard", "full snapshot", "summary", "analyze", "analysis", "analyse", "check", "investigate"],
-        ["نبذه", "اخبرني عن", "معلومات", "تقرير سريع", "لوحة معلومات", "ملخص سهم", "نظرة سريعة", "اعرض بيانات", "حلل", "تحليل", "فحص"],
+        ["snapshot", "quick look", "stock info", "brief", "dashboard", "full snapshot", "summary", "analyze", "analysis", "analyse", "check", "investigate", "summary for"],
+        ["نبذه", "اخبرني عن", "معلومات", "تقرير سريع", "لوحة معلومات", "ملخص سهم", "نظرة سريعة", "اعرض بيانات", "حلل", "تحليل", "فحص", "ملخص لـ"],
         0.9
     ),
 
@@ -146,6 +146,18 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
         ["latest news", "news about", "recent news", "what happened", "stock news", "announcements", "press release"],
         ["اخبار", "اخر الاخبار", "ماذا حدث", "اخبار السهم", "اعلانات", "بيان صحفي"],
         1.5
+    ),
+
+    Intent.FOLLOW_UP: (
+        ["follow-up", "followup", "is that good", "tell me more", "how about", "what about", "is it good", "should i buy", "is it a buy", "worth it"],
+        ["متابعة", "هل هذا جيد", "ماذا عن", "هل تنصح", "هل هو جيد", "ايه رايك"],
+        1.0
+    ),
+
+    Intent.DEFINE_TERM: (
+        ["define", "definition", "what is", "explain", "meaning of", "clarify", "whats a", "what is a"],
+        ["عرف", "تعريف", "ما هو", "اشرح", "ما معنى", "وضح"],
+        1.0
     ),
     
     Intent.CALENDAR_EARNINGS: (

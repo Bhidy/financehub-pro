@@ -187,14 +187,16 @@ class ChatService:
             # Important: ensure result is a dict and has success
             result_data = result if isinstance(result, dict) else {}
             
-            if intent not in NO_NARRATIVE_INTENTS and result_data.get('success', True):
+            if result_data.get('success', True):
                 try:
                     # 1. Generate Narrative (Conversational Text)
+                    # Pass "Bhidy" as the default user name for the persona
                     conversational_text = await explainer.generate_narrative(
                         query=message, # Give LLM the ORIGINAL user voice for context
                         intent=intent.value,
                         data=result_data.get('cards', []),
-                        language=language
+                        language=language,
+                        user_name="Bhidy"
                     )
                     
                     # 2. Extract Fact Explanations (Definitions)
@@ -263,7 +265,7 @@ class ChatService:
                 err_msg = "Our AI Analyst is currently upgrading its neural pathways. Please try again in a moment." if lang == 'en' else "نظام التحليل الذكي يقوم بتحديث مساراته العصبية حالياً. يرجى المحاولة بعد قليل."
                 
                 fallback_card = Card(
-                    type=CardType.MARKDOWN,
+                    type=CardType.ERROR,
                     title="System Maintenance" if lang == 'en' else "صيانة النظام",
                     data={'content': f"### ⚠️ {err_msg}"}
                 )

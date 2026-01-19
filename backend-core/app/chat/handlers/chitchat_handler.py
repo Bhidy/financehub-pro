@@ -99,27 +99,22 @@ DEFINITIONS = {
 async def handle_chitchat(intent: str, language: str = "en") -> Dict[str, Any]:
     """Handle small talk intents."""
     
-    # Get responses list
+    # Get responses list (Fallback only if LLM fails)
     options = RESPONSES.get(intent, {}).get(language, ["Hello!"])
-    
-    # Pick random response
-    message = random.choice(options)
+    fallback_message = random.choice(options)
     
     # Add suggestions based on intent
-    actions = []
-    if intent in ["GREETING", "IDENTITY", "CAPABILITIES", "HELP"]:
-        # Ultra Premium Suggestions (Mix of Standard + Deep)
-        actions = [
-            {'label': '📈 Top Gainers', 'label_ar': '📈 الأكثر ارتفاعاً', 'action_type': 'query', 'payload': 'top gainers'},
-            {'label': '🛡️ Safe Stocks', 'label_ar': '🛡️ أسهم آمنة', 'action_type': 'query', 'payload': 'safest stocks with high z-score'},
-            {'label': '💎 Undervalued', 'label_ar': '💎 أسهم رخيصة', 'action_type': 'query', 'payload': 'stocks with lowest ev/ebit'},
-            {'label': '⚡ Efficient', 'label_ar': '⚡ كفاءة عالية', 'action_type': 'query', 'payload': 'best roce stocks'}
-        ]
+    actions = [
+        {'label': '📈 Top Gainers', 'label_ar': '📈 الأكثر ارتفاعاً', 'action_type': 'query', 'payload': 'top gainers'},
+        {'label': '🛡️ Safe Stocks', 'label_ar': '🛡️ أسهم آمنة', 'action_type': 'query', 'payload': 'safest stocks with high z-score'},
+        {'label': '💎 Undervalued', 'label_ar': '💎 أسهم رخيصة', 'action_type': 'query', 'payload': 'stocks with lowest ev/ebit'},
+        {'label': '⚡ Efficient', 'label_ar': '⚡ كفاءة عالية', 'action_type': 'query', 'payload': 'best roce stocks'}
+    ]
         
     return {
         'success': True,
-        'message': message,
-        'cards': [],  # No special cards for small talk typically, maybe "Suggestions" later
+        'message': fallback_message, # Static fallback
+        'cards': [], 
         'actions': actions
     }
 

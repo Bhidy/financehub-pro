@@ -457,9 +457,23 @@ async def root():
     return {
         "status": "ok", 
         "version": app.version, 
-        "build_timestamp": "2026-01-14 15:50:00 UTC",
+        "build_timestamp": "2026-01-19 16:15:00 UTC",
         "db": "connected" if db._pool else "disconnected"
     }
+
+@app.get("/debug/routes")
+async def debug_routes():
+    """List all registered routes for debugging deployment issues."""
+    import logging
+    routes = []
+    for route in app.routes:
+        if hasattr(route, "path"):
+            routes.append({
+                "path": route.path,
+                "name": route.name,
+                "methods": list(route.methods) if hasattr(route, "methods") else None
+            })
+    return {"count": len(routes), "routes": routes}
 
 @app.get("/debug/funds")
 async def debug_funds_endpoint():

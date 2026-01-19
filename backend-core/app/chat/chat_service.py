@@ -119,6 +119,20 @@ class ChatService:
         # Get context
         context = self.context_store.get(session_id)
         
+        # TRUTH SOURCE FIX: If history is empty but we have a valid session_id, 
+        # try to verify if this is actually a returning session from the DB.
+        # This prevents "First Message" greetings if the frontend fails to send history.
+        if (history is None or len(history) == 0) and session_id:
+             try:
+                 # Check if we have prior messages in DB for this session
+                 prior_count = await self.conn.fetchval("SELECT COUNT(*) FROM chat_messages WHERE session_id = $1", session_id)
+                 if prior_count and prior_count > 0:
+                     # Fabricate a history item so is_first_message logic works correctly
+                     history = [{'role': 'system', 'content': 'Previous session context exists.'}]
+                     print(f"[ChatService] 🔄 Restored session context from DB (Messages: {prior_count})")
+             except Exception as e:
+                 print(f"[ChatService] ⚠️ Failed to check DB history: {e}")
+
         # FORCE MARKET CONTEXT if provided
         last_market = market if market else (context.last_market if context else None)
         

@@ -201,9 +201,11 @@ class LLMExplainerService:
                 explanations[title] = definition
                 if len(explanations) >= 4: break
 
-        # Priority 2: Fallback to common metrics if we have data cards but few definitions
-        if data and len(explanations) < 2:
-            defaults = ["pe_ratio", "market_cap"] if language == 'en' else ["pe_ratio", "market_cap"]
+        # Priority 2: Force structure compliance by ensuring at least some definitions appear
+        # The user requires: AI Reply -> Cards -> Definitions (ALWAYS)
+        # So if we didn't find specific terms, we inject general market wisdom.
+        if len(explanations) < 2:
+            defaults = ["pe_ratio", "market_cap", "dividend_yield"]
             for key in defaults:
                 title, definition = FACTS[key].get(language, FACTS[key]['en'])
                 if title not in explanations:

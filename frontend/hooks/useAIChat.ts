@@ -52,6 +52,8 @@ export interface ResponseMeta {
 
 export interface ChatResponse {
     message_text: string;
+    conversational_text?: string; // New Hybrid Layer
+    fact_explanations?: Record<string, string>; // New Fact Layer
     message_text_ar?: string;
     language: "ar" | "en" | "mixed";
     cards: Card[];

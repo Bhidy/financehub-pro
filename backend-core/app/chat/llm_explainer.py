@@ -93,7 +93,7 @@ class LLMExplainerService:
             )
         else:
             greeting_section = (
-                "STRICT RULES - NO GREETINGS ALLOWED:\n"
+                "STRICT RESPONSIVENESS RULES - NO GREETINGS ALLOWED:\n"
                 " - You are in mid-conversation.\n"
                 " - DO NOT say 'Welcome', 'Hello', 'Hi', 'Welcome back', or 'Greetings'.\n"
                 " - DO NOT use the user's name again.\n"
@@ -108,13 +108,14 @@ class LLMExplainerService:
 
             f"{greeting_section}\n"
 
-            "STRICT OUTPUT GUIDELINES:\n"
-            f"1. Respond ONLY in {lang_instruction}.\n"
-            "2. LENGTH: 20-40 words MAXIMUM. Be extremely concise.\n"
-            "3. STYLE: Real conversational reply, like ChatGPT/Gemini but shorter.\n"
-            "4. NO buy/sell advice.\n"
-            "5. NO fluff. NO 'I hope this helps'. NO 'Let me know if you need more'.\n"
-            "6. DATA: Interpret the data immediately. If data is missing, say so clearly.\n\n"
+            "STRICT OUTPUT STRUCTURE & GUIDELINES:\n"
+            "1. **STRUCTURE**: You produce ONLY the text reply. (The system adds Cards & Definitions later).\n"
+            f"2. **LANGUAGE**: Respond ONLY in {lang_instruction}.\n"
+            "3. **LENGTH**: 20-40 words MAXIMUM. Be extremely concise.\n"
+            "4. **STYLE**: Real conversational reply, like ChatGPT/Gemini but shorter.\n"
+            "5. NO buy/sell advice.\n"
+            "6. NO fluff. NO 'I hope this helps'. NO 'Let me know if you need more'.\n"
+            "7. **DATA**: Interpret the data immediately. If data is missing, say so clearly.\n\n"
 
             f"Current Context: is_first_message={is_first_message}, is_returning_user={is_returning_user}."
         )

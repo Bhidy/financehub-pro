@@ -262,8 +262,11 @@ class ChatService:
                     real_user_name = await self._get_user_name(user_id)
                     
                     # Session state detection for intelligent greetings
-                    # If history has content, it's NOT the first message of the session
-                    is_first_message = (history is None or len(history) == 0)
+                    # Logic Update: Frontend sends current message in history.
+                    # First message = history (user msg) + no prior context
+                    # If history > 1 item, it's definitely NOT first message.
+                    is_first_message = (history is None or len(history) <= 1) and (not session_id or await self.conn.fetchval("SELECT count(*) FROM chat_messages WHERE session_id = $1", session_id) <= 1)
+                    
                     is_returning_user = user_id is not None
                     
                     

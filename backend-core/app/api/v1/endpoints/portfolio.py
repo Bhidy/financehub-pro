@@ -214,6 +214,7 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
             "cash_balance": cash_balance,
             "market_value": total_value,
             "total_equity": total_equity,
+            "holdings": holdings,
             "insights": {
                 "total_cost": total_cost,
                 "total_value": total_value,

@@ -195,9 +195,9 @@ export function StatsCard({ title, data }: StatsProps) {
         };
 
         const displayValue = (typeof value === 'number' && config.format) ? config.format(value) : value;
-        // Strict Check: If formatter returns null/undefined or empty string (our new logic), hide it.
         if (displayValue === null || displayValue === undefined) return null;
-        if (String(displayValue) === "" || String(displayValue) === "N/A" || String(displayValue) === "—") return null;
+        // RELAXED CHECK: Allow "N/A" to be shown (User request: "Force No Data")
+        if (String(displayValue) === "") return null;
 
         return {
             ...config,
@@ -917,22 +917,25 @@ interface OwnershipProps {
 interface DeepHealthProps {
     data: {
         symbol: string;
-        z_score: number;
-        f_score: number;
+        z_score: number | null;
+        f_score: number | null;
         status: string;
         metrics: Record<string, number | null>;
     };
 }
 
 export function DeepHealthCard({ data }: DeepHealthProps) {
-    const isSafe = data.z_score > 2.99;
-    const isDistress = data.z_score < 1.81;
-    const color = isSafe ? "text-emerald-600" : isDistress ? "text-red-500" : "text-amber-500";
-    const bg = isSafe ? "bg-emerald-50" : isDistress ? "bg-red-50" : "bg-amber-50";
+    // Safety check for null Z-Score (e.g. Banks)
+    const safeZ = data.z_score ?? 0;
+    const isSafe = safeZ > 2.99;
+    const isDistress = safeZ < 1.81;
+    const color = (data.z_score === null) ? "text-slate-500" : isSafe ? "text-emerald-600" : isDistress ? "text-red-500" : "text-amber-500";
+    const bg = (data.z_score === null) ? "bg-slate-50" : isSafe ? "bg-emerald-50" : isDistress ? "bg-red-50" : "bg-amber-50";
     const gradientId = `gauge-${data.symbol || 'default'}`;
 
     // Calculate gauge percentage (Z-Score typically 0-4 range, capped)
-    const gaugePercent = Math.min(Math.max(data.z_score / 4, 0), 1) * 100;
+    // If null, set to 0 (empty gauge)
+    const gaugePercent = (data.z_score === null) ? 0 : Math.min(Math.max(safeZ / 4, 0), 1) * 100;
     const strokeDasharray = `${gaugePercent * 2.51} 251`; // 251 = circumference of r=40
 
     return (
@@ -992,7 +995,7 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
                     </svg>
                     {/* Center Value */}
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-                        <div className={`text-3xl font-black ${color}`}>{data.z_score.toFixed(2)}</div>
+                        <div className={`text-3xl font-black ${color}`}>{data.z_score !== null ? data.z_score.toFixed(2) : "N/A"}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">Altman Z-Score</div>
                     </div>
                 </div>
@@ -1005,7 +1008,14 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
                     <div className="text-xl font-bold text-blue-800 dark:text-blue-200">{data.f_score}<span className="text-sm text-blue-500 dark:text-blue-400">/9</span></div>
                 </div>
                 {Object.entries(data.metrics).slice(0, 4).map(([key, val]) => {
-                    if (val === null || val === undefined || (val as any) === "N/A") return null;
+                    //Allow showing N/A explicitly if needed
+                    if (val === null || val === undefined) return (
+                        <div key={key} className="p-3 bg-white dark:bg-white/5 rounded-xl text-center border border-slate-100 dark:border-white/10 shadow-sm opacity-50">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 truncate">{key}</div>
+                            <div className="font-bold text-slate-400 dark:text-slate-500">N/A</div>
+                        </div>
+                    );
+                    if ((val as any) === "N/A") return null;
                     return (
                         <div key={key} className="p-3 bg-white dark:bg-white/5 rounded-xl text-center border border-slate-100 dark:border-white/10 shadow-sm">
                             <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 truncate">{key}</div>

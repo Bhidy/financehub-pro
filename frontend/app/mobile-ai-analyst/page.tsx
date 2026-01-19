@@ -310,8 +310,8 @@ function MobileAIAnalystPageContent() {
                                                         </div>
                                                     )}
                                                 </div>
-                                            )}
                                             </div>
+                                        )}
                                     </div>
                                 ))}
 

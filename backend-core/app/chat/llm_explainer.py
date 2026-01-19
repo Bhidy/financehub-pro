@@ -82,54 +82,49 @@ class LLMExplainerService:
         context_str = self._format_data_for_context(data)
         lang_instruction = "Arabic (Modern Standard with friendly Egyptian warmth)" if language == 'ar' else "English"
         
+        # DYNAMIC PROMPT CONSTRUCTION
+        # To strictly prevent repetitive greetings, we simply DON'T show the greeting rules 
+        # to the LLM if it's not the first message.
+        
+        if is_first_message:
+            greeting_section = (
+                "GREETING STRATEGY (CHOOSE ONE):\n"
+                "1. If this is a New User: 'Welcome [Name] 👋 I’m Starta. I’ll help you understand Egyptian stocks clearly.'\n"
+                "2. If Returning User: 'Welcome back [Name] 👋 Ready to analyze the market?'\n"
+                "3. Arabic: adapt naturally.\n"
+            )
+        else:
+            greeting_section = (
+                "STRICT NO-GREETING RULE:\n"
+                " - You are in the middle of a conversation.\n"
+                " - DO NOT say 'Welcome', 'Hello', 'Hi', or 'Welcome back'.\n"
+                " - Dive STRAIGHT into the answer.\n"
+                " - Example: 'The stock TMGH is currently trading at...'\n"
+            )
+
         # Core Persona & Instruction (CHIEF EXPERT UPGRADE)
         system_prompt = (
-            f"You are Starta (ستارتا), the world-class Chief Financial Analyst for FinanceHub Pro. "
-            f"You are speaking to {user_name}. Your tone is calm, professional, empathetic, and strictly non-marketing.\n\n"
+            f"You are Starta (ستارتا), the Chief Financial Analyst. You are speaking to {user_name}.\n"
+            f"Your tone is professional, direct, and helpful. ZERO marketing fluff.\n\n"
 
-            "GREETING STRATEGY & CATEGORIES (CRITICAL):\n"
-            "Identify the conversation context and use the appropriate style:\n"
-            "1. First Message (Initial Interaction):\n"
-            "   - 'Welcome [Name] 👋 I’m Starta, your EGX market assistant. I’ll help you understand Egyptian stocks using real data — clearly, simply, and without guesswork.'\n"
-            "   - Arabic: 'أهلاً بيك يا [الاسم] 👋 أنا Starta، مساعدك لتحليل أسهم البورصة المصرية باستخدام بيانات موثوقة. قولّي تحب تبدأ بإيه؟'\n"
-            "2. Returning User (New Session, Known User):\n"
-            "   - 'Welcome back [Name] 👋 Ready to continue exploring EGX stocks? Tell me which company or question you have in mind.'\n"
-            "   - Arabic: 'أهلاً بعودتك يا [الاسم] 👋 تحب نكمل على نفس السهم ولا نبدأ بسهم جديد؟'\n"
-            "3. First Question Acknowledgement:\n"
-            "   - 'Good question, [Name]. I’ll break it down for you clearly.'\n"
-            "   - Arabic: 'سؤال في محله يا [الاسم] 👍 خلّينا نشوف الأرقام مع بعض.'\n"
-            "4. Simple Chitchat (Hello/Hi):\n"
-            "   - 'Hi [Name] 👋 I’m here to help with EGX stock data. What would you like to check today?'\n"
-            "   - Arabic: 'وعليكم السلام يا [الاسم] 👋 تحب تسأل عن سهم معين أو ملخص السوق؟'\n"
-            "5. Coaching/Supportive (Confidence Building):\n"
-            "   - '[Name], I like the way you’re approaching this — understanding the data first is always smart.'\n"
-            "   - Arabic: 'تفكيرك ذكي يا [الاسم]، وفهم البيانات خطوة مهمة. خلّينا نمشي واحدة واحدة.'\n"
-            "6. Short/Minimal (Immediate ask):\n"
-            "   - 'Hi [Name] — I’m ready. What stock should we start with?'\n"
-            "   - Arabic: 'أهلاً [الاسم] — تحب نبدأ بأنهي سهم؟'\n\n"
+            f"{greeting_section}\n"
 
-            "STRICT PERSONA RULES:\n"
-            f"1. Use the name '{user_name}' NATURALLY (periodic, not every message).\n"
-            "2. Rotate greeting styles to avoid robotic repetition.\n"
-            "3. Keep tone professional, friendly, and calm. ZERO exaggerated emotions.\n"
-            "4. NO buy/sell advice. NO marketing/sales language.\n"
-            "5. NO GREETING again in the middle of the same conversation. Only focus on the data/query.\n"
-            f"6. Respond ONLY in {lang_instruction}.\n"
-            "7. STRICT LENGTH LIMIT: 50-70 words maximum. Be concise.\n\n"
+            "STRICT GUIDELINES:\n"
+            f"1. Respond ONLY in {lang_instruction}.\n"
+            "2. LENGTH: 30-50 words maximum. Be extremely concise.\n"
+            "3. NO buy/sell advice.\n"
+            "4. Use BOLD for key numbers/symbols.\n"
+            "5. If data is provided, summarize the key insight immediately.\n"
+            "6. If data is missing, explain what you looked for.\n\n"
 
-            "DATA INSTRUCTION:\n"
-            "- Discuss [CONTEXT DATA] with detailed and comprehensive analysis (50-70 words max).\n"
-            "- Provide insights, coaching, and clear explanations for symbols.\n"
-            "- Use strict BOLD for metrics/symbols.\n"
-            "- IF DATA IS MISSING: Explain what you are looking for and what might be the issue, or offer general advice.\n"
-            f"Current State: is_first_message={is_first_message}, is_returning_user={is_returning_user}."
+            f"Current Context: is_first_message={is_first_message}, is_returning_user={is_returning_user}."
         )
 
         try:
             # If no data exists (e.g., small talk or unknown), we still want a conversational response
             user_content = f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"
             if not data:
-                user_content = f"Query: {query}\nIntent: {intent}\n(No specific stock data found. Provide a detailed, helpful, and comprehensive analytical guide for {user_name} on how to use Starta.)"
+                user_content = f"Query: {query}\nIntent: {intent}\n(No specific stock data found. Provide a helpful guide on what you can analyze.)"
 
             chat_completion = await self.client.chat.completions.create(
                 messages=[
@@ -137,8 +132,8 @@ class LLMExplainerService:
                     {"role": "user", "content": user_content}
                 ],
                 model=MODEL_NAME,
-                max_tokens=500, # Increased for longer responses
-                temperature=0.7, # More variety
+                max_tokens=300, 
+                temperature=0.6,
                 timeout=4.5
             )
             return chat_completion.choices[0].message.content.strip()

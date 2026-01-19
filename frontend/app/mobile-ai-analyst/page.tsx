@@ -277,41 +277,41 @@ function MobileAIAnalystPageContent() {
 
                                                     <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
 
-                                                    {/* Fact Explanations (Definitions - Simplified Flat Display) */}
+                                                    {/* 2. Specialized UI Components (Chart & Cards) */}
+                                                    {m.response?.chart && (
+                                                        <div className="mb-2">
+                                                            <ChartCard chart={m.response.chart} />
+                                                        </div>
+                                                    )}
+
+                                                    {m.response?.cards && m.response.cards.length > 0 && (
+                                                        <ChatCards
+                                                            cards={m.response.cards}
+                                                            language={language}
+                                                            onSymbolClick={handleSymbolClick}
+                                                            onExampleClick={handleExampleClick}
+                                                        />
+                                                    )}
+
+                                                    {/* 3. Fact Explanations (Definitions - NOW AFTER CARDS) */}
                                                     {m.response?.fact_explanations && (
-                                                        <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5">
+                                                        <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5 px-2">
                                                             <FactExplanations explanations={m.response.fact_explanations} />
                                                         </div>
                                                     )}
+
+                                                    {/* Follow-up Actions */}
+                                                    {m.response?.actions && m.response.actions.length > 0 && (
+                                                        <div className="pt-1">
+                                                            <ActionsBar
+                                                                actions={m.response.actions}
+                                                                onAction={handleAction}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
-
-                                                {/* 2. Specialized UI Components (Chart & Cards) */}
-                                                {m.response?.chart && (
-                                                    <div className="mb-2">
-                                                        <ChartCard chart={m.response.chart} />
-                                                    </div>
-                                                )}
-
-                                                {m.response?.cards && m.response.cards.length > 0 && (
-                                                    <ChatCards
-                                                        cards={m.response.cards}
-                                                        language={language}
-                                                        onSymbolClick={handleSymbolClick}
-                                                        onExampleClick={handleExampleClick}
-                                                    />
-                                                )}
-
-                                                {/* Follow-up Actions */}
-                                                {m.response?.actions && m.response.actions.length > 0 && (
-                                                    <div className="pt-1">
-                                                        <ActionsBar
-                                                            actions={m.response.actions}
-                                                            onAction={handleAction}
-                                                        />
-                                                    </div>
-                                                )}
+                                            )}
                                             </div>
-                                        )}
                                     </div>
                                 ))}
 

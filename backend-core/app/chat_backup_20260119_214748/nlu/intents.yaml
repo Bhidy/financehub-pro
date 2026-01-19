@@ -1,0 +1,416 @@
+intents:
+  # ===== SMALL TALK =====
+  - name: GREETING
+    examples:
+      - "Hello"
+      - "Hi there"
+      - "Good morning"
+      - "Good evening"
+      - "Salaam"
+      - "Marhaba"
+      - "Hey Starta"
+      - "Greetings"
+      - "Start chat"
+      - "مرحبا"
+      - "السلام عليكم"
+      - "صباح الخير"
+      - "اهلا"
+
+  - name: IDENTITY
+    examples:
+      - "Who are you?"
+      - "What is your name?"
+      - "Are you a bot?"
+      - "Who made you?"
+      - "Tell me about yourself"
+      - "من انت"
+      - "ما اسمك"
+      - "هل انت ذكاء اصطناعي"
+
+  - name: CAPABILITIES
+    examples:
+      - "What can you do?"
+      - "Help me"
+      - "Show capabilities"
+      - "What do you know?"
+      - "How can you help?"
+      - "ماذا تستطيع ان تفعل"
+      - "قدراتك"
+      - "ساعدني"
+
+  - name: MOOD
+    examples:
+      - "How are you?"
+      - "How is it going?"
+      - "Are you doing well?"
+      - "What's up"
+      - "كيف حالك"
+      - "اخبارك"
+      - "عامل ايه"
+
+  - name: GRATITUDE
+    examples:
+      - "Thanks"
+      - "Thank you so much"
+      - "Appreciate it"
+      - "Good job"
+      - "Thanks Starta"
+      - "شكرا"
+      - "مشكور"
+      - "تسلم"
+
+  - name: GOODBYE
+    examples:
+      - "Bye"
+      - "Goodbye"
+      - "See you later"
+      - "End chat"
+      - "Quit"
+      - "مع السلامه"
+      - "وداعا"
+      - "باي"
+
+  # ===== STOCK INTENTS =====
+  - name: STOCK_PRICE
+    examples:
+      - "What is the price of ARAMCO?"
+      - "COMI price"
+      - "How much is Apple stock?"
+      - "Current quote for 2222"
+      - "Is CIB up or down?"
+      - "Trading at?"
+      - "Give me the cost of..."
+      - "سعر سهم ارامكو"
+      - "بكم سهم التجاري"
+      - "سعر فوري"
+      - "كم وصل السهم"
+
+  - name: STOCK_SNAPSHOT
+    examples:
+      - "Tell me about this company"
+      - "Overview of TSLA"
+      - "Stock summary"
+      - "What does this company do?"
+      - "Profile of CIB"
+      - "معلومات عن السهم"
+      - "نبذه عن الشركه"
+      - "ماذا تعمل هذه الشركه"
+
+  - name: STOCK_CHART
+    examples:
+      - "Show me the chart"
+      - "Plot price history"
+      - "Graph for last month"
+      - "Candlestick chart"
+      - "Technical chart"
+      - "Price movement"
+      - "شارت السهم"
+      - "الرسم البياني"
+      - "تحليل فني"
+      - "Trend analysis"
+  - name: SECTOR_STOCKS
+    examples:
+      - "Banking sector stocks"
+      - "List all banks"
+      - "Show me real estate companies"
+      - "Industrial goods sector"
+      - "What stocks are in the telecome sector?"
+      - "Construction stocks"
+      - "Healthcare companies"
+      - "Show me stocks in basic resources"
+      - "Banking stocks"
+      - "Education sector"
+      - "اسهم البنوك"
+      - "قطاع العقارات"
+      - "شركات الاسمنت"
+      - "قطاع الاغذية"
+      - "اسهم الرعاية الصحية"
+
+  - name: TOP_GAINERS
+    examples:
+      - "Top gainers today"
+      - "Highest rising stocks"
+      - "Who is up the most?"
+      - "Best performing stocks"
+      - "Top movers"
+      - "Green stocks"
+      - "Biggest gainers"
+      - "الاسهم الاكثر ارتفاعا"
+      - "الرابحون اليوم"
+      - "اعلى الاسهم صعودا"
+
+  - name: TOP_LOSERS
+    examples:
+      - "Top losers today"
+      - "Worst performing stocks"
+      - "Who is down the most?"
+      - "Biggest drop"
+      - "Red stocks"
+      - "Falling stocks"
+      - "الاسهم الاكثر انخفاضا"
+      - "الخاسرون اليوم"
+      - "اكبر تراجع"
+
+  - name: MARKET_SUMMARY
+    examples:
+      - "How is the market?"
+      - "Market overview"
+      - "EGX30 status"
+      - "Is the market up or down?"
+      - "General market index"
+      - "TASI index"
+      - "Market update"
+      - "حالة السوق"
+      - "المؤشر العام"
+      - "ملخص السوق"
+      - "اخبار البورصة"
+
+  - name: NEWS
+    examples:
+      - "Latest news"
+      - "News for CIB"
+      - "What is happening with Ezz Steel?"
+      - "Market news"
+      - "Any updates on ARAMCO?"
+      - "Recent announcements"
+      - "Company news"
+      - "اخبار السهم"
+      - "اخر الاخبار"
+      - "اخبار السوق"
+
+  - name: SCREENER_PE
+    examples:
+      - "Cheap stocks"
+      - "Undervalued stocks"
+      - "Stocks with low PE"
+      - "Best value stocks"
+      - "Low price to earnings"
+      - "اسهم رخيصة"
+      - "مكرر ربحية منخفض"
+      - "فرص استثمارية"
+  # ===== DEEP FINANCIALS (NEW) =====
+  - name: FIN_MARGINS
+    examples:
+      - "What is the gross margin?"
+      - "Operating margin for CIB"
+      - "Net profit margin"
+      - "Is the margin increasing?"
+      - "Profitability trend"
+      - "هامش الربح"
+      - "هامش التشغيل"
+      - "نسبة الربحية"
+
+  - name: FIN_DEBT
+    examples:
+      - "Total debt"
+      - "How much debt does it have?"
+      - "Debt to equity ratio"
+      - "Is it in debt?"
+      - "Leverage ratio"
+      - "Long term debt"
+      - "اجمالي الديون"
+      - "نسبة الدين"
+      - "هل الشركة مديونة"
+
+  - name: FIN_CASH
+    examples:
+      - "Free cash flow"
+      - "Cash on hand"
+      - "Liquidity position"
+      - "Does it have enough cash?"
+      - "Cash flow from operations"
+      - "التدفق النقدي الحر"
+      - "الكاش المتوفر"
+      - "السيولة"
+
+  - name: FIN_GROWTH
+    examples:
+      - "Revenue growth rate"
+      - "Net income growth"
+      - "Is it growing?"
+      - "Growth last year"
+      - "Sales growth"
+      - "نمو المبيعات"
+      - "نسبة النمو"
+      - "تطور الارباح"
+
+  - name: FIN_EPS
+    examples:
+      - "Earnings per share"
+      - "What is the EPS?"
+      - "Diluted EPS"
+      - "EPS trend"
+      - "Profit per share"
+      - "ربحية السهم"
+      - "العائد على السهم"
+
+  # ===== DEEP RATIOS (NEW) =====
+  - name: RATIO_VALUATION
+    examples:
+      - "EV/EBITDA"
+      - "Price to Sales ratio"
+      - "PEG ratio"
+      - "Is it overvalued?"
+      - "Valuation multiples"
+      - "Check valuation"
+      - "تقييم السهم"
+      - "مكرر المبيعات"
+      - "هل السهم غالي"
+
+  - name: RATIO_EFFICIENCY
+    examples:
+      - "Return on Equity (ROE)"
+      - "Return on Assets (ROA)"
+      - "Asset turnover"
+      - "Efficiency ratios"
+      - "How efficient is management?"
+      - "العائد على حقوق الملكية"
+      - "العائد على الاصول"
+      - "كفاءة الادارة"
+
+  - name: RATIO_LIQUIDITY
+    examples:
+      - "Current ratio"
+      - "Quick ratio"
+      - "Can they pay short term debt?"
+      - "Liquidity ratios"
+      - "Working capital"
+      - "نسبة السيولة"
+      - "النسبة الجارية"
+
+  # ===== FUND INTENTS (DISABLED) =====
+  # - name: FUND_NAV
+  #   examples:
+  #     - "Fund price"
+  #     - "NAV of fund 2742"
+  #     - "Mutual fund quote"
+  #     - "Value of the unit"
+  #     - "How much is the fund?"
+  #     - "سعر الوثيقه"
+  #     - "سعر الصندوق"
+  #     - "صافي الاصول"
+
+  # - name: FUND_SEARCH
+  #   examples:
+  #     - "List all funds"
+  #     - "Find shariah funds"
+  #     - "Islamic mutual funds"
+  #     - "Equity funds in Egypt"
+  #     - "Search for a fund"
+  #     - "Available funds"
+  #     - "صناديق الاستثمار"
+  #     - "صناديق شرعيه"
+  #     - "قائمة الصناديق"
+
+  # - name: FUND_MOVERS
+  #   examples:
+  #     - "Top performing funds"
+  #     - "Best funds this year"
+  #     - "Fund rankings"
+  #     - "Who is the best fund manager?"
+  #     - "Highest return funds"
+  #     - "افضل الصناديق"
+  #     - "اعلى عائد"
+  #     - "ترتيب الصناديق"
+
+  # - name: FUND_RISK
+  #   examples:
+  #     - "What is the risk level?"
+  #     - "Sharpe ratio of the fund"
+  #     - "Standard deviation"
+  #     - "Is this fund risky?"
+  #     - "Volatility"
+  #     - "مخاطر الصندوق"
+  #     - "نسبة شارب"
+  #     - "الانحراف المعياري"
+
+  # - name: FUND_MANAGER
+  #   examples:
+  #     - "Who manages this fund?"
+  #     - "Fund manager name"
+  #     - "Management company"
+  #     - "Who runs fund 2742?"
+  #     - "manager"
+  #     - "مدير الصندوق"
+  #     - "من يدير الصندوق"
+
+  # - name: FUND_INFO
+  #   examples:
+  #     - "Fund strategy"
+  #     - "Inception date"
+  #     - "When did it start?"
+  #     - "Investment strategy"
+  #     - "Is it equity or money market?"
+  #     - "Fund details"
+  #     - "استراتيجية الصندوق"
+  #     - "تاريخ الانشاء"
+  #     - "نوع الصندوق"
+
+  # ===== EDUCATION =====
+  - name: DEFINE_TERM
+    examples:
+      - "What is P/E?"
+      - "Define Market Cap"
+      - "Meaning of Dividend Yield"
+      - "Explain EPS"
+      - "What does volume mean?"
+      - "Definition of..."
+      - "ما هو مكرر الربحيه"
+      - "شرح"
+      - "معنى"
+
+  - name: SCREENER_GROWTH
+    examples:
+      - "High growth stocks"
+      - "Fastest growing companies"
+      - "Top revenue growth"
+      - "Best stocks for growth"
+      - "Sales growth leaders"
+      - "اسهم نمو"
+      - "الاسهم الاكثر نموا"
+      - "اسهم نمو المبيعات"
+
+  - name: SCREENER_SAFETY
+    examples:
+      - "Safest stocks"
+      - "Low risk companies"
+      - "Stocks with low debt"
+      - "High solvency"
+      - "Safety score"
+      - "Strong balance sheet"
+      - "اسهم امنة"
+      - "اقل مخاطر"
+      - "شركات قوية ماليا"
+
+  - name: SCREENER_VALUE
+    examples:
+      - "Best value stocks"
+      - "Deep value"
+      - "Most undervalued"
+      - "Cheap valuation"
+      - "Value investing"
+      - "اسهم قيمة"
+      - "استثمار القيمة"
+      - "اقل تقييم"
+
+  - name: SCREENER_INCOME
+    examples:
+      - "High dividend yield"
+      - "Income stocks"
+      - "Passive income"
+      - "Best dividend payers"
+      - "Dividend aristocrats"
+      - "اسهم توزيعات"
+      - "اعلى عائد توزيع"
+      - "دخل شهري"
+
+  # ===== SYSTEM =====
+  - name: HELP
+    examples:
+      - "Help"
+      - "Commands"
+      - "Menu"
+      - "What can I ask?"
+      - "Instructions"
+      - "مساعدة"
+      - "القائمة"

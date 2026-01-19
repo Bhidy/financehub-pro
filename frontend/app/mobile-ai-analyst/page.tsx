@@ -271,7 +271,21 @@ function MobileAIAnalystPageContent() {
                                         ) : (
                                             <div className="flex flex-col gap-3 w-full max-w-[95%] animate-in zoom-in-95 slide-in-from-left-2 duration-300">
 
-                                                {/* Specialized UI Components (Chart & Cards FIRST) */}
+
+                                                {/* Premium Text Message Renderer (NOW SECOND) with Enhanced Design */}
+                                                <div className="w-full space-y-4 px-2">
+
+                                                    <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
+
+                                                    {/* Fact Explanations (Definitions - Simplified Flat Display) */}
+                                                    {m.response?.fact_explanations && (
+                                                        <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5">
+                                                            <FactExplanations explanations={m.response.fact_explanations} />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* 2. Specialized UI Components (Chart & Cards) */}
                                                 {m.response?.chart && (
                                                     <div className="mb-2">
                                                         <ChartCard chart={m.response.chart} />
@@ -286,30 +300,6 @@ function MobileAIAnalystPageContent() {
                                                         onExampleClick={handleExampleClick}
                                                     />
                                                 )}
-
-                                                {/* Premium Text Message Renderer (NOW SECOND) with Enhanced Design */}
-                                                <div className="bg-gradient-to-br from-white to-slate-50 dark:from-[#1A1F2E] dark:to-[#151925] rounded-2xl p-5 shadow-lg shadow-slate-200/50 dark:shadow-black/20 border border-blue-100 dark:border-blue-900/30 backdrop-blur-sm relative overflow-hidden group">
-                                                    {/* Decorative Elements */}
-                                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-indigo-600 opacity-80 rounded-l-2xl" />
-                                                    <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors" />
-
-                                                    {/* Header */}
-                                                    <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100 dark:border-white/5">
-                                                        <div className="p-1.5 rounded-lg bg-blue-100/50 dark:bg-blue-900/20">
-                                                            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                                                        </div>
-                                                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Analysis Summary</span>
-                                                    </div>
-
-                                                    <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
-
-                                                    {/* Fact Explanations (Definitions) */}
-                                                    {m.response?.fact_explanations && (
-                                                        <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5">
-                                                            <FactExplanations explanations={m.response.fact_explanations} />
-                                                        </div>
-                                                    )}
-                                                </div>
 
                                                 {/* Follow-up Actions */}
                                                 {m.response?.actions && m.response.actions.length > 0 && (

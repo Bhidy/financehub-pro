@@ -62,25 +62,38 @@ class ChatService:
         self.context_store = get_context_store()
     
     async def _get_user_name(self, user_id: Optional[str]) -> str:
-        """Fetch the full name of the user from the database."""
+        """Fetch the first name of the user from the database and clean it."""
         if not user_id:
             return "Trader"
             
         try:
-            # Handle both string and int user_ids
-            uid = int(user_id) if str(user_id).isdigit() else None
-            if not uid:
+            # Handle both string (email) and int (numeric ID) user_ids
+            # In our system, JWT 'sub' is the email address
+            user_id_str = str(user_id).strip()
+            
+            if "@" in user_id_str:
+                # JWT/Auth path: lookup by email
+                query = "SELECT full_name FROM users WHERE email = $1"
+                row = await self.conn.fetchrow(query, user_id_str)
+            elif user_id_str.isdigit():
+                # Legacy/Numeric ID path
+                query = "SELECT full_name FROM users WHERE id = $1"
+                row = await self.conn.fetchrow(query, int(user_id_str))
+            else:
                 return "Trader"
 
-            query = "SELECT full_name FROM users WHERE id = $1"
-            row = await self.conn.fetchrow(query, uid)
-            
             if row and row['full_name']:
-                # Extract first name for a more friendly tone
-                name = row['full_name'].strip().split(' ')[0]
-                return name
+                # Clean name: remove special chars, keep only letters/Arabic chars
+                import re
+                full_name = row['full_name'].strip()
+                # Split by space and take the first part
+                first_name = full_name.split(' ')[0]
+                # Filter out emojis and non-alpha characters from first name
+                # Supports both English and Arabic characters
+                clean_name = re.sub(r'[^\w\s\u0600-\u06FF]', '', first_name)
+                return clean_name if clean_name else "Trader"
         except Exception as e:
-            print(f"[ChatService] Error fetching user name: {e}")
+            print(f"[ChatService] Error fetching user name for {user_id}: {e}")
             
         return "Trader"
 
@@ -215,13 +228,19 @@ class ChatService:
                     # Fetch real user name for personalization
                     real_user_name = await self._get_user_name(user_id)
                     
+                    # Session state detection for intelligent greetings
+                    is_first_message = len(history or []) == 0
+                    is_returning_user = user_id is not None # Placeholder logic for returning user check
+                    
                     # 1. Generate Narrative (Conversational Text)
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
                         intent=intent.value,
                         data=result_data.get('cards', []),
                         language=language,
-                        user_name=real_user_name
+                        user_name=real_user_name,
+                        is_first_message=is_first_message,
+                        is_returning_user=is_returning_user
                     )
                     
                     # 2. Extract Fact Explanations (Definitions)
@@ -750,7 +769,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="3.9.1-STARTA-VOICE" # DEPLOYMENT VERIFICATION
+                backend_version="3.9.8-CHIEF-EXPERT" # DEPLOYMENT VERIFICATION
             )
         )
 

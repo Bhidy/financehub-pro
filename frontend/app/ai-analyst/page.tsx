@@ -336,24 +336,13 @@ function AIAnalystPageContent() {
                                         ) : (
                                             <div className="w-full space-y-4">
                                                 {/* 1. Text Summary (The "Starta Voice" - NOW FIRST) */}
-                                                <div className="bg-gradient-to-br from-white to-slate-50 dark:from-[#1A1F2E] dark:to-[#151925] rounded-3xl p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/20 border border-blue-100 dark:border-blue-900/30 backdrop-blur-sm relative overflow-hidden group">
-                                                    {/* Decorative Elements */}
-                                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-indigo-600 opacity-80" />
-                                                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors" />
-
-                                                    {/* Header */}
-                                                    <div className="flex items-center gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-white/5">
-                                                        <div className="p-1.5 rounded-lg bg-blue-100/50 dark:bg-blue-900/20">
-                                                            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                                        </div>
-                                                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Analysis Summary</span>
-                                                    </div>
+                                                <div className="w-full space-y-4 px-2">
 
                                                     <PremiumMessageRenderer content={msg.response?.conversational_text || msg.content} />
 
-                                                    {/* Fact Explanations (Definitions - Expanded by default in component) */}
+                                                    {/* Fact Explanations (Definitions - Simplified Flat Display) */}
                                                     {msg.response?.fact_explanations && (
-                                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                                                        <div className="mt-2 border-t border-slate-100 dark:border-white/5 pt-4">
                                                             <FactExplanations explanations={msg.response.fact_explanations} />
                                                         </div>
                                                     )}

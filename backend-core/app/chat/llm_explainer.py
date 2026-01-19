@@ -141,20 +141,23 @@ class LLMExplainerService:
                 c_data = card.get("data", {})
                 
                 if c_type == "stock_header":
-                    summary_lines.append(f"Stock: {c_data.get('symbol')} @ {c_data.get('price')} (Change: {c_data.get('change_percent')}%)")
+                    summary_lines.append(f"Stock: {c_data.get('symbol')} ({c_data.get('name')})")
                 elif c_type == "snapshot":
-                    summary_lines.append(f"Snapshot: PE={c_data.get('pe_ratio')}, Cap={c_data.get('market_cap')}, Yield={c_data.get('yield')}")
+                    summary_lines.append(f"Price: {c_data.get('last_price')} {c_data.get('currency')} (Change: {c_data.get('change_percent')}%)")
+                elif c_type == "stats":
+                    summary_lines.append(f"Valuation: PE={c_data.get('pe_ratio')}, Yield={c_data.get('dividend_yield')}%, Cap={c_data.get('market_cap_formatted')}")
                 elif c_type == "screener_results":
                      # Summarize first 3 results
                      items = c_data.get('items', [])[:3]
                      names = [i.get('symbol') for i in items]
-                     summary_lines.append(f"Screener Results: Found {len(c_data.get('items', []))} stocks. Top: {', '.join(names)}")
+                     summary_lines.append(f"List: Found {len(c_data.get('items', []))} companies. Top: {', '.join(names)}")
                 else:
+                    # Generic fallback for other card types
                     summary_lines.append(f"[{c_type}] Data available.")
             
-            return "\n".join(summary_lines)
-        except Exception:
-            return "Data available."
+            return "\n".join(summary_lines) or "No structured data found."
+        except Exception as e:
+            return f"Data extraction error: {e}"
 
 # Singleton
 _explainer = LLMExplainerService()

@@ -13,6 +13,7 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { useGuestUsage } from "@/hooks/useGuestUsage";
 import { useAuth } from "@/contexts/AuthContext";
 import UsageLimitModal from "@/components/ai/UsageLimitModal";
+import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -365,7 +366,14 @@ function AIAnalystPageContent() {
                                                         <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Analysis Summary</span>
                                                     </div>
 
-                                                    <PremiumMessageRenderer content={msg.content} />
+                                                    <PremiumMessageRenderer content={msg.response?.conversational_text || msg.content} />
+
+                                                    {/* Fact Explanations (Definitions) */}
+                                                    {msg.response?.fact_explanations && (
+                                                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                                                            <FactExplanations explanations={msg.response.fact_explanations} />
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* 3. Actions */}

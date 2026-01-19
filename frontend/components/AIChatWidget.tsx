@@ -16,6 +16,8 @@ export default function AIChatWidget() {
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    const [sessionId, setSessionId] = useState<string>("");
+
     // Connection Sentinel
     const health = useBackendHealth();
     const isOffline = health === 'offline';
@@ -28,12 +30,29 @@ export default function AIChatWidget() {
         scrollToBottom();
     }, [messages]);
 
+    // Session Management
+    useEffect(() => {
+        const storedSession = localStorage.getItem("fh_chat_session_id");
+        if (storedSession) {
+            setSessionId(storedSession);
+        } else {
+            const newSession = `sess_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            localStorage.setItem("fh_chat_session_id", newSession);
+            setSessionId(newSession);
+        }
+    }, []);
+
     const handleSend = async () => {
         if (!input.trim()) return;
 
         const userMsg = input;
         setInput("");
-        setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+
+        // Optimistic Update
+        const newUserMsgObj = { role: 'user' as const, content: userMsg };
+        const currentHistory = [...messages, newUserMsgObj]; // Capture exact history for API
+
+        setMessages(prev => [...prev, newUserMsgObj]);
         setLoading(true);
 
         try {
@@ -44,7 +63,8 @@ export default function AIChatWidget() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     message: userMsg,
-                    history: messages
+                    history: currentHistory, // Send updated history
+                    session_id: sessionId // Persist session
                 })
             });
 

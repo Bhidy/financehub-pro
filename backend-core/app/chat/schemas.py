@@ -128,6 +128,8 @@ class CardType(str, Enum):
     HELP = "help"
     ERROR = "error"
     SUGGESTIONS = "suggestions"
+    # New Conversational Cards
+    FACT_EXPLANATIONS = "fact_explanations"
     # News card type
     NEWS_LIST = "news_list"
     # Fund card types
@@ -194,12 +196,14 @@ class ResponseMeta(BaseModel):
     latency_ms: int = 0
     cached: bool = False
     as_of: Optional[datetime] = None
-    backend_version: str = "2.9" # Incremented for tracking
+    backend_version: str = "3.0" # Incremented for Hybrid Chat
 
 
 class ChatResponse(BaseModel):
     """Full chat response."""
-    message_text: str
+    message_text: str  # The "Robotic" fallback or title
+    conversational_text: Optional[str] = None # The "Human" voice (Starta)
+    fact_explanations: Optional[Dict[str, str]] = None # Contextual definitions
     message_text_ar: Optional[str] = None
     language: Literal["ar", "en", "mixed"] = "en"
     cards: List[Card] = Field(default_factory=list)

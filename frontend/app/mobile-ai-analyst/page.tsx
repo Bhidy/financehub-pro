@@ -20,6 +20,7 @@ import { clsx } from "clsx";
 import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
+import { FactExplanations } from "@/components/ai/FactExplanations";
 
 /**
  * Mobile-specific AI Analyst Page
@@ -300,7 +301,14 @@ function MobileAIAnalystPageContent() {
                                                         <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Analysis Summary</span>
                                                     </div>
 
-                                                    <PremiumMessageRenderer content={m.content} />
+                                                    <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
+
+                                                    {/* Fact Explanations (Definitions) */}
+                                                    {m.response?.fact_explanations && (
+                                                        <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5">
+                                                            <FactExplanations explanations={m.response.fact_explanations} />
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Follow-up Actions */}

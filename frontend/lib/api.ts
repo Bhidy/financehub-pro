@@ -257,6 +257,19 @@ export const fetchPortfolio = async (): Promise<FullPortfolio> => {
     return data;
 };
 
+export interface PortfolioSnapshot {
+    snapshot_date: string;
+    total_value: number;
+    cash_balance: number;
+    total_pnl: number;
+}
+
+export const fetchPortfolioHistory = async (): Promise<PortfolioSnapshot[]> => {
+    const { data } = await api.get("/portfolio/history");
+    return data;
+};
+
+
 export const importPortfolio = async (holdings: HoldingImport[], replaceExisting: boolean = false) => {
     const { data } = await api.post("/portfolio/import", {
         holdings,

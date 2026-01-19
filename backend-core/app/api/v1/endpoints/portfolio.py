@@ -58,6 +58,12 @@ class PortfolioInsights(BaseModel):
     concentration_risk: float  # % in top 3 holdings
     sector_allocation: List[dict] = []
 
+class PortfolioSnapshot(BaseModel):
+    snapshot_date: date
+    total_value: float
+    cash_balance: float
+    total_pnl: float
+
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
@@ -72,6 +78,21 @@ async def get_or_create_portfolio(user_id: str):
         )
         portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
     return portfolio
+
+async def create_portfolio_snapshot(portfolio_id: int, total_value: float, cash_balance: float, total_pnl: float):
+    """Create a daily snapshot for analytics"""
+    today = date.today()
+    try:
+        await db.execute(
+            """INSERT INTO portfolio_snapshots 
+               (portfolio_id, snapshot_date, total_value, cash_balance, total_pnl)
+               VALUES ($1, $2, $3, $4, $5)
+               ON CONFLICT (portfolio_id, snapshot_date) 
+               DO UPDATE SET total_value = $3, cash_balance = $4, total_pnl = $5""",
+            portfolio_id, today, total_value, cash_balance, total_pnl
+        )
+    except Exception as e:
+        print(f"Error creating snapshot: {e}")
 
 async def get_holdings_with_prices(portfolio_id: int):
     """Fetch holdings with live prices and calculations"""
@@ -165,7 +186,6 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
             "cash_balance": cash_balance,
             "market_value": total_value,
             "total_equity": total_equity,
-            "holdings": [dict(h) for h in holdings],
             "insights": {
                 "total_cost": total_cost,
                 "total_value": total_value,
@@ -180,6 +200,12 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
                 "sector_allocation": sector_allocation
             }
         }
+        
+        # Async snapshot creation (fire and forget)
+        # In a real queue system this would be a task, here we just await it quickly or let it run
+        await create_portfolio_snapshot(portfolio['id'], total_value, cash_balance, total_pnl)
+        
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -455,7 +481,25 @@ async def upload_csv(
         request = ImportRequest(holdings=holdings, replace_existing=replace_existing)
         return await import_portfolio(request, current_user)
         
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing CSV: {str(e)}")
+
+
+@router.get("/portfolio/history")
+async def get_portfolio_history(current_user: dict = Depends(get_current_active_user)):
+    """Get portfolio value history for charts"""
+    try:
+        user_id = current_user['email']
+        portfolio = await get_or_create_portfolio(user_id)
+        
+        history = await db.fetch_all(
+            """SELECT snapshot_date, total_value, total_pnl 
+               FROM portfolio_snapshots 
+               WHERE portfolio_id = $1 
+               ORDER BY snapshot_date ASC""",
+            portfolio['id']
+        )
+        return [dict(h) for h in history]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

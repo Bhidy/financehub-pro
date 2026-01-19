@@ -105,3 +105,8 @@ ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS high_52w DECIMAL(12, 4);
 ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS low_52w DECIMAL(12, 4);
 ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS target_price DECIMAL(12, 4);
 ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS market_cap BIGINT;
+
+-- 7. Portfolio Management (Include new schema)
+-- \i /app/app/db/portfolio_schema.sql
+-- Note: The above is for psql. For direct SQL execution in Python, we append the content.
+

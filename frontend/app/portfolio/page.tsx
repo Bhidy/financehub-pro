@@ -8,8 +8,18 @@ import {
     deleteHolding,
     FullPortfolio,
     PortfolioHolding,
-    HoldingImport
+    HoldingImport,
+    fetchPortfolioHistory // Import the new function
 } from "@/lib/api";
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
@@ -46,6 +56,7 @@ import {
     RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PortfolioSummary } from "@/components/PortfolioSummary";
 
 // ============================================================================
 // CSV UPLOAD MODAL
@@ -514,6 +525,13 @@ export default function PortfolioPage() {
         enabled: true
     });
 
+    // Fetch history
+    const { data: history } = useQuery({
+        queryKey: ["portfolio-history"],
+        queryFn: fetchPortfolioHistory,
+        enabled: !!portfolio
+    });
+
     // Import mutation
     const importMutation = useMutation({
         mutationFn: ({ holdings, replace }: { holdings: HoldingImport[], replace: boolean }) =>
@@ -657,61 +675,76 @@ export default function PortfolioPage() {
 
             <div className="max-w-[1800px] mx-auto px-6 py-6">
                 {/* Hero Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 -mt-10 mb-8">
-                    {[
-                        {
-                            label: "Total Value",
-                            value: `SAR ${insights.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-                            icon: Wallet,
-                            color: "blue",
-                            subtext: `${holdings.length} holdings`
-                        },
-                        {
-                            label: "Total P&L",
-                            value: insights.total_pnl >= 0
-                                ? `+SAR ${insights.total_pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                                : `-SAR ${Math.abs(insights.total_pnl).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-                            icon: insights.total_pnl >= 0 ? TrendingUp : TrendingDown,
-                            color: insights.total_pnl >= 0 ? "green" : "red",
-                            subtext: `${insights.total_pnl_percent >= 0 ? '+' : ''}${insights.total_pnl_percent.toFixed(2)}%`
-                        },
-                        {
-                            label: "Today's Change",
-                            value: insights.daily_pnl >= 0
-                                ? `+SAR ${insights.daily_pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                                : `-SAR ${Math.abs(insights.daily_pnl).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-                            icon: Activity,
-                            color: insights.daily_pnl >= 0 ? "emerald" : "rose",
-                            subtext: `${insights.daily_pnl_percent >= 0 ? '+' : ''}${insights.daily_pnl_percent.toFixed(2)}%`
-                        },
-                        {
-                            label: "Cash Balance",
-                            value: `SAR ${portfolio.cash_balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-                            icon: DollarSign,
-                            color: "violet",
-                            subtext: "Available"
-                        },
-                    ].map((stat, i) => (
-                        <div key={i} className="bg-white dark:bg-[#151925] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-black/20 p-5">
-                            <div className="flex items-start justify-between mb-3">
-                                <div className={clsx(
-                                    "w-12 h-12 rounded-xl flex items-center justify-center",
-                                    stat.color === "blue" && "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400",
-                                    stat.color === "green" && "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
-                                    stat.color === "red" && "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400",
-                                    stat.color === "emerald" && "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
-                                    stat.color === "rose" && "bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400",
-                                    stat.color === "violet" && "bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400"
-                                )}>
-                                    <stat.icon className="w-6 h-6" />
-                                </div>
+                <PortfolioSummary
+                    totalValue={insights.total_value}
+                    totalPnl={insights.total_pnl}
+                    totalPnlPercent={insights.total_pnl_percent}
+                    dailyPnl={insights.daily_pnl}
+                    dailyPnlPercent={insights.daily_pnl_percent}
+                    cashBalance={portfolio.cash_balance}
+                    holdingsCount={holdings.length}
+                />
+
+                {/* Performance Chart */}
+                {history && history.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white dark:bg-[#151925] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-black/20 p-6 mb-8"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Portfolio Performance</h3>
+                                <p className="text-sm text-slate-500 font-medium">Net Asset Value History</p>
                             </div>
-                            <div className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-1">{stat.label}</div>
-                            <div className="text-xl font-black text-slate-900 dark:text-white">{stat.value}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{stat.subtext}</div>
+                            <div className="flex gap-2">
+                                {/* Timeframe toggles could go here */}
+                            </div>
                         </div>
-                    ))}
-                </div>
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={history}>
+                                    <defs>
+                                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.1} />
+                                    <XAxis
+                                        dataKey="snapshot_date"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                        tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                        tickFormatter={(val) => `SAR ${(val / 1000).toFixed(0)}k`}
+                                        domain={['auto', 'auto']}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc' }}
+                                        itemStyle={{ color: '#f8fafc' }}
+                                        formatter={(val: any) => [val ? `SAR ${Number(val).toLocaleString()}` : '0', 'Value']}
+                                        labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="total_value"
+                                        stroke="#3B82F6"
+                                        strokeWidth={3}
+                                        fillOpacity={1}
+                                        fill="url(#colorValue)"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Insights Row */}
                 {hasHoldings && (
@@ -846,76 +879,85 @@ export default function PortfolioPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                    {holdings.map((h: PortfolioHolding) => (
-                                        <tr key={h.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <Link href={`/symbol/${h.symbol}`} className="flex items-center gap-3">
+                                    <AnimatePresence mode='popLayout'>
+                                        {holdings.map((h: PortfolioHolding, i) => (
+                                            <motion.tr
+                                                key={h.id}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 20 }}
+                                                transition={{ delay: i * 0.05 }}
+                                                className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
+                                            >
+                                                <td className="px-6 py-4">
+                                                    <Link href={`/symbol/${h.symbol}`} className="flex items-center gap-3">
+                                                        <span className={clsx(
+                                                            "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-lg",
+                                                            Number(h.pnl_percent) >= 0
+                                                                ? "bg-gradient-to-br from-emerald-400 to-teal-500 shadow-emerald-500/20"
+                                                                : "bg-gradient-to-br from-red-400 to-rose-500 shadow-red-500/20"
+                                                        )}>
+                                                            {h.symbol.slice(0, 2)}
+                                                        </span>
+                                                        <div>
+                                                            <span className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{h.symbol}</span>
+                                                            <p className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[150px]">{h.company_name || h.sector || ''}</p>
+                                                        </div>
+                                                    </Link>
+                                                </td>
+                                                <td className="px-6 py-4 text-right font-mono font-bold text-slate-700 dark:text-slate-300">{h.quantity}</td>
+                                                <td className="px-6 py-4 text-right font-mono text-slate-500 dark:text-slate-400">{Number(h.average_price).toFixed(2)}</td>
+                                                <td className="px-6 py-4 text-right font-mono font-bold text-slate-900 dark:text-white">{Number(h.current_price).toFixed(2)}</td>
+                                                <td className="px-6 py-4 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{Number(h.current_value).toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-right">
                                                     <span className={clsx(
-                                                        "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white",
-                                                        Number(h.pnl_percent) >= 0
-                                                            ? "bg-gradient-to-br from-emerald-400 to-teal-500"
-                                                            : "bg-gradient-to-br from-red-400 to-rose-500"
+                                                        "inline-flex items-center gap-1 font-bold",
+                                                        Number(h.pnl_percent) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
                                                     )}>
-                                                        {h.symbol.slice(0, 2)}
+                                                        {Number(h.pnl_percent) >= 0
+                                                            ? <ArrowUpRight className="w-4 h-4" />
+                                                            : <ArrowDownRight className="w-4 h-4" />
+                                                        }
+                                                        {Number(h.pnl_percent).toFixed(2)}%
                                                     </span>
-                                                    <div>
-                                                        <span className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{h.symbol}</span>
-                                                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[150px]">{h.company_name || h.sector || ''}</p>
-                                                    </div>
-                                                </Link>
-                                            </td>
-                                            <td className="px-6 py-4 text-right font-mono font-bold text-slate-700 dark:text-slate-300">{h.quantity}</td>
-                                            <td className="px-6 py-4 text-right font-mono text-slate-500 dark:text-slate-400">{Number(h.average_price).toFixed(2)}</td>
-                                            <td className="px-6 py-4 text-right font-mono font-bold text-slate-900 dark:text-white">{Number(h.current_price).toFixed(2)}</td>
-                                            <td className="px-6 py-4 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{Number(h.current_value).toLocaleString()}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className={clsx(
-                                                    "inline-flex items-center gap-1 font-bold",
-                                                    Number(h.pnl_percent) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
-                                                )}>
-                                                    {Number(h.pnl_percent) >= 0
-                                                        ? <ArrowUpRight className="w-4 h-4" />
-                                                        : <ArrowDownRight className="w-4 h-4" />
-                                                    }
-                                                    {Number(h.pnl_percent).toFixed(2)}%
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className={clsx(
-                                                    "text-sm font-medium",
-                                                    Number(h.daily_change_percent) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
-                                                )}>
-                                                    {Number(h.daily_change_percent) >= 0 ? '+' : ''}{Number(h.daily_change_percent).toFixed(2)}%
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                {deleteConfirm === h.id ? (
-                                                    <div className="flex items-center justify-center gap-2">
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <span className={clsx(
+                                                        "text-sm font-medium",
+                                                        Number(h.daily_change_percent) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                                                    )}>
+                                                        {Number(h.daily_change_percent) >= 0 ? '+' : ''}{Number(h.daily_change_percent).toFixed(2)}%
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    {deleteConfirm === h.id ? (
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <button
+                                                                onClick={() => deleteMutation.mutate(h.id)}
+                                                                disabled={deleteMutation.isPending}
+                                                                className="p-2 rounded-lg bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-200 transition-colors"
+                                                            >
+                                                                <Check className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setDeleteConfirm(null)}
+                                                                className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200 transition-colors"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
                                                         <button
-                                                            onClick={() => deleteMutation.mutate(h.id)}
-                                                            disabled={deleteMutation.isPending}
-                                                            className="p-2 rounded-lg bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-200 transition-colors"
+                                                            onClick={() => setDeleteConfirm(h.id)}
+                                                            className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                                                         >
-                                                            <Check className="w-4 h-4" />
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
-                                                        <button
-                                                            onClick={() => setDeleteConfirm(null)}
-                                                            className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-slate-200 transition-colors"
-                                                        >
-                                                            <X className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => setDeleteConfirm(h.id)}
-                                                        className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                    )}
+                                                </td>
+                                            </motion.tr>
+                                        ))}
+                                    </AnimatePresence>
                                 </tbody>
                             </table>
                         </div>

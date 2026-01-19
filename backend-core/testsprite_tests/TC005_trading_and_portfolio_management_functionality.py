@@ -26,7 +26,7 @@ def test_trading_and_portfolio_management_functionality():
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
     # Step 3: Query the portfolio before trade
-    portfolio_resp = requests.get(f"{BASE_URL}/api/v1/portfolio", headers=headers, timeout=TIMEOUT)
+    portfolio_resp = requests.get(f"{BASE_URL}/api/v1/portfolio/full", headers=headers, timeout=TIMEOUT)
     assert portfolio_resp.status_code == 200, f"Get portfolio failed: {portfolio_resp.text}"
     portfolio_before = portfolio_resp.json()
     cash_before = portfolio_before.get("cash_balance", 0)
@@ -37,17 +37,20 @@ def test_trading_and_portfolio_management_functionality():
     tickers = tickers_resp.json()
     ticker = tickers[0].get("symbol")
 
-    # Step 5: Place a simulated buy trade
+    # Step 5: Place a simulated buy trade (using the holdings endpoint for direct manipulation or trade endpoint if exists)
+    # The current portfolio.py implements /portfolio/holdings via POST. 
+    # Let's use that instead of /trade which might be separate.
     trade_payload = {
         "symbol": ticker,
         "quantity": 10,
-        "side": "BUY"
+        "purchase_price": 50.0, # Dummy price
+        "purchase_date": "2024-01-01"
     }
-    trade_resp = requests.post(f"{BASE_URL}/api/v1/trade", headers=headers, json=trade_payload, timeout=TIMEOUT)
-    assert trade_resp.status_code == 200, f"Place trade failed: {trade_resp.text}"
+    trade_resp = requests.post(f"{BASE_URL}/api/v1/portfolio/holdings", headers=headers, json=trade_payload, timeout=TIMEOUT)
+    assert trade_resp.status_code == 200, f"Add holding failed: {trade_resp.text}"
 
     # Step 6: Immediately query portfolio after trade
-    portfolio_after = requests.get(f"{BASE_URL}/api/v1/portfolio", headers=headers, timeout=TIMEOUT).json()
+    portfolio_after = requests.get(f"{BASE_URL}/api/v1/portfolio/full", headers=headers, timeout=TIMEOUT).json()
     cash_after = portfolio_after.get("cash_balance", 0)
     assert cash_after < cash_before, "Cash should decrease after BUY"
     

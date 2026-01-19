@@ -223,8 +223,37 @@ async def lifespan(app: FastAPI):
                 # ============================================================
                 # PORTFOLIO ENHANCEMENTS (Added 2026-01-19)
                 # ============================================================
+
+                # Base Tables (if not exist)
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS portfolios (
+                        id SERIAL PRIMARY KEY,
+                        user_id VARCHAR(255) NOT NULL,
+                        cash_balance DECIMAL(18,2) DEFAULT 1000000.00,
+                        currency VARCHAR(10) DEFAULT 'SAR',
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW(),
+                        UNIQUE(user_id)
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_portfolios_user ON portfolios(user_id)")
+
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS portfolio_holdings (
+                        id SERIAL PRIMARY KEY,
+                        portfolio_id INTEGER REFERENCES portfolios(id) ON DELETE CASCADE,
+                        symbol VARCHAR(20) NOT NULL,
+                        quantity INTEGER NOT NULL,
+                        average_price DECIMAL(18,2) NOT NULL,
+                        purchase_date DATE,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_holdings_portfolio ON portfolio_holdings(portfolio_id)")
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_holdings_symbol ON portfolio_holdings(symbol)")
                 
-                # Add purchase_date to portfolio_holdings
+                # Add purchase_date to portfolio_holdings (Idempotent check)
                 await conn.execute("""
                     ALTER TABLE portfolio_holdings 
                     ADD COLUMN IF NOT EXISTS purchase_date DATE

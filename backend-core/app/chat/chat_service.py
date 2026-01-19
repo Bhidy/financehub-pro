@@ -208,11 +208,11 @@ class ChatService:
             # -------------------------------------------------------------
             
             # 7. Update context
-            self.context_store.update(session_id, {
-                'last_symbol': actual_symbol,
-                'last_intent': intent,
-                'last_market': entities.get('market_code', last_market)
-            })
+            self.context_store.set(session_id, 
+                last_symbol=actual_symbol,
+                last_intent=intent,
+                last_market=entities.get('market_code', last_market)
+            )
             
             # 8. Build response
             if isinstance(result, ChatResponse):

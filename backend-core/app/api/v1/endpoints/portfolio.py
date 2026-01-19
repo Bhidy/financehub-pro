@@ -70,14 +70,31 @@ class PortfolioSnapshot(BaseModel):
 
 async def get_or_create_portfolio(user_id: str):
     """Get existing portfolio or create new one for user"""
-    portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
-    if not portfolio:
-        await db.execute(
-            "INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, 1000000.00)", 
-            user_id
-        )
+    try:
+        print(f"DEBUG: Checking for portfolio with user_id={user_id}", flush=True)
         portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
-    return portfolio
+        if not portfolio:
+            print(f"DEBUG: Portfolio not found for {user_id}, parsing insert...", flush=True)
+            # Use explicit CAST if needed, but parameter binding usually handles it.
+            # Ensure 1000000.00 is recognized as decimal/numeric.
+            await db.execute(
+                "INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, 1000000.00)", 
+                user_id
+            )
+            print("DEBUG: Insert executed. Fetching new portfolio...", flush=True)
+            portfolio = await db.fetch_one("SELECT * FROM portfolios WHERE user_id = $1", user_id)
+        
+        if not portfolio:
+            print("CRITICAL: Failed to retrieve portfolio after creation attempt.", flush=True)
+        else:
+            print(f"DEBUG: Portfolio found/created: ID={portfolio['id']}", flush=True)
+            
+        return portfolio
+    except Exception as e:
+        print(f"CRITICAL ERROR in get_or_create_portfolio: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        raise e
 
 async def create_portfolio_snapshot(portfolio_id: int, total_value: float, cash_balance: float, total_pnl: float):
     """Create a daily snapshot for analytics"""
@@ -143,11 +160,13 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
     try:
         user_id = current_user['email']
         print(f"Stats: Fetching portfolio for {user_id}", flush=True) # DEBUG LOG
+        
         portfolio = await get_or_create_portfolio(user_id)
         if not portfolio:
              print(f"Error: Could not create/get portfolio for {user_id}", flush=True) # DEBUG LOG
              raise HTTPException(status_code=500, detail="Failed to initialize portfolio")
         
+        print(f"DEBUG: Fetching holdings for portfolio_id={portfolio['id']}", flush=True)
         holdings = await get_holdings_with_prices(portfolio['id'])
         print(f"Stats: Portfolio {portfolio['id']} has {len(holdings)} holdings", flush=True) # DEBUG LOG
         
@@ -177,6 +196,8 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
         sector_map = {}
         for h in holdings:
             sector = h['sector'] or 'Unknown'
+            # Check if sector is in arabic or english and normalize if needed
+            # For now just aggregate strings
             sector_map[sector] = sector_map.get(sector, 0) + float(h['current_value'] or 0)
         
         sector_allocation = [
@@ -184,10 +205,11 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
             for k, v in sorted(sector_map.items(), key=lambda x: x[1], reverse=True)
         ]
         
+        # Parse cash balance safely
         cash_balance = float(portfolio['cash_balance'] or 0)
         total_equity = cash_balance + total_value
         
-        return {
+        response_data = {
             "portfolio_id": portfolio['id'],
             "cash_balance": cash_balance,
             "market_value": total_value,
@@ -209,10 +231,16 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
         
         # Async snapshot creation (fire and forget)
         # In a real queue system this would be a task, here we just await it quickly or let it run
-        await create_portfolio_snapshot(portfolio['id'], total_value, cash_balance, total_pnl)
+        try:
+            await create_portfolio_snapshot(portfolio['id'], total_value, cash_balance, total_pnl)
+        except Exception as se:
+            print(f"WARNING: Snapshot creation failed: {se}")
         
-        return response
+        return response_data
     except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"CRITICAL ERROR in get_full_portfolio: {e}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

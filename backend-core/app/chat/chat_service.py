@@ -143,24 +143,36 @@ class ChatService:
                 'cap', 'snapshot', 'summary', 'report', 'view', 'see', 'check', 'active', 'gainers', 'losers',
             }
             
-            # 5. Resolve symbol (Same Logic)
-            # ... (Existing Symbol Resolution Logic Skipped for Brevity - It was correct) ...
-            # Need to ensure we don't accidentally remove it via replace_file.
-            # I will assume the previous tool call viewed lines 1 to 450, and I need to target specific blocks.
-            # Wait, replace_file_content replaces a CONTIGUOUS block.
-            # I must be careful not to delete the 100 lines of symbol logic.
-            # I will use the *original* message for symbol extraction as slang might contain the symbol better?
-            # Actually, `routing_text` is safer if the paraphraser works well.
-            # Let's trust `routing_text`.
+            # 5. Resolve symbol
+            symbol = entities.get('symbol')
+            potential_symbols = extract_potential_symbols(routing_text)
             
-            # NOTE: I cannot robustly rewriting lines 156-250 without seeing them perfectly aligned.
-            # I will abort this huge replacement and use `multi_replace_file_content` for surgical edits.
-            pass
+            # Candidate selection logic
+            candidate = symbol if symbol else (potential_symbols[0] if potential_symbols else None)
             
-            # ... (Skipping to Phase 2 Replacement)
+            # Resolve if candidate exists
+            resolved_symbol = None
+            resolver_method = "none"
             
-            # 5. Execute Handler (Using original logic flow)
-            # ...
+            if candidate:
+                resolved_symbol = await self.resolver.resolve(candidate, entities.get('market_code'))
+                resolver_method = "extraction"
+                
+            # Try last symbol from context if still unresolved and intent needs it
+            if not resolved_symbol and context_dict.get('last_symbol') and intent not in [Intent.UNKNOWN, Intent.HELP]:
+                resolved_symbol = await self.resolver.resolve(context_dict['last_symbol'], entities.get('market_code'))
+                resolver_method = "context"
+                
+            # If resolved, update entities and context
+            actual_symbol = None
+            if resolved_symbol:
+                actual_symbol = resolved_symbol.symbol
+                entities['symbol'] = actual_symbol
+                entities['market_code'] = resolved_symbol.market_code
+                
+            # 6. Execute Handler
+            handler_name = intent.value
+            result = await self._dispatch_handler(intent, entities, language, routing_text)
             
             # -------------------------------------------------------------
             # PHASE 2: HYBRID CONVERSATIONAL LAYER (The "Starta" Voice)
@@ -172,19 +184,22 @@ class ChatService:
             # Trigger Narrative for most intents except system ones
             NO_NARRATIVE_INTENTS = [Intent.UNKNOWN, Intent.BLOCKED, Intent.HELP, Intent.GREETING]
             
-            if intent not in NO_NARRATIVE_INTENTS and result.get('success', True):
+            # Important: ensure result is a dict and has success
+            result_data = result if isinstance(result, dict) else {}
+            
+            if intent not in NO_NARRATIVE_INTENTS and result_data.get('success', True):
                 try:
                     # 1. Generate Narrative (Conversational Text)
                     conversational_text = await explainer.generate_narrative(
                         query=message, # Give LLM the ORIGINAL user voice for context
                         intent=intent.value,
-                        data=result.get('cards', []),
+                        data=result_data.get('cards', []),
                         language=language
                     )
                     
                     # 2. Extract Fact Explanations (Definitions)
                     fact_explanations = explainer.extract_fact_explanations(
-                         data=result.get('cards', []),
+                         data=result_data.get('cards', []),
                          language=language
                     )
 
@@ -192,20 +207,44 @@ class ChatService:
                     print(f"LLM Hybrid Layer Error (Non-Fatal): {ex}")
             # -------------------------------------------------------------
             
-            # 6. Update context
-            # ...
+            # 7. Update context
+            self.context_store.update(session_id, {
+                'last_symbol': actual_symbol,
+                'last_intent': intent,
+                'last_market': entities.get('market_code', last_market)
+            })
             
-            # 7. Build response
+            # 8. Build response
             if isinstance(result, ChatResponse):
                 return result
                 
             response = self._build_response(
-                result, intent, intent_result.confidence, entities, start_time, language,
-                conversational_text, fact_explanations # Pass new fields
+                result_data, intent, intent_result.confidence, entities, start_time, language,
+                conversational_text, fact_explanations
             )
             
-            # 8. Log analytics...
+            # 9. Log analytics
+            await self._log_analytics(
+                session_id=session_id,
+                user_id=user_id,
+                raw_text=message,
+                normalized_text=normalized.normalized,
+                language=language,
+                intent=intent,
+                confidence=intent_result.confidence,
+                entities=entities,
+                symbol=actual_symbol,
+                resolver_method=resolver_method,
+                handler_name=handler_name,
+                response_success=result_data.get('success', False),
+                cards_count=len(result_data.get('cards', [])),
+                fallback_triggered=result_data.get('fallback', False),
+                error_code=result_data.get('error_code'),
+                latency_ms=int((time.time() - start_time) * 1000),
+                actions=result_data.get('actions', [])
+            )
             
+            return response
         except Exception as global_ex:
             # -------------------------------------------------------------
             # GLOBAL ERROR BOUNDARY (THE SAFETY NET)

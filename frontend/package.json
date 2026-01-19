@@ -9,7 +9,6 @@
     "lint": "eslint",
     "check-types": "tsc --noEmit",
     "format": "prettier --write .",
-    "format": "prettier --write .",
     "pull-env": "vercel env pull .env.local",
     "verify": "npx tsx scripts/verify-prod.ts"
   },
@@ -30,6 +29,7 @@
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
+    "papaparse": "^5.5.3",
     "pg": "^8.16.3",
     "react": "19.2.3",
     "react-apexcharts": "^1.9.0",
@@ -46,6 +46,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/papaparse": "^5.5.2",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

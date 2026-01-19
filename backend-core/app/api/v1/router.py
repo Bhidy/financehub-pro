@@ -40,3 +40,6 @@ api_router.include_router(egx.router, tags=["egx"])  # EGX endpoints at root (/e
 from app.api.v1.endpoints import yahoo
 api_router.include_router(yahoo.router, prefix="/yahoo", tags=["yahoo"])
 
+# Enterprise Portfolio Management
+from app.api.v1.endpoints import portfolio
+api_router.include_router(portfolio.router, tags=["portfolio"])

@@ -217,7 +217,34 @@ async def lifespan(app: FastAPI):
                     )
                 """)
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_verification_email ON verification_codes(email)")
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_verification_email ON verification_codes(email)")
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_verification_code_lookup ON verification_codes(email, code, used, expires_at)")
+
+                # ============================================================
+                # PORTFOLIO ENHANCEMENTS (Added 2026-01-19)
+                # ============================================================
+                
+                # Add purchase_date to portfolio_holdings
+                await conn.execute("""
+                    ALTER TABLE portfolio_holdings 
+                    ADD COLUMN IF NOT EXISTS purchase_date DATE
+                """)
+                
+                # Portfolio Snapshots for historical charts
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS portfolio_snapshots (
+                        id SERIAL PRIMARY KEY,
+                        portfolio_id INTEGER REFERENCES portfolios(id) ON DELETE CASCADE,
+                        snapshot_date DATE NOT NULL,
+                        total_value DECIMAL(18,2),
+                        cash_balance DECIMAL(18,2),
+                        market_value DECIMAL(18,2),
+                        daily_pnl DECIMAL(18,2),
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        UNIQUE(portfolio_id, snapshot_date)
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_portfolio_date ON portfolio_snapshots(portfolio_id, snapshot_date)")
 
                 print("Enterprise Analytics tables verified/created.")
                 print("Chatbot tables verified/created.")

@@ -112,309 +112,256 @@ class ChatService:
              pass 
 
         # 1. Normalize text
-        try:
-            normalized = normalize_text(message)
-            language = normalized.language if normalized.language != 'mixed' else 'en'
-            
-            # 2. Check compliance
-            is_blocked, violation_type, block_message = check_compliance(message)
-            if is_blocked:
-                result = handle_blocked(violation_type, block_message, language)
-                return self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language)
-            
-            # 3. Route intent
-            intent_result = self.router.route(message, context_dict)
-            intent = intent_result.intent
-            entities = intent_result.entities
-            
-            # Force market code in entities if provided explicitly
-            if market:
-                entities['market_code'] = market
-            
-            # Common stopwords that should never be resolved as symbols
-            # Includes: query words, financial terms, technical indicators
-            STOPWORDS = {
-                # Query words
-                'now', 'price', 'stock', 'what', 'please', 'show', 'tell', 
-                'today', 'current', 'latest', 'about', 'the', 'for', 'how', 'much',
-                'market', 'value', 'info', 'quote', 'buy', 'sell', 'hold', 
-                'chart', 'history', 'financial', 'financials', 'dividend', 'sector', 'compare',
-                # Technical indicators (MUST NOT be resolved as symbols)
-                'rsi', 'macd', 'sma', 'ema', 'adx', 'atr', 'cci', 'obv', 'roc',
-                'stochastic', 'bollinger', 'williams', 'momentum', 'volume',
-                # Valuation terms
-                'overvalued', 'undervalued', 'fair', 'check', 'analysis',
-                'peg', 'ebitda', 'ratio', 'ratios', 'margin', 'margins',
-                # Financials
-                'income', 'balance', 'cash', 'flow', 'statement', 'sheet',
-                'annual', 'quarterly', 'ttm', 'growth', 'trend',
-                'debt', 'equity', 'metric', 'metrics', 'analysis', 'valuation',
-                # Safety Stopwords (Common words in queries)
-                'cap', 'snapshot', 'summary', 'report', 'view', 'see', 'check', 'active', 'gainers', 'losers',
+        normalized = normalize_text(message)
+        language = normalized.language if normalized.language != 'mixed' else 'en'
+        
+        # 2. Check compliance
+        is_blocked, violation_type, block_message = check_compliance(message)
+        if is_blocked:
+            result = handle_blocked(violation_type, block_message, language)
+            return self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language)
+        
+        # 3. Route intent
+        intent_result = self.router.route(message, context_dict)
+        intent = intent_result.intent
+        entities = intent_result.entities
+        
+        # Force market code in entities if provided explicitly
+        if market:
+            entities['market_code'] = market
+        
+        # Common stopwords that should never be resolved as symbols
+        # Includes: query words, financial terms, technical indicators
+        STOPWORDS = {
+            # Query words
+            'now', 'price', 'stock', 'what', 'please', 'show', 'tell', 
+            'today', 'current', 'latest', 'about', 'the', 'for', 'how', 'much',
+            'market', 'value', 'info', 'quote', 'buy', 'sell', 'hold', 
+            'chart', 'history', 'financial', 'financials', 'dividend', 'sector', 'compare',
+            # Technical indicators (MUST NOT be resolved as symbols)
+            'rsi', 'macd', 'sma', 'ema', 'adx', 'atr', 'cci', 'obv', 'roc',
+            'stochastic', 'bollinger', 'williams', 'momentum', 'volume',
+            # Valuation terms
+            'overvalued', 'undervalued', 'fair', 'check', 'analysis',
+            'peg', 'ebitda', 'ratio', 'ratios', 'margin', 'margins',
+            # Financials
+            'income', 'balance', 'cash', 'flow', 'statement', 'sheet',
+            'annual', 'quarterly', 'ttm', 'growth', 'trend',
+            'debt', 'equity', 'metric', 'metrics', 'analysis', 'valuation',
+            # Safety Stopwords (Common words in queries)
+            'cap', 'snapshot', 'summary', 'report', 'view', 'see', 'check', 'active', 'gainers', 'losers',
+        }
+        
+        # 4. Resolve symbol if needed
+        # Skip symbol resolution for Fund intents if fund_id is present or not needed
+        is_fund_intent = intent in [Intent.FUND_NAV, Intent.FUND_SEARCH, Intent.FUND_MOVERS]
+        is_sector_intent = intent == Intent.SECTOR_STOCKS
+        
+        symbol = None
+        
+        # SECTOR EXTRACTION LOGIC
+        if is_sector_intent:
+            # Simple keyword matching for sectors (enhanced vs router entities)
+            text_lower = message.lower()
+            sector_map = {
+                'bank': 'Banks', 'banking': 'Banks', 'banks': 'Banks',
+                'real estate': 'Real Estate', 'construction': 'Construction',
+                'food': 'Food & Beverage', 'beverage': 'Food & Beverage',
+                'health': 'Health Care', 'pharma': 'Health Care',
+                'edu': 'Education', 'education': 'Education',
+                'energy': 'Energy', 'utilities': 'Utilities',
+                'finance': 'Financial Services', 'financial': 'Financial Services',
+                'tech': 'IT', 'technology': 'IT', 'telecom': 'Telecom',
+                'hospital': 'Health Care', 'transport': 'Shipping & Transport',
+                'ship': 'Shipping & Transport', 'textile': 'Textile',
+                'material': 'Basic Resources', 'resource': 'Basic Resources',
+                'chem': 'Basic Resources', 'paper': 'Basic Resources',
+                'contract': 'Contracting', 'auto': 'Automotive'
             }
             
-            # 4. Resolve symbol if needed
-            # Skip symbol resolution for Fund intents if fund_id is present or not needed
-            is_fund_intent = intent in [Intent.FUND_NAV, Intent.FUND_SEARCH, Intent.FUND_MOVERS]
-            is_sector_intent = intent == Intent.SECTOR_STOCKS
+            for key, val in sector_map.items():
+                if key in text_lower:
+                    entities['sector'] = val
+                    break
+        
+        potential_symbols = extract_potential_symbols(message)
+        
+        # Filter out stopwords from potential symbols (but keep multi-word phrases)
+        potential_symbols = [s for s in potential_symbols 
+                            if s.lower() not in STOPWORDS or ' ' in s]
+        
+        # Skip symbol resolution if it's a Sector intent (Prevents "Banking" -> "Fawry")
+        if potential_symbols and not is_fund_intent and not is_sector_intent:
+            # NEW: Try multi-word phrases first (longer = more specific), then single words
+            # Sort by length descending to prefer "المصرية للاتصالات" over "المصرية"
+            sorted_candidates = sorted(potential_symbols, key=len, reverse=True)
             
-            symbol = None
-            
-            # SECTOR EXTRACTION LOGIC
-            if is_sector_intent:
-                # Simple keyword matching for sectors (enhanced vs router entities)
-                text_lower = message.lower()
-                sector_map = {
-                    'bank': 'Banks', 'banking': 'Banks', 'banks': 'Banks',
-                    'real estate': 'Real Estate', 'construction': 'Construction',
-                    'food': 'Food & Beverage', 'beverage': 'Food & Beverage',
-                    'health': 'Health Care', 'pharma': 'Health Care',
-                    'edu': 'Education', 'education': 'Education',
-                    'energy': 'Energy', 'utilities': 'Utilities',
-                    'finance': 'Financial Services', 'financial': 'Financial Services',
-                    'tech': 'IT', 'technology': 'IT', 'telecom': 'Telecom',
-                    'hospital': 'Health Care', 'transport': 'Shipping & Transport',
-                    'ship': 'Shipping & Transport', 'textile': 'Textile',
-                    'material': 'Basic Resources', 'resource': 'Basic Resources',
-                    'chem': 'Basic Resources', 'paper': 'Basic Resources',
-                    'contract': 'Contracting', 'auto': 'Automotive'
-                }
-                
-                for key, val in sector_map.items():
-                    if key in text_lower:
-                        entities['sector'] = val
-                        break
-            
-            potential_symbols = extract_potential_symbols(message)
-            
-            # Filter out stopwords from potential symbols (but keep multi-word phrases)
-            potential_symbols = [s for s in potential_symbols 
-                                if s.lower() not in STOPWORDS or ' ' in s]
-            
-            # Skip symbol resolution if it's a Sector intent (Prevents "Banking" -> "Fawry")
-            if potential_symbols and not is_fund_intent and not is_sector_intent:
-                # NEW: Try multi-word phrases first (longer = more specific), then single words
-                # Sort by length descending to prefer "المصرية للاتصالات" over "المصرية"
-                sorted_candidates = sorted(potential_symbols, key=len, reverse=True)
-                
-                for candidate in sorted_candidates:
+            for candidate in sorted_candidates:
+                # PASS MARKET CONTEXT TO RESOLVER
+                resolved = await self.resolver.resolve(candidate, market_code=last_market)
+                if resolved:
+                    if getattr(resolved, 'entity_type', 'stock') == 'fund':
+                         # INTENT SWAP: User asked for a Fund (e.g. "Price of Shield")
+                         # But Router might have thought it's STOCK_PRICE.
+                         # Force switch to FUND_NAV if compatible
+                         if intent in [Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART]:
+                             intent = Intent.FUND_NAV
+                             is_fund_intent = True
+                         
+                         entities['fund_id'] = resolved.symbol
+                         # Clear symbol to avoid confusion
+                         symbol = None
+                    else:
+                        symbol = resolved.symbol
+                        entities['symbol'] = symbol
+                        entities['market_code'] = resolved.market_code
+                    break  # Stop at first successful resolution
+        
+        # Check for symbol in entities from router (fallback for edge cases)
+        if not symbol and 'symbol' not in entities and not is_fund_intent and not is_sector_intent:
+            # Try to find symbol mention in message using individual words
+            for word in normalized.normalized.split():
+                if len(word) >= 3 and word.lower() not in STOPWORDS:
                     # PASS MARKET CONTEXT TO RESOLVER
-                    resolved = await self.resolver.resolve(candidate, market_code=last_market)
+                    resolved = await self.resolver.resolve(word, market_code=last_market)
                     if resolved:
                         if getattr(resolved, 'entity_type', 'stock') == 'fund':
-                             # INTENT SWAP: User asked for a Fund (e.g. "Price of Shield")
-                             # But Router might have thought it's STOCK_PRICE.
-                             # Force switch to FUND_NAV if compatible
+                             # INTENT SWAP (Same logic)
                              if intent in [Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART]:
                                  intent = Intent.FUND_NAV
                                  is_fund_intent = True
-                             
                              entities['fund_id'] = resolved.symbol
-                             # Clear symbol to avoid confusion
                              symbol = None
+                             break
                         else:
                             symbol = resolved.symbol
                             entities['symbol'] = symbol
                             entities['market_code'] = resolved.market_code
-                        break  # Stop at first successful resolution
-            
-            # Check for symbol in entities from router (fallback for edge cases)
-            if not symbol and 'symbol' not in entities and not is_fund_intent and not is_sector_intent:
-                # Try to find symbol mention in message using individual words
-                for word in normalized.normalized.split():
-                    if len(word) >= 3 and word.lower() not in STOPWORDS:
-                        # PASS MARKET CONTEXT TO RESOLVER
-                        resolved = await self.resolver.resolve(word, market_code=last_market)
-                        if resolved:
-                            if getattr(resolved, 'entity_type', 'stock') == 'fund':
-                                 # INTENT SWAP (Same logic)
-                                 if intent in [Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART]:
-                                     intent = Intent.FUND_NAV
-                                     is_fund_intent = True
-                                 entities['fund_id'] = resolved.symbol
-                                 symbol = None
-                                 break
-                            else:
-                                symbol = resolved.symbol
-                                entities['symbol'] = symbol
-                                entities['market_code'] = resolved.market_code
-                                break
-            
-            # Use context symbol if still not found
-            # Do NOT use context symbol for Sector intents (e.g. "Show me banks" generally means ALL banks, not "Banks filtered by context symbol")
-            if not symbol and context_dict.get('last_symbol') and not is_sector_intent:
-                symbol = context_dict['last_symbol']
-                entities['symbol'] = symbol
-            
-            # 5. Execute handler
-            # FORCE MARKET CODE INTO ENTITIES FOR HANDLERS
-            # Handlers look at entities['market_code'] or generic args depending on implementation
-            # The dispatch_handler creates the args from entities.
-            if last_market:
-                 entities['market_code'] = last_market
-            elif not entities.get('market_code'):
-                 # ENTERPRISE FIX: Default to 'EGX' if no market context exists
-                 # This prevents handler crashes on generic queries like "Top Gainers"
-                 entities['market_code'] = 'EGX'
-            
-            print(f"DEBUG: Dispatching Handler - Intent: {intent}, Entities Market: {entities.get('market_code')}")
+                            break
+        
+        # Use context symbol if still not found
+        # Do NOT use context symbol for Sector intents (e.g. "Show me banks" generally means ALL banks, not "Banks filtered by context symbol")
+        if not symbol and context_dict.get('last_symbol') and not is_sector_intent:
+            symbol = context_dict['last_symbol']
+            entities['symbol'] = symbol
+        
+        # 5. Execute handler
+        # FORCE MARKET CODE INTO ENTITIES FOR HANDLERS
+        # Handlers look at entities['market_code'] or generic args depending on implementation
+        # The dispatch_handler creates the args from entities.
+        if last_market:
+             entities['market_code'] = last_market
+        elif not entities.get('market_code'):
+             # ENTERPRISE FIX: Default to 'EGX' if no market context exists
+             # This prevents handler crashes on generic queries like "Top Gainers"
+             entities['market_code'] = 'EGX'
+        
+        print(f"DEBUG: Dispatching Handler - Intent: {intent}, Entities Market: {entities.get('market_code')}")
 
-            try:
-                result = await self._dispatch_handler(intent, entities, language, message)
-            except Exception as e:
-                print(f"CRITICAL ERROR in Handler Dispatch: {e}")
-                import traceback
-                traceback.print_exc()
-                # Return a graceful error card instead of crashing (500)
-                result = {
-                    'success': False,
-                    'message': "I encountered a system error while processing your request. Please try again or specify a stock symbol." if language == 'en' else "حدث خطأ في النظام أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.",
-                    'cards': [{'type': 'error', 'title': 'System Error', 'data': {'error': repr(e)}}]
-                }
-
-            # -------------------------------------------------------------
-            # PHASE 2: LLM EXPLAINER LAYER
-            # -------------------------------------------------------------
-            # Only trigger for specific high-value intents
-            EXPLAINABLE_INTENTS = [
-                Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART,
-                Intent.FINANCIALS, Intent.DIVIDENDS, Intent.COMPARE_STOCKS,
-                Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.DEEP_GROWTH,
-                Intent.DEEP_EFFICIENCY
-            ]
-            
-            if intent in EXPLAINABLE_INTENTS and result.get('success', True):
-                try:
-                    explainer = get_explainer()
-                    explanation = await explainer.generate_explanation(
-                        query=message,
-                        intent=intent.value,
-                        data=result.get('cards', []),
-                        language=language
-                    )
-                    
-                    if explanation:
-                        # Prepend explanation to the template message (or replace strictly)
-                        # We prefer replacing the robotic template entirely if we have a good explanation
-                        result['message'] = explanation
-                        
-                except Exception as ex:
-                    print(f"LLM Explainer Error (Non-Fatal): {ex}")
-            # -------------------------------------------------------------
-            
-            # 6. Update context
-            # ENTERPRISE FIX: ALWAYS update last_market if we have a valid one, even if no symbol involved
-            final_market_to_save = entities.get('market_code') or last_market
-            
-            if symbol:
-                self.context_store.set(
-                    session_id,
-                    last_symbol=symbol,
-                    last_intent=intent.value,
-                    last_range=entities.get('range'),
-                    last_market=entities.get('market_code') or last_market
-                )
-            elif entities.get('fund_id'):
-                 # Save fund context
-                 self.context_store.set(
-                    session_id,
-                    last_symbol=entities.get('fund_id'), # Overload symbol for now or add last_fund_id
-                    last_intent=intent.value,
-                    last_market=last_market or 'EGX' # Funds are always EGX currently
-                )
-            else:
-                 # ENTERPRISE FIX: UPDATE MARKET EVEN IF NO SYMBOL (e.g. Screener)
-                 self.context_store.set(
-                    session_id,
-                    last_intent=intent.value,
-                    last_market=entities.get('market_code') or last_market
-                )
-            
-            # 7. Build response
-            if isinstance(result, ChatResponse):
-                return result
-                
-            response = self._build_response(
-                result, intent, intent_result.confidence, entities, start_time, language
-            )
-            
-            # 8. Log analytics (fire-and-forget, non-blocking)
-            try:
-                await self._log_analytics(
-                    session_id=session_id,
-                    user_id=user_id,  # Pass user_id
-                    raw_text=message,
-                    normalized_text=normalized.normalized,
-                    language=language,
-                    intent=intent,
-                    confidence=intent_result.confidence,
-                    entities=entities,
-                    symbol=symbol,
-                    resolver_method=getattr(resolved, 'match_type', None) if 'resolved' in dir() and resolved else None,
-                    handler_name=intent.value,
-                    response_success=result.get('success', True),
-                    cards_count=len(result.get('cards', [])),
-                    fallback_triggered=(intent == Intent.UNKNOWN),
-                    error_code=None if result.get('success', True) else 'HANDLER_ERROR',
-                    latency_ms=int((time.time() - start_time) * 1000),
-                    actions=result.get('actions', [])
-                )
-            except Exception as log_err:
-                print(f"Analytics logging failed (non-fatal): {log_err}")
-            
-            return response
-            
-        except Exception as global_ex:
-            # -------------------------------------------------------------
-            # GLOBAL ERROR BOUNDARY (THE SAFETY NET)
-            # -------------------------------------------------------------
-            print(f"CRITICAL: Uncaught Exception in ChatService: {global_ex}")
+        try:
+            result = await self._dispatch_handler(intent, entities, language, message)
+        except Exception as e:
+            print(f"CRITICAL ERROR in Handler Dispatch: {e}")
             import traceback
             traceback.print_exc()
-            
-            # Fallback Card
+            # Return a graceful error card instead of crashing (500)
+            result = {
+                'success': False,
+                'message': "I encountered a system error while processing your request. Please try again or specify a stock symbol." if language == 'en' else "حدث خطأ في النظام أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.",
+                'cards': [{'type': 'error', 'title': 'System Error', 'data': {'error': repr(e)}}]
+            }
+
+        # -------------------------------------------------------------
+        # PHASE 2: LLM EXPLAINER LAYER
+        # -------------------------------------------------------------
+        # Only trigger for specific high-value intents
+        EXPLAINABLE_INTENTS = [
+            Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART,
+            Intent.FINANCIALS, Intent.DIVIDENDS, Intent.COMPARE_STOCKS,
+            Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.DEEP_GROWTH,
+            Intent.DEEP_EFFICIENCY
+        ]
+        
+        if intent in EXPLAINABLE_INTENTS and result.get('success', True):
             try:
-                # Attempt to determine language even if crash happened
-                lang = 'en'
-                if message and any('\u0600' <= c <= '\u06FF' for c in message):
-                    lang = 'ar'
-                
-                err_msg = "Our AI Analyst is currently upgrading its neural pathways. Please try again in a moment." if lang == 'en' else "نظام التحليل الذكي يقوم بتحديث مساراته العصبية حالياً. يرجى المحاولة بعد قليل."
-                
-                fallback_card = Card(
-                    type=CardType.MARKDOWN,
-                    title="System Maintenance" if lang == 'en' else "صيانة النظام",
-                    data={'content': f"### ⚠️ {err_msg}"}
+                explainer = get_explainer()
+                explanation = await explainer.generate_explanation(
+                    query=message,
+                    intent=intent.value,
+                    data=result.get('cards', []),
+                    language=language
                 )
                 
-                return ChatResponse(
-                    message_text=err_msg,
-                    language=lang,
-                    cards=[fallback_card],
-                    chart=None,
-                    actions=[],
-                    disclaimer="System Error Recovery Mode",
-                    meta=ResponseMeta(
-                        intent="SYSTEM_ERROR",
-                        confidence=0.0,
-                        entities={},
-                        latency_ms=int((time.time() - start_time) * 1000),
-                        cached=False,
-                        as_of=datetime.utcnow()
-                    )
-                )
-            except Exception as super_fatal:
-                # If even the fallback fails, return a barebones object (Should never happen)
-                print(f"SUPER FATAL: {super_fatal}")
-                return ChatResponse(
-                    message_text="System Error. Please try again.",
-                    language="en",
-                    cards=[],
-                    chart=None,
-                    actions=[],
-                    disclaimer=None,
-                    meta=ResponseMeta(intent="FATAL", confidence=0, entities={}, latency_ms=0, cached=False, as_of=datetime.utcnow())
-                )
+                if explanation:
+                    # Prepend explanation to the template message (or replace strictly)
+                    # We prefer replacing the robotic template entirely if we have a good explanation
+                    result['message'] = explanation
+                    
+            except Exception as ex:
+                print(f"LLM Explainer Error (Non-Fatal): {ex}")
+        # -------------------------------------------------------------
+        
+        # 6. Update context
+        # ENTERPRISE FIX: ALWAYS update last_market if we have a valid one, even if no symbol involved
+        final_market_to_save = entities.get('market_code') or last_market
+        
+        if symbol:
+            self.context_store.set(
+                session_id,
+                last_symbol=symbol,
+                last_intent=intent.value,
+                last_range=entities.get('range'),
+                last_market=entities.get('market_code') or last_market
+            )
+        elif entities.get('fund_id'):
+             # Save fund context
+             self.context_store.set(
+                session_id,
+                last_symbol=entities.get('fund_id'), # Overload symbol for now or add last_fund_id
+                last_intent=intent.value,
+                last_market=last_market or 'EGX' # Funds are always EGX currently
+            )
+        else:
+             # ENTERPRISE FIX: UPDATE MARKET EVEN IF NO SYMBOL (e.g. Screener)
+             self.context_store.set(
+                session_id,
+                last_intent=intent.value,
+                last_market=entities.get('market_code') or last_market
+            )
+        
+        # 7. Build response
+        if isinstance(result, ChatResponse):
+            return result
+            
+        response = self._build_response(
+            result, intent, intent_result.confidence, entities, start_time, language
+        )
+        
+        # 8. Log analytics (fire-and-forget, non-blocking)
+        try:
+            await self._log_analytics(
+                session_id=session_id,
+                user_id=user_id,  # Pass user_id
+                raw_text=message,
+                normalized_text=normalized.normalized,
+                language=language,
+                intent=intent,
+                confidence=intent_result.confidence,
+                entities=entities,
+                symbol=symbol,
+                resolver_method=getattr(resolved, 'match_type', None) if 'resolved' in dir() and resolved else None,
+                handler_name=intent.value,
+                response_success=result.get('success', True),
+                cards_count=len(result.get('cards', [])),
+                fallback_triggered=(intent == Intent.UNKNOWN),
+                error_code=None if result.get('success', True) else 'HANDLER_ERROR',
+                latency_ms=int((time.time() - start_time) * 1000),
+                actions=result.get('actions', [])
+            )
+        except Exception as log_err:
+            print(f"Analytics logging failed (non-fatal): {log_err}")
+        
+        return response
     
     async def _log_analytics(
         self,

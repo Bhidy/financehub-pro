@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { PortfolioSummary } from "@/components/PortfolioSummary";
 import { SkeletonAssetCard, SkeletonInsightCard, SkeletonTable } from "@/components/PortfolioSkeletons";
+import { HoldingDrawer } from "@/components/HoldingDrawer";
 
 // ============================================================================
 // CSV UPLOAD MODAL
@@ -483,7 +484,7 @@ function AllocationChart({ data }: { data: { sector: string; percent: number }[]
 // ASSET CARD (NEW ULTRA PREMIUM COMPONENT)
 // ============================================================================
 
-function AssetCard({ holding, onDelete }: { holding: PortfolioHolding & { sparkline_data?: number[] }, onDelete: (id: number) => void }) {
+function AssetCard({ holding, onDelete, onClick }: { holding: PortfolioHolding & { sparkline_data?: number[] }, onDelete: (id: number) => void, onClick: () => void }) {
     const isProfitable = holding.pnl_percent >= 0;
 
     // Use real sparkline data if available, otherwise fallback to details
@@ -494,11 +495,12 @@ function AssetCard({ holding, onDelete }: { holding: PortfolioHolding & { sparkl
     return (
         <motion.div
             layout
+            onClick={onClick}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="group relative bg-white dark:bg-[#151925] rounded-2xl border border-slate-100 dark:border-white/5 p-5 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-500/20 transition-all duration-300"
+            className="group relative cursor-pointer bg-white dark:bg-[#151925] rounded-2xl border border-slate-100 dark:border-white/5 p-5 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-500/20 transition-all duration-300"
         >
             {/* Action Menu (Visible on Hover) */}
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -581,6 +583,7 @@ export default function PortfolioPage() {
     const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
     const [showCSVModal, setShowCSVModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [selectedHolding, setSelectedHolding] = useState<(PortfolioHolding & { sparkline_data?: number[] }) | null>(null);
 
     // Data Query
     const { data: portfolio, isLoading, refetch, isError, error } = useQuery({
@@ -649,6 +652,13 @@ export default function PortfolioPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] pb-20">
+            {/* Holding Detail Drawer */}
+            <HoldingDrawer
+                isOpen={!!selectedHolding}
+                onClose={() => setSelectedHolding(null)}
+                holding={selectedHolding}
+            />
+
             {/* Modals */}
             <AnimatePresence>
                 {showCSVModal && (
@@ -953,7 +963,12 @@ export default function PortfolioPage() {
                                 >
                                     <AnimatePresence>
                                         {holdings.map((h) => (
-                                            <AssetCard key={h.id} holding={h} onDelete={(id) => deleteMutation.mutate(id)} />
+                                            <AssetCard
+                                                key={h.id}
+                                                holding={h}
+                                                onDelete={(id) => deleteMutation.mutate(id)}
+                                                onClick={() => setSelectedHolding(h)}
+                                            />
                                         ))}
                                     </AnimatePresence>
                                 </motion.div>

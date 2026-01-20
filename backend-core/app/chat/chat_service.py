@@ -68,57 +68,55 @@ class ChatService:
         self.context_store = get_context_store()
     
     async def _get_user_name(self, user_id: Optional[str]) -> str:
-        """Fetch the first name or email of the user."""
+        """Fetch the first name or smart-extract it from email."""
         if not user_id:
             return "Trader"
             
         try:
             # Handle both string (email) and int (numeric ID) user_ids
-            # In our system, JWT 'sub' is the email address
             user_id_str = str(user_id).strip()
             
-            # If user_id is an email (contains @), we can default to using it (or the name part)
-            # The user specifically requested "mention his email".
+            # Helper to clean/format name
+            def clean_name(name_potential):
+                if not name_potential: return "Trader"
+                # Remove emojis/special chars
+                import re
+                cleaned = re.sub(r'[^\w\s\u0600-\u06FF]', '', name_potential)
+                if not cleaned: return "Trader"
+                # Capitalize first letter
+                return cleaned.capitalize()
+
+            # 1. Try DB Full Name
+            full_name = None
             is_email = "@" in user_id_str
             
             if is_email:
-                # JWT/Auth path: lookup by email
-                query = "SELECT full_name FROM users WHERE email = $1"
-                row = await self.conn.fetchrow(query, user_id_str)
-                
-                # If we have a full name, use first name (more natural), 
-                # BUT if user_id is explicitly an email, the user might expect it.
-                # However, "Hi mohamed@test.com" is weird. "Hi Mohamed" is better.
-                # If the user specifically said "mention his email", I will pass the email 
-                # IF name is missing or if we just want to ensure personalization.
-                # Let's clean the full name if found.
-                if row and row['full_name']:
-                     import re
-                     full_name = row['full_name'].strip()
-                     first_name = full_name.split(' ')[0]
-                     clean_name = re.sub(r'[^\w\s\u0600-\u06FF]', '', first_name)
-                     return clean_name if clean_name else user_id_str # Fallback to email
-                
-                # If DB lookup fails but we have the email in user_id, return the email
-                return user_id_str
-            
+                full_name = await self.conn.fetchval("SELECT full_name FROM users WHERE email = $1", user_id_str)
             elif user_id_str.isdigit():
-                # Legacy/Numeric ID path
-                query = "SELECT full_name FROM users WHERE id = $1"
-                row = await self.conn.fetchrow(query, int(user_id_str))
-                if row and row['full_name']:
-                    import re
-                    full_name = row['full_name'].strip()
-                    first_name = full_name.split(' ')[0]
-                    clean_name = re.sub(r'[^\w\s\u0600-\u06FF]', '', first_name)
-                    return clean_name if clean_name else "Trader"
-
+                 full_name = await self.conn.fetchval("SELECT full_name FROM users WHERE id = $1", int(user_id_str))
+                 
+            if full_name:
+                first_name = full_name.split(' ')[0]
+                return clean_name(first_name)
+            
+            # 2. Smart Fallback: Extract name from email
+            if is_email:
+                # Extract "mohamed" from "mohamed@test.com" or "mohamed.ali@..."
+                local_part = user_id_str.split('@')[0]
+                # If "mohamed.ali", take "mohamed"
+                name_part = local_part.split('.')[0]
+                # Remove numbers from end (e.g. mohamed123 -> mohamed)
+                import re
+                name_part = re.sub(r'\d+$', '', name_part)
+                return clean_name(name_part)
+                
             return "Trader"
+
         except Exception as e:
-            print(f"[ChatService] Error fetching user name for {user_id}: {e}")
-            # Fallback: if it's an email, return it.
+            print(f"[ChatService] Name extraction error: {e}")
+            # Final fallback if crash, try to salvage email user part
             if user_id and "@" in str(user_id):
-                return str(user_id)
+                 return str(user_id).split('@')[0].capitalize()
             
         return "Trader"
 

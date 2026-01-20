@@ -150,3 +150,52 @@ curl https://starta.46-224-223-172.sslip.io/health
     -   All scheduling is handled by GitHub Actions (Watchdog) or the internal FastAPI Scheduler.
     -   Your local machine is **NEVER** the runner.
     -   Verification of these processes must be done by inspecting **server logs** (`docker logs starta-backend-1`), not local output.
+
+### 7. BULLETPROOF DEPLOYMENT PROTOCOL (MANDATORY)
+> [!CAUTION]
+> **THIS IS THE ONLY CORRECT WAY TO DEPLOY. FAILURE TO FOLLOW CAUSES DISK FULL ERRORS AND TIMEOUTS.**
+
+#### Pre-Deployment Checklist
+1. **Check Disk Space FIRST**: 
+   ```bash
+   ssh root@46.224.223.172 "df -h"
+   ```
+   - If usage > 70%, run aggressive prune: `docker system prune -af --volumes`
+   - Minimum 15GB free required for torch/sentence-transformers builds
+
+2. **Commit and Push**:
+   ```bash
+   git add . && git commit -m "Your message" && git push origin main
+   ```
+
+#### Deployment Command (Single Step)
+```bash
+./scripts/deploy_production.sh backend nuclear
+```
+
+#### What the Nuclear Script Does (In Order)
+1. `docker compose down` - Stop containers
+2. `docker system prune -af` - Clear all caches (CRITICAL for disk space)
+3. `git pull origin main` - Fetch latest code
+4. `docker compose up -d --build --force-recreate` - Fresh rebuild
+5. `sleep 10 && docker ps` - Health check
+
+#### Post-Deployment Verification
+```bash
+curl https://starta.46-224-223-172.sslip.io/health
+```
+Expected: `"version": "X.X.X-YOUR-VERSION"`, `"status": "healthy"`
+
+#### Common Failure Modes & Fixes
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `no space left on device` | Disk full from Docker cache | Run `docker system prune -af --volumes` on server |
+| `ReadTimeoutError (pytorch CDN)` | Network timeout | Wait and retry - pip auto-retries 5 times |
+| `parent snapshot does not exist` | Stale Docker cache | Run `docker system prune -af` before build |
+| Expect script timeout | Large image export > 1200s | Retry - image is cached after first build |
+
+#### Emergency Recovery
+If deployment fails mid-way:
+```bash
+ssh root@46.224.223.172 "cd /opt/starta && docker system prune -af --volumes && docker compose -f docker-compose.prod.yml up -d --build"
+```

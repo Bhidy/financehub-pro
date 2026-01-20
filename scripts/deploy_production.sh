@@ -26,8 +26,17 @@ echo "🚀 Starting FinanceHub Pro Deployment ($MODE)..."
 # 2. BACKEND DEPLOYMENT (Hetzner via Git)
 # ------------------------------------------------------------------------------
 if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
+    # Check for NUCLEAR strategy flag
+    STRATEGY=${2:-standard} # Second argument: 'standard' (default) or 'nuclear'
+
     echo "----------------------------------------------------------------"
-    echo "📦 Deploying Backend to Hetzner (Nuclear Strategy via Git)..."
+    if [[ "$STRATEGY" == "nuclear" ]]; then
+        echo "☢️  NUCLEAR DEPLOYMENT SELECTED (Immediate Consistency)"
+        echo "   1. Push Code -> GitHub"
+        echo "   2. SSH -> Stop, Prune, Rebuild, Start"
+    else
+        echo "📦 Deploying Backend to Hetzner (Standard Git Push)..."
+    fi
     echo "----------------------------------------------------------------"
     
     # Check if we have uncommitted changes
@@ -40,7 +49,7 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
             git add .
             git commit -m "$COMMIT_MSG"
             git push origin main
-            echo "✅ Backend code pushed to GitHub (Coolify will auto-deploy)."
+            echo "✅ Backend code pushed to GitHub."
         else
             echo "⛔ Backend deployment aborted (Changes must be pushed for Coolify)."
             exit 1
@@ -48,6 +57,38 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
     else
         echo "✅ No local changes. Pushing current main..."
         git push origin main
+    fi
+
+    # EXECUTE NUCLEAR OPTION IF REQUESTED
+    if [[ "$STRATEGY" == "nuclear" ]]; then
+        echo "----------------------------------------------------------------"
+        echo "🔥 EXECUTING NUCLEAR REBUILD ON SERVER..."
+        echo "----------------------------------------------------------------"
+        # Verify expect script exists
+        if [[ ! -f "scripts/restore_production.exp" ]]; then
+            echo "❌ ERROR: scripts/restore_production.exp not found!"
+            exit 1
+        fi
+        
+        # Execute the restore script
+        # Note: We assume SSH key access is configured or password will be prompted by expect if needed.
+        # However, restore_production.exp takes arguments: [host] [password]
+        # We need to retrieve these safely.
+        
+        # Hardcoded IP from context/memory
+        HOST="46.224.223.172"
+        
+        echo "Enter Server Password for $HOST (Input Hidden):"
+        read -s SERVER_PASSWORD
+        
+        ./scripts/restore_production.exp "$HOST" "$SERVER_PASSWORD"
+        
+        if [[ $? -eq 0 ]]; then
+             echo "✅ Nuclear Deployment Successful."
+        else
+             echo "❌ Nuclear Deployment Failed."
+             exit 1
+        fi
     fi
 fi
 

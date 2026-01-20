@@ -105,7 +105,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: 20-40 words MAXIMUM.\n"
+                "2. LENGTH: 50-90 words. Provide detailed, helpful context.\n"
                 "3. STYLE: Natural, conversational, like talking to a smart friend.\n"
                 "4. NO marketing language, NO emojis beyond greeting.\n"
             )
@@ -142,7 +142,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: 20-40 words MAXIMUM. Be concise.\n"
+                "2. LENGTH: 50-90 words. Be comprehensive and explanatory.\n"
                 "3. CONNECT the data type to meaning, don't recite numbers.\n"
                 "4. TONE: Calm, supportive, confident, professional.\n"
                 "5. NO fluff phrases like 'I hope this helps' or 'Let me know'.\n"

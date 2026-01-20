@@ -401,6 +401,15 @@ class ChatService:
                          data=result_data.get('cards', []),
                          language=language
                     )
+                    
+                    # === APPEND DEFINITIONS TO MAIN TEXT (VISIBILITY FIX) ===
+                    # This ensures they appear in the main message bubble with the new larger font size.
+                    if fact_explanations and conversational_text:
+                        header = "**Key Terms:**" if language == "en" else "**مصطلحات هامة:**"
+                        definitions_text = f"\n\n{header}\n"
+                        for _, defn in fact_explanations.items():
+                             definitions_text += f"- {defn}\n"
+                        conversational_text += definitions_text
 
                 except Exception as ex:
                     print(f"LLM Hybrid Layer Error (Non-Fatal): {ex}")

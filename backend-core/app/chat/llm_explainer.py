@@ -106,7 +106,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: STRICTLY 18-25 words. Short, charming, and punchy. Avoid all fluff.\n"
+                "2. LENGTH: 25-35 words MINIMUM. Be comprehensive but punchy. No fluff.\n"
                 "3. STYLE: Intelligent, attractive, warm, and professional.\n"
                 "4. NO marketing language. Treat this as a chat between smart experts.\n"
             )
@@ -145,7 +145,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: STRICTLY 18-25 words. Provide punchy, expert context.\n"
+                "2. LENGTH: 25-35 words MINIMUM. Provide comprehensive, expert context.\n"
                 "3. TONE: Calm, supportive, confident, expert. NO fluff phrases.\n"
             )
 

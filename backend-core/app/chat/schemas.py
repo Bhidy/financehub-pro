@@ -233,7 +233,7 @@ class IntentResult(BaseModel):
 
 
 class ConversationContext(BaseModel):
-    """Stored conversation context."""
+    """Enhanced conversation context for world-class conversational AI."""
     session_id: str
     last_symbol: Optional[str] = None
     last_market: Optional[str] = None
@@ -241,3 +241,13 @@ class ConversationContext(BaseModel):
     last_range: Optional[str] = None
     compare_symbols: Optional[List[str]] = None
     expires_at: datetime
+    
+    # Phase 1: Enhanced Session State (NEW)
+    turn_count: int = 0  # Message count in this session
+    greeting_shown: bool = False  # Track if greeting was shown
+    last_greeting_category: Optional[str] = None  # Prevent repetition
+    last_opening_used: Optional[str] = None  # Prevent repetition
+    last_cards_shown: Optional[List[str]] = None  # Card types shown
+    user_name: Optional[str] = None  # Cached for personalization
+    detected_language: str = "en"  # ar/en
+

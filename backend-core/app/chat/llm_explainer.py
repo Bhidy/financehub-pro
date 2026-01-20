@@ -82,52 +82,71 @@ class LLMExplainerService:
         context_str = self._format_data_for_context(data)
         lang_instruction = "Arabic (Modern Standard)" if language == 'ar' else "English"
         
-        # SPLIT PROMPT ARCHITECTURE
-        # =========================
+        # WORLD-CLASS CONVERSATIONAL FRAMEWORK
+        # =====================================
+        # Layer ② - Data-Aware Commentary (Core - this is what LLM generates)
+        # The LLM produces the core narrative; Layers ① and ③ are added by ResponseComposer
+        
+        # Build card type context for the LLM
+        card_types = [c.get('type', 'data') for c in data] if data else []
+        card_context = self._describe_cards(card_types)
         
         if allow_greeting:
-            # --- PROMPT A: NEW SESSION (Greetings Allowed) ---
-            greeting_instruction = (
-                "GREETING STRATEGY:\n"
-                f"1. New User: 'Welcome {user_name} 👋 I’m Starta. I’ll help you understand Egyptian stocks.'\n"
-                f"2. Returning: 'Welcome back {user_name} 👋 Ready to analyze?'\n"
-                "You MAY strictly use one of the above greetings."
+            # --- PROMPT A: NEW SESSION (Conversational Intent) ---
+            # When user says "hello" or first message is conversational
+            system_prompt = (
+                f"You are Starta (ستارتا), a friendly and expert Financial Analyst.\n\n"
+                
+                "GREETING ALLOWED - This is a new conversation.\n"
+                f"You MAY welcome the user naturally. Examples:\n"
+                f"- 'Hey {user_name}! Ready to dive into the market?'\n"
+                f"- 'Hello! What would you like to explore today?'\n"
+                "But keep it brief - one short line maximum.\n\n"
+                
+                "GUIDELINES:\n"
+                f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
+                "2. LENGTH: 20-40 words MAXIMUM.\n"
+                "3. STYLE: Natural, conversational, like talking to a smart friend.\n"
+                "4. NO marketing language, NO emojis beyond greeting.\n"
             )
-            tone_instruction = "Your tone is professional, welcoming, and expert."
-            
         else:
-            # --- PROMPT B: ONGOING CONVERSATION (Greetings PHYSICALLY REMOVED) ---
-            # ENTERPRISE FIX: Make this instruction ABSOLUTE and UNMISTAKABLE
-            greeting_instruction = (
-                "⛔ ABSOLUTE RULE - READ CAREFULLY ⛔\n"
-                "This is an ONGOING CONVERSATION. The user is ALREADY talking to you.\n"
-                "YOU MUST OBEY THESE RULES:\n"
-                " 1. NEVER say 'Welcome', 'Welcome back', 'Hello', 'Hi', 'Hey', 'Greetings'.\n"
-                " 2. NEVER use the user's name at the start.\n"
-                " 3. NEVER say 'I am Starta', 'I'm here to help', 'Ready to analyze'.\n"
-                " 4. NEVER use emojis like 👋 at the beginning.\n"
-                " 5. START IMMEDIATELY with the analysis. First word should be data.\n"
-                " 6. Example good starts: 'The stock...', 'Based on...', 'Looking at...', 'Revenue shows...'\n"
-                " 7. Example BAD starts: 'Welcome back!', 'Hello Mohamed!', 'Hi there!'\n"
-                "VIOLATION OF THESE RULES IS UNACCEPTABLE.\n"
+            # --- PROMPT B: ONGOING CONVERSATION (Data-Focused) ---
+            # This is the core narrative prompt - produces Layer ②
+            system_prompt = (
+                f"You are Starta, an expert Financial Analyst providing data commentary.\n\n"
+                
+                "⛔ CRITICAL: This is an ONGOING conversation.\n"
+                "DO NOT greet. DO NOT say welcome. DO NOT use the user's name.\n"
+                "START DIRECTLY with your analysis.\n\n"
+                
+                "YOUR TASK (Layer ② - Data-Aware Commentary):\n"
+                f"The user is being shown: {card_context}\n"
+                "Your job is to EXPLAIN and CONTEXTUALIZE, not repeat raw numbers.\n\n"
+                
+                "GOOD RESPONSE PATTERNS:\n"
+                "- 'Based on the latest numbers, here's how this stock is positioned.'\n"
+                "- 'Looking at today's valuation metrics, this gives us a clearer picture.'\n"
+                "- 'When we combine price movement with valuation, this is what stands out.'\n"
+                "- 'The current metrics suggest the market is pricing in growth expectations.'\n"
+                "- 'From a valuation perspective, this stock is in an interesting range.'\n\n"
+                
+                "BAD RESPONSES (NEVER DO THIS):\n"
+                "- 'Welcome back!' ← FORBIDDEN\n"
+                "- 'The price is 45.5 EGP' ← Already on card, don't repeat\n"
+                "- 'P/E ratio is 12.5' ← Already on card\n"
+                "- 'Hello Mohamed!' ← FORBIDDEN\n\n"
+                
+                "VARIATION REQUIREMENT:\n"
+                "Each response must be UNIQUE. Never use the same phrasing twice.\n"
+                "Be creative in how you describe the data context.\n\n"
+                
+                "GUIDELINES:\n"
+                f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
+                "2. LENGTH: 20-40 words MAXIMUM. Be concise.\n"
+                "3. CONNECT the data type to meaning, don't recite numbers.\n"
+                "4. TONE: Calm, supportive, confident, professional.\n"
+                "5. NO fluff phrases like 'I hope this helps' or 'Let me know'.\n"
             )
-            tone_instruction = "Your tone is extremely direct, concise, and purely data-focused. NO greetings."
-
-        # Core Persona & Instruction (CHIEF EXPERT UPGRADE)
-        system_prompt = (
-            f"You are Starta (ستارتا), an expert Financial Analyst.\n"
-            f"{tone_instruction}\n\n"
-
-            f"{greeting_instruction}\n\n"
-
-            "STRICT OUTPUT STRUCTURE & GUIDELINES:\n"
-            "1. **STRUCTURE**: Produce ONLY the text reply. (Stats/Cards are added separately).\n"
-            f"2. **LANGUAGE**: Respond ONLY in {lang_instruction}.\n"
-            "3. **LENGTH**: 20-40 words MAXIMUM. Be extremely concise.\n"
-            "4. **STYLE**: Real conversational reply, like ChatGPT/Gemini but shorter.\n"
-            "5. NO fluff. NO 'I hope this helps'. NO 'Let me know if you need more'.\n"
-            "6. **DATA**: Interpret the data immediately.\n\n"
-        )
 
         try:
             # If no data exists (e.g., small talk or unknown), we still want a conversational response
@@ -274,6 +293,50 @@ class LLMExplainerService:
             return "\n".join(summary_lines) or "No specific metrics found."
         except Exception as e:
             return f"Data extraction error: {e}"
+
+    def _describe_cards(self, card_types: List[str]) -> str:
+        """
+        Convert card types to human-readable descriptions for LLM context.
+        This helps the LLM understand what data the user is seeing.
+        """
+        CARD_DESCRIPTIONS = {
+            "stock_header": "stock overview with price and daily change",
+            "snapshot": "key metrics and valuation summary",
+            "stats": "detailed statistics",
+            "financials_table": "financial statements",
+            "financial_explorer": "comprehensive financial data",
+            "dividends_table": "dividend history and yield",
+            "compare_table": "side-by-side comparison",
+            "movers_table": "top gainers/losers list",
+            "sector_list": "stocks in a sector",
+            "screener_results": "filtered stock results",
+            "technicals": "technical indicators (RSI, MACD, etc.)",
+            "ownership": "ownership structure",
+            "fair_value": "valuation analysis",
+            "news_list": "recent news articles",
+            "deep_valuation": "deep valuation metrics (EV/EBIT, P/TBV)",
+            "deep_health": "financial health indicators (Z-Score, F-Score)",
+            "deep_growth": "growth analysis (CAGR, revenue trends)",
+            "deep_efficiency": "efficiency metrics (ROCE, asset turnover)",
+            "ratios": "financial ratios",
+        }
+        
+        if not card_types:
+            return "general financial information"
+        
+        descriptions = []
+        for ct in card_types:
+            if ct in CARD_DESCRIPTIONS:
+                descriptions.append(CARD_DESCRIPTIONS[ct])
+            else:
+                descriptions.append(ct.replace("_", " "))
+        
+        if len(descriptions) == 1:
+            return descriptions[0]
+        elif len(descriptions) == 2:
+            return f"{descriptions[0]} and {descriptions[1]}"
+        else:
+            return ", ".join(descriptions[:-1]) + ", and " + descriptions[-1]
 
 
 # Singleton

@@ -2,7 +2,7 @@ import requests
 import time
 import sys
 
-TARGET_VERSION = "4.2.0-NO-KEY-TERMS"
+TARGET_VERSION = "4.2.1-GREETING-FIX"
 URL = "https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
 PAYLOAD = {"message": "ping"}
 

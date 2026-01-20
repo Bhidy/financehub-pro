@@ -347,15 +347,20 @@ class ChatService:
                         Intent.MOOD, Intent.GRATITUDE, Intent.HELP
                     ]
                     
-                    # CRITICAL: Default to NO greeting unless explicitly allowed
+                    # ENTERPRISE FIX: ALWAYS include greeting/opening in responses
+                    # For new sessions: Show full welcome greeting
+                    # For returning users: Show human opening (acknowledgment)
                     final_allow_greeting = False
+                    force_human_opening = False
                     
-                    if is_new_session and intent in CONVERSATIONAL_INTENTS:
-                        # Only allow greeting on first message AND if it's a conversational intent
+                    if is_new_session:
+                        # First message of session - ALWAYS show greeting, regardless of intent
                         final_allow_greeting = True
-                        print(f"[ChatService] 👋 Allowing greeting: New session + Conversational intent")
+                        print(f"[ChatService] 👋 Allowing greeting: New session (intent={intent})")
                     else:
-                        print(f"[ChatService] 🔒 Suppressing greeting: is_new_session={is_new_session}, intent={intent}")
+                        # Returning user - force human opening for natural flow
+                        force_human_opening = True
+                        print(f"[ChatService] 💬 Force human opening: Returning user (intent={intent})")
                     
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
@@ -370,8 +375,9 @@ class ChatService:
                     # -------------------------------------------------------------
                     # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
                     # -------------------------------------------------------------
-                    # If we have a narrative, wrap it with human opening and guidance
-                    if conversational_text and not final_allow_greeting:
+                    # ENTERPRISE FIX: Compose response for ALL cases (new session & returning)
+                    # Only skip if we already have LLM-generated greeting in conversational_text
+                    if conversational_text:
                         # Get the context for tracking
                         ctx = self.context_store.get(session_id)
                         last_opening = ctx.last_opening_used if ctx else None
@@ -388,8 +394,9 @@ class ChatService:
                             user_name=real_user_name,
                             last_opening_used=last_opening,
                             shown_card_types=card_types,
-                            include_opening=True,  # Maybe add human opening
-                            include_guidance=True   # Maybe add guidance
+                            include_opening=force_human_opening,  # ONLY add opening for returning users
+                            include_guidance=True,   # Always consider guidance
+                            force_opening=force_human_opening  # Force if returning user
                         )
                         
                         # Update the conversational text with composed response

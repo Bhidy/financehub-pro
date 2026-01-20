@@ -230,6 +230,24 @@ class ChatService:
             handler_name = intent.value
             result = await self._dispatch_handler(intent, entities, language, routing_text)
             
+            # --- NORMALIZATION FIX (Ensure Pipeline Processing) ---
+            # If handler returns a ChatResponse object (e.g. Deep Dive), convert to dict
+            # so it flows through the World-Class Conversational Framework (LLM + Layers).
+            if isinstance(result, ChatResponse):
+                print(f"[ChatService] 🔄 Converting ChatResponse for {intent} to pipeline dict")
+                # Use .dict() for Pydantic v1 compatibility (or .model_dump() for v2)
+                # We try .dict() first as it's safer for mixed envs
+                def to_dict(obj):
+                    return obj.dict() if hasattr(obj, 'dict') else obj.model_dump()
+
+                result = {
+                    'cards': [to_dict(c) for c in (result.cards or [])],
+                    'chart': to_dict(result.chart) if result.chart else None,
+                    'actions': [to_dict(a) for a in (result.actions or [])],
+                    'data': {},
+                    'success': True
+                }
+            
             # CRITICAL CHECK: Force Data Card if missing for data intents
             result_data = result if isinstance(result, dict) else {}
             DATA_INTENTS = [

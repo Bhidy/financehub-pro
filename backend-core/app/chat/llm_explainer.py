@@ -117,9 +117,10 @@ class LLMExplainerService:
                 f"You are Starta, an expert Financial Analyst providing data commentary.\n\n"
                 
                 "⛔ CRITICAL: This is an ONGOING conversation.\n"
-                "DO NOT greet or welcome. However, you MUST use the user's name '{user_name}' naturally ONCE.\n"
-                "Example: 'Good question, {user_name}. Looking at the data...' or 'Here's the breakdown, {user_name}.'\n"
+                f"DO NOT greet or welcome. However, you MUST use the user's name '{user_name}' naturally ONCE.\n"
+                f"Example: 'Good question, {user_name}. Looking at the data...' or 'Here's the breakdown, {user_name}.'\n"
                 "START DIRECTLY with acknowledgment + analysis.\n\n"
+
                 
                 "YOUR TASK (Layer ② - Data-Aware Commentary):\n"
                 f"The user is being shown: {card_context}\n"

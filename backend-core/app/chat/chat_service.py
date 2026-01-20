@@ -263,18 +263,17 @@ class ChatService:
                     
                     # DETERMINISTIC STATE CONTROL (The "Starta" Fix)
                     # 1. Check DB for EXACT message count for this session
-                    # If count > 0, it is PHYSICALLY IMPOSSIBLE to be the first message.
-                    # We check for USER messages specifically to see if the user has spoken before.
-                    
                     msg_count = 0
                     if session_id:
                         msg_count = await self.conn.fetchval("SELECT count(*) FROM chat_messages WHERE session_id = $1 AND role = 'user'", session_id)
                     
-                    # 2. Strict Boolean Flag
-                    is_new_session = (msg_count == 0)
+                    # 2. Strict Boolean Flag (Double Safety: DB + History Array)
+                    # If history has items, it is NOT a new session, regardless of DB lag.
+                    has_history = (history is not None and len(history) > 0)
+                    is_new_session = (msg_count == 0) and not has_history
                     
                     # 3. Log the decision for debugging
-                    print(f"[ChatService] Session '{session_id}' | Msg Count: {msg_count} | New Session? {is_new_session}")
+                    print(f"[ChatService] Session '{session_id}' | Msg Count: {msg_count} | Hist Len: {len(history) if history else 0} | New Session? {is_new_session}")
 
                     # 4. Generate Narrative
                     conversational_text = await explainer.generate_narrative(
@@ -286,7 +285,27 @@ class ChatService:
                         allow_greeting=is_new_session, # PASS THE STRICT FLAG
                         is_returning_user=is_returning_user
                     )
-                    
+
+                    # -------------------------------------------------------------
+                    # PHASE 4: THE "NUCLEAR" REGEX FILTER (FAIL-SAFE)
+                    # -------------------------------------------------------------
+                    # Even if the LLM hallucinates a greeting, we physically rip it out.
+                    if not is_new_session and conversational_text:
+                        import re
+                        # Patterns to strip: "Welcome back [Name] .", "Welcome [Name] .", "Hello .", "Hi ."
+                        # We use a non-greedy match for the punctuation to catch the first sentence.
+                        patterns = [
+                            r"^(Welcome back|Welcome|Hello|Hi|Greetings).*?[\.\!\?]"
+                        ]
+                        
+                        original_text = conversational_text
+                        for pattern in patterns:
+                            # Verify it's at the start of the string
+                            conversational_text = re.sub(pattern, "", conversational_text, flags=re.IGNORECASE | re.MULTILINE).strip()
+                            
+                        if original_text != conversational_text:
+                            print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
+
                     # 2. Extract Fact Explanations (Definitions)
                     fact_explanations = explainer.extract_fact_explanations(
                          data=result_data.get('cards', []),

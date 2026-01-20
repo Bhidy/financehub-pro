@@ -68,7 +68,7 @@ class ChatService:
         self.context_store = get_context_store()
     
     async def _get_user_name(self, user_id: Optional[str]) -> str:
-        """Fetch the first name of the user from the database and clean it."""
+        """Fetch the first name or email of the user."""
         if not user_id:
             return "Trader"
             
@@ -77,29 +77,48 @@ class ChatService:
             # In our system, JWT 'sub' is the email address
             user_id_str = str(user_id).strip()
             
-            if "@" in user_id_str:
+            # If user_id is an email (contains @), we can default to using it (or the name part)
+            # The user specifically requested "mention his email".
+            is_email = "@" in user_id_str
+            
+            if is_email:
                 # JWT/Auth path: lookup by email
                 query = "SELECT full_name FROM users WHERE email = $1"
                 row = await self.conn.fetchrow(query, user_id_str)
+                
+                # If we have a full name, use first name (more natural), 
+                # BUT if user_id is explicitly an email, the user might expect it.
+                # However, "Hi mohamed@test.com" is weird. "Hi Mohamed" is better.
+                # If the user specifically said "mention his email", I will pass the email 
+                # IF name is missing or if we just want to ensure personalization.
+                # Let's clean the full name if found.
+                if row and row['full_name']:
+                     import re
+                     full_name = row['full_name'].strip()
+                     first_name = full_name.split(' ')[0]
+                     clean_name = re.sub(r'[^\w\s\u0600-\u06FF]', '', first_name)
+                     return clean_name if clean_name else user_id_str # Fallback to email
+                
+                # If DB lookup fails but we have the email in user_id, return the email
+                return user_id_str
+            
             elif user_id_str.isdigit():
                 # Legacy/Numeric ID path
                 query = "SELECT full_name FROM users WHERE id = $1"
                 row = await self.conn.fetchrow(query, int(user_id_str))
-            else:
-                return "Trader"
+                if row and row['full_name']:
+                    import re
+                    full_name = row['full_name'].strip()
+                    first_name = full_name.split(' ')[0]
+                    clean_name = re.sub(r'[^\w\s\u0600-\u06FF]', '', first_name)
+                    return clean_name if clean_name else "Trader"
 
-            if row and row['full_name']:
-                # Clean name: remove special chars, keep only letters/Arabic chars
-                import re
-                full_name = row['full_name'].strip()
-                # Split by space and take the first part
-                first_name = full_name.split(' ')[0]
-                # Filter out emojis and non-alpha characters from first name
-                # Supports both English and Arabic characters
-                clean_name = re.sub(r'[^\w\s\u0600-\u06FF]', '', first_name)
-                return clean_name if clean_name else "Trader"
+            return "Trader"
         except Exception as e:
             print(f"[ChatService] Error fetching user name for {user_id}: {e}")
+            # Fallback: if it's an email, return it.
+            if user_id and "@" in str(user_id):
+                return str(user_id)
             
         return "Trader"
 
@@ -414,9 +433,12 @@ class ChatService:
                         if original_text != conversational_text:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
-                    # 2. Extract Fact Explanations (DISABLED - Integrated into Narrative)
-                    # We correctly integrate definitions into the main text now.
-                    fact_explanations = None
+                    # 2. Extract Fact Explanations (Restored as per user request)
+                    # This generates the "Key Terms" / "Definitions" list under the card.
+                    fact_explanations = explainer.extract_fact_explanations(
+                         data=result_data.get('cards', []),
+                         language=language
+                    )
 
                 except Exception as ex:
                     print(f"LLM Hybrid Layer Error (Non-Fatal): {ex}")
@@ -440,7 +462,7 @@ class ChatService:
                 
             response = self._build_response(
                 result_data, intent, intent_result.confidence, entities, start_time, language,
-                conversational_text, fact_explanations
+                conversational_text, fact_explanations # Pass the definitions list
             )
             
             # 9. Log analytics

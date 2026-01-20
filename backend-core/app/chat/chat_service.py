@@ -414,20 +414,9 @@ class ChatService:
                         if original_text != conversational_text:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
-                    # 2. Extract Fact Explanations (Definitions)
-                    fact_explanations = explainer.extract_fact_explanations(
-                         data=result_data.get('cards', []),
-                         language=language
-                    )
-                    
-                    # === APPEND DEFINITIONS TO MAIN TEXT (VISIBILITY FIX) ===
-                    # This ensures they appear in the main message bubble with the new larger font size.
-                    # if fact_explanations and conversational_text:
-                    #    header = "**Key Terms:**" if language == "en" else "**مصطلحات هامة:**"
-                    #    definitions_text = f"\n\n{header}\n"
-                    #    for _, defn in fact_explanations.items():
-                    #         definitions_text += f"- {defn}\n"
-                    #    conversational_text += definitions_text
+                    # 2. Extract Fact Explanations (DISABLED - Integrated into Narrative)
+                    # We correctly integrate definitions into the main text now.
+                    fact_explanations = None
 
                 except Exception as ex:
                     print(f"LLM Hybrid Layer Error (Non-Fatal): {ex}")

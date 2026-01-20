@@ -332,12 +332,51 @@ async def get_portfolio_analytics(current_user: dict = Depends(get_current_activ
             "win_rate": round(win_rate, 2),
             "total_trades": len(trades),
             "best_trade": best_trade,
-            "worst_trade": worst_trade
+            "worst_trade": worst_trade,
+            "sharpe_ratio": await calculate_sharpe_ratio(portfolio_id)
         }
         
     except Exception as e:
         print(f"Error in analytics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+async def calculate_sharpe_ratio(portfolio_id: int) -> float:
+    """Calculate annualized Sharpe Ratio based on daily snapshot returns"""
+    try:
+        snapshots = await db.fetch_all(
+            "SELECT total_value, snapshot_date FROM portfolio_snapshots WHERE portfolio_id = $1 ORDER BY snapshot_date ASC",
+            portfolio_id
+        )
+        if len(snapshots) < 7: # Need at least a week of data
+            return 0.0
+            
+        # Calculate daily returns
+        returns = []
+        for i in range(1, len(snapshots)):
+            curr = float(snapshots[i]['total_value'])
+            prev = float(snapshots[i-1]['total_value'])
+            if prev > 0:
+                ret = (curr - prev) / prev
+                returns.append(ret)
+                
+        if not returns:
+            return 0.0
+            
+        import statistics
+        avg_return = statistics.mean(returns)
+        std_dev = statistics.stdev(returns) if len(returns) > 1 else 1.0
+        
+        if std_dev == 0:
+            return 0.0
+            
+        # Annualize (assuming 252 trading days)
+        # Ratio = (Avg Daily Return / Daily Std Dev) * sqrt(252)
+        # Using 0% risk-free rate for simplicity or adjust as needed
+        sharpe = (avg_return / std_dev) * (252 ** 0.5)
+        
+        return round(sharpe, 2)
+    except Exception:
+        return 0.0
 
 
 @router.post("/portfolio/import")

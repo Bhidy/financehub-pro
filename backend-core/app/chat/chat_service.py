@@ -978,7 +978,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="4.2.1-GREETING-FIX" # DEPLOYMENT VERIFICATION
+                backend_version="4.2.2-SMART-GREETING" # DEPLOYMENT VERIFICATION
             )
         )
 

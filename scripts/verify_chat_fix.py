@@ -26,7 +26,7 @@ def test_chat(message, history=None, expect_greeting=True):
 
         data = res.json()
         print(f"DEBUG JSON: {json.dumps(data, indent=2)}")
-        reply = data.get('reply', '')
+        reply = data.get('conversational_text') or data.get('message_text') or data.get('reply', '')
         print(f"✅ Received ({latency:.2f}s): \"{reply[:100]}...\"")
         
         # Check for greeting

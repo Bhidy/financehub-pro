@@ -276,13 +276,28 @@ class ChatService:
                     print(f"[ChatService] Session '{session_id}' | Msg Count: {msg_count} | Hist Len: {len(history) if history else 0} | New Session? {is_new_session}")
 
                     # 4. Generate Narrative
+                    # INTENT-BASED OVERRIDE: 
+                    # If this is a specific data request (e.g. "Price of X"), suppress greeting 
+                    # to keep it "Enterprise Professional" and direct, even for first message.
+                    # Only allow greetings for conversational intents or generic help.
+                    CONVERSATIONAL_INTENTS = [
+                        Intent.GREETING, Intent.IDENTITY, Intent.CAPABILITIES, 
+                        Intent.MOOD, Intent.GRATITUDE, Intent.HELP
+                    ]
+                    
+                    final_allow_greeting = is_new_session
+                    if intent not in CONVERSATIONAL_INTENTS:
+                        final_allow_greeting = False
+                        # Also force strict tone for data queries
+                        print(f"[ChatService] 🔒 Data Intent {intent} -> Forcing NO GREETING")
+                    
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
                         intent=intent.value,
                         data=result_data.get('cards', []),
                         language=language,
                         user_name=real_user_name,
-                        allow_greeting=is_new_session, # PASS THE STRICT FLAG
+                        allow_greeting=final_allow_greeting, 
                         is_returning_user=is_returning_user
                     )
 
@@ -290,10 +305,9 @@ class ChatService:
                     # PHASE 4: THE "NUCLEAR" REGEX FILTER (FAIL-SAFE)
                     # -------------------------------------------------------------
                     # Even if the LLM hallucinates a greeting, we physically rip it out.
-                    if not is_new_session and conversational_text:
+                    # Run this if we explicitly disallowed greetings.
+                    if (not final_allow_greeting) and conversational_text:
                         import re
-                        # Patterns to strip: "Welcome back [Name] .", "Welcome [Name] .", "Hello .", "Hi ."
-                        # We use a non-greedy match for the punctuation to catch the first sentence.
                         # Patterns to strip: "Welcome back [Name] .", "Welcome [Name] .", "Hello .", "Hi ."
                         # Updated to handle Markdown bolding/italics and whitespace
                         patterns = [

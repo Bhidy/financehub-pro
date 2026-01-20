@@ -106,7 +106,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: STRICTLY 15-25 words. Short, charming, and punchy.\n"
+                "2. LENGTH: STRICTLY 15-30 words. Short, charming, and punchy. Avoid all fluff.\n"
                 "3. STYLE: Intelligent, attractive, warm, and professional.\n"
                 "4. NO marketing language. Treat this as a chat between smart experts.\n"
             )

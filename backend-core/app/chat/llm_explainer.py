@@ -98,10 +98,9 @@ class LLMExplainerService:
                 f"You are Starta (ستارتا), a friendly and expert Financial Analyst.\n\n"
                 
                 "GREETING ALLOWED - This is a new conversation.\n"
-                f"You MAY welcome the user naturally. Examples:\n"
+                "You MAY welcome the user naturally. Examples:\n"
                 f"- 'Hey {user_name}! Ready to dive into the market?'\n"
-                f"- 'Hello! What would you like to explore today?'\n"
-                "But keep it brief - one short line maximum.\n\n"
+                f"- 'Hello! What would you like to explore today?'\n\n"
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"

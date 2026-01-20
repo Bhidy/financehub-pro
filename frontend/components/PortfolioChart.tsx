@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import clsx from "clsx";
+import { useEffect, useRef, useState } from 'react';
+import { createChart, ColorType, ISeriesApi, Time, AreaSeries } from 'lightweight-charts';
 import { motion } from "framer-motion";
+import clsx from "clsx";
 import { PortfolioSnapshot } from "@/lib/api";
 
 interface PortfolioChartProps {
@@ -11,38 +11,144 @@ interface PortfolioChartProps {
 }
 
 export function PortfolioChart({ history }: PortfolioChartProps) {
+    const chartContainerRef = useRef<HTMLDivElement>(null);
     const [timeframe, setTimeframe] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
 
-    // Filter Logic (Simplified - assumes backend handles standard history or we filter client side)
-    // For now, we just pass all data but in a real app we'd slice the array based on timeframe
-    const data = history || [];
+    // Tooltip State
+    const [tooltipData, setTooltipData] = useState<{
+        value: string;
+        date: string;
+        x: number;
+        y: number;
+        visible: boolean;
+    } | null>(null);
+
+    // Data Processing
+    // We expect history sorted by date ASC
+    const data = (history || []).map(item => ({
+        time: item.snapshot_date as string, // lightweight-charts handles 'YYYY-MM-DD' string
+        value: item.total_value
+    }));
+
+    useEffect(() => {
+        if (!chartContainerRef.current || data.length === 0) return;
+
+        const chart = createChart(chartContainerRef.current, {
+            layout: {
+                background: { type: ColorType.Solid, color: 'transparent' },
+                textColor: '#94a3b8',
+            },
+            grid: {
+                vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+            },
+            width: chartContainerRef.current.clientWidth,
+            height: 350,
+            timeScale: {
+                borderVisible: false,
+                timeVisible: true,
+            },
+            rightPriceScale: {
+                borderVisible: false,
+            },
+            crosshair: {
+                vertLine: {
+                    labelVisible: false,
+                    color: 'rgba(255, 255, 255, 0.2)',
+                    width: 1,
+                    style: 3, // Dashed
+                },
+                horzLine: {
+                    labelVisible: false,
+                    color: 'rgba(255, 255, 255, 0.2)',
+                    width: 1,
+                    style: 3, // Dashed
+                },
+            },
+            handleScroll: false,
+            handleScale: false,
+        });
+
+        const newSeries = chart.addSeries(AreaSeries, {
+            lineColor: '#3B82F6', // Blue-500
+            topColor: 'rgba(59, 130, 246, 0.4)',
+            bottomColor: 'rgba(59, 130, 246, 0.0)',
+            lineWidth: 3,
+        });
+
+        // @ts-ignore - LW Charts time type mismatch fix
+        newSeries.setData(data);
+
+        // Fit Content
+        chart.timeScale().fitContent();
+
+        // Tooltip Logic
+        chart.subscribeCrosshairMove(param => {
+            if (
+                param.point === undefined ||
+                !param.time ||
+                param.point.x < 0 ||
+                param.point.x > chartContainerRef.current!.clientWidth ||
+                param.point.y < 0 ||
+                param.point.y > chartContainerRef.current!.clientHeight
+            ) {
+                setTooltipData(null);
+            } else {
+                const price = param.seriesData.get(newSeries) as number | undefined;
+                if (price !== undefined) {
+                    const dateStr = param.time as string;
+                    setTooltipData({
+                        value: `SAR ${(price / 1000).toFixed(1)}k`,
+                        date: new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                        x: param.point.x,
+                        y: param.point.y,
+                        visible: true
+                    });
+                }
+            }
+        });
+
+        // Resize Observer
+        const handleResize = () => {
+            if (chartContainerRef.current) {
+                chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            chart.remove();
+        };
+    }, [data, timeframe]); // Re-create on data change
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-[#151925] border border-white/5 rounded-[32px] p-8 shadow-2xl shadow-black/40 relative overflow-hidden"
+            className="bg-[#151925] border border-white/5 rounded-[32px] p-8 shadow-2xl shadow-black/40 relative overflow-hidden h-[480px]"
         >
             {/* Background Glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 relative z-10">
                 <div>
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         Portfolio Performance
-                        {/* Live Indicator */}
                         <span className="relative flex h-2.5 w-2.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                         </span>
                     </h3>
-                    <p className="text-sm font-medium text-slate-400">Net Asset Value (NAV) History</p>
+                    <p className="text-sm font-medium text-slate-400">Net Asset Value (NAV)</p>
                 </div>
 
                 {/* Timeframe Toggles */}
                 <div className="flex bg-white/5 rounded-xl p-1.5 border border-white/5">
-                    {(['1W', '1M', '3M', '1Y', 'ALL'] as const).map(t => (
+                    {(['1D', '1W', '1M', '3M', '1Y', 'ALL'] as const).map(t => (
                         <button
                             key={t}
                             onClick={() => setTimeframe(t)}
@@ -59,66 +165,32 @@ export function PortfolioChart({ history }: PortfolioChartProps) {
                 </div>
             </div>
 
-            <div className="h-[350px] w-full">
+            {/* Chart Area */}
+            <div className="relative w-full h-[350px]">
                 {data.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
-                                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.15} />
-                            <XAxis
-                                dataKey="snapshot_date"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
-                                tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                minTickGap={50}
-                                dy={10}
-                            />
-                            <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
-                                tickFormatter={(val) => `SAR ${(val / 1000).toFixed(0)}k`}
-                                domain={['auto', 'auto']}
-                                dx={-10}
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: '16px',
-                                    color: '#f8fafc',
-                                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
-                                    backdropFilter: 'blur(10px)'
+                    <>
+                        <div ref={chartContainerRef} className="w-full h-full" />
+
+                        {/* Custom Floating Tooltip */}
+                        {tooltipData && tooltipData.visible && (
+                            <div
+                                className="absolute pointer-events-none bg-slate-800/90 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-xl z-50 flex flex-col items-center min-w-[100px]"
+                                style={{
+                                    left: Math.min(Math.max(tooltipData.x - 50, 0), (chartContainerRef.current?.clientWidth || 500) - 100),
+                                    top: 10 // Fixed top position is cleaner than following Y
                                 }}
-                                itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                                formatter={(val: any) => [`SAR ${Number(val).toLocaleString()}`, 'Portfolio Value']}
-                                labelFormatter={(label) => new Date(label).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                cursor={{ stroke: '#3B82F6', strokeWidth: 2, strokeDasharray: '4 4' }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="total_value"
-                                stroke="#3B82F6"
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorValue)"
-                                activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                            >
+                                <span className="text-slate-400 text-xs font-bold uppercase">{tooltipData.date}</span>
+                                <span className="text-white text-lg font-black font-mono">{tooltipData.value}</span>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center text-slate-500">
                         <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
                             <span className="text-2xl">📉</span>
                         </div>
                         <p className="font-medium">No history data available yet</p>
-                        <p className="text-xs opacity-60">Check back tomorrow for trend analysis</p>
                     </div>
                 )}
             </div>

@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- GIT LOG ---' && git log -1 --format='%H %s' && echo '--- MAIN.PY VER ---' && grep 'version=' backend-core/app/main.py || echo 'grep failed' && echo '--- STATUS ---' && git status"
+
+expect "password:"
+send "$password\r"
+
+expect eof

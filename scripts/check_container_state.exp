@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "docker exec starta-backend-1 cat /app/app/main.py | grep 'version='"
+
+expect "password:"
+send "$password\r"
+
+expect eof

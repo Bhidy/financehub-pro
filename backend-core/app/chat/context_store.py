@@ -36,7 +36,7 @@ class ContextStore:
         existing = self.get(session_id)
         
         if existing:
-            # Update existing context
+            # Update existing context - increment turn_count
             updates = {
                 'session_id': session_id,
                 'last_symbol': kwargs.get('last_symbol', existing.last_symbol),
@@ -44,7 +44,15 @@ class ContextStore:
                 'last_intent': kwargs.get('last_intent', existing.last_intent),
                 'last_range': kwargs.get('last_range', existing.last_range),
                 'compare_symbols': kwargs.get('compare_symbols', existing.compare_symbols),
-                'expires_at': datetime.utcnow() + timedelta(minutes=self.ttl_minutes)
+                'expires_at': datetime.utcnow() + timedelta(minutes=self.ttl_minutes),
+                # Phase 1: Enhanced Session State
+                'turn_count': existing.turn_count + 1,  # Increment on each set
+                'greeting_shown': kwargs.get('greeting_shown', existing.greeting_shown),
+                'last_greeting_category': kwargs.get('last_greeting_category', existing.last_greeting_category),
+                'last_opening_used': kwargs.get('last_opening_used', existing.last_opening_used),
+                'last_cards_shown': kwargs.get('last_cards_shown', existing.last_cards_shown),
+                'user_name': kwargs.get('user_name', existing.user_name),
+                'detected_language': kwargs.get('detected_language', existing.detected_language),
             }
             ctx = ConversationContext(**updates)
         else:
@@ -56,7 +64,15 @@ class ContextStore:
                 last_intent=kwargs.get('last_intent'),
                 last_range=kwargs.get('last_range'),
                 compare_symbols=kwargs.get('compare_symbols'),
-                expires_at=datetime.utcnow() + timedelta(minutes=self.ttl_minutes)
+                expires_at=datetime.utcnow() + timedelta(minutes=self.ttl_minutes),
+                # Phase 1: Enhanced Session State (initialize)
+                turn_count=1,  # First message
+                greeting_shown=kwargs.get('greeting_shown', False),
+                last_greeting_category=kwargs.get('last_greeting_category'),
+                last_opening_used=kwargs.get('last_opening_used'),
+                last_cards_shown=kwargs.get('last_cards_shown'),
+                user_name=kwargs.get('user_name'),
+                detected_language=kwargs.get('detected_language', 'en'),
             )
         
         self._store[session_id] = ctx

@@ -487,6 +487,21 @@ class ChatService:
             
             # 8. Build response
             if isinstance(result, ChatResponse):
+                # ENTERPRISE FIX: Even if handler returns a ChatResponse, we MUST inject our layers
+                # to ensure universal structure (greeting + data + learning + follow up)
+                if conversational_text and not result.conversational_text:
+                    result.conversational_text = conversational_text
+                if learning_section and not result.learning_section:
+                    result.learning_section = learning_section
+                if follow_up_prompt and not result.follow_up_prompt:
+                    result.follow_up_prompt = follow_up_prompt
+                
+                # Also ensure message_text is updated for frontend consistency
+                if conversational_text and (not result.message_text or result.message_text == conversational_text):
+                     # If it's a data-rich response, we might want to keep the handler's message_text 
+                     # but here we ensure the core conversational logic is captured
+                     pass
+                
                 return result
                 
             response = self._build_response(

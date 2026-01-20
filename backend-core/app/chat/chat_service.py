@@ -431,12 +431,8 @@ class ChatService:
                         if original_text != conversational_text:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
-                    # 2. Extract Fact Explanations (Restored as per user request)
-                    # This generates the "Key Terms" / "Definitions" list under the card.
-                    fact_explanations = explainer.extract_fact_explanations(
-                         data=result_data.get('cards', []),
-                         language=language
-                    )
+                    # 2. Fact Explanations (DISABLED as per user request for conciseness)
+                    fact_explanations = None
 
                 except Exception as ex:
                     print(f"LLM Hybrid Layer Error (Non-Fatal): {ex}")
@@ -978,7 +974,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="4.2.2-SMART-GREETING" # DEPLOYMENT VERIFICATION
+                backend_version="4.3.0-CONCISE-VOICE" # DEPLOYMENT VERIFICATION
             )
         )
 

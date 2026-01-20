@@ -269,27 +269,50 @@ class ChatService:
                     
                     # 2. Strict Boolean Flag (Double Safety: DB + History Array)
                     # If history has items, it is NOT a new session, regardless of DB lag.
-                    has_history = (history is not None and len(history) > 0)
+                    # ENTERPRISE FIX: Filter out system welcome messages from history count
+                    # Only count real user/assistant exchanges
+                    real_history_count = 0
+                    if history:
+                        for h in history:
+                            # Skip system messages and initial welcome
+                            if h.get('role') == 'system':
+                                continue
+                            if h.get('role') == 'assistant' and 'initialized' in str(h.get('content', '')).lower():
+                                continue
+                            real_history_count += 1
+                    
+                    has_history = real_history_count > 0
+                    
+                    # CRITICAL FIX: is_returning_user is based on DB count (authoritative source)
+                    # If user has ANY prior messages in DB, they are returning
+                    is_returning_user = (msg_count is not None and msg_count > 0)
+                    
+                    # is_new_session: Only true if BOTH DB and history show no prior messages
                     is_new_session = (msg_count == 0) and not has_history
                     
-                    # 3. Log the decision for debugging
-                    print(f"[ChatService] Session '{session_id}' | Msg Count: {msg_count} | Hist Len: {len(history) if history else 0} | New Session? {is_new_session}")
+                    # 3. Log the decision for debugging (DETAILED)
+                    print(f"[ChatService] 🔍 Session '{session_id}' | DB Msg Count: {msg_count} | Real Hist: {real_history_count} | New Session? {is_new_session} | Returning? {is_returning_user}")
 
                     # 4. Generate Narrative
-                    # INTENT-BASED OVERRIDE: 
-                    # If this is a specific data request (e.g. "Price of X"), suppress greeting 
-                    # to keep it "Enterprise Professional" and direct, even for first message.
-                    # Only allow greetings for conversational intents or generic help.
+                    # ENTERPRISE RULE: NEVER show greeting in ongoing conversation
+                    # Only show greeting if:
+                    #   a) is_new_session = True (zero prior messages)
+                    #   b) Intent is conversational (GREETING, HELP, etc)
+                    # Otherwise: ALWAYS suppress greeting
                     CONVERSATIONAL_INTENTS = [
                         Intent.GREETING, Intent.IDENTITY, Intent.CAPABILITIES, 
                         Intent.MOOD, Intent.GRATITUDE, Intent.HELP
                     ]
                     
-                    final_allow_greeting = is_new_session
-                    if intent not in CONVERSATIONAL_INTENTS:
-                        final_allow_greeting = False
-                        # Also force strict tone for data queries
-                        print(f"[ChatService] 🔒 Data Intent {intent} -> Forcing NO GREETING")
+                    # CRITICAL: Default to NO greeting unless explicitly allowed
+                    final_allow_greeting = False
+                    
+                    if is_new_session and intent in CONVERSATIONAL_INTENTS:
+                        # Only allow greeting on first message AND if it's a conversational intent
+                        final_allow_greeting = True
+                        print(f"[ChatService] 👋 Allowing greeting: New session + Conversational intent")
+                    else:
+                        print(f"[ChatService] 🔒 Suppressing greeting: is_new_session={is_new_session}, intent={intent}")
                     
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
@@ -298,7 +321,7 @@ class ChatService:
                         language=language,
                         user_name=real_user_name,
                         allow_greeting=final_allow_greeting, 
-                        is_returning_user=is_returning_user
+                        is_returning_user=is_returning_user  # Now properly defined!
                     )
 
                     # -------------------------------------------------------------
@@ -875,7 +898,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="3.9.9-CHIEF-EXPERT-V3" # DEPLOYMENT VERIFICATION
+                backend_version="4.0.0-GREETING-FIX-FINAL" # DEPLOYMENT VERIFICATION
             )
         )
 

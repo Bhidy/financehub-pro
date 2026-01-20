@@ -97,14 +97,21 @@ class LLMExplainerService:
             
         else:
             # --- PROMPT B: ONGOING CONVERSATION (Greetings PHYSICALLY REMOVED) ---
+            # ENTERPRISE FIX: Make this instruction ABSOLUTE and UNMISTAKABLE
             greeting_instruction = (
-                "CRITICAL INSTRUCTION: ALREADY IN CONVERSATION.\n"
-                " - DO NOT say 'Welcome', 'Welcome back', 'Hello', 'Hi'.\n"
-                " - DO NOT use the user's name.\n"
-                " - START DIRECTLY with your analysis.\n"
-                " - START DIRECTLY with the answer.\n"
+                "⛔ ABSOLUTE RULE - READ CAREFULLY ⛔\n"
+                "This is an ONGOING CONVERSATION. The user is ALREADY talking to you.\n"
+                "YOU MUST OBEY THESE RULES:\n"
+                " 1. NEVER say 'Welcome', 'Welcome back', 'Hello', 'Hi', 'Hey', 'Greetings'.\n"
+                " 2. NEVER use the user's name at the start.\n"
+                " 3. NEVER say 'I am Starta', 'I'm here to help', 'Ready to analyze'.\n"
+                " 4. NEVER use emojis like 👋 at the beginning.\n"
+                " 5. START IMMEDIATELY with the analysis. First word should be data.\n"
+                " 6. Example good starts: 'The stock...', 'Based on...', 'Looking at...', 'Revenue shows...'\n"
+                " 7. Example BAD starts: 'Welcome back!', 'Hello Mohamed!', 'Hi there!'\n"
+                "VIOLATION OF THESE RULES IS UNACCEPTABLE.\n"
             )
-            tone_instruction = "Your tone is extremely direct, concise, and purely data-focused."
+            tone_instruction = "Your tone is extremely direct, concise, and purely data-focused. NO greetings."
 
         # Core Persona & Instruction (CHIEF EXPERT UPGRADE)
         system_prompt = (

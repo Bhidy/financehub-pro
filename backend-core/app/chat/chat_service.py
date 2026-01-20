@@ -294,8 +294,10 @@ class ChatService:
                         import re
                         # Patterns to strip: "Welcome back [Name] .", "Welcome [Name] .", "Hello .", "Hi ."
                         # We use a non-greedy match for the punctuation to catch the first sentence.
+                        # Patterns to strip: "Welcome back [Name] .", "Welcome [Name] .", "Hello .", "Hi ."
+                        # Updated to handle Markdown bolding/italics and whitespace
                         patterns = [
-                            r"^(Welcome back|Welcome|Hello|Hi|Greetings).*?[\.\!\?]"
+                            r"^[\s\W]*(Welcome back|Welcome|Hello|Hi|Greetings).*?[\.\!\?]"
                         ]
                         
                         original_text = conversational_text

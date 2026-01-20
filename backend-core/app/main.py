@@ -379,7 +379,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    version="1.0.5",
+    version="4.2.2-SMART-GREETING",
     lifespan=lifespan
 )
 # Removed deprecated @app.on_event("startup") - handled in lifespan

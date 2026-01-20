@@ -143,10 +143,8 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: 130-180 words. Provide deep, comprehensive analysis.\n"
-                "3. INTEGRATION RULE: If you mention a technical term (like P/E, RSI, Volatility), you MUST briefly define it immediately within the sentence. \n"
-                "   - Example: 'The P/E ratio, which measures the stock price relative to earnings, is currently high...'\n"
-                "4. TONE: Calm, supportive, confident, expert. NO fluff phrases.\n"
+                "2. LENGTH: STRICTLY 15-30 words. Provide punchy, expert context.\n"
+                "3. TONE: Calm, supportive, confident, expert. NO fluff phrases.\n"
             )
 
         try:

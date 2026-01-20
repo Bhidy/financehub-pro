@@ -823,8 +823,23 @@ class ChatService:
         # Get disclaimer if needed
         disclaimer = get_disclaimer(intent.value, language)
         
+        # Fallback mechanism: If LLM fails (no conversational_text) and no system message,
+        # generate a generic message based on content to prevent empty bubbles.
+        final_message_text = result.get('message', '')
+        if not conversational_text and not final_message_text and cards:
+            # Generate simple fallback based on intent or first card
+            card_titles = [c.get('title', 'Data') for c in result.get('cards', [])]
+            if card_titles:
+                final_message_text = f"Here is the {card_titles[0]}."
+            else:
+                final_message_text = "Here is the requested data."
+                
+        # If we have a chart but no text
+        if not conversational_text and not final_message_text and chart:
+            final_message_text = f"Here is the chart for {chart.symbol}."
+
         return ChatResponse(
-            message_text=result.get('message', ''),
+            message_text=final_message_text,
             conversational_text=conversational_text, # Add new field
             fact_explanations=fact_explanations, # Add new field
             language=language,

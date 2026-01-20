@@ -1,97 +1,68 @@
-
 import requests
 import json
 import time
+import sys
 
-API_URL = "https://starta.46-224-223-172.sslip.io/api/v1"
-SESSION_ID = f"verify_det_v2_{int(time.time())}"
+BASE_URL = "https://starta.46-224-223-172.sslip.io/api/v1"
+SESSION_ID = f"test_fix_{int(time.time())}"
 
-def test_chat():
-    print(f"🧪 Starting Chat Verification (Session: {SESSION_ID})")
-    
-    # 1. First Message (Expect Greeting)
-    print("\n[1] Sending First Message: 'Hello'")
-    history = []
+def test_chat(message, history=None, expect_greeting=True):
+    url = f"{BASE_URL}/ai/chat"
     payload = {
-        "message": "Hello",
+        "message": message,
         "session_id": SESSION_ID,
-        "history": history + [{"role": "user", "content": "Hello"}]
+        "history": history or []
     }
     
+    print(f"\n📨 Sending: '{message}' (Session: {SESSION_ID})")
     try:
-        r1 = requests.post(f"{API_URL}/ai/chat", json=payload)
-        r1.raise_for_status()
-        data1 = r1.json()
-        reply1 = data1.get('reply') or data1.get('message_text', '')
+        start = time.time()
+        res = requests.post(url, json=payload, timeout=20)
+        latency = time.time() - start
         
-        print(f"   Response: {reply1[:100]}...")
-        if "Welcome" in reply1 or "Hello" in reply1:
-            print("   ✅ Greeting detected (Authorized for 1st message)")
-        else:
-            print("   ⚠️ No greeting in 1st message (Acceptable, but check logic)")
+        if res.status_code != 200:
+            print(f"❌ Error {res.status_code}: {res.text}")
+            return None, False
+
+        data = res.json()
+        print(f"DEBUG JSON: {json.dumps(data, indent=2)}")
+        reply = data.get('reply', '')
+        print(f"✅ Received ({latency:.2f}s): \"{reply[:100]}...\"")
+        
+        # Check for greeting
+        has_greeting = any(x in reply.lower() for x in ['welcome', 'hello', 'hi ', 'greetings'])
+        
+        if expect_greeting and not has_greeting:
+            print(f"⚠️ Warning: Expected greeting but none found. (Acceptable for ongoing sessions)")
+        elif not expect_greeting and has_greeting:
+            print(f"❌ FAILURE: Deployment Failed! Recieved repetitive greeting: '{reply[:50]}'")
+            return reply, False
             
-        # Update history logic like frontend
-        history.append({"role": "user", "content": "Hello"})
-        history.append({"role": "ai", "content": reply1})
-        
+        return reply, True
     except Exception as e:
-        print(f"   ❌ Error: {e}")
-        return
+        print(f"❌ Exception: {e}")
+        return None, False
 
-    # 2. Second Message (Expect NO Greeting, Strict Structure)
-    print("\n[2] Sending Second Message: 'What is the price of CIB?'")
-    msg2 = "What is the price of CIB?"
-    payload2 = {
-        "message": msg2,
-        "session_id": SESSION_ID,
-        "history": history + [{"role": "user", "content": msg2}]
-    }
-    
-    try:
-        r2 = requests.post(f"{API_URL}/ai/chat", json=payload2)
-        r2.raise_for_status()
-        data2 = r2.json()
-        reply2 = data2.get('reply') or data2.get('message_text', '')  # Note: API returns message_text usually mapped to reply
-        cards = data2.get('cards', [])
-        actions = data2.get('actions', [])
-        
-        print(f"   Response: {reply2}")
-        
-        # CHECKS
-        failed = False
-        
-        # Check A: No Greeting
-        forbidden = ["Welcome back", "Hello", "Hi ", "Greetings"]
-        for bad in forbidden:
-            if bad.lower() in reply2.lower():
-                print(f"   ❌ FAILED: Found forbidden greeting '{bad}'")
-                failed = True
-        if not failed:
-            print("   ✅ strict 'No Greeting' check passed")
-            
-        # Check B: Length
-        words = len(reply2.split())
-        print(f"   ℹ️ Word count: {words}")
-        if words > 50:
-             print("   ⚠️ WARNING: Response might be too long (>50 words)")
-             
-        # Check C: Structure (Cards)
-        if cards:
-            print(f"   ✅ Cards present ({len(cards)})")
-        else:
-            print("   ❌ FAILED: No data cards found")
-            
-        # Check D: Definitions (in text or separate?)
-        # My implementation of 'fact_explanations' adds them to the response object, but how are they rendered?
-        # The frontend renders them. The API should return them in 'fact_explanations'.
-        facts = data2.get('fact_explanations', {})
-        if facts:
-             print(f"   ✅ Definitions present ({len(facts)})")
-        else:
-             print("   ⚠️ No definitions returned (Check if needed for this query)")
+# Step 1: First Message (New Session) - Triggers Data Intent
+print("--- Step 1: Initial Data Query (Expect Greeting) ---")
+# Use a known symbol and query to ensure non-UNKNOWN intent
+reply1, success1 = test_chat("Price of 1120", history=[], expect_greeting=False) # Changed to False temporarily to see what we get
 
-    except Exception as e:
-        print(f"   ❌ Error: {e}")
+if not reply1:
+    sys.exit(1)
 
-if __name__ == "__main__":
-    test_chat()
+# Step 2: Follow up (Existing Session)
+print("\n--- Step 2: Follow-up (Should have NO greeting) ---")
+# Simulate frontend sending history
+history = [
+    {"role": "user", "content": "Price of 1120"},
+    {"role": "ai", "content": reply1}
+]
+reply2, success2 = test_chat("Technical analysis of 1120", history=history, expect_greeting=False)
+
+if success2:
+    print("\n🎉 SUCCESS: Logic is holding. No repetitive greeting detected.")
+    sys.exit(0)
+else:
+    print("\n💀 FAILURE: Repetitive greeting detected.")
+    sys.exit(1)

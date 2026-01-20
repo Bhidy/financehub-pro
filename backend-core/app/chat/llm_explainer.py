@@ -99,16 +99,16 @@ class LLMExplainerService:
                 
                 "GREETING ALLOWED - This is a new conversation.\n"
                 "You MUST welcome the user naturally as if continuing a discussion.\n"
-                f"Refer to the user by their email/name: '{user_name}'\n"
+                f"Refer to the user by their Name: '{user_name}'\n"
                 "Examples:\n"
-                f"- 'Hi {user_name}, good to see you! What market data are we analyzing today?'\n"
-                f"- 'Welcome back, {user_name}. I'm ready to discuss the latest stock moves.'\n\n"
+                f"- 'Hi {user_name}! Great to see you. Ready to uncover some market insights today?'\n"
+                f"- 'Welcome back, {user_name}. The market is moving - let's analyze the latest trends together.'\n\n"
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: STRICTLY 20-40 words. Short, punchy, and engaging.\n"
-                "3. STYLE: Conversational, discussion-like, warm.\n"
-                "4. NO marketing language. Treat this as a chat between experts.\n"
+                "2. LENGTH: STRICTLY 15-25 words. Short, charming, and punchy.\n"
+                "3. STYLE: Intelligent, attractive, warm, and professional.\n"
+                "4. NO marketing language. Treat this as a chat between smart experts.\n"
             )
         else:
             # --- PROMPT B: ONGOING CONVERSATION (Data-Focused) ---

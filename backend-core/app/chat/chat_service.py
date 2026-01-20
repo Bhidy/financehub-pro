@@ -56,6 +56,8 @@ from .response_composer import (
     get_response_composer, ResponseComposer, 
     is_follow_up_question, get_follow_up_response
 )
+from .learning_section_generator import generate_learning_section
+from .follow_up_generator import generate_follow_up
 
 
 class ChatService:
@@ -431,7 +433,24 @@ class ChatService:
                         if original_text != conversational_text:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
-                    # 2. Fact Explanations (DISABLED as per user request for conciseness)
+                    # 2. Learning Section (NEW: Educational bullet points)
+                    learning_section = None
+                    if result_data.get('cards'):
+                        card_types = [c.get('type', '') for c in result_data.get('cards', [])]
+                        learning_section = generate_learning_section(
+                            card_types=card_types,
+                            card_data=result_data.get('cards', []),
+                            language=language
+                        )
+                    
+                    # 3. Soft Follow-Up Prompt (NEW: Intent-based suggestion)
+                    follow_up_prompt = generate_follow_up(
+                        intent=intent,
+                        language=language,
+                        symbol=actual_symbol
+                    )
+                    
+                    # Legacy fact_explanations (kept for backwards compatibility)
                     fact_explanations = None
 
                 except Exception as ex:
@@ -456,7 +475,7 @@ class ChatService:
                 
             response = self._build_response(
                 result_data, intent, intent_result.confidence, entities, start_time, language,
-                conversational_text, fact_explanations # Pass the definitions list
+                conversational_text, fact_explanations, learning_section, follow_up_prompt
             )
             
             # 9. Log analytics
@@ -891,8 +910,10 @@ class ChatService:
         entities: Dict[str, Any],
         start_time: float,
         language: str,
-        conversational_text: Optional[str] = None, # New
-        fact_explanations: Optional[Dict[str, str]] = None # New
+        conversational_text: Optional[str] = None,
+        fact_explanations: Optional[Dict[str, str]] = None,
+        learning_section: Optional[Dict[str, Any]] = None,  # NEW
+        follow_up_prompt: Optional[str] = None  # NEW
     ) -> ChatResponse:
         """Build the final ChatResponse."""
         
@@ -960,8 +981,10 @@ class ChatService:
 
         return ChatResponse(
             message_text=final_message_text,
-            conversational_text=conversational_text, # Add new field
-            fact_explanations=fact_explanations, # Add new field
+            conversational_text=conversational_text,
+            fact_explanations=fact_explanations,
+            learning_section=learning_section,  # NEW
+            follow_up_prompt=follow_up_prompt,  # NEW
             language=language,
             cards=cards,
             chart=chart,
@@ -974,9 +997,10 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="4.3.0-CONCISE-VOICE" # DEPLOYMENT VERIFICATION
+                backend_version="4.4.0-STARTA-STRUCTURE"  # DEPLOYMENT VERIFICATION
             )
         )
+
 
 
 async def process_message(

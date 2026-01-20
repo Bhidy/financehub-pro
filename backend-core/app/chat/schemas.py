@@ -203,7 +203,9 @@ class ChatResponse(BaseModel):
     """Full chat response."""
     message_text: str  # The "Robotic" fallback or title
     conversational_text: Optional[str] = None # The "Human" voice (Starta)
-    fact_explanations: Optional[Dict[str, str]] = None # Contextual definitions
+    fact_explanations: Optional[Dict[str, str]] = None # Legacy - kept for compatibility
+    learning_section: Optional[Dict[str, Any]] = None  # NEW: {"title": "...", "items": ["..."]}
+    follow_up_prompt: Optional[str] = None  # NEW: Soft follow-up suggestion
     message_text_ar: Optional[str] = None
     language: Literal["ar", "en", "mixed"] = "en"
     cards: List[Card] = Field(default_factory=list)
@@ -211,6 +213,7 @@ class ChatResponse(BaseModel):
     actions: List[Action] = Field(default_factory=list)
     disclaimer: Optional[str] = None
     meta: ResponseMeta
+
 
 
 class ResolvedSymbol(BaseModel):

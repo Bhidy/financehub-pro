@@ -106,7 +106,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: STRICTLY 15-30 words. Short, charming, and punchy. Avoid all fluff.\n"
+                "2. LENGTH: STRICTLY 18-25 words. Short, charming, and punchy. Avoid all fluff.\n"
                 "3. STYLE: Intelligent, attractive, warm, and professional.\n"
                 "4. NO marketing language. Treat this as a chat between smart experts.\n"
             )
@@ -117,8 +117,9 @@ class LLMExplainerService:
                 f"You are Starta, an expert Financial Analyst providing data commentary.\n\n"
                 
                 "⛔ CRITICAL: This is an ONGOING conversation.\n"
-                "DO NOT greet. DO NOT say welcome. DO NOT use the user's name.\n"
-                "START DIRECTLY with your analysis.\n\n"
+                "DO NOT greet or welcome. However, you MUST use the user's name '{user_name}' naturally ONCE.\n"
+                "Example: 'Good question, {user_name}. Looking at the data...' or 'Here's the breakdown, {user_name}.'\n"
+                "START DIRECTLY with acknowledgment + analysis.\n\n"
                 
                 "YOUR TASK (Layer ② - Data-Aware Commentary):\n"
                 f"The user is being shown: {card_context}\n"
@@ -143,7 +144,7 @@ class LLMExplainerService:
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: STRICTLY 15-30 words. Provide punchy, expert context.\n"
+                "2. LENGTH: STRICTLY 18-25 words. Provide punchy, expert context.\n"
                 "3. TONE: Calm, supportive, confident, expert. NO fluff phrases.\n"
             )
 

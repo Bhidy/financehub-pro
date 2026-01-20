@@ -58,21 +58,33 @@ class SlangParaphraser:
                 "Output (Command ONLY, include TICKER):"
             )
             
-            chat_completion = await self.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model=MODEL_NAME,
-                max_tokens=25,
-                temperature=0.0, # Zero variance for routing
-                timeout=2.5 
-            )
+            # Tiered Model Fallback
+            MODELS_TO_TRY = [MODEL_NAME, "llama-3.1-8b-instant", "llama3-8b-8192"]
             
-            result = chat_completion.choices[0].message.content.strip()
-            logger.info(f"Paraphrased: '{message}' -> '{result}'")
-            return result
-
+            for model in MODELS_TO_TRY:
+                try:
+                    chat_completion = await self.client.chat.completions.create(
+                        messages=[{"role": "user", "content": prompt}],
+                        model=model,
+                        max_tokens=25,
+                        temperature=0.0, # Zero variance for routing
+                        timeout=2.0 
+                    )
+                    
+                    result = chat_completion.choices[0].message.content.strip()
+                    if result:
+                        if model != MODEL_NAME:
+                            logger.info(f"✅ Paraphraser fallback to {model} successful")
+                        logger.info(f"Paraphrased: '{message}' -> '{result}'")
+                        return result
+                except Exception as model_err:
+                    logger.warning(f"Paraphraser failed for {model}: {model_err}")
+                    continue
+            
+            return None
             
         except Exception as e:
-            logger.warning(f"Paraphraser failed: {e}")
+            logger.warning(f"Paraphraser total failure: {e}")
             return None
 
 # Singleton

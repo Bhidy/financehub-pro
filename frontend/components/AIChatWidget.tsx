@@ -83,7 +83,7 @@ export default function AIChatWidget() {
 
             setMessages(prev => [...prev, {
                 role: 'ai',
-                content: data.reply || "Sorry, I couldn't process that."
+                content: data.conversational_text || data.message_text || data.reply || "Sorry, I couldn't process that."
             }]);
             setLoading(false);
 

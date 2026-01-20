@@ -50,6 +50,12 @@ from .handlers.deep_dive_handler import (
 )
 from .middleware.paraphraser import get_paraphraser # New Middleware
 from .llm_explainer import get_explainer
+# Phase 2 & 3: World-Class Conversational Framework
+from .greeting_controller import get_greeting_controller, GreetingController
+from .response_composer import (
+    get_response_composer, ResponseComposer, 
+    is_follow_up_question, get_follow_up_response
+)
 
 
 class ChatService:
@@ -321,8 +327,46 @@ class ChatService:
                         language=language,
                         user_name=real_user_name,
                         allow_greeting=final_allow_greeting, 
-                        is_returning_user=is_returning_user  # Now properly defined!
+                        is_returning_user=is_returning_user
                     )
+
+                    # -------------------------------------------------------------
+                    # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
+                    # -------------------------------------------------------------
+                    # If we have a narrative, wrap it with human opening and guidance
+                    if conversational_text and not final_allow_greeting:
+                        # Get the context for tracking
+                        ctx = self.context_store.get(session_id)
+                        last_opening = ctx.last_opening_used if ctx else None
+                        
+                        # Get card types for context
+                        card_types = [c.get('type', '') for c in result_data.get('cards', [])]
+                        
+                        # Compose full 3-layer response
+                        composer = get_response_composer()
+                        full_response, opening_category = composer.compose_full_response(
+                            core_narrative=conversational_text,
+                            language=language,
+                            intent=intent,
+                            user_name=real_user_name,
+                            last_opening_used=last_opening,
+                            shown_card_types=card_types,
+                            include_opening=True,  # Maybe add human opening
+                            include_guidance=True   # Maybe add guidance
+                        )
+                        
+                        # Update the conversational text with composed response
+                        conversational_text = full_response
+                        
+                        # Track what we used for next time
+                        if opening_category:
+                            self.context_store.set(
+                                session_id,
+                                last_opening_used=opening_category,
+                                last_cards_shown=card_types
+                            )
+                        
+                        print(f"[ChatService] ✨ Response composed with opening='{opening_category}'")
 
                     # -------------------------------------------------------------
                     # PHASE 4: THE "NUCLEAR" REGEX FILTER (FAIL-SAFE)
@@ -898,7 +942,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="4.0.0-GREETING-FIX-FINAL" # DEPLOYMENT VERIFICATION
+                backend_version="4.1.0-WORLD-CLASS-CONVERSATIONAL" # DEPLOYMENT VERIFICATION
             )
         )
 

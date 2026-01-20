@@ -299,6 +299,13 @@ class ChatService:
             # Important: ensure result is a dict and has success
             result_data = result if isinstance(result, dict) else {}
             
+            # --- INITIALIZE PREMIUM LAYERS ---
+            # Pre-declare to avoid UnboundLocalError in catastrophic failure paths
+            conversational_text = None
+            fact_explanations = None
+            learning_section = None
+            follow_up_prompt = None
+            
             if result_data.get('success', True) and intent not in NO_NARRATIVE_INTENTS:
                 try:
                     # Fetch real user name for personalization
@@ -326,15 +333,14 @@ class ChatService:
                     
                     has_history = real_history_count > 0
                     
-                    # CRITICAL FIX: is_returning_user is based on DB count (authoritative source)
-                    # If user has ANY prior messages in DB, they are returning
-                    is_returning_user = (msg_count is not None and msg_count > 0)
+                    # is_returning_user: True if DB shows messages OR request has history array
+                    is_returning_user = (msg_count is not None and msg_count > 0) or has_history
                     
-                    # is_new_session: Only true if BOTH DB and history show no prior messages
+                    # is_new_session: True ONLY if strictly no prior messages in DB AND history
                     is_new_session = (msg_count == 0) and not has_history
                     
                     # 3. Log the decision for debugging (DETAILED)
-                    print(f"[ChatService] 🔍 Session '{session_id}' | DB Msg Count: {msg_count} | Real Hist: {real_history_count} | New Session? {is_new_session} | Returning? {is_returning_user}")
+                    print(f"[ChatService] 🔍 Session '{session_id}' | DB: {msg_count} | Hist: {real_history_count} | New? {is_new_session} | Returning? {is_returning_user}")
 
                     # 4. Generate Narrative
                     # ENTERPRISE RULE: NEVER show greeting in ongoing conversation

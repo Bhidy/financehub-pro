@@ -123,21 +123,31 @@ export function useAIChat(config?: {
         if (typeof window !== 'undefined') {
             setDeviceFingerprint(getDeviceFingerprint());
 
-            // Restore session from local storage if available
-            const savedSession = localStorage.getItem("fh_chat_session");
-            if (savedSession) {
-                setSessionId(savedSession);
-                sessionIdRef.current = savedSession;
-                // Optionally load history here if needed
+            // ROBUST SESSION MANAGEMENT (v2.2 FIX)
+            // 1. Try to load specific session
+            let activeSession = localStorage.getItem("fh_chat_session");
+
+            // 2. If missing, generate immediately (Client-Side Authority)
+            if (!activeSession) {
+                activeSession = `sess_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+                localStorage.setItem("fh_chat_session", activeSession);
             }
+
+            // 3. Set state and ref synchronously
+            setSessionId(activeSession);
+            sessionIdRef.current = activeSession;
+
+            console.log(`[useAIChat] 🟢 Session Initialized: ${activeSession}`);
         }
-    }, []);
+    }, [config]);
 
     // Keep Ref in sync with State
     useEffect(() => {
-        sessionIdRef.current = sessionId;
-        if (sessionId && typeof window !== 'undefined') {
-            localStorage.setItem("fh_chat_session", sessionId);
+        if (sessionId) {
+            sessionIdRef.current = sessionId;
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("fh_chat_session", sessionId);
+            }
         }
     }, [sessionId]);
 
@@ -148,9 +158,15 @@ export function useAIChat(config?: {
 
     const [messages, setMessages] = useState<Message[]>([SYSTEM_WELCOME_MESSAGE]);
 
+    // CRITICAL FIX: Ref to track latest messages for mutation closure
+    const messagesRef = useRef<Message[]>(messages);
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
+
     const mutation = useMutation({
         mutationFn: async (text: string) => {
-            const history = messages
+            const history = messagesRef.current
                 .filter(m => m.role !== 'assistant' || m.content !== SYSTEM_WELCOME_MESSAGE.content)
                 .map(m => ({ role: m.role, content: m.content }));
 
@@ -158,7 +174,7 @@ export function useAIChat(config?: {
             // preventing stale closure issues in the mutation callback
             const currentSessionId = sessionIdRef.current;
 
-            console.log("[useAIChat] Sending message with Session ID:", currentSessionId);
+            console.log(`[useAIChat] 🚀 Sending Message: "${text.substring(0, 10)}..." | SessionID: ${currentSessionId}`);
 
             return await sendChatMessage(text, history, currentSessionId, config?.market, deviceFingerprint);
         },

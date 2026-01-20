@@ -372,6 +372,15 @@ class ChatService:
                         is_returning_user=is_returning_user
                     )
 
+                    # ENTERPRISE SAFETY: If LLM fails completely, inject a basic fallback
+                    # This ensures the ResponseComposer below ALWAYS has something to wrap
+                    if not conversational_text:
+                        if intent in [Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT]:
+                            conversational_text = f"I've pulled the latest data for {actual_symbol or 'the requested stock'} for you." if language == 'en' else f"لقد قمت بسحب أحدث البيانات لـ {actual_symbol or 'السهم المطلوب'} من أجلك."
+                        else:
+                            conversational_text = "Here's the data analysis you requested." if language == 'en' else "إليك تحليل البيانات الذي طلبته."
+                        print(f"[ChatService] ⚠️ LLM Narrative failed. Using safety fallback: '{conversational_text}'")
+
                     # -------------------------------------------------------------
                     # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
                     # -------------------------------------------------------------

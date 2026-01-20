@@ -173,16 +173,24 @@ class ResponseComposer:
         language: str,
         user_name: str = "Trader",
         last_opening_used: Optional[str] = None,
-        use_name: bool = True
+        use_name: bool = True,
+        force: bool = False  # NEW: Force opening (no random skip)
     ) -> Tuple[Optional[str], Optional[str]]:
         """
         Get a human opening (Layer ①).
         
+        Args:
+            language: 'en' or 'ar'
+            user_name: User's name for personalization
+            last_opening_used: Last used category (to avoid repetition)
+            use_name: Whether to use name-based openings
+            force: If True, ALWAYS return an opening (no 50% skip)
+        
         Returns:
             Tuple of (opening_text or None, category_used or None)
         """
-        # 50% chance to include opening
-        if random.random() > 0.5:
+        # 50% chance to include opening (unless forced)
+        if not force and random.random() > 0.5:
             return None, None
         
         # Choose category type based on name usage
@@ -274,7 +282,8 @@ class ResponseComposer:
         last_opening_used: Optional[str] = None,
         shown_card_types: Optional[List[str]] = None,
         include_opening: bool = True,
-        include_guidance: bool = True
+        include_guidance: bool = True,
+        force_opening: bool = False  # NEW: Force opening for returning users
     ) -> Tuple[str, Optional[str]]:
         """
         Compose a full 3-layer response.
@@ -288,6 +297,7 @@ class ResponseComposer:
             shown_card_types: List of card types shown
             include_opening: Whether to potentially include Layer ①
             include_guidance: Whether to potentially include Layer ③
+            force_opening: If True, ALWAYS include opening (no random skip)
             
         Returns:
             Tuple of (full_response, opening_category_used)
@@ -295,12 +305,13 @@ class ResponseComposer:
         parts = []
         opening_category = None
         
-        # Layer ① - Human Opening (optional)
+        # Layer ① - Human Opening (optional or forced)
         if include_opening:
             opening, opening_category = cls.get_human_opening(
                 language=language,
                 user_name=user_name,
-                last_opening_used=last_opening_used
+                last_opening_used=last_opening_used,
+                force=force_opening  # Pass force flag
             )
             if opening:
                 parts.append(opening)

@@ -93,6 +93,11 @@ curl https://starta.46-224-223-172.sslip.io/health
 ./scripts/deploy_production.sh backend
 ```
 
+### Force "Nuclear" Backend Rebuild (Immediate)
+```bash
+./scripts/deploy_production.sh backend nuclear
+```
+
 ## AI & DEPLOYMENT PROTOCOLS (STRICT ENFORCEMENT)
 > [!CAUTION]
 > **VIOLATION OF THESE RULES CAUSES SYSTEM FAILURE.**

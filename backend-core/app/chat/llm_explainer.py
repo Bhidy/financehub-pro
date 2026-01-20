@@ -182,44 +182,44 @@ class LLMExplainerService:
         # Extended bilingual dictionary
         FACTS = {
             "pe_ratio": {
-                "en": ("P/E Ratio", "Price-to-Earnings Ratio. It shows how much investors pay for $1 of profit."),
-                "ar": ("مضاعف الربحية", "يقيس السعر الذي يدفعه المستثمر مقابل كل جنيه من أرباح الشركة.")
+                "en": ("P/E Ratio", "The Price-to-Earnings (P/E) Ratio measures a company's current share price relative to its per-share earnings. A high P/E could mean that a stock's price is high relative to earnings and possibly overvalued, or that investors are expecting high growth rates in the future. Conversely, a low P/E might indicate that the current stock price is low relative to earnings."),
+                "ar": ("مضاعف الربحية (P/E)", "هو نسبة تقيس سعر سهم الشركة الحالي بالنسبة إلى أرباح السهم الواحد. يشير ارتفاع هذا المعدل إلى أن المستثمرين يتوقعون نمواً كبيراً في المستقبل، أو أن السهم مقيم بأعلى من قيمته الحقيقية. بينما قد يعني انخفاضه أن السهم مقيم بأقل من قيمته.")
             },
             "market_cap": {
-                "en": ("Market Cap", "Total market value of the company's shares."),
-                "ar": ("القيمة السوقية", "إجمالي قيمة أسهم الشركة في السوق.")
+                "en": ("Market Cap", "Market Capitalization refers to the total dollar market value of a company's outstanding shares of stock. It is calculated by multiplying the total number of a company's outstanding shares by the current market price of one share. It is a key indicator of a company's size."),
+                "ar": ("القيمة السوقية", "القيمة السوقية هي إجمالي القيمة الدولارية لأسهم الشركة القائمة في السوق. يتم حسابها عن طريق ضرب العدد الإجمالي لأسهم الشركة القائمة في سعر السوق الحالي للسهم الواحد. وهي مؤشر رئيسي لحجم الشركة.")
             },
             "dividend_yield": {
-                "en": ("Dividend Yield", "Annual dividend payment divided by the stock price."),
-                "ar": ("عائد التوزيعات", "الربح النقدي السنوي الموزع مقارنة بسعر السهم.")
+                "en": ("Dividend Yield", "The dividend yield is a financial ratio (dividend/price) that shows how much a company pays out in dividends each year relative to its stock price. It is expressed as a percentage and represents the return on investment for a stock without any capital gains."),
+                "ar": ("عائد التوزيعات", "عائد التوزيعات هو نسبة مالية توضح مقدار الأرباح التي توزعها الشركة سنوياً نسبة إلى سعر سهمها. يتم التعبير عنها كنسبة مئوية وتمثل العائد على الاستثمار من السهم دون حساب الأرباح الرأسمالية.")
             },
             "z_score": {
-                "en": ("Z-Score", "A measure of financial health. Above 3.0 is safe, below 1.8 is risky."),
-                "ar": ("مؤشر ألتمان", "مقياس للصحة المالية. فوق 3.0 آمن، وتحت 1.8 يعبر عن وجود مخاطر.")
+                "en": ("Z-Score", "The Altman Z-Score is a formula ensuring financial health. A score below 1.8 indicates a company is likely heading for bankruptcy, while a score above 3.0 indicates a company is in a solid financial position. It uses profitability, leverage, liquidity, solvency, and activity ratios."),
+                "ar": ("مؤشر ألتمان (Z-Score)", "هو صيغة لقياس الصحة المالية للشركة. تشير الدرجة الأقل من 1.8 إلى احتمالية حدوث إفلاس، بينما تشير الدرجة الأعلى من 3.0 إلى وضع مالي قوي. يستخدم هذا المؤشر نسب الربحية والرافعة المالية والسيولة والملاءة المالية.")
             },
             "eps": {
-                "en": ("EPS", "Earnings Per Share. The portion of a company's profit allocated to each outstanding share of common stock."),
-                "ar": ("ربحية السهم", "نصيب السهم الواحد من صافي أرباح الشركة.")
+                "en": ("EPS", "Earnings Per Share (EPS) is calculated as a company's profit divided by the outstanding shares of its common stock. The resulting number serves as an indicator of a company's profitability. It is common for a company to report EPS that is adjusted for extraordinary items."),
+                "ar": ("ربحية السهم (EPS)", "يتم حساب ربحية السهم عن طريق قسمة صافي ربح الشركة على عدد الأسهم القائمة. يعتبر الرقم الناتج مؤشراً رئيسياً لربحية الشركة، وغالباً ما يتم استخدامه لمقارنة الأداء المالي بين الشركات المختلفة.")
             },
             "roe": {
-                "en": ("ROE", "Return on Equity. Measures a corporation's profitability in relation to stockholders' equity."),
-                "ar": ("العائد على حقوق الملكية", "يقيس ربحية الشركة بالنسبة لحقوق المساهمين.")
+                "en": ("ROE", "Return on Equity (ROE) is a measure of financial performance calculated by dividing net income by shareholders' equity. Because shareholders' equity is equal to a company's assets minus its debt, ROE constitutes the return on net assets."),
+                "ar": ("العائد على حقوق الملكية", "هو مقياس للأداء المالي يتم حسابه بقسمة صافي الدخل على حقوق المساهمين. نظراً لأن حقوق المساهمين تساوي أصول الشركة مطروحاً منها ديونها، فإن العائد على حقوق الملكية يعتبر العائد على صافي الأصول.")
             },
             "pb_ratio": {
-                "en": ("P/B Ratio", "Price-to-Book Ratio. Compares market value to book value. Lower P/B could mean the stock is undervalued."),
-                "ar": ("مضاعف القيمة الدفترية", "يقارن القيمة السوقية بالقيمة الدفترية. انخفاضه قد يعني أن السهم مقيم بأقل من قيمته.")
+                "en": ("P/B Ratio", "The Price-to-Book (P/B) ratio compares a company's market value to its book value. A ratio under 1.0 is often considered a solid investment, indicating that the stock is potentially undervalued relative to the company's assets."),
+                "ar": ("مضاعف القيمة الدفترية", "يقارن نسبة السعر إلى القيمة الدفترية بين القيمة السوقية للشركة وقيمتها الدفترية. غالباً ما تعتبر النسبة الأقل من 1.0 استثماراً جيداً، حيث تشير إلى أن السهم قد يكون مقيماً بأقل من قيمته الحقيقية بالنسبة لأصول الشركة.")
             },
             "ebitda": {
-                "en": ("EBITDA", "Earnings Before Interest, Taxes, Depreciation, and Amortization."),
-                "ar": ("الأرباح قبل الفوائد والضرائب", "مقياس لأداء الشركة المالي العام.")
+                "en": ("EBITDA", "EBITDA stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It is an alternate measure of profitability to net income. EBITDA attempts to represent cash profit generated by the company's operations."),
+                "ar": ("الأرباح قبل الفوائد والضرائب", "هي اختصار للأرباح قبل الفوائد والضرائب والإهلاكات والاستهلاكات. وهي مقياس بديل للربحية يختلف عن صافي الدخل، وتهدف إلى تمثيل الربح النقدي الناتج عن عمليات الشركة التشغيلية.")
             },
             "current_ratio": {
-                "en": ("Current Ratio", "Ability to pay short-term obligations."),
-                "ar": ("النسبة الحالية", "قدرة الشركة على سداد التزاماتها قصيرة الأجل.")
+                "en": ("Current Ratio", "The Current Ratio is a liquidity ratio that measures a company's ability to pay short-term obligations or those due within one year. It tells investors and analysts how a company can maximize the current assets on its balance sheet to satisfy its current debt and other payables."),
+                "ar": ("النسبة الحالية", "هي نسبة سيولة تقيس قدرة الشركة على سداد التزاماتها قصيرة الأجل أو المستحقة خلال عام واحد. تخبر المستثمرين بكيفية استغلال الشركة لأصولها الحالية لسداد ديونها ومدفوعاتها الأخرى.")
             },
             "operating_margin": {
-                "en": ("Operating Margin", "Profit on a dollar of sales after variable costs."),
-                "ar": ("هامش التشغيل", "الربح من كل دولار مبيعات بعد تغطية تكاليف الإنتاج.")
+                "en": ("Operating Margin", "Operating margin measures how much profit a company makes on a dollar of sales after paying for variable costs of production, such as wages and raw materials, but before paying interest or tax."),
+                "ar": ("هامش التشغيل", "يقيس هامش التشغيل مقدار الربح الذي تحققه الشركة من كل دولار من المبيعات بعد دفع تكاليف الإنتاج المتغيرة، مثل الأجور والمواد الخام، ولكن قبل دفع الفوائد أو الضرائب.")
             }
         }
         

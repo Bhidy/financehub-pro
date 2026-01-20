@@ -17,67 +17,72 @@ from .schemas import Intent
 GREETING_CATEGORIES = {
     "warm_welcome": {
         "en": [
-            "Good to see you, {name}! 👋",
-            "Hey {name}! Ready to explore some stocks?",
-            "Welcome! Let's dive into the market together.",
-            "Great to have you here, {name}!",
+            "Good to see you, {name}! 👋 I'm ready to help you analyze the Egyptian stock market with real-time data and insights.",
+            "Hey {name}! It's a great time to explore the market. I'm here to provide you with expert analysis and data.",
+            "Welcome back to Starta! Let's dive deep into the latest market trends and find some opportunities together.",
+            "Great to have you here, {name}! Whether you're tracking a portfolio or looking for new stocks, I'm ready to assist.",
         ],
         "ar": [
-            "أهلاً {name}! 👋",
-            "سعيد بوجودك! خلينا نبدأ.",
-            "مرحباً! جاهز نستكشف السوق سوا.",
+            "أهلاً بك يا {name}! 👋 أنا جاهز لمساعدتك في تحليل سوق الأسهم المصري باستخدام بيانات ولحظية ورؤى دقيقة.",
+            "سعيد بوجودك معنا! هذا وقت ممتاز لاستكشاف السوق، وأنا هنا لأوفر لك كل التحليلات والبيانات التي تحتاجها.",
+            "مرحباً بك في ستارتا! دعنا نتعمق في أحدث اتجاهات السوق ونبحث معاً عن أفضل الفرص الاستثمارية.",
+            "أهلاً {name}! سواء كنت تتابع محفظتك أو تبحث عن فرص جديدة، أنا مستعد تماماً لمساعدتك."
         ]
     },
     "professional_intro": {
         "en": [
-            "Hello {name}. I'm here to help you analyze EGX stocks.",
-            "Good to have you. Let's look at the data together.",
-            "Welcome to Starta. What would you like to analyze?",
-            "I'm Starta, your financial analyst. How can I assist?",
+            "Hello {name}. I am Starta, your advanced financial intelligence assistant. I'm here to help you dissect EGX stocks with precision.",
+            "Good to have you using Starta. Let's look at the data together and uncover the financial health of your favorite companies.",
+            "Welcome to Starta's premium analysis. What specific stock or sector would you like to examine in detail today?",
+            "I'm Starta, your AI financial analyst. I can process complex financial reports and market data to give you clear answers.",
         ],
         "ar": [
-            "مرحباً {name}. أنا ستارتا، محللك المالي.",
-            "أهلاً بك. خلينا نحلل البيانات سوا.",
-            "مرحباً! إزاي أقدر أساعدك النهارده؟",
+            "مرحباً {name}. أنا ستارتا، مساعدك المالي الذكي. أنا هنا لمساعدتك في تحليل أسهم البورصة المصرية بدقة واحترافية.",
+            "شرفت باستخدمك لستارتا. دعنا ننظر إلى البيانات معاً ونكتشف الصحة المالية للشركات التي تهمك.",
+            "مرحباً بك في التحليل المتقدم من ستارتا. ما هو السهم أو القطاع الذي تود فحصه بالتفصيل اليوم؟",
+            "أنا ستارتا، محللك المالي بالذكاء الاصطناعي. يمكنني معالجة التقارير المالية المعقدة لتقديم إجابات واضحة ومباشرة."
         ]
     },
     "friendly_minimal": {
         "en": [
-            "Hey there! 👋",
-            "Hi {name}!",
-            "Hello!",
-            "Hey!",
+            "Hey there! 👋 I'm all set to crunch some numbers and pull up the latest charts for you.",
+            "Hi {name}! I hope you're having a productive day. Let me know which stock is on your mind.",
+            "Hello! I'm standing by to help you navigate the market complexity with simple, data-driven answers.",
+            "Hey! Ready to turn market noise into clear signals? Just ask me about any symbol or company.",
         ],
         "ar": [
-            "أهلاً! 👋",
-            "مرحباً {name}!",
-            "أهلاً وسهلاً!",
+            "أهلاً بك! 👋 أنا مستعد تماماً لتحليل الأرقام وعرض أحدث الرسوم البيانية من أجلك.",
+            "مرحباً {name}! أتمنى لك يوماً مثمراً. أخبرني عن السهم الذي تفكر فيه حالياً.",
+            "أهلاً وسهلاً! أنا هنا لمساعدتك في تجاوز تعقيدات السوق بإجابات بسيطة ومدعومة بالبيانات.",
+            "أهلاً! جاهز لتحويل ضجيج السوق إلى إشارات واضحة؟ فقط اسألني عن أي رمز أو شركة."
         ]
     },
     "coaching": {
         "en": [
-            "Ready to make smart investment decisions, {name}?",
-            "Let's build your market knowledge today.",
-            "Great timing — I'm ready to break down any stock for you.",
-            "Let's turn data into insights today.",
+            "Ready to make smart investment decisions, {name}? I can help you evaluate risks and growth potential instantly.",
+            "Let's build your market knowledge today. Ask me about P/E ratios, dividends, or technical indicators.",
+            "Great timing — volatility can create opportunities. I'm ready to break down any stock's fundamentals for you.",
+            "Let's turn raw data into actionable insights today. I can compare stocks or deep-dive into financial statements.",
         ],
         "ar": [
-            "جاهز نتخذ قرارات استثمارية ذكية؟",
-            "خلينا نبني معرفتك بالسوق النهارده.",
-            "توقيت ممتاز — جاهز أحلل أي سهم ليك.",
+            "جاهز لاتخاذ قرارات استثمارية ذكية يا {name}؟ يمكنني مساعدتك في تقييم المخاطر وفرص النمو في لحظات.",
+            "دعنا نبني معرفتك بالسوق اليوم. اسألني عن مكررات الربحية، التوزيعات، أو المؤشرات الفنية.",
+            "توقيت ممتاز — التقلبات قد تخلق فرصاً. أنا جاهز لتحليل أساسيات أي سهم بالتفصيل من أجلك.",
+            "دعنا نحول البيانات الخام إلى رؤى قابلة للتنفيذ اليوم. يمكنني مقارنة الأسهم أو الغوص في القوائم المالية."
         ]
     },
     "neutral": {
         "en": [
-            "How can I help you today?",
-            "What would you like to know?",
-            "I'm ready when you are.",
-            "What can I help you with?",
+            "How can I help you analyze the market today? I have access to prices, financials, and news.",
+            "What would you like to know? I can screen for top stocks or checking specific company details.",
+            "I'm ready when you are. Just type a symbol or a question about the Egyptian market.",
+            "What can I help you with? Whether it's technicals or fundamentals, I'm here to assist.",
         ],
         "ar": [
-            "إزاي أقدر أساعدك؟",
-            "تحب تعرف إيه؟",
-            "جاهز أساعدك.",
+            "كيف يمكنني مساعدتك في تحليل السوق اليوم؟ لدي وصول للأسعار، القوائم المالية، والأخبار.",
+            "ما الذي تود معرفته؟ يمكنني البحث عن أفضل الأسهم أو فحص تفاصيل شركة محددة.",
+            "أنا جاهز في أي وقت. فقط اكتب رمز السهم أو سؤالك عن السوق المصري.",
+            "بماذا يمكنني مساعدتك؟ سواء كان تحليلاً فنياً أو أساسياً، أنا هنا للمساعدة."
         ]
     }
 }

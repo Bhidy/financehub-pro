@@ -357,17 +357,44 @@ function AIAnalystPageContent() {
                                                         </>
                                                     )}
 
-                                                    {/* 3. Fact Explanations (Definitions - NOW AFTER CARDS) */}
+                                                    {/* 3. Fact Explanations (Legacy - kept for compatibility) */}
                                                     {msg.response?.fact_explanations && (
                                                         <div className="mt-2 border-t border-slate-100 dark:border-white/5 pt-4 px-2">
                                                             <FactExplanations explanations={msg.response.fact_explanations} />
                                                         </div>
                                                     )}
 
-                                                    {/* 3. Actions */}
+                                                    {/* 4. Learning Section (NEW - After Cards) */}
+                                                    {msg.response?.learning_section && (
+                                                        <div className="mt-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-500/20">
+                                                            <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
+                                                                {msg.response.learning_section.title}
+                                                            </h4>
+                                                            <ul className="space-y-2">
+                                                                {msg.response.learning_section.items.map((item, i) => (
+                                                                    <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
+                                                                        <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-slate-900 dark:text-white font-semibold">$1</strong>') }} />
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 5. Follow-Up Prompt (NEW - At the End) */}
+                                                    {msg.response?.follow_up_prompt && (
+                                                        <div className="mt-4 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-white/5">
+                                                            <p className="text-sm text-slate-600 dark:text-slate-400 italic">
+                                                                💡 {msg.response.follow_up_prompt}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 6. Actions */}
                                                     {msg.response?.actions && msg.response.actions.length > 0 && (
                                                         <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />
                                                     )}
+
                                                 </div>
                                             </div>
                                         )}

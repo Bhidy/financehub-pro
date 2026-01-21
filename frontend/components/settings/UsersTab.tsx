@@ -62,9 +62,9 @@ export default function UsersTab() {
         <div className="space-y-6">
             {/* Statistics Cards - Moves to Top */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-blue-50/50 dark:bg-blue-500/10 rounded-xl p-4 border border-blue-100 dark:border-blue-500/20">
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{total}</div>
-                    <div className="text-xs font-medium text-blue-600/80 dark:text-blue-400/60">Total Users</div>
+                <div className="bg-teal-50/50 dark:bg-teal-500/10 rounded-xl p-4 border border-teal-100 dark:border-teal-500/20">
+                    <div className="text-2xl font-bold text-teal-700 dark:text-teal-400">{total}</div>
+                    <div className="text-xs font-medium text-teal-600/80 dark:text-teal-400/60">Total Users</div>
                 </div>
                 <div className="bg-emerald-50/50 dark:bg-emerald-500/10 rounded-xl p-4 border border-emerald-100 dark:border-emerald-500/20">
                     <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
@@ -72,18 +72,18 @@ export default function UsersTab() {
                     </div>
                     <div className="text-xs font-medium text-emerald-600/80 dark:text-emerald-400/60">Active Now</div>
                 </div>
-                <div className="bg-purple-50/50 dark:bg-purple-500/10 rounded-xl p-4 border border-purple-100 dark:border-purple-500/20">
-                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">
+                <div className="bg-slate-50/50 dark:bg-white/10 rounded-xl p-4 border border-slate-100 dark:border-white/20">
+                    <div className="text-2xl font-bold text-slate-700 dark:text-slate-400">
                         {users ? users.filter((u: any) => u.role === 'admin').length : '-'}
                     </div>
-                    <div className="text-xs font-medium text-purple-600/80 dark:text-purple-400/60">Admins</div>
+                    <div className="text-xs font-medium text-slate-600/80 dark:text-slate-400/60">Admins</div>
                 </div>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <Shield className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                         User Management
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">View and manage all registered users.</p>
@@ -100,7 +100,7 @@ export default function UsersTab() {
                             setPage(0); // Reset to first page on search
                         }}
                         placeholder="Search by email or name..."
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                 </div>
             </div>
@@ -125,7 +125,7 @@ export default function UsersTab() {
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center gap-2">
-                                            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                                            <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
                                             <span>Loading users...</span>
                                         </div>
                                     </td>
@@ -180,8 +180,8 @@ export default function UsersTab() {
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize
                                                 ${user.role === 'admin'
-                                                    ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-100 dark:border-purple-500/20'
-                                                    : 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20'
+                                                    ? 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-400 border border-slate-200 dark:border-white/20'
+                                                    : 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-100 dark:border-teal-500/20'
                                                 }`}>
                                                 {user.role}
                                             </span>
@@ -224,7 +224,7 @@ export default function UsersTab() {
                                                     setResetError("");
                                                     setNewPassword("");
                                                 }}
-                                                className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+                                                className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-500 hover:text-teal-600 dark:text-slate-400 dark:hover:text-teal-400 transition-colors"
                                                 title="Reset Password"
                                             >
                                                 <Key className="w-4 h-4" />
@@ -243,7 +243,7 @@ export default function UsersTab() {
                         <button
                             disabled={page === 0}
                             onClick={() => setPage(p => Math.max(0, p - 1))}
-                            className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             Previous
                         </button>
@@ -253,7 +253,7 @@ export default function UsersTab() {
                         <button
                             disabled={page >= totalPages - 1}
                             onClick={() => setPage(p => p + 1)}
-                            className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             Next
                         </button>
@@ -273,7 +273,7 @@ export default function UsersTab() {
                     >
                         <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <Shield className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                                 Reset Password
                             </h3>
                             <button
@@ -304,7 +304,7 @@ export default function UsersTab() {
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         placeholder="Enter new password (min. 8 chars)"
-                                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-medium"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium"
                                     />
                                 </div>
                                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
@@ -338,7 +338,7 @@ export default function UsersTab() {
                             <button
                                 onClick={handleResetSubmit}
                                 disabled={!newPassword || newPassword.length < 8 || resetStatus === 'loading' || resetStatus === 'success'}
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all"
+                                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-teal-500/20 flex items-center gap-2 transition-all"
                             >
                                 {resetStatus === 'loading' ? (
                                     <>

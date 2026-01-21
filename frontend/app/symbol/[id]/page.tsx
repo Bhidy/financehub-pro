@@ -79,10 +79,10 @@ function formatCurrency(num: number | string | null | undefined): string {
 // Loading Skeleton with animations
 function LoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/50 to-indigo-50/30 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] p-6">
+        <div className="min-h-screen bg-gradient-to-br from-white via-slate-50/50 to-teal-50/30 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] p-6">
             <div className="max-w-[1800px] mx-auto">
                 <div className="animate-pulse space-y-6">
-                    <div className="h-32 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 rounded-3xl" />
+                    <div className="h-32 bg-gradient-to-r from-slate-100 via-teal-50 to-emerald-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 rounded-3xl" />
                     <div className="grid grid-cols-6 gap-4">{[...Array(6)].map((_, i) => <div key={i} className="h-28 bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg" />)}</div>
                     <div className="h-[500px] bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-xl" />
                 </div>
@@ -96,11 +96,11 @@ function StatCard({ label, value, icon: Icon, trend, color = "blue", delay = 0 }
     label: string; value: string; icon?: any; trend?: "up" | "down" | null; color?: string; delay?: number;
 }) {
     const colorStyles: Record<string, { bg: string; icon: string; text: string; glow: string }> = {
-        blue: { bg: "from-blue-500 to-blue-600", icon: "bg-blue-500", text: "text-blue-600", glow: "shadow-blue-500/20" },
+        blue: { bg: "from-slate-700 to-slate-900", icon: "bg-slate-800", text: "text-slate-800", glow: "shadow-slate-500/20" },
         emerald: { bg: "from-emerald-500 to-teal-600", icon: "bg-emerald-500", text: "text-emerald-600", glow: "shadow-emerald-500/20" },
         red: { bg: "from-red-500 to-rose-600", icon: "bg-red-500", text: "text-red-600", glow: "shadow-red-500/20" },
         amber: { bg: "from-amber-500 to-orange-600", icon: "bg-amber-500", text: "text-amber-600", glow: "shadow-amber-500/20" },
-        violet: { bg: "from-violet-500 to-purple-600", icon: "bg-violet-500", text: "text-violet-600", glow: "shadow-violet-500/20" },
+        violet: { bg: "from-slate-600 to-slate-700", icon: "bg-slate-600", text: "text-slate-600", glow: "shadow-slate-500/20" },
         cyan: { bg: "from-cyan-500 to-teal-600", icon: "bg-cyan-500", text: "text-cyan-600", glow: "shadow-cyan-500/20" },
     };
     const style = colorStyles[color] || colorStyles.blue;
@@ -146,9 +146,9 @@ function PremiumCard({ children, className = "", gradient = false }: { children:
 // Section Header with animated icon
 function SectionHeader({ title, icon: Icon, color = "blue" }: { title: string; icon: any; color?: string }) {
     const colorMap: Record<string, string> = {
-        blue: "from-blue-500 to-blue-600 shadow-blue-500/30",
+        blue: "from-slate-700 to-slate-800 shadow-slate-500/30",
         emerald: "from-emerald-500 to-teal-600 shadow-emerald-500/30",
-        violet: "from-violet-500 to-purple-600 shadow-violet-500/30",
+        violet: "from-teal-600 to-emerald-600 shadow-teal-500/30",
         orange: "from-orange-500 to-amber-600 shadow-orange-500/30",
         cyan: "from-cyan-500 to-blue-600 shadow-cyan-500/30",
         red: "from-red-500 to-rose-600 shadow-red-500/30",
@@ -167,7 +167,7 @@ function EmptyState({ message }: { message: string }) {
     return (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
             <div className="relative">
-                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
+                <div className="absolute inset-0 bg-slate-500/20 rounded-full blur-xl animate-pulse" />
                 <AlertCircle className="w-16 h-16 mb-4 relative" />
             </div>
             <p className="text-sm font-medium">{message}</p>
@@ -275,15 +275,16 @@ export default function SymbolDetailPage() {
             });
             chartRef.current = chart;
 
+            chartRef.current = chart;
             try {
                 if (chartStyle === "candle") {
                     const series = chart.addSeries(CandlestickSeries, { upColor: '#10b981', downColor: '#ef4444', borderUpColor: '#10b981', borderDownColor: '#ef4444', wickUpColor: '#10b981', wickDownColor: '#ef4444' });
                     series.setData(chartData);
                 } else if (chartStyle === "line") {
-                    const series = chart.addSeries(LineSeries, { color: '#6366f1', lineWidth: 3 });
+                    const series = chart.addSeries(LineSeries, { color: '#14b8a6', lineWidth: 3 });
                     series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
                 } else {
-                    const series = chart.addSeries(AreaSeries, { topColor: 'rgba(99, 102, 241, 0.4)', bottomColor: 'rgba(99, 102, 241, 0.02)', lineColor: '#6366f1', lineWidth: 3 });
+                    const series = chart.addSeries(AreaSeries, { topColor: 'rgba(20, 184, 166, 0.4)', bottomColor: 'rgba(20, 184, 166, 0.02)', lineColor: '#14b8a6', lineWidth: 3 });
                     series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
                 }
                 const volumeSeries = chart.addSeries(HistogramSeries, { color: 'rgba(148,163,184,0.2)', priceFormat: { type: 'volume' }, priceScaleId: '' });
@@ -304,7 +305,7 @@ export default function SymbolDetailPage() {
 
     if (tickersLoading) return <LoadingSkeleton />;
     if (!stockData) return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-indigo-50 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121]">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-slate-50 to-teal-50 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121]">
             <div className="text-center bg-white dark:bg-[#1A1F2E] p-12 rounded-3xl shadow-2xl border border-slate-100 dark:border-white/5 animate-fade-in">
                 <div className="relative inline-block"><div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse" /><AlertCircle className="w-20 h-20 text-red-400 relative" /></div>
                 <h2 className="text-3xl font-black text-slate-800 dark:text-white mt-6 mb-2">Stock Not Found</h2>
@@ -321,7 +322,7 @@ export default function SymbolDetailPage() {
     const loading = isIntraday ? intradayLoading : chartLoading;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/20 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] pb-12">
+        <div className="min-h-screen bg-gradient-to-br from-white via-slate-50/30 to-teal-50/20 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] pb-12">
             {/* Add custom animations */}
             <style jsx global>{`
                 @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -346,8 +347,8 @@ export default function SymbolDetailPage() {
                             </div>
                             <div>
                                 <div className="flex items-center gap-3 flex-wrap">
-                                    <h1 className="text-4xl font-black bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">{symbol}</h1>
-                                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-500/20 shadow-sm">{stockData.sector_name || "EQUITY"}</span>
+                                    <h1 className="text-4xl font-black bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">{symbol}</h1>
+                                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm">{stockData.sector_name || "EQUITY"}</span>
                                 </div>
                                 <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">{stockData.name_en || stockData.name_ar || symbol}</p>
                             </div>
@@ -366,9 +367,9 @@ export default function SymbolDetailPage() {
                                     </span>
                                 </div>
                             </div>
-                            <div className="hidden md:flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-300/50 dark:border-blue-700/30 shadow-lg shadow-blue-500/10">
-                                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                <span className="text-sm font-bold text-blue-700 dark:text-blue-400">Delayed 5 min</span>
+                            <div className="hidden md:flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-slate-50 to-teal-50 dark:from-slate-800 dark:to-teal-900/10 border border-slate-200 dark:border-slate-700 shadow-lg shadow-slate-200/50 dark:shadow-none">
+                                <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-400">Delayed 5 min</span>
                             </div>
                         </div>
                     </div>
@@ -403,12 +404,12 @@ export default function SymbolDetailPage() {
                 {/* Tabs */}
                 <div className="flex items-center gap-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-2.5 shadow-xl border border-slate-100 dark:border-white/5 mb-8 overflow-x-auto">
                     {[
-                        { id: "overview", label: "Overview", icon: Activity, color: "from-blue-500 to-indigo-500" },
-                        { id: "financials", label: "Financials", icon: FileText, color: "from-violet-500 to-purple-500" },
+                        { id: "overview", label: "Overview", icon: Activity, color: "from-slate-700 to-slate-800" },
+                        { id: "financials", label: "Financials", icon: FileText, color: "from-teal-600 to-emerald-600" },
                         { id: "ownership", label: "Ownership", icon: Users, color: "from-orange-500 to-amber-500" },
                         { id: "analysts", label: "Analysts", icon: Target, color: "from-cyan-500 to-blue-500" },
-                        { id: "earnings", label: "Earnings", icon: Calendar, color: "from-pink-500 to-rose-500" },
-                        { id: "insider", label: "Insider", icon: Briefcase, color: "from-teal-500 to-emerald-500" },
+                        { id: "earnings", label: "Earnings", icon: Calendar, color: "from-teal-500 to-emerald-500" },
+                        { id: "insider", label: "Insider", icon: Briefcase, color: "from-slate-600 to-slate-700" },
                     ].map((tab) => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
                             className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap ${activeTab === tab.id ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:scale-105"}`}>
@@ -425,7 +426,7 @@ export default function SymbolDetailPage() {
                         {activeTab === "overview" && (
                             <>
                                 <div className="relative overflow-hidden bg-white dark:bg-[#1A1F2E] rounded-3xl p-8 shadow-2xl border border-slate-100 dark:border-white/5">
-                                    <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 rounded-full blur-3xl" />
+                                    <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-teal-500/5 via-emerald-500/5 to-slate-500/5 rounded-full blur-3xl" />
                                     <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-emerald-500/5 to-cyan-500/5 rounded-full blur-3xl" />
 
                                     <div className="relative">
@@ -617,7 +618,7 @@ export default function SymbolDetailPage() {
                     {/* Right Sidebar */}
                     <div className="space-y-6">
                         {/* Trading Info - Colorful Gradient */}
-                        <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl p-6 shadow-2xl shadow-indigo-500/30">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-3xl p-6 shadow-2xl shadow-slate-900/30">
                             <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
                             <div className="relative">
                                 <div className="flex items-center gap-3 mb-5"><div className="p-3 rounded-2xl bg-white/20"><Wallet className="w-6 h-6 text-white" /></div><h3 className="text-xl font-bold text-white">Trading Info</h3></div>

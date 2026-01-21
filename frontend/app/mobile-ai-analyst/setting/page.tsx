@@ -28,35 +28,33 @@ export default function MobileSettingsPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-[100dvh] w-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:bg-[#0B1121] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-500" />
+            <div className="min-h-[100dvh] w-full bg-gradient-to-br from-slate-50 via-[#14B8A6]/5 to-slate-50 dark:bg-[#0B1121] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50/50 to-purple-50/50 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121] text-slate-900 dark:text-white font-sans overflow-y-auto overflow-x-hidden relative selection:bg-blue-500/30 transition-colors duration-300">
+        <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-[#14B8A6]/5 to-slate-50 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121] text-[#0F172A] dark:text-white font-sans overflow-y-auto overflow-x-hidden relative selection:bg-[#14B8A6]/30 transition-colors duration-300">
 
-            {/* Background Decorative Elements */}
+            {/* Background Decorative Elements - Midnight Teal */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                {/* Light mode: Vibrant, shiny gradients */}
-                <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-gradient-to-br from-blue-400/20 via-purple-400/15 to-pink-400/10 dark:from-blue-500/10 dark:via-transparent dark:to-transparent rounded-full blur-[80px]" />
-                <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-gradient-to-tl from-purple-400/20 via-pink-400/15 to-orange-400/10 dark:from-purple-500/10 dark:via-transparent dark:to-transparent rounded-full blur-[80px]" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] bg-gradient-to-r from-cyan-300/10 to-blue-300/10 dark:from-transparent dark:to-transparent rounded-full blur-[60px]" />
+                <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-gradient-to-br from-[#14B8A6]/10 via-[#3B82F6]/10 to-transparent dark:from-[#14B8A6]/10 dark:via-transparent dark:to-transparent rounded-full blur-[80px]" />
+                <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-gradient-to-tl from-[#3B82F6]/10 via-[#14B8A6]/10 to-transparent dark:from-[#3B82F6]/10 dark:via-transparent dark:to-transparent rounded-full blur-[80px]" />
             </div>
 
-            {/* Header / Nav */}
-            <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-white/70 dark:bg-[#0B1121]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/5 shadow-sm dark:shadow-none transition-colors duration-300">
+            {/* Header / Nav - Midnight Teal Design */}
+            <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-white/70 dark:bg-[#0B1121]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] shadow-sm dark:shadow-none transition-colors duration-300">
                 <button
                     onClick={() => router.push('/mobile-ai-analyst')}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm dark:shadow-none border border-slate-200/50 dark:border-transparent"
+                    className="w-10 h-10 flex items-center justify-center rounded-lg bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/[0.08]"
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
-                <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
+                <h1 className="text-lg font-bold tracking-tight text-[#0F172A] dark:text-white">Settings</h1>
                 <button
                     onClick={logout}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-red-50 to-red-100 dark:from-red-500/10 dark:to-red-500/5 text-red-600 dark:text-red-500 hover:from-red-100 hover:to-red-200 dark:hover:from-red-500/20 dark:hover:to-red-500/10 transition-all active:scale-95 border border-red-200/50 dark:border-red-500/20 shadow-sm dark:shadow-none"
+                    className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-br from-red-50 to-red-100 dark:from-[#EF4444]/10 dark:to-[#EF4444]/5 text-[#EF4444] hover:from-red-100 hover:to-red-200 dark:hover:from-[#EF4444]/20 dark:hover:to-[#EF4444]/10 transition-all active:scale-95 border border-red-200/50 dark:border-[#EF4444]/20 shadow-sm dark:shadow-none"
                     title="Sign Out"
                 >
                     <LogOut className="w-4 h-4" />
@@ -67,12 +65,12 @@ export default function MobileSettingsPage() {
                 {/* Profile Header Card */}
                 <ProfileHeader user={user} />
 
-                {/* Custom Tab Navigation */}
+                {/* Custom Tab Navigation - Midnight Teal */}
                 <div className="px-5 mt-6 mb-8">
-                    <div className="p-1.5 bg-white/60 dark:bg-white/5 rounded-2xl flex relative backdrop-blur-sm border border-slate-200/50 dark:border-transparent shadow-sm dark:shadow-none transition-colors duration-300">
-                        {/* Active Tab Indicator */}
+                    <div className="p-1.5 bg-white/60 dark:bg-white/5 rounded-xl flex relative backdrop-blur-sm border border-slate-200/50 dark:border-white/[0.08] shadow-sm dark:shadow-none transition-colors duration-300">
+                        {/* Active Tab Indicator - Trust Blue + Teal */}
                         <motion.div
-                            className="absolute top-1.5 bottom-1.5 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-xl shadow-lg shadow-blue-500/20"
+                            className="absolute top-1.5 bottom-1.5 bg-gradient-to-r from-[#3B82F6] to-[#14B8A6] rounded-lg shadow-lg shadow-[#3B82F6]/20"
                             layoutId="activeTabIndicator"
                             initial={false}
                             animate={{
@@ -86,7 +84,7 @@ export default function MobileSettingsPage() {
                         <button
                             onClick={() => setActiveTab('personal')}
                             className={clsx(
-                                "flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors rounded-xl",
+                                "flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors rounded-lg",
                                 activeTab === 'personal' ? "text-white" : "text-slate-600 dark:text-slate-400"
                             )}
                         >
@@ -95,7 +93,7 @@ export default function MobileSettingsPage() {
                         <button
                             onClick={() => setActiveTab('security')}
                             className={clsx(
-                                "flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors rounded-xl",
+                                "flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors rounded-lg",
                                 activeTab === 'security' ? "text-white" : "text-slate-600 dark:text-slate-400"
                             )}
                         >
@@ -104,7 +102,7 @@ export default function MobileSettingsPage() {
                         <button
                             onClick={() => setActiveTab('app')}
                             className={clsx(
-                                "flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors rounded-xl",
+                                "flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors rounded-lg",
                                 activeTab === 'app' ? "text-white" : "text-slate-600 dark:text-slate-400"
                             )}
                         >
@@ -150,16 +148,16 @@ function ProfileHeader({ user }: { user: any }) {
 
     return (
         <div className="px-5 pt-4 flex flex-col items-center text-center">
-            {/* Avatar with premium glow effect */}
+            {/* Avatar with Teal glow effect */}
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity scale-90" />
-                <div className="relative w-28 h-28 rounded-full p-1 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shadow-lg shadow-purple-500/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity scale-90" />
+                <div className="relative w-28 h-28 rounded-full p-1 bg-gradient-to-br from-[#3B82F6] via-[#14B8A6] to-[#0D9488] shadow-lg shadow-[#14B8A6]/20">
                     <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 overflow-hidden relative p-0.5">
                         <div className="w-full h-full rounded-full overflow-hidden">
                             {avatarUrl ? (
                                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-3xl font-bold text-white">
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] text-3xl font-bold text-white">
                                     {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                                 </div>
                             )}
@@ -169,7 +167,7 @@ function ProfileHeader({ user }: { user: any }) {
                         </div>
                     </div>
                 </div>
-                <div className="absolute bottom-0 right-0 w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-4 border-slate-50 dark:border-[#0B1121] shadow-lg transition-colors duration-300">
+                <div className="absolute bottom-0 right-0 w-9 h-9 bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] rounded-full flex items-center justify-center border-4 border-slate-50 dark:border-[#0B1121] shadow-lg transition-colors duration-300">
                     <Camera className="w-4 h-4 text-white" />
                 </div>
                 <input
@@ -187,10 +185,10 @@ function ProfileHeader({ user }: { user: any }) {
             </div>
 
             <div className="mt-5 flex items-center gap-3">
-                <div className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 border border-emerald-200/50 dark:border-emerald-500/20 rounded-full text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 shadow-sm dark:shadow-none transition-colors">
+                <div className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#10B981]/10 dark:to-[#14B8A6]/10 border border-emerald-200/50 dark:border-[#10B981]/20 rounded-full text-xs font-bold text-[#10B981] flex items-center gap-1.5 shadow-sm dark:shadow-none transition-colors">
                     <Check className="w-3.5 h-3.5" /> Verified
                 </div>
-                <div className="px-3.5 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 border border-amber-200/50 dark:border-amber-500/20 rounded-full text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 shadow-sm dark:shadow-none transition-colors">
+                <div className="px-3.5 py-1.5 bg-gradient-to-r from-[#14B8A6]/10 to-[#3B82F6]/10 dark:from-[#14B8A6]/10 dark:to-[#3B82F6]/10 border border-[#14B8A6]/20 dark:border-[#14B8A6]/20 rounded-full text-xs font-bold text-[#14B8A6] flex items-center gap-1.5 shadow-sm dark:shadow-none transition-colors">
                     <Sparkles className="w-3.5 h-3.5" /> Pro Member
                 </div>
             </div>
@@ -258,7 +256,7 @@ function PersonalTab({ user }: { user: any }) {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-5 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-[length:200%_100%] hover:bg-right text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:scale-100"
+                    className="w-full mt-5 py-4 bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white font-bold text-sm rounded-xl shadow-lg shadow-[#3B82F6]/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:scale-100"
                 >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
                 </button>
@@ -319,17 +317,17 @@ function SecurityTab({ logout }: { logout: () => void }) {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-white font-bold text-sm rounded-2xl border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm dark:shadow-none disabled:opacity-50 disabled:scale-100"
+                    className="w-full py-4 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-700 dark:text-white font-bold text-sm rounded-xl border border-slate-300 dark:border-white/[0.08] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm dark:shadow-none disabled:opacity-50 disabled:scale-100"
                 >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Update Password"}
                 </button>
             </form>
 
-            <div className="mt-10 pt-6 border-t border-slate-200 dark:border-white/5 transition-colors">
-                <h3 className="text-sm font-bold text-red-500 dark:text-red-400 mb-4 uppercase tracking-wider">Danger Zone</h3>
+            <div className="mt-10 pt-6 border-t border-slate-200 dark:border-white/[0.08] transition-colors">
+                <h3 className="text-sm font-bold text-[#EF4444] mb-4 uppercase tracking-wider">Danger Zone</h3>
                 <button
                     onClick={logout}
-                    className="w-full py-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-500/10 dark:to-red-500/5 hover:from-red-100 hover:to-red-200 dark:hover:from-red-500/20 dark:hover:to-red-500/10 text-red-600 dark:text-red-500 font-bold text-sm rounded-2xl border border-red-200 dark:border-red-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm dark:shadow-none"
+                    className="w-full py-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-[#EF4444]/10 dark:to-[#EF4444]/5 hover:from-red-100 hover:to-red-200 dark:hover:from-[#EF4444]/20 dark:hover:to-[#EF4444]/10 text-[#EF4444] font-bold text-sm rounded-xl border border-red-200 dark:border-[#EF4444]/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm dark:shadow-none"
                 >
                     <LogOut className="w-4 h-4" /> Sign Out
                 </button>
@@ -347,51 +345,51 @@ function AppTab() {
             {/* Appearance */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-sm">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] flex items-center justify-center shadow-sm">
                         <Palette className="w-4 h-4 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white transition-colors">Appearance</h3>
+                    <h3 className="text-lg font-bold text-[#0F172A] dark:text-white transition-colors">Appearance</h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <button
                         onClick={() => setTheme('light')}
                         className={clsx(
-                            "relative group p-5 rounded-2xl border text-left transition-all overflow-hidden",
+                            "relative group p-5 rounded-xl border text-left transition-all overflow-hidden",
                             theme === 'light'
-                                ? "bg-white text-slate-900 border-blue-300 shadow-lg shadow-blue-500/10 ring-2 ring-blue-500/30"
-                                : "bg-white/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:bg-white/10 shadow-sm dark:shadow-none"
+                                ? "bg-white text-[#0F172A] border-[#3B82F6]/30 shadow-lg shadow-[#3B82F6]/10 ring-2 ring-[#3B82F6]/30"
+                                : "bg-white/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:bg-white/10 shadow-sm dark:shadow-none"
                         )}
                     >
                         <div className={clsx(
-                            "w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all",
+                            "w-12 h-12 rounded-lg flex items-center justify-center mb-3 transition-all",
                             theme === 'light' ? "bg-gradient-to-br from-orange-400 to-yellow-400 shadow-md shadow-orange-400/30" : "bg-slate-100 dark:bg-white/10"
                         )}>
                             <Sun className={clsx("w-6 h-6 transition-colors", theme === 'light' ? "text-white" : "text-slate-400")} />
                         </div>
-                        <span className={clsx("block text-sm font-bold", theme === 'light' ? "text-slate-900" : "text-slate-600 dark:text-slate-400")}>Light</span>
+                        <span className={clsx("block text-sm font-bold", theme === 'light' ? "text-[#0F172A]" : "text-slate-600 dark:text-slate-400")}>Light</span>
                         <span className="block text-xs text-slate-400 mt-0.5">Bright & vibrant</span>
-                        {theme === 'light' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-sm" />}
+                        {theme === 'light' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] shadow-sm" />}
                     </button>
 
                     <button
                         onClick={() => setTheme('dark')}
                         className={clsx(
-                            "relative group p-5 rounded-2xl border text-left transition-all overflow-hidden",
+                            "relative group p-5 rounded-xl border text-left transition-all overflow-hidden",
                             theme === 'dark'
-                                ? "bg-gradient-to-br from-slate-800 to-slate-900 text-white border-blue-500/50 shadow-lg shadow-blue-500/10 ring-2 ring-blue-500/30"
-                                : "bg-white/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:bg-white/10 shadow-sm dark:shadow-none"
+                                ? "bg-gradient-to-br from-slate-800 to-slate-900 text-white border-[#14B8A6]/50 shadow-lg shadow-[#14B8A6]/10 ring-2 ring-[#14B8A6]/30"
+                                : "bg-white/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:bg-white/10 shadow-sm dark:shadow-none"
                         )}
                     >
                         <div className={clsx(
-                            "w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all",
-                            theme === 'dark' ? "bg-gradient-to-br from-blue-500 to-purple-600 shadow-md shadow-blue-500/30" : "bg-slate-100 dark:bg-white/10"
+                            "w-12 h-12 rounded-lg flex items-center justify-center mb-3 transition-all",
+                            theme === 'dark' ? "bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] shadow-md shadow-[#14B8A6]/30" : "bg-slate-100 dark:bg-white/10"
                         )}>
                             <Moon className={clsx("w-6 h-6 transition-colors", theme === 'dark' ? "text-white" : "text-slate-400")} />
                         </div>
                         <span className={clsx("block text-sm font-bold", theme === 'dark' ? "text-white" : "text-slate-600 dark:text-slate-400")}>Dark</span>
                         <span className={clsx("block text-xs mt-0.5", theme === 'dark' ? "text-slate-400" : "text-slate-400")}>Easy on eyes</span>
-                        {theme === 'dark' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />}
+                        {theme === 'dark' && <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] shadow-[0_0_10px_rgba(20,184,166,0.5)]" />}
                     </button>
                 </div>
             </section>
@@ -399,21 +397,21 @@ function AppTab() {
             {/* Language */}
             <section className="space-y-4">
                 <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-sm">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-sm">
                         <Globe className="w-4 h-4 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white transition-colors">Language</h3>
+                    <h3 className="text-lg font-bold text-[#0F172A] dark:text-white transition-colors">Language</h3>
                 </div>
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:bg-white/10 transition-colors cursor-pointer group shadow-sm dark:shadow-none">
+                    <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:bg-white/10 transition-colors cursor-pointer group shadow-sm dark:shadow-none">
                         <div className="flex items-center gap-3">
                             <span className="text-2xl">🇺🇸</span>
                             <div>
-                                <div className="text-sm font-bold text-slate-900 dark:text-white transition-colors">English</div>
+                                <div className="text-sm font-bold text-[#0F172A] dark:text-white transition-colors">English</div>
                                 <div className="text-xs text-slate-500 dark:text-slate-400 transition-colors">Default</div>
                             </div>
                         </div>
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-sm">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#10B981] to-[#14B8A6] flex items-center justify-center shadow-sm">
                             <Check className="w-3.5 h-3.5 text-white" />
                         </div>
                     </div>
@@ -438,7 +436,7 @@ function PremiumInput({ icon: Icon, label, value, onChange, placeholder, type = 
         <div className="space-y-2 group">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider transition-colors">{label}</label>
             <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3B82F6] dark:group-focus-within:text-[#3B82F6] transition-colors">
                     <Icon className="w-5 h-5" />
                 </div>
                 <input
@@ -447,7 +445,7 @@ function PremiumInput({ icon: Icon, label, value, onChange, placeholder, type = 
                     onChange={onChange}
                     disabled={disabled}
                     readOnly={readOnly}
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-white/5 text-slate-900 dark:text-white text-sm font-medium placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 border border-slate-200 dark:border-white/10 focus:border-blue-500/50 dark:focus:border-blue-500/50 rounded-2xl transition-all shadow-sm dark:shadow-none disabled:bg-slate-50 dark:disabled:bg-white/5 disabled:text-slate-500 dark:disabled:text-slate-500"
+                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-white/5 text-[#0F172A] dark:text-white text-sm font-medium placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 dark:focus:ring-[#3B82F6]/50 border border-slate-200 dark:border-white/[0.08] focus:border-[#3B82F6]/50 dark:focus:border-[#3B82F6]/50 rounded-xl transition-all shadow-sm dark:shadow-none disabled:bg-slate-50 dark:disabled:bg-white/5 disabled:text-slate-500 dark:disabled:text-slate-500"
                     placeholder={placeholder}
                 />
             </div>
@@ -464,12 +462,12 @@ function StatusMessages({ success, error }: { success: string, error: string }) 
             className="overflow-hidden"
         >
             {success && (
-                <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 border border-emerald-200/50 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-sm dark:shadow-none">
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#10B981]/10 dark:to-[#14B8A6]/10 border border-emerald-200/50 dark:border-[#10B981]/20 text-[#10B981] rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm dark:shadow-none">
                     <Check className="w-5 h-5" /> {success}
                 </div>
             )}
             {error && (
-                <div className="p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-500/10 dark:to-rose-500/10 border border-red-200/50 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-sm dark:shadow-none">
+                <div className="p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-[#EF4444]/10 dark:to-rose-500/10 border border-red-200/50 dark:border-[#EF4444]/20 text-[#EF4444] rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm dark:shadow-none">
                     <AlertCircle className="w-5 h-5" /> {error}
                 </div>
             )}

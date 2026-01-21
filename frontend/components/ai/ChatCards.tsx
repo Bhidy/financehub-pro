@@ -47,8 +47,8 @@ interface StockHeaderProps {
 
 export function StockHeaderCard({ data }: StockHeaderProps) {
     return (
-        <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl transition-all duration-300">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-500/20">
+        <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl transition-all duration-300">
+            <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-teal-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-900/20">
                 {data.symbol.slice(0, 2)}
             </div>
             <div className="flex-1 min-w-0">
@@ -88,8 +88,8 @@ export function SnapshotCard({ data }: SnapshotProps) {
     const isPositive = (data.change_percent || 0) >= 0;
 
     return (
-        <div className="relative p-6 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden group">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="relative p-6 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl overflow-hidden group">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#14B8A6]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
 
             <div className="flex items-baseline justify-between mb-8 relative z-10">
                 <div className="flex flex-col">
@@ -110,13 +110,6 @@ export function SnapshotCard({ data }: SnapshotProps) {
                         {isPositive ? <TrendingUp size={22} className="stroke-[3]" /> : <TrendingDown size={22} className="stroke-[3]" />}
                         <span className="text-2xl font-black">{formatPercent(data.change_percent)}</span>
                     </div>
-                    <span className="text-xs font-black mt-1 opacity-70">
-                        {data.change !== null && data.change !== undefined ? (
-                            <>
-                                {data.change > 0 ? '+' : ''}{data.change.toFixed(2)}
-                            </>
-                        ) : '0.00'}
-                    </span>
                 </div>
             </div>
 
@@ -172,8 +165,8 @@ interface StatsProps {
 export function StatsCard({ title, data }: StatsProps) {
     // Legacy mapping for known keys
     const knownStats: Record<string, any> = {
-        pe_ratio: { label: "P/E", icon: Target, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => v.toFixed(2) },
-        pb_ratio: { label: "P/B", icon: BarChart3, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => v.toFixed(2) },
+        pe_ratio: { label: "P/E", icon: Target, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
+        pb_ratio: { label: "P/B", icon: BarChart3, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
         dividend_yield: { label: "Yield", icon: DollarSign, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
         beta: { label: "Beta", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
         eps: { label: "EPS", icon: TrendingUp, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-500/10", format: (v: number) => v.toFixed(2) },
@@ -212,7 +205,7 @@ export function StatsCard({ title, data }: StatsProps) {
         <div className="p-5 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none">
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
                         <Activity className="w-5 h-5" />
                     </div>
                     <div>
@@ -646,7 +639,7 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
     return (
         <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-colors duration-300">
             {/* Premium Header */}
-            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 px-5 py-4">
+            <div className="bg-gradient-to-r from-slate-800 via-teal-700 to-emerald-600 px-5 py-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="flex items-center gap-2 text-white font-bold text-lg">

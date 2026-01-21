@@ -34,16 +34,16 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
         <div className="w-full px-4 pb-safe pt-2 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent dark:from-[#0B1121] dark:via-[#0B1121] dark:to-transparent">
             {/* Added extra padding bottom to ensure it doesn't touch the home indicator too closely */}
             <div className="pb-2">
-                {/* Floating island container */}
+                {/* Floating island container - Midnight Teal Design */}
                 <div className={clsx(
-                    "relative bg-white/90 dark:bg-[#1A1F2E]/90 backdrop-blur-xl rounded-[24px] border shadow-xl transition-all duration-300",
+                    "relative bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl rounded-2xl border shadow-xl transition-all duration-300",
                     isFocused
-                        ? "border-blue-300 dark:border-blue-500/50 shadow-blue-500/10 dark:shadow-blue-900/20 ring-4 ring-blue-500/10 dark:ring-blue-500/20"
-                        : "border-slate-200/60 dark:border-white/10 shadow-slate-900/5 dark:shadow-black/20"
+                        ? "border-[#3B82F6] dark:border-[#3B82F6]/50 shadow-[#3B82F6]/10 dark:shadow-[#3B82F6]/20 ring-2 ring-[#3B82F6]/10 dark:ring-[#3B82F6]/20"
+                        : "border-slate-200/60 dark:border-white/[0.08] shadow-slate-900/5 dark:shadow-black/20"
                 )}>
-                    {/* Glow effect when focused */}
+                    {/* Subtle glow when focused */}
                     {isFocused && (
-                        <div className="absolute inset-0 rounded-[24px] bg-gradient-to-r from-blue-500/5 via-cyan-500/5 to-blue-500/5 -z-10 blur-xl" />
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#3B82F6]/5 via-[#14B8A6]/5 to-[#3B82F6]/5 -z-10 blur-xl" />
                     )}
 
                     <div className="flex items-end gap-2 p-1.5 pl-4">
@@ -61,16 +61,16 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
                             disabled={isLoading}
                         />
 
-                        {/* Send / Mic Button */}
+                        {/* Send / Mic Button - Using Trust Blue */}
                         <div className="flex-none">
                             {isLoading ? (
-                                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#0B1121] mb-0.5">
-                                    <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+                                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#0F172A] mb-0.5">
+                                    <Loader2 className="w-5 h-5 animate-spin text-[#3B82F6]" />
                                 </div>
                             ) : query.trim() ? (
                                 <button
                                     onClick={onSend}
-                                    className="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-600 text-white rounded-full shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center mb-0.5"
+                                    className="w-10 h-10 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-full shadow-lg shadow-[#3B82F6]/30 active:scale-95 transition-all flex items-center justify-center mb-0.5"
                                 >
                                     <Send className="w-4.5 h-4.5 ml-0.5" />
                                 </button>

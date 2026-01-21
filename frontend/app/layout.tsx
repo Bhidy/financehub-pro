@@ -6,14 +6,20 @@ import ShellWrapper from "@/components/ShellWrapper";
 import { ToastProvider } from "@/components/ToastProvider";
 
 
+// Inter - Primary Brand Font (Google Fonts)
+// https://fonts.google.com/specimen/Inter
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+// JetBrains Mono - Monospace for code/data
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -50,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased flex h-screen overflow-hidden bg-[var(--background)] transition-colors duration-300`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased flex h-screen overflow-hidden bg-[var(--background)] transition-colors duration-300`}
       >
         <div id="build-id" data-timestamp={new Date().toISOString()} className="hidden" />
         <Suspense fallback={null}>

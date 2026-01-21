@@ -29,7 +29,7 @@ export function PortfolioHeader({ isLoading, onRefresh, onImport, onAdd }: Portf
                     rotate: [0, 45, 0]
                 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[-50%] left-[20%] w-[600px] h-[600px] rounded-full bg-blue-600/30 blur-[120px] z-0"
+                className="absolute top-[-50%] left-[20%] w-[600px] h-[600px] rounded-full bg-teal-600/20 blur-[120px] z-0"
             />
             <motion.div
                 animate={{
@@ -38,7 +38,7 @@ export function PortfolioHeader({ isLoading, onRefresh, onImport, onAdd }: Portf
                     x: [0, 50, 0]
                 }}
                 transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-500/20 blur-[100px] z-0"
+                className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[100px] z-0"
             />
 
             {/* Noise Texture for Texture */}
@@ -51,14 +51,14 @@ export function PortfolioHeader({ isLoading, onRefresh, onImport, onAdd }: Portf
                     {/* Title Section */}
                     <div className="flex items-center gap-5">
                         <div className="relative group">
-                            <div className="absolute inset-0 bg-blue-500 blur-lg opacity-40 group-hover:opacity-60 transition-opacity" />
-                            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-2xl ring-1 ring-white/20">
+                            <div className="absolute inset-0 bg-teal-500 blur-lg opacity-40 group-hover:opacity-60 transition-opacity" />
+                            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-teal-400 shadow-2xl ring-1 ring-white/10">
                                 <Briefcase className="w-8 h-8" />
                             </div>
                         </div>
                         <div>
                             <h1 className="text-4xl font-black text-white tracking-tight mb-1">My Portfolio</h1>
-                            <p className="text-blue-200/80 font-medium text-lg">Welcome back, {firstName}</p>
+                            <p className="text-slate-400 font-medium text-lg">Welcome back, {firstName}</p>
                         </div>
                     </div>
 
@@ -82,7 +82,7 @@ export function PortfolioHeader({ isLoading, onRefresh, onImport, onAdd }: Portf
 
                         <button
                             onClick={onAdd}
-                            className="px-6 py-3.5 rounded-2xl bg-white text-blue-950 font-bold flex items-center gap-2.5 hover:bg-blue-50 transition-all shadow-lg shadow-white/10 active:scale-95 whitespace-nowrap"
+                            className="px-6 py-3.5 rounded-2xl bg-white text-slate-900 font-bold flex items-center gap-2.5 hover:bg-teal-50 transition-all shadow-lg shadow-white/10 active:scale-95 whitespace-nowrap"
                         >
                             <Plus className="w-5 h-5 stroke-[3px]" />
                             <span>Add Holding</span>

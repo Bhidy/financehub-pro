@@ -41,15 +41,15 @@ const NAV_ITEMS = [
 ];
 
 const colorStyles: Record<string, { iconBg: string; iconText: string; activeBg: string; activeText: string }> = {
-    blue: { iconBg: "bg-blue-50", iconText: "text-blue-600", activeBg: "bg-blue-600", activeText: "text-white" },
-    indigo: { iconBg: "bg-indigo-50", iconText: "text-indigo-600", activeBg: "bg-indigo-600", activeText: "text-white" },
-    teal: { iconBg: "bg-teal-50", iconText: "text-teal-600", activeBg: "bg-teal-600", activeText: "text-white" },
-    violet: { iconBg: "bg-violet-50", iconText: "text-violet-600", activeBg: "bg-violet-600", activeText: "text-white" },
-    amber: { iconBg: "bg-amber-50", iconText: "text-amber-600", activeBg: "bg-amber-600", activeText: "text-white" },
-    emerald: { iconBg: "bg-emerald-50", iconText: "text-emerald-600", activeBg: "bg-emerald-600", activeText: "text-white" },
+    blue: { iconBg: "bg-blue-50", iconText: "text-[#3B82F6]", activeBg: "bg-[#3B82F6]", activeText: "text-white" },
+    indigo: { iconBg: "bg-blue-50", iconText: "text-[#3B82F6]", activeBg: "bg-[#3B82F6]", activeText: "text-white" },
+    teal: { iconBg: "bg-teal-50", iconText: "text-[#14B8A6]", activeBg: "bg-[#14B8A6]", activeText: "text-white" },
+    violet: { iconBg: "bg-teal-50", iconText: "text-[#14B8A6]", activeBg: "bg-[#14B8A6]", activeText: "text-white" },
+    amber: { iconBg: "bg-amber-50", iconText: "text-[#F59E0B]", activeBg: "bg-[#F59E0B]", activeText: "text-white" },
+    emerald: { iconBg: "bg-emerald-50", iconText: "text-[#10B981]", activeBg: "bg-[#10B981]", activeText: "text-white" },
     cyan: { iconBg: "bg-cyan-50", iconText: "text-cyan-600", activeBg: "bg-cyan-600", activeText: "text-white" },
-    rose: { iconBg: "bg-rose-50", iconText: "text-rose-600", activeBg: "bg-rose-600", activeText: "text-white" },
-    slate: { iconBg: "bg-slate-50", iconText: "text-slate-600", activeBg: "bg-slate-800", activeText: "text-white" },
+    rose: { iconBg: "bg-rose-50", iconText: "text-[#EF4444]", activeBg: "bg-[#EF4444]", activeText: "text-white" },
+    slate: { iconBg: "bg-slate-50", iconText: "text-slate-600", activeBg: "bg-[#0F172A]", activeText: "text-white" },
 };
 
 export default function Sidebar() {
@@ -64,7 +64,7 @@ export default function Sidebar() {
     return (
         <aside
             className={clsx(
-                "h-screen flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 dark:border-white/5 bg-white dark:bg-[#0B1121] shadow-2xl shadow-slate-200/20 dark:shadow-black/20 z-50",
+                "h-screen flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 dark:border-white/[0.08] bg-white dark:bg-[#0B1121] shadow-xl shadow-slate-200/20 dark:shadow-black/20 z-50",
                 widthClass
             )}
         >
@@ -72,18 +72,18 @@ export default function Sidebar() {
             <div className={clsx("relative flex items-center h-20 px-6", collapsed ? "justify-center px-0" : "justify-start")}>
                 <div className="flex items-center gap-3">
                     <div className="relative group">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center shadow-lg shadow-slate-900/20 group-hover:shadow-slate-900/40 transition-shadow duration-300">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0F172A] to-[#14B8A6] flex items-center justify-center shadow-lg shadow-[#14B8A6]/20 group-hover:shadow-[#14B8A6]/40 transition-shadow duration-300">
                             <Zap className="w-5 h-5 text-white" fill="currentColor" />
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-blue-500 rounded-full border-[3px] border-white" />
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#14B8A6] rounded-full border-[3px] border-white" />
                     </div>
 
                     {!collapsed && (
                         <div className="flex flex-col">
                             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
-                                Finance<span className="text-blue-600 dark:text-blue-500">Hub</span>
+                                Starta
                             </span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-widest mt-1">
                                 Pro Terminal
                             </span>
                         </div>
@@ -135,7 +135,7 @@ export default function Sidebar() {
                             {/* Active Indicator Line */}
                             {reallyActive && (
                                 <div className={clsx(
-                                    "absolute left-0 top-1/2 -translate-y-1/2 rounded-r-md bg-blue-600 transition-all duration-300",
+                                    "absolute left-0 top-1/2 -translate-y-1/2 rounded-r-md bg-[#14B8A6] transition-all duration-300",
                                     collapsed ? "w-1 h-8" : "w-1 h-8"
                                 )} />
                             )}

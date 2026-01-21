@@ -81,17 +81,17 @@ export function HistoryDrawer({
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
                     />
 
-                    {/* Drawer */}
+                    {/* Drawer - Midnight Teal Design */}
                     <motion.div
                         initial={{ x: "-100%" }}
                         animate={{ x: 0 }}
                         exit={{ x: "-100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-slate-50 dark:bg-[#0B1121] shadow-2xl z-50 flex flex-col border-r border-slate-200 dark:border-white/10"
+                        className="fixed inset-y-0 left-0 w-[85%] max-w-[320px] bg-[#F8FAFC] dark:bg-[#0B1121] shadow-2xl z-50 flex flex-col border-r border-slate-200 dark:border-white/[0.08]"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/5">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Chat History</h2>
+                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/[0.08]">
+                            <h2 className="text-lg font-bold text-[#0F172A] dark:text-white">Chat History</h2>
                             <button
                                 onClick={onClose}
                                 className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 transition-colors"
@@ -102,13 +102,13 @@ export function HistoryDrawer({
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto px-2 py-4 space-y-6">
-                            {/* New Chat Button */}
+                            {/* New Chat Button - Trust Blue */}
                             <button
                                 onClick={() => {
                                     onNewChat();
                                     onClose();
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all font-semibold mx-auto max-w-[95%]"
+                                className="w-full flex items-center gap-3 px-4 py-3 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg shadow-lg shadow-[#3B82F6]/20 transition-all font-semibold mx-auto max-w-[95%]"
                             >
                                 <MessageSquare className="w-5 h-5" />
                                 <span>New Chat</span>
@@ -116,7 +116,7 @@ export function HistoryDrawer({
 
                             {isLoading ? (
                                 <div className="flex justify-center py-8">
-                                    <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-[#14B8A6]" />
                                 </div>
                             ) : sessions.length === 0 ? (
                                 <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm">
@@ -144,7 +144,7 @@ export function HistoryDrawer({
                                                             className={clsx(
                                                                 "w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg mx-auto max-w-[98%]",
                                                                 currentSessionId === session.session_id
-                                                                    ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
+                                                                    ? "bg-[#3B82F6]/10 dark:bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20"
                                                                     : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300 border border-transparent"
                                                             )}
                                                         >
@@ -162,7 +162,7 @@ export function HistoryDrawer({
                                                                 </p>
                                                             </div>
                                                             {currentSessionId === session.session_id && (
-                                                                <ChevronRight className="w-4 h-4 text-blue-500" />
+                                                                <ChevronRight className="w-4 h-4 text-[#3B82F6]" />
                                                             )}
                                                         </button>
                                                     ))}

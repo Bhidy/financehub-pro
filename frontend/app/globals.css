@@ -75,12 +75,12 @@
   --color-surface-elevated: #FFFFFF;
 
   /* ========================================================================
-     SURFACE COLORS (Dark Theme)
+     SURFACE COLORS (Dark Theme) - Midnight Teal
      ======================================================================== */
-  --color-dark-base: #0B1121;
-  --color-dark-card: #111827;
-  --color-dark-elevated: #1F2937;
-  --color-dark-border: rgba(255, 255, 255, 0.08);
+  --color-dark-base: #0D1F1C;
+  --color-dark-card: #102926;
+  --color-dark-elevated: #153330;
+  --color-dark-border: rgba(20, 184, 166, 0.15);
 
   /* ========================================================================
      TEXT COLORS
@@ -185,20 +185,20 @@
 /* System Preference Detection */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0B1121;
+    --background: #0D1F1C;
     --foreground: #F8FAFC;
-    --card-bg: #111827;
-    --card-border: rgba(255, 255, 255, 0.08);
+    --card-bg: #102926;
+    --card-border: rgba(20, 184, 166, 0.15);
     color-scheme: dark;
   }
 }
 
 /* Manual Dark Mode Toggle */
 .dark {
-  --background: #0B1121;
+  --background: #0D1F1C;
   --foreground: #F8FAFC;
-  --card-bg: #111827;
-  --card-border: rgba(255, 255, 255, 0.08);
+  --card-bg: #102926;
+  --card-border: rgba(20, 184, 166, 0.15);
   color-scheme: dark !important;
 }
 
@@ -350,7 +350,7 @@ input:invalid:not(:placeholder-shown),
    BUTTONS (Design System Compliant)
    ============================================================================ */
 
-/* Primary Button: Midnight Teal with subtle shadow */
+/* Primary Button: Trust Blue with subtle shadow */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -358,7 +358,7 @@ input:invalid:not(:placeholder-shown),
   gap: 0.5rem;
   height: var(--height-button);
   padding: 0 1.5rem;
-  background-color: var(--color-brand-accent);
+  background-color: var(--color-trust-blue);
   color: white;
   font-weight: 600;
   font-size: var(--text-body-sm);
@@ -369,8 +369,8 @@ input:invalid:not(:placeholder-shown),
 }
 
 .btn-primary:hover {
-  background-color: var(--color-brand-accent-dark);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
+  background-color: var(--color-trust-blue-dark);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .btn-primary:active {
@@ -401,9 +401,9 @@ input:invalid:not(:placeholder-shown),
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-brand-accent);
-  color: var(--color-brand-accent);
-  background-color: var(--color-brand-accent-subtle);
+  border-color: var(--color-trust-blue);
+  color: var(--color-trust-blue);
+  background-color: var(--color-trust-blue-subtle);
 }
 
 .dark .btn-secondary {
@@ -412,8 +412,8 @@ input:invalid:not(:placeholder-shown),
 }
 
 .dark .btn-secondary:hover {
-  border-color: var(--color-brand-accent);
-  color: var(--color-brand-accent-light);
+  border-color: var(--color-trust-blue);
+  color: var(--color-trust-blue-light);
 }
 
 /* ============================================================================

@@ -70,9 +70,9 @@ function MobileLoginPageContent() {
     };
 
     return (
-        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col font-sans selection:bg-[#14B8A6]/30 text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0D1F1C] flex flex-col font-sans selection:bg-[#14B8A6]/30 text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             {/* Background Effects - Midnight Teal */}
-            <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0F172A_50%)] opacity-20 pointer-events-none transition-opacity duration-300" />
+            <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0D1F1C_50%)] opacity-20 pointer-events-none transition-opacity duration-300" />
             <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-15 brightness-100 contrast-150 mix-blend-overlay pointer-events-none" />
 
             {/* Header */}
@@ -126,7 +126,7 @@ function MobileLoginPageContent() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
+                                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-[#102926] border border-slate-200 dark:border-[#14B8A6]/20 rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
                                     placeholder="name@company.com"
                                     autoComplete="email"
                                 />
@@ -142,7 +142,7 @@ function MobileLoginPageContent() {
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
+                                    className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-[#102926] border border-slate-200 dark:border-[#14B8A6]/20 rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
                                     placeholder="••••••••"
                                     autoComplete="current-password"
                                 />
@@ -166,11 +166,11 @@ function MobileLoginPageContent() {
                             </Link>
                         </div>
 
-                        {/* Submit - Midnight Teal (Primary Brand CTA) */}
+                        {/* Submit - Trust Blue (Primary CTA) */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#14B8A6]/20"
+                            className="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/20"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -208,7 +208,7 @@ function MobileLoginPageContent() {
 export default function MobileLoginPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0D1F1C]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>

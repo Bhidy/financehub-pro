@@ -189,7 +189,7 @@ function MobileAIAnalystPageContent() {
 
     if (isAuthLoading) {
         return (
-            <div className="h-[100dvh] w-full flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+            <div className="h-[100dvh] w-full flex items-center justify-center bg-slate-50 dark:bg-[#0D1F1C]">
                 <Loader2 className="w-8 h-8 animate-spin text-teal-600 dark:text-teal-500" />
             </div>
         );
@@ -200,8 +200,8 @@ function MobileAIAnalystPageContent() {
     const showWelcome = visibleMessages.length === 0;
 
     return (
-        <div className="fixed inset-0 w-full h-[100dvh] bg-slate-100 dark:bg-[#020617] flex flex-col items-center justify-center overflow-hidden">
-            <div className="flex flex-col h-full w-full max-w-[500px] bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans transition-colors duration-300 relative shadow-2xl md:border-x border-slate-200/60 dark:border-white/[0.08] overflow-hidden">
+        <div className="fixed inset-0 w-full h-[100dvh] bg-slate-100 dark:bg-[#0A1816] flex flex-col items-center justify-center overflow-hidden">
+            <div className="flex flex-col h-full w-full max-w-[500px] bg-[#F8FAFC] dark:bg-[#0D1F1C] text-[#0F172A] dark:text-white font-sans transition-colors duration-300 relative shadow-2xl md:border-x border-slate-200/60 dark:border-[#14B8A6]/10 overflow-hidden">
                 {/* Background Gradient - Midnight Teal subtle glow */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/5 via-transparent to-transparent dark:from-[#14B8A6]/5 dark:via-transparent dark:to-transparent pointer-events-none" />
 
@@ -360,7 +360,7 @@ function MobileAIAnalystPageContent() {
 
                                 {isLoading && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex items-center gap-3 shadow-sm backdrop-blur-sm">
+                                        <div className="bg-white dark:bg-[#102926] border border-slate-200 dark:border-[#14B8A6]/15 rounded-xl p-4 flex items-center gap-3 shadow-sm backdrop-blur-sm">
                                             <div className="flex gap-1">
                                                 <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                                                 <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -377,7 +377,7 @@ function MobileAIAnalystPageContent() {
                 </main>
 
                 {/* Input Area */}
-                <div className="flex-none w-full bg-[#F8FAFC] dark:bg-[#0F172A] border-t border-slate-200/60 dark:border-white/[0.08] z-10">
+                <div className="flex-none w-full bg-[#F8FAFC] dark:bg-[#0D1F1C] border-t border-slate-200/60 dark:border-[#14B8A6]/10 z-10">
                     <MobileInput
                         query={query}
                         setQuery={setQuery}
@@ -393,7 +393,7 @@ function MobileAIAnalystPageContent() {
 export default function MobileAIAnalystPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0D1F1C]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>

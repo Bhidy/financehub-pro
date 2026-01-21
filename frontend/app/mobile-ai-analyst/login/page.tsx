@@ -166,11 +166,11 @@ function MobileLoginPageContent() {
                             </Link>
                         </div>
 
-                        {/* Submit - Trust Blue */}
+                        {/* Submit - Midnight Teal (Primary Brand CTA) */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/20"
+                            className="w-full py-4 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#14B8A6]/20"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />

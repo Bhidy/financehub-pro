@@ -149,39 +149,28 @@ class LLMExplainerService:
                 "3. TONE: Calm, supportive, confident, expert. Reference REAL numbers from DATA.\n"
             )
 
-        # Tiered Model Fallback
-        MODELS_TO_TRY = [MODEL_NAME, "llama-3.1-8b-instant", "llama3-8b-8192"]
+        # Use Multi-Provider LLM Client for resilience
+        from .llm_clients import get_multi_llm
+        multi_llm = get_multi_llm()
         
-        for model in MODELS_TO_TRY:
-            try:
-                # If no data exists (e.g., small talk or unknown), we still want a conversational response
-                user_content = f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"
-                if not data:
-                    user_content = f"Query: {query}\nIntent: {intent}\n(No specific stock data found. Provide a helpful guide on what you can analyze.)"
+        # If no data exists (e.g., small talk or unknown), we still want a conversational response
+        user_content = f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"
+        if not data:
+            user_content = f"Query: {query}\nIntent: {intent}\n(No specific stock data found. Provide a helpful guide on what you can analyze.)"
 
-                chat_completion = await self.client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_content}
-                    ],
-                    model=model, # Use current model in loop
-                    max_tokens=250, 
-                    temperature=0.5,
-                    timeout=4.5
-                )
-                
-                content = chat_completion.choices[0].message.content.strip()
-                if content:
-                    if model != MODEL_NAME:
-                        logger.info(f"✅ Fallback to {model} successful")
-                    return content
-                    
-            except Exception as e:
-                logger.warning(f"Narrative generation failed for {model}: {e}")
-                # Continue to next model in list
-                continue
-                
-        return None
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content}
+        ]
+        
+        result = await multi_llm.complete(
+            messages=messages,
+            max_tokens=250,
+            temperature=0.5,
+            purpose="narrative"
+        )
+        
+        return result
 
     def extract_fact_explanations(self, data: List[Dict[str, Any]], language: str = 'en') -> Dict[str, str]:
         """

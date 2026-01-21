@@ -4,6 +4,7 @@ Enhanced with live data fallback when database is stale.
 """
 
 import asyncpg
+import asyncio
 import httpx
 import logging
 from bs4 import BeautifulSoup

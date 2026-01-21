@@ -292,13 +292,13 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
 
 # Patterns for entity extraction
 RANGE_PATTERNS = {
-    r'\b1\s*d(?:ay)?\b': '1D',
-    r'\b1\s*w(?:eek)?\b': '1W',
-    r'\b1\s*m(?:onth)?\b': '1M',
-    r'\b3\s*m(?:onths?)?\b': '3M',
-    r'\b6\s*m(?:onths?)?\b': '6M',
-    r'\b1\s*y(?:ear)?\b': '1Y',
-    r'\b5\s*y(?:ears?)?\b': '5Y',
+    r'\b1\s*[-]?\s*d(?:ays?)?\b': '1D',
+    r'\b1\s*[-]?\s*w(?:eeks?)?\b': '1W',
+    r'\b1\s*[-]?\s*m(?:onths?)?\b': '1M',
+    r'\b3\s*[-]?\s*m(?:onths?)?\b': '3M',
+    r'\b6\s*[-]?\s*m(?:onths?)?\b': '6M',
+    r'\b1\s*[-]?\s*y(?:ears?)?\b': '1Y',
+    r'\b5\s*[-]?\s*y(?:ears?)?\b': '5Y',
     r'\bmax\b': 'MAX',
     r'\ball\s*time\b': 'MAX',
     # Arabic

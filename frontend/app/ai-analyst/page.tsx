@@ -117,8 +117,8 @@ function AIAnalystPageContent() {
         <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-[#0B1121] relative overflow-hidden transition-colors duration-300">
 
             {/* ============================================================================ */}
-            {/* ULTRA-PREMIUM BACKGROUND DECOR (Mobile Style) */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent dark:from-blue-900/10 dark:via-transparent dark:to-transparent pointer-events-none" />
+            {/* ULTRA-PREMIUM BACKGROUND DECOR (Midnight Teal) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/5 via-transparent to-transparent dark:from-[#14B8A6]/5 dark:via-transparent dark:to-transparent pointer-events-none" />
 
             {/* History Drawer (Slide-out) */}
             <AnimatePresence>
@@ -141,7 +141,7 @@ function AIAnalystPageContent() {
                             <div className="p-6 border-b border-slate-100/50 dark:border-white/5">
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                        <History className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                        <History className="w-6 h-6 text-[#3B82F6]" />
                                         <span>History</span>
                                     </h2>
                                     <button
@@ -153,7 +153,7 @@ function AIAnalystPageContent() {
                                 </div>
                                 <button
                                     onClick={() => { setIsHistoryOpen(false); window.location.reload(); }}
-                                    className="w-full flex items-center justify-center gap-2 bg-slate-900 dark:bg-blue-600 text-white rounded-xl px-4 py-4 hover:shadow-xl hover:shadow-slate-900/20 hover:bg-slate-800 dark:hover:bg-blue-500 transition-all font-bold text-sm active:scale-[0.98]"
+                                    className="w-full flex items-center justify-center gap-2 bg-[#3B82F6] text-white rounded-lg px-4 py-3 hover:shadow-xl hover:shadow-[#3B82F6]/20 hover:bg-[#2563EB] transition-all font-bold text-sm active:scale-[0.98]"
                                 >
                                     <MessageSquarePlus className="w-4 h-4" />
                                     New Conversation
@@ -174,14 +174,14 @@ function AIAnalystPageContent() {
                 <div className="absolute top-6 left-6 z-20 flex gap-3">
                     <button
                         onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-                        className="p-3.5 bg-white/70 dark:bg-[#1A1F2E]/70 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-sm hover:shadow-lg rounded-2xl text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all group active:scale-95"
+                        className="p-3.5 bg-white/70 dark:bg-[#111827]/70 backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-sm hover:shadow-lg rounded-xl text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#3B82F6] transition-all group active:scale-95"
                         title="View History"
                     >
                         <History className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />
                     </button>
                     <button
                         onClick={() => window.location.reload()}
-                        className="p-3.5 bg-white/70 dark:bg-[#1A1F2E]/70 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-sm hover:shadow-lg rounded-2xl text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all group active:scale-95"
+                        className="p-3.5 bg-white/70 dark:bg-[#111827]/70 backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-sm hover:shadow-lg rounded-xl text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#3B82F6] transition-all group active:scale-95"
                         title="New Chat"
                     >
                         <MessageSquarePlus className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
@@ -192,12 +192,12 @@ function AIAnalystPageContent() {
                 <div className="absolute top-6 right-6 z-20 flex gap-3 items-center">
                     {/* Usage Counter Badge (for guests only) */}
                     {!isAuthenticated && remainingQuestions > 0 && (
-                        <div className="px-3 py-2 bg-white/70 dark:bg-[#1A1F2E]/70 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
-                            <span className="text-blue-600 dark:text-blue-400 font-bold">{remainingQuestions}</span> questions left
+                        <div className="px-3 py-2 bg-white/70 dark:bg-[#111827]/70 backdrop-blur-xl border border-white/50 dark:border-white/[0.08] rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <span className="text-[#3B82F6] font-bold">{remainingQuestions}</span> questions left
                         </div>
                     )}
                     {!isAuthenticated && remainingQuestions <= 0 && (
-                        <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-500/30 rounded-xl text-sm font-medium text-red-600 dark:text-red-400">
+                        <div className="px-3 py-2 bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg text-sm font-medium text-[#EF4444]">
                             Limit reached
                         </div>
                     )}
@@ -205,7 +205,7 @@ function AIAnalystPageContent() {
                     {/* Settings Button (Theme Toggling) */}
                     <button
                         onClick={() => router.push('/settings')}
-                        className="p-3 bg-white/70 dark:bg-[#1A1F2E]/70 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-sm hover:shadow-lg rounded-xl text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                        className="p-3 bg-white/70 dark:bg-[#111827]/70 backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-sm hover:shadow-lg rounded-lg text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#3B82F6] transition-all"
                         title="Settings"
                     >
                         <Settings className="w-5 h-5" />
@@ -214,12 +214,12 @@ function AIAnalystPageContent() {
                     {/* Login/Profile Button */}
                     {isAuthenticated ? (
                         <div className="flex items-center gap-2">
-                            <div className="px-4 py-2 bg-white/70 dark:bg-[#1A1F2E]/70 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200">
+                            <div className="px-4 py-2 bg-white/70 dark:bg-[#111827]/70 backdrop-blur-xl border border-white/50 dark:border-white/[0.08] rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200">
                                 {user?.full_name || user?.email}
                             </div>
                             <button
                                 onClick={logout}
-                                className="p-3 bg-white/70 dark:bg-[#1A1F2E]/70 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-sm hover:shadow-lg rounded-xl text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                                className="p-3 bg-white/70 dark:bg-[#111827]/70 backdrop-blur-xl border border-white/50 dark:border-white/[0.08] shadow-sm hover:shadow-lg rounded-lg text-slate-500 dark:text-slate-400 hover:text-[#EF4444] dark:hover:text-[#EF4444] transition-all"
                                 title="Logout"
                             >
                                 <LogIn className="w-5 h-5" />
@@ -228,7 +228,7 @@ function AIAnalystPageContent() {
                     ) : (
                         <button
                             onClick={() => router.push('/login')}
-                            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-teal-600 text-white rounded-xl font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-95"
+                            className="px-4 py-2.5 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-[#3B82F6]/20 transition-all active:scale-95"
                         >
                             <LogIn className="w-4 h-4" />
                             Login
@@ -245,7 +245,7 @@ function AIAnalystPageContent() {
                             <div className="flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
                                 {/* AI Robot Logo */}
                                 <div className="w-32 h-32 mb-8 relative">
-                                    <div className="absolute -inset-4 bg-teal-500/20 rounded-full blur-2xl animate-pulse opacity-50"></div>
+                                    <div className="absolute -inset-4 bg-[#14B8A6]/20 rounded-full blur-2xl animate-pulse opacity-50"></div>
                                     <div className="relative w-full h-full p-2 filter drop-shadow-xl">
                                         <Image
                                             src="/assets/chatbot-icon.png"
@@ -258,7 +258,7 @@ function AIAnalystPageContent() {
                                 </div>
 
                                 <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">
-                                    Hello, I'm <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-teal-400 bg-clip-text text-transparent">Starta</span>.
+                                    Hello, I'm <span className="text-[#14B8A6]">Starta</span>.
                                 </h1>
                                 <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
                                     Your personal AI financial analyst. I can analyze <span className="text-slate-800 dark:text-slate-200 font-bold">valuation</span>, <span className="text-slate-800 dark:text-slate-200 font-bold">health</span>, and <span className="text-slate-800 dark:text-slate-200 font-bold">growth</span> for any {market} stock.
@@ -319,8 +319,8 @@ function AIAnalystPageContent() {
                                 >
                                     {/* Bot Avatar */}
                                     {msg.role === "assistant" && (
-                                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#1A1F2E] border border-slate-200 dark:border-white/10 flex items-center justify-center shrink-0 shadow-lg mt-1">
-                                            <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                        <div className="w-10 h-10 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-lg mt-1">
+                                            <Sparkles className="w-5 h-5 text-[#14B8A6]" />
                                         </div>
                                     )}
 
@@ -330,7 +330,7 @@ function AIAnalystPageContent() {
                                         msg.role === "user" ? "items-end" : "items-start w-full"
                                     )}>
                                         {msg.role === "user" ? (
-                                            <div className="px-6 py-4 bg-emerald-500 text-white rounded-3xl rounded-tr-sm shadow-emerald-500/20 text-base leading-relaxed shadow-sm font-medium">
+                                            <div className="px-6 py-4 bg-[#3B82F6] text-white rounded-2xl rounded-tr-sm shadow-[#3B82F6]/20 text-base leading-relaxed shadow-sm font-medium">
                                                 {msg.content}
                                             </div>
                                         ) : (
@@ -404,13 +404,13 @@ function AIAnalystPageContent() {
 
                             {isLoading && (
                                 <div className="flex gap-5 items-center">
-                                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#1A1F2E] border border-slate-200 dark:border-white/10 flex items-center justify-center shrink-0 shadow-lg">
-                                        <Loader2 className="w-5 h-5 animate-spin text-blue-500 dark:text-blue-400" />
+                                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] flex items-center justify-center shrink-0 shadow-lg">
+                                        <Loader2 className="w-5 h-5 animate-spin text-[#14B8A6]" />
                                     </div>
-                                    <div className="flex items-center gap-3 px-6 py-3 bg-white/80 dark:bg-[#1A1F2E]/80 backdrop-blur-md rounded-full border border-slate-100 dark:border-white/5 shadow-md">
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75"></span>
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150"></span>
+                                    <div className="flex items-center gap-3 px-6 py-3 bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-md">
+                                        <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-pulse"></span>
+                                        <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-pulse delay-75"></span>
+                                        <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-pulse delay-150"></span>
                                         <span className="text-sm font-bold text-slate-500 dark:text-slate-400 ml-2">Analyst is thinking...</span>
                                     </div>
                                 </div>
@@ -423,10 +423,10 @@ function AIAnalystPageContent() {
                 <div className="absolute bottom-6 left-0 right-0 z-30 px-6">
                     <div className="max-w-4xl mx-auto w-full relative">
                         {/* Glass Container */}
-                        <div className="bg-white/80 dark:bg-[#1A1F2E]/80 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-white/10 shadow-2xl shadow-slate-900/10 dark:shadow-black/30 p-2 flex items-end gap-3 transition-all focus-within:ring-4 focus-within:ring-blue-500/10 dark:focus-within:ring-blue-500/5 focus-within:border-blue-300 dark:focus-within:border-blue-700/50">
+                        <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-2xl rounded-2xl border border-white/50 dark:border-white/[0.08] shadow-2xl shadow-slate-900/10 dark:shadow-black/30 p-2 flex items-end gap-3 transition-all focus-within:ring-2 focus-within:ring-[#3B82F6]/20 focus-within:border-[#3B82F6] dark:focus-within:border-[#3B82F6]/50">
 
                             {/* Attachment Button */}
-                            <button className="p-3 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-[#252b3d] rounded-2xl transition-all h-14 w-14 flex items-center justify-center" title="Attach">
+                            <button className="p-3 text-slate-400 dark:text-slate-500 hover:text-[#3B82F6] dark:hover:text-[#3B82F6] hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all h-14 w-14 flex items-center justify-center" title="Attach">
                                 <Paperclip className="w-6 h-6" />
                             </button>
 
@@ -443,15 +443,15 @@ function AIAnalystPageContent() {
                             />
 
                             {/* Voice Button */}
-                            <button className="p-3 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-[#252b3d] rounded-2xl transition-all h-14 w-14 flex items-center justify-center" title="Voice">
+                            <button className="p-3 text-slate-400 dark:text-slate-500 hover:text-[#3B82F6] dark:hover:text-[#3B82F6] hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all h-14 w-14 flex items-center justify-center" title="Voice">
                                 <Mic className="w-6 h-6" />
                             </button>
 
-                            {/* Send Button */}
+                            {/* Send Button - Trust Blue */}
                             <button
                                 onClick={handleSendWithUsageCheck}
                                 disabled={!query.trim() || isLoading}
-                                className="h-14 w-14 bg-emerald-500 text-white rounded-2xl flex items-center justify-center hover:shadow-lg hover:shadow-emerald-500/30 disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
+                                className="h-14 w-14 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-xl flex items-center justify-center hover:shadow-lg hover:shadow-[#3B82F6]/30 disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
                             >
                                 <Send className="w-6 h-6 ml-0.5" />
                             </button>

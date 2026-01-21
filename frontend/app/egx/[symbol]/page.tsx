@@ -118,7 +118,7 @@ const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: an
         emerald: { stroke: '#059669', trackLight: '#d1fae5', trackDark: '#064e3b' },
         rose: { stroke: '#e11d48', trackLight: '#ffe4e6', trackDark: '#4c0519' },
         amber: { stroke: '#d97706', trackLight: '#fef3c7', trackDark: '#451a03' },
-        blue: { stroke: '#2563eb', trackLight: '#dbeafe', trackDark: '#1e3a5f' },
+        blue: { stroke: '#0f172a', trackLight: '#e2e8f0', trackDark: '#1e293b' },
     };
 
     return (
@@ -266,7 +266,7 @@ const TabButton = ({ active, onClick, label, icon: Icon }: any) => (
                 : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
         )}
     >
-        {Icon && <Icon className={clsx("w-4 h-4", active ? "text-blue-400 dark:text-blue-600" : "")} />}
+        {Icon && <Icon className={clsx("w-4 h-4", active ? "text-teal-400 dark:text-teal-600" : "")} />}
         {label}
     </button>
 );
@@ -286,7 +286,7 @@ const RangeIndicator = ({ current, low, high, label }: any) => {
                     style={{ width: '100%' }}
                 />
                 <div
-                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-slate-900 rounded-full border-2 border-blue-600 shadow-lg transition-all"
+                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-slate-900 rounded-full border-2 border-teal-600 shadow-lg transition-all"
                     style={{ left: `calc(${Math.min(100, Math.max(0, percent))}% - 8px)` }}
                 />
             </div>
@@ -297,7 +297,7 @@ const RangeIndicator = ({ current, low, high, label }: any) => {
 const DataRow = ({ label, value, highlight = false }: any) => (
     <div className={clsx(
         "flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-800 last:border-0",
-        highlight && "bg-blue-50/50 dark:bg-blue-900/20 -mx-4 px-4 rounded-lg"
+        highlight && "bg-teal-50/50 dark:bg-teal-900/20 -mx-4 px-4 rounded-lg"
     )}>
         <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
         <span className="text-sm font-semibold text-slate-900 dark:text-white font-mono">{value}</span>
@@ -399,7 +399,7 @@ export default function EnterpriseStockProfile() {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center">
                 <div className="text-center space-y-4">
-                    <div className="w-16 h-16 mx-auto border-4 border-slate-200 dark:border-slate-700 border-t-blue-500 rounded-full animate-spin" />
+                    <div className="w-16 h-16 mx-auto border-4 border-slate-200 dark:border-slate-700 border-t-teal-500 rounded-full animate-spin" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Loading market data...</p>
                 </div>
             </div>
@@ -534,7 +534,7 @@ export default function EnterpriseStockProfile() {
                     <div className="space-y-6">
                         {/* Key Stats Row */}
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            <StatCard label="Market Cap" value={formatLarge(p.marketCap || p.market_cap)} icon={Building2} color="blue" />
+                            <StatCard label="Market Cap" value={formatLarge(p.marketCap || p.market_cap)} icon={Building2} color="teal" />
                             <StatCard label="P/E Ratio" value={formatNumber(p.trailingPE || f.pe_ratio)} icon={Scale} />
                             <StatCard label="EPS (TTM)" value={formatNumber(p.epsTrailingTwelveMonths || f.trailing_eps)} icon={DollarSign} color="green" />
                             <StatCard label="Book Value" value={formatNumber(p.bookValue || f.book_value)} icon={Banknote} />
@@ -554,8 +554,8 @@ export default function EnterpriseStockProfile() {
                                             <AreaChart data={chartData}>
                                                 <defs>
                                                     <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                                                        <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.3} />
+                                                        <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
                                                     </linearGradient>
                                                 </defs>
                                                 <XAxis
@@ -584,7 +584,7 @@ export default function EnterpriseStockProfile() {
                                                 <Area
                                                     type="monotone"
                                                     dataKey="price"
-                                                    stroke="#3b82f6"
+                                                    stroke="#14b8a6"
                                                     strokeWidth={2}
                                                     fill="url(#priceGradient)"
                                                 />

@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, Loader2, AlertCircle, TrendingUp, Shield, Zap } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, Loader2, AlertCircle, TrendingUp, Shield, Zap, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 
@@ -73,17 +73,17 @@ function LoginPageContent() {
     };
 
     return (
-        <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white overflow-hidden font-sans selection:bg-teal-500/30">
+        <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white overflow-hidden font-sans selection:bg-[#14B8A6]/30">
 
-            {/* Left Panel - Visual/Brand */}
-            <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-slate-950 items-center justify-center p-16">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,_#0f766e_0%,_#0f172a_100%)]" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
+            {/* Left Panel - Visual/Brand (Midnight Teal Theme) */}
+            <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-[#0F172A] items-center justify-center p-16">
+                {/* Background Effects - Midnight Teal Gradient */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_#14B8A6_0%,_#0F172A_40%,_#020617_100%)] opacity-80" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay" />
 
-                {/* Abstract Shapes */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-500/20 rounded-full blur-[120px] opacity-40 animate-pulse duration-[10s]" />
-                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-slate-950 to-transparent z-10" />
+                {/* Subtle Teal Glow */}
+                <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-[#14B8A6]/15 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#0F172A] to-transparent z-10" />
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -92,31 +92,31 @@ function LoginPageContent() {
                     className="relative z-20 max-w-md"
                 >
                     <div className="flex items-center gap-3 mb-10">
-                        <div className="w-16 h-16 relative flex items-center justify-center">
-                            <div className="absolute inset-0 bg-teal-500/20 rounded-2xl blur-xl" />
-                            <img src="/app-icon.png" alt="Starta" className="w-16 h-16 object-contain relative z-10 drop-shadow-2xl" />
+                        <div className="w-14 h-14 relative flex items-center justify-center">
+                            <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-2xl blur-xl" />
+                            <img src="/app-icon.png" alt="Starta" className="w-14 h-14 object-contain relative z-10 drop-shadow-2xl" />
                         </div>
                         <span className="text-2xl font-bold tracking-tight text-white">Starta</span>
                     </div>
 
-                    <h1 className="text-5xl font-bold leading-tight mb-6 text-white">
-                        Meet Starta, Your <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">AI Market Analyst</span>
+                    <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-6 text-white">
+                        Your Personal <br />
+                        <span className="text-[#14B8A6]">AI Market Analyst</span>
                     </h1>
 
                     <p className="text-lg text-slate-400 leading-relaxed mb-10">
-                        The first AI specialized in Egypt Stock Market. Get instant answers, analyze stocks, and spot opportunities in seconds.
+                        Professional-grade financial intelligence for Egypt and Saudi markets. Get instant answers, analyze stocks, and make informed decisions.
                     </p>
 
                     <div className="grid grid-cols-1 gap-4">
                         {[
-                            { icon: Zap, label: "Instant Market Answers" },
-                            { icon: Sparkles, label: "Egypt Market Intelligence" },
-                            { icon: Shield, label: "Unbiased AI Insights" }
+                            { icon: Zap, label: "Instant Market Insights" },
+                            { icon: BarChart3, label: "Deep Fundamental Analysis" },
+                            { icon: Shield, label: "Institutional-Grade Data" }
                         ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                                <div className="p-2 bg-white/5 rounded-lg">
-                                    <item.icon className="w-5 h-5 text-teal-400" />
+                            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/[0.08] backdrop-blur-sm">
+                                <div className="p-2.5 bg-[#14B8A6]/10 rounded-lg">
+                                    <item.icon className="w-5 h-5 text-[#14B8A6]" />
                                 </div>
                                 <span className="font-medium text-slate-200">{item.label}</span>
                             </div>
@@ -129,7 +129,7 @@ function LoginPageContent() {
             <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-24 relative z-10">
                 {/* Mobile Background */}
                 <div className="lg:hidden absolute inset-0 bg-slate-50 dark:bg-[#0B1121]">
-                    <div className="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-teal-500/10 dark:from-teal-900/20 to-transparent" />
+                    <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-[#14B8A6]/[0.08] to-transparent" />
                 </div>
 
                 <motion.div
@@ -147,7 +147,7 @@ function LoginPageContent() {
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
-                            className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3"
+                            className="p-4 rounded-lg bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-sm flex items-center gap-3"
                         >
                             <AlertCircle className="w-5 h-5 shrink-0" />
                             {error}
@@ -163,7 +163,7 @@ function LoginPageContent() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
+                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
                                         placeholder="name@company.com"
                                     />
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
@@ -177,7 +177,7 @@ function LoginPageContent() {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:focus:ring-teal-500/50 focus:border-teal-500 transition-all font-medium"
+                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
                                         placeholder="Enter your password"
                                     />
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
@@ -194,7 +194,7 @@ function LoginPageContent() {
 
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-teal-600 border-teal-600' : 'bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 group-hover:border-slate-400 dark:group-hover:border-slate-600'}`}>
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-[#3B82F6] border-[#3B82F6]' : 'bg-slate-100 dark:bg-[#111827] border-slate-300 dark:border-slate-700 group-hover:border-slate-400 dark:group-hover:border-slate-600'}`}>
                                     {rememberMe && <ArrowRight className="w-3 h-3 text-white rotate-[-45deg]" />}
                                 </div>
                                 <input
@@ -205,7 +205,7 @@ function LoginPageContent() {
                                 />
                                 <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-300 transition-colors">Remember me</span>
                             </label>
-                            <button type="button" className="text-sm font-medium text-teal-400 hover:text-teal-300 transition-colors">
+                            <button type="button" className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors">
                                 Forgot password?
                             </button>
                         </div>
@@ -213,7 +213,7 @@ function LoginPageContent() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl py-4 font-bold text-base shadow-lg shadow-teal-900/20 ring-1 ring-white/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full h-12 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-md font-semibold text-base shadow-lg shadow-[#3B82F6]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -230,19 +230,19 @@ function LoginPageContent() {
                         onError={(err) => setError(err)}
                     />
 
-                    <div className="pt-6 text-center border-t border-slate-200 dark:border-slate-800">
+                    <div className="pt-6 text-center border-t border-slate-200 dark:border-white/[0.08]">
                         <p className="text-slate-500 dark:text-slate-500">
                             Don&apos;t have an account?{' '}
-                            <Link href="/register" className="font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 transition-colors">
+                            <Link href="/register" className="font-semibold text-[#14B8A6] hover:text-[#0D9488] transition-colors">
                                 Create free account
                             </Link>
                         </p>
                     </div>
                 </motion.div>
 
-                {/* Footer simple */}
+                {/* Footer */}
                 <div className="absolute bottom-6 left-0 right-0 text-center">
-                    <p className="text-xs text-slate-600">© 2026 Starta. Secure & Encrypted.</p>
+                    <p className="text-xs text-slate-500">© 2026 Starta. Secure & Encrypted.</p>
                 </div>
             </div>
         </div>
@@ -253,7 +253,7 @@ export default function LoginPage() {
     return (
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
-                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>
             <LoginPageContent />

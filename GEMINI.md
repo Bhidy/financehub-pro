@@ -199,3 +199,47 @@ If deployment fails mid-way:
 ```bash
 ssh root@46.224.223.172 "cd /opt/starta && docker system prune -af --volumes && docker compose -f docker-compose.prod.yml up -d --build"
 ```
+
+---
+
+## Multi-Provider LLM System (High Availability)
+
+> [!IMPORTANT]
+> The chatbot uses a multi-provider LLM fallback system to ensure **zero downtime** when any single provider's quota is exhausted.
+
+### Provider Priority Order
+| Priority | Provider | Daily Limit | Base URL |
+|----------|----------|-------------|----------|
+| 1 | **Groq** | 100K tokens/day | `api.groq.com` |
+| 2 | **Cerebras** | 14,400 requests/day | `api.cerebras.ai` |
+| 3 | **Mistral** | 1B tokens/month | `api.mistral.ai` |
+
+### API Keys Location
+**Server:** `/opt/starta/.env`
+```bash
+GROQ_API_KEY=gsk_...              # Primary (configured)
+CEREBRAS_API_KEY=csk-f4w64kfr5pn8dh9m3yrtrvwn8y29556y9vtr5pmxvkyfdwww
+MISTRAL_API_KEY=eKM8088tpNHFdFbgEyX8dzoSQszHyoFB
+```
+
+### Quota Renewal Schedule
+| Provider | Renewal Time | How to Check |
+|----------|--------------|--------------|
+| Groq | Midnight UTC | [console.groq.com](https://console.groq.com) |
+| Cerebras | Midnight UTC | [cloud.cerebras.ai](https://cloud.cerebras.ai) |
+| Mistral | Monthly | [console.mistral.ai](https://console.mistral.ai) |
+
+### Implementation Files
+| File | Purpose |
+|------|---------|
+| `backend-core/app/chat/llm_clients.py` | Multi-provider orchestrator |
+| `backend-core/app/chat/llm_explainer.py` | Narrative generation |
+| `backend-core/app/chat/middleware/paraphraser.py` | Slang translation |
+
+### Guaranteed 4-Layer Response Structure
+Every chatbot response MUST have:
+1. ✅ **Greeting/Opening** - "Welcome back, {name}" or "Got it, {name}"
+2. ✅ **Data Cards** - Stock metrics, charts, tables
+3. ✅ **Learning Section** - Educational bullet points (always present)
+4. ✅ **Follow-up Prompt** - Suggested next action (always present)
+

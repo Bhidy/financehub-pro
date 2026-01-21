@@ -9,63 +9,63 @@
   /* ========================================================================
      CORE BRAND COLORS (Midnight Teal Palette)
      ======================================================================== */
-  
+
   /* Primary: Deep Navy - The foundation of trust and authority */
   --color-brand-primary: #0F172A;
   --color-brand-primary-light: #1E293B;
   --color-brand-primary-dark: #020617;
-  
+
   /* Accent: Midnight Teal - Distinctive, innovative, trustworthy */
   --color-brand-accent: #14B8A6;
   --color-brand-accent-light: #2DD4BF;
   --color-brand-accent-dark: #0D9488;
   --color-brand-accent-subtle: rgba(20, 184, 166, 0.1);
-  
+
   /* ========================================================================
      FUNCTIONAL COLORS (Strict Semantic Usage)
      ======================================================================== */
-  
+
   /* Trust Blue: CTAs, Links, Interactive Elements */
   --color-trust-blue: #3B82F6;
   --color-trust-blue-light: #60A5FA;
   --color-trust-blue-dark: #2563EB;
   --color-trust-blue-subtle: rgba(59, 130, 246, 0.1);
-  
+
   /* Success Green: Confirmations, Positive States, Bullish Data */
   --color-success: #10B981;
   --color-success-light: #34D399;
   --color-success-dark: #059669;
   --color-success-subtle: rgba(16, 185, 129, 0.1);
-  
+
   /* Market Bullish: Price Increases ONLY */
   --color-bullish: #22C55E;
   --color-bullish-light: #4ADE80;
   --color-bullish-dark: #16A34A;
   --color-bullish-subtle: rgba(34, 197, 94, 0.1);
-  
+
   /* Alert Orange: Warnings, Notices */
   --color-warning: #F59E0B;
   --color-warning-light: #FBBF24;
   --color-warning-dark: #D97706;
   --color-warning-subtle: rgba(245, 158, 11, 0.1);
-  
+
   /* Error Red: Errors, Critical Alerts, Bearish Data */
   --color-error: #EF4444;
   --color-error-light: #F87171;
   --color-error-dark: #DC2626;
   --color-error-subtle: rgba(239, 68, 68, 0.1);
-  
+
   /* Market Bearish: Price Decreases ONLY */
   --color-bearish: #EF4444;
   --color-bearish-light: #F87171;
   --color-bearish-dark: #DC2626;
   --color-bearish-subtle: rgba(239, 68, 68, 0.1);
-  
+
   /* Neutral Gray: Unchanged Market Data */
   --color-neutral: #6B7280;
   --color-neutral-light: #9CA3AF;
   --color-neutral-dark: #4B5563;
-  
+
   /* ========================================================================
      SURFACE COLORS (Light Theme)
      ======================================================================== */
@@ -73,7 +73,7 @@
   --color-surface-secondary: #F8FAFC;
   --color-surface-tertiary: #F1F5F9;
   --color-surface-elevated: #FFFFFF;
-  
+
   /* ========================================================================
      SURFACE COLORS (Dark Theme)
      ======================================================================== */
@@ -81,7 +81,7 @@
   --color-dark-card: #111827;
   --color-dark-elevated: #1F2937;
   --color-dark-border: rgba(255, 255, 255, 0.08);
-  
+
   /* ========================================================================
      TEXT COLORS
      ======================================================================== */
@@ -90,19 +90,19 @@
   --color-text-tertiary: #64748B;
   --color-text-muted: #94A3B8;
   --color-text-placeholder: #9CA3AF;
-  
+
   --color-text-dark-primary: #F8FAFC;
   --color-text-dark-secondary: #CBD5E1;
   --color-text-dark-tertiary: #94A3B8;
   --color-text-dark-muted: #64748B;
-  
+
   /* ========================================================================
      BORDER COLORS
      ======================================================================== */
   --color-border-light: #E2E8F0;
   --color-border-default: #CBD5E1;
   --color-border-dark: rgba(255, 255, 255, 0.1);
-  
+
   /* ========================================================================
      SLATE SCALE (Extended for Transitions)
      ======================================================================== */
@@ -117,37 +117,53 @@
   --color-slate-800: #1E293B;
   --color-slate-900: #0F172A;
   --color-slate-950: #020617;
-  
+
   /* ========================================================================
      TYPOGRAPHY
      ======================================================================== */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   --font-arabic: "Cairo", var(--font-sans);
-  
+
   /* Type Scale */
-  --text-h1: 2rem;      /* 32px */
-  --text-h2: 1.5rem;    /* 24px */
-  --text-h3: 1.125rem;  /* 18px */
-  --text-body: 1rem;    /* 16px */
-  --text-body-sm: 0.875rem; /* 14px */
-  --text-caption: 0.75rem;  /* 12px */
-  --text-micro: 0.625rem;   /* 10px */
-  
+  --text-h1: 2rem;
+  /* 32px */
+  --text-h2: 1.5rem;
+  /* 24px */
+  --text-h3: 1.125rem;
+  /* 18px */
+  --text-body: 1rem;
+  /* 16px */
+  --text-body-sm: 0.875rem;
+  /* 14px */
+  --text-caption: 0.75rem;
+  /* 12px */
+  --text-micro: 0.625rem;
+  /* 10px */
+
   /* ========================================================================
      SPACING & SIZING
      ======================================================================== */
-  --radius-sm: 0.375rem;  /* 6px - Input fields, small elements */
-  --radius-md: 0.5rem;    /* 8px - Buttons, cards */
-  --radius-lg: 0.75rem;   /* 12px - Modal corners */
-  --radius-xl: 1rem;      /* 16px - Large cards */
-  --radius-2xl: 1.25rem;  /* 20px - Hero sections */
-  --radius-full: 9999px;  /* Pills, avatars */
-  
+  --radius-sm: 0.375rem;
+  /* 6px - Input fields, small elements */
+  --radius-md: 0.5rem;
+  /* 8px - Buttons, cards */
+  --radius-lg: 0.75rem;
+  /* 12px - Modal corners */
+  --radius-xl: 1rem;
+  /* 16px - Large cards */
+  --radius-2xl: 1.25rem;
+  /* 20px - Hero sections */
+  --radius-full: 9999px;
+  /* Pills, avatars */
+
   /* Component Heights */
-  --height-input: 3rem;   /* 48px */
-  --height-button: 2.75rem; /* 44px */
-  --height-button-sm: 2rem; /* 32px */
+  --height-input: 3rem;
+  /* 48px */
+  --height-button: 2.75rem;
+  /* 44px */
+  --height-button-sm: 2rem;
+  /* 32px */
 }
 
 /* ============================================================================
@@ -216,7 +232,9 @@ body {
 }
 
 /* Arabic Font Support */
-[lang="ar"], .rtl, .font-arabic {
+[lang="ar"],
+.rtl,
+.font-arabic {
   font-family: var(--font-arabic);
   direction: rtl;
 }
@@ -224,28 +242,32 @@ body {
 /* ============================================================================
    TYPOGRAPHY HIERARCHY
    ============================================================================ */
-h1, .h1 {
+h1,
+.h1 {
   font-size: var(--text-h1);
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
 
-h2, .h2 {
+h2,
+.h2 {
   font-size: var(--text-h2);
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.02em;
 }
 
-h3, .h3 {
+h3,
+.h3 {
   font-size: var(--text-h3);
   font-weight: 500;
   line-height: 1.3;
 }
 
 /* Numeric Data Optimization */
-.font-tabular, .tabular-nums {
+.font-tabular,
+.tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" on;
 }
@@ -299,7 +321,9 @@ select:focus {
 }
 
 /* Error State */
-input.error, textarea.error, select.error,
+input.error,
+textarea.error,
+select.error,
 input:invalid:not(:placeholder-shown),
 .input-error {
   border-color: var(--color-error);
@@ -314,6 +338,7 @@ input:invalid:not(:placeholder-shown),
 
 /* Prevent iOS zoom on input focus */
 @media screen and (max-width: 768px) {
+
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
@@ -325,7 +350,7 @@ input:invalid:not(:placeholder-shown),
    BUTTONS (Design System Compliant)
    ============================================================================ */
 
-/* Primary Button: Trust Blue with subtle shadow */
+/* Primary Button: Midnight Teal with subtle shadow */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -333,7 +358,7 @@ input:invalid:not(:placeholder-shown),
   gap: 0.5rem;
   height: var(--height-button);
   padding: 0 1.5rem;
-  background-color: var(--color-trust-blue);
+  background-color: var(--color-brand-accent);
   color: white;
   font-weight: 600;
   font-size: var(--text-body-sm);
@@ -344,8 +369,8 @@ input:invalid:not(:placeholder-shown),
 }
 
 .btn-primary:hover {
-  background-color: var(--color-trust-blue-dark);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  background-color: var(--color-brand-accent-dark);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
 }
 
 .btn-primary:active {
@@ -376,9 +401,9 @@ input:invalid:not(:placeholder-shown),
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-trust-blue);
-  color: var(--color-trust-blue);
-  background-color: var(--color-trust-blue-subtle);
+  border-color: var(--color-brand-accent);
+  color: var(--color-brand-accent);
+  background-color: var(--color-brand-accent-subtle);
 }
 
 .dark .btn-secondary {
@@ -387,8 +412,8 @@ input:invalid:not(:placeholder-shown),
 }
 
 .dark .btn-secondary:hover {
-  border-color: var(--color-trust-blue);
-  color: var(--color-trust-blue-light);
+  border-color: var(--color-brand-accent);
+  color: var(--color-brand-accent-light);
 }
 
 /* ============================================================================
@@ -616,9 +641,12 @@ a:focus-visible {
    ANIMATIONS
    ============================================================================ */
 @keyframes pulse-soft {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -635,12 +663,12 @@ a:focus-visible {
   .no-print {
     display: none !important;
   }
-  
+
   body {
     background: white;
     color: black;
   }
-  
+
   .card {
     border: 1px solid #ddd;
     box-shadow: none;

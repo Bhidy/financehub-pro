@@ -112,9 +112,9 @@ function MobileRegisterPageContent() {
     const passwordStrength = getPasswordStrength();
 
     return (
-        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0B1121] flex flex-col font-sans selection:bg-[#14B8A6]/30 text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col font-sans selection:bg-[#14B8A6]/30 text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             {/* Background Effects - Midnight Teal */}
-            <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0B1121_50%)] opacity-20 pointer-events-none transition-opacity duration-300" />
+            <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0F172A_50%)] opacity-20 pointer-events-none transition-opacity duration-300" />
             <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-15 brightness-100 contrast-150 mix-blend-overlay pointer-events-none" />
 
             {/* Header */}
@@ -250,11 +250,11 @@ function MobileRegisterPageContent() {
                             </div>
                         </div>
 
-                        {/* Submit - Trust Blue */}
+                        {/* Submit - Midnight Teal (Primary Brand CTA) */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/20"
+                            className="w-full py-4 bg-[#14B8A6] hover:bg-[#0D9488] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#14B8A6]/20"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -292,7 +292,7 @@ function MobileRegisterPageContent() {
 export default function MobileRegisterPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0B1121]">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>

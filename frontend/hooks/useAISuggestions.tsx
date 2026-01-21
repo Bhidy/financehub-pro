@@ -30,7 +30,7 @@ export function useAISuggestions() {
     const suggestionCategories = useMemo(() => {
         const isEgypt = market === 'EGX';
         const stocks = isEgypt
-            ? { main: "TMGH", second: "SWDY", bank: "COMI", pharma: "PHDC", growth: "EKHO", efficient: "ADIB", cagr: "EFIH" }
+            ? { main: "TMGH", second: "SWDY", bank: "COMI", pharma: "PHDC", growth: "FWRY", efficient: "ADIB", cagr: "EFIH" }
             : { main: "Aramco", second: "Al Rajhi", bank: "SNB", pharma: "2070", growth: "4030", efficient: "1120", cagr: "7010" };
 
         return [

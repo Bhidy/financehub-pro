@@ -48,6 +48,56 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
   > **BACKEND LOCATION**: The real backend code is in `backend-core/`. **NEVER USE `backend/`**. The `backend/` folder is legacy and should be ignored for all deployment and development purposes.
   > **DEPLOYMENT**: The `Dockerfile` MUST copy from `backend-core/`. Always verify this before deploying.
 
+---
+
+## 🔒 PROTECTED: 4-Layer Chatbot Response Structure
+
+> [!CAUTION]
+> ## ⚠️ DO NOT MODIFY WITHOUT EXPLICIT USER REQUEST ⚠️
+> This chatbot response structure is **PRODUCTION-CRITICAL** and has been approved by the product owner.
+> **AI Agents: DO NOT change, remove, or "improve" any of these components unless the USER explicitly requests it.**
+> Breaking this structure will result in a degraded user experience.
+
+### The 4 MANDATORY Layers (ALL responses MUST have these)
+
+| Layer | Component | Description | NEVER Remove |
+|-------|-----------|-------------|--------------|
+| 1 | **Greeting/Opening** | Personalized greeting with user's first name. Example: "Got it, Mohamed. Let me show you..." | ⛔ PROTECTED |
+| 2 | **Data Cards** | Stock data, metrics, charts, screener results | ⛔ PROTECTED |
+| 3 | **Learning Section** | Blue box with 📊 title and educational bullet points explaining the data | ⛔ PROTECTED |
+| 4 | **Follow-up Prompt** | Gray box with 💡 suggesting what to explore next | ⛔ PROTECTED |
+
+### Protected Files (DO NOT MODIFY without explicit request)
+
+| File | Purpose | Protection Level |
+|------|---------|------------------|
+| `backend-core/app/chat/chat_service.py` | Lines 504-540: 4-Layer structure guarantee | 🔴 CRITICAL |
+| `backend-core/app/chat/llm_explainer.py` | Narrative generation prompts | 🔴 CRITICAL |
+| `backend-core/app/chat/learning_section_generator.py` | Educational bullets | 🟠 HIGH |
+| `backend-core/app/chat/follow_up_generator.py` | Follow-up suggestions | 🟠 HIGH |
+| `frontend/app/mobile-ai-analyst/page.tsx` | Lines 303-327: UI rendering | 🔴 CRITICAL |
+| `frontend/app/ai-analyst/page.tsx` | Desktop UI rendering | 🔴 CRITICAL |
+| `frontend/hooks/useAIChat.ts` | Response type definitions | 🟠 HIGH |
+
+### What an AI Agent CAN Do
+
+✅ Fix bugs that prevent the 4 layers from appearing
+✅ Improve the content/quality within each layer
+✅ Add new card types to Layer 2
+✅ Update the learning definitions in Layer 3
+✅ Change follow-up suggestions in Layer 4
+
+### What an AI Agent MUST NOT Do
+
+❌ Remove any of the 4 layers
+❌ Make any layer conditional (they must ALWAYS appear)
+❌ Change the rendering order of the layers
+❌ Remove the fallback guarantees in chat_service.py
+❌ Modify the response type definitions in useAIChat.ts
+❌ "Simplify" or "clean up" the response structure
+
+
+
   ---
 
 ## Directory Map

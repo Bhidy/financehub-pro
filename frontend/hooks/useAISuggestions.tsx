@@ -50,7 +50,6 @@ export function useAISuggestions() {
                 suggestions: [
                     { text: "Show me the safest stocks in EGX", icon: ShieldCheck, gradient: "from-emerald-500 to-teal-600" },
                     { text: "Top 10 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-500 to-yellow-600" },
-                    { text: "Which stocks are undervalued?", icon: Sparkles, gradient: "from-cyan-500 to-teal-600" },
                     { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-blue-600" },
                 ]
             },

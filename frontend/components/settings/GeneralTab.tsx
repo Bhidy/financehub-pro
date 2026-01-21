@@ -26,13 +26,13 @@ export default function GeneralTab() {
                                 className={clsx(
                                     "relative flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left group",
                                     isActive
-                                        ? "border-blue-600 dark:border-blue-500/50 bg-blue-50/50 dark:bg-blue-500/10 shadow-md shadow-blue-100 dark:shadow-blue-900/10"
+                                        ? "border-teal-600 dark:border-teal-500/50 bg-teal-50/50 dark:bg-teal-500/10 shadow-md shadow-teal-100 dark:shadow-teal-900/10"
                                         : "border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 hover:border-slate-300 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10"
                                 )}
                             >
                                 <div className={clsx(
                                     "w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-sm transition-colors",
-                                    isActive ? "bg-white dark:bg-blue-500/20" : "bg-slate-100 dark:bg-white/10"
+                                    isActive ? "bg-white dark:bg-teal-500/20" : "bg-slate-100 dark:bg-white/10"
                                 )}>
                                     {config.flag}
                                 </div>
@@ -45,8 +45,8 @@ export default function GeneralTab() {
                                 </div>
 
                                 {isActive && (
-                                    <div className="absolute top-4 right-4 text-blue-600 dark:text-blue-400">
-                                        <Check className="w-5 h-5 bg-blue-100 dark:bg-blue-500/20 rounded-full p-0.5" />
+                                    <div className="absolute top-4 right-4 text-teal-600 dark:text-teal-400">
+                                        <Check className="w-5 h-5 bg-teal-100 dark:bg-teal-500/20 rounded-full p-0.5" />
                                     </div>
                                 )}
                             </button>

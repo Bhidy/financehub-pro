@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, ArrowLeft, TrendingUp } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 
@@ -63,7 +63,6 @@ function MobileLoginPageContent() {
         setIsLoading(false);
 
         if (result.success) {
-            // HARDCODED REDIRECT - No sessionStorage dependency
             router.push("/mobile-ai-analyst");
         } else {
             setError(result.error || "Login failed");
@@ -71,16 +70,16 @@ function MobileLoginPageContent() {
     };
 
     return (
-        <div className="min-h-[100dvh] w-full bg-slate-50 dark:bg-[#0B1121] flex flex-col font-sans selection:bg-teal-500/30 text-slate-900 dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-            {/* Background Effects */}
-            <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#0f766e_0%,_#0B1121_50%)] pointer-events-none transition-opacity duration-300" />
-            <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-20 brightness-100 contrast-150 mix-blend-overlay pointer-events-none" />
+        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col font-sans selection:bg-[#14B8A6]/30 text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+            {/* Background Effects - Midnight Teal */}
+            <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0F172A_50%)] opacity-20 pointer-events-none transition-opacity duration-300" />
+            <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-15 brightness-100 contrast-150 mix-blend-overlay pointer-events-none" />
 
             {/* Header */}
             <header className="px-4 py-4 relative z-10">
                 <button
                     onClick={() => router.push('/mobile-ai-analyst')}
-                    className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors font-medium"
+                    className="flex items-center gap-2 text-slate-500 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white transition-colors font-medium"
                 >
                     <ArrowLeft className="w-5 h-5" />
                     <span>Back to Starta</span>
@@ -97,10 +96,10 @@ function MobileLoginPageContent() {
                     {/* Logo area */}
                     <div className="flex flex-col items-center mb-8">
                         <div className="w-20 h-20 relative flex items-center justify-center mb-4">
-                            <div className="absolute inset-0 bg-teal-500/20 rounded-full blur-xl" />
+                            <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-full blur-xl" />
                             <img src="/app-icon.png" alt="Starta" className="w-20 h-20 object-contain relative z-10 drop-shadow-2xl" />
                         </div>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2 transition-colors">Welcome Back</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white mb-2 transition-colors">Welcome Back</h1>
                         <p className="text-slate-500 dark:text-slate-400 text-center transition-colors">Sign in to your Starta account</p>
                     </div>
 
@@ -109,7 +108,7 @@ function MobileLoginPageContent() {
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 dark:text-red-400"
+                            className="mb-6 p-4 bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl flex items-center gap-3 text-[#EF4444]"
                         >
                             <AlertCircle className="w-5 h-5 shrink-0" />
                             <span className="text-sm font-medium">{error}</span>
@@ -127,7 +126,7 @@ function MobileLoginPageContent() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
                                     placeholder="name@company.com"
                                     autoComplete="email"
                                 />
@@ -143,7 +142,7 @@ function MobileLoginPageContent() {
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all font-medium"
+                                    className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
                                     placeholder="••••••••"
                                     autoComplete="current-password"
                                 />
@@ -155,14 +154,23 @@ function MobileLoginPageContent() {
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
-
                         </div>
 
-                        {/* Submit */}
+                        {/* Forgot Password */}
+                        <div className="flex justify-end">
+                            <Link
+                                href="/mobile-ai-analyst/forgot-password"
+                                className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                            >
+                                Forgot password?
+                            </Link>
+                        </div>
+
+                        {/* Submit - Trust Blue */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-teal-500/20 dark:shadow-teal-900/20 ring-1 ring-white/10"
+                            className="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/20"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -182,11 +190,11 @@ function MobileLoginPageContent() {
                         onError={(err) => setError(err)}
                     />
 
-                    {/* Register link */}
+                    {/* Register link - Teal accent */}
                     <div className="pt-8 text-center mt-4">
                         <p className="text-slate-500 dark:text-slate-500 text-sm">
                             Don't have an account?{" "}
-                            <Link href="/mobile-ai-analyst/register" className="text-teal-600 dark:text-teal-400 font-bold hover:text-teal-500 dark:hover:text-teal-300 transition-colors">
+                            <Link href="/mobile-ai-analyst/register" className="text-[#14B8A6] font-bold hover:text-[#0D9488] transition-colors">
                                 Create free account
                             </Link>
                         </p>
@@ -200,8 +208,8 @@ function MobileLoginPageContent() {
 export default function MobileLoginPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
-                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>
             <MobileLoginPageContent />

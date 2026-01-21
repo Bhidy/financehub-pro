@@ -72,8 +72,8 @@ function NotificationItem({ icon: Icon, title, description, isOn, onToggle }: an
 
             <button
                 onClick={onToggle}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                    ${isOn ? 'bg-blue-600' : 'bg-slate-200 dark:bg-white/10'}`}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500
+                    ${isOn ? 'bg-teal-600' : 'bg-slate-200 dark:bg-white/10'}`}
             >
                 <motion.span
                     layout

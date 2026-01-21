@@ -36,15 +36,15 @@ export default function SettingsLayout({ activeTab, onTabChange, isAdmin, childr
                                 key={tab.id}
                                 onClick={() => onTabChange(tab.id)}
                                 className={`relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors whitespace-nowrap outline-none
-                                    ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}
+                                    ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}
                                 `}
                             >
-                                <Icon className={`w-4 h-4 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
+                                <Icon className={`w-4 h-4 ${isActive ? "text-teal-600 dark:text-teal-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
                                 <span className="relative z-10">{tab.label}</span>
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeTabUnderline"
-                                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 dark:bg-blue-500 rounded-t-full"
+                                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-teal-600 dark:bg-teal-500 rounded-t-full"
                                         initial={false}
                                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                     />

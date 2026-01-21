@@ -115,15 +115,15 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] pb-12">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-[#14B8A6]/5 dark:from-[#0B1121] dark:via-[#0F172A] dark:to-[#0B1121] pb-12">
       {/* Premium Ticker Tape */}
       <MarketTicker />
 
-      {/* Hero Header - Premium Gradient */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white">
+      {/* Hero Header - Midnight Teal Premium Gradient */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#0F172A] via-[#14B8A6] to-[#0D9488] text-white">
         {/* Decorative Elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#14B8A6]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         <div className="relative max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -209,7 +209,7 @@ export default function Home() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-6">
           {/* Market Index Card - Premium Design */}
-          <div className="col-span-12 lg:col-span-8 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-black/20 overflow-hidden">
+          <div className="col-span-12 lg:col-span-8 bg-white dark:bg-[#111827] rounded-2xl border border-slate-100 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/20 overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-white/5">
               <div className="flex items-center justify-between">
                 <div>
@@ -250,9 +250,9 @@ export default function Home() {
           {/* Side Stats */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
             {/* Sector Performance - Real Data */}
-            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-100/50 dark:shadow-black/20 p-5">
+            <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-slate-100/50 dark:shadow-black/20 p-5">
               <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-blue-500" />
+                <Target className="w-5 h-5 text-teal-600 dark:text-teal-500" />
                 <h3 className="font-bold text-slate-800 dark:text-white">Sector Leaders</h3>
               </div>
               <div className="space-y-3">
@@ -280,8 +280,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* AI Insights - Premium Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-orange-400 via-orange-500 to-amber-500 rounded-2xl p-5 text-white shadow-xl shadow-orange-200/50">
+            {/* AI Insights - Brand Teal Card */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#14B8A6] via-[#0D9488] to-[#0F172A] rounded-xl p-5 text-white shadow-xl shadow-[#14B8A6]/20">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
                 <div className="flex items-center gap-2 mb-3">
@@ -306,7 +306,7 @@ export default function Home() {
           </div>
 
           {/* Market Intelligence Section - Real Sector Data */}
-          <div className="col-span-12 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/50 dark:shadow-black/20 p-5">
+          <div className="col-span-12 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-slate-200/50 dark:shadow-black/20 p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <PieChart className="w-4 h-4 text-white" />
@@ -377,8 +377,8 @@ export default function Home() {
         {/* Stock Lists Row - Premium Design */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
           {/* Top Gainers */}
-          <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-emerald-100/30 dark:shadow-black/20 overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white">
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-[#22C55E]/10 dark:shadow-black/20 overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-[#22C55E] to-[#10B981] text-white">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
                 <h3 className="font-bold">Top Gainers</h3>
@@ -419,8 +419,8 @@ export default function Home() {
           </div>
 
           {/* Top Losers */}
-          <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-red-100/30 dark:shadow-black/20 overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-red-500 to-rose-500 text-white">
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-[#EF4444]/10 dark:shadow-black/20 overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-[#EF4444] to-[#DC2626] text-white">
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5" />
                 <h3 className="font-bold">Top Losers</h3>
@@ -461,8 +461,8 @@ export default function Home() {
           </div>
 
           {/* Most Active */}
-          <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-blue-100/30 dark:shadow-black/20 overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-cyan-500/10 dark:shadow-black/20 overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white">
               <div className="flex items-center gap-2">
                 <Activity className="w-5 h-5" />
                 <h3 className="font-bold">Most Active</h3>
@@ -477,20 +477,20 @@ export default function Home() {
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all group"
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-500/10 transition-all group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-bold flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 text-xs font-bold flex items-center justify-center">
                           {i + 1}
                         </span>
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
+                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-400 transition-colors">{stock.symbol}</div>
                           <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                        <div className="text-sm font-bold text-cyan-600 dark:text-cyan-400">
                           {(Number(stock.volume) / 1000000).toFixed(2)}M
                         </div>
                       </div>

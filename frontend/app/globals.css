@@ -1,91 +1,260 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   STARTA – MIDNIGHT TEAL DESIGN SYSTEM
+   Ultra-Premium Institutional FinTech Branding
+   ============================================================================ */
+
 @theme {
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
+  /* ========================================================================
+     CORE BRAND COLORS (Midnight Teal Palette)
+     ======================================================================== */
+  
+  /* Primary: Deep Navy - The foundation of trust and authority */
+  --color-brand-primary: #0F172A;
+  --color-brand-primary-light: #1E293B;
+  --color-brand-primary-dark: #020617;
+  
+  /* Accent: Midnight Teal - Distinctive, innovative, trustworthy */
+  --color-brand-accent: #14B8A6;
+  --color-brand-accent-light: #2DD4BF;
+  --color-brand-accent-dark: #0D9488;
+  --color-brand-accent-subtle: rgba(20, 184, 166, 0.1);
+  
+  /* ========================================================================
+     FUNCTIONAL COLORS (Strict Semantic Usage)
+     ======================================================================== */
+  
+  /* Trust Blue: CTAs, Links, Interactive Elements */
+  --color-trust-blue: #3B82F6;
+  --color-trust-blue-light: #60A5FA;
+  --color-trust-blue-dark: #2563EB;
+  --color-trust-blue-subtle: rgba(59, 130, 246, 0.1);
+  
+  /* Success Green: Confirmations, Positive States, Bullish Data */
+  --color-success: #10B981;
+  --color-success-light: #34D399;
+  --color-success-dark: #059669;
+  --color-success-subtle: rgba(16, 185, 129, 0.1);
+  
+  /* Market Bullish: Price Increases ONLY */
+  --color-bullish: #22C55E;
+  --color-bullish-light: #4ADE80;
+  --color-bullish-dark: #16A34A;
+  --color-bullish-subtle: rgba(34, 197, 94, 0.1);
+  
+  /* Alert Orange: Warnings, Notices */
+  --color-warning: #F59E0B;
+  --color-warning-light: #FBBF24;
+  --color-warning-dark: #D97706;
+  --color-warning-subtle: rgba(245, 158, 11, 0.1);
+  
+  /* Error Red: Errors, Critical Alerts, Bearish Data */
+  --color-error: #EF4444;
+  --color-error-light: #F87171;
+  --color-error-dark: #DC2626;
+  --color-error-subtle: rgba(239, 68, 68, 0.1);
+  
+  /* Market Bearish: Price Decreases ONLY */
+  --color-bearish: #EF4444;
+  --color-bearish-light: #F87171;
+  --color-bearish-dark: #DC2626;
+  --color-bearish-subtle: rgba(239, 68, 68, 0.1);
+  
+  /* Neutral Gray: Unchanged Market Data */
+  --color-neutral: #6B7280;
+  --color-neutral-light: #9CA3AF;
+  --color-neutral-dark: #4B5563;
+  
+  /* ========================================================================
+     SURFACE COLORS (Light Theme)
+     ======================================================================== */
+  --color-surface-primary: #FFFFFF;
+  --color-surface-secondary: #F8FAFC;
+  --color-surface-tertiary: #F1F5F9;
+  --color-surface-elevated: #FFFFFF;
+  
+  /* ========================================================================
+     SURFACE COLORS (Dark Theme)
+     ======================================================================== */
+  --color-dark-base: #0B1121;
+  --color-dark-card: #111827;
+  --color-dark-elevated: #1F2937;
+  --color-dark-border: rgba(255, 255, 255, 0.08);
+  
+  /* ========================================================================
+     TEXT COLORS
+     ======================================================================== */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-text-placeholder: #9CA3AF;
+  
+  --color-text-dark-primary: #F8FAFC;
+  --color-text-dark-secondary: #CBD5E1;
+  --color-text-dark-tertiary: #94A3B8;
+  --color-text-dark-muted: #64748B;
+  
+  /* ========================================================================
+     BORDER COLORS
+     ======================================================================== */
+  --color-border-light: #E2E8F0;
+  --color-border-default: #CBD5E1;
+  --color-border-dark: rgba(255, 255, 255, 0.1);
+  
+  /* ========================================================================
+     SLATE SCALE (Extended for Transitions)
+     ======================================================================== */
+  --color-slate-50: #F8FAFC;
+  --color-slate-100: #F1F5F9;
+  --color-slate-200: #E2E8F0;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
   --color-slate-600: #475569;
   --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
+  --color-slate-800: #1E293B;
+  --color-slate-900: #0F172A;
   --color-slate-950: #020617;
-
-  /* Ultra Premium Dark Palette */
-  --color-dark-base: #0B1121;
-  --color-dark-card: #151925;
-  --color-dark-border: rgba(255, 255, 255, 0.05);
-
-  --color-emerald-50: #ecfdf5;
-  --color-emerald-500: #10b981;
-  --color-emerald-600: #059669;
-
-  --color-red-50: #fef2f2;
-  --color-red-500: #ef4444;
-  --color-red-600: #dc2626;
-
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+  
+  /* ========================================================================
+     TYPOGRAPHY
+     ======================================================================== */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-arabic: "Cairo", var(--font-sans);
+  
+  /* Type Scale */
+  --text-h1: 2rem;      /* 32px */
+  --text-h2: 1.5rem;    /* 24px */
+  --text-h3: 1.125rem;  /* 18px */
+  --text-body: 1rem;    /* 16px */
+  --text-body-sm: 0.875rem; /* 14px */
+  --text-caption: 0.75rem;  /* 12px */
+  --text-micro: 0.625rem;   /* 10px */
+  
+  /* ========================================================================
+     SPACING & SIZING
+     ======================================================================== */
+  --radius-sm: 0.375rem;  /* 6px - Input fields, small elements */
+  --radius-md: 0.5rem;    /* 8px - Buttons, cards */
+  --radius-lg: 0.75rem;   /* 12px - Modal corners */
+  --radius-xl: 1rem;      /* 16px - Large cards */
+  --radius-2xl: 1.25rem;  /* 20px - Hero sections */
+  --radius-full: 9999px;  /* Pills, avatars */
+  
+  /* Component Heights */
+  --height-input: 3rem;   /* 48px */
+  --height-button: 2.75rem; /* 44px */
+  --height-button-sm: 2rem; /* 32px */
 }
 
-/* TAILWIND V4 CLASS-BASED DARK MODE */
+/* ============================================================================
+   TAILWIND V4 DARK MODE VARIANT
+   ============================================================================ */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================================
+   ROOT VARIABLES (LIGHT THEME DEFAULT)
+   ============================================================================ */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
   color-scheme: light;
 }
 
-/* System Preference (Default) */
+/* System Preference Detection */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
+    --background: #0B1121;
+    --foreground: #F8FAFC;
+    --card-bg: #111827;
+    --card-border: rgba(255, 255, 255, 0.08);
     color-scheme: dark;
   }
 }
 
-/* Manual Toggles */
+/* Manual Dark Mode Toggle */
 .dark {
   --background: #0B1121;
-  --foreground: #f8fafc;
+  --foreground: #F8FAFC;
+  --card-bg: #111827;
+  --card-border: rgba(255, 255, 255, 0.08);
   color-scheme: dark !important;
 }
 
+/* Manual Light Mode Toggle */
 .light {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
   color-scheme: light !important;
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+html {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* NUCLEAR OPTION: Prevent iOS Zoom on Inputs */
-@media screen and (max-width: 768px) {
-
-  input,
-  textarea,
-  select {
-    font-size: 16px !important;
-    max-height: 100% !important;
-  }
+/* Arabic Font Support */
+[lang="ar"], .rtl, .font-arabic {
+  font-family: var(--font-arabic);
+  direction: rtl;
 }
 
-/* Prevent double-tap zoom */
-html {
-  touch-action: manipulation;
+/* ============================================================================
+   TYPOGRAPHY HIERARCHY
+   ============================================================================ */
+h1, .h1 {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
 }
 
-/* Safe Area Utility Shims (Tailwind v4) */
+h2, .h2 {
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+h3, .h3 {
+  font-size: var(--text-h3);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Numeric Data Optimization */
+.font-tabular, .tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on;
+}
+
+/* ============================================================================
+   CUSTOM UTILITIES
+   ============================================================================ */
+
+/* Safe Area Insets (iOS/Mobile) */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
 }
@@ -99,7 +268,269 @@ html {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Custom Scrollbar - Minimal */
+/* ============================================================================
+   FORM ELEMENTS (Design System Compliant)
+   ============================================================================ */
+
+/* Input Fields: 48px height, 6px radius, Trust Blue focus */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  height: var(--height-input);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background-color: var(--card-bg);
+  color: var(--foreground);
+  font-size: var(--text-body-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"])::placeholder,
+textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-trust-blue);
+  box-shadow: 0 0 0 2px var(--color-trust-blue-subtle);
+}
+
+/* Error State */
+input.error, textarea.error, select.error,
+input:invalid:not(:placeholder-shown),
+.input-error {
+  border-color: var(--color-error);
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select {
+  border-color: var(--color-dark-border);
+  background-color: var(--color-dark-card);
+}
+
+/* Prevent iOS zoom on input focus */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* ============================================================================
+   BUTTONS (Design System Compliant)
+   ============================================================================ */
+
+/* Primary Button: Trust Blue with subtle shadow */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: var(--height-button);
+  padding: 0 1.5rem;
+  background-color: var(--color-trust-blue);
+  color: white;
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-trust-blue-dark);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Secondary Button: Outlined */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: var(--height-button);
+  padding: 0 1.5rem;
+  background-color: transparent;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-trust-blue);
+  color: var(--color-trust-blue);
+  background-color: var(--color-trust-blue-subtle);
+}
+
+.dark .btn-secondary {
+  color: var(--color-text-dark-primary);
+  border-color: var(--color-dark-border);
+}
+
+.dark .btn-secondary:hover {
+  border-color: var(--color-trust-blue);
+  color: var(--color-trust-blue-light);
+}
+
+/* ============================================================================
+   CARDS (Design System Compliant)
+   ============================================================================ */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark .card {
+  background-color: var(--color-dark-card);
+  border-color: var(--color-dark-border);
+}
+
+.dark .card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================================
+   BADGES & TAGS (Design System Compliant)
+   ============================================================================ */
+
+/* Primary Badge: Brand Accent */
+.badge-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-accent);
+  color: white;
+}
+
+/* Bullish Badge: ONLY for positive market data */
+.badge-bullish {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bullish);
+  color: white;
+}
+
+/* Bearish Badge: ONLY for negative market data */
+.badge-bearish {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bearish);
+  color: white;
+}
+
+/* Neutral Badge */
+.badge-neutral {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: var(--text-caption);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  background-color: var(--color-slate-100);
+  color: var(--color-slate-600);
+  border: 1px solid var(--color-slate-200);
+}
+
+.dark .badge-neutral {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-300);
+  border-color: var(--color-dark-border);
+}
+
+/* Sector/Category Tag */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--text-caption);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-slate-100);
+  color: var(--color-slate-600);
+  border: 1px solid var(--color-slate-200);
+}
+
+.dark .tag {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-400);
+  border-color: var(--color-dark-border);
+}
+
+/* ============================================================================
+   MARKET DATA COLORS (Strict Semantic Usage)
+   ⚠️ Green/Red are ONLY for actual market data. Never decorative.
+   ============================================================================ */
+
+/* Bullish/Positive Price Movement */
+.text-bullish {
+  color: var(--color-bullish) !important;
+}
+
+.bg-bullish {
+  background-color: var(--color-bullish-subtle) !important;
+}
+
+.border-bullish {
+  border-color: var(--color-bullish) !important;
+}
+
+/* Bearish/Negative Price Movement */
+.text-bearish {
+  color: var(--color-bearish) !important;
+}
+
+.bg-bearish {
+  background-color: var(--color-bearish-subtle) !important;
+}
+
+.border-bearish {
+  border-color: var(--color-bearish) !important;
+}
+
+/* Neutral/Unchanged */
+.text-neutral-data {
+  color: var(--color-neutral) !important;
+}
+
+/* ============================================================================
+   CUSTOM SCROLLBAR (Premium, Minimal)
+   ============================================================================ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -110,14 +541,23 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: var(--color-slate-300);
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-slate-400);
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-slate-700);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-600);
+}
+
+/* Hide scrollbar utility */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -125,4 +565,84 @@ html {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Transparent scrollbar (visible on hover) */
+.scrollbar-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.scrollbar-transparent:hover::-webkit-scrollbar-thumb {
+  background: var(--color-slate-300);
+}
+
+.dark .scrollbar-transparent:hover::-webkit-scrollbar-thumb {
+  background: var(--color-slate-700);
+}
+
+/* ============================================================================
+   SELECTION
+   ============================================================================ */
+::selection {
+  background-color: var(--color-brand-accent-subtle);
+  color: var(--color-brand-primary);
+}
+
+.dark ::selection {
+  background-color: rgba(20, 184, 166, 0.3);
+  color: var(--color-text-dark-primary);
+}
+
+/* ============================================================================
+   FOCUS STATES (Accessibility)
+   ============================================================================ */
+:focus-visible {
+  outline: 2px solid var(--color-trust-blue);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-trust-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .card {
+    border: 1px solid #ddd;
+    box-shadow: none;
+  }
 }

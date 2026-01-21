@@ -4,36 +4,34 @@ Acts as a "Universal Translator" before the strict Intent Router.
 """
 import os
 import logging
-from typing import Optional, Tuple
-from groq import AsyncGroq
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-MODEL_NAME = "llama-3.3-70b-versatile"
 
 class SlangParaphraser:
     """
     Paraphrases user queries (especially Arabic Slang) into formal financial intents.
     Example: "Eih el donia fel CIB?" -> "Stock price and summary for CIB"
+    
+    Uses Multi-Provider LLM for resilience against rate limits.
     """
     
     def __init__(self):
-        self.client = None
-        if GROQ_API_KEY:
-            try:
-                self.client = AsyncGroq(api_key=GROQ_API_KEY)
-            except Exception as e:
-                logger.error(f"Failed to init Groq Paraphraser: {e}")
+        # Multi-provider client is lazy-loaded to avoid circular imports
+        self._multi_llm = None
+        
+    def _get_llm(self):
+        if self._multi_llm is None:
+            from ..llm_clients import get_multi_llm
+            self._multi_llm = get_multi_llm()
+        return self._multi_llm
         
     async def paraphrase(self, message: str) -> Optional[str]:
         """
         Returns a cleaned, formal version of the query if slang is detected.
         Returns None if the query seems standard/simple to save latency.
         """
-        if not self.client:
-            return None
-            
         # Heuristic: Skip short queries or known simple english
         if len(message.split()) < 3 and message.isascii():
             return None
@@ -53,33 +51,26 @@ class SlangParaphraser:
                 "- 'يعني اية مكرر الربحية' -> 'Define PE Ratio'\n"
                 "- 'What does market cap mean?' -> 'Define market cap'\n"
                 "- 'TMGH kwaysa?' -> 'Summary and analysis for TMGH'\n"
-                "- 'What happened with Bitcoin?' -> 'Refusal: Bitcoin news'\n\n"
+                "- 'What happened with Bitcoin?' -> 'Refusal: Bitcoin news'\n"
+                "- 'And SWDY?' -> 'Price of SWDY'\n"
+                "- 'What about CIB?' -> 'Summary for CIB'\n\n"
                 f"Query: {message}\n"
                 "Output (Command ONLY, include TICKER):"
             )
             
-            # Tiered Model Fallback
-            MODELS_TO_TRY = [MODEL_NAME, "llama-3.1-8b-instant", "llama3-8b-8192"]
+            # Use Multi-Provider LLM
+            multi_llm = self._get_llm()
             
-            for model in MODELS_TO_TRY:
-                try:
-                    chat_completion = await self.client.chat.completions.create(
-                        messages=[{"role": "user", "content": prompt}],
-                        model=model,
-                        max_tokens=25,
-                        temperature=0.0, # Zero variance for routing
-                        timeout=2.0 
-                    )
-                    
-                    result = chat_completion.choices[0].message.content.strip()
-                    if result:
-                        if model != MODEL_NAME:
-                            logger.info(f"✅ Paraphraser fallback to {model} successful")
-                        logger.info(f"Paraphrased: '{message}' -> '{result}'")
-                        return result
-                except Exception as model_err:
-                    logger.warning(f"Paraphraser failed for {model}: {model_err}")
-                    continue
+            result = await multi_llm.complete(
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=25,
+                temperature=0.0,  # Zero variance for routing
+                purpose="paraphrase"
+            )
+            
+            if result:
+                logger.info(f"Paraphrased: '{message}' -> '{result}'")
+                return result
             
             return None
             
@@ -92,3 +83,4 @@ _paraphraser = SlangParaphraser()
 
 def get_paraphraser() -> SlangParaphraser:
     return _paraphraser
+

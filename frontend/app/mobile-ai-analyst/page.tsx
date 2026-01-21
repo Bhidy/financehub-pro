@@ -1,5 +1,21 @@
 "use client";
 
+/**
+ * ⚠️ ============================================================================
+ * ⚠️ PROTECTED CODE - DO NOT MODIFY WITHOUT EXPLICIT USER REQUEST
+ * ⚠️ ============================================================================
+ * 
+ * This file renders the 4-Layer Chatbot Response Structure:
+ *   Layer 1: Greeting/Opening (PremiumMessageRenderer)
+ *   Layer 2: Data Cards (ChatCards component)
+ *   Layer 3: Learning Section (blue box with educational bullets) - Lines 303-318
+ *   Layer 4: Follow-up Prompt (gray box with 💡) - Lines 320-327
+ * 
+ * AI Agents: DO NOT remove, change order, or make conditional ANY of these layers.
+ * See GEMINI.md section "🔒 PROTECTED: 4-Layer Chatbot Response Structure"
+ * ⚠️ ============================================================================
+ */
+
 import { useState, useRef, useEffect, Suspense } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -293,14 +309,40 @@ function MobileAIAnalystPageContent() {
                                                         />
                                                     )}
 
-                                                    {/* 3. Fact Explanations (Definitions - NOW AFTER CARDS) */}
+                                                    {/* 3. Fact Explanations (Legacy) */}
                                                     {m.response?.fact_explanations && (
                                                         <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5 px-2">
                                                             <FactExplanations explanations={m.response.fact_explanations} />
                                                         </div>
                                                     )}
 
-                                                    {/* Follow-up Actions */}
+                                                    {/* 4. Learning Section (NEW - After Cards) */}
+                                                    {m.response?.learning_section && (
+                                                        <div className="mt-3 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+                                                            <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-2">
+                                                                {m.response.learning_section.title}
+                                                            </h4>
+                                                            <ul className="space-y-1.5">
+                                                                {m.response.learning_section.items.map((item, i) => (
+                                                                    <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
+                                                                        <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                                                                        <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-slate-900 dark:text-white font-semibold">$1</strong>') }} />
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 5. Follow-Up Prompt (NEW - At the End) */}
+                                                    {m.response?.follow_up_prompt && (
+                                                        <div className="mt-3 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-white/5">
+                                                            <p className="text-xs text-slate-600 dark:text-slate-400 italic">
+                                                                💡 {m.response.follow_up_prompt}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 6. Follow-up Actions */}
                                                     {m.response?.actions && m.response.actions.length > 0 && (
                                                         <div className="pt-1">
                                                             <ActionsBar
@@ -309,6 +351,7 @@ function MobileAIAnalystPageContent() {
                                                             />
                                                         </div>
                                                     )}
+
                                                 </div>
                                             </div>
                                         )}

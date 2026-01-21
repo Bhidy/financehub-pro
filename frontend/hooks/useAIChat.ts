@@ -1,11 +1,27 @@
 "use client";
 
+/**
+ * ⚠️ ============================================================================
+ * ⚠️ PROTECTED CODE - DO NOT MODIFY WITHOUT EXPLICIT USER REQUEST
+ * ⚠️ ============================================================================
+ * 
+ * The ChatResponse interface defines the 4-Layer Response Structure:
+ *   - conversational_text (Layer 1: Greeting/Opening)
+ *   - cards (Layer 2: Data Cards)
+ *   - learning_section (Layer 3: Educational bullets)
+ *   - follow_up_prompt (Layer 4: Suggested next action)
+ * 
+ * AI Agents: DO NOT modify these type definitions without explicit user request.
+ * See GEMINI.md section "🔒 PROTECTED: 4-Layer Chatbot Response Structure"
+ * ⚠️ ============================================================================
+ */
+
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { sendChatMessage, fetchSessionMessages } from "@/lib/api";
 
 // ============================================================
-// Types matching backend ChatResponse schema
+// Types matching backend ChatResponse schema - PROTECTED
 // ============================================================
 
 export interface Card {
@@ -53,7 +69,12 @@ export interface ResponseMeta {
 export interface ChatResponse {
     message_text: string;
     conversational_text?: string; // New Hybrid Layer
-    fact_explanations?: Record<string, string>; // New Fact Layer
+    fact_explanations?: Record<string, string>; // Legacy Fact Layer
+    learning_section?: {  // NEW: Educational bullets
+        title: string;
+        items: string[];
+    };
+    follow_up_prompt?: string;  // NEW: Soft follow-up suggestion
     message_text_ar?: string;
     language: "ar" | "en" | "mixed";
     cards: Card[];
@@ -63,6 +84,7 @@ export interface ChatResponse {
     meta: ResponseMeta;
     session_id?: string; // Top-level or from meta
 }
+
 
 export interface Message {
     role: "user" | "assistant";

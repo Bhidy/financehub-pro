@@ -10,6 +10,22 @@ Routes messages through the deterministic pipeline:
 5. Execute handler
 6. Render response
 7. Update context
+
+⚠️ ============================================================================
+⚠️ PROTECTED CODE - DO NOT MODIFY WITHOUT EXPLICIT USER REQUEST
+⚠️ ============================================================================
+⚠️
+⚠️ The 4-Layer Response Structure is PRODUCTION-CRITICAL:
+⚠️   Layer 1: Greeting/Opening (personalized with user's name)
+⚠️   Layer 2: Data Cards (stock data, charts, metrics)
+⚠️   Layer 3: Learning Section (📊 educational bullet points)
+⚠️   Layer 4: Follow-up Prompt (💡 suggested next action)
+⚠️
+⚠️ AI Agents: DO NOT remove, change, or make conditional ANY of these layers.
+⚠️ If unsure, ask the user before making changes to response structure.
+⚠️
+⚠️ See GEMINI.md section "🔒 PROTECTED: 4-Layer Chatbot Response Structure"
+⚠️ ============================================================================
 """
 
 import time

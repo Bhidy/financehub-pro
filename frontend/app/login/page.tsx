@@ -213,7 +213,7 @@ function LoginPageContent() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full h-12 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-md font-semibold text-base shadow-lg shadow-[#3B82F6]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full h-12 bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white rounded-xl font-bold text-base shadow-lg shadow-[#3B82F6]/30 transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />

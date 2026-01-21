@@ -73,7 +73,7 @@ function LoginPageContent() {
     };
 
     return (
-        <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#0D1F1C] text-slate-900 dark:text-white overflow-hidden font-sans selection:bg-[#14B8A6]/30">
+        <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white overflow-hidden font-sans selection:bg-[#14B8A6]/30">
 
             {/* Left Panel - Visual/Brand (Midnight Teal Theme) */}
             <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-[#0F172A] items-center justify-center p-16">
@@ -128,7 +128,7 @@ function LoginPageContent() {
             {/* Right Panel - Form */}
             <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-24 relative z-10">
                 {/* Mobile Background */}
-                <div className="lg:hidden absolute inset-0 bg-slate-50 dark:bg-[#0D1F1C]">
+                <div className="lg:hidden absolute inset-0 bg-slate-50 dark:bg-[#0B1121]">
                     <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-[#14B8A6]/[0.08] to-transparent" />
                 </div>
 
@@ -163,7 +163,7 @@ function LoginPageContent() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full h-12 bg-white dark:bg-[#102926] border border-slate-200 dark:border-[#14B8A6]/20 rounded-md px-4 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
+                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
                                         placeholder="name@company.com"
                                     />
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
@@ -177,7 +177,7 @@ function LoginPageContent() {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full h-12 bg-white dark:bg-[#102926] border border-slate-200 dark:border-[#14B8A6]/20 rounded-md px-4 pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
+                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
                                         placeholder="Enter your password"
                                     />
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
@@ -194,7 +194,7 @@ function LoginPageContent() {
 
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-[#3B82F6] border-[#3B82F6]' : 'bg-slate-100 dark:bg-[#102926] border-slate-300 dark:border-[#14B8A6]/30 group-hover:border-slate-400 dark:group-hover:border-[#14B8A6]/50'}`}>
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-[#3B82F6] border-[#3B82F6]' : 'bg-slate-100 dark:bg-[#111827] border-slate-300 dark:border-slate-700 group-hover:border-slate-400 dark:group-hover:border-slate-600'}`}>
                                     {rememberMe && <ArrowRight className="w-3 h-3 text-white rotate-[-45deg]" />}
                                 </div>
                                 <input
@@ -252,7 +252,7 @@ function LoginPageContent() {
 export default function LoginPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0D1F1C]">
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>

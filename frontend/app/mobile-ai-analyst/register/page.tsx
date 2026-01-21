@@ -250,11 +250,11 @@ function MobileRegisterPageContent() {
                             </div>
                         </div>
 
-                        {/* Submit - Trust Blue */}
+                        {/* Submit - Ultra Premium Gradient CTA */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-lg font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/20"
+                            className="w-full py-4 bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/30"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />

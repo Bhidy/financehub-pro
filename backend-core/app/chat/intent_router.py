@@ -463,7 +463,7 @@ class IntentRouter:
              return IntentResult(intent=Intent.MARKET_MOST_ACTIVE, confidence=1.0, entities=entities, missing_fields=[])
              
         if "banking sector" in merged_text or "banks in" in merged_text:
-             entities['sector'] = 'Financial Services'
+             entities['sector'] = 'Banks'  # Use 'Banks' so handler can search by name_en
              return IntentResult(intent=Intent.SECTOR_STOCKS, confidence=1.0, entities=entities, missing_fields=[])
 
         # 4. Financial Health Overrides
@@ -664,9 +664,9 @@ class IntentRouter:
         
         # Extract sector - map keywords to actual database sector_name values
         sector_map = {
-            # Financial Services sector
-            'bank': 'Financial Services', 'banks': 'Financial Services', 
-            'banking': 'Financial Services', 'بنوك': 'Financial Services',
+            # Banking sector - use 'Banks' to trigger name search in handler
+            'bank': 'Banks', 'banks': 'Banks', 
+            'banking': 'Banks', 'بنوك': 'Banks',
             'financial': 'Financial Services',
             # Real Estate
             'real estate': 'Real Estate', 'عقار': 'Real Estate', 'عقارات': 'Real Estate',

@@ -292,20 +292,19 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
 
 # Patterns for entity extraction
 RANGE_PATTERNS = {
-    # English
-    r'\b1\s*d(ay)?\b': '1D',
-    r'\b1\s*w(eek)?\b': '1W',
-    r'\b1\s*m(onth)?\b': '1M',
-    r'\b3\s*m(onths?)?\b': '3M',
-    r'\b6\s*m(onths?)?\b': '6M',
-    r'\b1\s*y(ear)?\b': '1Y',
-    r'\b5\s*y(ears?)?\b': '5Y',
+    r'\b1\s*d(?:ay)?\b': '1D',
+    r'\b1\s*w(?:eek)?\b': '1W',
+    r'\b1\s*m(?:onth)?\b': '1M',
+    r'\b3\s*m(?:onths?)?\b': '3M',
+    r'\b6\s*m(?:onths?)?\b': '6M',
+    r'\b1\s*y(?:ear)?\b': '1Y',
+    r'\b5\s*y(?:ears?)?\b': '5Y',
     r'\bmax\b': 'MAX',
     r'\ball\s*time\b': 'MAX',
     # Arabic
-    r'يوم(\s*واحد)?': '1D',
+    r'يوم(?:\s*واحد)?': '1D',
     r'اسبوع': '1W',
-    r'شهر(\s*واحد)?': '1M',
+    r'شهر(?:\s*واحد)?': '1M',
     r'[٣3]\s*شهور': '3M',
     r'[٦6]\s*شهور': '6M',
     r'سنه|عام': '1Y',
@@ -782,7 +781,7 @@ class IntentRouter:
         if symbol_match:
             candidate = symbol_match.group(1).upper()
             # Filter common stopwords that might be caught (e.g "Check FOR")
-            if candidate not in ["THE", "FOR", "THIS", "THAT", "STOCK", "PRICE", "TODAY", "NOW", "HERE"]:
+            if candidate not in ["THE", "FOR", "THIS", "THAT", "STOCK", "PRICE", "TODAY", "NOW", "HERE", "CHART", "GRAPH", "SHOW"]:
                 entities['symbol'] = candidate
 
         # 2. Standalone Ticker Pattern (if not found above)
@@ -798,7 +797,7 @@ class IntentRouter:
              for word in split_text:
                  # Check against a known "safe" list or strict regex
                  # (Common EGX tickers are 4 chars usually)
-                  if re.match(r'^[A-Z]{3,5}$', word.upper()) and word.upper() not in ["THE", "FOR", "AND", "EST", "NOW", "BUY", "SELL", "HOW", "WHAT", "WHEN", "WHY", "WHO", "YES", "NOT", "PRICE"]:
+                  if re.match(r'^[A-Z]{3,5}$', word.upper()) and word.upper() not in ["THE", "FOR", "AND", "EST", "NOW", "BUY", "SELL", "HOW", "WHAT", "WHEN", "WHY", "WHO", "YES", "NOT", "PRICE", "CHART", "GRAPH"]:
                       entities['symbol'] = word.upper()
                       break
 

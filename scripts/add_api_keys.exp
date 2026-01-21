@@ -1,0 +1,18 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host [lindex $argv 0]
+set pass [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host {
+    cd /opt/starta && \
+    echo "" >> .env && \
+    echo "# Multi-Provider LLM Keys (Added 2026-01-21)" >> .env && \
+    echo "CEREBRAS_API_KEY=csk-f4w64kfr5pn8dh9m3yrtrvwn8y29556y9vtr5pmxvkyfdwww" >> .env && \
+    echo "MISTRAL_API_KEY=eKM8088tpNHFdFbgEyX8dzoSQszHyoFB" >> .env && \
+    echo "✅ API Keys Added" && \
+    grep -E "(CEREBRAS|MISTRAL)" .env
+}
+
+expect "password:"
+send "$pass\r"
+expect eof

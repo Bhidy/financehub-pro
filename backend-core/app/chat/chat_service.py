@@ -455,17 +455,27 @@ class ChatService:
                         if original_text != conversational_text:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
-                    # 2. Learning Section (NEW: Educational bullet points)
+                    # 2. Learning Section (Educational bullet points) - ALWAYS REQUIRED
                     learning_section = None
+                    card_types = [c.get('type', '') for c in result_data.get('cards', [])]
                     if result_data.get('cards'):
-                        card_types = [c.get('type', '') for c in result_data.get('cards', [])]
                         learning_section = generate_learning_section(
                             card_types=card_types,
                             card_data=result_data.get('cards', []),
                             language=language
                         )
                     
-                    # 3. Soft Follow-Up Prompt (NEW: Intent-based suggestion)
+                    # FALLBACK: If no learning section generated but we have cards, force one
+                    if not learning_section and result_data.get('cards'):
+                        learning_section = {
+                            "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
+                            "items": [
+                                "**P/E Ratio**: Shows how much investors pay for each unit of profit." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح.",
+                                "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
+                            ]
+                        }
+                    
+                    # 3. Soft Follow-Up Prompt (Intent-based suggestion) - ALWAYS REQUIRED
                     follow_up_prompt = generate_follow_up(
                         intent=intent,
                         language=language,

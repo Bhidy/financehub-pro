@@ -124,29 +124,29 @@ class LLMExplainerService:
                 
                 "YOUR TASK (Layer ② - Data-Aware Commentary):\n"
                 f"The user is being shown: {card_context}\n"
-                "Your job is to EXPLAIN and CONTEXTUALIZE, not repeat raw numbers.\n\n"
+                "Your job is to EXPLAIN and CONTEXTUALIZE the data, not repeat raw numbers.\n\n"
+                
+                "⚠️ ABSOLUTE RULE: The DATA section below contains REAL values.\n"
+                "You MUST reference and comment on these values.\n"
+                "NEVER EVER say 'absence of data', 'no metrics available', 'missing data', or similar phrases.\n"
+                "The user CAN see the data cards. Your job is to ADD CONTEXT and INSIGHT.\n\n"
                 
                 "GOOD RESPONSE PATTERNS:\n"
-                "- 'Based on the latest numbers, here's how this stock is positioned.'\n"
-                "- 'Looking at today's valuation metrics, this gives us a clearer picture.'\n"
-                "- 'When we combine price movement with valuation, this is what stands out.'\n"
-                "- 'The current metrics suggest the market is pricing in growth expectations.'\n"
-                "- 'From a valuation perspective, this stock is in an interesting range.'\n\n"
+                "- 'Based on the PE ratio of 10.19, this stock appears reasonably valued compared to...'\n"
+                "- 'With an F-Score of 3/9, the financial strength is below average, suggesting...'\n"
+                "- 'The Z-Score of 0.91 places this in the distress zone, which means...'\n"
+                "- 'Looking at the current price of 83.75 EGP with a 2.11% gain today...'\n\n"
                 
                 "BAD RESPONSES (NEVER DO THIS):\n"
                 "- 'Welcome back!' ← FORBIDDEN\n"
-                "- 'The price is 45.5 EGP' ← Already on card, don't repeat\n"
-                "- 'P/E ratio is 12.5' ← Already on card\n"
+                "- 'Given the absence of key valuation metrics...' ← DATA EXISTS, DO NOT SAY THIS\n"
+                "- 'Without specific metrics...' ← FORBIDDEN, metrics are in the DATA\n"
                 "- 'Hello Mohamed!' ← FORBIDDEN\n\n"
-                
-                "VARIATION REQUIREMENT:\n"
-                "Each response must be UNIQUE. Never use the same phrasing twice.\n"
-                "Be creative in how you describe the data context.\n\n"
                 
                 "GUIDELINES:\n"
                 f"1. LANGUAGE: Respond ONLY in {lang_instruction}.\n"
-                "2. LENGTH: 25-35 words MINIMUM. Provide comprehensive, expert context.\n"
-                "3. TONE: Calm, supportive, confident, expert. NO fluff phrases.\n"
+                "2. LENGTH: 30-50 words. Provide expert insight on the visible data.\n"
+                "3. TONE: Calm, supportive, confident, expert. Reference REAL numbers from DATA.\n"
             )
 
         # Tiered Model Fallback
@@ -268,7 +268,21 @@ class LLMExplainerService:
                     summary_lines.append(f"Stock: {c_data.get('symbol')} ({c_data.get('name')})")
                 elif c_type == "snapshot":
                     summary_lines.append(f"Price: {c_data.get('last_price')} (Change: {c_data.get('change_percent')}%)")
-                    summary_lines.append(f"Metrics: PE={c_data.get('pe_ratio')}, PB={c_data.get('pb_ratio')}, Cap={c_data.get('market_cap_formatted')}")
+                    metrics = []
+                    if c_data.get('pe_ratio'): metrics.append(f"PE={c_data.get('pe_ratio')}")
+                    if c_data.get('pb_ratio'): metrics.append(f"PB={c_data.get('pb_ratio')}")
+                    if c_data.get('market_cap_formatted'): metrics.append(f"Cap={c_data.get('market_cap_formatted')}")
+                    if c_data.get('dividend_yield'): metrics.append(f"Yield={c_data.get('dividend_yield')}%")
+                    if metrics:
+                        summary_lines.append(f"Metrics: {', '.join(metrics)}")
+                elif c_type == "stats":
+                    # Extract ALL available stats
+                    stat_items = []
+                    for key, val in c_data.items():
+                        if val is not None and key not in ['title', 'type']:
+                            stat_items.append(f"{key}={val}")
+                    if stat_items:
+                        summary_lines.append(f"Stats: {', '.join(stat_items[:8])}")
                 elif c_type == "financial_trend":
                     items = c_data.get('items', [])
                     if items:
@@ -283,27 +297,61 @@ class LLMExplainerService:
                     metric = c_data.get('metric', 'value')
                     summary = f"Screener Results ({len(stocks)} stocks): "
                     stock_strings = []
-                    for s in stocks[:5]:  # Top 5 for context brevity
+                    for s in stocks[:5]:
                         val = s.get('value', s.get(metric, 'N/A'))
                         stock_strings.append(f"{s['name']} ({s['symbol']}): {val}")
                     summary_lines.append(summary + ", ".join(stock_strings))
-                    
                 elif c_type == 'movers_table':
                     movers = c_data.get('movers', [])
                     direction = c_data.get('direction', 'up')
                     label = "Top Gainers" if direction == 'up' else "Top Losers"
                     stock_strings = [f"{s['name']} ({s['symbol']}): {s['change_percent']}%" for s in movers[:5]]
                     summary_lines.append(f"{label}: " + ", ".join(stock_strings))
-                    
                 elif c_type == 'sector_list':
                     stocks = c_data.get('stocks', [])
                     sector = c_data.get('sector', 'Unknown Sector')
                     stock_strings = [f"{s['name']} ({s['symbol']}): {s['price']}" for s in stocks[:5]]
                     summary_lines.append(f"Sector {sector}: " + ", ".join(stock_strings))
+                elif c_type in ['deep_valuation', 'valuation']:
+                    # Extract deep valuation metrics
+                    val_items = []
+                    for key in ['pe_ratio', 'pb_ratio', 'ev_ebit', 'ev_ebitda', 'price_to_sales', 'peg_ratio']:
+                        if c_data.get(key): val_items.append(f"{key}={c_data.get(key)}")
+                    if val_items:
+                        summary_lines.append(f"Valuation: {', '.join(val_items)}")
+                elif c_type in ['deep_health', 'financial_health', 'health']:
+                    # Extract financial health metrics
+                    health_items = []
+                    for key in ['z_score', 'f_score', 'current_ratio', 'quick_ratio', 'debt_equity', 'interest_coverage']:
+                        if c_data.get(key): health_items.append(f"{key}={c_data.get(key)}")
+                    if health_items:
+                        summary_lines.append(f"Financial Health: {', '.join(health_items)}")
+                elif c_type in ['deep_growth', 'growth']:
+                    growth_items = []
+                    for key in ['revenue_growth', 'earnings_growth', 'cagr_3y', 'cagr_5y']:
+                        if c_data.get(key): growth_items.append(f"{key}={c_data.get(key)}")
+                    if growth_items:
+                        summary_lines.append(f"Growth: {', '.join(growth_items)}")
+                elif c_type in ['deep_efficiency', 'efficiency']:
+                    eff_items = []
+                    for key in ['roe', 'roa', 'roce', 'asset_turnover', 'operating_margin']:
+                        if c_data.get(key): eff_items.append(f"{key}={c_data.get(key)}")
+                    if eff_items:
+                        summary_lines.append(f"Efficiency: {', '.join(eff_items)}")
+                elif c_type == 'capital_structure':
+                    summary_lines.append(f"Capital Structure: Debt={c_data.get('debt_percent', 'N/A')}%, Equity={c_data.get('equity_percent', 'N/A')}%")
                 elif "screener" in c_type:
                     summary_lines.append(f"Search Results: Found {len(c_data.get('items', []))} stocks.")
+                else:
+                    # Generic fallback - extract any numeric values
+                    generic_items = []
+                    for key, val in c_data.items():
+                        if isinstance(val, (int, float)) and key not in ['type']:
+                            generic_items.append(f"{key}={val}")
+                    if generic_items:
+                        summary_lines.append(f"{c_type}: {', '.join(generic_items[:6])}")
             
-            return "\n".join(summary_lines) or "No specific metrics found."
+            return "\n".join(summary_lines) if summary_lines else "General stock information displayed."
         except Exception as e:
             return f"Data extraction error: {e}"
 

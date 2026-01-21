@@ -502,21 +502,38 @@ class ChatService:
             )
             
             # 8. Build response
+            # GLOBAL STRUCTURE GUARANTEE: Ensure all 4 layers are ALWAYS present
+            # ====================================================================
+            # Layer 1: Greeting/Opening (handled above)
+            # Layer 2: Cards (from handler)
+            # Layer 3: Learning Section (MUST be present)
+            # Layer 4: Follow-up Prompt (MUST be present)
+            
+            # GUARANTEE Layer 3: Learning Section
+            if not learning_section:
+                learning_section = {
+                    "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
+                    "items": [
+                        "**P/E Ratio**: Shows how much investors pay for each unit of profit. Lower can mean undervalued." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح. الانخفاض قد يعني فرصة.",
+                        "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
+                    ]
+                }
+                print(f"[ChatService] 📘 Injected fallback learning_section")
+            
+            # GUARANTEE Layer 4: Follow-up Prompt
+            if not follow_up_prompt:
+                follow_up_prompt = "What would you like to explore next?" if language == 'en' else "ماذا تريد استكشافه بعد ذلك؟"
+                print(f"[ChatService] 💡 Injected fallback follow_up_prompt")
+            
             if isinstance(result, ChatResponse):
                 # ENTERPRISE FIX: Even if handler returns a ChatResponse, we MUST inject our layers
                 # to ensure universal structure (greeting + data + learning + follow up)
                 if conversational_text and not result.conversational_text:
                     result.conversational_text = conversational_text
-                if learning_section and not result.learning_section:
+                if not result.learning_section:
                     result.learning_section = learning_section
-                if follow_up_prompt and not result.follow_up_prompt:
+                if not result.follow_up_prompt:
                     result.follow_up_prompt = follow_up_prompt
-                
-                # Also ensure message_text is updated for frontend consistency
-                if conversational_text and (not result.message_text or result.message_text == conversational_text):
-                     # If it's a data-rich response, we might want to keep the handler's message_text 
-                     # but here we ensure the core conversational logic is captured
-                     pass
                 
                 return result
                 

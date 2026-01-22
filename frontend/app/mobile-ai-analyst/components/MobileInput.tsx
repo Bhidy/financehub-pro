@@ -31,7 +31,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
     };
 
     return (
-        <div className="w-full px-4 pb-safe pt-2 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent dark:from-[#0B1121] dark:via-[#0B1121] dark:to-transparent">
+        <div className="w-full px-4 pb-safe pt-2 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC] to-transparent dark:from-[#0F172A] dark:via-[#0F172A] dark:to-transparent">
             {/* Added extra padding bottom to ensure it doesn't touch the home indicator too closely */}
             <div className="pb-2">
                 {/* Floating island container - Midnight Teal Design */}
@@ -76,7 +76,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
                                 </button>
                             ) : (
                                 <button className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500 mb-0.5">
-                                    <Mic className="w-5 h-5" />
+                                    <Send className="w-5 h-5" />
                                 </button>
                             )}
                         </div>

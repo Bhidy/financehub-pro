@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
     RefreshCw, Database, TrendingUp, BarChart3, Users, Calendar,
     FileText, PieChart, Activity, Zap, Clock, Server, CheckCircle2,
-    AlertCircle, Layers, Globe, ChevronRight, BrainCircuit, Cpu, Sparkles,
-    Star, Shield
+    AlertCircle, Layers, ChevronRight
 } from 'lucide-react';
 
 interface InventoryData {
@@ -143,33 +142,7 @@ export default function CommandCenterPage() {
     const [loading, setLoading] = useState(true);
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
     const [autoRefresh, setAutoRefresh] = useState(false);
-    const [aiStatus, setAiStatus] = useState<{ status: string; model: string; provider: string; tier: string } | null>(null);
-    const [selectedModel, setSelectedModel] = useState<'main' | 'backup'>('main');
 
-    // Check AI status
-    const checkAIStatus = useCallback(async () => {
-        try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
-            const res = await fetch(`${API_URL}/api/v1/ai/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'ping' })
-            });
-            const data = await res.json();
-            if (data.error) {
-                setAiStatus({ status: 'rate_limited', model: '-', provider: 'Groq', tier: 'Free' });
-            } else {
-                setAiStatus({
-                    status: 'online',
-                    model: data.model_used || 'llama-3.3-70b',
-                    provider: data.provider || 'Groq',
-                    tier: 'Free'
-                });
-            }
-        } catch {
-            setAiStatus({ status: 'offline', model: '-', provider: '-', tier: '-' });
-        }
-    }, []);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -219,8 +192,7 @@ export default function CommandCenterPage() {
 
     useEffect(() => {
         fetchData();
-        checkAIStatus();
-    }, [fetchData, checkAIStatus]);
+    }, [fetchData]);
 
     useEffect(() => {
         if (autoRefresh) {
@@ -240,32 +212,32 @@ export default function CommandCenterPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121]">
             {/* Hero Header */}
-            <div className="bg-gradient-to-r from-blue-600 via-teal-500 to-cyan-500 text-white">
-                <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="bg-gradient-to-r from-blue-600 via-teal-500 to-cyan-500 text-white shadow-md relative z-10">
+                <div className="max-w-7xl mx-auto px-6 py-5">
                     <div className="flex items-center justify-between">
                         <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <Database className="w-10 h-10" />
-                                <span className="text-blue-200 text-sm font-medium">ENTERPRISE DATA PLATFORM</span>
+                            <div className="flex items-center gap-2 mb-1">
+                                <Database className="w-6 h-6" />
+                                <span className="text-blue-100 text-xs font-bold tracking-wider">ENTERPRISE DATA PLATFORM</span>
                             </div>
-                            <h1 className="text-4xl font-black tracking-tight">
+                            <h1 className="text-2xl font-black tracking-tight">
                                 Database Command Center
                             </h1>
-                            <p className="text-blue-100 mt-2">
+                            <p className="text-blue-50 text-sm mt-1 opacity-90">
                                 Real-time monitoring of your enterprise financial data inventory
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             {/* Auto Refresh Toggle */}
                             <button
                                 onClick={() => setAutoRefresh(!autoRefresh)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${autoRefresh
-                                    ? 'bg-green-400 text-green-900'
-                                    : 'bg-white/20 hover:bg-white/30'
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all ${autoRefresh
+                                    ? 'bg-green-400 text-green-900 shadow-md'
+                                    : 'bg-white/10 hover:bg-white/20 border border-white/10'
                                     }`}
                             >
-                                <Activity className={`w-4 h-4 ${autoRefresh ? 'animate-pulse' : ''}`} />
+                                <Activity className={`w-3.5 h-3.5 ${autoRefresh ? 'animate-pulse' : ''}`} />
                                 {autoRefresh ? 'Auto-Refresh ON' : 'Auto-Refresh'}
                             </button>
 
@@ -273,9 +245,9 @@ export default function CommandCenterPage() {
                             <button
                                 onClick={fetchData}
                                 disabled={loading}
-                                className="flex items-center gap-2 bg-white dark:bg-white/10 text-blue-600 dark:text-blue-400 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg text-xs font-black shadow-lg hover:bg-blue-50 transition-all disabled:opacity-70 active:scale-95"
                             >
-                                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                                 Refresh Data
                             </button>
                         </div>
@@ -283,8 +255,8 @@ export default function CommandCenterPage() {
 
                     {/* Last Updated */}
                     {lastRefresh && (
-                        <div className="mt-4 text-blue-200 text-sm flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
+                        <div className="mt-2 text-blue-100/60 text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
                             Last updated: {lastRefresh.toLocaleTimeString()}
                         </div>
                     )}
@@ -386,177 +358,9 @@ export default function CommandCenterPage() {
                     </div>
                 )}
 
-                {/* AI Advisor Status Card - Premium Models */}
-                <div className="mt-12 bg-white rounded-3xl shadow-xl p-6 border-2 border-blue-100 overflow-hidden relative transition-all duration-300">
-                    {/* Subtle background gradient based on Model */}
-                    <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-40 transition-colors duration-500 ${selectedModel === 'main' ? 'bg-gradient-to-br from-orange-100 to-amber-50' : 'bg-gradient-to-br from-blue-100 to-indigo-50'}`}></div>
-                    <div className={`absolute bottom-0 left-0 w-48 h-48 rounded-full blur-3xl opacity-40 transition-colors duration-500 ${selectedModel === 'main' ? 'bg-gradient-to-tr from-orange-50 to-red-50' : 'bg-gradient-to-tr from-blue-50 to-cyan-50'}`}></div>
 
-                    <div className="relative z-10">
-                        {/* Header & Toggle */}
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 ${selectedModel === 'main' ? 'bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-500/20' : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20'}`}>
-                                    <BrainCircuit className="w-7 h-7 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-800 dark:text-slate-800">AI Advisor Cloud Status</h3>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className={`w-2 h-2 rounded-full ${aiStatus?.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
-                                        <p className="text-gray-500 dark:text-slate-600 text-sm font-medium">System {aiStatus?.status === 'online' ? 'Operational' : 'Issues Detected'}</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className="flex items-center gap-3 bg-slate-100 p-1.5 rounded-xl">
-                                <button
-                                    onClick={() => setSelectedModel('main')}
-                                    className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${selectedModel === 'main'
-                                        ? 'bg-white text-orange-600 shadow-md'
-                                        : 'text-gray-500 hover:text-gray-700 hover:bg-slate-200'
-                                        }`}
-                                >
-                                    <Sparkles className={`w-4 h-4 ${selectedModel === 'main' ? 'fill-orange-600' : ''}`} />
-                                    Main: Llama 3.3
-                                </button>
-                                <button
-                                    onClick={() => setSelectedModel('backup')}
-                                    className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${selectedModel === 'backup'
-                                        ? 'bg-white text-blue-600 shadow-md'
-                                        : 'text-gray-500 hover:text-gray-700 hover:bg-slate-200'
-                                        }`}
-                                >
-                                    <Zap className={`w-4 h-4 ${selectedModel === 'backup' ? 'fill-blue-600' : ''}`} />
-                                    Backup: Llama 3.1
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Content Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Usage Stats (Shared) */}
-                            <div className="md:col-span-2 space-y-4">
-                                <div className="bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-slate-100 shadow-sm">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h4 className="font-bold text-gray-700 flex items-center gap-2">
-                                            <Activity className="w-5 h-5 text-blue-500" />
-                                            Daily Token Usage (Shared)
-                                        </h4>
-                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${selectedModel === 'main' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
-                                            Hard Limit: 100K
-                                        </span>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        {/* Progress Bar */}
-                                        <div>
-                                            <div className="flex justify-between text-sm mb-2">
-                                                <span className="text-gray-500">Consumed Today</span>
-                                                <span className="font-bold text-gray-800">
-                                                    {aiStatus?.status === 'rate_limited' ? '100,000 (Limit Hit)' : '~45,200'}
-                                                </span>
-                                            </div>
-                                            <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full transition-all duration-1000 ${selectedModel === 'main'
-                                                        ? 'bg-gradient-to-r from-orange-400 to-red-500'
-                                                        : 'bg-gradient-to-r from-blue-400 to-indigo-500'
-                                                        }`}
-                                                    style={{
-                                                        width: aiStatus?.status === 'rate_limited' ? '100%' : '45%'
-                                                    }}
-                                                ></div>
-                                            </div>
-                                            <p className="text-xs text-slate-400 mt-2 text-right">
-                                                Resets in: <span className="font-mono text-slate-600">08:42:15</span>
-                                            </p>
-                                        </div>
-
-                                        {/* Quick Stats Row */}
-                                        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
-                                            <div>
-                                                <p className="text-xs text-gray-500 mb-1">Requests/Min</p>
-                                                <p className="text-lg font-bold text-gray-800">30</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500 mb-1">Availability</p>
-                                                <p className={`text-lg font-bold ${aiStatus?.status === 'online' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                                    {aiStatus?.status === 'online' ? 'Active' : 'Limited'}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500 mb-1">Latency</p>
-                                                <p className="text-lg font-bold text-gray-800">
-                                                    {selectedModel === 'main' ? '0.8s' : '0.3s'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Model Details Card */}
-                            <div className={`rounded-2xl p-5 text-white shadow-lg flex flex-col justify-between ${selectedModel === 'main'
-                                ? 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/30'
-                                : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/30'
-                                }`}>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-6 opacity-90">
-                                        <Sparkles className="w-5 h-5" />
-                                        <span className="font-bold tracking-wide text-sm uppercase">Configuration</span>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div>
-                                            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Model Engine</p>
-                                            <p className="text-2xl font-black tracking-tight">
-                                                {selectedModel === 'main' ? 'Llama 3.3 70B' : 'Llama 3.1 8B'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1">Role</p>
-                                            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg">
-                                                {selectedModel === 'main' ? (
-                                                    <Star className="w-3 h-3 text-yellow-300 fill-yellow-300" />
-                                                ) : (
-                                                    <Shield className="w-3 h-3 text-blue-300 fill-blue-300" />
-                                                )}
-                                                <span className="font-bold text-sm">
-                                                    {selectedModel === 'main' ? 'Primary' : 'Backup'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={checkAIStatus}
-                                    className="mt-6 w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border border-white/10"
-                                >
-                                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                                    Test Connectivity
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer Stats */}
-                <div className="mt-8 bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-6 border-2 border-gray-100 dark:border-white/5">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Globe className="w-8 h-8 text-blue-500" />
-                            <div>
-                                <h3 className="font-bold text-gray-800 dark:text-white">FinanceHub Pro Enterprise Database</h3>
-                                <p className="text-gray-500 dark:text-slate-400 text-sm">Made with ❤️ by Bhidy • <span className="font-mono bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded text-xs font-bold">v1.1.1</span></p>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-sm text-gray-500 dark:text-slate-400">Generated at</div>
-                            <div className="font-mono text-gray-700 dark:text-slate-300">{data?.generated_at ? new Date(data.generated_at).toLocaleString() : '-'}</div>
-                        </div>
-                    </div>
-                </div>            </div>
+            </div>
         </div>
     );
 }

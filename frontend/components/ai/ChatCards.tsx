@@ -168,6 +168,12 @@ export function StatsCard({ title, data }: StatsProps) {
         pe_ratio: { label: "P/E", icon: Target, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
         pb_ratio: { label: "P/B", icon: BarChart3, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
         dividend_yield: { label: "Yield", icon: DollarSign, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
+
+        // New Deep Stats
+        roe: { label: "ROE", icon: TrendingUp, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
+        debt_equity: { label: "D/E", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
+        net_profit_margin: { label: "Margin", icon: PieChart, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => `${v.toFixed(2)}%` },
+
         beta: { label: "Beta", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
         eps: { label: "EPS", icon: TrendingUp, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-500/10", format: (v: number) => v.toFixed(2) },
         high_52w: { label: "High", icon: ArrowUpRight, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => v.toFixed(2) },

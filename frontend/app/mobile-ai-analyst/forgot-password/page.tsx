@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
 
 
     return (
-        <div className="min-h-[100dvh] bg-[#F8FAFC] dark:bg-[#0B1121] flex flex-col font-sans text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="min-h-[100dvh] bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col font-sans text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
 
             {/* Header */}
             <header className="px-4 py-4">
@@ -179,7 +179,7 @@ export default function ForgotPasswordPage() {
 
                                 <button
                                     disabled={isLoading}
-                                    className="w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#3B82F6]/20"
+                                    className="w-full bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-[#3B82F6]/30"
                                 >
                                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Code"}
                                     {!isLoading && <ArrowRight className="w-5 h-5" />}
@@ -295,7 +295,7 @@ export default function ForgotPasswordPage() {
 
                                 <button
                                     disabled={isLoading}
-                                    className="w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white font-bold py-4 rounded-lg transition-all shadow-lg shadow-[#3B82F6]/20 mt-4"
+                                    className="w-full bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-[#3B82F6]/30 mt-4"
                                 >
                                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Reset Password"}
                                 </button>

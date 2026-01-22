@@ -200,8 +200,8 @@ function MobileAIAnalystPageContent() {
     const showWelcome = visibleMessages.length === 0;
 
     return (
-        <div className="fixed inset-0 w-full h-[100dvh] bg-slate-100 dark:bg-[#020617] flex flex-col items-center justify-center overflow-hidden">
-            <div className="flex flex-col h-full w-full max-w-[500px] bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans transition-colors duration-300 relative shadow-2xl md:border-x border-slate-200/60 dark:border-white/[0.08] overflow-hidden">
+        <div className="relative w-full h-full min-h-[100dvh] bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col items-center overflow-hidden font-sans overscroll-none">
+            <div className="flex flex-col flex-1 min-h-0 w-full max-w-[500px] bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-white transition-all duration-300 relative shadow-2xl md:border-x border-slate-200/60 dark:border-white/[0.08] overflow-hidden">
                 {/* Background Gradient - Midnight Teal subtle glow */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/5 via-transparent to-transparent dark:from-[#14B8A6]/5 dark:via-transparent dark:to-transparent pointer-events-none" />
 
@@ -235,16 +235,16 @@ function MobileAIAnalystPageContent() {
                     onLogin={() => router.push('/mobile-ai-analyst/login')}
                 />
 
-                {/* Chat Area */}
-                <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth overscroll-contain px-0 w-full scrollbar-transparent relative">
-                    <div className="w-full space-y-6 px-4 py-4">
+                {/* Chat Area - min-h-0 is CRITICAL for flex scrolling */}
+                <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto scroll-smooth overscroll-contain px-0 w-full scrollbar-transparent relative pb-4">
+                    <div className="w-full space-y-6 px-4 py-4 min-h-full flex flex-col">
                         {showWelcome ? (
-                            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700 pt-2 pb-8">
-                                {/* Hero Section */}
-                                <div className="flex-none pb-6 px-4 text-center space-y-4">
-                                    <div className="relative w-32 h-32 mx-auto mb-4">
-                                        <div className="absolute -inset-4 bg-[#14B8A6]/20 rounded-full blur-2xl animate-pulse opacity-50"></div>
-                                        <div className="relative w-full h-full p-2 filter drop-shadow-xl">
+                            <div className="flex flex-col flex-1 items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 py-12">
+                                {/* Hero Section - Centered and Premium */}
+                                <div className="flex-none text-center space-y-6 mb-12 relative z-10 w-full max-w-[320px]">
+                                    <div className="relative w-28 h-28 mx-auto">
+                                        <div className="absolute inset-0 bg-[#14B8A6]/30 rounded-full blur-[40px] animate-pulse"></div>
+                                        <div className="relative w-full h-full p-0 filter drop-shadow-2xl hover:scale-105 transition-transform duration-500">
                                             <Image
                                                 src="/assets/chatbot-icon.png"
                                                 alt="Starta AI"
@@ -255,18 +255,18 @@ function MobileAIAnalystPageContent() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-teal-700 to-slate-900 dark:from-white dark:via-teal-300 dark:to-white tracking-tight leading-tight">
+                                    <div className="space-y-3">
+                                        <h2 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-teal-200 dark:to-white leading-[1.1]">
                                             Hello, {user?.full_name?.split(' ')[0] || "Trader"}
                                         </h2>
-                                        <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-sm max-w-[280px] mx-auto font-medium">
-                                            I'm Starta. Ask me anything about {contextMarket === 'EGX' ? 'Egyptian' : 'Saudi'} stocks.
+                                        <p className="text-slate-500 dark:text-slate-400 text-base font-medium leading-relaxed">
+                                            I'm Starta. Ask me anything about <span className="text-[#14B8A6] font-bold">{contextMarket === 'EGX' ? 'Egyptian' : 'Saudi'}</span> stocks.
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Suggestions */}
-                                <div className="w-full flex-1">
+                                {/* Suggestions - Pushed to look good */}
+                                <div className="w-full relative z-10">
                                     <MobileSuggestions onSelect={sendDirectMessage} />
                                 </div>
                             </div>

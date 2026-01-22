@@ -43,7 +43,7 @@ async def handle_stock_price(
     Handle STOCK_PRICE intent - premium quote with real OHLC data.
     Joins market_tickers with ohlc_data for complete data.
     """
-    # Premium query: Join market_tickers with latest ohlc_data for real OHLC values
+    # Premium query: Join market_tickers with latest ohlc_data AND stock_statistics for full deep stats
     row = await conn.fetchrow("""
         SELECT 
             m.symbol, m.name_en, m.name_ar, m.market_code, m.currency,
@@ -55,10 +55,12 @@ async def handle_stock_price(
             m.pe_ratio, m.pb_ratio, m.dividend_yield, m.market_cap,
             m.high_52w, m.low_52w, m.sector_name,
             m.last_updated,
-            o.date as ohlc_date
+            o.date as ohlc_date,
+            ss.roe, ss.debt_equity, ss.profit_margin
         FROM market_tickers m
         LEFT JOIN ohlc_data o ON m.symbol = o.symbol 
             AND o.date = (SELECT MAX(date) FROM ohlc_data WHERE symbol = m.symbol)
+        LEFT JOIN stock_statistics ss ON m.symbol = ss.symbol
         WHERE m.symbol = $1
     """, symbol)
     
@@ -94,6 +96,12 @@ async def handle_stock_price(
     market_cap = int(data['market_cap']) if data['market_cap'] else None
     high_52w = float(data['high_52w']) if data['high_52w'] else None
     low_52w = float(data['low_52w']) if data['low_52w'] else None
+    
+    # New Stats (Deep Analysis)
+    roe = float(data['roe'] * 100) if data['roe'] else None  # Convert decimal to %
+    debt_equity = float(data['debt_equity']) if data['debt_equity'] else None
+    profit_margin = float(data['profit_margin'] * 100) if data['profit_margin'] else None # Convert decimal to %
+
     sector = data['sector_name'] or "N/A"
     
     # Trend analysis
@@ -201,12 +209,21 @@ async def handle_stock_price(
     
     # Add valuation card if we have data
     valuation_data = {}
-    if pe_ratio:
-        valuation_data['pe_ratio'] = pe_ratio
-    if pb_ratio:
-        valuation_data['pb_ratio'] = pb_ratio
-    if dividend_yield:
-        valuation_data['dividend_yield'] = dividend_yield
+    
+    # 1. P/E Ratio
+    if pe_ratio: valuation_data['pe_ratio'] = pe_ratio
+    
+    # 2. ROE (New)
+    if roe: valuation_data['roe'] = roe
+    
+    # 3. Profit Margin (New)
+    if profit_margin: valuation_data['net_profit_margin'] = profit_margin
+    
+    # 4. Debt to Equity (New)
+    if debt_equity: valuation_data['debt_equity'] = debt_equity
+    
+    if pb_ratio: valuation_data['pb_ratio'] = pb_ratio
+    if dividend_yield: valuation_data['dividend_yield'] = dividend_yield
     if market_cap:
         valuation_data['market_cap'] = market_cap
         valuation_data['market_cap_formatted'] = _format_number(market_cap, 0)

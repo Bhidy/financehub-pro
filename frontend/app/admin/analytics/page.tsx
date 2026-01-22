@@ -247,7 +247,7 @@ export default function ChatbotAnalyticsPage() {
 
     if (!isAuthenticated || user?.role !== 'admin') {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#151925] flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] flex items-center justify-center">
                 <div className="text-center">
                     <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Access Denied</h1>
@@ -258,25 +258,30 @@ export default function ChatbotAnalyticsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#151925]">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] transition-colors duration-300">
+            {/* Background Ambient Glow */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-[#14B8A6]/5 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-[#3B82F6]/5 rounded-full blur-[100px]" />
+            </div>
             {/* 1. TOP HEADER & FILTERS */}
-            <header className="bg-white/90 dark:bg-[#1E2433]/90 backdrop-blur-md border-b border-slate-200 dark:border-[#2A303C] sticky top-0 z-40">
+            <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-[#0B1121]/80 border-b border-slate-200 dark:border-white/[0.08]">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                         {/* Title */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                <LayoutDashboard className="w-5 h-5 text-white" />
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#0F172A] to-[#1E293B] dark:from-[#1E293B] dark:to-[#0F172A] rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/10">
+                                <LayoutDashboard className="w-5 h-5 text-[#14B8A6]" />
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     Analytics v2
-                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-500/30">
-                                        PREMIUM
+                                    <span className="px-2 py-0.5 rounded-full bg-[#14B8A6]/10 text-[#14B8A6] text-[10px] font-bold border border-[#14B8A6]/20 tracking-wider">
+                                        PRO TERMINAL
                                     </span>
                                 </h1>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Real-time intelligence dashboard</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Real-time intelligence dashboard</p>
                             </div>
                         </div>
 
@@ -285,12 +290,12 @@ export default function ChatbotAnalyticsPage() {
 
                             {/* User Type */}
                             <Tooltip content="Filter by user authentication status">
-                                <div className="relative">
-                                    <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <div className="relative group">
+                                    <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#14B8A6] transition-colors" />
                                     <select
                                         value={userType}
                                         onChange={(e) => setUserType(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-slate-100 dark:bg-[#2A303C] border-none rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer hover:bg-slate-200 dark:hover:bg-[#323946] transition-colors"
+                                        className="pl-9 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#14B8A6]/20 focus:border-[#14B8A6]/50 outline-none appearance-none cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors shadow-sm"
                                     >
                                         <option value="all">All Users</option>
                                         <option value="user">Registered</option>
@@ -301,12 +306,12 @@ export default function ChatbotAnalyticsPage() {
 
                             {/* Language */}
                             <Tooltip content="Filter by detected conversation language">
-                                <div className="relative">
-                                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <div className="relative group">
+                                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#14B8A6] transition-colors" />
                                     <select
                                         value={language}
                                         onChange={(e) => setLanguage(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-slate-100 dark:bg-[#2A303C] border-none rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer hover:bg-slate-200 dark:hover:bg-[#323946] transition-colors"
+                                        className="pl-9 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#14B8A6]/20 focus:border-[#14B8A6]/50 outline-none appearance-none cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors shadow-sm"
                                     >
                                         <option value="all">All Languages</option>
                                         <option value="en">English (EN)</option>
@@ -315,18 +320,18 @@ export default function ChatbotAnalyticsPage() {
                                 </div>
                             </Tooltip>
 
-                            <div className="h-6 w-px bg-slate-300 dark:bg-[#323946] mx-1"></div>
+                            <div className="h-6 w-px bg-slate-200 dark:bg-white/[0.08] mx-1"></div>
 
                             {/* Period Selection */}
                             <Tooltip content="Select time range for all metrics">
-                                <div className="flex bg-slate-100 dark:bg-[#2A303C] rounded-lg p-1 border border-slate-200 dark:border-[#323946]">
+                                <div className="flex bg-white dark:bg-[#111827] rounded-xl p-1 border border-slate-200 dark:border-white/[0.08] shadow-sm">
                                     {['today', '7d', '30d'].map(p => (
                                         <button
                                             key={p}
                                             onClick={() => setPeriod(p)}
-                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${period === p
-                                                ? 'bg-white dark:bg-[#1E2433] text-blue-600 dark:text-blue-400 shadow-sm'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${period === p
+                                                ? 'bg-slate-100 dark:bg-[#1E293B] text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                         >
                                             {p === 'today' ? '24H' : p.toUpperCase()}
@@ -338,9 +343,9 @@ export default function ChatbotAnalyticsPage() {
                             <Tooltip content="Refresh all data">
                                 <button
                                     onClick={fetchData}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-[#2A303C] rounded-lg transition-colors border border-transparent dark:border-[#323946] text-slate-500 dark:text-slate-400"
+                                    className="p-2.5 bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-white/[0.02] rounded-xl transition-colors border border-slate-200 dark:border-white/[0.08] text-slate-500 dark:text-slate-400 shadow-sm"
                                 >
-                                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#14B8A6]' : ''}`} />
                                 </button>
                             </Tooltip>
                         </div>
@@ -351,69 +356,7 @@ export default function ChatbotAnalyticsPage() {
             <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
                 {/* 2. PRODUCT HEALTH SUMMARY (NEW) */}
-                {healthSummary && (
-                    <section className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-[#1E2433] dark:to-[#151925] rounded-2xl border border-indigo-100 dark:border-[#2A303C] shadow-sm p-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Sparkles className="w-24 h-24 text-indigo-500" />
-                        </div>
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-8 h-8 bg-indigo-500 text-white rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                                    <Activity className="w-5 h-5" />
-                                </div>
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Product Health Summary</h2>
-                                <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border ${healthSummary.status === 'Healthy' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-300 dark:border-green-500/30' :
-                                        healthSummary.status === 'Critical' ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/30' :
-                                            'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:border-orange-500/30'
-                                    }`}>
-                                    {healthSummary.status}
-                                </span>
-                            </div>
 
-                            <div className="grid md:grid-cols-3 gap-6">
-                                <div>
-                                    <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1">
-                                        <TrendingUp className="w-3 h-3" /> Improvements
-                                    </h3>
-                                    <ul className="space-y-1">
-                                        {healthSummary.improvements.map((item, i) => (
-                                            <li key={i} className="text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2">
-                                                <span className="text-green-500 mt-1">●</span> {item}
-                                            </li>
-                                        ))}
-                                        {healthSummary.improvements.length === 0 && <li className="text-sm text-slate-400 italic">No significant improvements</li>}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1">
-                                        <TrendingDown className="w-3 h-3" /> Degradations
-                                    </h3>
-                                    <ul className="space-y-1">
-                                        {healthSummary.degradations.map((item, i) => (
-                                            <li key={i} className="text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2">
-                                                <span className="text-red-500 mt-1">●</span> {item}
-                                            </li>
-                                        ))}
-                                        {healthSummary.degradations.length === 0 && <li className="text-sm text-slate-400 italic">No failures detected</li>}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1">
-                                        <Flag className="w-3 h-3" /> Action Items
-                                    </h3>
-                                    <ul className="space-y-1">
-                                        {healthSummary.top_issues.map((item, i) => (
-                                            <li key={i} className="text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2">
-                                                <span className="text-orange-500 mt-1">●</span> {item}
-                                            </li>
-                                        ))}
-                                        {healthSummary.top_issues.length === 0 && <li className="text-sm text-slate-400 italic">No urgent issues</li>}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                )}
 
                 {/* 3. EXECUTIVE KPI ROW */}
                 <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
@@ -479,29 +422,34 @@ export default function ChatbotAnalyticsPage() {
                 </section>
 
                 {/* 4. MAIN CONTENT GRID */}
-                <div className="grid lg:grid-cols-3 gap-8">
+                {/* 4. MAIN CONTENT GRID */}
+                <div className="grid lg:grid-cols-3 gap-8 relative z-10">
 
                     {/* LEFT COLUMN: 2/3 Width */}
                     <div className="lg:col-span-2 space-y-8">
 
                         {/* DEMAND INTELLIGENCE (NEW) */}
-                        <section className="bg-white dark:bg-[#1E2433] rounded-2xl border border-slate-200 dark:border-[#2A303C] shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2A303C] flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-500/20 rounded-lg flex items-center justify-center">
-                                        <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
+                                        <TrendingUp className="w-6 h-6 text-[#14B8A6]" />
                                     </div>
-                                    <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                        Demand Intelligence
-                                        <Tooltip content="Trending topics based on volume growth vs previous period">
-                                            <Info className="w-4 h-4 text-slate-400 cursor-help" />
-                                        </Tooltip>
-                                    </h2>
+                                    <div>
+                                        <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+                                            Demand Intelligence
+                                            <Tooltip content="Trending topics based on volume growth">
+                                                <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                            </Tooltip>
+                                        </h2>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Market query velocity & trends</p>
+                                    </div>
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="bg-slate-50 dark:bg-[#2A303C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
+                                    <thead className="bg-slate-50/50 dark:bg-[#0B1121]/50 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                         <tr>
                                             <th className="px-6 py-3">Trending Query</th>
                                             <th className="px-6 py-3">Volume</th>
@@ -541,18 +489,22 @@ export default function ChatbotAnalyticsPage() {
                         </section>
 
                         {/* TOP QUESTIONS */}
-                        <section className="bg-white dark:bg-[#1E2433] rounded-2xl border border-slate-200 dark:border-[#2A303C] shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2A303C] flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center">
-                                        <HelpCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/5 via-transparent to-[#14B8A6]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
+                                        <HelpCircle className="w-6 h-6 text-[#3B82F6]" />
                                     </div>
-                                    <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                        Top Questions
-                                        <Tooltip content="Most frequently asked questions ranked by volume">
-                                            <Info className="w-4 h-4 text-slate-400 cursor-help" />
-                                        </Tooltip>
-                                    </h2>
+                                    <div>
+                                        <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+                                            Top Questions
+                                            <Tooltip content="Most frequently asked questions">
+                                                <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                            </Tooltip>
+                                        </h2>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Highest volume user inquiries</p>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => exportToCSV(topQuestions, 'top_questions')}
@@ -595,130 +547,84 @@ export default function ChatbotAnalyticsPage() {
                             </div>
                         </section>
 
-                        {/* INTENT PERFORMANCE */}
-                        <section className="bg-white dark:bg-[#1E2433] rounded-2xl border border-slate-200 dark:border-[#2A303C] shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2A303C]">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-500/20 rounded-lg flex items-center justify-center">
-                                        <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                                    </div>
-                                    <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                        Intent Analytics
-                                        <Tooltip content="Performance metrics broken down by detected user intent">
-                                            <Info className="w-4 h-4 text-slate-400 cursor-help" />
-                                        </Tooltip>
-                                    </h2>
-                                </div>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-slate-50 dark:bg-[#2A303C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
-                                        <tr>
-                                            <th className="px-6 py-3">Intent Scope</th>
-                                            <th className="px-6 py-3">Volume</th>
-                                            <th className="px-6 py-3">Confidence</th>
-                                            <th className="px-6 py-3">Success Rate</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-[#2A303C]">
-                                        {intentPerformance.slice(0, 10).map((ip, i) => (
-                                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#2A303C]/50 transition-colors">
-                                                <td className="px-6 py-4 font-mono text-xs font-medium text-slate-700 dark:text-slate-300">{ip.intent}</td>
-                                                <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">{ip.volume}</td>
-                                                <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{(ip.avg_confidence * 100).toFixed(0)}%</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-16 h-1.5 bg-slate-100 dark:bg-[#2A303C] rounded-full overflow-hidden">
-                                                            <div className={`h-full rounded-full ${ip.success_rate > 80 ? 'bg-green-500' : 'bg-orange-500'}`} style={{ width: `${ip.success_rate}%` }}></div>
-                                                        </div>
-                                                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{ip.success_rate.toFixed(0)}%</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
 
                     </div>
 
                     {/* RIGHT COLUMN: 1/3 Width */}
                     <div className="space-y-8">
 
-                        {/* UNRESOLVED QUEUE */}
-                        <section className="bg-white dark:bg-[#1E2433] rounded-2xl border border-slate-200 dark:border-[#2A303C] shadow-sm overflow-hidden ring-1 ring-red-100 dark:ring-red-900/20">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2A303C] flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-red-100 dark:bg-red-500/20 rounded-lg flex items-center justify-center">
-                                        <Inbox className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        {/* SYSTEM PERFORMANCE (Right Top) */}
+                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#14B8A6]/5 via-transparent to-[#0D9488]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
+                                        <Activity className="w-6 h-6 text-[#14B8A6]" />
                                     </div>
-                                    <h2 className="font-bold text-slate-900 dark:text-white">Impact Queue</h2>
-                                    {unresolvedQueries.length > 0 && (
-                                        <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
-                                            {unresolvedQueries.length}
-                                        </span>
-                                    )}
+                                    <h2 className="font-bold text-xl text-slate-900 dark:text-white">System Health</h2>
+                                </div>
+                                <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                    <span className="text-[10px] font-black text-emerald-500 tracking-widest">ONLINE</span>
                                 </div>
                             </div>
-                            <div className="divide-y divide-slate-100 dark:divide-[#2A303C] max-h-[500px] overflow-y-auto">
-                                {unresolvedQueries.length === 0 ? (
-                                    <div className="p-8 text-center">
-                                        <CheckCircle className="w-12 h-12 text-green-200 dark:text-green-800 mx-auto mb-2" />
-                                        <p className="text-slate-400 text-sm">All clear! No issues pending.</p>
-                                    </div>
-                                ) : (
-                                    unresolvedQueries.map((q) => (
-                                        <div key={q.id} className="p-4 hover:bg-slate-50 dark:hover:bg-[#2A303C]/50 transition-colors group">
-                                            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2 line-clamp-2">"{q.raw_text}"</p>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[10px] bg-slate-100 dark:bg-[#2A303C] text-slate-500 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                                                    {q.failure_reason}
-                                                </span>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Tooltip content="Mark as Resolved">
-                                                        <button onClick={() => resolveQuery(q.id, 'resolved')} className="p-1 hover:bg-green-100 dark:hover:bg-green-900 text-green-600 rounded">
-                                                            <CheckCircle className="w-4 h-4" />
-                                                        </button>
-                                                    </Tooltip>
-                                                    <Tooltip content="Ignore">
-                                                        <button onClick={() => resolveQuery(q.id, 'ignored')} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 rounded">
-                                                            <XCircle className="w-4 h-4" />
-                                                        </button>
-                                                    </Tooltip>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
+                            <div className="p-6 grid grid-cols-2 gap-4 relative z-10">
+                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Avg Latency</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-white">
+                                        {performanceMetrics?.avg_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-slate-400 ml-1">ms</span>
+                                    </p>
+                                </div>
+                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">P95 Latency</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-white">
+                                        {performanceMetrics?.p95_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-slate-400 ml-1">ms</span>
+                                    </p>
+                                </div>
+                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Throughput</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-white">
+                                        {((healthKPIs?.total_messages || 0) / (30 * 24)).toFixed(1)}<span className="text-xs font-bold text-slate-400 ml-1">MSG/HR</span>
+                                    </p>
+                                </div>
+                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Error Rate</p>
+                                    <p className={`text-2xl font-black ${(performanceMetrics?.error_rate ?? 0) > 1 ? 'text-red-500' : 'text-emerald-500'}`}>
+                                        {performanceMetrics?.error_rate || 0}<span className="text-sm font-medium text-slate-400 ml-1">%</span>
+                                    </p>
+                                </div>
                             </div>
                         </section>
 
                         {/* SESSION FUNNEL */}
-                        <section className="bg-white dark:bg-[#1E2433] rounded-2xl border border-slate-200 dark:border-[#2A303C] shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2A303C]">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-teal-100 dark:bg-teal-500/20 rounded-lg flex items-center justify-center">
-                                        <Filter className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                                    </div>
-                                    <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
+                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-4 relative z-10">
+                                <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
+                                    <Filter className="w-6 h-6 text-[#14B8A6]" />
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
                                         Session Funnel
                                         <Tooltip content="User journey drop-off analysis">
                                             <Info className="w-4 h-4 text-slate-400 cursor-help" />
                                         </Tooltip>
                                     </h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Conversion flow analysis</p>
                                 </div>
                             </div>
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-5 relative z-10">
                                 {sessionFunnel.map((step, i) => (
                                     <div key={i} className="relative">
-                                        <div className="flex justify-between text-xs mb-1">
-                                            <span className="font-medium text-slate-700 dark:text-slate-300">{step.step}</span>
-                                            <span className="text-slate-500 font-mono">{step.count} ({step.percentage.toFixed(0)}%)</span>
+                                        <div className="flex justify-between text-xs mb-1.5 px-0.5">
+                                            <span className="font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">{step.step}</span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-mono text-slate-400">{step.count}</span>
+                                                <span className="font-bold text-[#14B8A6]">({step.percentage.toFixed(0)}%)</span>
+                                            </div>
                                         </div>
-                                        <div className="h-2 w-full bg-slate-100 dark:bg-[#2A303C] rounded-full overflow-hidden">
+                                        <div className="h-2.5 w-full bg-slate-100 dark:bg-[#0B1121] rounded-full overflow-hidden border border-slate-100 dark:border-white/[0.05]">
                                             <div
-                                                className="h-full bg-teal-500 dark:bg-teal-400 rounded-full transition-all duration-500"
+                                                className="h-full bg-gradient-to-r from-[#14B8A6] to-[#0D9488] rounded-full shadow-[0_0_8px_rgba(20,184,166,0.5)] transition-all duration-700"
                                                 style={{ width: `${step.percentage}%`, opacity: 1 - (i * 0.15) }}
                                             />
                                         </div>
@@ -728,21 +634,23 @@ export default function ChatbotAnalyticsPage() {
                         </section>
 
                         {/* LANGUAGE & DEMOGRAPHICS */}
-                        <section className="bg-white dark:bg-[#1E2433] rounded-2xl border border-slate-200 dark:border-[#2A303C] shadow-sm overflow-hidden">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2A303C]">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-orange-100 dark:bg-orange-500/20 rounded-lg flex items-center justify-center">
-                                        <Globe className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                                    </div>
-                                    <h2 className="font-bold text-slate-900 dark:text-white">Demographics</h2>
+                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-4 relative z-10">
+                                <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
+                                    <Globe className="w-6 h-6 text-orange-500" />
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-xl text-slate-900 dark:text-white">Demographics</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">User distribution</p>
                                 </div>
                             </div>
                             <div className="p-6">
                                 <div className="space-y-4">
                                     {languageStats.map((ls, i) => (
-                                        <div key={i} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#2A303C] flex items-center justify-center text-lg">
+                                        <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#0B1121] transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#0B1121] flex items-center justify-center text-lg border border-slate-200 dark:border-white/[0.05]">
                                                     {ls.language === 'en' ? '🇬🇧' : ls.language === 'ar' ? '🇪🇬' : '🌍'}
                                                 </div>
                                                 <div>
@@ -763,6 +671,132 @@ export default function ChatbotAnalyticsPage() {
                     </div>
                 </div>
 
+                {/* 5. FAILURE DETAILS ANALYSIS (Full Width) */}
+                <section className="bg-white dark:bg-[#111827] rounded-3xl border border-red-100 dark:border-red-500/20 shadow-xl overflow-hidden relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] relative z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-red-500/20">
+                                <AlertTriangle className="w-6 h-6 text-red-500" />
+                            </div>
+                            <div>
+                                <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+                                    Failure Rate Analysis
+                                    <Tooltip content="Detailed breakdown of system fallback and failure reasons">
+                                        <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                    </Tooltip>
+                                </h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Automated fallback & error diagnostics</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Failure Reason Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-8 border-b border-slate-100 dark:border-white/[0.08] bg-slate-50/50 dark:bg-[#0B1121]/50 relative z-10">
+                        {Array.from(new Set(unresolvedQueries.map(q => q.failure_reason))).map((reason, i) => {
+                            const count = unresolvedQueries.filter(q => q.failure_reason === reason).length;
+                            const pct = (unresolvedQueries.length ? (count / unresolvedQueries.length) * 100 : 0).toFixed(0);
+                            return (
+                                <div key={i} className="bg-white dark:bg-[#1E293B] p-5 rounded-2xl border border-slate-100 dark:border-white/[0.05] shadow-sm hover:border-red-500/30 transition-colors">
+                                    <div className="text-[10px] uppercase font-bold text-slate-500 mb-2">{reason.replace(/_/g, ' ')}</div>
+                                    <div className="flex items-end justify-between">
+                                        <div className="text-2xl font-black text-slate-900 dark:text-white">{count}</div>
+                                        <div className="text-sm font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-lg">{pct}%</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        {unresolvedQueries.length === 0 && (
+                            <div className="col-span-4 text-center text-sm text-slate-400 py-2">
+                                No active failure data to analyze
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="overflow-x-auto relative z-10">
+                        <table className="w-full">
+                            <thead className="bg-slate-50 dark:bg-[#1E293B] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                <tr>
+                                    <th className="px-6 py-4">Time</th>
+                                    <th className="px-6 py-4">Query Context</th>
+                                    <th className="px-6 py-4">Failure Reason</th>
+                                    <th className="px-6 py-4">Intent Match</th>
+                                    <th className="px-6 py-4">User Impact</th>
+                                    <th className="px-6 py-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                                {unresolvedQueries.slice(0, 20).map((q, i) => (
+                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                                <Clock className="w-3 h-3" />
+                                                {new Date(q.created_at).toLocaleTimeString()}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 max-w-xs">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white mb-0.5 line-clamp-2">"{q.raw_text}"</p>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-white/5 px-1.5 rounded">{q.language.toUpperCase()}</span>
+                                                <span className="text-[10px] text-slate-400">ID: #{q.id}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-500/20">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                                <span className="text-xs font-bold capitalize">{q.failure_reason.replace(/_/g, ' ')}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 mt-1 pl-1">
+                                                {q.failure_reason === 'low_confidence' ? 'Intent unrecognized' :
+                                                    q.failure_reason === 'out_of_scope' ? 'Topic not supported' : 'System error'}
+                                            </p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">{q.detected_intent || 'None'}</span>
+                                                <div className="w-full bg-slate-100 dark:bg-white/5 h-1.5 rounded-full mt-1 overflow-hidden">
+                                                    <div className={`h-full ${q.confidence > 0.7 ? 'bg-green-500' : q.confidence > 0.4 ? 'bg-orange-500' : 'bg-red-500'}`} style={{ width: `${(q.confidence * 100)}%` }} />
+                                                </div>
+                                                <span className="text-[10px] text-slate-500 mt-0.5">Confidence: {(q.confidence * 100).toFixed(0)}%</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-500">
+                                            <div className="flex items-center gap-2">
+                                                <Users className="w-3 h-3" />
+                                                <span>Guest User</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex gap-1">
+                                                <Tooltip content="Mark as Resolved">
+                                                    <button onClick={() => resolveQuery(q.id, 'resolved')} className="p-1 hover:bg-green-100 dark:hover:bg-green-900 text-green-600 rounded">
+                                                        <CheckCircle className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                                <Tooltip content="Ignore">
+                                                    <button onClick={() => resolveQuery(q.id, 'ignored')} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 rounded">
+                                                        <XCircle className="w-4 h-4" />
+                                                    </button>
+                                                </Tooltip>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {unresolvedQueries.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                                            <div className="flex flex-col items-center">
+                                                <CheckCircle className="w-8 h-8 text-green-500 mb-2 opacity-50" />
+                                                <span>System healthy. No failures recorded.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
             </main>
         </div>
     );
@@ -782,50 +816,61 @@ function OverviewCard({ icon: Icon, label, value, trend, tooltip, color, inverse
     inverseTrend?: boolean;
 }) {
     const colorClasses: Record<string, string> = {
-        blue: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/20',
-        indigo: 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/20',
-        purple: 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20',
-        green: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-500/20',
-        red: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/20',
-        orange: 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-500/20',
-        teal: 'text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-500/20',
+        blue: 'text-blue-600 dark:text-[#3B82F6] bg-blue-100 dark:bg-[#3B82F6]/10 border border-blue-200 dark:border-[#3B82F6]/20',
+        indigo: 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20',
+        purple: 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20',
+        green: 'text-green-600 dark:text-[#10B981] bg-green-100 dark:bg-[#10B981]/10 border border-green-200 dark:border-[#10B981]/20',
+        red: 'text-red-600 dark:text-[#EF4444] bg-red-100 dark:bg-[#EF4444]/10 border border-red-200 dark:border-[#EF4444]/20',
+        orange: 'text-orange-600 dark:text-[#F59E0B] bg-orange-100 dark:bg-[#F59E0B]/10 border border-orange-200 dark:border-[#F59E0B]/20',
+        teal: 'text-teal-600 dark:text-[#14B8A6] bg-teal-100 dark:bg-[#14B8A6]/10 border border-teal-200 dark:border-[#14B8A6]/20',
     };
 
     const isPositive = trend && trend > 0;
     const isNeutral = trend === 0;
 
-    // Determine trend color (green for good, red for bad)
-    // If inverseTrend is true (e.g. failure rate), positive trend is BAD (red).
+    // Determine trend color
     let trendColor = 'text-slate-500';
+    let TrendIcon = isPositive ? ArrowUpRight : ArrowDownRight;
+    let trendBg = 'bg-slate-100 dark:bg-slate-800';
+
     if (trend !== null && trend !== undefined && !isNeutral) {
         if (inverseTrend) {
-            trendColor = isPositive ? 'text-red-500' : 'text-green-500';
+            trendColor = isPositive ? 'text-red-500' : 'text-emerald-500';
+            trendBg = isPositive ? 'bg-red-50 dark:bg-red-500/10' : 'bg-emerald-50 dark:bg-emerald-500/10';
         } else {
-            trendColor = isPositive ? 'text-green-500' : 'text-red-500';
+            trendColor = isPositive ? 'text-emerald-500' : 'text-red-500';
+            trendBg = isPositive ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10';
         }
     }
 
     return (
-        <div className="bg-white dark:bg-[#1E2433] rounded-xl p-4 border border-slate-200 dark:border-[#2A303C] shadow-sm hover:shadow-md transition-all relative group">
-            <div className="flex items-start justify-between mb-2">
-                <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
-                    <Icon className="w-5 h-5" />
+        <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative group flex flex-col justify-between h-full overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+            <div className="flex items-start justify-between mb-4 relative z-10">
+                <div className={`p-3 rounded-2xl ${colorClasses[color]} shadow-sm`}>
+                    <Icon className="w-5 h-5 flex-shrink-0" />
                 </div>
                 {trend !== null && trend !== undefined && (
-                    <div className={`flex items-center text-xs font-bold ${trendColor} bg-slate-50 dark:bg-[#2A303C] px-1.5 py-0.5 rounded-full`}>
-                        {isPositive ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
+                    <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${trendColor} ${trendBg}`}>
+                        <TrendIcon className="w-3 h-3" />
                         {Math.abs(trend)}%
                     </div>
                 )}
             </div>
 
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-0.5">{value}</h3>
-            <div className="flex items-center gap-1.5">
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{label}</p>
-                <Tooltip content={tooltip}>
-                    <Info className="w-3 h-3 text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 cursor-help" />
-                </Tooltip>
+            <div className="relative z-10">
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+                <div className="flex items-baseline gap-2">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
+                </div>
             </div>
+
+            <Tooltip content={tooltip}>
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Info className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                </div>
+            </Tooltip>
         </div>
     );
 }

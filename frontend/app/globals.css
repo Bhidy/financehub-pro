@@ -229,6 +229,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
   transition: background-color 0.3s ease, color 0.3s ease;
+  zoom: 0.85;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* Arabic Font Support */
@@ -675,5 +678,28 @@ a:focus-visible {
   .card {
     border: 1px solid #ddd;
     box-shadow: none;
+  }
+}
+
+/* ============================================================================
+   ZOOM COMPENSATION
+   Compensate for body { zoom: 0.85 } to ensure full screen coverage.
+   100% / 0.85 = ~117.65%
+   ============================================================================ */
+@layer utilities {
+  .h-screen {
+    height: 117.65vh !important;
+  }
+
+  .min-h-screen {
+    min-height: 117.65vh !important;
+  }
+
+  .w-screen {
+    width: 117.65vw !important;
+  }
+
+  .min-w-screen {
+    min-width: 117.65vw !important;
   }
 }

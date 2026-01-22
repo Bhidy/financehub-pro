@@ -103,7 +103,7 @@ export function MobileHeader({
                     {isAuthenticated ? (
                         <button
                             onClick={() => router.push('/mobile-ai-analyst/setting')}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#3B82F6] text-white shadow-lg shadow-[#3B82F6]/20 dark:shadow-[#3B82F6]/10 active:scale-95 transition-all"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#14B8A6] text-white shadow-lg shadow-[#14B8A6]/20 dark:shadow-[#14B8A6]/10 active:scale-95 transition-all"
                             title="Settings"
                         >
                             <User className="w-4 h-4" />

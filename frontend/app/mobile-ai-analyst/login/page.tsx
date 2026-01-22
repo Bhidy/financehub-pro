@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
@@ -70,138 +70,153 @@ function MobileLoginPageContent() {
     };
 
     return (
-        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col font-sans selection:bg-[#14B8A6]/30 text-[#0F172A] dark:text-white transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="relative w-full h-full min-h-[100dvh] bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-white font-sans selection:bg-[#14B8A6]/30 overflow-x-hidden flex flex-col">
             {/* Background Effects - Midnight Teal */}
             <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0F172A_50%)] opacity-20 pointer-events-none transition-opacity duration-300" />
             <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-15 brightness-100 contrast-150 mix-blend-overlay pointer-events-none" />
 
-            {/* Header */}
-            <header className="px-4 py-4 relative z-10">
-                <button
-                    onClick={() => router.push('/mobile-ai-analyst')}
-                    className="flex items-center gap-2 text-slate-500 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white transition-colors font-medium"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>Back to Starta</span>
-                </button>
-            </header>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col p-6 relative z-10">
 
-            {/* Content */}
-            <main className="flex-1 flex flex-col justify-center px-6 pb-10 relative z-10">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    {/* Logo area */}
-                    <div className="flex flex-col items-center mb-8">
-                        <div className="w-20 h-20 relative flex items-center justify-center mb-4">
-                            <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-full blur-xl" />
-                            <img src="/app-icon.png" alt="Starta" className="w-20 h-20 object-contain relative z-10 drop-shadow-2xl" />
-                        </div>
-                        <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white mb-2 transition-colors">Welcome Back</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-center transition-colors">Sign in to your Starta account</p>
-                    </div>
+                {/* Header */}
+                <header className="py-2 mb-8">
+                    <button
+                        onClick={() => router.push('/mobile-ai-analyst')}
+                        className="flex items-center gap-2 text-slate-500 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white transition-colors font-medium active:scale-95 duration-200"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="text-sm font-semibold">Back to Starta</span>
+                    </button>
+                </header>
 
-                    {/* Error */}
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mb-6 p-4 bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl flex items-center gap-3 text-[#EF4444]"
-                        >
-                            <AlertCircle className="w-5 h-5 shrink-0" />
-                            <span className="text-sm font-medium">{error}</span>
-                        </motion.div>
-                    )}
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 transition-colors">Email</label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
-                                    placeholder="name@company.com"
-                                    autoComplete="email"
-                                />
+                {/* Main Content Centered Vertically if space permits, otherwise flows */}
+                <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full pb-12">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        {/* Logo area */}
+                        <div className="flex flex-col items-center mb-10">
+                            <div className="w-24 h-24 relative flex items-center justify-center mb-6">
+                                <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-full blur-2xl" />
+                                <div className="relative z-10 w-full h-full bg-white dark:bg-[#1e293b] rounded-3xl shadow-2xl flex items-center justify-center border border-slate-100 dark:border-slate-700">
+                                    <img src="/app-icon.png" alt="Starta" className="w-16 h-16 object-contain" />
+                                </div>
                             </div>
+                            <h1 className="text-3xl font-black tracking-tight text-[#0F172A] dark:text-white mb-3 text-center">Welcome Back</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-center font-medium">Sign in to your Starta account</p>
                         </div>
 
-                        {/* Password */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 transition-colors">Password</label>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
-                                    placeholder="••••••••"
-                                    autoComplete="current-password"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-white transition-colors"
+                        {/* Error */}
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10, height: 0 }}
+                                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                    exit={{ opacity: 0, y: -10, height: 0 }}
+                                    className="mb-6 overflow-hidden"
                                 >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
+                                    <div className="p-4 bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl flex items-center gap-3 text-[#EF4444]">
+                                        <AlertCircle className="w-5 h-5 shrink-0" />
+                                        <span className="text-sm font-bold">{error}</span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Email */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Email</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-[#3B82F6] transition-colors" />
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-2xl text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-[#3B82F6]/10 focus:border-[#3B82F6] transition-all font-medium text-base shadow-sm"
+                                        placeholder="name@company.com"
+                                        autoComplete="email"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Password */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Password</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-[#3B82F6] transition-colors" />
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full pl-12 pr-12 py-4 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-2xl text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-[#3B82F6]/10 focus:border-[#3B82F6] transition-all font-medium text-base shadow-sm"
+                                        placeholder="••••••••"
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-white transition-colors p-2"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Forgot Password */}
+                            <div className="flex justify-end">
+                                <Link
+                                    href="/mobile-ai-analyst/forgot-password"
+                                    className="text-sm font-bold text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                                >
+                                    Forgot password?
+                                </Link>
+                            </div>
+
+                            {/* Submit - Ultra Premium Gradient CTA */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full py-4 bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 mt-8 shadow-xl shadow-[#3B82F6]/20"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <>
+                                        <span>Sign In</span>
+                                        <ArrowRight className="w-5 h-5" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Google Login */}
+                        <div className="my-8">
+                            <OrDivider />
+                            <div className="mt-8">
+                                <GoogleLoginButton
+                                    mode="login"
+                                    onError={(err) => setError(err)}
+                                />
                             </div>
                         </div>
 
-                        {/* Forgot Password */}
-                        <div className="flex justify-end">
-                            <Link
-                                href="/mobile-ai-analyst/forgot-password"
-                                className="text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] transition-colors"
-                            >
-                                Forgot password?
-                            </Link>
+                        {/* Register link */}
+                        <div className="text-center">
+                            <p className="text-slate-500 dark:text-slate-400 font-medium">
+                                Don't have an account?{" "}
+                                <Link href="/mobile-ai-analyst/register" className="text-[#14B8A6] font-black hover:text-[#0D9488] transition-colors ml-1">
+                                    Create Account
+                                </Link>
+                            </p>
                         </div>
-
-                        {/* Submit - Ultra Premium Gradient CTA */}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full py-4 bg-gradient-to-r from-[#3B82F6] via-[#14B8A6] to-[#3B82F6] bg-[length:200%_100%] hover:bg-right text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 mt-6 shadow-lg shadow-[#3B82F6]/30"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <>
-                                    <span>Sign In</span>
-                                    <ArrowRight className="w-5 h-5" />
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Google Login */}
-                    <OrDivider />
-                    <GoogleLoginButton
-                        mode="login"
-                        onError={(err) => setError(err)}
-                    />
-
-                    {/* Register link - Teal accent */}
-                    <div className="pt-8 text-center mt-4">
-                        <p className="text-slate-500 dark:text-slate-500 text-sm">
-                            Don't have an account?{" "}
-                            <Link href="/mobile-ai-analyst/register" className="text-[#14B8A6] font-bold hover:text-[#0D9488] transition-colors">
-                                Create free account
-                            </Link>
-                        </p>
-                    </div>
-                </motion.div>
-            </main>
-        </div>
+                    </motion.div>
+                </div>
+            </div>
+        </div >
     );
 }
 

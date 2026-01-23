@@ -9,20 +9,31 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get("error");
     const state = searchParams.get("state"); // Contains mobile/desktop flag
 
-    // Parse state to determine if mobile
+    // Parse state to determine if mobile and return origin
     let isMobile = false;
+    let returnOrigin: string | null = null;
+
     if (state) {
         try {
             const stateData = JSON.parse(decodeURIComponent(state));
             isMobile = stateData.mobile === true;
+            returnOrigin = stateData.returnTo;
         } catch (e) {
             // Legacy: check if state simply equals "mobile"
             isMobile = state === "mobile";
         }
     }
 
-    const successRedirect = isMobile ? "/mobile-ai-analyst" : "/ai-analyst";
-    const loginRedirect = isMobile ? "/mobile-ai-analyst/login" : "/login";
+    // CRITICAL: Detect if returning to startamarkets.com which uses clean URLs
+    const isCleanDomain = returnOrigin?.includes("startamarkets.com") ?? false;
+
+    // Clean domains use "/" for home, others use "/mobile-ai-analyst"
+    const successRedirect = isMobile
+        ? (isCleanDomain ? "/" : "/mobile-ai-analyst")
+        : "/ai-analyst";
+    const loginRedirect = isMobile
+        ? (isCleanDomain ? "/login" : "/mobile-ai-analyst/login")
+        : "/login";
 
     // Handle errors from Google
     if (error) {
@@ -81,7 +92,11 @@ export async function GET(request: NextRequest) {
 
         // Create a response that will set cookies/localStorage on client side
         // We'll use a redirect with token in query params (temporary, handled by client)
-        const redirectUrl = new URL(successRedirect, request.url);
+
+        // CRITICAL FIX: Redirect back to the original domain if provided (e.g. startamarkets.com)
+        const baseUrl = returnOrigin || request.nextUrl.origin;
+        const redirectUrl = new URL(successRedirect, baseUrl);
+
         redirectUrl.searchParams.set("token", data.access_token);
         redirectUrl.searchParams.set("user", encodeURIComponent(JSON.stringify(data.user)));
         redirectUrl.searchParams.set("google_auth", "success");

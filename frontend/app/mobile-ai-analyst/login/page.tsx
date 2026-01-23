@@ -7,11 +7,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
+import { useMobileRoutes } from "../hooks/useMobileRoutes";
 
 function MobileLoginPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
+    const { getRoute } = useMobileRoutes();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -36,7 +38,7 @@ function MobileLoginPageContent() {
                 const user = JSON.parse(decodeURIComponent(userStr));
                 localStorage.setItem("fh_auth_token", token);
                 localStorage.setItem("fh_user", JSON.stringify(user));
-                router.push("/mobile-ai-analyst");
+                router.push(getRoute('home'));
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
             }
@@ -63,7 +65,7 @@ function MobileLoginPageContent() {
         setIsLoading(false);
 
         if (result.success) {
-            router.push("/mobile-ai-analyst");
+            router.push(getRoute('home'));
         } else {
             setError(result.error || "Login failed");
         }
@@ -81,7 +83,7 @@ function MobileLoginPageContent() {
                 {/* Header */}
                 <header className="py-2 mb-8">
                     <button
-                        onClick={() => router.push('/mobile-ai-analyst')}
+                        onClick={() => router.push(getRoute('home'))}
                         className="flex items-center gap-2 text-slate-500 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white transition-colors font-medium active:scale-95 duration-200"
                     >
                         <ArrowLeft className="w-5 h-5" />
@@ -169,7 +171,7 @@ function MobileLoginPageContent() {
                             {/* Forgot Password */}
                             <div className="flex justify-end">
                                 <Link
-                                    href="/mobile-ai-analyst/forgot-password"
+                                    href={getRoute('forgotPassword')}
                                     className="text-sm font-bold text-[#3B82F6] hover:text-[#2563EB] transition-colors"
                                 >
                                     Forgot password?
@@ -208,7 +210,7 @@ function MobileLoginPageContent() {
                         <div className="text-center">
                             <p className="text-slate-500 dark:text-slate-400 font-medium">
                                 Don't have an account?{" "}
-                                <Link href="/mobile-ai-analyst/register" className="text-[#14B8A6] font-black hover:text-[#0D9488] transition-colors ml-1">
+                                <Link href={getRoute('register')} className="text-[#14B8A6] font-black hover:text-[#0D9488] transition-colors ml-1">
                                     Create Account
                                 </Link>
                             </p>

@@ -50,16 +50,39 @@ const MarketContext = createContext<MarketContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'selectedMarket';
 
+// Domains that should default to Egypt market
+const EGX_DOMAINS = ['startamarkets.com', 'www.startamarkets.com'];
+
+// Get default market based on hostname
+function getDefaultMarket(): Market {
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (EGX_DOMAINS.includes(hostname)) {
+            return 'EGX';
+        }
+    }
+    return 'SAUDI';
+}
+
 export function MarketProvider({ children }: { children: ReactNode }) {
     const [market, setMarketState] = useState<Market>('SAUDI');
     const [mounted, setMounted] = useState(false);
 
-    // Load from localStorage on mount
+    // Load from localStorage on mount, or use domain-based default
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored === 'SAUDI' || stored === 'EGX') {
-                setMarketState(stored);
+            const hostname = window.location.hostname;
+            const isEgxDomain = EGX_DOMAINS.includes(hostname);
+
+            // For EGX domains, ALWAYS use EGX (ignore localStorage)
+            if (isEgxDomain) {
+                setMarketState('EGX');
+            } else {
+                // For other domains, respect localStorage
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored === 'SAUDI' || stored === 'EGX') {
+                    setMarketState(stored);
+                }
             }
             setMounted(true);
         }
@@ -101,14 +124,15 @@ export function useMarket() {
     return context;
 }
 
-// Optional: Safe hook for use outside provider (returns default)
+// Optional: Safe hook for use outside provider (returns domain-based default)
 export function useMarketSafe(): MarketContextType {
     const context = useContext(MarketContext);
+    const defaultMarket = getDefaultMarket();
     return context ?? {
-        market: 'SAUDI',
+        market: defaultMarket,
         setMarket: () => { },
-        config: MARKET_CONFIGS.SAUDI,
-        isEgypt: false,
-        isSaudi: true
+        config: MARKET_CONFIGS[defaultMarket],
+        isEgypt: defaultMarket === 'EGX',
+        isSaudi: defaultMarket === 'SAUDI'
     };
 }

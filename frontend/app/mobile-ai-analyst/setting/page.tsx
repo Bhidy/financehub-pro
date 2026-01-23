@@ -11,18 +11,20 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { updateProfile, changePassword } from "@/lib/api";
+import { useMobileRoutes } from "../hooks/useMobileRoutes";
 
 type Tab = 'personal' | 'security' | 'app';
 
 export default function MobileSettingsPage() {
     const router = useRouter();
     const { user, logout, isAuthenticated, isLoading } = useAuth();
+    const { getRoute } = useMobileRoutes();
     const [activeTab, setActiveTab] = useState<Tab>('personal');
 
     // Redirect if not authenticated
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            router.push("/mobile-ai-analyst/login");
+            router.push(getRoute('login'));
         }
     }, [isLoading, isAuthenticated, router]);
 
@@ -35,18 +37,18 @@ export default function MobileSettingsPage() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-[#14B8A6]/5 to-slate-50 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121] text-[#0F172A] dark:text-white font-sans overflow-y-auto overflow-x-hidden relative selection:bg-[#14B8A6]/30 transition-colors duration-300">
+        <div className="h-[100dvh] w-full flex flex-col bg-gradient-to-br from-slate-50 via-[#14B8A6]/5 to-slate-50 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121] text-[#0F172A] dark:text-white font-sans overflow-hidden relative selection:bg-[#14B8A6]/30 transition-colors duration-300">
 
             {/* Background Decorative Elements - Midnight Teal */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-gradient-to-br from-[#14B8A6]/10 via-[#3B82F6]/10 to-transparent dark:from-[#14B8A6]/10 dark:via-transparent dark:to-transparent rounded-full blur-[80px]" />
                 <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-gradient-to-tl from-[#3B82F6]/10 via-[#14B8A6]/10 to-transparent dark:from-[#3B82F6]/10 dark:via-transparent dark:to-transparent rounded-full blur-[80px]" />
             </div>
 
             {/* Header / Nav - Midnight Teal Design */}
-            <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-white/70 dark:bg-[#0B1121]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] shadow-sm dark:shadow-none transition-colors duration-300">
+            <header className="flex-shrink-0 z-30 px-5 py-4 flex items-center justify-between bg-white/70 dark:bg-[#0B1121]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] shadow-sm dark:shadow-none transition-colors duration-300">
                 <button
-                    onClick={() => router.push('/mobile-ai-analyst')}
+                    onClick={() => router.push(getRoute('home'))}
                     className="w-10 h-10 flex items-center justify-center rounded-lg bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/[0.08]"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -61,7 +63,7 @@ export default function MobileSettingsPage() {
                 </button>
             </header>
 
-            <main className="relative z-10 pb-20">
+            <main className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 pb-20">
                 {/* Profile Header Card */}
                 <ProfileHeader user={user} />
 

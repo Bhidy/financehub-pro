@@ -49,17 +49,32 @@ export default function GoogleLoginButton({
         setIsLoading(true);
 
         try {
-            // Detect mobile from current URL path if not explicitly set
+            // Detect mobile from current URL path OR domain
             const currentPath = window.location.pathname;
-            const isMobileFlow = isMobile ?? currentPath.includes("/mobile-ai-analyst");
+            const hostname = window.location.hostname;
+
+            // CRITICAL: startamarkets.com is ALWAYS a mobile-only domain
+            const isStartaDomain = hostname === 'startamarkets.com' || hostname === 'www.startamarkets.com';
+            const isMobileFlow = isMobile ?? (isStartaDomain || currentPath.includes("/mobile-ai-analyst"));
 
             // 1. ENTERPRISE FIX: Use internal Next.js Proxy to avoid CORS/Network issues
             // This calls our local route /api/auth/google/url/route.ts service-side
             const proxyUrl = `/api/auth/google/url`;
 
-            // Create state parameter to track mobile vs desktop
-            const stateParam = encodeURIComponent(JSON.stringify({ mobile: isMobileFlow }));
-            const callbackUrl = redirectUri || `${window.location.origin}/api/auth/google/callback`;
+            // Production domain for OAuth (now properly whitelisted in Google Console)
+            // This allows login to work on startamarkets.com without editing Google Console
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const PRIMARY_DOMAIN = "https://startamarkets.com";
+
+            // If on localhost, use localhost. If on any production domain, use the PRIMARY whitelist
+            const callbackBase = isLocal ? window.location.origin : PRIMARY_DOMAIN;
+            const callbackUrl = redirectUri || `${callbackBase}/api/auth/google/callback`;
+
+            // Create state parameter to track mobile vs desktop AND return domain
+            const stateParam = encodeURIComponent(JSON.stringify({
+                mobile: isMobileFlow,
+                returnTo: window.location.origin, // e.g. https://startamarkets.com
+            }));
 
             // 2. Fetch from our own secure proxy (Bypasses Client Network Blocks)
             const response = await fetch(

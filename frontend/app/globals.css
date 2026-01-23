@@ -229,9 +229,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
   transition: background-color 0.3s ease, color 0.3s ease;
-  zoom: 0.85;
   width: 100%;
   overflow-x: hidden;
+}
+
+/* ============================================================================
+   DESKTOP ZOOM OPTIMIZATION (20% Zoom Out)
+   Applied ONLY to desktop screens (≥1024px). Mobile remains at 100%.
+   zoom: 0.80 = 80% scale = 20% zoom out
+   ============================================================================ */
+@media (min-width: 1024px) {
+  body {
+    zoom: 0.80;
+  }
 }
 
 /* Arabic Font Support */
@@ -682,24 +692,48 @@ a:focus-visible {
 }
 
 /* ============================================================================
-   ZOOM COMPENSATION
-   Compensate for body { zoom: 0.85 } to ensure full screen coverage.
-   100% / 0.85 = ~117.65%
+   ZOOM COMPENSATION (Desktop Only)
+   Compensate for body { zoom: 0.80 } to ensure full screen coverage on desktop.
+   100% / 0.80 = 125%
+   Mobile uses standard 100vh/100vw (no compensation needed).
    ============================================================================ */
 @layer utilities {
+
+  /* Default: Mobile - No zoom compensation needed */
   .h-screen {
-    height: 117.65vh !important;
+    height: 100vh !important;
   }
 
   .min-h-screen {
-    min-height: 117.65vh !important;
+    min-height: 100vh !important;
   }
 
   .w-screen {
-    width: 117.65vw !important;
+    width: 100vw !important;
   }
 
   .min-w-screen {
-    min-width: 117.65vw !important;
+    min-width: 100vw !important;
+  }
+}
+
+/* Desktop zoom compensation (≥1024px) */
+@media (min-width: 1024px) {
+  @layer utilities {
+    .h-screen {
+      height: 125vh !important;
+    }
+
+    .min-h-screen {
+      min-height: 125vh !important;
+    }
+
+    .w-screen {
+      width: 125vw !important;
+    }
+
+    .min-w-screen {
+      min-width: 125vw !important;
+    }
   }
 }

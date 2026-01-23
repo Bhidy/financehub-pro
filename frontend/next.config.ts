@@ -60,6 +60,34 @@ const nextConfig = {
     optimizeCss: true,
   },
 
+  // Rewrites for custom domain (URL stays clean, content from mobile-ai-analyst)
+  // Maps startamarkets.com/* to /mobile-ai-analyst/* for all mobile pages
+  async rewrites() {
+    // Define all mobile-only domains
+    const mobileHosts = ['startamarkets.com', 'www.startamarkets.com'];
+
+    // Define all page mappings: clean URL -> actual mobile page
+    const pageMappings = [
+      { source: '/', destination: '/mobile-ai-analyst' },
+      { source: '/login', destination: '/mobile-ai-analyst/login' },
+      { source: '/register', destination: '/mobile-ai-analyst/register' },
+      { source: '/forgot-password', destination: '/mobile-ai-analyst/forgot-password' },
+      { source: '/setting', destination: '/mobile-ai-analyst/setting' },
+      { source: '/settings', destination: '/mobile-ai-analyst/setting' }, // Alias
+    ];
+
+    // Generate rewrites for all combinations of hosts and pages
+    const beforeFiles = mobileHosts.flatMap(host =>
+      pageMappings.map(({ source, destination }) => ({
+        source,
+        has: [{ type: 'host' as const, value: host }],
+        destination,
+      }))
+    );
+
+    return { beforeFiles };
+  },
+
   // Headers for security
   async headers() {
     return [

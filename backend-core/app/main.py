@@ -389,9 +389,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://finhub-pro.vercel.app",        # Production
+        "https://finhub-pro.vercel.app",        # Production (Vercel primary)
+        "https://startamarkets.com",            # Production (Custom Egypt Domain)
+        "https://www.startamarkets.com",        # Production (Custom Egypt Domain WWW)
         "http://localhost:3000",                # Local Dev
-        "http://localhost:3001",
         "http://localhost:3001",
     ],
     allow_credentials=True, # Critical for Auth Headers

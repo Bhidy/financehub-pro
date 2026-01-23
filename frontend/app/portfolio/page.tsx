@@ -91,7 +91,7 @@ export default function PortfolioPage() {
     if (!portfolio) return null;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] pb-20 font-sans selection:bg-brand-accent/30 transition-colors duration-500">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] pb-20 font-sans selection:bg-brand-accent/30 transition-colors duration-500 overflow-x-hidden">
             {/* Slide-Over Drawer */}
             <HoldingDrawer
                 isOpen={!!selectedHolding}
@@ -125,8 +125,8 @@ export default function PortfolioPage() {
                 onAdd={() => setShowAddModal(true)}
             />
 
-            {/* 2. ELITE DASHBOARD LAYOUT */}
-            <div className="max-w-[1900px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-20 -mt-8">
+            {/* 2. ELITE DASHBOARD LAYOUT - HIGH DENSITY MODE */}
+            <div className="max-w-[1900px] mx-auto px-4 sm:px-6 lg:px-8 space-y-5 relative z-20 -mt-6">
 
                 {/* A. Summary Strip */}
                 <PortfolioSummary
@@ -181,13 +181,13 @@ export default function PortfolioPage() {
                 {/* E. Operational Intelligence */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <PortfolioHealth
-                        score={88}
-                        beta={1.05}
-                        diversityScore={portfolio.insights.sector_allocation.length * 15} // Mock calc
+                        score={88} // In real app, calculate from risk metrics
+                        beta={1.05} // In real app, weighted average beta of holdings
+                        diversityScore={portfolio.insights.sector_allocation.length * 15}
                     />
-                    <DividendForecast />
-                    <PerformanceHeatmap />
-                    <TopMoversList />
+                    <DividendForecast holdings={portfolio.holdings} />
+                    <PerformanceHeatmap history={history} />
+                    <TopMoversList holdings={portfolio.holdings} />
                 </div>
 
                 {/* C. The Asset Universe (Full Width) */}
@@ -323,8 +323,8 @@ function CSVUploadModalInline({ isOpen, onClose, onImport, isLoading }: any) {
                     onDragLeave={onDragLeave}
                     onDrop={onDrop}
                     className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all cursor-pointer relative group ${isDragging
-                            ? "border-emerald-500 bg-emerald-500/10 scale-[1.02]"
-                            : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 hover:border-emerald-500/50 hover:bg-emerald-500/5"
+                        ? "border-emerald-500 bg-emerald-500/10 scale-[1.02]"
+                        : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 hover:border-emerald-500/50 hover:bg-emerald-500/5"
                         }`}
                 >
                     <input

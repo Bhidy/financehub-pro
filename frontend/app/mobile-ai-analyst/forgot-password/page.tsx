@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, ArrowRight, CheckCircle2, ShieldCheck, RefreshCw, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
+import { useMobileRoutes } from "../hooks/useMobileRoutes";
 
 type Step = "EMAIL" | "OTP" | "NEW_PASSWORD" | "SUCCESS";
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
+    const { getRoute } = useMobileRoutes();
     const [step, setStep] = useState<Step>("EMAIL");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -126,7 +128,7 @@ export default function ForgotPasswordPage() {
             {/* Header */}
             <header className="px-4 py-4">
                 <button
-                    onClick={() => step === "EMAIL" ? router.push("/mobile-ai-analyst/login") : setStep("EMAIL")}
+                    onClick={() => step === "EMAIL" ? router.push(getRoute('login')) : setStep("EMAIL")}
                     className="flex items-center gap-2 text-slate-500 hover:text-[#14B8A6] transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -320,7 +322,7 @@ export default function ForgotPasswordPage() {
                             </p>
 
                             <button
-                                onClick={() => router.push("/mobile-ai-analyst/login")}
+                                onClick={() => router.push(getRoute('login'))}
                                 className="w-full max-w-sm bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] font-bold py-4 rounded-lg transition-all hover:scale-[1.02]"
                             >
                                 Back to Login

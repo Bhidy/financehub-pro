@@ -49,12 +49,8 @@ class RegisterRequest(BaseModel):
     
     @validator('password')
     def validate_password(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters')
-        if not re.search(r'[A-Z]', v):
-            raise ValueError('Password must contain at least one uppercase letter')
-        if not re.search(r'[0-9]', v):
-            raise ValueError('Password must contain at least one number')
+        if len(v) < 6:
+            raise ValueError('Password must be at least 6 characters')
         return v
 
 class UserUpdate(BaseModel):
@@ -67,12 +63,8 @@ class PasswordChange(BaseModel):
 
     @validator('new_password')
     def validate_password(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters')
-        if not re.search(r'[A-Z]', v):
-            raise ValueError('Password must contain at least one uppercase letter')
-        if not re.search(r'[0-9]', v):
-            raise ValueError('Password must contain at least one number')
+        if len(v) < 6:
+            raise ValueError('Password must be at least 6 characters')
         return v
 
 class GuestUsageResponse(BaseModel):

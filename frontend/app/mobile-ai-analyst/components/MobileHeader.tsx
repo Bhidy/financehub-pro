@@ -3,6 +3,7 @@
 import { MessageSquarePlus, History, LogIn, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMarketSafe } from "@/contexts/MarketContext";
+import { useMobileRoutes } from "../hooks/useMobileRoutes";
 
 interface MobileHeaderProps {
     onNewChat?: () => void;
@@ -30,6 +31,7 @@ export function MobileHeader({
 }: MobileHeaderProps) {
     const router = useRouter();
     const { market: contextMarket } = useMarketSafe();
+    const { getRoute } = useMobileRoutes();
     const displayMarket = forceMarket || contextMarket;
 
     return (
@@ -102,7 +104,7 @@ export function MobileHeader({
                     {/* Login/Profile Button - Using Trust Blue gradient */}
                     {isAuthenticated ? (
                         <button
-                            onClick={() => router.push('/mobile-ai-analyst/setting')}
+                            onClick={() => router.push(getRoute('setting'))}
                             className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#14B8A6] text-white shadow-lg shadow-[#14B8A6]/20 dark:shadow-[#14B8A6]/10 active:scale-95 transition-all"
                             title="Settings"
                         >

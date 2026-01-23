@@ -7,11 +7,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
+import { useMobileRoutes } from "../hooks/useMobileRoutes";
 
 function MobileRegisterPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { register } = useAuth();
+    const { getRoute } = useMobileRoutes();
 
     const [formData, setFormData] = useState({
         full_name: "",
@@ -40,7 +42,7 @@ function MobileRegisterPageContent() {
                 const user = JSON.parse(decodeURIComponent(userStr));
                 localStorage.setItem("fh_auth_token", token);
                 localStorage.setItem("fh_user", JSON.stringify(user));
-                router.push("/mobile-ai-analyst");
+                router.push(getRoute('home'));
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
             }
@@ -59,16 +61,8 @@ function MobileRegisterPageContent() {
             setError("Please enter your email");
             return;
         }
-        if (formData.password.length < 8) {
-            setError("Password must be at least 8 characters");
-            return;
-        }
-        if (!/[A-Z]/.test(formData.password)) {
-            setError("Password must contain at least one uppercase letter");
-            return;
-        }
-        if (!/[0-9]/.test(formData.password)) {
-            setError("Password must contain at least one number");
+        if (formData.password.length < 6) {
+            setError("Password must be at least 6 characters");
             return;
         }
         if (formData.password !== formData.confirmPassword) {
@@ -87,26 +81,22 @@ function MobileRegisterPageContent() {
         setIsLoading(false);
 
         if (result.success) {
-            router.push("/mobile-ai-analyst");
+            router.push(getRoute('home'));
         } else {
             setError(result.error || "Registration failed");
         }
     };
 
-    // Password strength - using design system semantic colors
+    // Password strength - simplified: 6+ characters required
     const getPasswordStrength = () => {
         const p = formData.password;
         if (!p) return { strength: 0, label: "", color: "bg-slate-200" };
-        let score = 0;
-        if (p.length >= 8) score++;
-        if (/[A-Z]/.test(p)) score++;
-        if (/[0-9]/.test(p)) score++;
-        if (/[^A-Za-z0-9]/.test(p)) score++;
 
-        if (score <= 1) return { strength: 25, label: "Weak", color: "bg-[#EF4444]" };
-        if (score === 2) return { strength: 50, label: "Fair", color: "bg-[#F59E0B]" };
-        if (score === 3) return { strength: 75, label: "Good", color: "bg-[#14B8A6]" };
-        return { strength: 100, label: "Strong", color: "bg-[#22C55E]" };
+        // Simple length-based strength
+        if (p.length < 6) return { strength: 25, label: "Too short", color: "bg-[#EF4444]" };
+        if (p.length < 8) return { strength: 50, label: "Good", color: "bg-[#14B8A6]" };
+        if (p.length < 12) return { strength: 75, label: "Strong", color: "bg-[#22C55E]" };
+        return { strength: 100, label: "Very Strong", color: "bg-[#22C55E]" };
     };
 
     const passwordStrength = getPasswordStrength();
@@ -120,7 +110,7 @@ function MobileRegisterPageContent() {
             {/* Header */}
             <header className="px-4 py-4 relative z-10">
                 <button
-                    onClick={() => router.push('/mobile-ai-analyst')}
+                    onClick={() => router.push(getRoute('home'))}
                     className="flex items-center gap-2 text-slate-500 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white transition-colors font-medium"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -202,7 +192,7 @@ function MobileRegisterPageContent() {
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-lg text-[#0F172A] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/30 focus:border-[#3B82F6] transition-all font-medium"
-                                    placeholder="Min 8 chars, 1 uppercase, 1 number"
+                                    placeholder="Min 6 characters"
                                     autoComplete="new-password"
                                 />
                                 <button
@@ -278,7 +268,7 @@ function MobileRegisterPageContent() {
                     <div className="pt-6 text-center mt-4">
                         <p className="text-slate-500 dark:text-slate-500 text-sm">
                             Already have an account?{" "}
-                            <Link href="/mobile-ai-analyst/login" className="text-[#14B8A6] font-bold hover:text-[#0D9488] transition-colors">
+                            <Link href={getRoute('login')} className="text-[#14B8A6] font-bold hover:text-[#0D9488] transition-colors">
                                 Sign in
                             </Link>
                         </p>

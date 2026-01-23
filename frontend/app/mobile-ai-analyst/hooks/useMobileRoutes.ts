@@ -37,11 +37,18 @@ export type RouteKey = keyof typeof MOBILE_ROUTES;
 
 /**
  * Hook to get the correct route based on current domain
+ * 
+ * CRITICAL: To avoid hydration mismatches, this hook uses the pathname
+ * to detect clean-URL domains during initial render. If the path doesn't
+ * include /mobile-ai-analyst and we're on a known mobile page, we're on
+ * a clean-URL domain.
  */
 export function useMobileRoutes() {
     const [isCleanDomain, setIsCleanDomain] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         if (typeof window !== "undefined") {
             const hostname = window.location.hostname;
             setIsCleanDomain(CLEAN_URL_DOMAINS.includes(hostname));
@@ -50,8 +57,18 @@ export function useMobileRoutes() {
 
     /**
      * Get the correct route path based on current domain
+     * 
+     * CRITICAL FIX: During SSR and before mount, always return the full
+     * mobile-ai-analyst paths to match what Next.js expects. The rewrites
+     * will handle the clean URL display.
      */
     const getRoute = (routeKey: RouteKey): string => {
+        // Before client mount, return prefixed routes (matches SSR output)
+        if (!mounted) {
+            return MOBILE_ROUTES[routeKey];
+        }
+
+        // After mount, return clean routes for clean domains
         if (isCleanDomain) {
             return CLEAN_ROUTES[routeKey];
         }
@@ -60,6 +77,7 @@ export function useMobileRoutes() {
 
     return {
         isCleanDomain,
+        mounted,
         getRoute,
         routes: isCleanDomain ? CLEAN_ROUTES : MOBILE_ROUTES,
     };

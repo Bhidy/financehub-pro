@@ -37,6 +37,7 @@ import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { FactExplanations } from "@/components/ai/FactExplanations";
+import { useMobileRoutes } from "./hooks/useMobileRoutes";
 
 /**
  * Mobile-specific AI Analyst Page
@@ -48,6 +49,7 @@ function MobileAIAnalystPageContent() {
     const searchParams = useSearchParams();
     const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { market } = useMarketSafe();
+    const { getRoute } = useMobileRoutes();
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -73,7 +75,7 @@ function MobileAIAnalystPageContent() {
                 localStorage.setItem("fh_user", JSON.stringify(userData));
 
                 // Force navigation to clean URL (prevents infinite reload loop)
-                window.location.href = "/mobile-ai-analyst";
+                window.location.href = getRoute('home');
             } catch (e) {
                 console.error("Failed to parse Google auth response:", e);
             }
@@ -232,7 +234,7 @@ function MobileAIAnalystPageContent() {
                     isAuthenticated={isAuthenticated}
                     hasHistory={isAuthenticated}
                     remainingQuestions={remainingQuestions}
-                    onLogin={() => router.push('/mobile-ai-analyst/login')}
+                    onLogin={() => router.push(getRoute('login'))}
                 />
 
                 {/* Chat Area - min-h-0 is CRITICAL for flex scrolling */}
@@ -281,7 +283,7 @@ function MobileAIAnalystPageContent() {
                                         )}
                                     >
                                         {m.role === 'user' ? (
-                                            <div className="bg-[#3B82F6] text-white rounded-[20px] rounded-tr-none px-4 py-2.5 max-w-[85%] shadow-md shadow-[#3B82F6]/10 text-[15px] font-medium leading-normal animate-in zoom-in-95 slide-in-from-right-2 duration-300">
+                                            <div className="bg-[#14B8A6] text-white rounded-[20px] rounded-tr-none px-4 py-2.5 max-w-[85%] shadow-md shadow-[#14B8A6]/10 text-[15px] font-medium leading-normal animate-in zoom-in-95 slide-in-from-right-2 duration-300">
                                                 {m.content}
                                             </div>
                                         ) : (

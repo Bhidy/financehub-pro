@@ -367,6 +367,65 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
             };
             return { chartOptions: options, chartSeries: series };
 
+        } else if (chart.type === "line" && chart.symbol.includes(" vs ")) {
+            // Multi-Series Comparison Chart
+            // Data format: [{ time: '...', SYMB1: 10.2, SYMB2: 12.5 }]
+            if (!chart.data || chart.data.length === 0) return { chartOptions: null, chartSeries: null };
+
+            // Extract keys from first data point (excluding 'time')
+            const keys = Object.keys(chart.data[0]).filter(k => k !== 'time');
+
+            const series = keys.map(key => ({
+                name: key,
+                data: chart.data.map((d: any) => ({
+                    x: new Date(d.time).getTime(),
+                    y: d[key] || 0
+                }))
+            }));
+
+            const options: ApexCharts.ApexOptions = {
+                chart: {
+                    type: "line",
+                    height,
+                    toolbar: { show: true },
+                    zoom: { enabled: true },
+                    background: "transparent"
+                },
+                theme: { mode: isDark ? 'dark' : 'light' },
+                title: { text: chart.title, style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor } },
+                xaxis: {
+                    type: "datetime",
+                    labels: { style: { colors: secondaryTextColor, fontSize: '11px' } },
+                    tooltip: { enabled: false }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => val.toFixed(2) + "%",
+                        style: { colors: secondaryTextColor, fontSize: '11px' }
+                    },
+                    title: { text: "Performance (%)", style: { color: secondaryTextColor, fontSize: '10px' } }
+                },
+                grid: {
+                    borderColor: borderColor,
+                    strokeDashArray: 4,
+                    yaxis: { lines: { show: true } },
+                    xaxis: { lines: { show: false } }
+                },
+                stroke: { curve: "smooth", width: 3 },
+                colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"],
+                legend: {
+                    position: 'top',
+                    labels: { colors: primaryTextColor }
+                },
+                tooltip: {
+                    theme: isDark ? 'dark' : 'light',
+                    y: {
+                        formatter: (val) => val.toFixed(2) + "%"
+                    }
+                }
+            };
+            return { chartOptions: options, chartSeries: series };
+
         } else {
             const series = [{
                 name: "Price",

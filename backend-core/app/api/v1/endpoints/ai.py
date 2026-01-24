@@ -492,39 +492,43 @@ async def delete_session(
         if str(owner) != str(current_user.get('id')) and str(owner) != str(current_user['email']):
              raise HTTPException(status_code=403, detail="Not authorized to delete this session")
         
-    # Delete - "Nuclear" Approach (Cascade Manually)
+    # Delete - ROBUST Approach (No Transaction - Independent Deletes)
+    # ===================================================================
+    # PostgreSQL transactions abort entirely if ANY error occurs inside them,
+    # even if caught. Since we're doing cleanup (not atomic business logic),
+    # we execute each delete independently. This is safe because:
+    # 1. Failing to delete from a non-existent table is harmless.
+    # 2. If parent session delete succeeds, cleanup is complete.
+    # 3. If parent session fails, we return an error.
+    # ===================================================================
     try:
         if not db._pool:
              raise HTTPException(status_code=503, detail="Database unavailable")
 
-        # Use explicit connection for transaction atomicity
         async with db._pool.acquire() as conn:
-            async with conn.transaction():
-                # 1. Delete from child tables
-                # We use distinct try/except blocks to handle "table not found" silently
-                
-                tables = [
-                    'chat_messages', 
-                    'chat_analytics', 
-                    'chat_interactions', 
-                    'chat_session_summary',
-                    'unresolved_queries'
-                ]
-                
-                for table in tables:
-                    try:
-                        await conn.execute(f"DELETE FROM {table} WHERE session_id = $1", session_id)
-                    except Exception as e:
-                        # Ignore "table does not exist" errors, raise others
-                        if "does not exist" not in str(e):
-                            print(f"Warning cleaning {table}: {e}")
-                
-                # 2. Finally delete the parent session
-                await conn.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
+            # 1. Delete from child tables (order: children first)
+            # Execute each independently - no transaction wrapper
+            child_tables = [
+                'chat_messages', 
+                'chat_analytics', 
+                'chat_interactions', 
+                'chat_session_summary',
+            ]
+            
+            for table in child_tables:
+                try:
+                    await conn.execute(f"DELETE FROM {table} WHERE session_id = $1", session_id)
+                except Exception as e:
+                    # Silently skip if table doesn't exist or column missing
+                    err_str = str(e).lower()
+                    if "does not exist" not in err_str and "column" not in err_str:
+                        print(f"[DeleteSession] Warning cleaning {table}: {e}")
+            
+            # 2. Delete the parent session (this is the critical operation)
+            await conn.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
                  
     except Exception as e:
         print(f"Delete Session Error: {e}")
-        # Return strict 500 but with detail
         raise HTTPException(status_code=500, detail=f"Database error during deletion: {str(e)}")
         
     return {"success": True, "session_id": session_id, "message": "Chat session deleted permanently"}

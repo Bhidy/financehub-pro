@@ -24,12 +24,8 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    // CRITICAL FIX: Detect domain via Host Header (Source of Truth)
-    // This prevents redirect loops if the 'state' param is lost or malformed
-    const requestHost = request.headers.get("host") || request.nextUrl.host || "";
-    const isCleanDomainHost = requestHost.includes("startamarkets.com");
-
-    const isCleanDomain = isCleanDomainHost || (returnOrigin?.includes("startamarkets.com") ?? false);
+    // CRITICAL: Detect if returning to startamarkets.com which uses clean URLs
+    const isCleanDomain = returnOrigin?.includes("startamarkets.com") ?? false;
 
     // Clean domains (startamarkets.com) use "/" for home, others use "/mobile-ai-analyst"
     // CRITICAL FIX: startamarkets.com redirects ALWAYS to "/" (root), effectively deprecating /mobile-ai-analyst for this domain

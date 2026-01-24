@@ -42,14 +42,6 @@ export function useAISuggestions() {
                     { text: `What is the fair value of ${stocks.second}?`, icon: Target, gradient: "from-blue-600 to-cyan-600" },
                     { text: `Is ${stocks.bank} financially safe?`, icon: ShieldCheck, gradient: "from-emerald-600 to-teal-600" },
                     { text: `Does ${stocks.growth} have high growth potential?`, icon: Rocket, gradient: "from-fuchsia-600 to-purple-600" },
-                ]
-            },
-            {
-                id: 'popular',
-                label: `🔥 ${isEgypt ? 'Egypt' : 'KSA'} Hot`,
-                suggestions: [
-                    { text: "Show me the safest stocks in EGX", icon: ShieldCheck, gradient: "from-emerald-500 to-teal-600" },
-                    { text: "Top 10 dividend stocks in Egypt", icon: DollarSignIcon, gradient: "from-amber-500 to-yellow-600" },
                     { text: "Market summary", icon: PieChart, gradient: "from-blue-500 to-blue-600" },
                 ]
             },

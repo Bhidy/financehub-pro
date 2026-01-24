@@ -429,6 +429,16 @@ export const fetchSessionMessages = async (sessionId: string): Promise<any[]> =>
     return data;
 };
 
+export const renameChatSession = async (sessionId: string, title: string) => {
+    const { data } = await api.patch(`/ai/history/${sessionId}`, { title });
+    return data;
+};
+
+export const deleteChatSession = async (sessionId: string) => {
+    const { data } = await api.delete(`/ai/history/${sessionId}`);
+    return data;
+};
+
 export const fetchEarnings = async (symbol?: string, limit: number = 200) => {
     const params = symbol ? { symbol, limit } : { limit };
     const { data } = await api.get("/earnings", { params });

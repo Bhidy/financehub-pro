@@ -16,10 +16,10 @@
   --color-brand-primary-dark: #020617;
 
   /* Accent: Midnight Teal - Distinctive, innovative, trustworthy */
-  --color-brand-accent: #14B8A6;
+  --color-brand-accent: #13b8a6;
   --color-brand-accent-light: #2DD4BF;
   --color-brand-accent-dark: #0D9488;
-  --color-brand-accent-subtle: rgba(20, 184, 166, 0.1);
+  --color-brand-accent-subtle: rgba(19, 184, 166, 0.1);
 
   /* ========================================================================
      FUNCTIONAL COLORS (Strict Semantic Usage)
@@ -32,10 +32,10 @@
   --color-trust-blue-subtle: rgba(59, 130, 246, 0.1);
 
   /* Success Green: Confirmations, Positive States, Bullish Data */
-  --color-success: #10B981;
+  --color-success: #13b8a6;
   --color-success-light: #34D399;
   --color-success-dark: #059669;
-  --color-success-subtle: rgba(16, 185, 129, 0.1);
+  --color-success-subtle: rgba(19, 184, 166, 0.1);
 
   /* Market Bullish: Price Increases ONLY */
   --color-bullish: #22C55E;

@@ -434,7 +434,62 @@ async def list_supported_intents():
             {"id": "TOP_LOSERS", "description": "Show top losing stocks", "examples": ["Top losers", "الأكثر انخفاضاً"]},
             {"id": "SECTOR_STOCKS", "description": "Show stocks by sector", "examples": ["Banking sector stocks", "أسهم البنوك"]},
             {"id": "DIVIDEND_LEADERS", "description": "Show highest dividend yields", "examples": ["Highest dividend stocks", "أعلى توزيعات"]},
-            {"id": "SCREENER_PE", "description": "Screen by PE ratio", "examples": ["Stocks with PE below 10", "أقل من"]},
             {"id": "HELP", "description": "Show help and examples", "examples": ["Help", "مساعدة"]},
         ]
     }
+
+
+class UpdateSessionRequest(BaseModel):
+    title: str
+
+
+@router.patch("/history/{session_id}")
+async def update_session(
+    session_id: str,
+    update_data: UpdateSessionRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update chat session (e.g. rename title)."""
+    if not db._pool:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    
+    # Verify ownership
+    query = "SELECT user_id FROM chat_sessions WHERE session_id = $1"
+    owner = await db.fetch_val(query, session_id)
+    
+    if not owner or owner != current_user['email']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    # Update
+    await db.execute(
+        "UPDATE chat_sessions SET title = $1, updated_at = NOW() WHERE session_id = $2",
+        update_data.title, session_id
+    )
+    return {"success": True, "session_id": session_id, "title": update_data.title}
+
+
+@router.delete("/history/{session_id}")
+async def delete_session(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a chat session."""
+    if not db._pool:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+        
+    # Verify ownership
+    query = "SELECT user_id FROM chat_sessions WHERE session_id = $1"
+    owner = await db.fetch_val(query, session_id)
+    
+    if not owner or owner != current_user['email']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    # Delete
+    # We delete related data first manually to be safe
+    async with db.transaction():
+        await db.execute("DELETE FROM chat_messages WHERE session_id = $1", session_id)
+        await db.execute("DELETE FROM chat_interactions WHERE session_id = $1", session_id) # Analytics
+        await db.execute("DELETE FROM chat_session_summary WHERE session_id = $1", session_id) # Summary
+        await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
+        
+    return {"success": True, "session_id": session_id}

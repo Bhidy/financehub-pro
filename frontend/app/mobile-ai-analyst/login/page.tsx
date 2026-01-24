@@ -176,7 +176,7 @@ function LoginPageContent() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="text-slate-400 text-lg leading-relaxed mb-14 max-w-[420px]"
                         >
-                            Professional-grade financial intelligence for Egypt and Saudi markets.
+                            Professional-grade financial intelligence for the Egyptian market.
                             Get instant answers, analyze stocks, and make informed decisions.
                         </motion.p>
 
@@ -278,8 +278,8 @@ function LoginPageContent() {
                                     Email address
                                 </label>
                                 <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'email'
-                                        ? 'ring-2 ring-[#14B8A6]/20 shadow-lg shadow-[#14B8A6]/5'
-                                        : ''
+                                    ? 'ring-2 ring-[#14B8A6]/20 shadow-lg shadow-[#14B8A6]/5'
+                                    : ''
                                     }`}>
                                     <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'
                                         }`} />
@@ -302,8 +302,8 @@ function LoginPageContent() {
                                     Password
                                 </label>
                                 <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'password'
-                                        ? 'ring-2 ring-[#14B8A6]/20 shadow-lg shadow-[#14B8A6]/5'
-                                        : ''
+                                    ? 'ring-2 ring-[#14B8A6]/20 shadow-lg shadow-[#14B8A6]/5'
+                                    : ''
                                     }`}>
                                     <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-[#14B8A6]' : 'text-slate-400'
                                         }`} />
@@ -333,8 +333,8 @@ function LoginPageContent() {
                                     <div
                                         onClick={() => setRememberMe(!rememberMe)}
                                         className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${rememberMe
-                                                ? "bg-[#14B8A6] border-[#14B8A6] scale-105"
-                                                : "border-slate-300 dark:border-slate-600 group-hover:border-[#14B8A6]/50"
+                                            ? "bg-[#14B8A6] border-[#14B8A6] scale-105"
+                                            : "border-slate-300 dark:border-slate-600 group-hover:border-[#14B8A6]/50"
                                             }`}
                                     >
                                         <motion.div
@@ -527,8 +527,8 @@ function LoginPageContent() {
                                     <div
                                         onClick={() => setRememberMe(!rememberMe)}
                                         className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer ${rememberMe
-                                                ? "bg-[#14B8A6] border-[#14B8A6]"
-                                                : "border-slate-300 dark:border-slate-600"
+                                            ? "bg-[#14B8A6] border-[#14B8A6]"
+                                            : "border-slate-300 dark:border-slate-600"
                                             }`}
                                     >
                                         {rememberMe && <Check className="w-3 h-3 text-white" />}

@@ -442,15 +442,14 @@ function DesktopSecurityTab({ logout }: { logout: () => void }) {
                 </form>
             </div>
 
-            {/* Danger Zone */}
-            <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-red-200 dark:border-red-500/20 p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-red-500 mb-1">Danger Zone</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Irreversible account actions.</p>
+            {/* Sign Out Section */}
+            <div className="bg-red-50/50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/20 p-6 shadow-sm">
                 <button
                     onClick={logout}
-                    className="px-6 py-3 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl font-semibold text-sm border border-red-200 dark:border-red-500/20 flex items-center gap-2 hover:bg-red-100 dark:hover:bg-red-500/20 active:scale-[0.98] transition-all"
+                    className="w-full px-6 py-4 bg-white dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl font-bold text-sm border border-red-200 dark:border-red-500/20 flex items-center justify-center gap-2.5 hover:bg-red-50 dark:hover:bg-red-500/20 active:scale-[0.98] transition-all shadow-sm hover:shadow-red-500/10"
                 >
-                    <LogOut className="w-4 h-4" /> Sign Out
+                    <LogOut className="w-5 h-5" />
+                    Sign Out
                 </button>
             </div>
         </motion.div>

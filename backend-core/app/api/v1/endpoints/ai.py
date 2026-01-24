@@ -481,6 +481,11 @@ async def delete_session(
     query = "SELECT user_id FROM chat_sessions WHERE session_id = $1"
     owner = await db.fetch_val(query, session_id)
     
+    # IDEMPOTENCY FIX: If session is already gone, consider it a success.
+    # This prevents UI from showing errors if the user double-clicks or if it was partially deleted.
+    if not owner:
+        return {"success": True, "session_id": session_id, "message": "Session already deleted"}
+    
     # Allow admin or owner
     if not owner or (owner != current_user['email'] and current_user.get('role') != 'admin'):
         # Just in case user_id is integer in DB (some mixed schemas)

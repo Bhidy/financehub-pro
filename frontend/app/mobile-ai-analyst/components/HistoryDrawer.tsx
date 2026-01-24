@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MessageSquare, Calendar, ChevronRight, Loader2, MoreVertical, Edit2, Trash2, Check, XCircle } from "lucide-react";
 import { fetchChatHistory, renameChatSession, deleteChatSession } from "@/lib/api";
+import { Toast, ToastType } from "@/components/ui/Toast";
 import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 import { clsx } from "clsx";
 
@@ -41,6 +42,7 @@ export function HistoryDrawer({
     const menuRef = useRef<HTMLDivElement>(null);
 
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
     // ... existing refs
 
@@ -98,8 +100,11 @@ export function HistoryDrawer({
             if (currentSessionId === deleteConfirmId) {
                 onNewChat(); // Reset if deleted current
             }
-        } catch (error) {
+            setToast({ message: "Conversation deleted successfully", type: "success" });
+        } catch (error: any) {
             console.error("Failed to delete:", error);
+            const errMsg = error?.response?.data?.detail || "Failed to delete chat. Please try again.";
+            setToast({ message: typeof errMsg === 'string' ? errMsg : "System error occurred", type: "error" });
         } finally {
             setProcessingId(null);
             setDeleteConfirmId(null);
@@ -133,6 +138,13 @@ export function HistoryDrawer({
 
     return (
         <AnimatePresence>
+            <Toast
+                isVisible={!!toast}
+                message={toast?.message || ""}
+                type={toast?.type}
+                onClose={() => setToast(null)}
+            />
+
             {/* Delete Confirmation Modal - High Z-Index */}
             {deleteConfirmId && (
                 <div key="delete-modal" className="fixed inset-0 z-[70] flex items-center justify-center p-4">

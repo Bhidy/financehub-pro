@@ -103,7 +103,8 @@ class MultiProviderLLM:
         messages: List[Dict[str, str]],
         max_tokens: int = 250,
         temperature: float = 0.5,
-        purpose: str = "narrative"
+        purpose: str = "narrative",
+        model_override: Optional[str] = None
     ) -> Optional[str]:
         """
         Make a chat completion request with automatic failover.
@@ -113,6 +114,7 @@ class MultiProviderLLM:
             max_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             purpose: For logging ("narrative", "paraphrase", etc.)
+            model_override: Specific model to use (e.g. "llama-3.1-8b-instant")
         
         Returns:
             Generated text or None if all providers fail
@@ -126,15 +128,23 @@ class MultiProviderLLM:
             if not provider.is_available():
                 continue
                 
+            # Determine models to try for this provider
+            models_to_try = provider.models
+            
+            # If override requested and this provider supports it (or just try it)
+            # For Groq, we trust the override exists if valid
+            if model_override and provider.name == "groq":
+                models_to_try = [model_override] + [m for m in provider.models if m != model_override]
+
             # Try each model in the provider
-            for model in provider.models:
+            for model in models_to_try:
                 try:
                     result = await self._call_provider(
                         provider, model, messages, max_tokens, temperature
                     )
                     if result:
                         if provider.name != "groq" or model != provider.models[0]:
-                            logger.info(f"✅ [{purpose}] Fallback to {provider.name}/{model} successful")
+                            logger.info(f"✅ [{purpose}] Fallback/Override using {provider.name}/{model}")
                         self._last_successful_provider = provider.name
                         return result
                         

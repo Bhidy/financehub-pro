@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
@@ -58,6 +59,19 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased flex h-screen overflow-hidden bg-[var(--background)] transition-colors duration-300`}
       >
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-X86G4NMVFJ');
+          `}
+        </Script>
         <div id="build-id" data-timestamp={new Date().toISOString()} className="hidden" />
         <Suspense fallback={null}>
           <BuildInfo />

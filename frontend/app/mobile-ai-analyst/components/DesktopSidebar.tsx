@@ -266,7 +266,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center shadow-lg shadow-[#13b8a6]/20">
                                         <BarChart3 className="w-4 h-4 text-white" />
                                     </div>
-                                    <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">Starta AI</span>
+                                    <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">STARTA</span>
                                 </div>
                                 <button
                                     onClick={onToggle}

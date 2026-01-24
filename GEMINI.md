@@ -41,6 +41,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
   5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
   6. **Configuration Updates:** When updating environment variables (like secrets) on Hetzner, Docker containers MUST be restarted with `--force-recreate` to pick up the changes. The `setup_hetzner.sh` script handles this automatically.
   7. **CLOUD-ONLY MANDATE:** All automated processes (schedulers, scrapers, data sync) MUST run on the Cloud Infrastructure (Hetzner + GitHub Actions). **Local execution of automated workflows is STRICTLY PROHIBITED** to prevent data corruption and IP bans. The local machine is for development only.
+  8. **ROOT URL STRUCTURE (CRITICAL):** The root URL `https://startamarkets.com/` (i.e., `/`) **MUST ALWAYS serve the AI Chatbot** (`mobile-ai-analyst`). This is the core product experience. The Market Dashboard is available at `/dashboard`. **DO NOT** change this structure or create a different homepage. The file `frontend/app/page.tsx` re-exports the Mobile AI Analyst and must remain unchanged.
 
   ## STRICT ARCHITECTURE RULES (CRITICAL)
   > [!IMPORTANT]

@@ -245,6 +245,8 @@ function MobileAIAnalystPageContent() {
                     hasHistory={isAuthenticated}
                     remainingQuestions={remainingQuestions}
                     onLogin={() => router.push(getRoute('login'))}
+                    designMode="analyst"
+                    onToggleDesignMode={() => { }}
                 />
 
                 {/* Chat Area - min-h-0 is CRITICAL for flex scrolling */}

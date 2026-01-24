@@ -341,14 +341,14 @@ function DesktopPersonalTab({ user }: { user: any }) {
                         icon={UserIcon}
                         label="Full Name"
                         value={formData.full_name}
-                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, full_name: e.target.value })}
                         placeholder="Enter your full name"
                     />
                     <DesktopInput
                         icon={Phone}
                         label="Phone Number"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+1 234 567 8900"
                         type="tel"
                     />
@@ -415,7 +415,7 @@ function DesktopSecurityTab({ logout }: { logout: () => void }) {
                         icon={Lock}
                         label="Current Password"
                         value={passData.old_password}
-                        onChange={(e) => setPassData({ ...passData, old_password: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassData({ ...passData, old_password: e.target.value })}
                         placeholder="••••••••"
                         type="password"
                     />
@@ -423,7 +423,7 @@ function DesktopSecurityTab({ logout }: { logout: () => void }) {
                         icon={Shield}
                         label="New Password"
                         value={passData.new_password}
-                        onChange={(e) => setPassData({ ...passData, new_password: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassData({ ...passData, new_password: e.target.value })}
                         placeholder="Min 6 characters"
                         type="password"
                     />
@@ -692,8 +692,8 @@ function PersonalTab({ user }: { user: any }) {
             <p className="text-xs text-slate-500 mb-5">Manage your identity information.</p>
 
             <form onSubmit={handleUpdate} className="space-y-4">
-                <MobileInput icon={UserIcon} label="Full Name" value={formData.full_name} onChange={(e: any) => setFormData({ ...formData, full_name: e.target.value })} placeholder="Enter name" />
-                <MobileInput icon={Phone} label="Phone" value={formData.phone} onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 234 567" type="tel" />
+                <MobileInput icon={UserIcon} label="Full Name" value={formData.full_name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, full_name: e.target.value })} placeholder="Enter name" />
+                <MobileInput icon={Phone} label="Phone" value={formData.phone} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 234 567" type="tel" />
                 <MobileInput icon={Mail} label="Email" value={user?.email || ""} disabled readOnly />
                 <StatusMessages success={successMsg} error={errorMsg} />
                 <button type="submit" disabled={isLoading} className="w-full py-4 bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#14B8A6]/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50">
@@ -732,8 +732,8 @@ function SecurityTab({ logout }: { logout: () => void }) {
             <p className="text-xs text-slate-500 mb-5">Protect your account.</p>
 
             <form onSubmit={handleChange} className="space-y-4">
-                <MobileInput icon={Lock} label="Current Password" value={passData.old_password} onChange={(e: any) => setPassData({ ...passData, old_password: e.target.value })} placeholder="••••••••" type="password" />
-                <MobileInput icon={Shield} label="New Password" value={passData.new_password} onChange={(e: any) => setPassData({ ...passData, new_password: e.target.value })} placeholder="Min 6 chars" type="password" />
+                <MobileInput icon={Lock} label="Current Password" value={passData.old_password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassData({ ...passData, old_password: e.target.value })} placeholder="••••••••" type="password" />
+                <MobileInput icon={Shield} label="New Password" value={passData.new_password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassData({ ...passData, new_password: e.target.value })} placeholder="Min 6 chars" type="password" />
                 <StatusMessages success={successMsg} error={errorMsg} />
                 <button type="submit" disabled={isLoading} className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50">
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Update Password"}

@@ -209,7 +209,7 @@ function MobileRegisterPageContent() {
                                 transition={{ duration: 0.6, delay: 0.2 }}
                                 className="text-slate-400 text-lg xl:text-xl leading-relaxed mb-10 max-w-[460px]"
                             >
-                                Create your free account to access professional-grade market intelligence for Egypt and Saudi stocks.
+                                Create your free account to access professional-grade market intelligence for Egyptian stocks.
                             </motion.p>
 
                             <div className="space-y-3">

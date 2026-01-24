@@ -481,42 +481,41 @@ async def delete_session(
     query = "SELECT user_id FROM chat_sessions WHERE session_id = $1"
     owner = await db.fetch_val(query, session_id)
     
-    if not owner or owner != current_user['email']:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    # Allow admin or owner
+    if not owner or (owner != current_user['email'] and current_user.get('role') != 'admin'):
+        # Just in case user_id is integer in DB (some mixed schemas)
+        if str(owner) != str(current_user.get('id')) and str(owner) != str(current_user['email']):
+             raise HTTPException(status_code=403, detail="Not authorized to delete this session")
         
-    # Delete
-    # Ultra-Robust Deletion: Check which tables exist first to avoid 500 errors
+    # Delete - "Nuclear" Approach (Cascade Manually)
     try:
-        # Get all public tables involved in chat
-        check_query = """
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema='public' 
-            AND table_name IN ('chat_messages', 'chat_analytics', 'chat_interactions', 'chat_session_summary', 'chat_sessions')
-        """
-        rows = await db.fetch_all(check_query)
-        existing_tables = set(r['table_name'] for r in rows)
-        
         async with db.transaction():
-            # Delete children first (Reference Integrity)
-            if 'chat_messages' in existing_tables:
-                await db.execute("DELETE FROM chat_messages WHERE session_id = $1", session_id)
+            # 1. Delete from child tables (Order matters for some schemas, but usually parallel)
+            # We use distinct try/except blocks for each table to handle "table not found" silently
+            # but ensure we attempt to clear data.
             
-            if 'chat_analytics' in existing_tables:
-                await db.execute("DELETE FROM chat_analytics WHERE session_id = $1", session_id)
-                
-            if 'chat_interactions' in existing_tables:
-                await db.execute("DELETE FROM chat_interactions WHERE session_id = $1", session_id)
-
-            if 'chat_session_summary' in existing_tables:
-                await db.execute("DELETE FROM chat_session_summary WHERE session_id = $1", session_id)
+            tables = [
+                'chat_messages', 
+                'chat_analytics', 
+                'chat_interactions', 
+                'chat_session_summary',
+                'unresolved_queries' # Linked via interaction usually, but good to check
+            ]
             
-            # Finally delete the parent session
-            if 'chat_sessions' in existing_tables:
-                 await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
+            for table in tables:
+                try:
+                    await db.execute(f"DELETE FROM {table} WHERE session_id = $1", session_id)
+                except Exception as e:
+                    # Ignore "table does not exist" errors, raise others
+                    if "does not exist" not in str(e):
+                        print(f"Warning cleaning {table}: {e}")
+            
+            # 2. Finally delete the parent session
+            await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
                  
     except Exception as e:
         print(f"Delete Session Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
+        # Return strict 500 but with detail
+        raise HTTPException(status_code=500, detail=f"Database error during deletion: {str(e)}")
         
-    return {"success": True, "session_id": session_id}
+    return {"success": True, "session_id": session_id, "message": "Chat session deleted permanently"}

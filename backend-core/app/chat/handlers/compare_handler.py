@@ -10,6 +10,8 @@ import tls_client
 import asyncio
 import logging
 
+import logging
+
 logger = logging.getLogger(__name__)
 
 def safe_float(val: Any) -> Any:
@@ -20,61 +22,7 @@ def safe_float(val: Any) -> Any:
         return f
     except: return None
 
-# --- EMBEDDED LIVE FETCH (To avoid circular imports) ---
-async def fetch_ohlc_live_embedded(symbol: str, limit: int = 200) -> Optional[List[Dict]]:
-    """
-    Fetch OHLC data directly from StockAnalysis.com Internal API.
-    Embedded in compare_handler to ensure isolation.
-    """
-    # Sanitize symbol
-    clean_symbol = symbol.upper().strip()
-    # Handle market prefixes if present (e.g. EGX:COMI -> COMI)
-    if ":" in clean_symbol:
-        clean_symbol = clean_symbol.split(":")[-1]
-        
-    url = f"https://stockanalysis.com/api/symbol/a/EGX-{clean_symbol}/history?type=full"
-    
-    try:
-        session = tls_client.Session(
-            client_identifier="chrome_120",
-            random_tls_extension_order=True
-        )
-        
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Referer": f"https://stockanalysis.com/quote/egx/{clean_symbol.lower()}/history/",
-            "Accept": "application/json"
-        }
-        
-        loop = asyncio.get_running_loop()
-        resp = await loop.run_in_executor(
-            None,
-            lambda: session.get(url, headers=headers, timeout_seconds=10)
-        )
-        
-        if resp.status_code != 200:
-            print(f"[COMPARE LIVE] API HTTP {resp.status_code} for {clean_symbol}") # Print to logs
-            return None
-            
-        data = resp.json()
-        history = []
-        
-        if 'data' in data and 'data' in data['data']:
-            for row in data['data']['data']:
-                try:
-                    history.append({
-                        "time": row.get('t'), # YYYY-MM-DD
-                        "val": float(row.get('c', 0)) # Close price
-                    })
-                except:
-                    continue
-        
-        history.sort(key=lambda x: x['time'])
-        return history
-            
-    except Exception as e:
-        print(f"[COMPARE LIVE] Error fetching {clean_symbol}: {e}")
-        return None
+
 
 
 async def handle_compare_stocks(
@@ -97,18 +45,38 @@ async def handle_compare_stocks(
     # 1. Fetch Fundamental Data (Smart Metrics)
     stocks_data = []
     for symbol in symbols:
-        # Get basic ticker info
-        row = await conn.fetchrow("""
-            SELECT 
-                symbol, name_en, name_ar, market_code, currency,
-                last_price, change_percent, volume,
-                pe_ratio, pb_ratio, dividend_yield, market_cap,
-                high_52w, low_52w, beta
-            FROM market_tickers
-            WHERE symbol = $1
-        """, symbol)
+        # 1. Smart Symbol Lookup (DB-Only)
+        # Try exact match first, then common suffixes if not found
+        # This solves "Unavailable Data" due to symbol format mismatch (e.g. COMI vs COMI.CA)
+        candidates = [symbol]
+        if "." not in symbol:
+             # Add market suffixes based on common patterns
+             candidates.append(f"{symbol}.CA") # Egypt
+             candidates.append(f"{symbol}.SR") # Saudi
         
-        # Get deep stats from stock_statistics
+        row = None
+        found_symbol = symbol
+        
+        for cand in candidates:
+             row = await conn.fetchrow("""
+                SELECT 
+                    symbol, name_en, name_ar, market_code, currency,
+                    last_price, change_percent, volume,
+                    pe_ratio, pb_ratio, dividend_yield, market_cap,
+                    high_52w, low_52w, beta
+                FROM market_tickers
+                WHERE symbol = $1
+            """, cand)
+             if row:
+                 found_symbol = cand
+                 break
+        
+        # If still no row, stick to original symbol, handled by 'if row:' check below
+        
+        # Update symbol for subsequent queries to match the valid DB ticker
+        symbol = found_symbol
+
+        # Get deep stats from stock_statistics using the correct symbol
         stats_row = await conn.fetchrow("""
             SELECT 
                 revenue_growth, profit_growth as net_income_growth, eps_growth,
@@ -243,9 +211,11 @@ async def handle_compare_stocks(
         start_date = datetime.now() - timedelta(days=target_days)
         
         # Parallel fetch for DB or fallback
+        # Parallel fetch for DB or fallback
         # First, try DB for all
-        for sym in symbols:
+        for sym in [d['symbol'] for d in stocks_data]: # Use the resolved symbols from above
             series = []
+            # Primary: Get data in range
             rows = await conn.fetch("""
                 SELECT date, close
                 FROM ohlc_data
@@ -258,19 +228,24 @@ async def handle_compare_stocks(
                     if r.get('close'):
                         series.append({'time': r['date'].isoformat(), 'val': float(r['close'])})
             
-            # If DB Sparse, trigger embedded Live Fetch
-            if not series or len(series) < (target_days * 0.5):
-                live = await fetch_ohlc_live_embedded(sym, limit=target_days + 30)
-                if live:
+            # DB-ONLY FALLBACK: If sparse/empty (stale data), get LATEST N records regardless of date
+            # This fixes "No Chart Data" if ingestion is paused/broken, staying compliant with "DB Only"
+            if not series or len(series) < 5:
+                print(f"[COMPARE] Sparse data for {sym} in range. Fetching latest available.")
+                latest_rows = await conn.fetch("""
+                    SELECT date, close
+                    FROM ohlc_data
+                    WHERE symbol = $1
+                    ORDER BY date DESC
+                    LIMIT 30
+                """, sym)
+                
+                if latest_rows:
                     series = []
-                    for pt in live:
-                        pt_date_str = pt.get('time')
-                        if not pt_date_str: continue
-                        try:
-                            pt_date = datetime.strptime(pt_date_str, '%Y-%m-%d').date()
-                            if pt_date >= start_date.date():
-                                series.append({'time': pt_date_str, 'val': float(pt.get('val', 0))})
-                        except: pass
+                    # They come out DESC, so reverse them for chart
+                    for r in reversed(latest_rows):
+                        if r.get('close'):
+                             series.append({'time': r['date'].isoformat(), 'val': float(r['close'])})
             
             series.sort(key=lambda x: x['time'])
             history_map[sym] = series

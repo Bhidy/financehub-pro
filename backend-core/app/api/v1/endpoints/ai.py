@@ -485,12 +485,38 @@ async def delete_session(
         raise HTTPException(status_code=403, detail="Not authorized")
         
     # Delete
-    # We delete related data first manually to be safe
-    async with db.transaction():
-        await db.execute("DELETE FROM chat_messages WHERE session_id = $1", session_id)
-        # Fix: Table name is chat_analytics
-        await db.execute("DELETE FROM chat_analytics WHERE session_id = $1", session_id) 
-        # await db.execute("DELETE FROM chat_session_summary WHERE session_id = $1", session_id) # Optional/Future
-        await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
+    # Ultra-Robust Deletion: Check which tables exist first to avoid 500 errors
+    try:
+        # Get all public tables involved in chat
+        check_query = """
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema='public' 
+            AND table_name IN ('chat_messages', 'chat_analytics', 'chat_interactions', 'chat_session_summary', 'chat_sessions')
+        """
+        rows = await db.fetch_all(check_query)
+        existing_tables = set(r['table_name'] for r in rows)
+        
+        async with db.transaction():
+            # Delete children first (Reference Integrity)
+            if 'chat_messages' in existing_tables:
+                await db.execute("DELETE FROM chat_messages WHERE session_id = $1", session_id)
+            
+            if 'chat_analytics' in existing_tables:
+                await db.execute("DELETE FROM chat_analytics WHERE session_id = $1", session_id)
+                
+            if 'chat_interactions' in existing_tables:
+                await db.execute("DELETE FROM chat_interactions WHERE session_id = $1", session_id)
+
+            if 'chat_session_summary' in existing_tables:
+                await db.execute("DELETE FROM chat_session_summary WHERE session_id = $1", session_id)
+            
+            # Finally delete the parent session
+            if 'chat_sessions' in existing_tables:
+                 await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
+                 
+    except Exception as e:
+        print(f"Delete Session Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
         
     return {"success": True, "session_id": session_id}

@@ -20,8 +20,8 @@
 
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
-import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useRef, useEffect, Suspense, useCallback } from "react";
+import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
 import { MobileHeader } from "./components/MobileHeader";
@@ -41,10 +41,13 @@ import { ChartCard } from "@/components/ai/ChartCard";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useMobileRoutes } from "./hooks/useMobileRoutes";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
 
 // Domain and Device detection
 import { useDomainDetect } from "@/hooks/useDomainDetect";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
+import { DesktopSidebar } from "./components/DesktopSidebar";
 
 /**
  * Responsive AI Analyst with Domain-Based Layout
@@ -52,11 +55,13 @@ import { useDeviceDetect } from "@/hooks/useDeviceDetect";
 function ResponsiveAIAnalystContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
     const { getRoute } = useMobileRoutes();
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [designMode, setDesignMode] = useState<'pro' | 'analyst'>('pro');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const mainRef = useRef<HTMLElement>(null);
 
@@ -70,11 +75,12 @@ function ResponsiveAIAnalystContent() {
     // Fixed market context - Egypt is default (no market selector)
     const contextMarket = "EGX";
 
-    // Theme detection
+    // Force Light Theme Default
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const isDark = document.documentElement.classList.contains("dark");
-            setTheme(isDark ? "dark" : "light");
+            // Remove dark class to ensure light mode by default
+            document.documentElement.classList.remove("dark");
+            setTheme("light");
         }
     }, []);
 
@@ -115,7 +121,7 @@ function ResponsiveAIAnalystContent() {
         sendDirectMessage,
         clearHistory,
         loadSession,
-        sessionId
+        sessionId,
     } = useAIChat({
         market: contextMarket,
         onUsageLimitReached: () => {
@@ -124,6 +130,13 @@ function ResponsiveAIAnalystContent() {
             }
         }
     });
+
+    // Handle session selection wrapper to ensure state updates
+    const handleSelectSession = useCallback(async (id: string) => {
+        console.log("Selecting session:", id);
+        // Force the sidebar to stay open or just load the session
+        await loadSession(id);
+    }, [loadSession]);
 
     // Increment usage counter for guests
     const prevMessageCount = useRef(messages.length);
@@ -180,13 +193,13 @@ function ResponsiveAIAnalystContent() {
         }
     };
 
-    const handleSymbolClick = (symbol: string) => {
+    const handleSymbolClick = useCallback((symbol: string) => {
         sendDirectMessage(`Analyze ${symbol}`);
-    };
+    }, [sendDirectMessage]);
 
-    const handleExampleClick = (text: string) => {
+    const handleExampleClick = useCallback((text: string) => {
         sendDirectMessage(text);
-    };
+    }, [sendDirectMessage]);
 
     // Loading state
     if (isAuthLoading || isDomainSSR || isDeviceSSR) {
@@ -227,7 +240,7 @@ function ResponsiveAIAnalystContent() {
                 >
                     {m.role === 'user' ? (
                         <div className={clsx(
-                            "bg-[#14B8A6] text-white rounded-[20px] rounded-tr-none px-4 py-2.5 shadow-md shadow-[#14B8A6]/10 text-[15px] font-medium leading-normal animate-in zoom-in-95 slide-in-from-right-2 duration-300",
+                            "bg-[#13b8a6] text-white rounded-[20px] rounded-tr-none px-4 py-2.5 shadow-md shadow-[#13b8a6]/10 text-[15px] font-medium leading-normal animate-in zoom-in-95 slide-in-from-right-2 duration-300",
                             effectiveDesktop ? "max-w-[70%]" : "max-w-[85%]"
                         )}>
                             {m.content}
@@ -305,9 +318,9 @@ function ResponsiveAIAnalystContent() {
                 <div className="flex justify-start">
                     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex items-center gap-3 shadow-sm backdrop-blur-sm">
                         <div className="flex gap-1">
-                            <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                            <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                            <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce"></span>
+                            <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce"></span>
                         </div>
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium animate-pulse">Analyzing market data...</span>
                     </div>
@@ -321,23 +334,6 @@ function ResponsiveAIAnalystContent() {
     // DESKTOP LAYOUT - Exact Match to Provided Mockup
     // ========================================================================
     if (effectiveDesktop) {
-        // Mock chat history data (grouped by time)
-        const chatHistory = {
-            today: [
-                { id: '1', title: 'Show me the safest stocks...', time: '12:48 AM', market: 'EGX' },
-            ],
-            yesterday: [
-                { id: '2', title: 'Is TMGH undervalued or overvalued?', time: '8:50 PM', market: 'EGX' },
-            ],
-            thisWeek: [
-                { id: '3', title: 'Is COMI financially safe?', time: '8:18 PM', market: '' },
-                { id: '4', title: 'Hello', time: '4:32 PM', market: 'EGX' },
-                { id: '5', title: 'Is TMGH undervalued or overvalued?', time: '1:31 PM', market: 'EGX' },
-                { id: '6', title: 'Show PEG Ratio for COMI', time: '10:27 PM', market: 'EGX' },
-                { id: '7', title: 'Does EKHO have high growth...', time: '10:31 PM', market: 'EGX' },
-            ],
-        };
-
         // Popular analysis request cards - matches mockup exactly
         const popularRequests = [
             { icon: '🎯', title: 'Fair Value Analysis', subtitle: 'Get comprehensive valuation', query: 'What is the fair value of SWDY?', color: 'teal' },
@@ -351,130 +347,20 @@ function ResponsiveAIAnalystContent() {
         return (
             <div className="h-[100dvh] w-full flex bg-[#F8FAFC] dark:bg-[#0B1121] overflow-hidden">
                 {/* ================================================================
-                    LEFT SIDEBAR - Chat History & Navigation (Matches Mockup)
+                    LEFT SIDEBAR - Ultra Premium Component
                     ================================================================ */}
-                <aside className="flex-shrink-0 w-[240px] h-full bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-white/5 flex flex-col">
-                    {/* Sidebar Header */}
-                    <div className="flex-shrink-0 p-4 border-b border-slate-100 dark:border-white/5">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg bg-[#14B8A6] flex items-center justify-center">
-                                    <BarChart3 className="w-3.5 h-3.5 text-white" />
-                                </div>
-                                <span className="font-semibold text-slate-800 dark:text-white text-sm">Starta AI</span>
-                            </div>
-                            <button className="w-6 h-6 rounded-md hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center text-slate-400">
-                                <ChevronLeft className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* New Chat Button - Teal like mockup */}
-                        <button
-                            onClick={clearHistory}
-                            className="w-full h-10 rounded-lg bg-[#14B8A6] hover:bg-[#0D9488] text-white font-medium text-sm flex items-center justify-center gap-2 transition-colors"
-                        >
-                            <Plus className="w-4 h-4" />
-                            New Chat
-                        </button>
-                    </div>
-
-                    {/* Chat History Section */}
-                    <div className="flex-1 overflow-y-auto">
-                        {/* Chat History Button */}
-                        <div className="p-3 pb-2">
-                            <button
-                                onClick={() => setIsHistoryOpen(true)}
-                                className="w-full p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-[#14B8A6]/30 transition-all text-left group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-[#14B8A6] transition-colors">
-                                        <History className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-700 dark:text-white">Chat History</p>
-                                        <p className="text-xs text-slate-400">View past conversations</p>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* TODAY */}
-                        <div className="px-3 pt-3">
-                            <p className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider mb-2">Today</p>
-                            {chatHistory.today.map((chat) => (
-                                <button key={chat.id} className="w-full text-left p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors mb-1 group">
-                                    <p className="text-sm text-slate-600 dark:text-slate-300 truncate group-hover:text-slate-900 dark:group-hover:text-white">{chat.title}</p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-[10px] text-slate-400">{chat.time}</span>
-                                        {chat.market && <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 rounded font-medium">{chat.market}</span>}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* YESTERDAY */}
-                        <div className="px-3 pt-3">
-                            <p className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider mb-2">Yesterday</p>
-                            {chatHistory.yesterday.map((chat) => (
-                                <button key={chat.id} className="w-full text-left p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors mb-1 group">
-                                    <p className="text-sm text-slate-600 dark:text-slate-300 truncate group-hover:text-slate-900 dark:group-hover:text-white">{chat.title}</p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-[10px] text-slate-400">{chat.time}</span>
-                                        {chat.market && <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 rounded font-medium">{chat.market}</span>}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* THIS WEEK */}
-                        <div className="px-3 pt-3 pb-4">
-                            <p className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider mb-2">This Week</p>
-                            {chatHistory.thisWeek.map((chat) => (
-                                <button key={chat.id} className="w-full text-left p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors mb-1 group">
-                                    <p className="text-sm text-slate-600 dark:text-slate-300 truncate group-hover:text-slate-900 dark:group-hover:text-white">{chat.title}</p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-[10px] text-slate-400">{chat.time}</span>
-                                        {chat.market && <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 rounded font-medium">{chat.market}</span>}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Sidebar Footer */}
-                    <div className="flex-shrink-0 p-3 border-t border-slate-100 dark:border-white/5 space-y-2">
-                        {/* Dark Mode Toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="w-full p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 text-left text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors flex items-center gap-3"
-                        >
-                            <Moon className="w-4 h-4" />
-                            Dark Mode
-                        </button>
-
-                        {/* Sign In Button */}
-                        {isAuthenticated ? (
-                            <button
-                                onClick={() => router.push(getRoute('setting'))}
-                                className="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-3 hover:border-[#14B8A6]/30 transition-colors"
-                            >
-                                <div className="w-7 h-7 rounded-full bg-[#14B8A6] flex items-center justify-center text-white text-xs font-bold">
-                                    {user?.full_name?.charAt(0) || "U"}
-                                </div>
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate flex-1 text-left">
-                                    {user?.full_name || "User"}
-                                </span>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => router.push(getRoute('login'))}
-                                className="w-full p-3 rounded-lg bg-[#0F172A] dark:bg-slate-800 text-white font-medium text-sm text-center transition-all hover:bg-[#1E293B]"
-                            >
-                                Sign In
-                            </button>
-                        )}
-                    </div>
-                </aside>
+                <DesktopSidebar
+                    isOpen={isSidebarOpen}
+                    onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+                    onNewChat={clearHistory}
+                    onSelectSession={handleSelectSession}
+                    currentSessionId={sessionId}
+                    isAuthenticated={isAuthenticated}
+                    user={user}
+                    onLogin={() => router.push(getRoute('login'))}
+                    onLogout={logout}
+                    onSettings={() => router.push(getRoute('setting'))}
+                />
 
                 {/* ================================================================
                     MAIN CONTENT AREA (Matches Mockup)
@@ -483,14 +369,39 @@ function ResponsiveAIAnalystContent() {
                     {/* Top Header Bar - StartaAI PRO badge + User button */}
                     <header className="flex-shrink-0 h-14 px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827]">
                         <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-[#14B8A6] flex items-center justify-center">
-                                <BarChart3 className="w-3.5 h-3.5 text-white" />
-                            </div>
-                            <span className="font-semibold text-slate-800 dark:text-white text-sm">StartaAI</span>
-                            <span className="px-2 py-0.5 rounded-full bg-[#14B8A6]/10 text-[#14B8A6] text-[10px] font-bold">PRO</span>
+                            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Starta AI</span>
+                            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#13b8a6]/10 text-[#13b8a6] text-[10px] font-black uppercase tracking-wider">PRO</span>
                         </div>
 
                         <div className="flex items-center gap-3">
+                            {/* Design Switcher (Desktop) */}
+                            <div className="bg-slate-100 dark:bg-white/5 p-1 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-white/10">
+                                <button
+                                    onClick={() => setDesignMode('pro')}
+                                    className={clsx(
+                                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all",
+                                        designMode === 'pro'
+                                            ? "bg-white dark:bg-slate-700 text-[#13b8a6] shadow-sm"
+                                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    )}
+                                >
+                                    <Sparkles className="w-3 h-3" />
+                                    Pro
+                                </button>
+                                <button
+                                    onClick={() => setDesignMode('analyst')}
+                                    className={clsx(
+                                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all",
+                                        designMode === 'analyst'
+                                            ? "bg-white dark:bg-slate-700 text-[#13b8a6] shadow-sm"
+                                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    )}
+                                >
+                                    <Bot className="w-3 h-3" />
+                                    Analyst
+                                </button>
+                            </div>
+
                             {/* Dark Mode Toggle */}
                             <button
                                 onClick={toggleTheme}
@@ -503,7 +414,12 @@ function ResponsiveAIAnalystContent() {
                             {isAuthenticated ? (
                                 <button
                                     onClick={() => router.push(getRoute('setting'))}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#14B8A6] text-white text-sm font-medium hover:bg-[#0D9488] transition-colors"
+                                    className={clsx(
+                                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-sm font-medium transition-colors",
+                                        designMode === 'pro'
+                                            ? "bg-[#13b8a6] hover:bg-[#0f8f82]"
+                                            : "bg-[#13b8a6] hover:bg-[#0f8f82]"
+                                    )}
                                 >
                                     <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">
                                         {user?.full_name?.charAt(0) || "U"}
@@ -513,7 +429,12 @@ function ResponsiveAIAnalystContent() {
                             ) : (
                                 <button
                                     onClick={() => router.push(getRoute('login'))}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#14B8A6] text-white text-sm font-medium hover:bg-[#0D9488] transition-colors"
+                                    className={clsx(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors",
+                                        designMode === 'pro'
+                                            ? "bg-[#13b8a6] hover:bg-[#0f8f82]"
+                                            : "bg-[#13b8a6] hover:bg-[#0f8f82]"
+                                    )}
                                 >
                                     Sign In
                                 </button>
@@ -521,14 +442,7 @@ function ResponsiveAIAnalystContent() {
                         </div>
                     </header>
 
-                    {/* History Drawer */}
-                    <HistoryDrawer
-                        isOpen={isHistoryOpen}
-                        onClose={() => setIsHistoryOpen(false)}
-                        onSelectSession={loadSession}
-                        onNewChat={clearHistory}
-                        currentSessionId={sessionId}
-                    />
+
 
                     {/* Usage Limit Modal */}
                     <AnimatePresence>
@@ -544,100 +458,125 @@ function ResponsiveAIAnalystContent() {
                     {/* Main Content */}
                     <main ref={mainRef} className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#0F172A]">
                         <div className="max-w-4xl mx-auto px-6 py-8">
+                            {/* DESIGN MODE CONTENT SWITCHING (Only if showWelcome is true) */}
                             {showWelcome ? (
-                                <div className="flex flex-col items-center justify-center min-h-[70vh]">
-                                    {/* Welcome Icon - Teal rounded square like mockup */}
-                                    <div className="w-14 h-14 rounded-2xl bg-[#14B8A6] flex items-center justify-center mb-6 shadow-lg shadow-[#14B8A6]/20">
-                                        <BarChart3 className="w-7 h-7 text-white" />
-                                    </div>
+                                designMode === 'pro' ? (
+                                    // PRO DESIGN (Green, Centered Input, Vertical Cards)
+                                    <div className="flex flex-col items-center justify-center min-h-[70vh] w-full max-w-2xl mx-auto">
+                                        <div className="w-16 h-16 rounded-2xl bg-[#13b8a6] flex items-center justify-center mb-6 shadow-xl shadow-[#13b8a6]/20 animate-in fade-in zoom-in duration-500">
+                                            <BarChart3 className="w-8 h-8 text-white" />
+                                        </div>
 
-                                    {/* Welcome Text */}
-                                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
-                                        Welcome to <span className="text-[#14B8A6]">Starta AI</span>
-                                    </h1>
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">
-                                        Your intelligent assistant for Egyptian stock market analysis.
-                                    </p>
+                                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3 text-center tracking-tight">
+                                            Starta Market Intelligence
+                                        </h1>
+                                        <p className="text-slate-500 dark:text-slate-400 text-base mb-10 text-center max-w-md leading-relaxed">
+                                            Begin understanding the Egyptian stock market with AI-powered insights
+                                        </p>
 
-                                    {/* Input Field - Matches mockup with ⌘+Enter hint */}
-                                    <div className="w-full max-w-xl mb-10">
-                                        <div className="flex items-center gap-2 p-2 rounded-full bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-sm focus-within:border-[#14B8A6]/50 focus-within:ring-2 focus-within:ring-[#14B8A6]/10 transition-all">
-                                            <input
-                                                type="text"
-                                                value={query}
-                                                onChange={(e) => setQuery(e.target.value)}
-                                                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                                                placeholder="Ask Starta anything about the market..."
-                                                className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm"
-                                            />
-                                            <div className="flex items-center gap-2 pr-1">
-                                                <span className="hidden sm:flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-white/10 rounded-md text-[10px] text-slate-400 font-medium">
-                                                    ⌘ + Enter
-                                                </span>
-                                                <button
-                                                    onClick={handleSend}
-                                                    disabled={isLoading || !query.trim()}
-                                                    className="w-9 h-9 rounded-full bg-[#14B8A6] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0D9488] transition-all"
-                                                >
-                                                    {isLoading ? (
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                    ) : (
-                                                        <Send className="w-4 h-4" />
-                                                    )}
-                                                </button>
+                                        {/* Centered Input (Pro) - Fixed Light Mode Background */}
+                                        <div className="w-full mb-12">
+                                            <div className="relative group">
+                                                <div className="absolute inset-0 bg-[#13b8a6]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                                <div className="relative flex items-center gap-3 p-2 pr-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-lg shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                                    <input
+                                                        type="text"
+                                                        value={query}
+                                                        onChange={(e) => setQuery(e.target.value)}
+                                                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                                                        placeholder="Compare HRHO vs COMI..."
+                                                        className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 text-base"
+                                                    />
+                                                    <button
+                                                        onClick={handleSend}
+                                                        disabled={isLoading || !query.trim()}
+                                                        className="w-11 h-11 rounded-xl bg-[#13b8a6] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0f8f82] transition-all shadow-md shadow-[#13b8a6]/20"
+                                                    >
+                                                        {isLoading ? (
+                                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                                        ) : (
+                                                            <Send className="w-5 h-5" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Grid Layout for Desktop Popular Questions (Pro) */}
+                                        <div className="w-full max-w-4xl">
+                                            <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
+                                                Popular Analysis Requests
+                                            </p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                                                {[
+                                                    { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of SWDY?', subtitle: 'ASK STARTA', query: 'What is the fair value of SWDY?', color: 'teal' },
+                                                    { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', query: 'Dividend history TMGH', color: 'teal' },
+                                                    { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', query: 'PE ratio for SWDY', color: 'teal' },
+                                                ].map((item, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => sendDirectMessage(item.query)}
+                                                        className="p-5 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#10B981]/50 hover:shadow-lg transition-all text-left group flex flex-col h-full"
+                                                    >
+                                                        <div className={clsx(
+                                                            "w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-lg transition-colors",
+                                                            item.color === 'coral' ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10" : "bg-[#13b8a6]/10 text-[#13b8a6] dark:bg-[#13b8a6]/10"
+                                                        )}>
+                                                            {item.icon}
+                                                        </div>
+                                                        <p className="text-sm font-bold text-slate-800 dark:text-white mb-1 group-hover:text-[#13b8a6] transition-colors">
+                                                            {item.title}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 leading-relaxed">
+                                                            {item.subtitle}
+                                                        </p>
+                                                    </button>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
+                                ) : (
+                                    // ANALYST DESIGN (Green, Robot, Bottom Input, Grid Cards)
+                                    <div className="flex flex-col items-center justify-center min-h-[70vh]">
+                                        <div className="relative w-32 h-32 mx-auto mb-6">
+                                            <div className="absolute inset-0 bg-[#13b8a6]/30 rounded-full blur-[50px] animate-pulse"></div>
+                                            <Image
+                                                src="/assets/chatbot-icon.png"
+                                                alt="Starta AI"
+                                                fill
+                                                className="object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                                            />
+                                        </div>
 
-                                    {/* Popular Analysis Requests - 3x2 grid like mockup */}
-                                    <div className="w-full max-w-3xl">
-                                        <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5">
-                                            Popular Analysis Requests
+                                        <h1 className="text-3xl font-black text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#13b8a6] to-slate-900 dark:from-white dark:via-[#13b8a6] dark:to-white">
+                                            Hello, {user?.full_name?.split(' ')[0] || "Trader"}
+                                        </h1>
+                                        <p className="text-slate-500 dark:text-slate-400 text-base mb-10 text-center max-w-md">
+                                            I'm Starta. Ask me anything about <span className="text-[#13b8a6] font-bold">Egyptian</span> stocks.
                                         </p>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            {popularRequests.map((item, idx) => (
-                                                <button
-                                                    key={idx}
-                                                    onClick={() => sendDirectMessage(item.query)}
-                                                    className="p-4 rounded-xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#14B8A6]/50 hover:shadow-md transition-all text-left group"
-                                                >
-                                                    <div className={clsx(
-                                                        "w-9 h-9 rounded-xl flex items-center justify-center mb-2.5 text-base",
-                                                        item.color === 'coral'
-                                                            ? "bg-[#FB7185]/10"
-                                                            : "bg-[#14B8A6]/10"
-                                                    )}>
-                                                        {item.icon}
-                                                    </div>
-                                                    <p className="text-sm font-semibold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#14B8A6] transition-colors">
-                                                        {item.title}
-                                                    </p>
-                                                    <p className="text-xs text-slate-400">
-                                                        {item.subtitle}
-                                                    </p>
-                                                </button>
-                                            ))}
+
+                                        {/* Grid Layout for Desktop Popular Questions (Analyst Mode - Blue) - Sourced from Mobile Suggestions */}
+                                        <div className="w-full max-w-4xl mt-8">
+                                            <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
+                                                Recommended Analysis
+                                            </p>
+                                            <AnalystDesktopGrid onSelect={sendDirectMessage} />
                                         </div>
                                     </div>
+                                )
+                            ) : null}
 
-                                    {/* Disclaimer */}
-                                    <p className="mt-10 text-[11px] text-slate-400 flex items-center gap-1.5">
-                                        <span className="text-amber-500">⚠️</span>
-                                        Starta AI can make mistakes. This is not financial advice.
-                                    </p>
-                                </div>
-                            ) : (
-                                /* Chat Messages */
-                                renderMessageList()
-                            )}
+                            {/* Show Messages when NOT in welcome mode */}
+                            {!showWelcome && renderMessageList()}
                         </div>
                     </main>
 
-                    {/* Input Area (when in chat mode) */}
-                    {!showWelcome && (
+                    {/* Input Area (Desktop) */}
+                    {/* Always show input unless it's the Pro Welcome screen (which has centered input) */}
+                    {(!showWelcome || designMode === 'analyst') && (
                         <div className="flex-shrink-0 border-t border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827] p-4">
                             <div className="max-w-3xl mx-auto">
-                                <div className="flex items-center gap-2 p-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus-within:border-[#14B8A6]/50 focus-within:ring-2 focus-within:ring-[#14B8A6]/10 transition-all">
+                                <div className="flex items-center gap-2 p-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
                                     <input
                                         type="text"
                                         value={query}
@@ -649,7 +588,10 @@ function ResponsiveAIAnalystContent() {
                                     <button
                                         onClick={handleSend}
                                         disabled={isLoading || !query.trim()}
-                                        className="w-9 h-9 rounded-full bg-[#14B8A6] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0D9488] transition-all"
+                                        className={clsx(
+                                            "w-9 h-9 rounded-full text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all",
+                                            designMode === 'pro' ? "bg-[#13b8a6] hover:bg-[#0f8f82]" : "bg-[#13b8a6] hover:bg-[#0f8f82]"
+                                        )}
                                     >
                                         {isLoading ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -703,6 +645,8 @@ function ResponsiveAIAnalystContent() {
                     hasHistory={isAuthenticated}
                     remainingQuestions={remainingQuestions}
                     onLogin={() => router.push(getRoute('login'))}
+                    designMode={designMode}
+                    onToggleDesignMode={() => setDesignMode(designMode === 'pro' ? 'analyst' : 'pro')}
                 />
 
                 {/* Chat Area */}
@@ -710,35 +654,114 @@ function ResponsiveAIAnalystContent() {
                     <div className="w-full space-y-6 px-4 py-4 min-h-full flex flex-col">
                         {showWelcome ? (
                             <div className="flex flex-col flex-1 items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 py-12">
-                                {/* Hero Section */}
-                                <div className="flex-none text-center space-y-6 mb-12 relative z-10 w-full max-w-[320px]">
-                                    <div className="relative w-28 h-28 mx-auto">
-                                        <div className="absolute inset-0 bg-[#14B8A6]/30 rounded-full blur-[40px] animate-pulse"></div>
-                                        <div className="relative w-full h-full p-0 filter drop-shadow-2xl hover:scale-105 transition-transform duration-500">
-                                            <Image
-                                                src="/assets/chatbot-icon.png"
-                                                alt="Starta AI"
-                                                fill
-                                                className="object-contain"
-                                                priority
-                                            />
+                                {designMode === 'pro' ? (
+                                    // MOBILE PRO WELCOME (Match Image 2)
+                                    <div className="w-full flex flex-col items-center px-2">
+                                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center mb-6 shadow-xl shadow-[#13b8a6]/30 ring-4 ring-[#13b8a6]/10">
+                                            <BarChart3 className="w-8 h-8 text-white" />
+                                        </div>
+                                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 text-center tracking-tight">
+                                            Starta Market Intelligence
+                                        </h1>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[13px] mb-10 text-center max-w-[280px] leading-relaxed font-medium">
+                                            Begin understanding the Egyptian stock market with AI-powered insights
+                                        </p>
+
+                                        {/* Centered Input Mobile - Dark Theme */}
+                                        <div className="w-full mb-10">
+                                            <div className="relative group">
+                                                {/* Glow */}
+                                                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#13b8a6]/30 to-[#13b8a6]/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                                <div className="relative flex items-center gap-2 p-2 pr-2 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-[#1E293B] shadow-lg shadow-slate-200/50 dark:shadow-[#0F172A]/20">
+                                                    <input
+                                                        type="text"
+                                                        value={query}
+                                                        onChange={(e) => setQuery(e.target.value)}
+                                                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                                                        placeholder="Compare HRHO vs..."
+                                                        className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium"
+                                                    />
+                                                    <button
+                                                        onClick={handleSend}
+                                                        className="w-9 h-9 rounded-xl bg-white text-slate-900 hover:bg-slate-50 flex items-center justify-center shadow-md active:scale-95 transition-all"
+                                                    >
+                                                        {isLoading ? (
+                                                            <Loader2 className="w-4 h-4 animate-spin text-[#13b8a6]" />
+                                                        ) : (
+                                                            <Send className="w-4 h-4" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Popular Questions Vertical List */}
+                                        <div className="w-full space-y-3">
+                                            <p className="text-center text-[10px] font-bold text-slate-400/80 uppercase tracking-widest mb-4">
+                                                Popular Questions
+                                            </p>
+                                            {[
+                                                { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of SWDY?', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
+                                                { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
+                                                { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
+                                            ].map((item, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => sendDirectMessage(item.title)}
+                                                    className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-white/5 shadow-sm active:scale-[0.98] transition-all duration-300 text-left group"
+                                                >
+                                                    <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md shrink-0", item.color)}>
+                                                        <span className="text-lg">{item.icon}</span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-[14px] font-bold text-slate-800 dark:text-white truncate group-hover:text-[#13b8a6] transition-colors">{item.title}</p>
+                                                        <p className="text-[10px] font-semibold text-slate-400 mt-0.5 flex items-center gap-1 uppercase tracking-wide">
+                                                            <Sparkles className="w-2.5 h-2.5" />
+                                                            {item.subtitle}
+                                                        </p>
+                                                    </div>
+                                                    <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:bg-[#13b8a6] group-hover:text-white transition-colors">
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </div>
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
+                                ) : (
+                                    // MOBILE ANALYST WELCOME (Default/Robot)
+                                    <>
+                                        {/* Hero Section */}
+                                        <div className="flex-none text-center space-y-6 mb-12 relative z-10 w-full max-w-[320px]">
+                                            <div className="relative w-28 h-28 mx-auto">
+                                                <div className="absolute inset-0 bg-[#13b8a6]/30 rounded-full blur-[40px] animate-pulse"></div>
+                                                <div className="relative w-full h-full p-0 filter drop-shadow-2xl hover:scale-105 transition-transform duration-500">
+                                                    <Image
+                                                        src="/assets/chatbot-icon.png"
+                                                        alt="Starta AI"
+                                                        fill
+                                                        className="object-contain"
+                                                        priority
+                                                    />
+                                                </div>
+                                            </div>
 
-                                    <div className="space-y-3">
-                                        <h2 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-teal-200 dark:to-white leading-[1.1]">
-                                            Hello, {user?.full_name?.split(' ')[0] || "Trader"}
-                                        </h2>
-                                        <p className="text-slate-500 dark:text-slate-400 text-base font-medium leading-relaxed">
-                                            I'm Starta. Ask me anything about <span className="text-[#14B8A6] font-bold">Egyptian</span> stocks.
-                                        </p>
-                                    </div>
-                                </div>
+                                            <div className="space-y-3">
+                                                <h2 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-blue-200 dark:to-white leading-[1.1]">
+                                                    Hello, {user?.full_name?.split(' ')[0] || "Trader"}
+                                                </h2>
+                                                <p className="text-slate-500 dark:text-slate-400 text-base font-medium leading-relaxed">
+                                                    I'm Starta. Ask me anything about <span className="text-[#13b8a6] font-bold">Egyptian</span> stocks.
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                {/* Suggestions */}
-                                <div className="w-full relative z-10">
-                                    <MobileSuggestions onSelect={sendDirectMessage} />
-                                </div>
+                                        {/* Suggestions */}
+                                        <div className="w-full relative z-10">
+                                            <MobileSuggestions onSelect={sendDirectMessage} />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         ) : (
                             renderMessageList()
@@ -746,15 +769,17 @@ function ResponsiveAIAnalystContent() {
                     </div>
                 </main>
 
-                {/* Input Area */}
-                <div className="flex-none w-full bg-[#F8FAFC] dark:bg-[#0F172A] border-t border-slate-200/60 dark:border-white/[0.08] z-10">
-                    <MobileInput
-                        query={query}
-                        setQuery={setQuery}
-                        onSend={handleSend}
-                        isLoading={isLoading}
-                    />
-                </div>
+                {/* Input Area (Only show fixed bottom input if NOT in Pro Welcome screen) */}
+                {(!showWelcome || designMode === 'analyst') && (
+                    <div className="flex-none w-full bg-[#F8FAFC] dark:bg-[#0F172A] border-t border-slate-200/60 dark:border-white/[0.08] z-10">
+                        <MobileInput
+                            query={query}
+                            setQuery={setQuery}
+                            onSend={handleSend}
+                            isLoading={isLoading}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -764,7 +789,7 @@ export default function ResponsiveAIAnalystPage() {
     return (
         <Suspense fallback={
             <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#13b8a6]" />
             </div>
         }>
             <ResponsiveAIAnalystContent />

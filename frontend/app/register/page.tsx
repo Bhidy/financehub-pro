@@ -206,7 +206,7 @@ function RegisterPageContent() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="text-slate-400 text-lg xl:text-xl leading-relaxed mb-10 max-w-[460px]"
                         >
-                            Create your free account to access professional-grade market intelligence for Egypt and Saudi stocks.
+                            Create your free account to access professional-grade market intelligence for Egyptian stocks.
                         </motion.p>
 
                         {/* Premium Benefit Cards */}
@@ -323,8 +323,8 @@ function RegisterPageContent() {
                                 Full Name
                             </label>
                             <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'name'
-                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
-                                    : ''
+                                ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                : ''
                                 }`}>
                                 <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'name' ? 'text-[#14B8A6]' : 'text-slate-400'
                                     }`} />
@@ -346,8 +346,8 @@ function RegisterPageContent() {
                                 Email address
                             </label>
                             <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'email'
-                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
-                                    : ''
+                                ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                : ''
                                 }`}>
                                 <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'
                                     }`} />
@@ -369,8 +369,8 @@ function RegisterPageContent() {
                                 Password
                             </label>
                             <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'password'
-                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
-                                    : ''
+                                ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                : ''
                                 }`}>
                                 <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-[#14B8A6]' : 'text-slate-400'
                                     }`} />
@@ -415,8 +415,8 @@ function RegisterPageContent() {
                                 Confirm Password
                             </label>
                             <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'confirm'
-                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
-                                    : ''
+                                ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                : ''
                                 }`}>
                                 <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'confirm' ? 'text-[#14B8A6]' : 'text-slate-400'
                                     }`} />

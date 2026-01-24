@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, Mic, Loader2 } from "lucide-react";
 import clsx from "clsx";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 interface MobileInputProps {
     query: string;
@@ -14,6 +15,22 @@ interface MobileInputProps {
 export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isFocused, setIsFocused] = useState(false);
+
+    // Typewriter placeholders
+    const placeholderTexts = [
+        "Ask Starta anything...",
+        "What is the fair value of COMI?",
+        "Analyze the dividend history of TMGH",
+        "Show me the top gainers today",
+        "Is SWDY undervalued right now?",
+        "Financial health check for FWRY",
+        "Who are the major shareholders of ETEL?",
+        "Technical analysis for ORWE",
+        "Show me the banking sector performance",
+        "What is the PE ratio of ADIB?"
+    ];
+
+    const typewriterPlaceholder = useTypewriter(placeholderTexts);
 
     // Auto-resize
     useEffect(() => {
@@ -54,7 +71,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
                             onKeyDown={handleKeyDown}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            placeholder="Ask Starta anything..."
+                            placeholder={isFocused ? "Ask Starta anything..." : typewriterPlaceholder}
                             className="flex-1 bg-transparent border-none py-2.5 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[16px] leading-snug resize-none max-h-24 min-h-[44px] focus:ring-0 focus:outline-none font-medium"
                             style={{ fontSize: '16px' }} // HARD ENFORCEMENT for iOS
                             rows={1}

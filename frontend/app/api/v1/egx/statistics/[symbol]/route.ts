@@ -4,9 +4,10 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-22
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { symbol: string } }
+    { params }: { params: Promise<{ symbol: string }> }
 ) {
-    const symbol = params.symbol?.toUpperCase();
+    const resolvedParams = await params;
+    const symbol = resolvedParams.symbol?.toUpperCase();
 
     if (!symbol) {
         return NextResponse.json({ error: 'Symbol required' }, { status: 400 });

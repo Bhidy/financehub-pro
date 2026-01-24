@@ -488,8 +488,9 @@ async def delete_session(
     # We delete related data first manually to be safe
     async with db.transaction():
         await db.execute("DELETE FROM chat_messages WHERE session_id = $1", session_id)
-        await db.execute("DELETE FROM chat_interactions WHERE session_id = $1", session_id) # Analytics
-        await db.execute("DELETE FROM chat_session_summary WHERE session_id = $1", session_id) # Summary
+        # Fix: Table name is chat_analytics
+        await db.execute("DELETE FROM chat_analytics WHERE session_id = $1", session_id) 
+        # await db.execute("DELETE FROM chat_session_summary WHERE session_id = $1", session_id) # Optional/Future
         await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
         
     return {"success": True, "session_id": session_id}

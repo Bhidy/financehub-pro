@@ -50,41 +50,36 @@ export function MobileHeader({
 
                 {/* Left: Avatar + Title + Design Switcher */}
                 {/* Left: Avatar + Title + Design Switcher */}
+                {/* Left: Avatar + Title + Design Switcher */}
                 <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                            <div className="font-black text-slate-900 dark:text-white text-xl leading-none tracking-tight transition-colors">Starta AI</div>
+                    <div className="flex flex-col gap-0.5">
+                        <div className="font-black text-slate-900 dark:text-white text-lg leading-none tracking-tight transition-colors">Starta AI</div>
+                        <div className="flex items-center gap-2.5">
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{displayMarket === 'EGX' ? 'Egypt' : 'Saudi'}</span>
 
-                            {/* Premium Mobile Mode Toggle */}
+                            {/* Premium Mobile Mode Toggle - Compact */}
                             <button
                                 onClick={onToggleDesignMode}
-                                className="group relative grid grid-cols-2 items-center w-[140px] h-8 p-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-inner overflow-hidden"
+                                className="group relative flex items-center bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-md p-0.5 h-5 shadow-sm overflow-hidden"
                             >
-                                {/* Glider */}
                                 <div className={clsx(
-                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-[#13b8a6] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)]",
-                                    designMode === 'pro' ? "left-1" : "left-[calc(50%+2px)]"
+                                    "absolute top-0.5 bottom-0.5 w-[50%] rounded bg-white dark:bg-slate-700 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)]",
+                                    designMode === 'pro' ? "left-0.5" : "left-[calc(50%-2px)] translate-x-[2px]"
                                 )} />
 
-                                {/* PRO Label */}
                                 <span className={clsx(
-                                    "relative z-10 text-[10px] font-black uppercase tracking-widest text-center transition-colors duration-200 flex items-center justify-center gap-1",
-                                    designMode === 'pro' ? "text-white" : "text-slate-400 dark:text-slate-500"
+                                    "relative z-10 px-2 text-[8px] font-black uppercase tracking-widest transition-colors duration-200",
+                                    designMode === 'pro' ? "text-[#13b8a6]" : "text-slate-400 dark:text-slate-500"
                                 )}>
                                     PRO
                                 </span>
-
-                                {/* ANALYST Label */}
                                 <span className={clsx(
-                                    "relative z-10 text-[10px] font-black uppercase tracking-widest text-center transition-colors duration-200 flex items-center justify-center gap-1",
-                                    designMode === 'analyst' ? "text-white" : "text-slate-400 dark:text-slate-500"
+                                    "relative z-10 px-2 text-[8px] font-black uppercase tracking-widest transition-colors duration-200",
+                                    designMode === 'analyst' ? "text-[#13b8a6]" : "text-slate-400 dark:text-slate-500"
                                 )}>
                                     ANALYST
                                 </span>
                             </button>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{displayMarket === 'EGX' ? 'Egypt' : 'Saudi'}</span>
                         </div>
                     </div>
                 </div>

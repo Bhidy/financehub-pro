@@ -76,29 +76,39 @@ async def handle_compare_stocks(
         # Update symbol for subsequent queries to match the valid DB ticker
         symbol = found_symbol
 
-        # Get deep stats from stock_statistics using the correct symbol
-        stats_row = await conn.fetchrow("""
-            SELECT 
-                revenue_growth, profit_growth as net_income_growth, eps_growth,
-                gross_margin, operating_margin, net_margin as profit_margin,
-                roe, roa, roic, roce, asset_turnover,
-                debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score,
-                ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
-                eps
-            FROM stock_statistics
-            WHERE symbol = $1
-        """, symbol)
+        # Get deep stats from stock_statistics
+        # ENTERPRISE FIX: Wrapped in try/except to prevent schema drift from crashing the app
+        stats_row = None
+        try:
+            stats_row = await conn.fetchrow("""
+                SELECT 
+                    revenue_growth, profit_growth as net_income_growth, eps_growth,
+                    gross_margin, operating_margin,
+                    roe, roa, roic, roce, asset_turnover,
+                    debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score,
+                    ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
+                    eps
+                FROM stock_statistics
+                WHERE symbol = $1
+            """, symbol)
+        except Exception as e_stats:
+            print(f"[COMPARE] Statistics query failed for {symbol}: {e_stats}")
+            # Continue to fallback
         
         # Fallback Ratios
-        ratios_row = await conn.fetchrow("""
-            SELECT 
-                gross_margin, net_margin as profit_margin, 
-                roe, debt_equity as debt_equity_ratio
-            FROM financial_ratios_history 
-            WHERE symbol = $1 AND period_type = 'annual'
-            ORDER BY fiscal_year DESC 
-            LIMIT 1
-        """, symbol)
+        ratios_row = None
+        try:
+            ratios_row = await conn.fetchrow("""
+                SELECT 
+                    gross_margin, net_margin as profit_margin, 
+                    roe, debt_equity as debt_equity_ratio
+                FROM financial_ratios_history 
+                WHERE symbol = $1 AND period_type = 'annual'
+                ORDER BY fiscal_year DESC 
+                LIMIT 1
+            """, symbol)
+        except Exception as e_ratios:
+             print(f"[COMPARE] Ratios query failed for {symbol}: {e_ratios}")
 
         if row:
             ticker_stats = dict(row)

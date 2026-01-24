@@ -185,7 +185,8 @@ async def get_google_auth_url(redirect_uri: Optional[str] = None, state: Optiona
     if state:
         params["state"] = state
     
-    query_string = "&".join(f"{k}={v}" for k, v in params.items())
+    import urllib.parse
+    query_string = urllib.parse.urlencode(params)
     auth_url = f"{GOOGLE_AUTH_URL}?{query_string}"
     
     return {"auth_url": auth_url}

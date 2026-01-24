@@ -53,14 +53,14 @@ export function MobileHeader({
                 {/* Left: Avatar + Title + Design Switcher */}
                 <div className="flex items-center gap-3">
                     <div className="flex flex-col gap-0.5">
-                        <div className="font-black text-slate-900 dark:text-white text-lg leading-none tracking-tight transition-colors">Starta AI</div>
+                        <div className="font-black text-slate-900 dark:text-white text-lg leading-none tracking-tight transition-colors">STARTA</div>
                         <div className="flex items-center gap-2.5">
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{displayMarket === 'EGX' ? 'Egypt' : 'Saudi'}</span>
 
                             {/* Premium Mobile Mode Toggle - Compact */}
                             <button
                                 onClick={onToggleDesignMode}
-                                className="group relative flex items-center bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-md p-0.5 h-5 shadow-sm overflow-hidden"
+                                className="hidden group relative flex items-center bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-md p-0.5 h-5 shadow-sm overflow-hidden"
                             >
                                 <div className={clsx(
                                     "absolute top-0.5 bottom-0.5 w-[50%] rounded bg-white dark:bg-slate-700 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)]",

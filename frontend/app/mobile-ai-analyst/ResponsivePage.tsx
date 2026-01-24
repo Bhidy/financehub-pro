@@ -24,6 +24,7 @@ import { useState, useRef, useEffect, Suspense, useCallback } from "react";
 import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
+import { useTypewriter } from "@/hooks/useTypewriter";
 import { MobileHeader } from "./components/MobileHeader";
 import { MobileInput } from "./components/MobileInput";
 import { MobileSuggestions } from "./components/MobileSuggestions";
@@ -60,7 +61,7 @@ function ResponsiveAIAnalystContent() {
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [designMode, setDesignMode] = useState<'pro' | 'analyst'>('pro');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const mainRef = useRef<HTMLElement>(null);
@@ -74,6 +75,22 @@ function ResponsiveAIAnalystContent() {
 
     // Fixed market context - Egypt is default (no market selector)
     const contextMarket = "EGX";
+
+    // Typewriter placeholders
+    const placeholderTexts = [
+        "Compare HRHO vs COMI...",
+        "What is the fair value of COMI?",
+        "Analyze the dividend history of TMGH",
+        "Show me the top gainers today",
+        "Is SWDY undervalued right now?",
+        "Financial health check for FWRY",
+        "Who are the major shareholders of ETEL?",
+        "Technical analysis for ORWE",
+        "Show me the banking sector performance",
+        "What is the PE ratio of ADIB?"
+    ];
+
+    const typewriterPlaceholder = useTypewriter(placeholderTexts);
 
     // Force Light Theme Default
     useEffect(() => {
@@ -111,6 +128,13 @@ function ResponsiveAIAnalystContent() {
             }
         }
     }, [searchParams]);
+
+    // Set sidebar state based on auth
+    useEffect(() => {
+        if (!isAuthLoading) {
+            setIsSidebarOpen(isAuthenticated);
+        }
+    }, [isAuthLoading, isAuthenticated]);
 
     const {
         messages,
@@ -369,13 +393,13 @@ function ResponsiveAIAnalystContent() {
                     {/* Top Header Bar - StartaAI PRO badge + User button */}
                     <header className="flex-shrink-0 h-14 px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827]">
                         <div className="flex items-center gap-2">
-                            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Starta AI</span>
-                            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#13b8a6]/10 text-[#13b8a6] text-[10px] font-black uppercase tracking-wider">PRO</span>
+                            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">STARTA</span>
+                            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#13b8a6]/10 text-[#13b8a6] text-[10px] font-black uppercase tracking-wider">BETA</span>
                         </div>
 
                         <div className="flex items-center gap-3">
                             {/* Design Switcher (Desktop) */}
-                            <div className="bg-slate-100 dark:bg-white/5 p-1 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-white/10">
+                            <div className="hidden bg-slate-100 dark:bg-white/5 p-1 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-white/10">
                                 <button
                                     onClick={() => setDesignMode('pro')}
                                     className={clsx(
@@ -484,7 +508,7 @@ function ResponsiveAIAnalystContent() {
                                                         value={query}
                                                         onChange={(e) => setQuery(e.target.value)}
                                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                                                        placeholder="Compare HRHO vs COMI..."
+                                                        placeholder={typewriterPlaceholder}
                                                         className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 text-base"
                                                     />
                                                     <button
@@ -509,7 +533,7 @@ function ResponsiveAIAnalystContent() {
                                             </p>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                                                 {[
-                                                    { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of SWDY?', subtitle: 'ASK STARTA', query: 'What is the fair value of SWDY?', color: 'teal' },
+                                                    { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of COMI?', subtitle: 'ASK STARTA', query: 'What is the fair value of COMI?', color: 'teal' },
                                                     { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', query: 'Dividend history TMGH', color: 'teal' },
                                                     { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', query: 'PE ratio for SWDY', color: 'teal' },
                                                 ].map((item, idx) => (
@@ -702,7 +726,7 @@ function ResponsiveAIAnalystContent() {
                                                 Popular Questions
                                             </p>
                                             {[
-                                                { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of SWDY?', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
+                                                { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of COMI?', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
                                                 { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
                                                 { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
                                             ].map((item, idx) => (

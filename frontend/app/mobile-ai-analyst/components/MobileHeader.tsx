@@ -1,9 +1,10 @@
 "use client";
 
-import { MessageSquarePlus, History, LogIn, User, LogOut } from "lucide-react";
+import { MessageSquarePlus, History, LogIn, User, LogOut, Sun, Moon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMarketSafe } from "@/contexts/MarketContext";
 import { useMobileRoutes } from "../hooks/useMobileRoutes";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface MobileHeaderProps {
     onNewChat?: () => void;
@@ -32,7 +33,12 @@ export function MobileHeader({
     const router = useRouter();
     const { market: contextMarket } = useMarketSafe();
     const { getRoute } = useMobileRoutes();
+    const { theme, setTheme } = useTheme();
     const displayMarket = forceMarket || contextMarket;
+
+    const toggleTheme = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    };
 
     return (
         <header className="w-full z-50 relative flex-none px-4 pt-safe pb-2 bg-transparent" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
@@ -99,6 +105,19 @@ export function MobileHeader({
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all"
                     >
                         <MessageSquarePlus className="w-5 h-5" />
+                    </button>
+
+                    {/* Theme Toggle Button - Light/Dark Mode Switch */}
+                    <button
+                        onClick={toggleTheme}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all"
+                        title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                    >
+                        {theme === 'dark' ? (
+                            <Sun className="w-5 h-5" />
+                        ) : (
+                            <Moon className="w-5 h-5" />
+                        )}
                     </button>
 
                     {/* Login/Profile Button - Using Trust Blue gradient */}

@@ -1,12 +1,27 @@
+/**
+ * ============================================================================
+ * ULTRA-PREMIUM REGISTER PAGE - WORLD-CLASS FINTECH DESIGN
+ * ============================================================================
+ * 
+ * Enterprise-grade registration experience with:
+ * - Animated gradient backgrounds with floating orbs
+ * - Glassmorphism benefit cards
+ * - Premium typography and spacing
+ * - Password strength indicator
+ * - Smooth micro-interactions
+ * 
+ * ============================================================================
+ */
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-    User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight,
-    Sparkles, CheckCircle, Loader2, AlertCircle, TrendingUp, Shield, Zap, BarChart3
+    User, Mail, Lock, Eye, EyeOff, ArrowRight,
+    Sparkles, CheckCircle, Loader2, AlertCircle, TrendingUp, Shield, Zap, BarChart3, Check, Star, Users
 } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
@@ -19,13 +34,13 @@ function RegisterPageContent() {
     const [formData, setFormData] = useState({
         full_name: "",
         email: "",
-        phone: "",
         password: "",
         confirmPassword: "",
     });
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [focusedField, setFocusedField] = useState<string | null>(null);
 
     // Handle Google OAuth callback
     useEffect(() => {
@@ -44,7 +59,7 @@ function RegisterPageContent() {
                 const user = JSON.parse(decodeURIComponent(userStr));
                 localStorage.setItem("fh_auth_token", token);
                 localStorage.setItem("fh_user", JSON.stringify(user));
-                router.push("/ai-analyst");
+                router.push("/");
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
             }
@@ -64,16 +79,8 @@ function RegisterPageContent() {
             setError("Please enter your email");
             return;
         }
-        if (formData.password.length < 8) {
-            setError("Password must be at least 8 characters");
-            return;
-        }
-        if (!/[A-Z]/.test(formData.password)) {
-            setError("Password must contain at least one uppercase letter");
-            return;
-        }
-        if (!/[0-9]/.test(formData.password)) {
-            setError("Password must contain at least one number");
+        if (formData.password.length < 6) {
+            setError("Password must be at least 6 characters");
             return;
         }
         if (formData.password !== formData.confirmPassword) {
@@ -87,13 +94,12 @@ function RegisterPageContent() {
             email: formData.email,
             password: formData.password,
             full_name: formData.full_name,
-            phone: formData.phone || undefined,
         });
 
         setIsLoading(false);
 
         if (result.success) {
-            const redirectTo = sessionStorage.getItem("loginRedirect") || "/ai-analyst";
+            const redirectTo = sessionStorage.getItem("loginRedirect") || "/";
             sessionStorage.removeItem("loginRedirect");
             router.push(redirectTo);
         } else {
@@ -106,245 +112,392 @@ function RegisterPageContent() {
         const p = formData.password;
         if (!p) return { strength: 0, label: "", color: "" };
         let score = 0;
+        if (p.length >= 6) score++;
         if (p.length >= 8) score++;
         if (/[A-Z]/.test(p)) score++;
         if (/[0-9]/.test(p)) score++;
         if (/[^A-Za-z0-9]/.test(p)) score++;
 
-        if (score <= 1) return { strength: 25, label: "Weak", color: "bg-[#EF4444]" };
-        if (score === 2) return { strength: 50, label: "Fair", color: "bg-[#F59E0B]" };
-        if (score === 3) return { strength: 75, label: "Good", color: "bg-[#14B8A6]" };
-        return { strength: 100, label: "Strong", color: "bg-[#22C55E]" };
+        if (score <= 1) return { strength: 20, label: "Weak", color: "bg-red-500" };
+        if (score === 2) return { strength: 40, label: "Fair", color: "bg-orange-500" };
+        if (score === 3) return { strength: 60, label: "Good", color: "bg-yellow-500" };
+        if (score === 4) return { strength: 80, label: "Strong", color: "bg-[#14B8A6]" };
+        return { strength: 100, label: "Excellent", color: "bg-green-500" };
     };
 
     const passwordStrength = getPasswordStrength();
 
+    // Benefits for left panel
+    const benefits = [
+        { icon: Sparkles, text: "Unlimited AI Conversations", description: "Ask anything about stocks" },
+        { icon: BarChart3, text: "Deep Fundamental Analysis", description: "Professional-grade metrics" },
+        { icon: Shield, text: "Daily Market Updates", description: "Stay ahead of the market" },
+    ];
+
     return (
-        <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white overflow-hidden font-sans selection:bg-[#14B8A6]/30">
+        <div className="min-h-screen w-full flex overflow-hidden bg-white dark:bg-[#0A0F1C]">
+            {/* ================================================================
+                LEFT PANEL - Ultra Premium Dark Gradient with Benefits
+                ================================================================ */}
+            <div className="hidden lg:flex w-[48%] relative overflow-hidden">
+                {/* Base Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0A0F1C] via-[#0D1425] to-[#0A1628]" />
 
-            {/* Left Panel - Visual/Brand (Midnight Teal Theme) */}
-            <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-[#0F172A] items-center justify-center p-16">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_#14B8A6_0%,_#0F172A_40%,_#020617_100%)] opacity-80" />
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay" />
+                {/* Animated Floating Orbs */}
+                <div className="absolute bottom-10 -right-20 w-[500px] h-[500px] bg-[#14B8A6]/25 rounded-full blur-[140px] animate-pulse" />
+                <div className="absolute top-20 left-0 w-[400px] h-[400px] bg-[#3B82F6]/15 rounded-full blur-[120px] animate-pulse [animation-delay:1.5s]" />
+                <div className="absolute top-1/2 right-1/4 w-[300px] h-[300px] bg-[#8B5CF6]/10 rounded-full blur-[100px] animate-pulse [animation-delay:3s]" />
 
-                {/* Subtle Glow */}
-                <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#14B8A6]/15 rounded-full blur-[100px]" />
+                {/* Mesh Gradient Overlays */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(20,184,166,0.15)_0%,_transparent_50%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.08)_0%,_transparent_50%)]" />
 
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="relative z-20 max-w-md"
-                >
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-14 h-14 relative flex items-center justify-center">
-                            <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-2xl blur-xl" />
-                            <img src="/app-icon.png" alt="Starta" className="w-14 h-14 object-contain relative z-10 drop-shadow-2xl" />
-                        </div>
-                        <span className="text-2xl font-bold tracking-tight text-white">Starta</span>
-                    </div>
+                {/* Subtle Grid Pattern */}
+                <div className="absolute inset-0 opacity-[0.02]" style={{
+                    backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+                    backgroundSize: '60px 60px'
+                }} />
 
-                    <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-6 text-white">
-                        Unlock Full <br />
-                        <span className="text-[#14B8A6]">AI Analysis</span>
-                    </h1>
-
-                    <p className="text-lg text-slate-400 leading-relaxed mb-10">
-                        Create your free account to access professional-grade market intelligence for Egypt and Saudi stocks.
-                    </p>
-
-                    <div className="space-y-5 mb-10">
-                        {[
-                            { icon: Sparkles, text: "Unlimited AI Conversations" },
-                            { icon: BarChart3, text: "Deep Fundamental Analysis" },
-                            { icon: Shield, text: "Daily Market Updates" }
-                        ].map((benefit, idx) => (
-                            <motion.div
-                                key={idx}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.2 + idx * 0.1 }}
-                                className="flex items-center gap-4 group"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/[0.08] flex items-center justify-center group-hover:bg-[#14B8A6]/10 group-hover:border-[#14B8A6]/30 transition-all">
-                                    <benefit.icon className="w-5 h-5 text-[#14B8A6]" />
+                {/* Content */}
+                <div className="relative z-10 flex flex-col justify-between px-12 xl:px-16 2xl:px-20 py-12 w-full h-full">
+                    {/* Top Section - Logo */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-[#14B8A6] rounded-xl blur-xl opacity-60" />
+                                <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-lg shadow-[#14B8A6]/30">
+                                    <TrendingUp className="w-5 h-5 text-white" />
                                 </div>
-                                <span className="text-lg text-slate-300 font-medium">{benefit.text}</span>
-                            </motion.div>
-                        ))}
+                            </div>
+                            <span className="text-xl font-bold text-white tracking-tight">Starta</span>
+                            <div className="ml-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
+                                <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">PRO</span>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Middle Section - Main Content */}
+                    <div className="flex-1 flex flex-col justify-center -mt-8">
+                        {/* Main Headline */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                            className="mb-6"
+                        >
+                            <h1 className="text-[44px] xl:text-[52px] 2xl:text-[58px] font-bold text-white leading-[1.05] tracking-tight mb-2">
+                                Unlock Full
+                            </h1>
+                            <h1 className="text-[44px] xl:text-[52px] 2xl:text-[58px] font-bold leading-[1.05] tracking-tight">
+                                <span className="bg-gradient-to-r from-[#14B8A6] via-[#2DD4BF] to-[#14B8A6] bg-clip-text text-transparent">
+                                    AI Analysis
+                                </span>
+                            </h1>
+                        </motion.div>
+
+                        {/* Description */}
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="text-slate-400 text-lg xl:text-xl leading-relaxed mb-10 max-w-[460px]"
+                        >
+                            Create your free account to access professional-grade market intelligence for Egypt and Saudi stocks.
+                        </motion.p>
+
+                        {/* Premium Benefit Cards */}
+                        <div className="space-y-3">
+                            {benefits.map((benefit, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -30 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.3 + idx * 0.1 }}
+                                    className="group relative"
+                                >
+                                    <div className="relative flex items-center gap-4 p-4 xl:p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] hover:bg-white/[0.06] hover:border-[#14B8A6]/40 transition-all duration-500 cursor-default overflow-hidden">
+                                        {/* Animated Gradient Line */}
+                                        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[#14B8A6] via-[#3B82F6] to-[#14B8A6] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                        {/* Icon Container */}
+                                        <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-[#14B8A6]/20 to-[#14B8A6]/5 border border-[#14B8A6]/20 flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg shadow-[#14B8A6]/10">
+                                            <benefit.icon className="w-5 h-5 text-[#14B8A6]" />
+                                        </div>
+
+                                        {/* Text */}
+                                        <div className="relative">
+                                            <span className="text-white font-semibold text-[15px] group-hover:text-[#14B8A6] transition-colors duration-300 block">
+                                                {benefit.text}
+                                            </span>
+                                            <span className="text-slate-500 text-sm">{benefit.description}</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
-                </motion.div>
+
+                    {/* Bottom Section - Social Proof */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 0.8 }}
+                        className="flex items-center gap-4"
+                    >
+                        <div className="flex -space-x-2">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 border-2 border-[#0A0F1C] flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                                    {String.fromCharCode(64 + i)}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-[#14B8A6]" />
+                            <p className="text-slate-400 text-sm">
+                                Join <span className="text-white font-semibold">2,500+</span> traders
+                            </p>
+                        </div>
+                    </motion.div>
+                </div>
             </div>
 
-            {/* Right Panel - Form */}
-            <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10 overflow-y-auto w-full">
-                {/* Mobile Background */}
-                <div className="lg:hidden absolute inset-0 bg-slate-50 dark:bg-[#0B1121]">
-                    <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-[#14B8A6]/[0.08] to-transparent" />
+            {/* ================================================================
+                RIGHT PANEL - Premium Registration Form
+                ================================================================ */}
+            <div className="flex-1 flex flex-col justify-center px-6 lg:px-12 xl:px-16 2xl:px-24 py-8 relative overflow-y-auto">
+                {/* Subtle Background Pattern */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(20,184,166,0.03)_0%,_transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_right,_rgba(20,184,166,0.06)_0%,_transparent_50%)]" />
+
+                {/* Mobile Header - Logo */}
+                <div className="lg:hidden mb-6 flex items-center justify-center">
+                    <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="font-bold text-slate-900 dark:text-white text-lg">Starta</span>
+                    </div>
                 </div>
 
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-full max-w-lg space-y-6 relative z-10 my-auto py-10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-full max-w-[440px] mx-auto relative z-10"
                 >
-                    <div className="text-center lg:text-left">
-                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create Account</h2>
-                        <p className="mt-2 text-slate-600 dark:text-slate-400">Start your journey with Starta today</p>
+                    {/* Header */}
+                    <div className="mb-6">
+                        <h1 className="text-3xl lg:text-[32px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                            Create Account
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-[15px]">
+                            Start your journey with Starta today
+                        </p>
                     </div>
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="p-4 rounded-lg bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-sm flex items-center gap-3"
-                        >
-                            <AlertCircle className="w-5 h-5 shrink-0" />
-                            {error}
-                        </motion.div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={formData.full_name}
-                                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
-                                        placeholder="John Doe"
-                                    />
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
+                    {/* Error */}
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10, height: 0 }}
+                                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                exit={{ opacity: 0, y: -10, height: 0 }}
+                                className="mb-5 overflow-hidden"
+                            >
+                                <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400">
+                                    <AlertCircle className="w-5 h-5 shrink-0" />
+                                    <span className="text-sm font-medium">{error}</span>
                                 </div>
-                            </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email address</label>
-                                <div className="relative">
-                                    <input
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
-                                        placeholder="name@company.com"
-                                    />
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                </div>
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Phone Number <span className="text-slate-400 dark:text-slate-500 text-xs font-normal ml-1">(Optional)</span>
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="tel"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
-                                        placeholder="+20 10 123 4567"
-                                    />
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                </div>
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
-                                <div className="relative group">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
-                                        placeholder="Min 8 chars, 1 uppercase, 1 number"
-                                    />
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                    </button>
-                                </div>
-                                {/* Password Strength Meter */}
-                                {formData.password && (
-                                    <div className="mt-2.5 flex items-center gap-3">
-                                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                            <motion.div
-                                                className={`h-full ${passwordStrength.color}`}
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${passwordStrength.strength}%` }}
-                                                transition={{ duration: 0.3 }}
-                                            />
-                                        </div>
-                                        <span className={`text-xs font-semibold ${passwordStrength.color.replace('bg-', 'text-')}`}>
-                                            {passwordStrength.label}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Confirm Password</label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={formData.confirmPassword}
-                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className="w-full h-12 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-md px-4 pl-11 pr-10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6] transition-all font-medium"
-                                        placeholder="Retype password"
-                                    />
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                    {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                                        <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#22C55E]" />
-                                    )}
-                                </div>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Full Name */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Full Name
+                            </label>
+                            <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'name'
+                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                    : ''
+                                }`}>
+                                <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'name' ? 'text-[#14B8A6]' : 'text-slate-400'
+                                    }`} />
+                                <input
+                                    type="text"
+                                    value={formData.full_name}
+                                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                    onFocus={() => setFocusedField('name')}
+                                    onBlur={() => setFocusedField(null)}
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                    placeholder="John Doe"
+                                />
                             </div>
                         </div>
 
-                        <div className="pt-2">
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full h-12 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-md font-semibold text-base shadow-lg shadow-[#3B82F6]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
-                            >
+                        {/* Email */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Email address
+                            </label>
+                            <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'email'
+                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                    : ''
+                                }`}>
+                                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'
+                                    }`} />
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    onFocus={() => setFocusedField('email')}
+                                    onBlur={() => setFocusedField(null)}
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                    placeholder="name@company.com"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Password
+                            </label>
+                            <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'password'
+                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                    : ''
+                                }`}>
+                                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-[#14B8A6]' : 'text-slate-400'
+                                    }`} />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    onFocus={() => setFocusedField('password')}
+                                    onBlur={() => setFocusedField(null)}
+                                    className="w-full pl-12 pr-12 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                    placeholder="Min 6 characters"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                            {/* Password Strength Meter */}
+                            {formData.password && (
+                                <div className="flex items-center gap-3 mt-2">
+                                    <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <motion.div
+                                            className={`h-full ${passwordStrength.color}`}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${passwordStrength.strength}%` }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    </div>
+                                    <span className={`text-xs font-semibold ${passwordStrength.color.replace('bg-', 'text-')}`}>
+                                        {passwordStrength.label}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Confirm Password
+                            </label>
+                            <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'confirm'
+                                    ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10'
+                                    : ''
+                                }`}>
+                                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'confirm' ? 'text-[#14B8A6]' : 'text-slate-400'
+                                    }`} />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                    onFocus={() => setFocusedField('confirm')}
+                                    onBlur={() => setFocusedField(null)}
+                                    className="w-full pl-12 pr-12 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                    placeholder="Confirm your password"
+                                />
+                                {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                                    <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Premium Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="relative w-full py-4 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 mt-4 overflow-hidden group"
+                        >
+                            {/* Gradient Background */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#14B8A6] via-[#0D9488] to-[#14B8A6] bg-[length:200%_100%] group-hover:bg-right transition-all duration-500" />
+
+                            {/* Shine Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+
+                            {/* Shadow */}
+                            <div className="absolute inset-0 shadow-xl shadow-[#14B8A6]/30" />
+
+                            {/* Content */}
+                            <span className="relative text-white flex items-center gap-2">
                                 {isLoading ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <>
-                                        Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                        Get Started
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                                     </>
                                 )}
-                            </button>
-                        </div>
+                            </span>
+                        </button>
                     </form>
 
-                    {/* Google Sign Up */}
-                    <OrDivider />
-                    <GoogleLoginButton
-                        mode="register"
-                        onError={(err) => setError(err)}
-                    />
+                    {/* Divider */}
+                    <div className="my-6">
+                        <OrDivider />
+                    </div>
 
-                    <div className="pt-6 text-center border-t border-slate-200 dark:border-white/[0.08]">
-                        <p className="text-slate-500 dark:text-slate-500">
-                            Already have an account?{' '}
-                            <Link href="/login" className="font-semibold text-[#14B8A6] hover:text-[#0D9488] transition-colors">
+                    {/* Google Sign Up */}
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+                        <div className="relative">
+                            <GoogleLoginButton
+                                mode="register"
+                                onError={(err) => setError(err)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Login link */}
+                    <div className="text-center mt-6">
+                        <p className="text-slate-500 dark:text-slate-400 text-[15px]">
+                            Already have an account?{" "}
+                            <Link href="/login" className="text-[#14B8A6] font-bold hover:text-[#0D9488] transition-colors hover:underline underline-offset-2">
                                 Sign in
                             </Link>
                         </p>
                     </div>
-                </motion.div>
 
-                {/* Footer - mobile only */}
-                <div className="lg:hidden mt-8 text-center pb-6">
-                    <p className="text-xs text-slate-500">© 2026 Starta</p>
-                </div>
+                    {/* Footer */}
+                    <div className="text-center mt-8 pt-6 border-t border-slate-100 dark:border-white/5">
+                        <p className="text-xs text-slate-400 flex items-center justify-center gap-2">
+                            <Shield className="w-3.5 h-3.5" />
+                            © 2026 Starta. Secure & Encrypted.
+                        </p>
+                    </div>
+                </motion.div>
             </div>
         </div>
     );
@@ -353,7 +506,7 @@ function RegisterPageContent() {
 export default function RegisterPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1121]">
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0A0F1C]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>

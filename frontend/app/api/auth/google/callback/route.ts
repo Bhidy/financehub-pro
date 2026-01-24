@@ -27,18 +27,13 @@ export async function GET(request: NextRequest) {
     // CRITICAL: Detect if returning to startamarkets.com which uses clean URLs
     const isCleanDomain = returnOrigin?.includes("startamarkets.com") ?? false;
 
-    // Clean domains (startamarkets.com) use "/" for home, others use "/mobile-ai-analyst"
-    // CRITICAL FIX: startamarkets.com redirects ALWAYS to "/" (root), effectively deprecating /mobile-ai-analyst for this domain
-    let successRedirect = "/ai-analyst";
-    let loginRedirect = "/login";
-
-    if (isCleanDomain) {
-        successRedirect = "/";
-        loginRedirect = "/login";
-    } else if (isMobile) {
-        successRedirect = "/mobile-ai-analyst";
-        loginRedirect = "/mobile-ai-analyst/login";
-    }
+    // Clean domains use "/" for home, others use "/mobile-ai-analyst"
+    const successRedirect = isMobile
+        ? (isCleanDomain ? "/" : "/mobile-ai-analyst")
+        : "/ai-analyst";
+    const loginRedirect = isMobile
+        ? (isCleanDomain ? "/login" : "/mobile-ai-analyst/login")
+        : "/login";
 
     // Handle errors from Google
     if (error) {

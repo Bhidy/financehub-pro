@@ -494,29 +494,33 @@ async def delete_session(
         
     # Delete - "Nuclear" Approach (Cascade Manually)
     try:
-        async with db.transaction():
-            # 1. Delete from child tables (Order matters for some schemas, but usually parallel)
-            # We use distinct try/except blocks for each table to handle "table not found" silently
-            # but ensure we attempt to clear data.
-            
-            tables = [
-                'chat_messages', 
-                'chat_analytics', 
-                'chat_interactions', 
-                'chat_session_summary',
-                'unresolved_queries' # Linked via interaction usually, but good to check
-            ]
-            
-            for table in tables:
-                try:
-                    await db.execute(f"DELETE FROM {table} WHERE session_id = $1", session_id)
-                except Exception as e:
-                    # Ignore "table does not exist" errors, raise others
-                    if "does not exist" not in str(e):
-                        print(f"Warning cleaning {table}: {e}")
-            
-            # 2. Finally delete the parent session
-            await db.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
+        if not db._pool:
+             raise HTTPException(status_code=503, detail="Database unavailable")
+
+        # Use explicit connection for transaction atomicity
+        async with db._pool.acquire() as conn:
+            async with conn.transaction():
+                # 1. Delete from child tables
+                # We use distinct try/except blocks to handle "table not found" silently
+                
+                tables = [
+                    'chat_messages', 
+                    'chat_analytics', 
+                    'chat_interactions', 
+                    'chat_session_summary',
+                    'unresolved_queries'
+                ]
+                
+                for table in tables:
+                    try:
+                        await conn.execute(f"DELETE FROM {table} WHERE session_id = $1", session_id)
+                    except Exception as e:
+                        # Ignore "table does not exist" errors, raise others
+                        if "does not exist" not in str(e):
+                            print(f"Warning cleaning {table}: {e}")
+                
+                # 2. Finally delete the parent session
+                await conn.execute("DELETE FROM chat_sessions WHERE session_id = $1", session_id)
                  
     except Exception as e:
         print(f"Delete Session Error: {e}")

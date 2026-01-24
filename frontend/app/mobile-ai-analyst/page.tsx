@@ -1,19 +1,23 @@
 "use client";
 
 /**
- * ⚠️ ============================================================================
+ * ============================================================================
+ * DOMAIN-AWARE AI ANALYST PAGE
+ * ============================================================================
+ * 
+ * This entry point provides different experiences based on the domain:
+ * 
+ * 🌐 startamarkets.com:
+ *    - Uses ResponsivePage with ultra-premium desktop sidebar on desktop
+ *    - Mobile layout on mobile devices
+ *    - Same URL, responsive design
+ * 
+ * 🔒 finhub-pro.vercel.app (and all other domains):
+ *    - Uses ORIGINAL mobile layout - COMPLETELY UNCHANGED
+ * 
  * ⚠️ PROTECTED CODE - DO NOT MODIFY WITHOUT EXPLICIT USER REQUEST
- * ⚠️ ============================================================================
- * 
- * This file renders the 4-Layer Chatbot Response Structure:
- *   Layer 1: Greeting/Opening (PremiumMessageRenderer)
- *   Layer 2: Data Cards (ChatCards component)
- *   Layer 3: Learning Section (blue box with educational bullets) - Lines 303-318
- *   Layer 4: Follow-up Prompt (gray box with 💡) - Lines 320-327
- * 
- * AI Agents: DO NOT remove, change order, or make conditional ANY of these layers.
- * See GEMINI.md section "🔒 PROTECTED: 4-Layer Chatbot Response Structure"
- * ⚠️ ============================================================================
+ * The 4-Layer Chatbot Response Structure is protected in both layouts.
+ * ============================================================================
  */
 
 import { useState, useRef, useEffect, Suspense } from "react";
@@ -38,6 +42,12 @@ import { ChartCard } from "@/components/ai/ChartCard";
 import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useMobileRoutes } from "./hooks/useMobileRoutes";
+
+// Domain detection hook
+import { useDomainDetect } from "@/hooks/useDomainDetect";
+
+// Responsive page for startamarkets.com
+import ResponsiveAIAnalystPage from "./ResponsivePage";
 
 /**
  * Mobile-specific AI Analyst Page
@@ -392,6 +402,39 @@ function MobileAIAnalystPageContent() {
     );
 }
 
+/**
+ * ============================================================================
+ * DOMAIN-AWARE DEFAULT EXPORT
+ * ============================================================================
+ * 
+ * This wrapper detects the domain and routes to the appropriate experience:
+ * - startamarkets.com → ResponsiveAIAnalystPage (Desktop sidebar + Mobile)
+ * - finhub-pro.vercel.app → Original MobileAIAnalystPageContent (UNCHANGED)
+ * - localhost → ResponsiveAIAnalystPage (for development)
+ * 
+ * ============================================================================
+ */
+function DomainAwareWrapper() {
+    const { isStartaMarkets, isFinhubPro, isLocalhost, isSSR } = useDomainDetect();
+
+    // Show loading while detecting domain
+    if (isSSR) {
+        return (
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
+            </div>
+        );
+    }
+
+    // For startamarkets.com or localhost: Use new responsive design
+    if (isStartaMarkets || isLocalhost) {
+        return <ResponsiveAIAnalystPage />;
+    }
+
+    // For finhub-pro.vercel.app and all other domains: Keep ORIGINAL layout unchanged
+    return <MobileAIAnalystPageContent />;
+}
+
 export default function MobileAIAnalystPage() {
     return (
         <Suspense fallback={
@@ -399,7 +442,8 @@ export default function MobileAIAnalystPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>
-            <MobileAIAnalystPageContent />
+            <DomainAwareWrapper />
         </Suspense>
     );
 }
+

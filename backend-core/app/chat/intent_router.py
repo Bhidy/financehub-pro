@@ -464,6 +464,13 @@ class IntentRouter:
         if "banking sector" in merged_text or "banks in" in merged_text:
              entities['sector'] = 'Banks'  # Use 'Banks' so handler can search by name_en
              return IntentResult(intent=Intent.SECTOR_STOCKS, confidence=1.0, entities=entities, missing_fields=[])
+        
+        # Generic Sector Override
+        # If we successfully extracted a 'sector' entity in _extract_entities, route to SECTOR_STOCKS
+        if entities.get('sector'):
+             # Ensure it's not a false positive for a stock symbol (e.g. "Food") if that was a ticker
+             # But sector map is robust.
+             return IntentResult(intent=Intent.SECTOR_STOCKS, confidence=0.95, entities=entities, missing_fields=[])
 
         # 4. Financial Health Overrides
         if "financial health" in merged_text or "health" in merged_text:
@@ -663,30 +670,42 @@ class IntentRouter:
         
         # Extract sector - map keywords to actual database sector_name values
         sector_map = {
-            # Banking sector - use 'Banks' to trigger name search in handler
-            'bank': 'Banks', 'banks': 'Banks', 
-            'banking': 'Banks', 'بنوك': 'Banks',
-            'financial': 'Financial Services',
-            # Real Estate
-            'real estate': 'Real Estate', 'عقار': 'Real Estate', 'عقارات': 'Real Estate',
-            # Industrials
-            'industrial': 'Industrials', 'صناع': 'Industrials', 'صناعي': 'Industrials',
+            # Banking
+            'bank': 'Banks', 'banks': 'Banks', 'banking': 'Banks', 'بنوك': 'Banks',
+            # Basic Resources
+            'basic resources': 'Basic Resources', 'resources': 'Basic Resources', 'موارد اساسية': 'Basic Resources',
+            # Building Materials
+            'building': 'Building Materials', 'construction material': 'Building Materials', 'مواد بناء': 'Building Materials',
+            # Construction
+            'contracting': 'Contracting and Construction Engineering', 'construction': 'Contracting and Construction Engineering', 'مقاولات': 'Contracting and Construction Engineering',
+            # Education
+            'education': 'Education Services', 'schools': 'Education Services', 'تعليم': 'Education Services',
+            # Financial Services (Non-Bank)
+            'financial': 'Financial Services', 'financial services': 'Financial Services', 'services financial': 'Financial Services', 'خدمات مالية': 'Financial Services',
+            # Food & Bev
+            'food': 'Food, Beverages and Tobacco', 'beverage': 'Food, Beverages and Tobacco', 'tobacco': 'Food, Beverages and Tobacco', 'اغذية': 'Food, Beverages and Tobacco', 'مشروبات': 'Food, Beverages and Tobacco',
             # Healthcare
-            'healthcare': 'Healthcare', 'pharma': 'Healthcare', 'pharmaceutical': 'Healthcare',
-            'دوائي': 'Healthcare', 'صحي': 'Healthcare',
-            # Technology  
-            'tech': 'Technology', 'technology': 'Technology', 'تكنولوجيا': 'Technology',
-            # Basic Materials
-            'materials': 'Basic Materials', 'basic materials': 'Basic Materials',
+            'healthcare': 'Health Care and Pharmaceuticals', 'health': 'Health Care and Pharmaceuticals', 'pharma': 'Health Care and Pharmaceuticals', 'pharmaceuticals': 'Health Care and Pharmaceuticals', 'رعاية صحية': 'Health Care and Pharmaceuticals', 'ادوية': 'Health Care and Pharmaceuticals',
+            # Industrial Goods
+            'industrial goods': 'Industrial Goods , Services and Automobiles', 'automobiles': 'Industrial Goods , Services and Automobiles', 'auto': 'Industrial Goods , Services and Automobiles', 'cars': 'Industrial Goods , Services and Automobiles', 'سيارات': 'Industrial Goods , Services and Automobiles',
+            # IT & Media
+            'it': 'IT , Media and Communication Services', 'media': 'IT , Media and Communication Services', 'communication': 'IT , Media and Communication Services', 'telecom': 'IT , Media and Communication Services', 'technology': 'IT , Media and Communication Services', 'تكنولوجيا': 'IT , Media and Communication Services', 'اعلام': 'IT , Media and Communication Services', 'اتصالات': 'IT , Media and Communication Services',
+            # Paper
+            'paper': 'Paper and Packaging', 'packaging': 'Paper and Packaging', 'ورق': 'Paper and Packaging',
+            # Real Estate
+            'real estate': 'Real Estate', 'estate': 'Real Estate', 'property': 'Real Estate', 'عقارات': 'Real Estate',
+            # Shipping
+            'shipping': 'Shipping and Transportation Services', 'transport': 'Shipping and Transportation Services', 'transportation': 'Shipping and Transportation Services', 'nile': 'Shipping and Transportation Services', 'شحن': 'Shipping and Transportation Services', 'نقل': 'Shipping and Transportation Services',
+            # Textile
+            'textile': 'Textile and Durables', 'durables': 'Textile and Durables', 'clothing': 'Textile and Durables', 'نسيج': 'Textile and Durables',
+            # Trade
+            'trade': 'Trade and Distributors', 'distributors': 'Trade and Distributors', 'تجارة': 'Trade and Distributors', 'توزيع': 'Trade and Distributors',
+            # Travel
+            'travel': 'Travel and Leisure', 'leisure': 'Travel and Leisure', 'tourism': 'Travel and Leisure', 'سياحة': 'Travel and Leisure', 'ترفيه': 'Travel and Leisure',
+            # Utilities
+            'utilities': 'Utilities', 'utility': 'Utilities', 'مرافق': 'Utilities',
             # Energy
-            'energy': 'Energy', 'oil': 'Energy', 'gas': 'Energy', 'طاقه': 'Energy',
-            # Consumer
-            'consumer': 'Consumer Cyclical', 'retail': 'Consumer Cyclical',
-            # Communication
-            'telecom': 'Communication Services', 'communication': 'Communication Services',
-            'اتصالات': 'Communication Services',
-            # Food
-            'food': 'Consumer Defensive', 'اغذيه': 'Consumer Defensive',
+            'energy': 'Energy and Support Services', 'oil': 'Energy and Support Services', 'gas': 'Energy and Support Services', 'طاقة': 'Energy and Support Services',
         }
         for keyword, sector in sector_map.items():
             if keyword in text.lower():

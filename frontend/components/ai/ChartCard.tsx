@@ -97,25 +97,55 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
             return { chartOptions: options, chartSeries: series };
 
         } else if (isBarOrColumn) {
-            const series = [{
-                name: "Value",
-                data: chart.data.map((d: any) => d.value || 0)
-            }];
-            const categories = chart.data.map((d: any) => d.label || "");
+            // Updated to handle both single series and multi-series (grouped)
+            // Backend sends: [{ label: 'Net Margin', 'COMI': 20, 'TMGH': 15 }, ...]
+
+            let series: any[] = [];
+            let categories: string[] = [];
+
+            if (chart.data && chart.data.length > 0) {
+                const firstItem = chart.data[0];
+                // Extract keys excluding standard label fields
+                // We cast to any to bypass strict type checks on the 'protected' interface
+                const safeItem = firstItem as any;
+                const dataKeys = Object.keys(safeItem).filter(k =>
+                    k !== 'label' && k !== 'metric' && k !== 'time' && k !== 'value'
+                );
+
+                categories = chart.data.map((d: any) => d.label || d.metric || "");
+
+                if (dataKeys.length > 0) {
+                    // Multi-Series (Grouped) from Keys
+                    series = dataKeys.map(key => ({
+                        name: key,
+                        data: chart.data.map((d: any) => d[key] || 0)
+                    }));
+                } else {
+                    // Single Series (Standard 'value' field)
+                    series = [{
+                        name: "Value",
+                        data: chart.data.map((d: any) => d.value || 0)
+                    }];
+                }
+            }
 
             const options: ApexCharts.ApexOptions = {
                 chart: {
                     type: "bar",
                     height,
                     toolbar: { show: true },
-                    background: "transparent"
+                    background: "transparent",
+                    stacked: false // Grouped bars side-by-side
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 plotOptions: {
                     bar: {
-                        horizontal: chart.type === "bar",
+                        horizontal: chart.type === "bar", // 'bar' is horizontal, 'column' is vertical in Apex
                         borderRadius: 4,
-                        columnWidth: '50%'
+                        columnWidth: '55%',
+                        dataLabels: {
+                            position: 'top', // top, center, bottom
+                        },
                     }
                 },
                 xaxis: {
@@ -130,8 +160,23 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     align: "left",
                     style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
                 },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val: number) {
+                        return val.toFixed(1) + "%";
+                    },
+                    offsetY: -20,
+                    style: {
+                        fontSize: '10px',
+                        colors: [primaryTextColor]
+                    }
+                },
                 grid: { borderColor },
-                colors: ["#3b82f6"]
+                colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"],
+                legend: {
+                    position: 'top',
+                    labels: { colors: primaryTextColor }
+                }
             };
             return { chartOptions: options, chartSeries: series };
 

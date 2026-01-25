@@ -265,86 +265,35 @@ async def handle_compare_stocks(
             # We will just list them.
             flat_metrics.extend(final_metrics_map[cat])
 
-    # 3. Chart Generation (Enhanced Robustness)
+    # 3. Chart Generation (Enhanced: Multi-Metric Grouped Bar Chart)
+    # Replaces the old Relative Performance Line Chart
     chart_data = []
     try:
-        history_map = {}
-        target_days = 365 # 1 Year for "Duel"
-        start_date = datetime.now() - timedelta(days=target_days)
+        # We want to display key percentage metrics: Net Margin, ROE, Div Yield
+        # Format as Array of Objects for compatibility with ChartPayload types
+        # [{ 'label': 'Net Margin', 'COMI': 20, 'TMGH': 15 }, ...]
         
-        # Parallel fetch for DB or fallback
-        for sym in [d['symbol'] for d in stocks_data]: 
-            series = []
-            # Primary: Get data in range
-            rows = await conn.fetch("""
-                SELECT date, close
-                FROM ohlc_data
-                WHERE symbol = $1 AND date >= $2
-                ORDER BY date ASC
-            """, sym, start_date.date())
-            
-            if rows:
-                for r in rows:
-                    if r.get('close'):
-                        series.append({'time': r['date'].isoformat(), 'val': float(r['close'])})
-            
-            # DB-ONLY FALLBACK
-            if not series or len(series) < 5:
-                # Try getting last 100 points
-                latest_rows = await conn.fetch("""
-                    SELECT date, close
-                    FROM ohlc_data
-                    WHERE symbol = $1
-                    ORDER BY date DESC
-                    LIMIT 200
-                """, sym)
-                
-                if latest_rows:
-                    series = []
-                    for r in reversed(latest_rows):
-                        if r.get('close'):
-                             series.append({'time': r['date'].isoformat(), 'val': float(r['close'])})
-            
-            series.sort(key=lambda x: x['time'])
-            history_map[sym] = series
-
-        # Normalize to % Return
-        all_dates = set()
-        for sym in symbols:
-            for pt in history_map.get(sym, []):
-                all_dates.add(pt['time'])
+        chart_metrics = [
+            {'key': 'profit_margin', 'label': 'Net Margin'},
+            {'key': 'roe', 'label': 'ROE'},
+            {'key': 'dividend_yield', 'label': 'Div Yield'},
+            {'key': 'operating_margin', 'label': 'Op Margin'}
+        ]
         
-        if all_dates:
-            sorted_dates = sorted(list(all_dates))
-            bases = {}
-            for sym in symbols:
-                series = history_map.get(sym, [])
-                # Rebase to the first common date? Or first available date for each?
-                # "Performance Duel" usually starts at 0% from the start of the chart.
-                # Find first valid value in the chart range
-                if series:
-                     bases[sym] = series[0]['val']
+        for m in chart_metrics:
+            row = {'label': m['label']}
+            has_data = False
+            for stock in stocks_data:
+                val = stock.get(m['key'])
+                if val is not None:
+                     # Convert decimal to percentage (0.22 -> 22.0)
+                     row[stock['symbol']] = round(val * 100, 2)
+                     has_data = True
                 else:
-                     bases[sym] = None
-
-            for dt in sorted_dates:
-                point = {'time': dt}
-                has_valid = False
-                for sym in symbols:
-                    # Find value for this date
-                    val = next((item['val'] for item in history_map.get(sym, []) if item['time'] == dt), None)
-                    
-                    # Carry forward previous value if missing (simple fill for line continuity)?
-                    # Or generic null.
-                    
-                    if val is not None and bases[sym] and bases[sym] > 0:
-                        pct_change = ((val - bases[sym]) / bases[sym]) * 100.0
-                        point[sym] = round(pct_change, 2)
-                        has_valid = True
-                    # If missing, we leave it out
-                
-                if has_valid: 
-                    chart_data.append(point)
+                     row[stock['symbol']] = 0
+            
+            if has_data:
+                chart_data.append(row)
 
     except Exception as e:
         print(f"[COMPARE] Chart Logic Failed: {e}")
@@ -375,11 +324,12 @@ async def handle_compare_stocks(
             }
         ],
         'chart': {
-            'type': 'line',
+            'type': 'bar', # Changed to bar for Column Chart
             'symbol': f"{symbols[0]} vs {symbols[1]}",
-            'title': f"Performance Duel (1Y)" if language == 'en' else "سباق الأداء (سنة)",
+            'title': f"Fundamental Face-off" if language == 'en' else "مواجهة المؤشرات الأساسية",
             'data': chart_data,
-            'range': '1Y'
+            'range': '1Y', # Not strictly time-series but keeps schema
+            'currency': stocks_data[0].get('currency', 'EGP') # Explicit currency for LLM
         },
         'learning_section': {
             'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',

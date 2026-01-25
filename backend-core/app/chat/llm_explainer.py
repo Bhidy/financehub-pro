@@ -300,10 +300,11 @@ class LLMExplainerService:
                 c_data = card.get("data", {})
                 
                 if c_type == "stock_header":
-                    # Compact: "TMGH (Talaat Moustafa)"
+                    # Compact: "TMGH (Talaat Moustafa) [EGP]"
                     symbol = c_data.get('symbol', '')
                     name = c_data.get('name', '')[:20]  # Truncate long names
-                    summary_parts.append(f"{symbol} ({name})")
+                    curr = c_data.get('currency', 'EGP') # Default to EGP for EGX context which prevents '$' hallucination
+                    summary_parts.append(f"{symbol} ({name}) [{curr}]")
                     
                 elif c_type == "snapshot":
                     # Compact: "Price:82.95 Chg:-0.95%"

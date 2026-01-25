@@ -158,62 +158,34 @@ async def handle_sector_stocks(
     """Handle SECTOR_STOCKS intent."""
     
     
-    # SECTOR MAPPING: Expand broad categories to specific keywords found in EGX/StockAnalysis data
+    # SECTOR MAPPING: 
+    # The Intent Router now provides the exact DB sector name (e.g. "Basic Resources").
+    # We use that for search.
     sector_lower = sector.lower()
     search_terms = [f"%{sector_lower}%"]
     
-    # Industries to EXCLUDE from banking results (Investment holdings, brokers, insurance)
-    # These match %invest%, %finan%, etc. but are NOT actual banks
+    # Specific logic for Banking to exclude non-banks and investment holdings
     excluded_industries = []
     
-    # Special flag for banking - also search by company name
-    search_by_name = False
-    name_terms = []
-    
     if sector_lower in ['bank', 'banks', 'banking'] or 'bank' in sector_lower:
-        # For banking sector: ONLY match actual banks
-        # Search in sector/industry ONLY (structured data now populated from EGX excel)
+        # For banking sector: ONLY match actual Commercial/Islamic banks
         search_terms = ["%bank%"]
-        name_terms = []
         # Exclude investment holdings, brokers, and insurance companies
         excluded_industries = [
             'investors, not elsewhere classified',  # Real Estate/Investment Holdings like TMGH
             'security and commodity brokers, dealers, exchanges, and services',  # Brokers like HRHO
-            'security brokers, dealers, and flotation companies',  # More brokers
-            'insurance carriers',  # Insurance companies
+            'security brokers, dealers, and flotation companies',
+            'insurance carriers',
         ]
-    elif "insur" in sector_lower:
-        # Insurance sector - be specific
-        search_terms = ["%insur%"]
-    elif "broker" in sector_lower or "investment" in sector_lower:
-        # Investment/Broker sector - be specific
-        search_terms = ["%broker%", "%invest%", "%security%"]
-    elif "finan" in sector_lower:
-        # General Financial Services - broader match but exclude pure banks
-        search_terms = ["%finan%"]
-    elif "tech" in sector_lower:
-        search_terms.extend(["%comput%", "%softw%", "%tech%"])
-    elif "consumer" in sector_lower:
-        search_terms.extend(["%textile%", "%apparel%", "%retail%", "%food%", "%bever%"])
-    elif "indust" in sector_lower:
-        search_terms.extend(["%construct%", "%build%", "%cement%", "%steel%", "%metal%"])
-    elif "basic" in sector_lower or "material" in sector_lower:
-        search_terms.extend(["%chem%", "%mine%", "%mining%", "%steel%", "%metal%"])
-    elif "health" in sector_lower:
-        search_terms.extend(["%pharm%", "%medic%", "%health%"])
-    elif "real" in sector_lower or "estate" in sector_lower or "property" in sector_lower:
-        search_terms.extend(["%real estate%", "%property%", "%housing%", "%development%"])
-
-    # Build SQL with optional industry exclusions
-    if False: # Deprecated name search logic
-        pass
-    else:
-        sql = """
-            SELECT symbol, name_en, name_ar, last_price, change_percent, market_cap, sector_name
-            FROM market_tickers
-            WHERE (LOWER(sector_name) LIKE ANY($1) OR LOWER(industry) LIKE ANY($1))
-        """
-        params: List = [search_terms]
+    
+    # Build SQL to search in sector_name
+    # We prioritize sector_name match.
+    sql = """
+        SELECT symbol, name_en, name_ar, last_price, change_percent, market_cap, sector_name
+        FROM market_tickers
+        WHERE (LOWER(sector_name) LIKE ANY($1))
+    """
+    params: List = [search_terms]
     
     # Add industry exclusions if specified (for banking sector)
     if excluded_industries:

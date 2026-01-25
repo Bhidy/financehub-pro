@@ -13,11 +13,11 @@ def handle_help(language: str = 'en') -> Dict[str, Any]:
         categories = [
             {
                 'title': '💰 أسعار الأسهم',
-                'examples': ['كم سعر COMI؟', 'ما سعر أرامكو؟', 'سعر التجاري الدولي']
+                'examples': ['كم سعر COMI؟', 'ما سعر فوري؟', 'سعر التجاري الدولي']
             },
             {
                 'title': '📊 الشارتات',
-                'examples': ['أعطني شارت COMI', 'شارت سويدي سنة', 'الرسم البياني لـ 2222']
+                'examples': ['أعطني شارت COMI', 'شارت سويدي سنة', 'الرسم البياني لـ HRHO']
             },
             {
                 'title': '🛡️ تحليل المخاطر',
@@ -25,7 +25,7 @@ def handle_help(language: str = 'en') -> Dict[str, Any]:
             },
             {
                 'title': '💎 التقييم',
-                'examples': ['هل SWDY رخيص؟', 'تقييم TMGH', 'القيمة العادلة لـ 2222']
+                'examples': ['هل SWDY رخيص؟', 'تقييم TMGH', 'القيمة العادلة لـ ORAS']
             },
             {
                 'title': '📈 النمو والكفاءة',
@@ -41,7 +41,7 @@ def handle_help(language: str = 'en') -> Dict[str, Any]:
         categories = [
             {
                 'title': '💰 Stock Prices',
-                'examples': ['Price of COMI', 'Aramco stock price', 'Quote for 2222']
+                'examples': ['Price of COMI', 'FWRY stock price', 'Quote for EAST']
             },
             {
                 'title': '📊 Charts & Technicals',
@@ -53,7 +53,7 @@ def handle_help(language: str = 'en') -> Dict[str, Any]:
             },
             {
                 'title': '💎 Valuation Analysis (NEW)',
-                'examples': ['Is SWDY cheap?', 'TMGH valuation', 'Is Aramco overvalued?']
+                'examples': ['Is SWDY cheap?', 'TMGH valuation', 'Is ORAS overvalued?']
             },
             {
                 'title': '📈 Growth & Efficiency (NEW)',

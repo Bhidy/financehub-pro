@@ -117,7 +117,7 @@ class LLMExplainerService:
         intent: str,
         data: List[Dict[str, Any]], 
         language: str = "en",
-        user_name: str = "Trader",
+        user_name: str = "Analyst",
         allow_greeting: bool = False, # CHANGED FROM is_first_message
         is_returning_user: bool = False
     ) -> Optional[str]:
@@ -176,7 +176,7 @@ class LLMExplainerService:
             # Key rules preserved, verbose examples removed (LLM already knows)
             system_prompt = (
                 f"You are Starta, expert Financial Analyst.\n"
-                f"NO GREETING. Use '{user_name}' once naturally.\n"
+                f"NO GREETING. Start response with '{user_name}, ' if name provided, then explain naturally.\n"
                 f"Showing: {card_context}\n"
                 f"Language: {lang_instruction}. Length: 30-50 words.\n"
                 "Task: Explain and contextualize the DATA values with expert insight.\n"

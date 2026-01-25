@@ -160,8 +160,12 @@ async def handle_compare_stocks(
 
     # 2. Smart Metric Selection
     # Define categories, labels, and "Better" direction (min/max)
-    # direction: 'max' (higher is better), 'min' (lower is better), None (neutral)
     categories_config = {
+        'Market Data': [
+            {'key': 'market_cap', 'label': 'Market Cap', 'label_ar': 'القيمة السوقية', 'format': 'compact', 'direction': 'max'},
+            {'key': 'volume', 'label': 'Volume (Avg)', 'label_ar': 'حجم التداول', 'format': 'compact', 'direction': 'max'},
+            {'key': 'change_percent', 'label': 'Daily Change', 'label_ar': 'التغير اليومي', 'format': 'pct', 'direction': 'max'}
+        ],
         'Valuation': [
             {'key': 'pe_ratio', 'label': 'P/E Ratio', 'label_ar': 'مضاعف الربحية', 'direction': 'min'},
             {'key': 'forward_pe', 'label': 'Fwd P/E', 'label_ar': 'مكرر مستقبلي', 'direction': 'min'},
@@ -196,7 +200,7 @@ async def handle_compare_stocks(
         ],
         'Dividends': [
             {'key': 'dividend_yield', 'label': 'Div Yield', 'label_ar': 'عائد التوزيعات', 'format': 'pct', 'direction': 'max'},
-            {'key': 'payout_ratio', 'label': 'Payout Ratio', 'label_ar': 'نسبة التوزيع', 'format': 'pct', 'direction': 'min'}, # Usually lower (sustainable) is better, but contextual. Let's say min for safety.
+            {'key': 'payout_ratio', 'label': 'Payout Ratio', 'label_ar': 'نسبة التوزيع', 'format': 'pct', 'direction': 'min'}, 
         ]
     }
     
@@ -230,12 +234,6 @@ async def handle_compare_stocks(
                     if val1 > val2: winner_idx = 0
                     elif val2 > val1: winner_idx = 1
                 elif direction == 'min':
-                    # For ratios where lower is better (PE, Debt), ensure positive?
-                    # Generally yes. Avoid negative PE? 
-                    # If PE is negative, it's usually bad (loss), but strict numerical min might pick -5 over 10.
-                    # Assumption: We handled bad data by now. Treat numerically.
-                    # Wait, PE < 0 is usually rendered as N/A or separate.
-                    # Simple numerical comparison for now.
                     if val1 < val2: winner_idx = 0
                     elif val2 < val1: winner_idx = 1
                     
@@ -245,66 +243,14 @@ async def handle_compare_stocks(
             chosen_metrics.append(m)
             
         if chosen_metrics:
-            # Add Category Header
-            # We flatten this for the table in frontend, or keep structure?
-            # Current frontend (CompareTable) expects flat: metrics: [{key, label}]
-            # To support categories, we might need to modify frontend or send flat with separators.
-            # Let's send flat but interspersed with Category Headers? 
-            # No, standard table usually groups field. 
-            # Let's just append them. The frontend CompareTable is simple.
-            # We can prefix label? "Valuation: PE" - too cluttery.
-            # Let's just append.
             final_metrics_map[cat_name] = chosen_metrics
 
     # Flatten for the response
     flat_metrics = []
     # Force specific order
-    for cat in ['Valuation', 'Profitability', 'Efficiency', 'Growth', 'Health', 'Dividends']:
+    for cat in ['Market Data', 'Valuation', 'Profitability', 'Efficiency', 'Growth', 'Health', 'Dividends']:
         if cat in final_metrics_map:
-            # Optional: Add a section header? The frontend doesn't support it yet.
-            # We will just list them.
             flat_metrics.extend(final_metrics_map[cat])
-
-    # 3. Chart Generation (Enhanced: Multi-Metric Grouped Bar Chart)
-    # Replaces the old Relative Performance Line Chart
-    chart_data = []
-    try:
-        # We want to display key percentage metrics: Net Margin, ROE, Div Yield
-        # Format as Array of Objects for compatibility with ChartPayload types
-        # [{ 'label': 'Net Margin', 'COMI': 20, 'TMGH': 15 }, ...]
-        
-        chart_metrics = [
-            {'key': 'profit_margin', 'label': 'Net Margin'},
-            {'key': 'roe', 'label': 'ROE'},
-            {'key': 'dividend_yield', 'label': 'Div Yield'},
-            {'key': 'operating_margin', 'label': 'Op Margin'}
-        ]
-        
-        for m in chart_metrics:
-            row = {'label': m['label']}
-            has_data = False
-            for stock in stocks_data:
-                val = stock.get(m['key'])
-                if val is not None:
-                     # Convert decimal to percentage (0.22 -> 22.0)
-                     row[stock['symbol']] = round(val * 100, 2)
-                     has_data = True
-                else:
-                     row[stock['symbol']] = 0
-            
-            if has_data:
-                chart_data.append(row)
-
-    except Exception as e:
-        print(f"[COMPARE] Chart Logic Failed: {e}")
-        chart_data = []
-
-    # 4. Construct Radar Data (Efficiency)
-    # We need normalized 0-100 scores for: PE, ROE, Yield, Margin, Debt
-    # This is complex to do universally. Simplified: Just pass raw values, let frontend handle?
-    # No, frontend needs pre-processed radar data usually.
-    # For now, let's stick to the requested Table + Line Chart as primary.
-    # The user asked for "Graphs ideas", one implemented (Line) is good. 
 
     message = f"Here is the comparison between {stocks_data[0]['name']} and {stocks_data[1]['name']}"
     if language == 'ar':
@@ -323,14 +269,7 @@ async def handle_compare_stocks(
                 }
             }
         ],
-        'chart': {
-            'type': 'bar', # Changed to bar for Column Chart
-            'symbol': f"{symbols[0]} vs {symbols[1]}",
-            'title': f"Fundamental Face-off" if language == 'en' else "مواجهة المؤشرات الأساسية",
-            'data': chart_data,
-            'range': '1Y', # Not strictly time-series but keeps schema
-            'currency': stocks_data[0].get('currency', 'EGP') # Explicit currency for LLM
-        },
+        'chart': None, # Chart Removed as requested
         'learning_section': {
             'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',
             'items': [

@@ -172,10 +172,9 @@ async def handle_sector_stocks(
     
     if sector_lower in ['bank', 'banks', 'banking'] or 'bank' in sector_lower:
         # For banking sector: ONLY match actual banks
-        # Search in sector/industry AND in company name (many EGX stocks have NULL sector)
+        # Search in sector/industry ONLY (structured data now populated from EGX excel)
         search_terms = ["%bank%"]
-        search_by_name = True
-        name_terms = ["%bank%"]
+        name_terms = []
         # Exclude investment holdings, brokers, and insurance companies
         excluded_industries = [
             'investors, not elsewhere classified',  # Real Estate/Investment Holdings like TMGH
@@ -205,19 +204,9 @@ async def handle_sector_stocks(
     elif "real" in sector_lower or "estate" in sector_lower or "property" in sector_lower:
         search_terms.extend(["%real estate%", "%property%", "%housing%", "%development%"])
 
-    # Build SQL with optional industry exclusions and name search
-    if search_by_name:
-        # For banking: search sector/industry OR company name
-        sql = """
-            SELECT symbol, name_en, name_ar, last_price, change_percent, market_cap, sector_name
-            FROM market_tickers
-            WHERE (
-                LOWER(sector_name) LIKE ANY($1) 
-                OR LOWER(industry) LIKE ANY($1)
-                OR LOWER(name_en) LIKE ANY($2)
-            )
-        """
-        params: List = [search_terms, name_terms]
+    # Build SQL with optional industry exclusions
+    if False: # Deprecated name search logic
+        pass
     else:
         sql = """
             SELECT symbol, name_en, name_ar, last_price, change_percent, market_cap, sector_name

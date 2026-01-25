@@ -23,6 +23,8 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 - **Database:** PostgreSQL via Supabase
 - **Deployment:** Hetzner VPS (Docker via Coolify)
 - **Base URL:** `https://starta.46-224-223-172.sslip.io`
+- **Server IP:** `46.224.223.172`
+- **Server Password:** `StartaProd2026!` (Used for SSH/Deployment)
 - **Data Extraction:** Custom scrapers in `extractors/`
 
 ### Deployment

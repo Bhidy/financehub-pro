@@ -88,7 +88,7 @@ class ChatService:
     async def _get_user_name(self, user_id: Optional[str]) -> str:
         """Fetch the first name or smart-extract it from email."""
         if not user_id:
-            return "Trader"
+            return "Analyst"
             
         try:
             # Handle both string (email) and int (numeric ID) user_ids
@@ -96,11 +96,11 @@ class ChatService:
             
             # Helper to clean/format name
             def clean_name(name_potential):
-                if not name_potential: return "Trader"
+                if not name_potential: return "Analyst"
                 # Remove emojis/special chars
                 import re
                 cleaned = re.sub(r'[^\w\s\u0600-\u06FF]', '', name_potential)
-                if not cleaned: return "Trader"
+                if not cleaned: return "Analyst"
                 # Capitalize first letter
                 return cleaned.capitalize()
 
@@ -128,7 +128,7 @@ class ChatService:
                 name_part = re.sub(r'\d+$', '', name_part)
                 return clean_name(name_part)
                 
-            return "Trader"
+            return "Analyst"
 
         except Exception as e:
             print(f"[ChatService] Name extraction error: {e}")
@@ -136,7 +136,7 @@ class ChatService:
             if user_id and "@" in str(user_id):
                  return str(user_id).split('@')[0].capitalize()
             
-        return "Trader"
+        return "Analyst"
 
     async def process_message(
         self,

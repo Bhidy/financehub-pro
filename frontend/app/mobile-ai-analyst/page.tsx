@@ -128,6 +128,9 @@ function MobileAIAnalystPageContent() {
                 // Only increment if it's a real response, not the limit message
                 if (lastMessage.response?.meta?.intent !== 'USAGE_LIMIT_REACHED') {
                     incrementUsage();
+                } else {
+                    // Trigger popup if limit reached intent is received
+                    setShowUsageModal(true);
                 }
             }
         }

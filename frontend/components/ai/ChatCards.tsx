@@ -323,35 +323,92 @@ interface CompareProps {
 
 export function CompareTable({ title, data }: CompareProps) {
     return (
-        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-x-auto">
-            {title && (
-                <div className="flex items-center gap-2 mb-3 text-slate-700 dark:text-slate-300 font-semibold">
-                    <BarChart3 size={16} />
-                    {title}
+        <div className="bg-white dark:bg-[#1A1F2E]/80 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-2xl overflow-hidden my-4 transition-all duration-300 hover:shadow-emerald-500/5">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-[#0F172A] dark:via-[#1e293b] dark:to-[#0F172A] px-6 py-5 border-b border-slate-700/50 dark:border-white/5">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-teal-400 to-emerald-600 rounded-xl shadow-lg shadow-teal-500/20">
+                        <BarChart3 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-bold text-lg tracking-tight">{title || "Head-to-Head Comparison"}</h3>
+                        <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-0.5">Deep Financial Analysis</p>
+                    </div>
                 </div>
-            )}
-            <table className="w-full text-sm">
-                <thead>
-                    <tr className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                        <th className="px-3 py-2 text-left bg-slate-50 dark:bg-white/5 rounded-l-lg">Stock</th>
-                        {data.metrics.map(m => (
-                            <th key={m.key} className="px-3 py-2 text-right bg-slate-50 dark:bg-white/5 last:rounded-r-lg">{m.label}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.metrics.map(metric => (
-                        <tr key={metric.key} className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5">
-                            <td className="p-2 text-slate-600 dark:text-slate-400">{metric.label}</td>
-                            {data.stocks.map(stock => (
-                                <td key={stock.symbol} className="text-right p-2 font-medium text-slate-800 dark:text-slate-200">
-                                    {formatNumber(stock[metric.key])}
-                                </td>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th className="px-6 py-4 text-left bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5 w-1/3">
+                                <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Metric</span>
+                            </th>
+                            {data.stocks.map((stock, i) => (
+                                <th key={stock.symbol} className="px-6 py-4 text-right bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className="font-black text-slate-800 dark:text-white text-base">{stock.symbol}</span>
+                                        <span className={clsx(
+                                            "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                            i === 0 ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"
+                                        )}>
+                                            {stock.market_code || 'EGX'}
+                                        </span>
+                                    </div>
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                        {data.metrics.map((metric: any) => (
+                            <tr key={metric.key} className="group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-teal-500 transition-colors" />
+                                        <span className="font-semibold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                                            {metric.label}
+                                        </span>
+                                    </div>
+                                </td>
+                                {data.stocks.map(stock => {
+                                    const isWinner = metric.winner_symbol === stock.symbol;
+                                    const val = stock[metric.key];
+
+                                    // Formatting
+                                    let displayVal = formatNumber(val);
+                                    if (metric.format === 'pct') displayVal = formatPercent(val);
+                                    if (metric.format === 'compact') displayVal = formatNumber(val, 0); // Need specialized compact logic if wanted
+
+                                    return (
+                                        <td key={stock.symbol} className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {isWinner && (
+                                                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 animate-in zoom-in spin-in-180 duration-500">
+                                                        <TrendingUp size={12} className="stroke-[3]" />
+                                                    </div>
+                                                )}
+                                                <span className={clsx(
+                                                    "font-mono font-medium transition-all duration-300",
+                                                    isWinner
+                                                        ? "text-emerald-600 dark:text-emerald-400 font-bold scale-105"
+                                                        : "text-slate-600 dark:text-slate-400"
+                                                )}>
+                                                    {displayVal}
+                                                </span>
+                                            </div>
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {/* Footer Legend */}
+            <div className="px-6 py-3 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5 flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                <TrendingUp size={12} className="text-emerald-500" />
+                <span>Indicates the superior metric based on financial logic</span>
+            </div>
         </div>
     );
 }

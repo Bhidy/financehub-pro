@@ -35,15 +35,15 @@ HUMAN_OPENINGS = {
     },
     "acknowledgment_with_name": {
         "en": [
-            "Good question, {name}.",
-            "Alright {name}, let's take a clear look.",
-            "This is a smart thing to check, {name}.",
-            "Got it, {name}. Let me show you.",
+            "Good question.",
+            "Alright, let's take a clear look.",
+            "This is a smart thing to check.",
+            "Got it. Let me show you.",
         ],
         "ar": [
-            "سؤال ممتاز يا {name}.",
-            "تمام يا {name}، خلينا نشوف.",
-            "فهمتك يا {name}. أوريك.",
+            "سؤال ممتاز.",
+            "تمام، خلينا نشوف.",
+            "فهمتك. أوريك.",
         ]
     },
     "affirmation": {
@@ -212,7 +212,9 @@ class ResponseComposer:
         opening = random.choice(openings)
         
         # Personalize
-        opening = opening.format(name=user_name)
+        # opening = opening.format(name=user_name) 
+        # NAME REMOVED: Name is now handled by LLM at the very start of message.
+        pass
         
         return opening, category
     

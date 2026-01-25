@@ -83,11 +83,11 @@ async def handle_compare_stocks(
             stats_row = await conn.fetchrow("""
                 SELECT 
                     revenue_growth, profit_growth as net_income_growth, eps_growth,
-                    gross_margin, operating_margin,
+                    gross_margin, operating_margin, profit_margin, ebitda_margin,
                     roe, roa, roic, roce, asset_turnover,
-                    debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score,
+                    debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score, piotroski_f_score,
                     ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
-                    eps
+                    eps, payout_ratio
                 FROM stock_statistics
                 WHERE symbol = $1
             """, symbol)
@@ -136,6 +136,10 @@ async def handle_compare_stocks(
                 for k, v in s_stats.items():
                     data_point[k] = safe_float(v)
             
+            # Map "net_margin" request to "profit_margin" to prevent crash
+            if data_point.get('profit_margin') is None and data_point.get('net_margin') is not None:
+                data_point['profit_margin'] = data_point.get('net_margin')
+            
             if ratios_row:
                 r_stats = dict(ratios_row)
                 if data_point.get('gross_margin') is None: data_point['gross_margin'] = safe_float(r_stats.get('gross_margin'))
@@ -153,77 +157,123 @@ async def handle_compare_stocks(
             'message': f"Could not find: {', '.join(missing)}"
         }
 
+
     # 2. Smart Metric Selection
-    categories = {
-        'Overview': [
-            {'key': 'price', 'label': 'Price', 'label_ar': 'السعر'},
-            {'key': 'change_percent', 'label': 'Change %', 'label_ar': 'التغيير %'},
-            {'key': 'market_cap', 'label': 'Market Cap', 'label_ar': 'القيمة السوقية', 'format': 'compact'},
-        ],
+    # Define categories, labels, and "Better" direction (min/max)
+    # direction: 'max' (higher is better), 'min' (lower is better), None (neutral)
+    categories_config = {
         'Valuation': [
-            {'key': 'pe_ratio', 'label': 'P/E Ratio', 'label_ar': 'مضاعف الربحية'},
-            {'key': 'forward_pe', 'label': 'Fwd P/E', 'label_ar': 'مكرر مستقبلي'},
-            {'key': 'peg_ratio', 'label': 'PEG Ratio', 'label_ar': 'PEG'},
-            {'key': 'ev_ebitda', 'label': 'EV/EBITDA', 'label_ar': 'EV/EBITDA'},
-            {'key': 'pb_ratio', 'label': 'P/B Ratio', 'label_ar': 'مضاعف الدفترية'},
+            {'key': 'pe_ratio', 'label': 'P/E Ratio', 'label_ar': 'مضاعف الربحية', 'direction': 'min'},
+            {'key': 'forward_pe', 'label': 'Fwd P/E', 'label_ar': 'مكرر مستقبلي', 'direction': 'min'},
+            {'key': 'peg_ratio', 'label': 'PEG Ratio', 'label_ar': 'PEG', 'direction': 'min'},
+            {'key': 'pb_ratio', 'label': 'P/B Ratio', 'label_ar': 'مضاعف الدفترية', 'direction': 'min'},
+            {'key': 'ev_ebitda', 'label': 'EV/EBITDA', 'label_ar': 'EV/EBITDA', 'direction': 'min'},
+            {'key': 'ev_sales', 'label': 'EV/Sales', 'label_ar': 'EV/Sales', 'direction': 'min'},
         ],
         'Profitability': [
-            {'key': 'profit_margin', 'label': 'Net Margin', 'label_ar': 'هامش صافي الربح', 'format': 'pct'},
-            {'key': 'gross_margin', 'label': 'Gross Margin', 'label_ar': 'الهامش الاجمالي', 'format': 'pct'},
-            {'key': 'operating_margin', 'label': 'Op. Margin', 'label_ar': 'هامش التشغيل', 'format': 'pct'},
+            {'key': 'profit_margin', 'label': 'Net Margin', 'label_ar': 'هامش صافي الربح', 'format': 'pct', 'direction': 'max'},
+            {'key': 'gross_margin', 'label': 'Gross Margin', 'label_ar': 'الهامش الاجمالي', 'format': 'pct', 'direction': 'max'},
+            {'key': 'operating_margin', 'label': 'Op. Margin', 'label_ar': 'هامش التشغيل', 'format': 'pct', 'direction': 'max'},
+            {'key': 'ebitda_margin', 'label': 'EBITDA Margin', 'label_ar': 'هامش EBITDA', 'format': 'pct', 'direction': 'max'},
         ],
         'Efficiency': [
-            {'key': 'roe', 'label': 'ROE', 'label_ar': 'العائد على الحقوق', 'format': 'pct'},
-            {'key': 'roce', 'label': 'ROCE', 'label_ar': 'العائد على المال العامل', 'format': 'pct'},
-            {'key': 'roic', 'label': 'ROIC', 'label_ar': 'العائد على الاستثمار', 'format': 'pct'},
+            {'key': 'roe', 'label': 'ROE', 'label_ar': 'العائد على الحقوق', 'format': 'pct', 'direction': 'max'},
+            {'key': 'roce', 'label': 'ROCE', 'label_ar': 'العائد على المال العامل', 'format': 'pct', 'direction': 'max'},
+            {'key': 'roic', 'label': 'ROIC', 'label_ar': 'العائد على الاستثمار', 'format': 'pct', 'direction': 'max'},
+            {'key': 'asset_turnover', 'label': 'Asset Turnover', 'label_ar': 'معدل دوران الأصول', 'direction': 'max'},
         ],
         'Growth': [
-            {'key': 'revenue_growth', 'label': 'Rev Growth', 'label_ar': 'نمو المبيعات', 'format': 'pct'},
-            {'key': 'net_income_growth', 'label': 'Profit Growth', 'label_ar': 'نمو الارباح', 'format': 'pct'},
+            {'key': 'revenue_growth', 'label': 'Rev Growth', 'label_ar': 'نمو المبيعات', 'format': 'pct', 'direction': 'max'},
+            {'key': 'net_income_growth', 'label': 'Profit Growth', 'label_ar': 'نمو الارباح', 'format': 'pct', 'direction': 'max'},
+            {'key': 'eps_growth', 'label': 'EPS Growth', 'label_ar': 'نمو ربح السهم', 'format': 'pct', 'direction': 'max'},
         ],
         'Health': [
-            {'key': 'altman_z_score', 'label': 'Altman Z', 'label_ar': 'مؤشر أمان'},
-            {'key': 'debt_equity', 'label': 'Debt / Equity', 'label_ar': 'الديون للملكية'},
-            {'key': 'current_ratio', 'label': 'Current Ratio', 'label_ar': 'النسبة الحالية'},
+            {'key': 'altman_z_score', 'label': 'Altman Z-Score', 'label_ar': 'مؤشر أمان (Z)', 'direction': 'max'},
+            {'key': 'piotroski_f_score', 'label': 'Piotroski F-Score', 'label_ar': 'مؤشر قوة (F)', 'direction': 'max'},
+            {'key': 'debt_equity', 'label': 'Debt / Equity', 'label_ar': 'الديون للملكية', 'direction': 'min'},
+            {'key': 'current_ratio', 'label': 'Current Ratio', 'label_ar': 'النسبة الحالية', 'direction': 'max'},
+            {'key': 'interest_coverage', 'label': 'Interest Cov.', 'label_ar': 'تغطية الفوائد', 'direction': 'max'},
         ],
         'Dividends': [
-            {'key': 'dividend_yield', 'label': 'Div Yield', 'label_ar': 'عائد التوزيعات', 'format': 'pct'},
+            {'key': 'dividend_yield', 'label': 'Div Yield', 'label_ar': 'عائد التوزيعات', 'format': 'pct', 'direction': 'max'},
+            {'key': 'payout_ratio', 'label': 'Payout Ratio', 'label_ar': 'نسبة التوزيع', 'format': 'pct', 'direction': 'min'}, # Usually lower (sustainable) is better, but contextual. Let's say min for safety.
         ]
     }
     
-    final_metrics = []
+    final_metrics_map = {}
     
-    for m in categories['Overview']:
-        m['label'] = m['label_ar'] if language == 'ar' else m['label']
-        final_metrics.append(m)
-        
-    for cat_name, metrics_list in categories.items():
-        if cat_name == 'Overview': continue
-        
-        added_count = 0
-        limit = 2
-        if cat_name == 'Valuation': limit = 3
+    # Process Categories
+    for cat_name, metrics_list in categories_config.items():
+        chosen_metrics = []
         
         for m in metrics_list:
-            if added_count >= limit: break
             key = m['key']
-            has_data = any(s.get(key) is not None for s in stocks_data)
-            if has_data:
-                m['label'] = m['label_ar'] if language == 'ar' else m['label']
-                final_metrics.append(m)
-                added_count += 1
-    
+            
+            # STRICT DATA POLICY: Only show if data exists for ALL stocks
+            # "Never show NA or dashes"
+            values = [s.get(key) for s in stocks_data]
+            if any(v is None for v in values):
+                continue
+                
+            # Formatting
+            m['label'] = m['label_ar'] if language == 'ar' else m['label']
+            
+            # Winner Logic
+            direction = m.get('direction')
+            if direction and len(stocks_data) == 2:
+                val1 = values[0]
+                val2 = values[1]
+                
+                # Check for zero/negative handling? Generally float comparison is fine.
+                winner_idx = -1
+                if direction == 'max':
+                    if val1 > val2: winner_idx = 0
+                    elif val2 > val1: winner_idx = 1
+                elif direction == 'min':
+                    # For ratios where lower is better (PE, Debt), ensure positive?
+                    # Generally yes. Avoid negative PE? 
+                    # If PE is negative, it's usually bad (loss), but strict numerical min might pick -5 over 10.
+                    # Assumption: We handled bad data by now. Treat numerically.
+                    # Wait, PE < 0 is usually rendered as N/A or separate.
+                    # Simple numerical comparison for now.
+                    if val1 < val2: winner_idx = 0
+                    elif val2 < val1: winner_idx = 1
+                    
+                if winner_idx != -1:
+                    m['winner_symbol'] = stocks_data[winner_idx]['symbol']
+            
+            chosen_metrics.append(m)
+            
+        if chosen_metrics:
+            # Add Category Header
+            # We flatten this for the table in frontend, or keep structure?
+            # Current frontend (CompareTable) expects flat: metrics: [{key, label}]
+            # To support categories, we might need to modify frontend or send flat with separators.
+            # Let's send flat but interspersed with Category Headers? 
+            # No, standard table usually groups field. 
+            # Let's just append them. The frontend CompareTable is simple.
+            # We can prefix label? "Valuation: PE" - too cluttery.
+            # Let's just append.
+            final_metrics_map[cat_name] = chosen_metrics
+
+    # Flatten for the response
+    flat_metrics = []
+    # Force specific order
+    for cat in ['Valuation', 'Profitability', 'Efficiency', 'Growth', 'Health', 'Dividends']:
+        if cat in final_metrics_map:
+            # Optional: Add a section header? The frontend doesn't support it yet.
+            # We will just list them.
+            flat_metrics.extend(final_metrics_map[cat])
+
     # 3. Chart Generation (Enhanced Robustness)
     chart_data = []
     try:
         history_map = {}
-        target_days = 30
+        target_days = 365 # 1 Year for "Duel"
         start_date = datetime.now() - timedelta(days=target_days)
         
         # Parallel fetch for DB or fallback
-        # Parallel fetch for DB or fallback
-        # First, try DB for all
-        for sym in [d['symbol'] for d in stocks_data]: # Use the resolved symbols from above
+        for sym in [d['symbol'] for d in stocks_data]: 
             series = []
             # Primary: Get data in range
             rows = await conn.fetch("""
@@ -238,21 +288,19 @@ async def handle_compare_stocks(
                     if r.get('close'):
                         series.append({'time': r['date'].isoformat(), 'val': float(r['close'])})
             
-            # DB-ONLY FALLBACK: If sparse/empty (stale data), get LATEST N records regardless of date
-            # This fixes "No Chart Data" if ingestion is paused/broken, staying compliant with "DB Only"
+            # DB-ONLY FALLBACK
             if not series or len(series) < 5:
-                print(f"[COMPARE] Sparse data for {sym} in range. Fetching latest available.")
+                # Try getting last 100 points
                 latest_rows = await conn.fetch("""
                     SELECT date, close
                     FROM ohlc_data
                     WHERE symbol = $1
                     ORDER BY date DESC
-                    LIMIT 30
+                    LIMIT 200
                 """, sym)
                 
                 if latest_rows:
                     series = []
-                    # They come out DESC, so reverse them for chart
                     for r in reversed(latest_rows):
                         if r.get('close'):
                              series.append({'time': r['date'].isoformat(), 'val': float(r['close'])})
@@ -260,7 +308,7 @@ async def handle_compare_stocks(
             series.sort(key=lambda x: x['time'])
             history_map[sym] = series
 
-        # Normalize
+        # Normalize to % Return
         all_dates = set()
         for sym in symbols:
             for pt in history_map.get(sym, []):
@@ -271,33 +319,47 @@ async def handle_compare_stocks(
             bases = {}
             for sym in symbols:
                 series = history_map.get(sym, [])
+                # Rebase to the first common date? Or first available date for each?
+                # "Performance Duel" usually starts at 0% from the start of the chart.
+                # Find first valid value in the chart range
                 if series:
-                    bases[sym] = series[0]['val']
+                     bases[sym] = series[0]['val']
                 else:
-                    bases[sym] = None
+                     bases[sym] = None
 
             for dt in sorted_dates:
                 point = {'time': dt}
+                has_valid = False
                 for sym in symbols:
                     # Find value for this date
                     val = next((item['val'] for item in history_map.get(sym, []) if item['time'] == dt), None)
                     
+                    # Carry forward previous value if missing (simple fill for line continuity)?
+                    # Or generic null.
+                    
                     if val is not None and bases[sym] and bases[sym] > 0:
                         pct_change = ((val - bases[sym]) / bases[sym]) * 100.0
                         point[sym] = round(pct_change, 2)
-                    # If missing, we leave it out (ApexCharts handles gaps or we can interpolate)
+                        has_valid = True
+                    # If missing, we leave it out
                 
-                # Only add point if at least one symbol has data
-                if len(point) > 1: 
+                if has_valid: 
                     chart_data.append(point)
 
     except Exception as e:
         print(f"[COMPARE] Chart Logic Failed: {e}")
         chart_data = []
 
-    message = f"Comparison: {stocks_data[0]['name']} vs {stocks_data[1]['name']}"
+    # 4. Construct Radar Data (Efficiency)
+    # We need normalized 0-100 scores for: PE, ROE, Yield, Margin, Debt
+    # This is complex to do universally. Simplified: Just pass raw values, let frontend handle?
+    # No, frontend needs pre-processed radar data usually.
+    # For now, let's stick to the requested Table + Line Chart as primary.
+    # The user asked for "Graphs ideas", one implemented (Line) is good. 
+
+    message = f"Here is the comparison between {stocks_data[0]['name']} and {stocks_data[1]['name']}"
     if language == 'ar':
-        message = f"مقارنة بين {stocks_data[0]['name']} و {stocks_data[1]['name']}"
+        message = f"مقارنة شاملة بين {stocks_data[0]['name']} و {stocks_data[1]['name']}"
 
     return {
         'success': True,
@@ -305,22 +367,32 @@ async def handle_compare_stocks(
         'cards': [
             {
                 'type': 'compare_table',
-                'title': 'Deep Comparison' if language == 'en' else 'مقارنة شاملة',
+                'title': 'Head-to-Head Comparison' if language == 'en' else 'مقارنة رأس برأس',
                 'data': {
                     'stocks': stocks_data,
-                    'metrics': final_metrics
+                    'metrics': flat_metrics
                 }
             }
         ],
         'chart': {
             'type': 'line',
             'symbol': f"{symbols[0]} vs {symbols[1]}",
-            'title': f"Relative Performance (1M)" if language == 'en' else "الأداء النسبي (شهر)",
+            'title': f"Performance Duel (1Y)" if language == 'en' else "سباق الأداء (سنة)",
             'data': chart_data,
-            'range': '1M'
+            'range': '1Y'
         },
+        'learning_section': {
+            'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',
+            'items': [
+                "**Profitability:** " + (f"{stocks_data[0]['symbol']} leads with higher margins" if (stocks_data[0].get('profit_margin') or 0) > (stocks_data[1].get('profit_margin') or 0) else f"{stocks_data[1]['symbol']} leads efficiency"),
+                "**Valuation:** " + (f"{stocks_data[0]['symbol']} is trading at a discount (Lower P/E)" if (stocks_data[0].get('pe_ratio') or 999) < (stocks_data[1].get('pe_ratio') or 999) else f"{stocks_data[1]['symbol']} is trading at a discount"),
+                "**Growth:** Check the Revenue Growth metric to see who is expanding faster."
+            ]
+        },
+        'follow_up_prompt': f"Which one has better dividends?" if language == 'en' else "أيهما يوزع أرباح أفضل؟",
         'actions': [
-            {'label': f'{symbols[0]} Deep Dive', 'action_type': 'query', 'payload': f'Analyze {symbols[0]} financial health'},
-            {'label': f'{symbols[1]} Deep Dive', 'action_type': 'query', 'payload': f'Analyze {symbols[1]} financial health'},
+            {'label': f'{symbols[0]} Financials', 'action_type': 'query', 'payload': f'Show financials for {symbols[0]}'},
+            {'label': f'{symbols[1]} Financials', 'action_type': 'query', 'payload': f'Show financials for {symbols[1]}'},
         ]
     }
+

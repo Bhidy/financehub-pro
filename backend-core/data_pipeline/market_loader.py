@@ -240,14 +240,13 @@ class EGXProductionLoader:
 
                 await self.conn.execute("""
                     INSERT INTO market_tickers (
-                        symbol, name_en, sector_name, market_code, currency,
+                        symbol, name_en, market_code, currency,
                         market_cap, last_price, change, change_percent, volume,
                         pe_ratio, dividend_yield, revenue, net_income, last_updated
                     )
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
                     ON CONFLICT (symbol) DO UPDATE SET
                         name_en = EXCLUDED.name_en,
-                        sector_name = EXCLUDED.sector_name,
                         market_code = EXCLUDED.market_code,
                         market_cap = EXCLUDED.market_cap,
                         last_price = EXCLUDED.last_price,
@@ -262,7 +261,6 @@ class EGXProductionLoader:
                 """,
                     stock['symbol'],
                     stock['name_en'],
-                    stock.get('sector_name'),
                     stock['market_code'],
                     stock['currency'],
                     stock.get('market_cap'),

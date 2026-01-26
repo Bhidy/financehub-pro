@@ -13,7 +13,7 @@ set password [lindex $argv 1]
 # 5. docker compose up -d --build --force-recreate: Rebuild and start
 # 6. docker ps: Show status
 
-spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- STOPPING ---' && docker compose -f docker-compose.prod.yml down && echo '--- PRUNING ---' && docker system prune -af && echo '--- PULLING ---' && git pull origin main && echo '--- STARTING ---' && docker compose -f docker-compose.prod.yml up -d --build --force-recreate && echo '--- HEALTH CHECK ---' && sleep 10 && docker ps && echo '--- DONE ---'"
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- STOPPING ---' && docker compose -f docker-compose.prod.yml down && echo '--- PRUNING ---' && docker system prune -af && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- STARTING ---' && docker compose -f docker-compose.prod.yml up -d --build --no-cache --force-recreate && echo '--- HEALTH CHECK ---' && sleep 10 && docker ps && echo '--- DONE ---'"
 
 expect "password:"
 send "$password\r"

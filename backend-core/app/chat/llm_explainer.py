@@ -161,21 +161,12 @@ class LLMExplainerService:
         card_types = [c.get('type', 'data') for c in data] if data else []
         card_context = self._describe_cards(card_types)
         
-        if allow_greeting:
-            # --- PROMPT A: NEW SESSION (Greeting Allowed) ---
-            # Optimized: ~120 tokens (was ~250 tokens)
-            system_prompt = (
-                f"You are Starta (ستارتا), expert Financial Analyst.\n"
-                f"GREETING REQUIRED: Welcome {user_name} warmly.\n"
-                f"Language: {lang_instruction}. Length: 25-35 words.\n"
-                "Style: Intelligent, warm, professional. No marketing fluff."
-            )
-        # Check for CFA Level 3 Deep Dive conditions
-        elif 'financial_explorer' in card_types or intent in [
+        # Check for CFA Level 3 Deep Dive conditions FIRST (Overrides greeting)
+        if 'financial_explorer' in card_types or intent in [
             'FINANCIALS', 'REVENUE_TREND', 'FIN_MARGINS', 'FIN_DEBT', 'FIN_CASH', 
             'FIN_GROWTH', 'FIN_EPS', 'RATIO_VALUATION', 'RATIO_EFFICIENCY', 
             'RATIO_LIQUIDITY', 'DEEP_VALUATION', 'DEEP_SAFETY', 'DEEP_EFFICIENCY', 
-            'DEEP_GROWTH', 'FAIR_VALUE'
+            'DEEP_GROWTH', 'FAIR_VALUE', 'COMPANY_PROFILE'
         ]:
             # --- PROMPT C: CFA LEVEL 3 ANALYST (Deep Dive) ---
             # Specialized prompt for rigorous financial analysis with STRICT 10-point structure
@@ -201,6 +192,16 @@ class LLMExplainerService:
                  "- ETHICS: No personalized advice. No price targets. Use 'screens as', 'trades at'.\n"
                  "- TONE: Professional, concise, direct. Explain technical terms briefly."
                  f"\n\nContext User: {user_name}"
+            )
+        
+        elif allow_greeting:
+            # --- PROMPT A: NEW SESSION (Greeting Allowed) ---
+            # Optimized: ~120 tokens (was ~250 tokens)
+            system_prompt = (
+                f"You are Starta (ستارتا), expert Financial Analyst.\n"
+                f"GREETING REQUIRED: Welcome {user_name} warmly.\n"
+                f"Language: {lang_instruction}. Length: 25-35 words.\n"
+                "Style: Intelligent, warm, professional. No marketing fluff."
             )
         else:
             # --- PROMPT B: ONGOING CONVERSATION (Data-Focused) ---

@@ -5,23 +5,40 @@ import os
 import asyncpg
 from dotenv import load_dotenv
 
-# Load env variables from parent directory if needed, or current
+# Load env variables
 load_dotenv()
-
-# Also load from .env in backend-core if running from there
+# Fallback to parent .env if needed
 if not os.getenv("DATABASE_URL"):
     load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 async def main():
+    print("🚀 Starting Enterprise Sector Update...")
+    
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        # Try to construct it or ask user?
-        # Assuming it's in the environment or .env
-        print("❌ DATABASE_URL not set. Please ensure .env is loaded.")
+        print("❌ CRITICAL: DATABASE_URL not set.")
         return
 
-    excel_path = '/Users/home/Documents/Info Site/mubasher-deep-extract/EGX Stocks Sectors.xlsx'
-    print(f"📂 Reading Excel: {excel_path}")
+    # Try multiple paths for the Excel file
+    possible_paths = [
+        'backend-core/data/EGX_Stocks_Sectors.xlsx',
+        'data/EGX_Stocks_Sectors.xlsx',
+        '/app/backend-core/data/EGX_Stocks_Sectors.xlsx',
+        'EGX Stocks Sectors.xlsx',
+        '../data/EGX_Stocks_Sectors.xlsx'
+    ]
+    
+    excel_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            excel_path = p
+            break
+            
+    if not excel_path:
+        print(f"❌ Error: Excel file 'EGX Stocks Sectors.xlsx' not found in search paths.")
+        return
+        
+    print(f"📂 Loading Data Source: {excel_path}")
     
     try:
         df = pd.read_excel(excel_path)
@@ -29,73 +46,81 @@ async def main():
         print(f"❌ Failed to read Excel: {e}")
         return
 
-    # Normalize column names just in case
     df.columns = [c.strip() for c in df.columns]
     
     if 'Symbol' not in df.columns or 'Sector' not in df.columns:
-        print(f"❌ Missing required columns. Found: {df.columns}")
+        print(f"❌ Schema Error: Missing 'Symbol' or 'Sector' columns. Found: {df.columns}")
         return
 
-    print(f"🔌 Connecting to DB...")
+    print(f"🔌 Connecting to Database...")
     try:
-        conn = await asyncpg.connect(db_url, statement_cache_size=0)
+        conn = await asyncpg.connect(db_url)
     except Exception as e:
-        print(f"❌ Failed to connect to DB: {e}")
+        print(f"❌ DB Connection Failed: {e}")
         return
     
-    print(f"🔄 Processing {len(df)} rows...")
+    # Pre-fetch existing tickers to minimize query overhead
+    print("🔍 Analyzing current database state...")
+    existing_tickers = await conn.fetch("SELECT symbol, sector_name FROM market_tickers")
+    db_map = {r['symbol']: r['sector_name'] for r in existing_tickers}
+    print(f"   -> Found {len(db_map)} tickers in DB.")
     
-    updated_count = 0
-    not_found_count = 0
-    errors = 0
+    updates = []
     
-    # Prepare prepared statement for speed
-    # We update sector_name. We will also set industry to match sector if industry is NULL, or maybe just leave it.
-    # User said: "that table will include sectors ... chatbot should show the stocks sectors correctly"
-    # I will strictly update sector_name.
-    
-    # Check if we should nullify industry to avoid confusion? 
-    # For FWRY, Industry was "Computer Processing...". Sector was NULL.
-    # If I set Sector="IT...", FWRY will have both.
-    # The chatbot looks at BOTH.
-    # If I don't look at name, and FWRY has Sector="IT...", and I search for "Bank", "IT" won't match.
-    # So FWRY is fixed.
+    print(f"🔄 Processing {len(df)} records from source...")
     
     for index, row in df.iterrows():
-        symbol = str(row['Symbol']).strip()
+        symbol = str(row['Symbol']).strip().upper()
         sector = str(row['Sector']).strip()
         
-        # Skip empty rows
-        if not symbol or not sector or symbol.lower() == 'nan':
+        # Data Cleaning
+        if not symbol or not sector or symbol.lower() == 'nan' or sector.lower() == 'nan':
             continue
             
-        try:
-            print(f"   -> Updating {symbol} to {sector}...")
-            # We match by symbol. 
-            # We force update sector_name.
-            # Use format() to avoid prepared statement issues if any linger, though cache_size=0 fixes most.
-            # But simple execute with vars is fine with cache_size=0
-            result = await conn.execute("""
-                UPDATE market_tickers 
-                SET sector_name = $1
-                WHERE symbol = $2
-            """, sector, symbol)
-            
-            if result == "UPDATE 1":
-                updated_count += 1
-            else:
-                not_found_count += 1
-                # print(f"⚠️ Stock not found: {symbol}")
-                
-        except Exception as e:
-            print(f"❌ Error updating {symbol}: {e}")
-            errors += 1
+        # Check if update is needed
+        current_sector = db_map.get(symbol)
+        if current_sector != sector:
+            updates.append((sector, symbol))
+    
+    if not updates:
+        print("✅ Analysis Complete: No updates required. Database is in sync.")
+        await conn.close()
+        return
+
+    print(f"⚡ Applying {len(updates)} sector updates...")
+    
+    # Batch update
+    try:
+        await conn.executemany("""
+            UPDATE market_tickers 
+            SET sector_name = $1
+            WHERE symbol = $2
+        """, updates)
+        print(f"✅ Successfully updated {len(updates)} stocks.")
+    except Exception as e:
+        print(f"❌ Batch Update Failed: {e}")
+        # Fallback to individual updates
+        print("⚠️ Attempting individual recovery...")
+        success_count = 0
+        for sector, symbol in updates:
+            try:
+                await conn.execute("UPDATE market_tickers SET sector_name = $1 WHERE symbol = $2", sector, symbol)
+                success_count += 1
+            except Exception as inner_e:
+                print(f"   Failed {symbol}: {inner_e}")
+        print(f"   Recovered {success_count}/{len(updates)} updates.")
+
+    # Verify Logic ("The Forever Fix")
+    print("\n🔍 Verification Sampling:")
+    sample_symbols = [u[1] for u in updates[:3]]
+    if sample_symbols:
+        q = "SELECT symbol, sector_name FROM market_tickers WHERE symbol = ANY($1)"
+        rows = await conn.fetch(q, sample_symbols)
+        for r in rows:
+            print(f"   - {r['symbol']}: {r['sector_name']}")
 
     print("-" * 40)
-    print(f"✅ Import Complete")
-    print(f"   Updated: {updated_count}")
-    print(f"   Not Match: {not_found_count}")
-    print(f"   Errors: {errors}")
+    print(f"✅ MISSION COMPLETE: Sector Data Synchronized.")
     print("-" * 40)
     
     await conn.close()

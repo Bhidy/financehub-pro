@@ -12,7 +12,7 @@ set password [lindex $argv 1]
 # Does NOT use 'down' or 'prune' to save time.
 
 set timestamp [clock seconds]
-spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- BUILDING ---' && docker compose build --build-arg CACHEBUST=$timestamp backend && echo '--- RESTARTING ---' && docker compose up -d --force-recreate backend && echo '--- HEALTH CHECK ---' && sleep 5 && docker ps && echo '--- DONE ---'"
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- BUILDING ---' && docker compose -f docker-compose.prod.yml build --build-arg CACHEBUST=$timestamp backend && echo '--- RESTARTING ---' && docker compose -f docker-compose.prod.yml up -d --force-recreate backend && echo '--- HEALTH CHECK ---' && sleep 5 && docker ps && echo '--- DONE ---'"
 
 expect "password:"
 send "$password\r"

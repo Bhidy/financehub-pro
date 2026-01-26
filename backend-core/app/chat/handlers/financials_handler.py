@@ -565,6 +565,15 @@ async def handle_financials_package(
         'message': f"Financial Explorer for {name}",
         'cards': [
             {
+                'type': 'stock_header',
+                'data': {
+                    'symbol': symbol,
+                    'name': name,
+                    'market_code': ticker['market_code'],
+                    'currency': currency
+                }
+            },
+            {
                 'type': 'financial_explorer', # New Mega-Card
                 'data': pkg
             }

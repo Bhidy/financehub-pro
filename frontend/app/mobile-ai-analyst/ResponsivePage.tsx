@@ -79,7 +79,7 @@ function ResponsiveAIAnalystContent() {
     // Typewriter placeholders
     const placeholderTexts = [
         "Compare HRHO vs COMI...",
-        "What is the fair value of COMI?",
+        "Market Summary",
         "Analyze the dividend history of TMGH",
         "Show me the top gainers today",
         "Is SWDY undervalued right now?",
@@ -536,7 +536,7 @@ function ResponsiveAIAnalystContent() {
                                             </p>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                                                 {[
-                                                    { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of COMI?', subtitle: 'ASK STARTA', query: 'What is the fair value of COMI?', color: 'teal' },
+                                                    { icon: <Target className="w-5 h-5" />, title: 'Market Summary', subtitle: 'ASK STARTA', query: 'Market Summary', color: 'teal' },
                                                     { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', query: 'Dividend history TMGH', color: 'teal' },
                                                     { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', query: 'PE ratio for SWDY', color: 'teal' },
                                                 ].map((item, idx) => (
@@ -729,7 +729,7 @@ function ResponsiveAIAnalystContent() {
                                                 Popular Questions
                                             </p>
                                             {[
-                                                { icon: <Target className="w-5 h-5" />, title: 'What is the fair value of COMI?', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
+                                                { icon: <Target className="w-5 h-5" />, title: 'Market Summary', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
                                                 { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
                                                 { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
                                             ].map((item, idx) => (

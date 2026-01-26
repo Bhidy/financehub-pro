@@ -15,6 +15,9 @@ import re
 import os
 import sys
 import logging
+from dotenv import load_dotenv
+
+load_dotenv('backend-core/.env')
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, date
 
@@ -66,6 +69,13 @@ INCOME_MAPPING = {
     "EBITDA Margin": "ebitda_margin",
     "EBIT": "ebit",
     "EBIT Margin": "ebit_margin",
+    "EBIT Margin": "ebit_margin",
+    
+    # Gap Analysis Additions
+    "Revenues Before Loan Losses": "revenues_before_loan_losses",
+    "Salaries and Employee Benefits": "salaries_and_benefits",
+    "Amortization of Goodwill & Intangibles": "amortization_of_goodwill",
+    "Other Unusual Items": "other_unusual_items",
 }
 
 BALANCE_MAPPING = {
@@ -93,6 +103,14 @@ BALANCE_MAPPING = {
     "Retained Earnings": "retained_earnings",
     "Total Stockholders' Equity": "total_equity",
     "Total Equity": "total_equity",
+    "Total Equity": "total_equity",
+    
+    # Gap Analysis Additions
+    "Restricted Cash": "restricted_cash",
+    "Accrued Interest Receivable": "accrued_interest_receivable",
+    "Interest Bearing Deposits": "interest_bearing_deposits",
+    "Non-Interest Bearing Deposits": "non_interest_bearing_deposits",
+    "Other Real Estate Owned & Foreclosed": "other_real_estate_owned",
 }
 
 CASHFLOW_MAPPING = {
@@ -121,6 +139,11 @@ CASHFLOW_MAPPING = {
     "Cash from Financing Activities": "cash_from_financing",
     "Net Change in Cash": "net_change_cash",
     "Free Cash Flow": "free_cashflow",
+    "Free Cash Flow": "free_cashflow",
+    
+    # Gap Analysis Additions
+    "Cash Income Tax Paid": "cash_income_tax_paid",
+    "Net Increase (Decrease) in Deposit Accounts": "net_increase_deposits",
 }
 
 RATIOS_MAPPING = {
@@ -183,9 +206,26 @@ def parse_date(date_str: str) -> Optional[date]:
 
     # 3. Try to find date pattern in messy text (e.g. "Sep '25Sep 30, 2025")
     # Regex for "Mmm D, YYYY" or "Mmm DD, YYYY"
-    match = re.search(r'([A-Za-z]{3}\s+\d{1,2},\s+\d{4})', date_str)
+    # Also handle "2023-12-31" inside text
+    
+    # ISO search
+    match_iso = re.search(r'(\d{4}-\d{2}-\d{2})', date_str)
+    if match_iso:
+         try:
+            return datetime.strptime(match_iso.group(1), "%Y-%m-%d").date()
+         except: pass
+
+    # Standard date search
+    match = re.search(r'([A-Za-z]{3}\.\s*\d{1,2},?\s+\d{4}|[A-Za-z]{3}\s+\d{1,2},?\s+\d{4})', date_str)
     if match:
-        clean_date = match.group(1)
+        clean_date = match.group(1).replace('.', '') # Remove dot from Jan.
+        # Normalize commas
+        if ',' not in clean_date:
+            # "Jan 01 2022" -> insert comma
+            parts = clean_date.split()
+            if len(parts) == 3:
+                clean_date = f"{parts[0]} {parts[1]}, {parts[2]}"
+                
         try:
             return datetime.strptime(clean_date, "%b %d, %Y").date()
         except ValueError:
@@ -218,12 +258,19 @@ def parse_value(value_str: str) -> Optional[float]:
 
 def parse_year(header: str) -> Optional[int]:
     """Extract fiscal year from header."""
+    # Try 4-digit year directly
     match = re.search(r'(?:FY\s*)?(\d{4})', header)
     if match:
         year = int(match.group(1))
         # Skip years before 2015 (often grouped)
         if year >= 2015:
             return year
+            
+    # Try parsing date-like header "Dec 30, 2023"
+    dt = parse_date(header)
+    if dt:
+        return dt.year
+        
     return None
 
 
@@ -313,7 +360,8 @@ def parse_table(soup: BeautifulSoup) -> Tuple[List[int], Dict[str, List[Optional
         logger.info(f"Found row: '{line_item}'")
         
         # Handle Period Ending Row explicitly
-        if line_item == 'Period Ending':
+        # Check case insensitive
+        if line_item.lower().strip() in ['period ending', 'fiscal year end date', 'year end date', 'date']:
             logger.info("Processing Period Ending row")
             for year_idx, col_idx in enumerate(valid_indices):
                 if col_idx < len(cells):
@@ -436,28 +484,38 @@ def parse_quarter_header(text: str) -> Tuple[Optional[int], Optional[int]]:
     return None, None
 
 
-def parse_quarterly_table(soup: BeautifulSoup) -> Tuple[List[Tuple[int, int]], Dict[str, List[Optional[float]]]]:
-    """Parse quarterly financial table, returning [(year, quarter), ...] and data."""
+def parse_quarterly_table(soup: BeautifulSoup) -> Tuple[List[Tuple[int, int]], Dict[str, List[Optional[float]]], Dict[Tuple[int, int], date]]:
+    """Parse quarterly financial table, returning [(year, quarter), ...], data, and dates."""
     periods = []
     data = {}
+    period_endings = {}
     
     table = soup.find('table')
     if not table:
-        return periods, data
+        return periods, data, period_endings
     
     rows = table.find_all('tr')
     if not rows:
-        return periods, data
+        return periods, data, period_endings
     
     header_cells = rows[0].find_all('th')
-    for cell in header_cells[1:]:
+    for i, cell in enumerate(header_cells[1:]): # 0 is label
         text = cell.get_text(strip=True)
         year, quarter = parse_quarter_header(text)
         if year and quarter:
             periods.append((year, quarter))
-    
+        else:
+            # Keep index sync? No, periods list corresponds to data columns?
+            # StockAnalysis columns usually map 1:1 to headers.
+            # But if a header fails parse, we might misalign.
+            # Let's assume strict columnar mapping 
+            pass
+            
     if not periods:
-        return periods, data
+        return periods, data, period_endings
+    
+    # Identify column indices for valid periods
+    # We parsed all headers. Let's assume indices 1..N map to periods 0..N-1
     
     for row in rows[1:]:
         cells = row.find_all(['td', 'th'])
@@ -466,25 +524,38 @@ def parse_quarterly_table(soup: BeautifulSoup) -> Tuple[List[Tuple[int, int]], D
         
         line_item = cells[0].get_text(strip=True)
         
+        # Handle Period Ending Row
+        if line_item.lower().strip() in ['period ending', 'date']:
+             for i, period in enumerate(periods):
+                 col_idx = i + 1
+                 if col_idx < len(cells):
+                     date_text = cells[col_idx].get_text(strip=True)
+                     parsed = parse_date(date_text)
+                     if parsed:
+                         period_endings[period] = parsed
+             continue
+        
         if not line_item or line_item in ['Period Ending', 'Fiscal Year', '']:
             continue
         if 'Upgrade' in line_item:
             continue
         
         values = []
-        for cell in cells[1:]:
-            text = cell.get_text(strip=True)
-            if 'Upgrade' in text:
-                continue
-            values.append(parse_value(text))
-        
-        if len(values) > len(periods):
-            values = values[:len(periods)]
+        for i in range(len(periods)):
+            col_idx = i + 1
+            if col_idx < len(cells):
+                text = cells[col_idx].get_text(strip=True)
+                if 'Upgrade' in text:
+                    values.append(None)
+                else:
+                    values.append(parse_value(text))
+            else:
+                values.append(None)
         
         if values:
             data[line_item] = values
     
-    return periods, data
+    return periods, data, period_endings
 
 
 async def scrape_and_insert_quarterly(
@@ -501,7 +572,7 @@ async def scrape_and_insert_quarterly(
     if not soup:
         return 0
     
-    periods, data = parse_quarterly_table(soup)
+    periods, data, period_endings = parse_quarterly_table(soup)
     if not periods or not data:
         return 0
     
@@ -515,6 +586,14 @@ async def scrape_and_insert_quarterly(
                 "period_type": "quarterly",
                 "currency": "EGP",
             }
+            
+            # Add date if found
+            if (year, quarter) in period_endings:
+                val = period_endings[(year, quarter)]
+                if isinstance(val, (date, datetime)):
+                     row["period_ending"] = val
+                else:
+                     row["period_ending"] = val
             
             for sa_name, db_col in mapping.items():
                 if sa_name in data and i < len(data[sa_name]):

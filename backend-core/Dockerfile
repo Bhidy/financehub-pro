@@ -2,9 +2,6 @@
 # Build Version: 2026-01-14-v4 - Stock Profile Fix
 FROM python:3.11-slim
 
-# Cache bust - change this to force rebuild
-ARG CACHEBUST=20260120-1857-GREETING-FIX-V2
-
 WORKDIR /app
 
 # Install system dependencies for asyncpg
@@ -25,6 +22,8 @@ RUN mkdir -p /ms-playwright && \
     playwright install --with-deps chromium
 
 # Copy application code
+# Cache bust - changes here force code recopy without reinstalling deps
+ARG CACHEBUST=1
 COPY app ./app
 COPY data_pipeline ./data_pipeline
 COPY data ./data

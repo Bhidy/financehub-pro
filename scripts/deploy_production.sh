@@ -34,6 +34,10 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
         echo "☢️  NUCLEAR DEPLOYMENT SELECTED (Immediate Consistency)"
         echo "   1. Push Code -> GitHub"
         echo "   2. SSH -> Stop, Prune, Rebuild, Start"
+    elif [[ "$STRATEGY" == "smart" ]]; then
+        echo "⚡ SMART DEPLOYMENT SELECTED (Fast Hot-Swap)"
+        echo "   1. Push Code -> GitHub"
+        echo "   2. SSH -> Git Reset & Rolling Update (No Prune)"
     else
         echo "📦 Deploying Backend to Hetzner (Standard Git Push)..."
     fi
@@ -59,7 +63,7 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
         git push origin main
     fi
 
-    # EXECUTE NUCLEAR OPTION IF REQUESTED
+    # EXECUTE DEPLOYMENT STRATEGY
     if [[ "$STRATEGY" == "nuclear" ]]; then
         echo "----------------------------------------------------------------"
         echo "🔥 EXECUTING NUCLEAR REBUILD ON SERVER..."
@@ -71,10 +75,6 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
         fi
         
         # Execute the restore script
-        # Note: We assume SSH key access is configured or password will be prompted by expect if needed.
-        # However, restore_production.exp takes arguments: [host] [password]
-        # We need to retrieve these safely.
-        
         # Hardcoded IP from context/memory
         HOST="46.224.223.172"
         
@@ -87,6 +87,31 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
              echo "✅ Nuclear Deployment Successful."
         else
              echo "❌ Nuclear Deployment Failed."
+             exit 1
+        fi
+        
+    elif [[ "$STRATEGY" == "smart" ]]; then
+        echo "----------------------------------------------------------------"
+        echo "⚡ EXECUTING SMART HOT-SWAP ON SERVER..."
+        echo "----------------------------------------------------------------"
+        # Verify expect script exists
+        if [[ ! -f "scripts/smart_deploy.exp" ]]; then
+            echo "❌ ERROR: scripts/smart_deploy.exp not found!"
+            exit 1
+        fi
+        
+        HOST="46.224.223.172"
+        
+        echo "Enter Server Password for $HOST (Input Hidden):"
+        # Reuse existing var if set, else prompt (though flow above ensures we'd prompt if we merged logic, but here we are clean)
+        read -s SERVER_PASSWORD
+        
+        ./scripts/smart_deploy.exp "$HOST" "$SERVER_PASSWORD"
+        
+        if [[ $? -eq 0 ]]; then
+             echo "✅ Smart Deployment Successful."
+        else
+             echo "❌ Smart Deployment Failed."
              exit 1
         fi
     fi

@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+
+# Set timeout to reasonable 120 seconds (Smart deploy should be fast)
+set timeout 120
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+# SMART DEPLOYMENT SEQUENCE:
+# 1. git fetch & reset: Fast, reliable code update.
+# 2. docker compose build --build-arg CACHEBUST: Forces partial rebuild of app layer ONLY. Deps are cached.
+# 3. docker compose up -d --force-recreate: Restarts the container with the new image.
+# Does NOT use 'down' or 'prune' to save time.
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- BUILDING ---' && docker compose build --build-arg CACHEBUST=$(date +%s) backend && echo '--- RESTARTING ---' && docker compose up -d --force-recreate backend && echo '--- HEALTH CHECK ---' && sleep 5 && docker ps && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        send_user "\n✅ Smart Deployment Completed (Hot Swap).\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ Timeout waiting for deployment.\n"
+        exit 1
+    }
+    eof
+}

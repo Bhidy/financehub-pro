@@ -17,13 +17,14 @@ import time
 import hashlib
 from typing import Dict, Any, Optional, List
 from groq import AsyncGroq
+from app.core.config import settings
 
 # Logger
 logger = logging.getLogger(__name__)
 
 # Constants
-# Use a default key if env var is missing to avoid crash during init, but fail gracefully later 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY") 
+# Use settings which handles .env loading reliably
+GROQ_API_KEY = settings.GROQ_API_KEY 
 MODEL_NAME = "llama-3.3-70b-versatile" # Fast, high quality
 MAX_TOKENS = 400
 TIMEOUT = 4.0 # Slightly increased for better analysis
@@ -86,6 +87,7 @@ class LLMExplainerService:
             logger.warning("GROQ_API_KEY not found. LLM Explainer disabled.")
 
         # Local High-Speed Dictionary for Fact Explanations (Zero Latency)
+        self.MAX_TOKENS = MAX_TOKENS
         self.FACT_DEFINITIONS = {
             "pe_ratio": ("Price-to-Earnings Ratio", "Measures a company's current share price relative to its per-share earnings. High P/E suggests investors expect high growth or the stock is overvalued."),
             "eps": ("Earnings Per Share", "The portion of a company's profit allocated to each share. Higher is generally better."),
@@ -200,7 +202,8 @@ class LLMExplainerService:
                  "8. **Valuation vs Sector**: P/E, P/B, EV/EBITDA, Yield vs Medians.\n"
                  "9. **Key Risks**: Volatility, leverage, macro risks.\n"
                  "10. **Overall Assessment**: Neutral, professional summary of strength vs risk.\n\n"
-                 "RULES:\n"
+                 "CRITICAL RULES:\n"
+                 "- **MISSING DATA**: If a metric is 'N/A' or missing in context, write 'Data not available' for that specific bullet. **DO NOT** skip the section header.\n"
                  "- STRICT DATA ADHERENCE: Use ONLY data provided in 'Showing'. Do not invent numbers.\n"
                  "- INTERPRETATION: Don't just list ratios; explain what they mean for the business.\n"
                  "- ETHICS: No personalized advice. No price targets. Use 'screens as', 'trades at'.\n"
@@ -247,7 +250,7 @@ class LLMExplainerService:
         
         result = await multi_llm.complete(
             messages=messages,
-            max_tokens=250,
+            max_tokens=self.MAX_TOKENS,
             temperature=0.5,
             purpose="narrative"
         )
@@ -423,8 +426,9 @@ class LLMExplainerService:
                             def get_row_val(rows, label_part, year):
                                 for r in rows:
                                     if label_part.lower() == r.get('label', '').lower() or label_part.lower() in r.get('label', '').lower():
-                                        return r.get('values', {}).get(year)
-                                return None
+                                        val = r.get('values', {}).get(year)
+                                        return val if val is not None else "N/A"
+                                return "N/A"
 
                             income_rows = annual.get('income', [])
                             balance_rows = annual.get('balance', [])

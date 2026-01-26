@@ -45,6 +45,13 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
   7. **CLOUD-ONLY MANDATE:** All automated processes (schedulers, scrapers, data sync) MUST run on the Cloud Infrastructure (Hetzner + GitHub Actions). **Local execution of automated workflows is STRICTLY PROHIBITED** to prevent data corruption and IP bans. The local machine is for development only.
   8. **ROOT URL STRUCTURE (CRITICAL):** The root URL `https://startamarkets.com/` (i.e., `/`) **MUST ALWAYS serve the AI Chatbot** (`mobile-ai-analyst`). This is the core product experience. The Market Dashboard is available at `/dashboard`. **DO NOT** change this structure or create a different homepage. The file `frontend/app/page.tsx` re-exports the Mobile AI Analyst and must remain unchanged.
 
+  ## DATA INTEGRITY & PROTECTION RULES
+  > [!CRITICAL]
+  > **SECTOR CLASSIFICATION IS SACRED.**
+  > The `sector_name` column in `market_tickers` is strictly controlled by the Master Excel File (`backend-core/data/EGX_Stocks_Sectors.xlsx`).
+  > **NEVER** allow automated scrapers (e.g., `market_loader.py`, `admin.py`, `ingest_stockanalysis.py`) to overwrite this column.
+  > **REQUIRED LOGIC for Updates**: Always use `COALESCE(market_tickers.sector_name, EXCLUDED.sector_name)` in SQL updates. If a sector exists, KEEP IT. Only update if NULL.
+
   ## STRICT ARCHITECTURE RULES (CRITICAL)
   > [!IMPORTANT]
   > **NO HUGGINGFACE**: HuggingFace is **completely banned**. Do not use `hf.space`, `huggingface.co`, or any related domains. The backend is **ONLY** on Hetzner.

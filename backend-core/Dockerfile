@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app ./app
 COPY data_pipeline ./data_pipeline
+COPY data ./data
 COPY scripts ./scripts
 
 # Create empty engine directory (not needed for API-only mode)

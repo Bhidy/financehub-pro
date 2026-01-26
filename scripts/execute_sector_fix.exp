@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+
+# Set timeout to 5 minutes
+set timeout 300
+set host "46.224.223.172"
+set password [lindex $argv 0]
+
+# Spawn SSH command to execute the python script inside the running container
+spawn ssh -o StrictHostKeyChecking=no root@$host "docker exec starta-backend-1 python scripts/update_egx_sectors.py"
+
+expect "password:"
+send "$password\r"
+
+# Wait for completion signature
+expect {
+    "MISSION COMPLETE" {
+        send_user "\n✅ Sector Fix Executed Successfully on Production.\n"
+        exit 0
+    }
+    "Failed to read Excel" {
+        send_user "\n❌ Remote Script Failed: Excel file not found.\n"
+        exit 1
+    }
+    timeout {
+        send_user "\n⚠️ Operation timed out. Check server logs.\n"
+        exit 1
+    }
+    eof
+}

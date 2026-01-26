@@ -247,7 +247,7 @@ class EGXProductionLoader:
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
                     ON CONFLICT (symbol) DO UPDATE SET
                         name_en = EXCLUDED.name_en,
-                        sector_name = EXCLUDED.sector_name,
+                        sector_name = CASE WHEN market_tickers.sector_name IS NULL OR market_tickers.sector_name = '' THEN EXCLUDED.sector_name ELSE market_tickers.sector_name END,
                         market_code = EXCLUDED.market_code,
                         market_cap = EXCLUDED.market_cap,
                         last_price = EXCLUDED.last_price,

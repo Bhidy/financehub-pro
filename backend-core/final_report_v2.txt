@@ -1,0 +1,55 @@
+--- Starting Deep Gap Analysis for COMI ---
+
+Scanning CSV file: ../COMI_Financial_Statements (2).csv
+
+--- Field Coverage Analysis (CSV vs Scraper Mapping) ---
+Total Line Items in CSV: 151
+Mapped Items (Collected): 57
+Unmapped Items (Potential Gaps): 94
+
+Connecting to DB: aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require
+
+--- Database Statistics (Global) ---
+Table 'income_statements': 5518 rows
+Table 'balance_sheets': 5518 rows
+Table 'cashflow_statements': 5517 rows
+Table 'financial_ratios_history': 1440 rows
+Total Rows in Financial Tables: 17993
+
+--- Database Statistics (EGX Only) ---
+Table 'income_statements' (EGX): 5518 rows
+Table 'balance_sheets' (EGX): 5518 rows
+Table 'cashflow_statements' (EGX): 5517 rows
+Table 'financial_ratios_history' (EGX): 1440 rows
+
+--- Table Schema Information ---
+Table 'income_statements': 53 columns
+Table 'balance_sheets': 56 columns
+Table 'cashflow_statements': 44 columns
+Table 'financial_ratios_history': 47 columns
+
+--- COMI Data Verification (FY 2024) ---
+Field                          | CSV Value       | DB Value        | Status
+---------------------------------------------------------------------------
+Revenue                        | 28,946          | 114754.00       | MISMATCH
+Net Income                     | 12,848          | 55196.00        | MISMATCH
+Net Interest Income            | 25,505          | 91259.00        | MISMATCH
+Total Assets                   | 1,214,973       | 1214973.00      | MATCH
+Total Liabilities              | 1,062,154       | 1062154.00      | MATCH
+Cash & Equivalents             | 225,552         | 225552.00       | MATCH
+Operating Cash Flow            | -132,501        | -205594.00      | MISMATCH
+Free Cash Flow                 | -135,898        | -211393.00      | MISMATCH
+
+--- Unmapped Important Fields (Gaps) ---
+Missing Mapping for: Tangible Book Value Per Share
+Missing Mapping for: Filing Date Shares Outstanding
+Missing Mapping for: Total Deposits
+Missing Mapping for: Investing Cash Flow
+Missing Mapping for: Basic Shares Outstanding
+Missing Mapping for: Other Long-Term Liabilities
+Missing Mapping for: FREE CASH FLOW
+Missing Mapping for: Net Income Growth
+Missing Mapping for: Net Income to Common
+Missing Mapping for: OPERATING ACTIVITIES
+
+... and 84 more.

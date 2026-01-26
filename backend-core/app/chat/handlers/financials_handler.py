@@ -671,7 +671,36 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
             data_by_period[label] = dict(r)
 
     processed = []
-    for col, label in display_map.items():
+    
+    # 1. Inject "Period Ending" row if available
+    period_ending_row = {
+        'label': 'Period Ending',
+        'values': {},
+        'isGrowth': False,
+        'isSubtotal': False,
+        'indent': 0,
+        'format': 'string'
+    }
+    has_period = False
+    for period in periods:
+        raw_date = data_by_period.get(period, {}).get('period_ending')
+        if raw_date:
+            try:
+                if hasattr(raw_date, 'strftime'):
+                    val_str = raw_date.strftime("%b %d, %Y")
+                else:
+                    val_str = datetime.strptime(str(raw_date), "%Y-%m-%d").strftime("%b %d, %Y")
+                period_ending_row['values'][period] = val_str
+                has_period = True
+            except:
+                period_ending_row['values'][period] = None
+        else:
+             period_ending_row['values'][period] = None
+
+    if has_period:
+        processed.append(period_ending_row)
+
+    # 2. Process standard columns
         row_obj = {
             'label': label,
             'values': {},

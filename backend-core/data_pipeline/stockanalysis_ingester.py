@@ -23,6 +23,7 @@ from decimal import Decimal
 import asyncpg
 import logging
 import os
+from playwright.async_api import async_playwright
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -30,19 +31,11 @@ logger = logging.getLogger(__name__)
 
 class StockAnalysisScraper:
     """
-    Robust scraper for StockAnalysis.com financial data.
-    Uses BeautifulSoup to parse HTML tables containing financial statements.
+    Robust scraper for StockAnalysis.com financial data using Playwright.
+    Executes JS to hydration full tables.
     """
     
     BASE_URL = "https://stockanalysis.com/quote/egx"
-    
-    HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-    }
     
     # Statement type to URL path mapping
     STATEMENT_PATHS = {
@@ -61,6 +54,7 @@ class StockAnalysisScraper:
         "Interest Paid on Deposits": "interest_expense",
         "Net Interest Income": "net_interest_income",
         "Net Interest Income Growth (YoY)": "net_interest_income_growth",
+        "Revenues Before Loan Losses": "revenues_before_loan_losses",
         # Trading and Fees
         "Income From Trading Activities": "trading_income",
         "Fee and Commission Income": "fee_income",
@@ -80,6 +74,9 @@ class StockAnalysisScraper:
         "Selling, General & Admin": "sga_expense",
         "Depreciation & Amortization": "depreciation",
         "Provision for Credit Losses": "provision_credit_losses",
+        "Salaries and Employee Benefits": "salaries_and_benefits",
+        "Amortization of Goodwill & Intangibles": "amortization_of_goodwill",
+        "Other Unusual Items": "other_unusual_items",
         # Profit lines
         "Operating Income": "operating_income",
         "Operating Margin": "operating_margin",
@@ -94,6 +91,16 @@ class StockAnalysisScraper:
         "EPS (Diluted)": "eps_diluted",
         "Shares Outstanding (Basic)": "shares_outstanding",
         "Shares Outstanding (Diluted)": "shares_diluted",
+        # Gap Fill Additions 2026-01-26
+        "Earnings From Continuing Operations": "earnings_from_continuing_ops",
+        "Earnings From Discontinued Operations": "earnings_from_discontinued_ops",
+        "Preferred Dividends & Other Adjustments": "preferred_dividends",
+        "EBT Excluding Unusual Items": "ebt_excl_unusual",
+        "EPS Growth": "eps_growth",
+        "Dividend Growth": "dividend_growth",
+        "Dividend Per Share": "dividend_per_share",
+        "Non-Interest Income Growth (YoY)": "non_interest_income_growth",
+        "Shares Change (YoY)": "shares_change",
     }
     
     BALANCE_MAPPING = {
@@ -104,6 +111,8 @@ class StockAnalysisScraper:
         "Inventory": "inventory",
         "Other Current Assets": "other_current_assets",
         "Total Current Assets": "total_current_assets",
+        "Restricted Cash": "restricted_cash",
+        "Accrued Interest Receivable": "accrued_interest_receivable",
         # Banking assets
         "Investment Securities": "investment_securities",
         "Trading Asset Securities": "trading_assets",
@@ -111,12 +120,14 @@ class StockAnalysisScraper:
         "Gross Loans": "gross_loans",
         "Allowance for Loan Losses": "allowance_loan_losses",
         "Net Loans": "net_loans",
+        "Other Real Estate Owned & Foreclosed": "other_real_estate_owned",
         # Fixed assets
         "Property, Plant & Equipment": "property_plant_equipment",
         "Goodwill": "goodwill",
         "Intangible Assets": "intangible_assets",
         "Other Non-Current Assets": "other_noncurrent_assets",
         "Total Assets": "total_assets",
+        "Long-Term Deferred Tax Assets": "deferred_tax_assets",
         # Liabilities
         "Accounts Payable": "accounts_payable",
         "Short-Term Debt": "short_term_debt",
@@ -125,6 +136,9 @@ class StockAnalysisScraper:
         "Deferred Revenue": "deferred_revenue",
         "Total Current Liabilities": "total_current_liabilities",
         "Deposits": "deposits",
+        "Total Deposits": "deposits",
+        "Interest Bearing Deposits": "interest_bearing_deposits",
+        "Non-Interest Bearing Deposits": "non_interest_bearing_deposits",
         "Long-Term Debt": "long_term_debt",
         "Deferred Tax Liabilities": "deferred_tax_liabilities",
         "Total Non-Current Liabilities": "total_noncurrent_liabilities",
@@ -136,6 +150,24 @@ class StockAnalysisScraper:
         "Treasury Stock": "treasury_stock",
         "Total Stockholders' Equity": "total_equity",
         "Total Equity": "total_equity",
+        "Tangible Book Value": "tangible_book_value",
+        "Minority Interest": "minority_interest",
+        # Gap Fill Additions 2026-01-26
+        "Long-Term Deferred Tax Assets": "deferred_tax_assets",
+        "Long-Term Deferred Tax Liabilities": "long_term_deferred_tax_liabilities",
+        "Comprehensive Income & Other": "comprehensive_income_other",
+        "Current Income Taxes Payable": "current_income_tax_payable",
+        "Accrued Interest Payable": "accrued_interest_payable",
+        "Accrued Expenses": "accrued_expenses",
+        "Other Receivables": "other_receivables",
+        "Other Intangible Assets": "other_intangible_assets",
+        "Other Long-Term Assets": "other_long_term_assets",
+        "Total Common Equity": "total_common_equity",
+        "Book Value Per Share": "book_value_per_share",
+        "Net Cash Per Share": "net_cash_per_share",
+        "Total Debt": "total_debt",
+        "Net Cash (Debt)": "net_cash",
+        "Net Cash Growth": "net_cash_growth",
     }
     
     CASHFLOW_MAPPING = {
@@ -170,6 +202,26 @@ class StockAnalysisScraper:
         # Summary
         "Net Change in Cash": "net_change_cash",
         "Free Cash Flow": "free_cashflow",
+        "Cash Income Tax Paid": "cash_income_tax_paid",
+        "Net Increase (Decrease) in Deposit Accounts": "net_increase_deposits",
+        # Gap Fill Additions 2026-01-26
+        "Issuance of Common Stock": "issuance_common_stock",
+        "Long-Term Debt Issued": "long_term_debt_issued",
+        "Long-Term Debt Repaid": "long_term_debt_repaid",
+        "Change in Trading Asset Securities": "change_in_trading_assets",
+        "Change in Income Taxes": "change_in_income_tax",
+        "Change in Other Net Operating Assets": "change_in_working_capital",
+        "Income (Loss) Equity Investments": "income_loss_equity_investments",
+        "Total Asset Writedown": "total_asset_writedown",
+        "Divestitures": "divestitures",
+        "Cash Acquisitions": "cash_acquisitions",
+        "Investment in Securities": "investment_in_securities",
+        "Sale of Property, Plant and Equipment": "sale_of_ppe",
+        "Other Amortization": "other_amortization",
+        "Free Cash Flow Growth": "free_cash_flow_growth",
+        "Operating Cash Flow Growth": "operating_cash_flow_growth",
+        "Free Cash Flow Margin": "free_cash_flow_margin",
+        "Free Cash Flow Per Share": "free_cash_flow_per_share",
     }
     
     RATIOS_MAPPING = {
@@ -205,23 +257,23 @@ class StockAnalysisScraper:
     
     def __init__(self, db_url: str):
         self.db_url = db_url
-        self.client: Optional[httpx.AsyncClient] = None
+        self.playwright = None
+        self.browser = None
         self.pool: Optional[asyncpg.Pool] = None
     
     async def connect(self):
         """Initialize connections."""
-        self.client = httpx.AsyncClient(
-            headers=self.HEADERS,
-            timeout=30.0,
-            follow_redirects=True
-        )
-        self.pool = await asyncpg.create_pool(self.db_url, min_size=2, max_size=10)
-        logger.info("Connected to database")
+        self.playwright = await async_playwright().start()
+        self.browser = await self.playwright.chromium.launch(headless=True)
+        self.pool = await asyncpg.create_pool(self.db_url, min_size=2, max_size=10, statement_cache_size=0)
+        logger.info("Connected to database and launched Playwright")
     
     async def close(self):
         """Close connections."""
-        if self.client:
-            await self.client.aclose()
+        if self.browser:
+            await self.browser.close()
+        if self.playwright:
+            await self.playwright.stop()
         if self.pool:
             await self.pool.close()
     
@@ -257,21 +309,28 @@ class StockAnalysisScraper:
         return None
     
     async def fetch_page(self, symbol: str, statement_type: str) -> Optional[BeautifulSoup]:
-        """Fetch and parse a financial statement page."""
+        """Fetch and parse a financial statement page using Playwright."""
         path = self.STATEMENT_PATHS.get(statement_type, "/financials/")
         url = f"{self.BASE_URL}/{symbol.lower()}{path}"
         
+        page = await self.browser.new_page()
         try:
-            response = await self.client.get(url)
+            logger.info(f"Navigating to {url}")
+            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
             
-            if response.status_code != 200:
-                logger.warning(f"Failed to fetch {statement_type} for {symbol}: HTTP {response.status_code}")
-                return None
+            # Wait for table to appear (Svelte hydration)
+            try:
+                await page.wait_for_selector('table.financials-table', timeout=10000)
+            except:
+                logger.warning(f"Timeout waiting for table on {url}")
             
-            return BeautifulSoup(response.text, 'html.parser')
+            content = await page.content()
+            await page.close()
+            return BeautifulSoup(content, 'html.parser')
             
         except Exception as e:
             logger.error(f"Error fetching {url}: {e}")
+            await page.close()
             return None
     
     def parse_table(self, soup: BeautifulSoup) -> Tuple[List[int], Dict[str, List[Optional[float]]]]:
@@ -290,7 +349,7 @@ class StockAnalysisScraper:
             table = soup.find('table')
         
         if not table:
-            logger.warning("No table found in page")
+            logger.warning("No table found in content")
             return years, data
         
         # Get all rows
@@ -365,9 +424,22 @@ class StockAnalysisScraper:
             }
             
             # Map each line item to our column
+            used_keys = set()
             for sa_name, db_col in self.INCOME_MAPPING.items():
                 if sa_name in data and i < len(data[sa_name]):
                     row[db_col] = data[sa_name][i]
+                    used_keys.add(sa_name)
+            
+            # Collect 100% of remaining data into sector_specific_data
+            sector_data = {}
+            for sa_name, values in data.items():
+                if sa_name not in used_keys and i < len(values) and values[i] is not None:
+                    # Clean the key for JSON (optional, but good for querying)
+                    key = sa_name.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('&', 'and').replace(',', '').replace('-', '_')
+                    sector_data[key] = values[i]
+            
+            if sector_data:
+                row['sector_specific_data'] = json.dumps(sector_data)
             
             rows.append(row)
         
@@ -391,10 +463,22 @@ class StockAnalysisScraper:
                 "currency": "EGP",
             }
             
+            used_keys = set()
             for sa_name, db_col in self.BALANCE_MAPPING.items():
                 if sa_name in data and i < len(data[sa_name]):
                     row[db_col] = data[sa_name][i]
+                    used_keys.add(sa_name)
             
+            # Collect 100% of remaining data
+            sector_data = {}
+            for sa_name, values in data.items():
+                if sa_name not in used_keys and i < len(values) and values[i] is not None:
+                    key = sa_name.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('&', 'and').replace(',', '').replace('-', '_')
+                    sector_data[key] = values[i]
+            
+            if sector_data:
+                row['sector_specific_data'] = json.dumps(sector_data)
+
             rows.append(row)
         
         return rows
@@ -417,10 +501,22 @@ class StockAnalysisScraper:
                 "currency": "EGP",
             }
             
+            used_keys = set()
             for sa_name, db_col in self.CASHFLOW_MAPPING.items():
                 if sa_name in data and i < len(data[sa_name]):
                     row[db_col] = data[sa_name][i]
+                    used_keys.add(sa_name)
             
+            # Collect 100% of remaining data
+            sector_data = {}
+            for sa_name, values in data.items():
+                if sa_name not in used_keys and i < len(values) and values[i] is not None:
+                    key = sa_name.lower().replace(' ', '_').replace('(', '').replace(')', '').replace('&', 'and').replace(',', '').replace('-', '_')
+                    sector_data[key] = values[i]
+            
+            if sector_data:
+                row['sector_specific_data'] = json.dumps(sector_data)
+
             rows.append(row)
         
         return rows
@@ -503,7 +599,6 @@ class StockAnalysisScraper:
             "income_statements", income_rows,
             ["symbol", "fiscal_year", "fiscal_quarter", "period_type"]
         )
-        await asyncio.sleep(1)  # Rate limiting
         
         # Balance Sheet
         balance_rows = await self.scrape_balance_sheet(symbol)
@@ -511,7 +606,6 @@ class StockAnalysisScraper:
             "balance_sheets", balance_rows,
             ["symbol", "fiscal_year", "fiscal_quarter", "period_type"]
         )
-        await asyncio.sleep(1)
         
         # Cash Flow
         cashflow_rows = await self.scrape_cashflow(symbol)
@@ -519,7 +613,6 @@ class StockAnalysisScraper:
             "cashflow_statements", cashflow_rows,
             ["symbol", "fiscal_year", "fiscal_quarter", "period_type"]
         )
-        await asyncio.sleep(1)
         
         # Ratios
         ratios_rows = await self.scrape_ratios(symbol)
@@ -599,11 +692,7 @@ async def main():
     try:
         # Test with COMI
         result = await scraper.ingest_symbol("COMI")
-        print(f"\nCOMI ingestion complete:")
-        print(f"  Income statements: {result['income']} years")
-        print(f"  Balance sheets: {result['balance']} years")
-        print(f"  Cash flow statements: {result['cashflow']} years")
-        print(f"  Ratios: {result['ratios']} years")
+        print(f"\nCOMI ingestion complete: {result}")
         
     finally:
         await scraper.close()

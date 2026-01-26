@@ -19,7 +19,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
     // Typewriter placeholders
     const placeholderTexts = [
         "Ask Starta anything...",
-        "What is the fair value of COMI?",
+        "Market Summary",
         "Analyze the dividend history of TMGH",
         "Show me the top gainers today",
         "Is SWDY undervalued right now?",

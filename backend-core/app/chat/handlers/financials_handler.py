@@ -701,6 +701,7 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
         processed.append(period_ending_row)
 
     # 2. Process standard columns
+    for col, label in display_map.items():
         row_obj = {
             'label': label,
             'values': {},

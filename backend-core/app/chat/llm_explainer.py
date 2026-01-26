@@ -170,6 +170,25 @@ class LLMExplainerService:
                 f"Language: {lang_instruction}. Length: 25-35 words.\n"
                 "Style: Intelligent, warm, professional. No marketing fluff."
             )
+        # Check for CFA Level 3 Deep Dive conditions
+        elif 'financial_explorer' in card_types or intent in [
+            'FINANCIALS', 'REVENUE_TREND', 'FIN_MARGINS', 'FIN_DEBT', 'FIN_CASH', 
+            'FIN_GROWTH', 'FIN_EPS', 'RATIO_VALUATION', 'RATIO_EFFICIENCY', 
+            'RATIO_LIQUIDITY', 'DEEP_VALUATION', 'DEEP_SAFETY', 'DEEP_EFFICIENCY', 
+            'DEEP_GROWTH', 'FAIR_VALUE'
+        ]:
+            # --- PROMPT C: CFA LEVEL 3 ANALYST (Deep Dive) ---
+            # Specialized prompt for rigorous financial analysis
+            system_prompt = (
+                f"You are Starta, a CFA Level 3 Charterholder and Expert Financial Analyst.\n"
+                f"NO GREETING. Start with '{user_name}, ' only if needed.\n"
+                f"Showing: {card_context}\n"
+                f"Language: {lang_instruction}. Length: 100-150 words.\n"
+                "Task: Provide a comprehensive, rigorous financial analysis like a senior analyst."
+                " Analyze the TRENDS in Revenue, Net Income, Margins, and ROE over the years shown."
+                " Assess Solvency (Debt/Equity), Liquidity, and Valuation."
+                " Use professional terminology but remain clear. Highlight risks and strengths."
+            )
         else:
             # --- PROMPT B: ONGOING CONVERSATION (Data-Focused) ---
             # Optimized: ~150 tokens (was ~500 tokens)
@@ -364,6 +383,46 @@ class LLMExplainerService:
                     if items:
                         summary_parts.append(" ".join(items[:6]))
                         
+                elif c_type == 'financial_explorer':
+                    # Extract key metrics for deep analysis (CFA Level 3 style)
+                    # Data structure: c_data['annual_data']['income'] -> List of rows
+                    
+                    try:
+                        annual = c_data.get('annual_data', {})
+                        years = annual.get('years', [])[:3] # Last 3 years
+                        if years:
+                            # Helper to find row by label (using partial match safety)
+                            def get_row_val(rows, label_part, year):
+                                for r in rows:
+                                    if label_part.lower() in r.get('label', '').lower():
+                                        return r.get('values', {}).get(year)
+                                return None
+
+                            income_rows = annual.get('income', [])
+                            ratios_rows = annual.get('ratios', [])
+                            
+                            metrics = []
+                            for y in years:
+                                rev = get_row_val(income_rows, 'revenue', y)
+                                net = get_row_val(income_rows, 'net income', y)
+                                margin = get_row_val(ratios_rows, 'net margin', y)
+                                roe = get_row_val(ratios_rows, 'return on equity', y)
+                                debt_eq = get_row_val(ratios_rows, 'debt / equity', y)
+                                
+                                # Format nicely
+                                part = f"{y}: Rev={rev} Net={net}"
+                                if margin: part += f" Mgn={margin}%"
+                                if roe: part += f" ROE={roe}%"
+                                if debt_eq: part += f" D/E={debt_eq}"
+                                metrics.append(part)
+                            
+                            if metrics:
+                                summary_parts.append(" | ".join(metrics))
+                            else:
+                                summary_parts.append("Financial Data Types: Income, Balance, Cashflow")
+                    except Exception as e:
+                        summary_parts.append(f"Financials Error: {str(e)}")
+
                 elif c_type == 'sector_list':
                     stocks = c_data.get('stocks', [])
                     sector = c_data.get('sector', '')[:15]
@@ -395,7 +454,7 @@ class LLMExplainerService:
             "snapshot": "key metrics and valuation summary",
             "stats": "detailed statistics",
             "financials_table": "financial statements",
-            "financial_explorer": "comprehensive financial data",
+            "financial_explorer": "comprehensive CFA-level financial data (Income, Balance, Cashflow, Ratios)",
             "dividends_table": "dividend history and yield",
             "compare_table": "side-by-side comparison",
             "movers_table": "top gainers/losers list",

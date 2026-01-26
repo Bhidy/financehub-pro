@@ -16,6 +16,7 @@ import asyncio
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 import httpx
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ def get_providers() -> List[LLMProvider]:
     providers = []
     
     # Priority 1: Groq (fastest inference)
-    if groq_key := os.environ.get("GROQ_API_KEY"):
+    if groq_key := settings.GROQ_API_KEY:
         providers.append(LLMProvider(
             name="groq",
             base_url="https://api.groq.com/openai/v1",
@@ -46,7 +47,9 @@ def get_providers() -> List[LLMProvider]:
         ))
     
     # Priority 2: Cerebras (generous free tier: 14,400 RPD)
-    if cerebras_key := os.environ.get("CEREBRAS_API_KEY"):
+    # Note: These are Optional in settings, so check if they exist
+    cerebras_key = getattr(settings, "CEREBRAS_API_KEY", os.environ.get("CEREBRAS_API_KEY"))
+    if cerebras_key:
         providers.append(LLMProvider(
             name="cerebras",
             base_url="https://api.cerebras.ai/v1",
@@ -56,7 +59,8 @@ def get_providers() -> List[LLMProvider]:
         ))
     
     # Priority 3: Mistral (1B tokens/month free)
-    if mistral_key := os.environ.get("MISTRAL_API_KEY"):
+    mistral_key = getattr(settings, "MISTRAL_API_KEY", os.environ.get("MISTRAL_API_KEY"))
+    if mistral_key:
         providers.append(LLMProvider(
             name="mistral",
             base_url="https://api.mistral.ai/v1",
@@ -66,7 +70,8 @@ def get_providers() -> List[LLMProvider]:
         ))
     
     # Priority 4: Together AI ($25 free credits)
-    if together_key := os.environ.get("TOGETHER_API_KEY"):
+    together_key = getattr(settings, "TOGETHER_API_KEY", os.environ.get("TOGETHER_API_KEY"))
+    if together_key:
         providers.append(LLMProvider(
             name="together",
             base_url="https://api.together.xyz/v1",
@@ -76,7 +81,8 @@ def get_providers() -> List[LLMProvider]:
         ))
     
     # Priority 5: OpenRouter (50 RPD free)
-    if openrouter_key := os.environ.get("OPENROUTER_API_KEY"):
+    openrouter_key = settings.OPENROUTER_API_KEY 
+    if openrouter_key:
         providers.append(LLMProvider(
             name="openrouter",
             base_url="https://openrouter.ai/api/v1",

@@ -19,10 +19,10 @@ COPY requirements.txt .
 # Install Python dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright removed for lightweight deployment
-# ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-# RUN mkdir -p /ms-playwright && \
-#    playwright install --with-deps chromium
+# Install Playwright for StockAnalysis scraping
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN mkdir -p /ms-playwright && \
+    playwright install --with-deps chromium
 
 # Copy application code
 COPY app ./app

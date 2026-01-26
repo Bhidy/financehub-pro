@@ -198,7 +198,23 @@ export function useAIChat(config?: {
 
             console.log(`[useAIChat] 🚀 Sending Message: "${text.substring(0, 10)}..." | SessionID: ${currentSessionId}`);
 
-            return await sendChatMessage(text, history, currentSessionId, config?.market, deviceFingerprint);
+            // RETRY LOGIC (Chief Expert Fix for Stability)
+            // Attempt up to 3 times with exponential backoff
+            let lastError;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    const response = await sendChatMessage(text, history, currentSessionId, config?.market, deviceFingerprint);
+                    return response;
+                } catch (err) {
+                    lastError = err;
+                    console.warn(`[useAIChat] ⚠️ Attempt ${attempt + 1} failed. Retrying...`, err);
+                    if (attempt < 2) {
+                        // Wait 1s, then 2s
+                        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+                    }
+                }
+            }
+            throw lastError;
         },
         onSuccess: (data: ChatResponse) => {
             // ... (rest of logic) ...

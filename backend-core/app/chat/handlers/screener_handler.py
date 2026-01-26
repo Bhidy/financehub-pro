@@ -177,6 +177,30 @@ async def handle_sector_stocks(
             'security brokers, dealers, and flotation companies',
             'insurance carriers',
         ]
+        
+    elif 'financial' in sector_lower:
+        # SEARCH STARTATEGY: Financial Services (Broad)
+        # Matches: "Financial Services", "Non-bank financial services", "Diversified Financials"
+        search_terms = [
+            "%financial services%", 
+            "%non-bank financial%", 
+            "%diversified financial%"
+        ]
+        # Exclude Banks explicitly if user asked for "Financial Services" (usually implies Non-Bank)
+        if 'non-bank' not in sector_lower:
+             excluded_industries = ['banks', 'commercial banks']
+             
+    elif 'telecom' in sector_lower or 'communication' in sector_lower:
+        search_terms = ["%telecom%", "%communication%", "%media%"]
+        
+    elif 'real estate' in sector_lower:
+        search_terms = ["%real estate%", "%development%"]
+        
+    elif 'industrial' in sector_lower:
+        search_terms = ["%industrial%", "%automobiles%", "%durables%"]
+        
+    elif 'food' in sector_lower or 'beverage' in sector_lower:
+        search_terms = ["%food%", "%beverage%", "%tobacco%"]
     
     # Build SQL to search in sector_name
     # We prioritize sector_name match.

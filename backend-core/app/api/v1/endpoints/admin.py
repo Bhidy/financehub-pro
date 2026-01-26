@@ -453,7 +453,7 @@ async def update_market_tickers(data: Dict):
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
                 ON CONFLICT (symbol) DO UPDATE SET
                     name_en = COALESCE(EXCLUDED.name_en, market_tickers.name_en),
-                    sector_name = COALESCE(EXCLUDED.sector_name, market_tickers.sector_name),
+                    sector_name = COALESCE(market_tickers.sector_name, EXCLUDED.sector_name),
                     last_price = EXCLUDED.last_price,
                     change = EXCLUDED.change,
                     change_percent = EXCLUDED.change_percent,

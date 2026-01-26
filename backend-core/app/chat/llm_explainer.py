@@ -422,30 +422,68 @@ class LLMExplainerService:
                             # Helper to find row by label (using partial match safety)
                             def get_row_val(rows, label_part, year):
                                 for r in rows:
-                                    if label_part.lower() in r.get('label', '').lower():
+                                    if label_part.lower() == r.get('label', '').lower() or label_part.lower() in r.get('label', '').lower():
                                         return r.get('values', {}).get(year)
                                 return None
 
                             income_rows = annual.get('income', [])
+                            balance_rows = annual.get('balance', [])
+                            cashflow_rows = annual.get('cashflow', [])
                             ratios_rows = annual.get('ratios', [])
                             
                             metrics = []
                             for y in years:
+                                # 1. Profitability & Growth
                                 rev = get_row_val(income_rows, 'revenue', y)
                                 net = get_row_val(income_rows, 'net income', y)
-                                margin = get_row_val(ratios_rows, 'net margin', y)
+                                eps = get_row_val(income_rows, 'eps', y)
+                                
+                                # 2. Margins
+                                gross_m = get_row_val(ratios_rows, 'gross margin', y)
+                                op_m = get_row_val(ratios_rows, 'operating margin', y)
+                                net_m = get_row_val(ratios_rows, 'net margin', y)
+                                
+                                # 3. Returns
                                 roe = get_row_val(ratios_rows, 'return on equity', y)
+                                roa = get_row_val(ratios_rows, 'return on assets', y)
+                                
+                                # 4. Leverage & Liquidity
                                 debt_eq = get_row_val(ratios_rows, 'debt / equity', y)
+                                curr_ratio = get_row_val(ratios_rows, 'current ratio', y)
+                                quick_ratio = get_row_val(ratios_rows, 'quick ratio', y)
+                                
+                                # 5. Cash Flow
+                                ocf = get_row_val(cashflow_rows, 'operating cash flow', y)
+                                fcf = get_row_val(cashflow_rows, 'free cash flow', y)
+                                
+                                # 6. Valuation
+                                pe = get_row_val(ratios_rows, 'pe ratio', y)
+                                pb = get_row_val(ratios_rows, 'pb ratio', y)
+                                ev_ebitda = get_row_val(ratios_rows, 'ev/ebitda', y)
                                 
                                 # Format nicely
-                                part = f"{y}: Rev={rev} Net={net}"
-                                if margin: part += f" Mgn={margin}%"
-                                if roe: part += f" ROE={roe}%"
-                                if debt_eq: part += f" D/E={debt_eq}"
+                                part = (
+                                    f"YEAR {y}: "
+                                    f"Rev={rev} Net={net} EPS={eps} | "
+                                    f"Mrg(G/O/N)={gross_m}%/{op_m}%/{net_m}% | "
+                                    f"ROE={roe}% ROA={roa}% | "
+                                    f"D/E={debt_eq} CurrR={curr_ratio} | "
+                                    f"OCF={ocf} FCF={fcf} | "
+                                    f"Val(PE/PB/EV)={pe}/{pb}/{ev_ebitda}"
+                                )
                                 metrics.append(part)
                             
+                            # Add TTM context if available
+                            ttm = c_data.get('ttm_data', {})
+                            if ttm and ttm.get('years'):
+                                ttm_per = ttm.get('years')[0]
+                                ttm_rev = get_row_val(ttm.get('income', []), 'revenue', ttm_per)
+                                ttm_net = get_row_val(ttm.get('income', []), 'net income', ttm_per)
+                                ttm_pe = get_row_val(ttm.get('ratios', []), 'pe ratio', ttm_per)
+                                metrics.insert(0, f"TTM ({ttm_per}): Rev={ttm_rev} Net={ttm_net} PE={ttm_pe}")
+
                             if metrics:
-                                summary_parts.append(" | ".join(metrics))
+                                summary_parts.append(" || ".join(metrics))
                             else:
                                 summary_parts.append("Financial Data Types: Income, Balance, Cashflow")
                     except Exception as e:

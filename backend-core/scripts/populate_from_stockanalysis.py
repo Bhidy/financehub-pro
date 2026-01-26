@@ -4,8 +4,8 @@ import os
 import sys
 from dotenv import load_dotenv
 
-# Add current directory to path so we can import from data_pipeline
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add parent directory to path so we can import from data_pipeline
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data_pipeline.stockanalysis_ingester import StockAnalysisScraper
 

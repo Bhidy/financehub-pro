@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 
 # Set timeout to reasonable 120 seconds (Smart deploy should be fast)
-set timeout 120
+set timeout 600
 set host [lindex $argv 0]
 set password [lindex $argv 1]
 

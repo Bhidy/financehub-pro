@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set host "46.224.223.172"
+set password "StartaProd2026!"
+set remote_file "/app/app/chat/llm_explainer.py"
+
+# Command to check: grep for "CFA Level 3" and print the line if found
+# We use docker exec to run it inside the container
+set cmd "docker exec starta-backend-1 grep 'CFA Level 3' $remote_file || echo 'NOT_FOUND'"
+
+spawn ssh -o StrictHostKeyChecking=no root@$host $cmd
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "NOT_FOUND" {
+        send_user "\n❌ VERIFICATION FAILED: Code not updated on server.\n"
+        exit 1
+    }
+    "CFA Level 3" {
+        send_user "\n✅ VERIFICATION PASSED: New code found on server.\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ TIMEOUT waiting for verification.\n"
+        exit 1
+    }
+    eof
+}

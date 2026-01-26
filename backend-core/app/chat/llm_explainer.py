@@ -158,16 +158,30 @@ class LLMExplainerService:
         # - Temperature/max_tokens (unchanged)
         
         # Build card type context for the LLM
-        card_types = [c.get('type', 'data') for c in data] if data else []
+        # ROBUSTNESS FIX: Ensure card types are strings and lowercased
+        card_types = [str(c.get('type', 'data')).lower() for c in data] if data else []
         card_context = self._describe_cards(card_types)
         
+        # Debug Log for CFA Trigger
+        logger.info(f"NARRATIVE TRIGGER CHECK: Intent='{intent}', Cards={card_types}, Greeting={allow_greeting}")
+
         # Check for CFA Level 3 Deep Dive conditions FIRST (Overrides greeting)
-        if 'financial_explorer' in card_types or intent in [
-            'FINANCIALS', 'REVENUE_TREND', 'FIN_MARGINS', 'FIN_DEBT', 'FIN_CASH', 
-            'FIN_GROWTH', 'FIN_EPS', 'RATIO_VALUATION', 'RATIO_EFFICIENCY', 
-            'RATIO_LIQUIDITY', 'DEEP_VALUATION', 'DEEP_SAFETY', 'DEEP_EFFICIENCY', 
-            'DEEP_GROWTH', 'FAIR_VALUE', 'COMPANY_PROFILE'
-        ]:
+        # Expanded triggers to catch ALL financial variants
+        is_deep_dive = (
+            'financial_explorer' in card_types or 
+            'financials_table' in card_types or
+            intent in [
+                'FINANCIALS', 'FINANCIALS_ANNUAL', 'REVENUE_TREND', 
+                'FIN_MARGINS', 'FIN_DEBT', 'FIN_CASH', 'FIN_GROWTH', 'FIN_EPS', 
+                'RATIO_VALUATION', 'RATIO_EFFICIENCY', 'RATIO_LIQUIDITY', 
+                'DEEP_VALUATION', 'DEEP_SAFETY', 'DEEP_EFFICIENCY', 'DEEP_GROWTH', 
+                'FAIR_VALUE', 'COMPANY_PROFILE'
+            ] or 
+            'financial' in str(intent).lower() # Safety net for partial matches
+        )
+
+        if is_deep_dive:
+            logger.info("-> ACTIVATING CFA LEVEL 3 PERSONA")
             # --- PROMPT C: CFA LEVEL 3 ANALYST (Deep Dive) ---
             # Specialized prompt for rigorous financial analysis with STRICT 10-point structure
             system_prompt = (

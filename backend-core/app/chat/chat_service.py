@@ -359,31 +359,38 @@ class ChatService:
                     print(f"[ChatService] 🔍 Session '{session_id}' | DB: {msg_count} | Hist: {real_history_count} | New? {is_new_session} | Returning? {is_returning_user}")
 
                     # 4. Generate Narrative
-                    # ENTERPRISE RULE: NEVER show greeting in ongoing conversation
-                    # Only show greeting if:
-                    #   a) is_new_session = True (zero prior messages)
-                    #   b) Intent is conversational (GREETING, HELP, etc)
-                    # Otherwise: ALWAYS suppress greeting
-                    CONVERSATIONAL_INTENTS = [
-                        Intent.GREETING, Intent.IDENTITY, Intent.CAPABILITIES, 
-                        Intent.MOOD, Intent.GRATITUDE, Intent.HELP
-                    ]
-                    
-                    # ENTERPRISE FIX: ALWAYS include greeting/opening in responses
-                    # For new sessions: Show full welcome greeting
-                    # For returning users: Show human opening (acknowledgment)
+                    # Check for Deep Dive Mode (CFA Level 3) - mirrors logic in llm_explainer
+                    card_types_str = [str(c.get('type', 'data')).lower() for c in result_data.get('cards', [])]
+                    is_deep_dive = (
+                        'financial_explorer' in card_types_str or 
+                        'financials_table' in card_types_str or
+                        intent.value in [
+                            'FINANCIALS', 'FINANCIALS_ANNUAL', 'REVENUE_TREND', 
+                            'FIN_MARGINS', 'FIN_DEBT', 'FIN_CASH', 'FIN_GROWTH', 'FIN_EPS', 
+                            'RATIO_VALUATION', 'RATIO_EFFICIENCY', 'RATIO_LIQUIDITY', 
+                            'DEEP_VALUATION', 'DEEP_SAFETY', 'DEEP_EFFICIENCY', 'DEEP_GROWTH', 
+                            'FAIR_VALUE', 'COMPANY_PROFILE'
+                        ] or 
+                        'financial' in str(intent.value).lower()
+                    )
+
+                    # ENTERPRISE RULE: NEVER show greeting in ongoing conversation unless forced
                     final_allow_greeting = False
                     force_human_opening = False
                     
                     if is_new_session:
-                        # First message of session - ALWAYS show greeting, regardless of intent
-                        final_allow_greeting = True
-                        print(f"[ChatService] 👋 Allowing greeting: New session (intent={intent})")
+                        # First message of session - ALWAYS show greeting unless deep dive
+                        final_allow_greeting = not is_deep_dive
+                        if is_deep_dive: print(f"[ChatService] 🚫 Suppressing greeting for Deep Dive")
+                        else: print(f"[ChatService] 👋 Allowing greeting: New session")
                     else:
-                        # Returning user - force human opening for natural flow
-                        force_human_opening = True
-                        print(f"[ChatService] 💬 Force human opening: Returning user (intent={intent})")
+                        # Returning user - force human opening ONLY if NOT deep dive
+                        force_human_opening = not is_deep_dive
+                        if not is_deep_dive: print(f"[ChatService] 💬 Force human opening: Returning user")
                     
+                    # DYNAMIC TOKEN LIMIT: Increase for deep dives
+                    explainer.MAX_TOKENS = 1000 if is_deep_dive else 400
+
                     conversational_text = await explainer.generate_narrative(
                         query=message, 
                         intent=intent.value,
@@ -394,9 +401,9 @@ class ChatService:
                         is_returning_user=is_returning_user
                     )
 
-                    # ENTERPRISE SAFETY: If LLM fails completely, inject a basic fallback
-                    # This ensures the ResponseComposer below ALWAYS has something to wrap
+                    # ... (Safety Fallback Logic) ...
                     if not conversational_text:
+                        # ... existing fallback code ...
                         if intent in [Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT]:
                             conversational_text = f"I've pulled the latest data for {actual_symbol or 'the requested stock'} for you." if language == 'en' else f"لقد قمت بسحب أحدث البيانات لـ {actual_symbol or 'السهم المطلوب'} من أجلك."
                         else:
@@ -407,7 +414,6 @@ class ChatService:
                     # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
                     # -------------------------------------------------------------
                     # ENTERPRISE FIX: Compose response for ALL cases (new session & returning)
-                    # Only skip if we already have LLM-generated greeting in conversational_text
                     if conversational_text:
                         # Get the context for tracking
                         ctx = self.context_store.get(session_id)
@@ -417,6 +423,9 @@ class ChatService:
                         card_types = [c.get('type', '') for c in result_data.get('cards', [])]
                         
                         # Compose full 3-layer response
+                        # IF DEEP DIVE: Disable all wrappers (Opening + Guidance) to keep strictly professional
+                        should_wrap = not is_deep_dive
+                        
                         composer = get_response_composer()
                         full_response, opening_category = composer.compose_full_response(
                             core_narrative=conversational_text,
@@ -425,9 +434,9 @@ class ChatService:
                             user_name=real_user_name,
                             last_opening_used=last_opening,
                             shown_card_types=card_types,
-                            include_opening=force_human_opening,  # ONLY add opening for returning users
-                            include_guidance=True,   # Always consider guidance
-                            force_opening=force_human_opening  # Force if returning user
+                            include_opening=force_human_opening if should_wrap else False,
+                            include_guidance=True if should_wrap else False, 
+                            force_opening=force_human_opening if should_wrap else False
                         )
                         
                         # Update the conversational text with composed response

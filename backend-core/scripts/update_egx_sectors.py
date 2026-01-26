@@ -70,6 +70,7 @@ async def main():
             continue
             
         try:
+            print(f"   -> Updating {symbol} to {sector}...")
             # We match by symbol. 
             # We force update sector_name.
             # Use format() to avoid prepared statement issues if any linger, though cache_size=0 fixes most.

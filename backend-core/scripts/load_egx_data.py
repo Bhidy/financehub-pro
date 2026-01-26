@@ -50,7 +50,7 @@ async def main():
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
                 ON CONFLICT (symbol) DO UPDATE SET
                     name_en = EXCLUDED.name_en,
-                    sector_name = EXCLUDED.sector_name,
+                    -- sector_name = EXCLUDED.sector_name, -- Protected: Source of truth is Excel
                     market_code = EXCLUDED.market_code,
                     currency = EXCLUDED.currency,
                     last_price = EXCLUDED.last_price,

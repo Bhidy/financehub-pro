@@ -165,13 +165,13 @@ async def main():
                     # We update sector/industry AND stats
                     await db.execute("""
                         UPDATE market_tickers 
-                        SET sector_name = COALESCE($1, sector_name), 
-                            industry = COALESCE($2, industry),
-                            pe_ratio = COALESCE($3, pe_ratio), 
-                            market_cap = COALESCE($4, market_cap), 
-                            dividend_yield = COALESCE($5, dividend_yield)
-                        WHERE symbol = $6 AND market_code = 'EGX'
-                    """, stats['sector'], stats['industry'], stats['pe_ratio'], 
+                        SET 
+                            industry = COALESCE($1, industry),
+                            pe_ratio = COALESCE($2, pe_ratio), 
+                            market_cap = COALESCE($3, market_cap), 
+                            dividend_yield = COALESCE($4, dividend_yield)
+                        WHERE symbol = $5 AND market_code = 'EGX'
+                    """, stats['industry'], stats['pe_ratio'], 
                          stats['market_cap'], stats['dividend_yield'], symbol)
                     updated_count += 1
             else:

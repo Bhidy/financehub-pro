@@ -358,29 +358,78 @@ class LLMExplainerService:
                 
                 elif c_type == "financial_explorer":
                     # DEEP DIVE IDENTITY FIX: Explicitly extract symbol from explorer package
-                    # to prevent LLM hallucination of default stocks (like COMI)
                     symbol = c_data.get('symbol', '')
                     curr = c_data.get('currency', 'EGP')
-                    # Add identity marker
                     summary_parts.append(f"FINANCIAL_REPORT_FOR: {symbol} [{curr}]")
                     
-                    # Add high-level summary stats from latest annual year if available
-                    income = c_data.get('annual_data', {}).get('income', [])
-                    if income:
-                        # Extract Revenue/NetIncome from latest year
-                        try:
-                            rev_row = next((r for r in income if r['label'] == 'Revenue'), None)
-                            net_row = next((r for r in income if r['label'] == 'Net Income'), None)
-                            
-                            # Get latest year key (usually first in values dict if not sorted, but years list is trusty)
-                            years = c_data.get('years', [])
-                            if years:
-                                latest_year = years[0]
-                                rev_val = rev_row['values'].get(latest_year) if rev_row else None
-                                net_val = net_row['values'].get(latest_year) if net_row else None
-                                summary_parts.append(f"Latest({latest_year}): Revenue={rev_val} NetIncome={net_val}")
-                        except:
-                            pass # Fail silently on stats, identity is what matters
+                    # EXTRACT FULL FINANCIAL PICTURE (Fixing 'Data not available')
+                    # We need to give the LLM enough meat to write the 10-point analysis
+                    
+                    # 1. Determine best dataset (TTM preferred if available, else Annual)
+                    dataset = c_data.get('ttm_data')
+                    period_label = "TTM"
+                    if not dataset or not dataset.get('income'):
+                        dataset = c_data.get('annual_data', {})
+                        period_label = "Annual"
+                        
+                    years = dataset.get('years', [])[:2] # Comparison: Current vs Prev
+                    
+                    # Helper to extract a row's values for latest years
+                    def extract_latest(section_key, row_labels):
+                        rows = dataset.get(section_key, [])
+                        found = []
+                        for label in row_labels:
+                            # Fuzzy match label (e.g. "Net Income" in "Net Income")
+                            row = next((r for r in rows if label.lower() in r['label'].lower()), None)
+                            if row:
+                                vals = []
+                                for y in years:
+                                    v = row['values'].get(y)
+                                    if v is not None:
+                                        # Format large numbers
+                                        if isinstance(v, (int, float)) and abs(v) > 1000000:
+                                            v_str = f"{v/1000000:.1f}M"
+                                        elif isinstance(v, (int, float)):
+                                            v_str = f"{v:.2f}"
+                                        else:
+                                            v_str = str(v)
+                                        vals.append(f"{y}={v_str}")
+                                if vals:
+                                    found.append(f"{row['label']}:[{', '.join(vals)}]")
+                        return " | ".join(found)
+
+                    # 2. Income Statement High-Level
+                    inc_str = extract_latest('income', ['Revenue', 'Gross Margin', 'Operating Income', 'Net Income', 'EPS', 'EBITDA'])
+                    if inc_str: summary_parts.append(f"INCOME({period_label}): {inc_str}")
+                    
+                    # 3. Balance Sheet Health
+                    bal_str = extract_latest('balance', ['Cash', 'Total Assets', 'Total Liabilities', 'Total Equity', 'Debt', 'Retained Earnings'])
+                    if bal_str: summary_parts.append(f"BALANCE({period_label}): {bal_str}")
+                    
+                    # 4. Cash Flow Quality
+                    cf_str = extract_latest('cashflow', ['Operating Cash Flow', 'Capital Expenditures', 'Free Cash Flow'])
+                    if cf_str: summary_parts.append(f"CASHFLOW({period_label}): {cf_str}")
+                    
+                    # 5. Key Ratios (Valuation & Efficiency) - CRITICAL
+                    # Ratios are usually in annual_data['ratios'] even if TTM is used for raw data
+                    ratios_src = c_data.get('annual_data', {}).get('ratios', [])
+                    
+                    # Manually reusing extraction logic for ratios source
+                    def extract_ratios(row_labels):
+                        rows = ratios_src
+                        found = []
+                        # Use annual years for ratios
+                        r_years = c_data.get('annual_data', {}).get('years', [])[:1] # Just latest
+                        for label in row_labels:
+                            row = next((r for r in rows if label.lower() in r['label'].lower()), None)
+                            if row and r_years:
+                                v = row['values'].get(r_years[0])
+                                if v is not None:
+                                    found.append(f"{row['label']}={v}")
+                        return " ".join(found)
+
+                    ratio_str = extract_ratios(['Pe Ratio', 'Pb Ratio', 'Debt / Equity', 'Roe', 'Current Ratio', 'Dividend Yield'])
+                    if ratio_str: summary_parts.append(f"RATIOS(Latest): {ratio_str}")
 
                     
                 elif c_type == "snapshot":

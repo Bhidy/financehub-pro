@@ -355,6 +355,33 @@ class LLMExplainerService:
                     name = c_data.get('name', '')[:20]  # Truncate long names
                     curr = c_data.get('currency', 'EGP') # Default to EGP for EGX context which prevents '$' hallucination
                     summary_parts.append(f"{symbol} ({name}) [{curr}]")
+                
+                elif c_type == "financial_explorer":
+                    # DEEP DIVE IDENTITY FIX: Explicitly extract symbol from explorer package
+                    # to prevent LLM hallucination of default stocks (like COMI)
+                    symbol = c_data.get('symbol', '')
+                    curr = c_data.get('currency', 'EGP')
+                    # Add identity marker
+                    summary_parts.append(f"FINANCIAL_REPORT_FOR: {symbol} [{curr}]")
+                    
+                    # Add high-level summary stats from latest annual year if available
+                    income = c_data.get('annual_data', {}).get('income', [])
+                    if income:
+                        # Extract Revenue/NetIncome from latest year
+                        try:
+                            rev_row = next((r for r in income if r['label'] == 'Revenue'), None)
+                            net_row = next((r for r in income if r['label'] == 'Net Income'), None)
+                            
+                            # Get latest year key (usually first in values dict if not sorted, but years list is trusty)
+                            years = c_data.get('years', [])
+                            if years:
+                                latest_year = years[0]
+                                rev_val = rev_row['values'].get(latest_year) if rev_row else None
+                                net_val = net_row['values'].get(latest_year) if net_row else None
+                                summary_parts.append(f"Latest({latest_year}): Revenue={rev_val} NetIncome={net_val}")
+                        except:
+                            pass # Fail silently on stats, identity is what matters
+
                     
                 elif c_type == "snapshot":
                     # Compact: "Price:82.95 Chg:-0.95%"

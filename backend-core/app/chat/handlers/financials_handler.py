@@ -447,12 +447,6 @@ async def handle_financials_package(
             # Determine required keys for a full TTM
             required_periods = []
             for delta in range(4): # 0, 1, 2, 3
-                # Logic to subtract quarters
-                # Q3 2025 - 0 = Q3 2025
-                # Q3 2025 - 1 = Q2 2025
-                # Q3 2025 - 2 = Q1 2025
-                # Q3 2025 - 3 = Q4 2024
-                
                 target_q = c_q - delta
                 target_y = c_y
                 while target_q <= 0:
@@ -461,7 +455,6 @@ async def handle_financials_package(
                 required_periods.append((target_y, target_q))
                 
             # Find these periods in our sorted_rows
-            # Since sorted_rows is small (limit 20), linear scan is fine, or simple lookahead
             window = []
             for (ry, rq) in required_periods:
                 match = next((r for r in sorted_rows if r['fiscal_year'] == ry and r['fiscal_quarter'] == rq), None)
@@ -483,15 +476,39 @@ async def handle_financials_package(
                     val = window[0].get(col)
                 else:
                     # Income/Cashflow: Sum of 4 quarters
-                    try:
-                        vals = [float(r.get(col) or 0) for r in window]
-                        # Only return sum if distinct non-zero values exist (data quality check)
-                        # or if it's legitimately zero? Let's treat all-zeros as 0.
-                        val = sum(vals)
-                    except (ValueError, TypeError):
-                        val = None
+                    # EXCEPTION: Do not sum margins/rates - they must be recalculated
+                    if col in ['gross_margin', 'operating_margin', 'net_margin', 'ebitda_margin', 'ebit_margin', 'effective_tax_rate']:
+                        val = None # Placeholder, calculated below
+                    else:
+                        try:
+                            # Safely sum numbers
+                            vals = [float(r.get(col) or 0) for r in window]
+                            val = sum(vals)
+                        except (ValueError, TypeError):
+                            val = None
                 mapped_data[col] = val
+            
+            # Recalculate Margins/Ratios for TTM if Income Statement
+            if not is_snapshot:
+                revenue = mapped_data.get('revenue') or 0
+                if revenue != 0:
+                    if mapped_data.get('gross_profit') is not None:
+                        mapped_data['gross_margin'] = (mapped_data['gross_profit'] / revenue) * 100
+                    if mapped_data.get('operating_income') is not None:
+                        mapped_data['operating_margin'] = (mapped_data['operating_income'] / revenue) * 100
+                    if mapped_data.get('net_income') is not None:
+                        mapped_data['net_margin'] = (mapped_data['net_income'] / revenue) * 100
+                    if mapped_data.get('ebitda') is not None:
+                        mapped_data['ebitda_margin'] = (mapped_data['ebitda'] / revenue) * 100
+                    if mapped_data.get('ebit') is not None:
+                        mapped_data['ebit_margin'] = (mapped_data['ebit'] / revenue) * 100
                 
+                # Recalculate Tax Rate
+                pretax = mapped_data.get('pretax_income') or 0
+                tax = mapped_data.get('income_tax') or 0
+                if pretax != 0:
+                    mapped_data['effective_tax_rate'] = (tax / pretax) * 100
+
             ttm_rows.append({
                 'period': period_label,
                 'data': mapped_data

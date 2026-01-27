@@ -399,18 +399,20 @@ class LLMExplainerService:
                         return " | ".join(found)
 
                     # 2. Income Statement High-Level
-                    inc_str = extract_latest('income', ['Revenue', 'Gross Margin', 'Operating Income', 'Net Income', 'EPS', 'EBITDA'])
+                    # Added 'Effective Tax Rate' and 'Research & Development' for quality checks
+                    inc_str = extract_latest('income', ['Revenue', 'Gross Margin', 'Operating Income', 'Net Income', 'EPS', 'EBITDA', 'Effective Tax Rate'])
                     if inc_str: summary_parts.append(f"INCOME({period_label}): {inc_str}")
                     
                     # 3. Balance Sheet Health
-                    bal_str = extract_latest('balance', ['Cash', 'Total Assets', 'Total Liabilities', 'Total Equity', 'Debt', 'Retained Earnings'])
+                    bal_str = extract_latest('balance', ['Cash', 'Total Assets', 'Total Liabilities', 'Total Equity', 'Debt', 'Retained Earnings', 'Goodwill'])
                     if bal_str: summary_parts.append(f"BALANCE({period_label}): {bal_str}")
                     
                     # 4. Cash Flow Quality
-                    cf_str = extract_latest('cashflow', ['Operating Cash Flow', 'Capital Expenditures', 'Free Cash Flow'])
+                    # Added 'Stock-Based Compensation' (Dilution risk) and 'Dividends Paid'
+                    cf_str = extract_latest('cashflow', ['Operating Cash Flow', 'Capital Expenditures', 'Free Cash Flow', 'Stock-Based Compensation', 'Dividends Paid'])
                     if cf_str: summary_parts.append(f"CASHFLOW({period_label}): {cf_str}")
                     
-                    # 5. Key Ratios (Valuation & Efficiency) - CRITICAL
+                    # 5. Key Ratios (Valuation & Efficiency) - CRITICAL CFA LEVEL 3 METRICS
                     # Ratios are usually in annual_data['ratios'] even if TTM is used for raw data
                     ratios_src = c_data.get('annual_data', {}).get('ratios', [])
                     
@@ -428,7 +430,18 @@ class LLMExplainerService:
                                     found.append(f"{row['label']}={v}")
                         return " ".join(found)
 
-                    ratio_str = extract_ratios(['Pe Ratio', 'Pb Ratio', 'Debt / Equity', 'Roe', 'Current Ratio', 'Dividend Yield'])
+                    # EXPANDED METRICS LIST:
+                    # Valuation: EV/EBITDA, P/FCF (Pfcf), P/OCF (Pocf), Earnings Yield
+                    # Efficiency: ROCE, Asset Turnover, Inventory Turnover
+                    # Safety: Interest Coverage, Current Ratio, Debt/Equity
+                    ratio_cats = [
+                        'Pe Ratio', 'Pb Ratio', 'EV/EBITDA', 'Pfcf Ratio', 'Pocf Ratio', # Valuation
+                        'Return on Capital Employed (ROCE)', 'Return on Equity (ROE)',   # Returns
+                        'Asset Turnover', 'Inventory Turnover',                          # Efficiency
+                        'Interest Coverage', 'Debt / Equity', 'Current Ratio',           # Solvency
+                        'Dividend Yield', 'Payout Ratio'                                 # Income
+                    ]
+                    ratio_str = extract_ratios(ratio_cats)
                     if ratio_str: summary_parts.append(f"RATIOS(Latest): {ratio_str}")
 
                     

@@ -531,13 +531,21 @@ async def handle_financials_package(
         ttm_periods = [r['period'] for r in unique_series]
         processed = []
         
+        # Calculate Deltas (Latest vs Previous)
+        has_prev = len(unique_series) >= 2
+        latest_idx = 0
+        prev_idx = 1
+        
         for col, label in display_map.items():
             row_obj = {
                 'label': label,
                 'values': {},
                 'isGrowth': 'growth' in col,
                 'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity'],
-                'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0
+                'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0,
+                'change_abs': None,
+                'change_pct': None,
+                'prev_val': None
             }
             
             has_val = False
@@ -550,6 +558,25 @@ async def handle_financials_package(
                 else:
                     row_obj['values'][p] = None
             
+            # Compute Delta
+            if has_prev and has_val:
+                v0 = unique_series[latest_idx]['data'].get(col)
+                v1 = unique_series[prev_idx]['data'].get(col)
+                
+                if v0 is not None and v1 is not None:
+                    row_obj['prev_val'] = v1
+                    try:
+                        # Absolute Change
+                        row_obj['change_abs'] = v0 - v1
+                        
+                        # Percent Change
+                        if v1 != 0:
+                            row_obj['change_pct'] = ((v0 - v1) / abs(v1)) * 100
+                        else:
+                             row_obj['change_pct'] = 0 if v0 == 0 else 100 # Simple fallback
+                    except Exception:
+                        pass
+
             if has_val:
                 processed.append(row_obj)
         return processed, ttm_periods

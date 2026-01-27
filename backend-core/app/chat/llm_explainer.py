@@ -506,8 +506,27 @@ class LLMExplainerService:
                                         else:
                                             v_str = str(v)
                                         vals.append(f"{y}={v_str}")
+                                
+                                # Format Change Deltas (New)
+                                change_str = ""
+                                c_abs = row.get('change_abs')
+                                c_pct = row.get('change_pct')
+                                
+                                if c_abs is not None:
+                                    if isinstance(c_abs, (int, float)) and abs(c_abs) > 1000000:
+                                        c_abs_str = f"{c_abs/1000000:.1f}M"
+                                    elif isinstance(c_abs, (int, float)):
+                                        c_abs_str = f"{c_abs:.2f}"
+                                    else:
+                                        c_abs_str = str(c_abs)
+                                        
+                                    if c_pct is not None:
+                                        change_str = f" (Chg: {c_abs_str} | {c_pct:.1f}%)"
+                                    else:
+                                        change_str = f" (Chg: {c_abs_str})"
+
                                 if vals:
-                                    found.append(f"{row['label']}:[{', '.join(vals)}]")
+                                    found.append(f"{row['label']}:[{', '.join(vals)}]{change_str}")
                         return " | ".join(found)
 
                     # 2. Income Statement High-Level

@@ -305,7 +305,12 @@ class StockAnalysisScraper:
         """Extract fiscal year from header string like 'FY 2024'."""
         match = re.search(r'(?:FY\s*)?(\d{4})', header)
         if match:
-            return int(match.group(1))
+            y = int(match.group(1))
+            # Safety check: Ignore years too far in the future (e.g. 2027 projections parsed as actuals)
+            curr = datetime.now().year
+            if y > curr + 1:
+                return None
+            return y
         return None
     
     async def fetch_page(self, symbol: str, statement_type: str) -> Optional[BeautifulSoup]:

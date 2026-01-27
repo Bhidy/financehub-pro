@@ -423,56 +423,75 @@ async def handle_financials_package(
 
     # Calculate TTM (Trailing Twelve Months)
     # TTM = Sum of last 4 quarters for Income/Cashflow, Latest Quarter for Balance Sheet
+    # Calculate TTM (Trailing Twelve Months) - ROBUST VERSION
     def calculate_ttm(quarterly_rows, display_map, is_snapshot=False):
         if not quarterly_rows or len(quarterly_rows) < 4:
             return []
         
-        # Sort by date descending
-        sorted_rows = sorted(quarterly_rows, key=lambda x: (x['fiscal_year'], x['fiscal_quarter']), reverse=True)
+        # 1. Map data by (Year, Quarter) for O(1) lookup
+        # Filter out invalid future years (e.g. 2027 parsed from TTM column)
+        current_year = datetime.now().year
+        valid_rows = [r for r in quarterly_rows if r['fiscal_year'] <= current_year + 1]
         
-        # We only calculate TTM for the most recent period available
-        # But we can calculate it for every TTM window (rolling)
-        # For parity with StockAnalysis, usually "TTM" column is just the current TTM
-        # But here we will try to provide TTM history if possible, or at least the latest TTM
+        # Sort desc
+        sorted_rows = sorted(valid_rows, key=lambda x: (x['fiscal_year'], x['fiscal_quarter']), reverse=True)
         
         ttm_rows = []
-        # Calculate Rolling TTM
-        # We need at least 4 quarters provided
-        for i in range(len(sorted_rows) - 3):
-            window = sorted_rows[i:i+4]
-            current_period = window[0] # Most recent in window
+        
+        # 2. Iterate through rows and look for the PREVIOUS 3 quarters explicitly
+        for i, current in enumerate(sorted_rows):
+            # We need the current quarter + 3 previous sequential quarters
+            c_y = current['fiscal_year']
+            c_q = current['fiscal_quarter']
             
-            # Label as "TTM" or "TTM Q2 2024" if we have history
-            # StockAnalysis usually just shows one "TTM" column at the start
-            # But let's build history: "TTM Q2 2024" means sum of Q3'23, Q4'23, Q1'24, Q2'24
-            y = str(current_period['fiscal_year'])
-            q = current_period.get('fiscal_quarter')
-            period_label = f"TTM Q{q} {y}"
+            # Determine required keys for a full TTM
+            required_periods = []
+            for delta in range(4): # 0, 1, 2, 3
+                # Logic to subtract quarters
+                # Q3 2025 - 0 = Q3 2025
+                # Q3 2025 - 1 = Q2 2025
+                # Q3 2025 - 2 = Q1 2025
+                # Q3 2025 - 3 = Q4 2024
+                
+                target_q = c_q - delta
+                target_y = c_y
+                while target_q <= 0:
+                    target_q += 4
+                    target_y -= 1
+                required_periods.append((target_y, target_q))
+                
+            # Find these periods in our sorted_rows
+            # Since sorted_rows is small (limit 20), linear scan is fine, or simple lookahead
+            window = []
+            for (ry, rq) in required_periods:
+                match = next((r for r in sorted_rows if r['fiscal_year'] == ry and r['fiscal_quarter'] == rq), None)
+                if match:
+                    window.append(match)
+                else:
+                    break # Gap found, cannot calculate TTM for this period
             
-            # Create a synthetic row for this TTM period
+            if len(window) != 4:
+                continue # Skip partial TTMs
+                
+            # We have a valid 4-quarter window
+            period_label = f"TTM Q{c_q} {c_y}"
             mapped_data = {}
             
             for col, label in display_map.items():
                 if is_snapshot:
-                    # Balance Sheet: Take value from most recent quarter in window
-                    val = window[0].get(col) 
+                    # Balance Sheet: Latest quarter only
+                    val = window[0].get(col)
                 else:
                     # Income/Cashflow: Sum of 4 quarters
                     try:
                         vals = [float(r.get(col) or 0) for r in window]
-                        # Only sum if we have valid data for most quarters (lax rule)
-                        if any(v != 0 for v in vals): 
-                            val = sum(vals)
-                        else:
-                            val = None
+                        # Only return sum if distinct non-zero values exist (data quality check)
+                        # or if it's legitimately zero? Let's treat all-zeros as 0.
+                        val = sum(vals)
                     except (ValueError, TypeError):
                         val = None
-                
                 mapped_data[col] = val
-            
-            # Create the TTM row structure expected by UI (year columns)
-            # Actually, _process_rows output format is list of {label, values: {period: val}}
-            # So we first gather data, then pivot.
+                
             ttm_rows.append({
                 'period': period_label,
                 'data': mapped_data
@@ -484,7 +503,15 @@ async def handle_financials_package(
         if not ttm_series:
             return [], []
             
-        ttm_periods = [r['period'] for r in ttm_series]
+        # Deduplicate periods if any
+        seen = set()
+        unique_series = []
+        for r in ttm_series:
+            if r['period'] not in seen:
+                seen.add(r['period'])
+                unique_series.append(r)
+                
+        ttm_periods = [r['period'] for r in unique_series]
         processed = []
         
         for col, label in display_map.items():
@@ -497,7 +524,7 @@ async def handle_financials_package(
             }
             
             has_val = False
-            for entry in ttm_series:
+            for entry in unique_series:
                 p = entry['period']
                 val = entry['data'].get(col)
                 if val is not None:

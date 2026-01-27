@@ -512,7 +512,7 @@ class LLMExplainerService:
 
                     # 2. Income Statement High-Level
                     # Added 'Effective Tax Rate' and 'Research & Development' for quality checks
-                    inc_str = extract_latest('income', ['Revenue', 'Gross Margin', 'Operating Income', 'Net Income', 'EPS', 'EBITDA', 'Effective Tax Rate'])
+                    inc_str = extract_latest('income', ['Revenue', 'Gross Profit', 'Gross Margin', 'Operating Income', 'Net Income', 'EPS', 'EBITDA', 'Effective Tax Rate'])
                     if inc_str: summary_parts.append(f"INCOME({period_label}): {inc_str}")
                     
                     # 3. Balance Sheet Health
@@ -640,6 +640,7 @@ class LLMExplainerService:
                             for y in years:
                                 # 1. Profitability & Growth
                                 rev = get_row_val(income_rows, 'revenue', y)
+                                gross = get_row_val(income_rows, 'gross profit', y)
                                 net = get_row_val(income_rows, 'net income', y)
                                 eps = get_row_val(income_rows, 'eps', y)
                                 
@@ -669,7 +670,7 @@ class LLMExplainerService:
                                 # Format nicely
                                 part = (
                                     f"YEAR {y}: "
-                                    f"Rev={rev} Net={net} EPS={eps} | "
+                                    f"Rev={rev} Gross={gross} Net={net} EPS={eps} | "
                                     f"Mrg(G/O/N)={gross_m}%/{op_m}%/{net_m}% | "
                                     f"ROE={roe}% ROA={roa}% | "
                                     f"D/E={debt_eq} CurrR={curr_ratio} | "
@@ -683,9 +684,10 @@ class LLMExplainerService:
                             if ttm and ttm.get('years'):
                                 ttm_per = ttm.get('years')[0]
                                 ttm_rev = get_row_val(ttm.get('income', []), 'revenue', ttm_per)
+                                ttm_gross = get_row_val(ttm.get('income', []), 'gross profit', ttm_per)
                                 ttm_net = get_row_val(ttm.get('income', []), 'net income', ttm_per)
                                 ttm_pe = get_row_val(ttm.get('ratios', []), 'pe ratio', ttm_per)
-                                metrics.insert(0, f"TTM ({ttm_per}): Rev={ttm_rev} Net={ttm_net} PE={ttm_pe}")
+                                metrics.insert(0, f"TTM ({ttm_per}): Rev={ttm_rev} Gross={ttm_gross} Net={ttm_net} PE={ttm_pe}")
 
                             if metrics:
                                 summary_parts.append(" || ".join(metrics))

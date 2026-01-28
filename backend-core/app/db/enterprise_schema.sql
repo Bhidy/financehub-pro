@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS market_tickers (
     low_52w DECIMAL(12, 4),
     target_price DECIMAL(12, 4),
     
+    -- Branding
+    logo_url TEXT,
+    
     last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

@@ -10,4 +10,6 @@
 - [x] **[EXPANSION]** Update `compare_handler.py` (Comparisons) <!-- id: 9 -->
 - [x] **[EXPANSION]** Update `ChatCards.tsx` (MoversTable & CompareTable) <!-- id: 10 -->
 - [x] Deploy Frontend to Production <!-- id: 7 -->
-- [x] Deploy Backend to Production <!-- id: 11 -->
+- [x] Deploy Backend to Production (Nuclear Rebuild Complete) <!-- id: 11 -->
+    - [x] Fix Missing `docker-compose.prod.yml` <!-- id: 12 -->
+    - [x] Manual SSH Execution via `restore_production.exp` <!-- id: 13 -->

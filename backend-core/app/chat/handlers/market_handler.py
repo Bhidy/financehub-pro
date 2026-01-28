@@ -20,7 +20,7 @@ async def handle_most_active(
     """Handle MARKET_MOST_ACTIVE intent."""
     
     rows = await conn.fetch("""
-        SELECT symbol, name_en, name_ar, last_price, change_percent, volume
+        SELECT symbol, name_en, name_ar, last_price, change_percent, volume, logo_url
         FROM market_tickers
         WHERE market_code = $1 AND volume IS NOT NULL
         ORDER BY volume DESC
@@ -43,6 +43,7 @@ async def handle_most_active(
             'price': float(row['last_price']) if row['last_price'] else 0,
             'change_percent': float(row['change_percent']) if row['change_percent'] else 0,
             'volume': int(row['volume']),
+            'logo_url': row['logo_url'],
             'market_code': market_code
         })
 
@@ -88,7 +89,7 @@ async def handle_market_summary(
     try:
         # Get top gainers
         gainers = await conn.fetch("""
-            SELECT symbol, name_en, last_price, change_percent
+            SELECT symbol, name_en, last_price, change_percent, logo_url
             FROM market_tickers
             WHERE market_code = $1 AND change_percent IS NOT NULL
             ORDER BY change_percent DESC
@@ -97,7 +98,7 @@ async def handle_market_summary(
         
         # Get top losers
         losers = await conn.fetch("""
-            SELECT symbol, name_en, last_price, change_percent
+            SELECT symbol, name_en, last_price, change_percent, logo_url
             FROM market_tickers
             WHERE market_code = $1 AND change_percent IS NOT NULL
             ORDER BY change_percent ASC
@@ -117,7 +118,7 @@ async def handle_market_summary(
         
         # Get volume leaders
         volume_leaders = await conn.fetch("""
-            SELECT symbol, name_en, last_price, volume, change_percent
+            SELECT symbol, name_en, last_price, volume, change_percent, logo_url
             FROM market_tickers
             WHERE market_code = $1 AND volume IS NOT NULL
             ORDER BY volume DESC
@@ -160,7 +161,8 @@ async def handle_market_summary(
                             "symbol": r['symbol'],
                             "name": r['name_en'] or r['symbol'],
                             "price": float(r['last_price']) if r['last_price'] else 0,
-                            "change_percent": float(r['change_percent']) if r['change_percent'] else 0
+                            "change_percent": float(r['change_percent']) if r['change_percent'] else 0,
+                            "logo_url": r['logo_url'],
                         }
                         for r in gainers
                     ],
@@ -179,7 +181,8 @@ async def handle_market_summary(
                             "symbol": r['symbol'],
                             "name": r['name_en'] or r['symbol'],
                             "price": float(r['last_price']) if r['last_price'] else 0,
-                            "change_percent": float(r['change_percent']) if r['change_percent'] else 0
+                            "change_percent": float(r['change_percent']) if r['change_percent'] else 0,
+                            "logo_url": r['logo_url'],
                         }
                         for r in losers
                     ],
@@ -199,7 +202,8 @@ async def handle_market_summary(
                             "name": r['name_en'] or r['symbol'],
                             "price": float(r['last_price']) if r['last_price'] else 0,
                             "volume": int(r['volume']) if r['volume'] else 0,
-                            "change_percent": float(r['change_percent']) if r['change_percent'] else 0
+                            "change_percent": float(r['change_percent']) if r['change_percent'] else 0,
+                            "logo_url": r['logo_url'],
                         }
                         for r in volume_leaders
                     ],

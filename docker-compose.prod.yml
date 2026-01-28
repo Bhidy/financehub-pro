@@ -19,6 +19,24 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     volumes:
       - ./backend-core:/app
+      
+  caddy:
+    image: caddy:alpine
+    container_name: starta-caddy-1
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  caddy_data:
+  caddy_config:
       - /opt/starta/data:/app/data
     networks:
       - starta-network

@@ -13,3 +13,5 @@
 - [x] Deploy Backend to Production (Nuclear Rebuild Complete) <!-- id: 11 -->
     - [x] Fix Missing `docker-compose.prod.yml` <!-- id: 12 -->
     - [x] Manual SSH Execution via `restore_production.exp` <!-- id: 13 -->
+    - [x] **[DEBUG]** Verify Code Integrity (Found missing commit for `market_handler.py`) <!-- id: 14 -->
+    - [/] **[FIX]** Re-apply code, Commit, and Redeploy (Nuclear Round 2) <!-- id: 15 -->

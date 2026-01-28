@@ -41,16 +41,32 @@ interface StockHeaderProps {
         name: string;
         market_code: string;
         currency: string;
+        logo_url?: string;
         as_of?: string;
     };
 }
 
 export function StockHeaderCard({ data }: StockHeaderProps) {
+    // Add onError handler to fallback if image fails to load
+    const [imgError, setImgError] = React.useState(false);
+
     return (
         <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl transition-all duration-300">
-            <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-teal-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-900/20">
-                {data.symbol.slice(0, 2)}
-            </div>
+            {data.logo_url && !imgError ? (
+                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={data.logo_url}
+                        alt={data.symbol}
+                        className="w-full h-full object-contain"
+                        onError={() => setImgError(true)}
+                    />
+                </div>
+            ) : (
+                <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-teal-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-900/20">
+                    {data.symbol.slice(0, 2)}
+                </div>
+            )}
             <div className="flex-1 min-w-0">
                 <div className="font-black text-slate-800 dark:text-white text-base truncate">{data.name}</div>
                 <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -241,7 +257,7 @@ export function StatsCard({ title, data }: StatsProps) {
 }
 
 // ============================================================
-// Movers Table (Gainers/Losers)
+// Movers Table (Gainers/Losers) - Updated with Logo Support
 // ============================================================
 
 interface MoversProps {
@@ -253,8 +269,9 @@ interface MoversProps {
             price: number;
             change_percent: number;
             volume?: number;
+            logo_url?: string;
         }>;
-        direction: "up" | "down";
+        direction: "up" | "down" | "volume"; // Added volume
     };
     onSymbolClick?: (symbol: string) => void;
 }
@@ -268,8 +285,8 @@ export function MoversTable({ title, data, onSymbolClick }: MoversProps) {
         <div className={`p-5 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden relative ${bgGlow}`}>
             <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-lg ${data.direction === 'up' ? 'from-emerald-500 to-teal-600 shadow-emerald-500/20' : 'from-red-500 to-rose-600 shadow-red-500/20'}`}>
-                        {data.direction === 'up' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-lg ${data.direction === 'up' ? 'from-emerald-500 to-teal-600 shadow-emerald-500/20' : data.direction === 'down' ? 'from-red-500 to-rose-600 shadow-red-500/20' : 'from-blue-500 to-indigo-600 shadow-blue-500/20'}`}>
+                        {data.direction === 'up' ? <TrendingUp size={20} /> : data.direction === 'down' ? <TrendingDown size={20} /> : <BarChart3 size={20} />}
                     </div>
                     <div>
                         <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title || (data.direction === 'up' ? 'Top Gainers' : 'Top Losers')}</h4>
@@ -288,18 +305,39 @@ export function MoversTable({ title, data, onSymbolClick }: MoversProps) {
                             className="group flex items-center gap-4 p-3 hover:bg-white dark:hover:bg-white/5 hover:shadow-lg rounded-xl border border-transparent hover:border-slate-100 dark:hover:border-white/10 transition-all duration-300 cursor-pointer active:scale-98"
                             onClick={() => onSymbolClick?.(stock.symbol)}
                         >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-sm ${rankColor}`}>
-                                {i + 1}
-                            </div>
+                            {stock.logo_url ? (
+                                <div className="w-8 h-8 rounded-lg bg-white p-0.5 border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden flex items-center justify-center relative">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={stock.logo_url}
+                                        className="w-full h-full object-contain"
+                                        alt={stock.symbol}
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.add('hidden'); }}
+                                    />
+                                    {/* Fallback to number if image hidden/errored */}
+                                    <div className={`hidden absolute inset-0 flex items-center justify-center text-xs font-black w-8 h-8 ${rankColor}`}>
+                                        {i + 1}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-sm ${rankColor}`}>
+                                    {i + 1}
+                                </div>
+                            )}
+
                             <div className="flex-1 min-w-0">
                                 <div className="font-bold text-slate-800 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
                                 <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate">{stock.name}</div>
                             </div>
                             <div className="text-right">
                                 <div className="font-bold text-slate-900 dark:text-white">{formatNumber(stock.price)}</div>
-                                <div className={`text-xs font-black px-2 py-0.5 rounded-full inline-block mt-0.5 ${isUp ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'}`}>
-                                    {formatPercent(stock.change_percent)}
-                                </div>
+                                {stock.change_percent !== 0 ? (
+                                    <div className={`text-xs font-black px-2 py-0.5 rounded-full inline-block mt-0.5 ${stock.change_percent > 0 ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'}`}>
+                                        {formatPercent(stock.change_percent)}
+                                    </div>
+                                ) : (
+                                    <div className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full inline-block mt-0.5 font-bold">0.00%</div>
+                                )}
                             </div>
                         </div>
                     );
@@ -345,15 +383,36 @@ export function CompareTable({ title, data }: CompareProps) {
                                 <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Metric</span>
                             </th>
                             {data.stocks.map((stock, i) => (
-                                <th key={stock.symbol} className="px-6 py-4 text-right bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
-                                    <div className="flex flex-col items-end gap-1">
-                                        <span className="font-black text-slate-800 dark:text-white text-base">{stock.symbol}</span>
-                                        <span className={clsx(
-                                            "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                                            i === 0 ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"
-                                        )}>
-                                            {stock.market_code || 'EGX'}
-                                        </span>
+                                <th key={stock.symbol} className="px-4 py-4 text-right bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
+                                    <div className="flex flex-col items-end gap-2">
+                                        {/* Logo or Initials */}
+                                        {stock.logo_url ? (
+                                            <div className="w-10 h-10 bg-white rounded-lg p-1 shadow-sm border border-slate-100 dark:border-white/10 overflow-hidden">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={stock.logo_url}
+                                                    alt={stock.symbol}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className={clsx(
+                                                "w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md",
+                                                i === 0 ? "bg-blue-600" : "bg-purple-600"
+                                            )}>
+                                                {stock.symbol.slice(0, 2)}
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-col items-end">
+                                            <span className="font-black text-slate-800 dark:text-white text-base leading-none">{stock.symbol}</span>
+                                            <span className={clsx(
+                                                "text-[9px] font-bold px-1.5 py-0.5 rounded-full mt-1",
+                                                i === 0 ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"
+                                            )}>
+                                                {stock.market_code || 'EGX'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </th>
                             ))}

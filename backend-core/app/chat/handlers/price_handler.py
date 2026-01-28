@@ -54,7 +54,7 @@ async def handle_stock_price(
             COALESCE(m.prev_close, LAG(o.close) OVER (ORDER BY o.date), o.close) as prev_close,
             m.pe_ratio, m.pb_ratio, m.dividend_yield, m.market_cap,
             m.high_52w, m.low_52w, m.sector_name,
-            m.last_updated,
+            m.last_updated, m.logo_url,
             o.date as ohlc_date,
             ss.roe, ss.debt_equity, ss.profit_margin
         FROM market_tickers m
@@ -187,6 +187,7 @@ async def handle_stock_price(
                 'market_code': data['market_code'],
                 'currency': currency,
                 'sector': sector,
+                'logo_url': data.get('logo_url'),
                 'as_of': data['last_updated'].isoformat() if data['last_updated'] else None
             }
         },

@@ -59,14 +59,14 @@ async def handle_compare_stocks(
         
         for cand in candidates:
              row = await conn.fetchrow("""
-                SELECT 
-                    symbol, name_en, name_ar, market_code, currency,
-                    last_price, change_percent, volume,
-                    pe_ratio, pb_ratio, dividend_yield, market_cap,
-                    high_52w, low_52w, beta
-                FROM market_tickers
-                WHERE symbol = $1
-            """, cand)
+                    SELECT 
+                        symbol, name_en, name_ar, market_code, currency,
+                        last_price, change_percent, volume,
+                        pe_ratio, pb_ratio, dividend_yield, market_cap,
+                        high_52w, low_52w, beta, logo_url
+                    FROM market_tickers
+                    WHERE symbol = $1
+                """, cand)
              if row:
                  found_symbol = cand
                  break
@@ -119,6 +119,7 @@ async def handle_compare_stocks(
                 'name': name,
                 'market_code': ticker_stats['market_code'],
                 'currency': ticker_stats['currency'],
+                'logo_url': ticker_stats.get('logo_url'),
                 'price': safe_float(ticker_stats.get('last_price')),
                 'change_percent': safe_float(ticker_stats.get('change_percent')),
                 'market_cap': int(ticker_stats['market_cap']) if ticker_stats.get('market_cap') else None,

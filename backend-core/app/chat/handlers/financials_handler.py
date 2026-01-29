@@ -644,11 +644,25 @@ async def handle_financials_package(
                     'currency': currency
                 }
             },
+
             {
                 'type': 'financial_explorer', # New Mega-Card
                 'data': pkg
             }
         ],
+        'chart': {
+            'type': 'bar',
+            'symbol': symbol,
+            'title': 'Revenue vs Net Income (Annual)' if language == 'en' else 'الإيرادات مقابل صافي الدخل (سنوي)',
+            'data': [
+                {
+                    'time': str(y), 
+                    'revenue': (next((r['revenue'] for r in annual_data['income'] if r['label'] == ('Revenue' if language == 'en' else 'الإيرادات') and r['values'].get(y)), 0) or 0),
+                    'net_income': (next((r['net_income'] for r in annual_data['income'] if r['label'] == ('Net Income' if language == 'en' else 'صافي الدخل') and r['values'].get(y)), 0) or 0)
+                } 
+                for y in reversed(annual_data['years'][:5]) # Last 5 years available, chronological
+            ]
+        },
         'actions': actions
     }
 

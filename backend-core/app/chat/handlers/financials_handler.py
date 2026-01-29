@@ -650,19 +650,7 @@ async def handle_financials_package(
                 'data': pkg
             }
         ],
-        'chart': {
-            'type': 'bar',
-            'symbol': symbol,
-            'title': 'Revenue vs Net Income (Annual)' if language == 'en' else 'الإيرادات مقابل صافي الدخل (سنوي)',
-            'data': [
-                {
-                    'time': str(y), 
-                    'revenue': (next((r['values'].get(str(y), 0) or 0 for r in annual_data['income'] if r['label'] == 'Revenue'), 0)),
-                    'net_income': (next((r['values'].get(str(y), 0) or 0 for r in annual_data['income'] if r['label'] == 'Net Income'), 0))
-                } 
-                for y in reversed(annual_data['years'][:5]) # Last 5 years available, chronological
-            ]
-        },
+
         'actions': actions
     }
 

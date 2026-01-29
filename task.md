@@ -16,5 +16,6 @@
     - [x] **[DEBUG]** Verify Code Integrity (Found missing commit for `market_handler.py`) <!-- id: 14 -->
     - [x] **[FIX]** Re-apply code to `market_handler.py` <!-- id: 15 -->
     - [x] **[FIX]** Remove redundant env vars from `docker-compose.prod.yml` to fix DB connection <!-- id: 16 -->
-    - [x] Redeploy Backend (Manual Docker Restart) <!-- id: 17 -->
-- [/] Deploy Frontend (Final) <!-- id: 18 -->
+    - [x] **[FIX]** Add Caddy to compose file to fix 502/Network Isolation <!-- id: 19 -->
+    - [/] **[DEPLOY]** Final Nuclear Rebuild (In Progress - Installing Dependencies) <!-- id: 17 -->
+- [ ] Deploy Frontend (Final Verification) <!-- id: 18 -->

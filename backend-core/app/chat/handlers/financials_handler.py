@@ -657,8 +657,8 @@ async def handle_financials_package(
             'data': [
                 {
                     'time': str(y), 
-                    'revenue': (next((r['revenue'] for r in annual_data['income'] if r['label'] == ('Revenue' if language == 'en' else 'الإيرادات') and r['values'].get(y)), 0) or 0),
-                    'net_income': (next((r['net_income'] for r in annual_data['income'] if r['label'] == ('Net Income' if language == 'en' else 'صافي الدخل') and r['values'].get(y)), 0) or 0)
+                    'revenue': (next((r['values'].get(str(y), 0) or 0 for r in annual_data['income'] if r['label'] == 'Revenue'), 0)),
+                    'net_income': (next((r['values'].get(str(y), 0) or 0 for r in annual_data['income'] if r['label'] == 'Net Income'), 0))
                 } 
                 for y in reversed(annual_data['years'][:5]) # Last 5 years available, chronological
             ]

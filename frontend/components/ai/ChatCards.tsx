@@ -1729,25 +1729,48 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
         return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
-    // Export to Excel
-    const handleExport = () => {
-        const headers = ['Line Item', ...uniqueYears];
-        const rows = activeRows.map(row => {
-            const values = uniqueYears.map(year => {
-                const val = row.values[year];
-                return val !== null && val !== undefined ? val : '';
+    // Export to Excel via Backend API (professional formatting)
+    const handleExport = async () => {
+        try {
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
+            const url = `${API_BASE}/api/v1/financials/${data.symbol}/export?period_type=${displayType === 'annual' ? 'annual' : 'quarterly'}&limit=10`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${data.symbol}_Financials_${displayType}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Export failed:', error);
+            // Fallback to client-side TSV if backend fails
+            const headers = ['Line Item', ...uniqueYears];
+            const rows = activeRows.map(row => {
+                const values = uniqueYears.map(year => {
+                    const val = row.values[year];
+                    return val !== null && val !== undefined ? val : '';
+                });
+                return [row.label, ...values].join('\t');
             });
-            return [row.label, ...values].join('\t');
-        });
-        const tsv = [headers.join('\t'), ...rows].join('\n');
-        const blob = new Blob(['\ufeff' + tsv], { type: 'application/vnd.ms-excel;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${data.symbol}_${activeTab}.xls`;
-        a.click();
-        URL.revokeObjectURL(url);
+            const tsv = [headers.join('\t'), ...rows].join('\n');
+            const blob = new Blob(['\ufeff' + tsv], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${data.symbol}_${activeTab}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
     };
+
 
     return (
         <div className="bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-xl rounded-xl shadow-sm border border-slate-200/60 dark:border-white/10 overflow-hidden my-2 ring-1 ring-slate-100/50 dark:ring-white/5 w-full max-w-full group/card transition-all hover:shadow-md">

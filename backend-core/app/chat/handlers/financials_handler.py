@@ -34,174 +34,358 @@ def _format_percent(value: float) -> Optional[str]:
 
 
 # Column Mappings for Display - Complete StockAnalysis Parity
-INCOME_DISPLAY = {
-    # Banking-specific line items
-    "interest_income_loans": "Interest Income on Loans",
-    "interest_income_investments": "Interest Income on Investments",
-    "total_interest_income": "Total Interest Income",
-    "interest_expense": "Interest Paid on Deposits",
-    "net_interest_income": "Net Interest Income",
-    "net_interest_income_growth": "Net Interest Income Growth",
-    "trading_income": "Income From Trading Activities",
-    "fee_income": "Fee and Commission Income",
-    "gain_loss_assets": "Gain (Loss) on Sale of Assets",
-    "gain_loss_investments": "Gain (Loss) on Sale of Investments",
-    "other_noninterest_income": "Other Non-Interest Income",
-    "total_noninterest_income": "Total Non-Interest Income",
-    # Standard corporate line items
-    "revenue": "Revenue",
-    "revenue_growth": "Revenue Growth",
-    "cost_of_revenue": "Cost of Revenue",
-    "gross_profit": "Gross Profit",
-    "gross_margin": "Gross Margin",
-    "operating_expenses": "Operating Expenses",
-    "rd_expense": "Research & Development",
-    "sga_expense": "Selling, General & Admin",
-    "depreciation": "Depreciation & Amortization",
-    "provision_credit_losses": "Provision for Credit Losses",
-    "operating_income": "Operating Income",
-    "operating_margin": "Operating Margin",
-    "interest_expense_nonop": "Interest Expense (Non-Op)",
-    "pretax_income": "Pretax Income",
-    "income_tax": "Income Tax Expense",
-    "effective_tax_rate": "Effective Tax Rate",
-    "net_income": "Net Income",
-    "net_income_growth": "Net Income Growth",
-    "net_margin": "Profit Margin",
-    "eps": "EPS (Basic)",
-    "eps_diluted": "EPS (Diluted)",
-    "shares_outstanding": "Shares Outstanding",
-    "shares_diluted": "Shares Diluted",
-    "ebitda": "EBITDA",
-    "ebitda_margin": "EBITDA Margin",
-    "ebit": "EBIT",
-    "ebit_margin": "EBIT Margin",
-}
+# FORMAT: list of tuples (db_column, display_label, options_dict)
+# Options: isSubtotal, isPercent, isGrowth, indent, section
 
-BALANCE_DISPLAY = {
-    # Assets
-    "cash_equivalents": "Cash & Equivalents",
-    "short_term_investments": "Short-Term Investments",
-    "accounts_receivable": "Accounts Receivable",
-    "inventory": "Inventory",
-    "other_current_assets": "Other Current Assets",
-    "total_current_assets": "Total Current Assets",
-    "investment_securities": "Investment Securities",
-    "trading_assets": "Trading Asset Securities",
-    "total_investments": "Total Investments",
-    "gross_loans": "Gross Loans",
-    "allowance_loan_losses": "Allowance for Loan Losses",
-    "net_loans": "Net Loans",
-    "property_plant_equipment": "Property, Plant & Equipment",
-    "ppe_net": "Net PP&E",
-    "goodwill": "Goodwill",
-    "intangible_assets": "Intangible Assets",
-    "other_noncurrent_assets": "Other Non-Current Assets",
-    "total_noncurrent_assets": "Total Non-Current Assets",
-    "total_assets": "Total Assets",
-    # Liabilities
-    "accounts_payable": "Accounts Payable",
-    "short_term_debt": "Short-Term Debt",
-    "current_portion_ltd": "Current Portion of LT Debt",
-    "accrued_liabilities": "Accrued Liabilities",
-    "deferred_revenue": "Deferred Revenue",
-    "other_current_liabilities": "Other Current Liabilities",
-    "total_current_liabilities": "Total Current Liabilities",
-    "deposits": "Deposits",
-    "long_term_debt": "Long-Term Debt",
-    "deferred_tax_liabilities": "Deferred Tax Liabilities",
-    "other_noncurrent_liabilities": "Other Non-Current Liabilities",
-    "total_noncurrent_liabilities": "Total Non-Current Liabilities",
-    "total_liabilities": "Total Liabilities",
-    # Equity
-    "common_stock": "Common Stock",
-    "additional_paid_in_capital": "Additional Paid-In Capital",
-    "retained_earnings": "Retained Earnings",
-    "treasury_stock": "Treasury Stock",
-    "accumulated_other_comprehensive_income": "Accumulated OCI",
-    "minority_interest": "Minority Interest",
-    "total_equity": "Total Stockholders' Equity",
-}
-
-CASHFLOW_DISPLAY = {
-    # Operating Activities
-    "net_income": "Net Income",
-    "depreciation_amortization": "Depreciation & Amortization",
-    "stock_based_compensation": "Stock-Based Compensation",
-    "deferred_taxes": "Deferred Income Taxes",
-    "gain_loss_assets": "Gain (Loss) on Sale of Assets",
-    "gain_loss_investments": "Gain (Loss) on Sale of Investments",
-    "provision_credit_losses": "Provision for Credit Losses",
-    "change_in_receivables": "Change in Receivables",
-    "change_in_inventory": "Change in Inventory",
-    "change_in_payables": "Change in Payables",
-    "other_operating_activities": "Other Operating Activities",
-    "cash_from_operating": "Operating Cash Flow",
-    # Investing Activities
-    "capex": "Capital Expenditures",
-    "acquisitions": "Acquisitions",
-    "investment_purchases": "Purchases of Investments",
-    "investment_sales": "Sales of Investments",
-    "cash_from_investing": "Investing Cash Flow",
-    # Financing Activities
-    "dividends_paid": "Dividends Paid",
-    "share_repurchases": "Share Repurchases",
-    "debt_issued": "Debt Issued",
-    "debt_repaid": "Debt Repaid",
-    "cash_from_financing": "Financing Cash Flow",
-    # Summary
-    "net_change_cash": "Net Change in Cash",
-    "free_cashflow": "Free Cash Flow",
-}
-
-RATIOS_DISPLAY = {
-    # Valuation
-    "fiscal_year": "Fiscal Year",
-    "last_close_price": "Last Close Price",
-    "market_cap": "Market Cap",
-    "market_cap_growth": "Market Cap Growth",
-    "enterprise_value": "Enterprise Value",
-    "pe_ratio": "Pe Ratio",
-    "pe_forward": "Forward PE",
-    "ps_ratio": "Ps Ratio",
-    "pb_ratio": "Pb Ratio",
-    "pfcf_ratio": "Pfcf Ratio",
-    "pocf_ratio": "Pocf Ratio",
-    "ev_ebitda": "EV/EBITDA",
-    "debt_ebitda": "Debt / EBITDA Ratio",
-    "debt_fcf": "Debt / FCF Ratio",
-    # Profitability
-    "roe": "Return on Equity (ROE)",
-    "roa": "Return on Assets (ROA)",
-    "roce": "Return on Capital Employed (ROCE)",
-    "roic": "Return on Capital (ROIC)",
-    "earnings_yield": "Earnings Yield",
-    "fcf_yield": "FCF Yield",
-    "gross_margin": "Gross Margin",
-    "operating_margin": "Operating Margin",
-    "net_margin": "Net Margin",
-    "asset_turnover": "Asset Turnover",
-    "inventory_turnover": "Inventory Turnover",
-    # Leverage
-    "debt_equity": "Debt / Equity Ratio",
-    "debt_assets": "Debt / Assets",
-    "current_ratio": "Current Ratio",
-    "quick_ratio": "Quick Ratio",
-    "interest_coverage": "Interest Coverage",
-    # Per Share
-    "revenue_per_share": "Revenue Per Share",
-    "fcf_per_share": "FCF Per Share",
-    "book_value_per_share": "Book Value Per Share",
-    # Activity
-    "asset_turnover": "Asset Turnover",
-    "inventory_turnover": "Inventory Turnover",
-    "receivables_turnover": "Receivables Turnover",
-    # Others
-    "ev_sales": "EV/Sales",
+# ORDERED INCOME STATEMENT DISPLAY (matches stockanalysis.com exactly)
+INCOME_DISPLAY_ORDERED = [
+    # ============ BANKING TEMPLATE ============
+    # Period Info
+    ("period_ending", "Period Ending", {"isHeader": True}),
+    
+    # Interest Income Section
+    ("interest_income_loans", "Interest Income on Loans", {"indent": 1}),
+    ("interest_income_investments", "Interest Income on Investments", {"indent": 1}),
+    ("total_interest_income", "Total Interest Income", {"isSubtotal": True}),
+    ("interest_expense", "Interest Paid on Deposits", {"indent": 1}),
+    ("net_interest_income", "Net Interest Income", {"isSubtotal": True}),
+    ("net_interest_income_growth", "Net Interest Income Growth", {"isPercent": True, "isGrowth": True}),
+    
+    # Non-Interest Income Section
+    ("trading_income", "Income From Trading Activities", {"indent": 1}),
+    ("fee_income", "Fee and Commission Income", {"indent": 1}),
+    ("gain_loss_assets", "Gain (Loss) on Sale of Assets", {"indent": 1}),
+    ("gain_loss_investments", "Gain (Loss) on Sale of Investments", {"indent": 1}),
+    ("other_noninterest_income", "Other Non-Interest Income", {"indent": 1}),
+    ("total_noninterest_income", "Total Non-Interest Income", {"isSubtotal": True}),
+    ("noninterest_income_growth", "Non-Interest Income Growth", {"isPercent": True, "isGrowth": True}),
+    
+    # Banking Revenue Total
+    ("revenues_before_loan_losses", "Revenues Before Loan Losses", {"isSubtotal": True}),
+    ("provision_credit_losses", "Provision for Loan Losses", {"indent": 1}),
+    
+    # ============ CORPORATE TEMPLATE ============
+    # Revenue Section
+    ("revenue", "Revenue", {"isSubtotal": True}),
+    ("revenue_growth", "Revenue Growth", {"isPercent": True, "isGrowth": True}),
+    
+    # Cost & Gross Profit
+    ("cost_of_revenue", "Cost of Revenue", {"indent": 1}),
+    ("gross_profit", "Gross Profit", {"isSubtotal": True}),
+    ("gross_margin", "Gross Margin", {"isPercent": True}),
+    
+    # Operating Expenses
+    ("sga_expense", "Selling, General & Admin", {"indent": 1}),
+    ("other_operating_expenses", "Other Operating Expenses", {"indent": 1}),
+    ("operating_expenses", "Operating Expenses", {"isSubtotal": True}),
+    ("rd_expense", "Research & Development", {"indent": 1}),
+    ("depreciation", "Depreciation & Amortization", {"indent": 1}),
+    
+    # Banking Expenses
+    ("salaries_and_benefits", "Salaries and Employee Benefits", {"indent": 1}),
+    ("amortization_of_goodwill", "Amortization of Goodwill & Intangibles", {"indent": 1}),
+    ("other_noninterest_expense", "Other Non-Interest Expense", {"indent": 1}),
+    ("total_noninterest_expense", "Total Non-Interest Expense", {"isSubtotal": True}),
+    
+    # Operating Income
+    ("operating_income", "Operating Income", {"isSubtotal": True}),
+    ("operating_margin", "Operating Margin", {"isPercent": True}),
+    
+    # Non-Operating Items
+    ("interest_expense_nonop", "Interest Expense", {"indent": 1}),
+    ("interest_investment_income", "Interest & Investment Income", {"indent": 1}),
+    ("fx_gain_loss", "Currency Exchange Gain (Loss)", {"indent": 1}),
+    ("other_nonop_income", "Other Non Operating Income (Expenses)", {"indent": 1}),
+    
+    # Pre-Tax Section
+    ("ebt_excl_unusual", "EBT Excluding Unusual Items", {"indent": 1}),
+    ("other_unusual_items", "Other Unusual Items", {"indent": 1}),
+    ("pretax_income", "Pretax Income", {"isSubtotal": True}),
+    ("income_tax", "Income Tax Expense", {"indent": 1}),
+    ("effective_tax_rate", "Effective Tax Rate", {"isPercent": True}),
+    
+    # Net Income Section
+    ("earnings_continuing_ops", "Earnings From Continuing Operations", {"indent": 1}),
+    ("earnings_discontinued_ops", "Earnings From Discontinued Operations", {"indent": 1}),
+    ("minority_interest_earnings", "Minority Interest in Earnings", {"indent": 1}),
+    ("net_income", "Net Income", {"isSubtotal": True}),
+    ("preferred_dividends", "Preferred Dividends & Other Adjustments", {"indent": 1}),
+    ("net_income_common", "Net Income to Common", {"isSubtotal": True}),
+    ("net_income_growth", "Net Income Growth", {"isPercent": True, "isGrowth": True}),
+    ("net_margin", "Profit Margin", {"isPercent": True}),
+    
+    # Shares & EPS
+    ("shares_outstanding", "Basic Shares Outstanding", {}),
+    ("shares_diluted", "Diluted Shares Outstanding", {}),
+    ("shares_change", "Shares Change", {"isPercent": True, "isGrowth": True}),
+    ("eps", "EPS (Basic)", {}),
+    ("eps_diluted", "EPS (Diluted)", {}),
+    ("eps_growth", "EPS Growth", {"isPercent": True, "isGrowth": True}),
+    
     # Dividends
-    "dividend_yield": "Dividend Yield",
-    "payout_ratio": "Payout Ratio",
-}
+    ("dividend_per_share", "Dividend Per Share", {}),
+    ("dividend_growth", "Dividend Growth", {"isPercent": True, "isGrowth": True}),
+    
+    # Cash Flow Metrics (in Income tab)
+    ("free_cashflow", "Free Cash Flow", {}),
+    ("fcf_per_share", "Free Cash Flow Per Share", {}),
+    ("fcf_margin", "Free Cash Flow Margin", {"isPercent": True}),
+    
+    # EBITDA/EBIT
+    ("ebitda", "EBITDA", {"isSubtotal": True}),
+    ("ebitda_margin", "EBITDA Margin", {"isPercent": True}),
+    ("da_for_ebitda", "D&A For EBITDA", {"indent": 1}),
+    ("ebit", "EBIT", {"isSubtotal": True}),
+    ("ebit_margin", "EBIT Margin", {"isPercent": True}),
+]
+
+# ORDERED BALANCE SHEET DISPLAY
+BALANCE_DISPLAY_ORDERED = [
+    # Period Info
+    ("period_ending", "Period Ending", {"isHeader": True}),
+    
+    # ============ ASSETS ============
+    # Cash & Investments
+    ("cash_equivalents", "Cash & Equivalents", {"indent": 1}),
+    ("short_term_investments", "Short-Term Investments", {"indent": 1}),
+    ("trading_assets", "Trading Asset Securities", {"indent": 1}),
+    ("cash_and_st_investments", "Cash & Short-Term Investments", {"isSubtotal": True}),
+    ("cash_growth", "Cash Growth", {"isPercent": True, "isGrowth": True}),
+    
+    # Receivables
+    ("accounts_receivable", "Accounts Receivable", {"indent": 1}),
+    ("other_receivables", "Other Receivables", {"indent": 1}),
+    ("total_receivables", "Receivables", {"isSubtotal": True}),
+    
+    # Inventory & Current
+    ("inventory", "Inventory", {"indent": 1}),
+    ("prepaid_expenses", "Prepaid Expenses", {"indent": 1}),
+    ("other_current_assets", "Other Current Assets", {"indent": 1}),
+    ("total_current_assets", "Total Current Assets", {"isSubtotal": True}),
+    
+    # Banking Assets
+    ("investment_securities", "Investment Securities", {"indent": 1}),
+    ("total_investments", "Total Investments", {"isSubtotal": True}),
+    ("gross_loans", "Gross Loans", {"indent": 1}),
+    ("allowance_loan_losses", "Allowance for Loan Losses", {"indent": 1}),
+    ("other_loan_adjustments", "Other Adjustments to Gross Loans", {"indent": 1}),
+    ("net_loans", "Net Loans", {"isSubtotal": True}),
+    
+    # Fixed Assets
+    ("property_plant_equipment", "Property, Plant & Equipment", {"indent": 1}),
+    ("long_term_investments", "Long-Term Investments", {"indent": 1}),
+    ("goodwill", "Goodwill", {"indent": 1}),
+    ("intangible_assets", "Other Intangible Assets", {"indent": 1}),
+    ("lt_accounts_receivable", "Long-Term Accounts Receivable", {"indent": 1}),
+    ("lt_deferred_tax_assets", "Long-Term Deferred Tax Assets", {"indent": 1}),
+    ("other_noncurrent_assets", "Other Long-Term Assets", {"indent": 1}),
+    
+    # Banking Specific
+    ("accrued_interest_receivable", "Accrued Interest Receivable", {"indent": 1}),
+    ("restricted_cash", "Restricted Cash", {"indent": 1}),
+    ("other_real_estate_owned", "Other Real Estate Owned", {"indent": 1}),
+    
+    # Total Assets
+    ("total_assets", "Total Assets", {"isSubtotal": True}),
+    
+    # ============ LIABILITIES ============
+    # Current Liabilities
+    ("accounts_payable", "Accounts Payable", {"indent": 1}),
+    ("accrued_liabilities", "Accrued Expenses", {"indent": 1}),
+    ("short_term_debt", "Short-Term Debt", {"indent": 1}),
+    ("current_portion_ltd", "Current Portion of Long-Term Debt", {"indent": 1}),
+    ("current_portion_leases", "Current Portion of Leases", {"indent": 1}),
+    ("current_taxes_payable", "Current Income Taxes Payable", {"indent": 1}),
+    ("deferred_revenue", "Current Unearned Revenue", {"indent": 1}),
+    ("other_current_liabilities", "Other Current Liabilities", {"indent": 1}),
+    ("total_current_liabilities", "Total Current Liabilities", {"isSubtotal": True}),
+    
+    # Banking Liabilities
+    ("interest_bearing_deposits", "Interest Bearing Deposits", {"indent": 1}),
+    ("non_interest_bearing_deposits", "Non-Interest Bearing Deposits", {"indent": 1}),
+    ("deposits", "Total Deposits", {"isSubtotal": True}),
+    ("accrued_interest_payable", "Accrued Interest Payable", {"indent": 1}),
+    
+    # Long-Term Liabilities
+    ("long_term_debt", "Long-Term Debt", {"indent": 1}),
+    ("long_term_leases", "Long-Term Leases", {"indent": 1}),
+    ("deferred_tax_liabilities", "Long-Term Deferred Tax Liabilities", {"indent": 1}),
+    ("other_noncurrent_liabilities", "Other Long-Term Liabilities", {"indent": 1}),
+    ("total_liabilities", "Total Liabilities", {"isSubtotal": True}),
+    
+    # ============ EQUITY ============
+    ("common_stock", "Common Stock", {"indent": 1}),
+    ("retained_earnings", "Retained Earnings", {"indent": 1}),
+    ("treasury_stock", "Treasury Stock", {"indent": 1}),
+    ("accumulated_other_comprehensive_income", "Comprehensive Income & Other", {"indent": 1}),
+    ("total_common_equity", "Total Common Equity", {"isSubtotal": True}),
+    ("minority_interest", "Minority Interest", {"indent": 1}),
+    ("total_equity", "Shareholders' Equity", {"isSubtotal": True}),
+    ("total_liabilities_equity", "Total Liabilities & Equity", {"isSubtotal": True}),
+    
+    # ============ DERIVED METRICS ============
+    ("total_debt", "Total Debt", {}),
+    ("net_cash", "Net Cash (Debt)", {}),
+    ("net_cash_growth", "Net Cash Growth", {"isPercent": True, "isGrowth": True}),
+    ("net_cash_per_share", "Net Cash Per Share", {}),
+    ("shares_outstanding", "Total Common Shares Outstanding", {}),
+    ("working_capital", "Working Capital", {}),
+    ("book_value_per_share", "Book Value Per Share", {}),
+    ("tangible_book_value", "Tangible Book Value", {}),
+    ("tangible_bv_per_share", "Tangible Book Value Per Share", {}),
+]
+
+# ORDERED CASH FLOW DISPLAY
+CASHFLOW_DISPLAY_ORDERED = [
+    # Period Info
+    ("period_ending", "Period Ending", {"isHeader": True}),
+    
+    # ============ OPERATING ACTIVITIES ============
+    ("net_income", "Net Income", {"isSubtotal": True}),
+    ("depreciation_amortization", "Depreciation & Amortization", {"indent": 1}),
+    ("other_amortization", "Other Amortization", {"indent": 1}),
+    ("stock_based_compensation", "Stock-Based Compensation", {"indent": 1}),
+    ("deferred_taxes", "Deferred Income Taxes", {"indent": 1}),
+    
+    # Gains/Losses
+    ("gain_loss_assets", "Loss (Gain) From Sale of Assets", {"indent": 1}),
+    ("gain_loss_investments", "Loss (Gain) From Sale of Investments", {"indent": 1}),
+    ("asset_writedown", "Total Asset Writedown", {"indent": 1}),
+    
+    # Provisions
+    ("provision_credit_losses", "Provision for Credit Losses", {"indent": 1}),
+    
+    # Working Capital Changes
+    ("change_in_trading_assets", "Change in Trading Asset Securities", {"indent": 1}),
+    ("change_in_income_taxes", "Change in Income Taxes", {"indent": 1}),
+    ("change_in_other_assets", "Change in Other Net Operating Assets", {"indent": 1}),
+    ("change_in_receivables", "Change in Accounts Receivable", {"indent": 1}),
+    ("change_in_inventory", "Change in Inventory", {"indent": 1}),
+    ("change_in_payables", "Change in Accounts Payable", {"indent": 1}),
+    ("change_in_working_capital", "Change in Working Capital", {"indent": 1}),
+    ("other_operating_activities", "Other Operating Activities", {"indent": 1}),
+    ("cash_discontinued_ops", "Net Cash from Discontinued Operations", {"indent": 1}),
+    
+    # Operating Total
+    ("cash_from_operating", "Operating Cash Flow", {"isSubtotal": True}),
+    ("ocf_growth", "Operating Cash Flow Growth", {"isPercent": True, "isGrowth": True}),
+    
+    # ============ INVESTING ACTIVITIES ============
+    ("capex", "Capital Expenditures", {"indent": 1}),
+    ("sale_of_ppe", "Sale of Property, Plant and Equipment", {"indent": 1}),
+    ("acquisitions", "Cash Acquisitions", {"indent": 1}),
+    ("investment_purchases", "Investment in Securities", {"indent": 1}),
+    ("investment_sales", "Sales of Investments", {"indent": 1}),
+    ("intangibles_purchased", "Sale (Purchase) of Intangibles", {"indent": 1}),
+    ("equity_investment_income", "Income (Loss) Equity Investments", {"indent": 1}),
+    ("divestitures", "Divestitures", {"indent": 1}),
+    ("other_investing_activities", "Other Investing Activities", {"indent": 1}),
+    
+    # Investing Total
+    ("cash_from_investing", "Investing Cash Flow", {"isSubtotal": True}),
+    
+    # ============ FINANCING ACTIVITIES ============
+    # Debt
+    ("short_term_debt_issued", "Short-Term Debt Issued", {"indent": 1}),
+    ("debt_issued", "Long-Term Debt Issued", {"indent": 1}),
+    ("total_debt_issued", "Total Debt Issued", {"indent": 1}),
+    ("short_term_debt_repaid", "Short-Term Debt Repaid", {"indent": 1}),
+    ("debt_repaid", "Long-Term Debt Repaid", {"indent": 1}),
+    ("total_debt_repaid", "Total Debt Repaid", {"indent": 1}),
+    ("net_debt_issued", "Net Debt Issued (Repaid)", {"indent": 1}),
+    
+    # Equity
+    ("share_issuances", "Issuance of Common Stock", {"indent": 1}),
+    ("share_repurchases", "Repurchase of Common Stock", {"indent": 1}),
+    ("dividends_paid", "Common Dividends Paid", {"indent": 1}),
+    
+    # Banking
+    ("net_increase_deposits", "Net Increase (Decrease) in Deposit Accounts", {"indent": 1}),
+    ("other_financing_activities", "Other Financing Activities", {"indent": 1}),
+    
+    # Financing Total
+    ("cash_from_financing", "Financing Cash Flow", {"isSubtotal": True}),
+    
+    # ============ SUMMARY ============
+    ("fx_effect", "Foreign Exchange Rate Adjustments", {"indent": 1}),
+    ("net_change_cash", "Net Cash Flow", {"isSubtotal": True}),
+    
+    # ============ FREE CASH FLOW ============
+    ("free_cashflow", "Free Cash Flow", {"isSubtotal": True}),
+    ("fcf_growth", "Free Cash Flow Growth", {"isPercent": True, "isGrowth": True}),
+    ("fcf_margin", "Free Cash Flow Margin", {"isPercent": True}),
+    ("fcf_per_share", "Free Cash Flow Per Share", {}),
+    
+    # ============ OTHER ============
+    ("cash_interest_paid", "Cash Interest Paid", {"indent": 1}),
+    ("cash_income_tax_paid", "Cash Income Tax Paid", {"indent": 1}),
+    ("levered_fcf", "Levered Free Cash Flow", {}),
+    ("unlevered_fcf", "Unlevered Free Cash Flow", {}),
+]
+
+# ORDERED RATIOS DISPLAY
+RATIOS_DISPLAY_ORDERED = [
+    # Period
+    ("fiscal_year", "Fiscal Year", {"isHeader": True}),
+    
+    # ============ VALUATION ============
+    ("last_close_price", "Last Close Price", {}),
+    ("market_cap", "Market Capitalization", {}),
+    ("market_cap_growth", "Market Cap Growth", {"isPercent": True, "isGrowth": True}),
+    ("enterprise_value", "Enterprise Value", {}),
+    ("pe_ratio", "PE Ratio", {}),
+    ("pe_forward", "Forward PE", {}),
+    ("peg_ratio", "PEG Ratio", {}),
+    ("ps_ratio", "PS Ratio", {}),
+    ("pb_ratio", "PB Ratio", {}),
+    ("ptbv_ratio", "P/TBV Ratio", {}),
+    ("pfcf_ratio", "P/FCF Ratio", {}),
+    ("pocf_ratio", "P/OCF Ratio", {}),
+    ("ev_ebitda", "EV/EBITDA", {}),
+    ("ev_sales", "EV/Sales", {}),
+    ("earnings_yield", "Earnings Yield", {"isPercent": True}),
+    ("fcf_yield", "FCF Yield", {"isPercent": True}),
+    
+    # ============ PROFITABILITY ============
+    ("roe", "Return on Equity (ROE)", {"isPercent": True}),
+    ("roa", "Return on Assets (ROA)", {"isPercent": True}),
+    ("roic", "Return on Capital (ROIC)", {"isPercent": True}),
+    ("roce", "Return on Capital Employed (ROCE)", {"isPercent": True}),
+    ("gross_margin", "Gross Margin", {"isPercent": True}),
+    ("operating_margin", "Operating Margin", {"isPercent": True}),
+    ("net_margin", "Profit Margin", {"isPercent": True}),
+    
+    # ============ LEVERAGE ============
+    ("debt_equity", "Debt / Equity Ratio", {}),
+    ("debt_assets", "Debt / Assets", {}),
+    ("debt_ebitda", "Debt / EBITDA", {}),
+    ("debt_fcf", "Debt / FCF", {}),
+    ("interest_coverage", "Interest Coverage", {}),
+    ("current_ratio", "Current Ratio", {}),
+    ("quick_ratio", "Quick Ratio", {}),
+    
+    # ============ EFFICIENCY ============
+    ("asset_turnover", "Asset Turnover", {}),
+    ("inventory_turnover", "Inventory Turnover", {}),
+    ("receivables_turnover", "Receivables Turnover", {}),
+    
+    # ============ PER SHARE ============
+    ("revenue_per_share", "Revenue Per Share", {}),
+    ("fcf_per_share", "Free Cash Flow Per Share", {}),
+    ("book_value_per_share", "Book Value Per Share", {}),
+    
+    # ============ DIVIDENDS ============
+    ("dividend_yield", "Dividend Yield", {"isPercent": True}),
+    ("payout_ratio", "Payout Ratio", {"isPercent": True}),
+]
+
+# Legacy dict format for backward compatibility
+INCOME_DISPLAY = {col: label for col, label, _ in INCOME_DISPLAY_ORDERED}
+BALANCE_DISPLAY = {col: label for col, label, _ in BALANCE_DISPLAY_ORDERED}
+CASHFLOW_DISPLAY = {col: label for col, label, _ in CASHFLOW_DISPLAY_ORDERED}
+RATIOS_DISPLAY = {col: label for col, label, _ in RATIOS_DISPLAY_ORDERED}
+
+
 
 
 async def handle_financials(
@@ -411,21 +595,22 @@ async def handle_financials_package(
     
     annual_data = {
         'years': extract_years(income_annual),
-        'income': _process_rows(income_annual, INCOME_DISPLAY),
-        'balance': _process_rows(balance_annual, BALANCE_DISPLAY),
-        'cashflow': _process_rows(cashflow_annual, CASHFLOW_DISPLAY),
-        'ratios': _process_rows(ratios_rows, RATIOS_DISPLAY),
-        'kpis': _process_rows(ratios_rows, RATIOS_DISPLAY),
+        'income': _process_rows(income_annual, INCOME_DISPLAY, INCOME_DISPLAY_ORDERED),
+        'balance': _process_rows(balance_annual, BALANCE_DISPLAY, BALANCE_DISPLAY_ORDERED),
+        'cashflow': _process_rows(cashflow_annual, CASHFLOW_DISPLAY, CASHFLOW_DISPLAY_ORDERED),
+        'ratios': _process_rows(ratios_rows, RATIOS_DISPLAY, RATIOS_DISPLAY_ORDERED),
+        'kpis': _process_rows(ratios_rows, RATIOS_DISPLAY, RATIOS_DISPLAY_ORDERED),
     }
     
     quarterly_data = {
         'years': extract_years(income_quarterly),
-        'income': _process_rows_quarterly(income_quarterly, INCOME_DISPLAY),
-        'balance': _process_rows_quarterly(balance_quarterly, BALANCE_DISPLAY),
-        'cashflow': _process_rows_quarterly(cashflow_quarterly, CASHFLOW_DISPLAY),
+        'income': _process_rows_quarterly(income_quarterly, INCOME_DISPLAY, INCOME_DISPLAY_ORDERED),
+        'balance': _process_rows_quarterly(balance_quarterly, BALANCE_DISPLAY, BALANCE_DISPLAY_ORDERED),
+        'cashflow': _process_rows_quarterly(cashflow_quarterly, CASHFLOW_DISPLAY, CASHFLOW_DISPLAY_ORDERED),
         'ratios': [],  # Ratios typically only annual
         'kpis': [],
     }
+
 
     # Calculate TTM (Trailing Twelve Months)
     # TTM = Sum of last 4 quarters for Income/Cashflow, Latest Quarter for Balance Sheet
@@ -739,8 +924,12 @@ async def handle_financials_package(
         'actions': actions
     }
 
-def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str]) -> List[Dict[str, Any]]:
-    """Convert DB rows into UI-ready row objects with years as columns."""
+def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], ordered_list: List[tuple] = None) -> List[Dict[str, Any]]:
+    """Convert DB rows into UI-ready row objects with years as columns.
+    
+    If ordered_list is provided (e.g., INCOME_DISPLAY_ORDERED), use it for ordering and metadata.
+    Otherwise fall back to display_map dict.
+    """
     if not rows:
         return []
 
@@ -763,23 +952,19 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str]) -> Li
         'values': {},
         'isGrowth': False,
         'isSubtotal': False,
+        'isPercent': False,
         'indent': 0,
-        'format': 'string' # Hint for frontend
+        'format': 'string'
     }
     has_period = False
     for y in years:
-        # Check for period_ending in the raw row data
         raw_date = data_by_year.get(y, {}).get('period_ending')
         if raw_date:
-            # Format: 2026-01-14 -> Jan 14, 2026
             try:
-                # If it's a date object
                 if hasattr(raw_date, 'strftime'):
                     val_str = raw_date.strftime("%b %d, %Y")
-                # If it's a string (YYYY-MM-DD)
                 else:
                     val_str = datetime.strptime(str(raw_date), "%Y-%m-%d").strftime("%b %d, %Y")
-                
                 period_ending_row['values'][y] = val_str
                 has_period = True
             except:
@@ -790,36 +975,70 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str]) -> Li
     if has_period:
         processed.append(period_ending_row)
 
-    # 2. Process standard columns
-    for col, label in display_map.items():
-        row_obj = {
-            'label': label,
-            'values': {},
-            'isGrowth': 'growth' in col,
-            'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity'],
-            'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0
-        }
-        
-        has_val = False
-        for y in years:
-            val = data_by_year.get(y, {}).get(col)
-            if val is not None:
-                try:
-                    row_obj['values'][y] = float(val)
-                    has_val = True
-                except (ValueError, TypeError):
-                    # Skip non-numeric values (like currency strings)
-                    row_obj['values'][y] = None
-            else:
-                row_obj['values'][y] = None
+    # 2. Process columns - use ordered_list if available for proper ordering and metadata
+    if ordered_list:
+        for col, label, options in ordered_list:
+            if col == 'period_ending':
+                continue  # Already handled above
+                
+            row_obj = {
+                'label': label,
+                'values': {},
+                'isGrowth': options.get('isGrowth', False),
+                'isSubtotal': options.get('isSubtotal', False),
+                'isPercent': options.get('isPercent', False),
+                'isHeader': options.get('isHeader', False),
+                'indent': options.get('indent', 0)
+            }
             
-        if has_val:
-            processed.append(row_obj)
+            has_val = False
+            for y in years:
+                val = data_by_year.get(y, {}).get(col)
+                if val is not None:
+                    try:
+                        row_obj['values'][y] = float(val)
+                        has_val = True
+                    except (ValueError, TypeError):
+                        row_obj['values'][y] = None
+                else:
+                    row_obj['values'][y] = None
+                
+            if has_val:
+                processed.append(row_obj)
+    else:
+        # Fallback to dict-based processing
+        for col, label in display_map.items():
+            if col == 'period_ending':
+                continue
+                
+            row_obj = {
+                'label': label,
+                'values': {},
+                'isGrowth': 'growth' in col.lower(),
+                'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity', 'total_liabilities', 'cash_from_operating', 'cash_from_investing', 'cash_from_financing', 'free_cashflow'],
+                'isPercent': 'margin' in col.lower() or 'growth' in col.lower() or 'rate' in col.lower() or col.startswith('roe') or col.startswith('roa'),
+                'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0
+            }
+            
+            has_val = False
+            for y in years:
+                val = data_by_year.get(y, {}).get(col)
+                if val is not None:
+                    try:
+                        row_obj['values'][y] = float(val)
+                        has_val = True
+                    except (ValueError, TypeError):
+                        row_obj['values'][y] = None
+                else:
+                    row_obj['values'][y] = None
+                
+            if has_val:
+                processed.append(row_obj)
             
     return processed
 
 
-def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, str]) -> List[Dict[str, Any]]:
+def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, str], ordered_list: List[tuple] = None) -> List[Dict[str, Any]]:
     """Convert quarterly DB rows into UI-ready row objects with Q1 2024 style labels."""
     if not rows:
         return []
@@ -845,6 +1064,7 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
         'values': {},
         'isGrowth': False,
         'isSubtotal': False,
+        'isPercent': False,
         'indent': 0,
         'format': 'string'
     }
@@ -867,32 +1087,69 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
     if has_period:
         processed.append(period_ending_row)
 
-    # 2. Process standard columns
-    for col, label in display_map.items():
-        row_obj = {
-            'label': label,
-            'values': {},
-            'isGrowth': 'growth' in col,
-            'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity'],
-            'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0
-        }
-        
-        has_val = False
-        for period in periods:
-            val = data_by_period.get(period, {}).get(col)
-            if val is not None:
-                try:
-                    row_obj['values'][period] = float(val)
-                    has_val = True
-                except (ValueError, TypeError):
-                    row_obj['values'][period] = None
-            else:
-                row_obj['values'][period] = None
+    # 2. Process columns - use ordered_list if available
+    if ordered_list:
+        for col, label, options in ordered_list:
+            if col == 'period_ending':
+                continue
+                
+            row_obj = {
+                'label': label,
+                'values': {},
+                'isGrowth': options.get('isGrowth', False),
+                'isSubtotal': options.get('isSubtotal', False),
+                'isPercent': options.get('isPercent', False),
+                'isHeader': options.get('isHeader', False),
+                'indent': options.get('indent', 0)
+            }
             
-        if has_val:
-            processed.append(row_obj)
+            has_val = False
+            for period in periods:
+                val = data_by_period.get(period, {}).get(col)
+                if val is not None:
+                    try:
+                        row_obj['values'][period] = float(val)
+                        has_val = True
+                    except (ValueError, TypeError):
+                        row_obj['values'][period] = None
+                else:
+                    row_obj['values'][period] = None
+                
+            if has_val:
+                processed.append(row_obj)
+    else:
+        # Fallback to dict-based processing
+        for col, label in display_map.items():
+            if col == 'period_ending':
+                continue
+                
+            row_obj = {
+                'label': label,
+                'values': {},
+                'isGrowth': 'growth' in col.lower(),
+                'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity'],
+                'isPercent': 'margin' in col.lower() or 'growth' in col.lower(),
+                'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0
+            }
+            
+            has_val = False
+            for period in periods:
+                val = data_by_period.get(period, {}).get(col)
+                if val is not None:
+                    try:
+                        row_obj['values'][period] = float(val)
+                        has_val = True
+                    except (ValueError, TypeError):
+                        row_obj['values'][period] = None
+                else:
+                    row_obj['values'][period] = None
+                
+            if has_val:
+                processed.append(row_obj)
             
     return processed
+
+
 
 
 async def handle_financial_metric(

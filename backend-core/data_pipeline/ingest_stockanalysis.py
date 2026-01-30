@@ -33,117 +33,314 @@ logger = logging.getLogger(__name__)
 # ============================================================
 
 INCOME_MAPPING = {
+    # ============ BANKING TEMPLATE ============
+    # Interest Income Section
     "Interest Income on Loans": "interest_income_loans",
     "Interest Income on Investments": "interest_income_investments",
     "Total Interest Income": "total_interest_income",
     "Interest Paid on Deposits": "interest_expense",
     "Net Interest Income": "net_interest_income",
     "Net Interest Income Growth (YoY)": "net_interest_income_growth",
+    "Net Interest Income Growth": "net_interest_income_growth",
+    
+    # Non-Interest Income Section (Banking)
     "Income From Trading Activities": "trading_income",
     "Fee and Commission Income": "fee_income",
     "Gain (Loss) on Sale of Assets": "gain_loss_assets",
+    "Loss (Gain) From Sale of Assets": "gain_loss_assets",
     "Gain (Loss) on Sale of Investments": "gain_loss_investments",
+    "Loss (Gain) From Sale of Investments": "gain_loss_investments",
     "Other Non-Interest Income": "other_noninterest_income",
     "Total Non-Interest Income": "total_noninterest_income",
+    "Non-Interest Income Growth (YoY)": "noninterest_income_growth",
+    
+    # Banking Revenue
+    "Revenues Before Loan Losses": "revenues_before_loan_losses",
+    "Provision for Loan Losses": "provision_credit_losses",
+    "Provision for Credit Losses": "provision_credit_losses",
+    
+    # ============ CORPORATE TEMPLATE ============
+    # Revenue Section
+    "Operating Revenue": "operating_revenue",
     "Revenue": "revenue",
     "Revenue Growth (YoY)": "revenue_growth",
+    "Revenue Growth": "revenue_growth",
+    
+    # Cost & Gross Profit
     "Cost of Revenue": "cost_of_revenue",
     "Gross Profit": "gross_profit",
     "Gross Margin": "gross_margin",
+    
+    # Operating Expenses
+    "Selling, General & Admin": "sga_expense",
+    "Selling, General & Administrative": "sga_expense",
+    "Other Operating Expenses": "other_operating_expenses",
     "Operating Expenses": "operating_expenses",
     "Research and Development": "rd_expense",
-    "Selling, General & Admin": "sga_expense",
+    "Research & Development": "rd_expense",
     "Depreciation & Amortization": "depreciation",
-    "Provision for Credit Losses": "provision_credit_losses",
+    
+    # Banking Expenses
+    "Salaries and Employee Benefits": "salaries_and_benefits",
+    "Amortization of Goodwill & Intangibles": "amortization_of_goodwill",
+    "Other Non-Interest Expense": "other_noninterest_expense",
+    "Total Non-Interest Expense": "total_noninterest_expense",
+    
+    # Operating Income
     "Operating Income": "operating_income",
     "Operating Margin": "operating_margin",
+    
+    # Non-Operating Items
+    "Interest Expense": "interest_expense_nonop",
+    "Interest & Investment Income": "interest_investment_income",
+    "Currency Exchange Gain (Loss)": "fx_gain_loss",
+    "Other Non Operating Income (Expenses)": "other_nonop_income",
+    
+    # Pre-Tax Section
+    "EBT Excluding Unusual Items": "ebt_excl_unusual",
+    "Other Unusual Items": "other_unusual_items",
     "Pretax Income": "pretax_income",
     "Income Tax Expense": "income_tax",
     "Effective Tax Rate": "effective_tax_rate",
+    
+    # Net Income Section
+    "Earnings From Continuing Operations": "earnings_continuing_ops",
+    "Earnings From Discontinued Operations": "earnings_discontinued_ops",
+    "Minority Interest in Earnings": "minority_interest_earnings",
     "Net Income": "net_income",
+    "Preferred Dividends & Other Adjustments": "preferred_dividends",
+    "Net Income to Common": "net_income_common",
     "Net Income Growth (YoY)": "net_income_growth",
+    "Net Income Growth": "net_income_growth",
     "Profit Margin": "net_margin",
+    
+    # Shares & EPS
+    "Basic Shares Outstanding": "shares_outstanding",
+    "Shares Outstanding (Basic)": "shares_outstanding",
+    "Diluted Shares Outstanding": "shares_diluted",
+    "Shares Outstanding (Diluted)": "shares_diluted",
+    "Shares Change (YoY)": "shares_change",
     "EPS (Basic)": "eps",
     "EPS (Diluted)": "eps_diluted",
+    "EPS Growth": "eps_growth",
+    
+    # Dividends
+    "Dividend Per Share": "dividend_per_share",
+    "Dividend Growth": "dividend_growth",
+    
+    # Cash Flow Metrics (in Income tab)
+    "Free Cash Flow": "free_cashflow",
+    "Free Cash Flow Per Share": "fcf_per_share",
+    "Free Cash Flow Margin": "fcf_margin",
+    
+    # EBITDA/EBIT
     "EBITDA": "ebitda",
     "EBITDA Margin": "ebitda_margin",
+    "D&A For EBITDA": "da_for_ebitda",
     "EBIT": "ebit",
     "EBIT Margin": "ebit_margin",
-    "EBIT Margin": "ebit_margin",
-    
-    # Gap Analysis Additions
-    "Revenues Before Loan Losses": "revenues_before_loan_losses",
-    "Salaries and Employee Benefits": "salaries_and_benefits",
-    "Amortization of Goodwill & Intangibles": "amortization_of_goodwill",
-    "Other Unusual Items": "other_unusual_items",
 }
 
 BALANCE_MAPPING = {
+    # ============ ASSETS ============
+    # Cash & Investments
     "Cash & Equivalents": "cash_equivalents",
     "Short-Term Investments": "short_term_investments",
-    "Accounts Receivable": "accounts_receivable",
-    "Inventory": "inventory",
-    "Total Current Assets": "total_current_assets",
-    "Investment Securities": "investment_securities",
     "Trading Asset Securities": "trading_assets",
+    "Cash & Short-Term Investments": "cash_and_st_investments",
+    "Cash Growth": "cash_growth",
+    
+    # Receivables
+    "Accounts Receivable": "accounts_receivable",
+    "Other Receivables": "other_receivables",
+    "Receivables": "total_receivables",
+    
+    # Inventory & Current
+    "Inventory": "inventory",
+    "Prepaid Expenses": "prepaid_expenses",
+    "Other Current Assets": "other_current_assets",
+    "Total Current Assets": "total_current_assets",
+    
+    # Banking Assets
+    "Investment Securities": "investment_securities",
     "Total Investments": "total_investments",
     "Gross Loans": "gross_loans",
     "Allowance for Loan Losses": "allowance_loan_losses",
+    "Other Adjustments to Gross Loans": "other_loan_adjustments",
     "Net Loans": "net_loans",
-    "Property, Plant & Equipment": "property_plant_equipment",
-    "Goodwill": "goodwill",
-    "Intangible Assets": "intangible_assets",
-    "Total Assets": "total_assets",
-    "Deposits": "deposits",
-    "Short-Term Debt": "short_term_debt",
-    "Long-Term Debt": "long_term_debt",
-    "Total Current Liabilities": "total_current_liabilities",
-    "Total Liabilities": "total_liabilities",
-    "Common Stock": "common_stock",
-    "Retained Earnings": "retained_earnings",
-    "Total Stockholders' Equity": "total_equity",
-    "Total Equity": "total_equity",
-    "Total Equity": "total_equity",
     
-    # Gap Analysis Additions
-    "Restricted Cash": "restricted_cash",
+    # Fixed Assets
+    "Property, Plant & Equipment": "property_plant_equipment",
+    "Long-Term Investments": "long_term_investments",
+    "Goodwill": "goodwill",
+    "Other Intangible Assets": "intangible_assets",
+    "Intangible Assets": "intangible_assets",
+    "Long-Term Accounts Receivable": "lt_accounts_receivable",
+    "Long-Term Deferred Tax Assets": "lt_deferred_tax_assets",
+    "Other Long-Term Assets": "other_noncurrent_assets",
+    
+    # Banking Specific Assets
     "Accrued Interest Receivable": "accrued_interest_receivable",
+    "Restricted Cash": "restricted_cash",
+    "Other Real Estate Owned & Foreclosed": "other_real_estate_owned",
+    
+    # Total Assets
+    "Total Assets": "total_assets",
+    
+    # ============ LIABILITIES ============
+    # Current Liabilities
+    "Accounts Payable": "accounts_payable",
+    "Accrued Expenses": "accrued_liabilities",
+    "Short-Term Debt": "short_term_debt",
+    "Short-Term Borrowings": "short_term_debt",
+    "Current Portion of Long-Term Debt": "current_portion_ltd",
+    "Current Portion of Leases": "current_portion_leases",
+    "Current Income Taxes Payable": "current_taxes_payable",
+    "Current Unearned Revenue": "deferred_revenue",
+    "Other Current Liabilities": "other_current_liabilities",
+    "Total Current Liabilities": "total_current_liabilities",
+    
+    # Banking Liabilities
     "Interest Bearing Deposits": "interest_bearing_deposits",
     "Non-Interest Bearing Deposits": "non_interest_bearing_deposits",
-    "Other Real Estate Owned & Foreclosed": "other_real_estate_owned",
+    "Total Deposits": "deposits",
+    "Deposits": "deposits",
+    "Accrued Interest Payable": "accrued_interest_payable",
+    
+    # Long-Term Liabilities
+    "Long-Term Debt": "long_term_debt",
+    "Long-Term Leases": "long_term_leases",
+    "Long-Term Deferred Tax Liabilities": "deferred_tax_liabilities",
+    "Other Long-Term Liabilities": "other_noncurrent_liabilities",
+    "Total Liabilities": "total_liabilities",
+    
+    # ============ EQUITY ============
+    "Common Stock": "common_stock",
+    "Retained Earnings": "retained_earnings",
+    "Treasury Stock": "treasury_stock",
+    "Comprehensive Income & Other": "accumulated_other_comprehensive_income",
+    "Total Common Equity": "total_common_equity",
+    "Minority Interest": "minority_interest",
+    "Shareholders' Equity": "total_equity",
+    "Total Stockholders' Equity": "total_equity",
+    "Total Equity": "total_equity",
+    "Total Liabilities & Equity": "total_liabilities_equity",
+    
+    # ============ DERIVED METRICS ============
+    "Total Debt": "total_debt",
+    "Net Cash (Debt)": "net_cash",
+    "Net Cash Growth": "net_cash_growth",
+    "Net Cash Per Share": "net_cash_per_share",
+    "Filing Date Shares Outstanding": "filing_shares_outstanding",
+    "Total Common Shares Outstanding": "shares_outstanding",
+    "Working Capital": "working_capital",
+    "Book Value Per Share": "book_value_per_share",
+    "Tangible Book Value": "tangible_book_value",
+    "Tangible Book Value Per Share": "tangible_bv_per_share",
+    
+    # PP&E Breakdown
+    "Land": "ppe_land",
+    "Buildings": "ppe_buildings",
+    "Machinery": "ppe_machinery",
+    "Construction In Progress": "ppe_construction",
+    "Leasehold Improvements": "ppe_leasehold",
 }
 
 CASHFLOW_MAPPING = {
+    # ============ OPERATING ACTIVITIES ============
     "Net Income": "net_income",
     "Depreciation & Amortization": "depreciation_amortization",
+    "Other Amortization": "other_amortization",
     "Stock-Based Compensation": "stock_based_compensation",
     "Deferred Income Taxes": "deferred_taxes",
+    
+    # Gains/Losses
+    "Loss (Gain) From Sale of Assets": "gain_loss_assets",
     "Gain (Loss) on Sale of Assets": "gain_loss_assets",
+    "Loss (Gain) From Sale of Investments": "gain_loss_investments",
     "Gain (Loss) on Sale of Investments": "gain_loss_investments",
+    "Total Asset Writedown": "asset_writedown",
+    
+    # Provisions
     "Provision for Credit Losses": "provision_credit_losses",
+    "Provision & Write-off of Bad Debts": "provision_credit_losses",
+    
+    # Working Capital Changes
+    "Change in Trading Asset Securities": "change_in_trading_assets",
+    "Change in Income Taxes": "change_in_income_taxes",
+    "Change in Other Net Operating Assets": "change_in_other_assets",
+    "Change in Accounts Receivable": "change_in_receivables",
     "Change in Receivables": "change_in_receivables",
     "Change in Inventory": "change_in_inventory",
+    "Change in Accounts Payable": "change_in_payables",
     "Change in Payables": "change_in_payables",
+    "Change in Working Capital": "change_in_working_capital",
     "Other Operating Activities": "other_operating_activities",
-    "Cash from Operating Activities": "cash_from_operating",
+    "Net Cash from Discontinued Operations": "cash_discontinued_ops",
+    
+    # Operating Cash Flow Total
     "Operating Cash Flow": "cash_from_operating",
+    "Cash from Operating Activities": "cash_from_operating",
+    "Operating Cash Flow Growth": "ocf_growth",
+    
+    # ============ INVESTING ACTIVITIES ============
     "Capital Expenditures": "capex",
+    "Sale of Property, Plant and Equipment": "sale_of_ppe",
+    "Cash Acquisitions": "acquisitions",
     "Acquisitions": "acquisitions",
+    "Investment in Securities": "investment_purchases",
     "Purchases of Investments": "investment_purchases",
     "Sales of Investments": "investment_sales",
-    "Cash from Investing Activities": "cash_from_investing",
-    "Dividends Paid": "dividends_paid",
-    "Share Repurchases": "share_repurchases",
-    "Debt Issued": "debt_issued",
-    "Debt Repaid": "debt_repaid",
-    "Cash from Financing Activities": "cash_from_financing",
-    "Net Change in Cash": "net_change_cash",
-    "Free Cash Flow": "free_cashflow",
-    "Free Cash Flow": "free_cashflow",
+    "Sale (Purchase) of Intangibles": "intangibles_purchased",
+    "Income (Loss) Equity Investments": "equity_investment_income",
+    "Divestitures": "divestitures",
+    "Other Investing Activities": "other_investing_activities",
     
-    # Gap Analysis Additions
-    "Cash Income Tax Paid": "cash_income_tax_paid",
+    # Investing Cash Flow Total
+    "Investing Cash Flow": "cash_from_investing",
+    "Cash from Investing Activities": "cash_from_investing",
+    
+    # ============ FINANCING ACTIVITIES ============
+    # Debt
+    "Short-Term Debt Issued": "short_term_debt_issued",
+    "Long-Term Debt Issued": "debt_issued",
+    "Total Debt Issued": "total_debt_issued",
+    "Short-Term Debt Repaid": "short_term_debt_repaid",
+    "Long-Term Debt Repaid": "debt_repaid",
+    "Total Debt Repaid": "total_debt_repaid",
+    "Net Debt Issued (Repaid)": "net_debt_issued",
+    
+    # Equity
+    "Issuance of Common Stock": "share_issuances",
+    "Repurchase of Common Stock": "share_repurchases",
+    "Share Repurchases": "share_repurchases",
+    "Common Dividends Paid": "dividends_paid",
+    "Dividends Paid": "dividends_paid",
+    
+    # Banking Specific
     "Net Increase (Decrease) in Deposit Accounts": "net_increase_deposits",
+    "Other Financing Activities": "other_financing_activities",
+    
+    # Financing Cash Flow Total
+    "Financing Cash Flow": "cash_from_financing",
+    "Cash from Financing Activities": "cash_from_financing",
+    
+    # ============ SUMMARY ============
+    "Foreign Exchange Rate Adjustments": "fx_effect",
+    "Net Cash Flow": "net_change_cash",
+    "Net Change in Cash": "net_change_cash",
+    
+    # ============ FREE CASH FLOW ============
+    "Free Cash Flow": "free_cashflow",
+    "Free Cash Flow Growth": "fcf_growth",
+    "Free Cash Flow Margin": "fcf_margin",
+    "Free Cash Flow Per Share": "fcf_per_share",
+    
+    # ============ OTHER METRICS ============
+    "Cash Interest Paid": "cash_interest_paid",
+    "Cash Income Tax Paid": "cash_income_tax_paid",
+    "Levered Free Cash Flow": "levered_fcf",
+    "Unlevered Free Cash Flow": "unlevered_fcf",
 }
 
 RATIOS_MAPPING = {

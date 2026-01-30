@@ -43,3 +43,8 @@ api_router.include_router(yahoo.router, prefix="/yahoo", tags=["yahoo"])
 # Enterprise Portfolio Management
 from app.api.v1.endpoints import portfolio
 api_router.include_router(portfolio.router, tags=["portfolio"])
+
+# Financial Statements Excel Export
+from app.api.v1.endpoints import financials_export
+api_router.include_router(financials_export.router, tags=["financials"])
+

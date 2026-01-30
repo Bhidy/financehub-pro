@@ -16,7 +16,7 @@ try:
 except ImportError:
     OPENPYXL_AVAILABLE = False
 
-from app.db.database import get_db_pool
+from app.db.session import db
 
 router = APIRouter()
 
@@ -195,53 +195,50 @@ async def export_financials(
     
     symbol = symbol.upper().strip()
     
-    # Get database connection
-    pool = await get_db_pool()
-    async with pool.acquire() as conn:
-        # Get company info
-        ticker = await conn.fetchrow("""
-            SELECT name_en, name_ar, market_code, currency 
-            FROM market_tickers WHERE symbol = $1
-        """, symbol)
-        
-        if not ticker:
-            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
-        
-        currency = ticker['currency'] or 'EGP'
-        company_name = ticker['name_en'] or symbol
-        
-        # Fetch financial data
-        if period_type == 'annual':
-            income_rows = await conn.fetch(
-                f"SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
-                symbol
-            )
-            balance_rows = await conn.fetch(
-                f"SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
-                symbol
-            )
-            cashflow_rows = await conn.fetch(
-                f"SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
-                symbol
-            )
-            ratios_rows = await conn.fetch(
-                f"SELECT * FROM financial_ratios_history WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT {limit}",
-                symbol
-            )
-        else:
-            income_rows = await conn.fetch(
-                "SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
-                symbol, limit * 4
-            )
-            balance_rows = await conn.fetch(
-                "SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
-                symbol, limit * 4
-            )
-            cashflow_rows = await conn.fetch(
-                "SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
-                symbol, limit * 4
-            )
-            ratios_rows = []  # Ratios typically annual only
+    # Get company info using db singleton
+    ticker = await db.fetch_one("""
+        SELECT name_en, name_ar, market_code, currency 
+        FROM market_tickers WHERE symbol = $1
+    """, symbol)
+    
+    if not ticker:
+        raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
+    
+    currency = ticker.get('currency') or 'EGP'
+    company_name = ticker.get('name_en') or symbol
+    
+    # Fetch financial data
+    if period_type == 'annual':
+        income_rows = await db.fetch_all(
+            f"SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
+            symbol
+        )
+        balance_rows = await db.fetch_all(
+            f"SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
+            symbol
+        )
+        cashflow_rows = await db.fetch_all(
+            f"SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
+            symbol
+        )
+        ratios_rows = await db.fetch_all(
+            f"SELECT * FROM financial_ratios_history WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT {limit}",
+            symbol
+        )
+    else:
+        income_rows = await db.fetch_all(
+            "SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
+            symbol, limit * 4
+        )
+        balance_rows = await db.fetch_all(
+            "SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
+            symbol, limit * 4
+        )
+        cashflow_rows = await db.fetch_all(
+            "SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
+            symbol, limit * 4
+        )
+        ratios_rows = []  # Ratios typically annual only
     
     # Import display mappings
     from app.chat.handlers.financials_handler import (

@@ -375,6 +375,12 @@ async def handle_financials_package(
         symbol
     )
     
+    # CRITICAL: Get stock_statistics for TTM KPIs (ROE, ROA, margins, OCF, FCF, etc.)
+    stock_stats = await conn.fetchrow(
+        "SELECT * FROM stock_statistics WHERE symbol = $1",
+        symbol
+    )
+    
     # Quarterly data
     income_quarterly = await conn.fetch(
         "SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT 20",
@@ -600,7 +606,84 @@ async def handle_financials_package(
         'kpis': [],
     }
 
-    # 4. Build response with BOTH datasets
+    # 4. Build KPI Summary from stock_statistics (for CFA analysis)
+    kpi_summary = {}
+    if stock_stats:
+        ss = dict(stock_stats)
+        # Helper to format numbers with scale
+        def fmt_num(val, scale='auto', suffix=''):
+            if val is None:
+                return None
+            v = float(val)
+            if scale == 'auto':
+                if abs(v) >= 1_000_000_000:
+                    return f"{v/1_000_000_000:,.2f}B{suffix}"
+                elif abs(v) >= 1_000_000:
+                    return f"{v/1_000_000:,.2f}M{suffix}"
+                elif abs(v) >= 1_000:
+                    return f"{v/1_000:,.2f}K{suffix}"
+                else:
+                    return f"{v:,.2f}{suffix}"
+            return f"{v:,.2f}{suffix}"
+        
+        def fmt_pct(val):
+            if val is None:
+                return None
+            v = float(val)
+            # Handle decimal form (0.43) vs percentage form (43.0)
+            if abs(v) <= 1:
+                return f"{v * 100:.2f}%"
+            return f"{v:.2f}%"
+            
+        # Build comprehensive KPI summary for CFA analysis
+        kpi_summary = {
+            # Profitability
+            'revenue_ttm': fmt_num(ss.get('revenue_ttm')),
+            'net_income_ttm': fmt_num(ss.get('net_income_ttm')),
+            'eps_ttm': f"{ss.get('eps_ttm'):.2f}" if ss.get('eps_ttm') else None,
+            'roe': fmt_pct(ss.get('roe')),
+            'roa': fmt_pct(ss.get('roa')),
+            'roic': fmt_pct(ss.get('roic')),
+            'roce': fmt_pct(ss.get('roce')),
+            # Margins
+            'gross_margin': fmt_pct(ss.get('gross_margin')),
+            'operating_margin': fmt_pct(ss.get('operating_margin')),
+            'pretax_margin': fmt_pct(ss.get('pretax_margin')),
+            'profit_margin': fmt_pct(ss.get('profit_margin')),
+            'ebitda_margin': fmt_pct(ss.get('ebitda_margin')),
+            'fcf_margin': fmt_pct(ss.get('fcf_margin')),
+            # Cash Flow (CRITICAL for CFA analysis)
+            'ocf_ttm': fmt_num(ss.get('ocf_ttm')),
+            'fcf_ttm': fmt_num(ss.get('fcf_ttm')),
+            'fcf_per_share': f"{ss.get('fcf_per_share'):.2f}" if ss.get('fcf_per_share') else None,
+            'cash_ttm': fmt_num(ss.get('cash_ttm')),
+            'net_cash': fmt_num(ss.get('net_cash')),
+            # Balance Sheet
+            'total_debt': fmt_num(ss.get('total_debt')),
+            'book_value': fmt_num(ss.get('book_value')),
+            'bvps': f"{ss.get('bvps'):.2f}" if ss.get('bvps') else None,
+            'working_capital': fmt_num(ss.get('working_capital')),
+            # Valuation
+            'pe_ratio': f"{ss.get('pe_ratio'):.2f}x" if ss.get('pe_ratio') else None,
+            'forward_pe': f"{ss.get('forward_pe'):.2f}x" if ss.get('forward_pe') else None,
+            'pb_ratio': f"{ss.get('pb_ratio'):.2f}x" if ss.get('pb_ratio') else None,
+            'ps_ratio': f"{ss.get('ps_ratio'):.2f}x" if ss.get('ps_ratio') else None,
+            'dividend_yield': fmt_pct(ss.get('dividend_yield')),
+            'payout_ratio': fmt_pct(ss.get('payout_ratio')),
+            'earnings_yield': fmt_pct(ss.get('earnings_yield')),
+            'fcf_yield': fmt_pct(ss.get('fcf_yield')),
+            # Quality Scores
+            'piotroski_f_score': str(int(ss.get('piotroski_f_score'))) if ss.get('piotroski_f_score') else None,
+            'altman_z_score': f"{ss.get('altman_z_score'):.2f}" if ss.get('altman_z_score') else None,
+            # Technical
+            'beta_5y': f"{ss.get('beta_5y'):.2f}" if ss.get('beta_5y') else None,
+            'shares_outstanding': fmt_num(ss.get('shares_outstanding')),
+            'effective_tax_rate': fmt_pct(ss.get('effective_tax_rate')),
+        }
+        # Remove None values
+        kpi_summary = {k: v for k, v in kpi_summary.items() if v is not None}
+
+    # 5. Build response with BOTH datasets
     pkg = {
         'symbol': symbol,
         'currency': currency,
@@ -615,6 +698,8 @@ async def handle_financials_package(
         'annual_data': annual_data,
         'quarterly_data': quarterly_data,
         'ttm_data': ttm_data,
+        # CRITICAL: KPI Summary for CFA Analysis (from stock_statistics)
+        'kpi_summary': kpi_summary,
     }
 
     # 5. Construct Actions

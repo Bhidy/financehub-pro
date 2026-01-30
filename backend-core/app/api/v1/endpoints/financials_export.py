@@ -20,6 +20,9 @@ from app.db.session import db
 
 router = APIRouter()
 
+# Current year for validation
+CURRENT_YEAR = datetime.now().year
+
 
 # Professional cell styles
 def setup_styles(wb):
@@ -79,12 +82,18 @@ def setup_styles(wb):
         bottom=Side(style='thin')
     )
     
+    # Info style (for subtitle)
+    info_style = NamedStyle(name="info_style")
+    info_style.font = Font(size=10, italic=True, color="666666")
+    info_style.alignment = Alignment(horizontal="left")
+    
     try:
         wb.add_named_style(header_style)
         wb.add_named_style(subtotal_style)
         wb.add_named_style(normal_style)
         wb.add_named_style(percent_style)
         wb.add_named_style(currency_style)
+        wb.add_named_style(info_style)
     except:
         pass  # Styles may already exist
     
@@ -107,7 +116,7 @@ def format_number(value, is_percent=False):
         return value
 
 
-def create_sheet(wb, sheet_name, data_rows, years, currency='EGP'):
+def create_sheet(wb, sheet_name, data_rows, years, currency='EGP', fiscal_note=''):
     """Create a formatted sheet with financial data."""
     ws = wb.create_sheet(title=sheet_name[:31])  # Excel sheet names max 31 chars
     
@@ -117,13 +126,19 @@ def create_sheet(wb, sheet_name, data_rows, years, currency='EGP'):
     title_cell.font = Font(bold=True, size=14)
     title_cell.alignment = Alignment(horizontal="center")
     
-    # Header row
-    ws.cell(row=3, column=1, value="Line Item").style = "header_style"
-    for i, year in enumerate(years):
-        ws.cell(row=3, column=i + 2, value=year).style = "header_style"
+    # Subtitle row - "Financials in millions. Fiscal year is January - December."
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=len(years) + 1)
+    subtitle_cell = ws.cell(row=2, column=1, value=fiscal_note)
+    subtitle_cell.font = Font(size=10, italic=True, color="666666")
+    subtitle_cell.alignment = Alignment(horizontal="center")
     
-    # Data rows
-    current_row = 4
+    # Header row (moved to row 4)
+    ws.cell(row=4, column=1, value="Line Item").style = "header_style"
+    for i, year in enumerate(years):
+        ws.cell(row=4, column=i + 2, value=year).style = "header_style"
+    
+    # Data rows (start from row 5)
+    current_row = 5
     for row_data in data_rows:
         label = row_data.get('label', '')
         values = row_data.get('values', {})
@@ -207,35 +222,35 @@ async def export_financials(
     currency = ticker.get('currency') or 'EGP'
     company_name = ticker.get('name_en') or symbol
     
-    # Fetch financial data
+    # Fetch financial data - FILTER OUT FUTURE YEARS (> current year)
     if period_type == 'annual':
         income_rows = await db.fetch_all(
-            f"SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
+            f"SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'annual' AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC LIMIT {limit}",
             symbol
         )
         balance_rows = await db.fetch_all(
-            f"SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
+            f"SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'annual' AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC LIMIT {limit}",
             symbol
         )
         cashflow_rows = await db.fetch_all(
-            f"SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'annual' ORDER BY fiscal_year DESC LIMIT {limit}",
+            f"SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'annual' AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC LIMIT {limit}",
             symbol
         )
         ratios_rows = await db.fetch_all(
-            f"SELECT * FROM financial_ratios_history WHERE symbol = $1 ORDER BY fiscal_year DESC LIMIT {limit}",
+            f"SELECT * FROM financial_ratios_history WHERE symbol = $1 AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC LIMIT {limit}",
             symbol
         )
     else:
         income_rows = await db.fetch_all(
-            "SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
+            f"SELECT * FROM income_statements WHERE symbol = $1 AND period_type = 'quarterly' AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
             symbol, limit * 4
         )
         balance_rows = await db.fetch_all(
-            "SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
+            f"SELECT * FROM balance_sheets WHERE symbol = $1 AND period_type = 'quarterly' AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
             symbol, limit * 4
         )
         cashflow_rows = await db.fetch_all(
-            "SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'quarterly' ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
+            f"SELECT * FROM cashflow_statements WHERE symbol = $1 AND period_type = 'quarterly' AND fiscal_year <= {CURRENT_YEAR} ORDER BY fiscal_year DESC, fiscal_quarter DESC LIMIT $2",
             symbol, limit * 4
         )
         ratios_rows = []  # Ratios typically annual only
@@ -248,27 +263,36 @@ async def export_financials(
         RATIOS_DISPLAY_ORDERED
     )
     
-    # Process data into export format
+    # Process data into export format - INCLUDE ALL ITEMS
     def process_for_export(rows, ordered_list, is_quarterly=False):
-        """Convert DB rows to export format."""
+        """Convert DB rows to export format. Include ALL items from ordered list."""
         if not rows:
             return [], []
         
-        # Build period labels
+        # Build period labels - FILTER OUT INVALID YEARS
         periods = []
         data_by_period = {}
         seen = set()
         
         for r in rows:
-            y = str(r['fiscal_year'])
+            y = r.get('fiscal_year')
+            if y is None:
+                continue
+            y = int(y)
+            
+            # Skip future years or very old years
+            if y > CURRENT_YEAR or y < 2010:
+                continue
+                
+            y_str = str(y)
             q = r.get('fiscal_quarter')
-            label = f"Q{q} {y}" if q and is_quarterly else y
+            label = f"Q{q} {y_str}" if q and is_quarterly else y_str
             if label not in seen:
                 seen.add(label)
                 periods.append(label)
                 data_by_period[label] = dict(r)
         
-        # Build processed rows
+        # Build processed rows - INCLUDE ALL ITEMS FROM ORDERED LIST
         processed = []
         for col, display_label, options in ordered_list:
             if col == 'period_ending':
@@ -282,28 +306,32 @@ async def export_financials(
                 'indent': options.get('indent', 0)
             }
             
-            has_val = False
             for period in periods:
                 val = data_by_period.get(period, {}).get(col)
                 if val is not None:
                     try:
                         row_obj['values'][period] = float(val)
-                        has_val = True
                     except:
                         row_obj['values'][period] = None
                 else:
                     row_obj['values'][period] = None
             
-            if has_val:
-                processed.append(row_obj)
+            # INCLUDE ALL ITEMS - even if they have no data
+            processed.append(row_obj)
         
         return processed, periods
     
     is_quarterly = period_type == 'quarterly'
     income_data, years = process_for_export(income_rows, INCOME_DISPLAY_ORDERED, is_quarterly)
-    balance_data, _ = process_for_export(balance_rows, BALANCE_DISPLAY_ORDERED, is_quarterly)
-    cashflow_data, _ = process_for_export(cashflow_rows, CASHFLOW_DISPLAY_ORDERED, is_quarterly)
+    balance_data, balance_years = process_for_export(balance_rows, BALANCE_DISPLAY_ORDERED, is_quarterly)
+    cashflow_data, cf_years = process_for_export(cashflow_rows, CASHFLOW_DISPLAY_ORDERED, is_quarterly)
     ratios_data, _ = process_for_export(ratios_rows, RATIOS_DISPLAY_ORDERED, is_quarterly)
+    
+    # Use the best years from any available data
+    if not years and balance_years:
+        years = balance_years
+    if not years and cf_years:
+        years = cf_years
     
     # Create Excel workbook
     wb = openpyxl.Workbook()
@@ -311,18 +339,21 @@ async def export_financials(
     
     setup_styles(wb)
     
-    # Create sheets
-    if income_data:
-        create_sheet(wb, "Income Statement", income_data, years, currency)
-    if balance_data:
-        create_sheet(wb, "Balance Sheet", balance_data, years, currency)
-    if cashflow_data:
-        create_sheet(wb, "Cash Flow Statement", cashflow_data, years, currency)
-    if ratios_data:
-        create_sheet(wb, "Financial Ratios", ratios_data, years, currency)
+    # Fiscal note for all sheets
+    fiscal_note = "Financials in millions. Fiscal year is January - December."
+    
+    # Create sheets with ALL items
+    if income_data and years:
+        create_sheet(wb, "Income Statement", income_data, years, currency, fiscal_note)
+    if balance_data and years:
+        create_sheet(wb, "Balance Sheet", balance_data, years, currency, fiscal_note)
+    if cashflow_data and years:
+        create_sheet(wb, "Cash Flow Statement", cashflow_data, years, currency, fiscal_note)
+    if ratios_data and years:
+        create_sheet(wb, "Financial Ratios", ratios_data, years, currency, "Key financial ratios and metrics.")
     
     # If no data, create empty sheet
-    if not any([income_data, balance_data, cashflow_data, ratios_data]):
+    if not any([income_data, balance_data, cashflow_data, ratios_data]) or not years:
         ws = wb.create_sheet(title="No Data")
         ws.cell(row=1, column=1, value=f"No financial data available for {symbol}")
     

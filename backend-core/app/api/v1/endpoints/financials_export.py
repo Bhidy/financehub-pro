@@ -317,8 +317,12 @@ async def export_financials(
                 else:
                     row_obj['values'][period] = None
             
-            # INCLUDE ALL ITEMS - even if they have no data
-            processed.append(row_obj)
+            has_any_data = any(v is not None for v in row_obj['values'].values())
+            
+            # Only include rows that have at least one data value
+            # This filters out irrelevant fields (e.g., corporate fields for banks)
+            if has_any_data:
+                processed.append(row_obj)
         
         return processed, periods
     

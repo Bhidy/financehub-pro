@@ -538,9 +538,10 @@ def parse_table(soup: BeautifulSoup) -> Tuple[List[int], Dict[str, List[Optional
     for i, cell in enumerate(header_cells[1:], start=1):
         text = cell.get_text(strip=True)
         if 'Current' in text or 'TTM' in text:
-             current_year = datetime.now().year + 1 # 2027 (Synthetic future year for display sorting)
-             years.append(current_year)
-             valid_indices.append(i)
+             # Skip TTM columns - they create invalid future years
+             # TTM data should be handled separately if needed
+             logger.info(f"Skipping TTM/Current column: {text}")
+             continue
         else:
             year = parse_year(text)
             if year:

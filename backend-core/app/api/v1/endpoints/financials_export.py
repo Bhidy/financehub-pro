@@ -280,8 +280,9 @@ async def export_financials(
                 continue
             y = int(y)
             
-            # Skip future years or very old years
-            if y > CURRENT_YEAR or y < 2010:
+            # STRICT year validation: only include 2016 to current year
+            # This filters out invalid data like 2076, 2027, 2015
+            if y > CURRENT_YEAR or y < 2016:
                 continue
                 
             y_str = str(y)

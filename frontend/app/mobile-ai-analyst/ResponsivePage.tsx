@@ -92,18 +92,28 @@ function ResponsiveAIAnalystContent() {
 
     const typewriterPlaceholder = useTypewriter(placeholderTexts);
 
-    // Force Light Theme Default
+    // Theme Initialization with Persistence
     useEffect(() => {
         if (typeof window !== "undefined") {
-            // Remove dark class to ensure light mode by default
-            document.documentElement.classList.remove("dark");
-            setTheme("light");
+            const savedTheme = localStorage.getItem("theme") as "light" | "dark";
+            // Default to light if no saved preference
+            const effectiveTheme = savedTheme || "light";
+
+            setTheme(effectiveTheme);
+
+            if (effectiveTheme === "dark") {
+                document.documentElement.classList.add("dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+            }
         }
     }, []);
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";
         setTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+
         if (newTheme === "dark") {
             document.documentElement.classList.add("dark");
         } else {
@@ -505,7 +515,7 @@ function ResponsiveAIAnalystContent() {
                                         <div className="w-full mb-12">
                                             <div className="relative group">
                                                 <div className="absolute inset-0 bg-[#13b8a6]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                                <div className="relative flex items-center gap-3 p-2 pr-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-lg shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                                <div className="relative flex items-center gap-3 p-2 pr-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
                                                     <input
                                                         type="text"
                                                         value={query}
@@ -543,7 +553,7 @@ function ResponsiveAIAnalystContent() {
                                                     <button
                                                         key={idx}
                                                         onClick={() => sendDirectMessage(item.query)}
-                                                        className="p-5 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#10B981]/50 hover:shadow-lg transition-all text-left group flex flex-col h-full"
+                                                        className="p-5 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#13b8a6]/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left group flex flex-col h-full"
                                                     >
                                                         <div className={clsx(
                                                             "w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-lg transition-colors",

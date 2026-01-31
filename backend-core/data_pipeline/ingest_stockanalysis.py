@@ -237,6 +237,8 @@ BALANCE_MAPPING = {
     "Net Cash Growth": "net_cash_growth",
     "Net Cash Per Share": "net_cash_per_share",
     "Filing Date Shares Outstanding": "filing_shares_outstanding",
+    "Filing Date": "filing_date",
+    "Shares Outstanding": "shares_outstanding",
     "Total Common Shares Outstanding": "shares_outstanding",
     "Working Capital": "working_capital",
     "Book Value Per Share": "book_value_per_share",
@@ -265,6 +267,8 @@ CASHFLOW_MAPPING = {
     "Loss (Gain) From Sale of Investments": "gain_loss_investments",
     "Gain (Loss) on Sale of Investments": "gain_loss_investments",
     "Total Asset Writedown": "asset_writedown",
+    "Asset Writedown & Restructuring Costs": "asset_writedown_restructuring",
+    "Loss (Gain) on Equity Investments": "loss_gain_equity_investments",
     
     # Provisions
     "Provision for Credit Losses": "provision_credit_losses",
@@ -279,6 +283,7 @@ CASHFLOW_MAPPING = {
     "Change in Inventory": "change_in_inventory",
     "Change in Accounts Payable": "change_in_payables",
     "Change in Payables": "change_in_payables",
+    "Change in Unearned Revenue": "change_unearned_revenue",
     "Change in Working Capital": "change_in_working_capital",
     "Other Operating Activities": "other_operating_activities",
     "Net Cash from Discontinued Operations": "cash_discontinued_ops",
@@ -291,6 +296,7 @@ CASHFLOW_MAPPING = {
     # ============ INVESTING ACTIVITIES ============
     "Capital Expenditures": "capex",
     "Sale of Property, Plant and Equipment": "sale_of_ppe",
+    "Sale of Property, Plant & Equipment": "sale_of_ppe",
     "Cash Acquisitions": "acquisitions",
     "Acquisitions": "acquisitions",
     "Investment in Securities": "investment_purchases",
@@ -325,6 +331,9 @@ CASHFLOW_MAPPING = {
     # Banking Specific
     "Net Increase (Decrease) in Deposit Accounts": "net_increase_deposits",
     "Other Financing Activities": "other_financing_activities",
+    
+    # Effects on Cash
+    "Miscellaneous Cash Flow Adjustments": "misc_cash_flow_adj",
     
     # Financing Cash Flow Total
     "Financing Cash Flow": "cash_from_financing",

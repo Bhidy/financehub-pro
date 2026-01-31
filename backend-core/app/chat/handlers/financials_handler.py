@@ -94,11 +94,14 @@ INCOME_DISPLAY_ORDERED = [
     # Non-Operating Items
     ("interest_expense_nonop", "Interest Expense", {"indent": 1}),
     ("interest_investment_income", "Interest & Investment Income", {"indent": 1}),
+    ("earnings_equity_investments", "Earnings From Equity Investments", {"indent": 1}),
     ("fx_gain_loss", "Currency Exchange Gain (Loss)", {"indent": 1}),
     ("other_nonop_income", "Other Non Operating Income (Expenses)", {"indent": 1}),
     
-    # Pre-Tax Section
-    ("ebt_excl_unusual", "EBT Excluding Unusual Items", {"indent": 1}),
+    # Unusual Items (Pre-Tax)
+    ("ebt_excl_unusual", "EBT Excluding Unusual Items", {"isSubtotal": True}),
+    ("impairment_goodwill", "Impairment of Goodwill", {"indent": 1}),
+    ("asset_writedown", "Asset Writedown", {"indent": 1}),
     ("other_unusual_items", "Other Unusual Items", {"indent": 1}),
     ("pretax_income", "Pretax Income", {"isSubtotal": True}),
     ("income_tax", "Income Tax Expense", {"indent": 1}),

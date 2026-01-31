@@ -307,19 +307,23 @@ async def export_financials(
                 'indent': options.get('indent', 0)
             }
             
+            has_any_data = False
             for period in periods:
                 val = data_by_period.get(period, {}).get(col)
                 if val is not None:
                     try:
                         row_obj['values'][period] = float(val)
+                        has_any_data = True
                     except:
                         row_obj['values'][period] = None
                 else:
                     row_obj['values'][period] = None
             
-            # ALWAYS include ALL rows for complete StockAnalysis.com parity
-            # Empty rows will show as "-" in Excel - this ensures consistency across all stocks
-            processed.append(row_obj)
+            # Smart filtering: Only show rows that have at least ONE value
+            # This ensures banking fields don't show for corporate companies and vice versa
+            # Matches StockAnalysis.com behavior exactly
+            if has_any_data:
+                processed.append(row_obj)
         
         return processed, periods
     

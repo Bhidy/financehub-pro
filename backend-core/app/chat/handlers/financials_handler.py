@@ -1006,8 +1006,8 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], order
                 else:
                     row_obj['values'][y] = None
                 
-            if has_val:
-                processed.append(row_obj)
+            # ALWAYS include ALL rows for complete StockAnalysis.com parity
+            processed.append(row_obj)
     else:
         # Fallback to dict-based processing
         for col, label in display_map.items():
@@ -1035,8 +1035,8 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], order
                 else:
                     row_obj['values'][y] = None
                 
-            if has_val:
-                processed.append(row_obj)
+            # ALWAYS include ALL rows for complete StockAnalysis.com parity
+            processed.append(row_obj)
             
     return processed
 
@@ -1118,8 +1118,8 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
                 else:
                     row_obj['values'][period] = None
                 
-            if has_val:
-                processed.append(row_obj)
+            # ALWAYS include ALL rows for complete StockAnalysis.com parity
+            processed.append(row_obj)
     else:
         # Fallback to dict-based processing
         for col, label in display_map.items():
@@ -1147,9 +1147,7 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
                 else:
                     row_obj['values'][period] = None
                 
-            if has_val:
-                processed.append(row_obj)
-            
+            # ALWAYS include ALL rows for complete StockAnalysis.com parity\n            processed.append(row_obj)\n            
     return processed
 
 

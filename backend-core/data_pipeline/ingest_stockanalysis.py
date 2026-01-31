@@ -93,8 +93,13 @@ INCOME_MAPPING = {
     # Non-Operating Items
     "Interest Expense": "interest_expense_nonop",
     "Interest & Investment Income": "interest_investment_income",
+    "Earnings From Equity Investments": "earnings_equity_investments",
     "Currency Exchange Gain (Loss)": "fx_gain_loss",
     "Other Non Operating Income (Expenses)": "other_nonop_income",
+    
+    # Unusual Items (Pre-Tax)
+    "Impairment of Goodwill": "impairment_goodwill",
+    "Asset Writedown": "asset_writedown",
     
     # Pre-Tax Section
     "EBT Excluding Unusual Items": "ebt_excl_unusual",

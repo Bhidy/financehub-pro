@@ -67,6 +67,7 @@ INCOME_DISPLAY_ORDERED = [
     # ============ CORPORATE TEMPLATE ============
     # Revenue Section
     ("revenue", "Revenue", {"isSubtotal": True}),
+    ("operating_revenue", "Operating Revenue", {"indent": 1}),
     ("revenue_growth", "Revenue Growth", {"isPercent": True, "isGrowth": True}),
     
     # Cost & Gross Profit
@@ -176,6 +177,11 @@ BALANCE_DISPLAY_ORDERED = [
     
     # Fixed Assets
     ("property_plant_equipment", "Property, Plant & Equipment", {"indent": 1}),
+    ("ppe_land", "Land", {"indent": 2}),
+    ("ppe_buildings", "Buildings", {"indent": 2}),
+    ("ppe_machinery", "Machinery", {"indent": 2}),
+    ("ppe_leasehold", "Leasehold Improvements", {"indent": 2}),
+    ("ppe_construction", "Construction In Progress", {"indent": 2}),
     ("long_term_investments", "Long-Term Investments", {"indent": 1}),
     ("goodwill", "Goodwill", {"indent": 1}),
     ("intangible_assets", "Other Intangible Assets", {"indent": 1}),
@@ -190,6 +196,9 @@ BALANCE_DISPLAY_ORDERED = [
     
     # Total Assets
     ("total_assets", "Total Assets", {"isSubtotal": True}),
+    ("filing_date", "Filing Date", {}),
+    ("filing_shares_outstanding", "Filing Date Shares Outstanding", {}),
+    
     
     # ============ LIABILITIES ============
     # Current Liabilities
@@ -253,7 +262,9 @@ CASHFLOW_DISPLAY_ORDERED = [
     # Gains/Losses
     ("gain_loss_assets", "Loss (Gain) From Sale of Assets", {"indent": 1}),
     ("gain_loss_investments", "Loss (Gain) From Sale of Investments", {"indent": 1}),
+    ("loss_gain_equity_investments", "Loss (Gain) on Equity Investments", {"indent": 1}),
     ("asset_writedown", "Total Asset Writedown", {"indent": 1}),
+    ("asset_writedown_restructuring", "Asset Writedown & Restructuring Costs", {"indent": 1}),
     
     # Provisions
     ("provision_credit_losses", "Provision for Credit Losses", {"indent": 1}),
@@ -265,6 +276,7 @@ CASHFLOW_DISPLAY_ORDERED = [
     ("change_in_receivables", "Change in Accounts Receivable", {"indent": 1}),
     ("change_in_inventory", "Change in Inventory", {"indent": 1}),
     ("change_in_payables", "Change in Accounts Payable", {"indent": 1}),
+    ("change_unearned_revenue", "Change in Unearned Revenue", {"indent": 1}),
     ("change_in_working_capital", "Change in Working Capital", {"indent": 1}),
     ("other_operating_activities", "Other Operating Activities", {"indent": 1}),
     ("cash_discontinued_ops", "Net Cash from Discontinued Operations", {"indent": 1}),
@@ -311,6 +323,7 @@ CASHFLOW_DISPLAY_ORDERED = [
     
     # ============ SUMMARY ============
     ("fx_effect", "Foreign Exchange Rate Adjustments", {"indent": 1}),
+    ("misc_cash_flow_adj", "Miscellaneous Cash Flow Adjustments", {"indent": 1}),
     ("net_change_cash", "Net Cash Flow", {"isSubtotal": True}),
     
     # ============ FREE CASH FLOW ============

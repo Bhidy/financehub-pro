@@ -156,6 +156,26 @@ class CardType(str, Enum):
     HIDDEN_GEMS = "hidden_gems"
     INDEX_COMPOSITION = "index_composition"
     DISCLAIMER = "disclaimer"
+    DISCLAIMER_CARD = "disclaimer_card"
+    
+    # Bull/Bear Analysis Cards (CRITICAL - without these cards fail!)
+    BULL_CASE = "bull_case"
+    BEAR_CASE = "bear_case"
+    INSIGHT = "insight"
+    
+    # Additional Card Types (Frontend expects these)
+    DISCOVERY_LIST = "discovery_list"
+    GEM_LIST = "gem_list"
+    SCREENING_CRITERIA = "screening_criteria"
+    MARKET_TIMING = "market_timing"
+    INDEX_VIEW = "index_view"
+    METRIC = "metric"
+    DEFINE_TERM = "define_term"
+    DEFINITION = "definition"
+    STATISTICS = "statistics"
+    FINANCIALS = "financials"
+    MOVERS = "movers"
+    COMPARE = "compare"
 
 
 class ChartType(str, Enum):

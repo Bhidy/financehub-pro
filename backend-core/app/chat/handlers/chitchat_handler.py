@@ -119,8 +119,26 @@ async def handle_chitchat(intent: str, language: str = "en") -> Dict[str, Any]:
     }
 
 async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
-    """Handle educational definition requests."""
+    """
+    Handle educational definition requests with structured EducationalCard responses.
     
+    Enhanced to return rich, structured content for the EducationalCard component.
+    """
+    # First try the new structured educational content
+    try:
+        from ..educational_content import get_educational_content, format_educational_response, format_unknown_term_response
+        
+        content = get_educational_content(term)
+        
+        if content:
+            return format_educational_response(content, language)
+        else:
+            # Fall back to legacy definitions
+            pass
+    except ImportError:
+        pass
+    
+    # Legacy fallback for backward compatibility
     # Normalize term
     term_key = term.lower().replace(" ", "_").replace("-", "")
     
@@ -136,20 +154,40 @@ async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
     }
     term_key = mapping.get(term_key, term_key)
     
-    # Lookup
+    # Lookup in legacy definitions
     definition = DEFINITIONS.get(term_key, {}).get(language)
     
     if not definition:
+        # Return helpful suggestions
         return {
-            'success': False,
-            'message': "I don't have a definition for that specific term yet." if language == 'en' else "ليس لدي تعريف لهذا المصطلح بعد.",
-            'cards': [],
-             'actions': []
+            'success': True,
+            'message': f"I don't have a detailed definition for '{term}' yet. Try asking about: ROE, P/E, P/B, EBITDA, or Dividend Yield." if language == 'en' else f"ليس لدي تعريف لـ '{term}' بعد. جرب السؤال عن: ROE, P/E, P/B.",
+            'cards': [
+                {
+                    'type': 'help',
+                    'data': {
+                        'title': 'Available Definitions',
+                        'categories': [
+                            {'title': 'Try these:', 'examples': ['What is ROE?', 'Explain P/E ratio', 'What is EBITDA?']}
+                        ]
+                    }
+                }
+            ],
+            'actions': [
+                {'label': '📊 What is ROE?', 'action_type': 'query', 'payload': 'what is roe'},
+                {'label': '💰 What is P/E?', 'action_type': 'query', 'payload': 'what is pe ratio'},
+                {'label': '📈 What is EBITDA?', 'action_type': 'query', 'payload': 'explain ebitda'}
+            ]
         }
-        
+    
+    # Return legacy format (still works)
     return {
         'success': True,
         'message': definition,
         'cards': [],
-        'actions': []
+        'actions': [
+            {'label': '📊 Stock Analysis', 'action_type': 'query', 'payload': 'analyze COMI'},
+            {'label': '💎 Undervalued Stocks', 'action_type': 'query', 'payload': 'undervalued stocks'}
+        ]
     }
+

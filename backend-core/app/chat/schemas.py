@@ -100,6 +100,13 @@ class Intent(str, Enum):
     SCREENER_VALUE = "SCREENER_VALUE"  # Distinct from SCREENER_PE
     SCREENER_INCOME = "SCREENER_INCOME" # High Yield
     
+    # ===== SECTOR G: EXTENDED SCENARIOS (Enterprise Phase) =====
+    HIDDEN_GEMS = "HIDDEN_GEMS"          # Discovery - undiscovered stocks
+    MACRO_SCORE = "MACRO_SCORE"          # Market timing score (0-100)
+    MACRO_VIEW = "MACRO_VIEW"            # Full macro analysis
+    INDEX_COMPOSITION = "INDEX_COMPOSITION" # EGX 30 constituents
+    MARKET_TIMING = "MARKET_TIMING"      # Is now a good time to buy?
+    
     # System
     HELP = "HELP"
     CLARIFY_SYMBOL = "CLARIFY_SYMBOL"
@@ -141,6 +148,14 @@ class CardType(str, Enum):
     DEEP_EFFICIENCY = "deep_efficiency"
     DEEP_HEALTH = "deep_health"
     DEEP_GROWTH = "deep_growth"
+    
+    # Extended Scenario Card Types (Enterprise Phase)
+    MACRO_SCORE = "macro_score"
+    EDUCATIONAL = "educational"
+    METHODOLOGY = "methodology"
+    HIDDEN_GEMS = "hidden_gems"
+    INDEX_COMPOSITION = "index_composition"
+    DISCLAIMER = "disclaimer"
 
 
 class ChartType(str, Enum):

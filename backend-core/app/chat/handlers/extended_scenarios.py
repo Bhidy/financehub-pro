@@ -93,7 +93,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         rows = await conn.fetch(query)
         
         if not rows:
-            # Fallback to simpler query without stock_statistics join
+            # Fallback to simpler, less restrictive query - just get low P/B small cap stocks
             fallback_query = """
             SELECT 
                 symbol,
@@ -103,14 +103,17 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 pe_ratio,
                 pb_ratio,
                 logo_url,
-                NULL as roe,
-                NULL as net_profit_margin
+                NULL::numeric as roe,
+                NULL::numeric as net_profit_margin,
+                0::numeric as pb_discount,
+                0::numeric as pe_discount,
+                50::numeric as gem_score
             FROM market_tickers
             WHERE market_code = 'EGX'
               AND is_active = true
-              AND market_cap BETWEEN 300000000 AND 10000000000
-              AND pb_ratio > 0 AND pb_ratio < 1.5
-            ORDER BY pb_ratio ASC
+              AND market_cap > 100000000
+              AND (pb_ratio > 0 OR pe_ratio > 0)
+            ORDER BY pb_ratio ASC NULLS LAST
             LIMIT 5
             """
             rows = await conn.fetch(fallback_query)

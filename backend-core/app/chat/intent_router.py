@@ -247,7 +247,51 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
         3.0
     ),
 
-
+    # =========================================================================
+    # SECTOR G: EXTENDED SCENARIOS (Enterprise Phase)
+    # =========================================================================
+    
+    Intent.HIDDEN_GEMS: (
+        ["hidden gems", "undiscovered stocks", "hidden opportunities", "find gems", "small cap value", 
+         "overlooked stocks", "under the radar", "undervalued small caps", "underfollowed", "gem stocks",
+         "secret stocks", "best kept secrets", "sleeper stocks", "discovery", "discover stocks"],
+        ["كنوز مخفية", "فرص مخفية", "اسهم صغيرة", "اسهم غير معروفة", "اكتشافات", "جواهر السوق"],
+        3.0
+    ),
+    
+    Intent.MACRO_SCORE: (
+        ["macro score", "market score", "market environment", "macro environment", "market conditions",
+         "macro analysis", "economy outlook", "economic outlook", "macro outlook", "egypt economy"],
+        ["تحليل كلي", "بيئة السوق", "الاقتصاد الكلي", "نظرة اقتصادية", "حالة السوق"],
+        2.5
+    ),
+    
+    Intent.MARKET_TIMING: (
+        ["good time to buy", "is now good time", "should i invest now", "market timing", 
+         "when to buy", "is it time to invest", "buy now or wait", "entry point", "optimal time",
+         "waiting to invest", "when should i buy", "right time to buy", "is market high",
+         "is market low", "should i wait", "market opportunity"],
+        ["وقت مناسب للشراء", "هل الوقت مناسب", "افضل وقت للاستثمار", "متى اشتري", 
+         "هل اشتري الان", "السوق غالي", "السوق رخيص", "فرصة شراء"],
+        3.5
+    ),
+    
+    Intent.INDEX_COMPOSITION: (
+        ["egx 30", "egx30", "index composition", "index constituents", "index stocks", 
+         "what is in egx 30", "egx 30 stocks", "main index", "benchmark index", 
+         "index breakdown", "index sectors", "egx 30 sectors", "egx thirty"],
+        ["ايجي اكس 30", "مؤشر البورصة", "تركيبة المؤشر", "اسهم المؤشر", 
+         "مكونات المؤشر", "المؤشر الرئيسي", "الثلاثيني"],
+        3.0
+    ),
+    
+    Intent.MACRO_VIEW: (
+        ["macro view", "market overview", "full market analysis", "market outlook", 
+         "big picture", "macro perspective", "overall market", "comprehensive market",
+         "egypt market", "egx analysis", "market summary deep"],
+        ["نظرة شاملة", "تحليل شامل للسوق", "الصورة الكبيرة", "نظرة كلية", "ملخص السوق"],
+        2.5
+    ),
 
     # =========================================================================
     # SYSTEM & CHITCHAT

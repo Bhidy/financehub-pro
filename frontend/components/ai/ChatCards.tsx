@@ -32,6 +32,14 @@ import { Card, ChartPayload, Action } from "@/hooks/useAIChat";
 import { FinancialTable } from "./AnalystUI";
 import { InsightCard } from "./InsightCard";
 
+// Enterprise Extended Scenario Components
+import { MacroScoreCard } from "./MacroScoreCard";
+import { EducationalCard } from "./EducationalCard";
+import { MethodologyCard } from "./MethodologyCard";
+import { HiddenGemCard } from "./HiddenGemCard";
+import { IndexCompositionCard } from "./IndexCompositionCard";
+import { DisclaimerCard } from "./DisclaimerCard";
+
 // ============================================================
 // Stock Header Card
 // ============================================================
@@ -2327,6 +2335,31 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             return <InsightCard data={card.data} variant_override="bear" />;
         case "insight":
             return <InsightCard data={card.data} />;
+
+        // ============================================================
+        // EXTENDED SCENARIO COMPONENTS (Enterprise)
+        // ============================================================
+        case "macro_score":
+        case "market_timing":
+            return <MacroScoreCard data={card.data} />;
+        case "educational":
+        case "define_term":
+        case "definition":
+            return <EducationalCard data={card.data} />;
+        case "methodology":
+        case "screening_criteria":
+            return <MethodologyCard data={card.data} />;
+        case "hidden_gems":
+        case "gem_list":
+        case "discovery_list":
+            return <HiddenGemCard data={card.data} onStockClick={onSymbolClick} />;
+        case "index_composition":
+        case "index_view":
+            return <IndexCompositionCard data={card.data} onStockClick={onSymbolClick} />;
+        case "disclaimer":
+        case "disclaimer_card":
+            return <DisclaimerCard data={card.data} />;
+
         case "news_list":
             return <NewsListCard title={card.title} data={card.data as any} />;
         case "screener_results":

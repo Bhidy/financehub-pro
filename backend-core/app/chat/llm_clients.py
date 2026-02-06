@@ -36,7 +36,17 @@ def get_providers() -> List[LLMProvider]:
     """Get all configured providers in priority order."""
     providers = []
     
-    # Priority 1: Groq (fastest inference)
+    # Priority 1: Claude (Anthropic) - Most intelligent, best for financial analysis
+    if anthropic_key := settings.ANTHROPIC_API_KEY:
+        providers.append(LLMProvider(
+            name="anthropic",
+            base_url="https://api.anthropic.com/v1",
+            api_key=anthropic_key,
+            models=["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022"],
+            timeout=8.0
+        ))
+    
+    # Priority 2: Groq (fastest inference)
     if groq_key := settings.GROQ_API_KEY:
         providers.append(LLMProvider(
             name="groq",
@@ -46,7 +56,7 @@ def get_providers() -> List[LLMProvider]:
             timeout=5.0
         ))
     
-    # Priority 2: Cerebras (generous free tier: 14,400 RPD)
+    # Priority 3: Cerebras (generous free tier: 14,400 RPD)
     # Note: These are Optional in settings, so check if they exist
     cerebras_key = getattr(settings, "CEREBRAS_API_KEY", os.environ.get("CEREBRAS_API_KEY"))
     if cerebras_key:
@@ -58,7 +68,7 @@ def get_providers() -> List[LLMProvider]:
             timeout=8.0
         ))
     
-    # Priority 3: Mistral (1B tokens/month free)
+    # Priority 4: Mistral (1B tokens/month free)
     mistral_key = getattr(settings, "MISTRAL_API_KEY", os.environ.get("MISTRAL_API_KEY"))
     if mistral_key:
         providers.append(LLMProvider(
@@ -69,7 +79,7 @@ def get_providers() -> List[LLMProvider]:
             timeout=8.0
         ))
     
-    # Priority 4: Together AI ($25 free credits)
+    # Priority 5: Together AI ($25 free credits)
     together_key = getattr(settings, "TOGETHER_API_KEY", os.environ.get("TOGETHER_API_KEY"))
     if together_key:
         providers.append(LLMProvider(
@@ -80,7 +90,7 @@ def get_providers() -> List[LLMProvider]:
             timeout=10.0
         ))
     
-    # Priority 5: OpenRouter (50 RPD free)
+    # Priority 6: OpenRouter (50 RPD free)
     openrouter_key = settings.OPENROUTER_API_KEY 
     if openrouter_key:
         providers.append(LLMProvider(
@@ -175,6 +185,10 @@ class MultiProviderLLM:
     ) -> Optional[str]:
         """Make the actual API call to a provider."""
         
+        # Handle Anthropic (Claude) separately - different API format
+        if provider.name == "anthropic":
+            return await self._call_anthropic(provider, model, messages, max_tokens, temperature)
+        
         headers = {
             "Authorization": f"Bearer {provider.api_key}",
             "Content-Type": "application/json"
@@ -207,6 +221,63 @@ class MultiProviderLLM:
             
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             return content.strip() if content else None
+    
+    async def _call_anthropic(
+        self,
+        provider: LLMProvider,
+        model: str,
+        messages: List[Dict[str, str]],
+        max_tokens: int,
+        temperature: float
+    ) -> Optional[str]:
+        """
+        Call Anthropic's Claude API with proper format.
+        Claude uses /v1/messages with different request structure.
+        """
+        headers = {
+            "x-api-key": provider.api_key,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json"
+        }
+        
+        # Extract system message if present (Claude wants it separate)
+        system_content = None
+        user_messages = []
+        for msg in messages:
+            if msg["role"] == "system":
+                system_content = msg["content"]
+            else:
+                user_messages.append(msg)
+        
+        payload = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "messages": user_messages
+        }
+        
+        # Add system message if present
+        if system_content:
+            payload["system"] = system_content
+        
+        async with httpx.AsyncClient(timeout=provider.timeout) as client:
+            response = await client.post(
+                f"{provider.base_url}/messages",
+                headers=headers,
+                json=payload
+            )
+            
+            if response.status_code == 429:
+                raise Exception(f"429 Rate Limit Exceeded")
+            
+            response.raise_for_status()
+            data = response.json()
+            
+            # Claude returns content array with text blocks
+            content_blocks = data.get("content", [])
+            if content_blocks and len(content_blocks) > 0:
+                text_content = content_blocks[0].get("text", "")
+                return text_content.strip() if text_content else None
+            return None
     
     def get_status(self) -> Dict[str, Any]:
         """Get provider status for debugging."""

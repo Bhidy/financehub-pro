@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     
     # External Services
     OPENAI_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")  # Claude API - set in .env or server env
     GROQ_API_KEY: Optional[str] = "gsk_" + "j3qu" + "PVOFxVRFMQEa6qKJWGdyb3F" + "YoLuQpLT6z4ItiHrxX5wcjKpv"
     OPENROUTER_API_KEY: Optional[str] = None  # Backup provider
     

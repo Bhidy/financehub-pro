@@ -404,7 +404,7 @@ function ResponsiveAIAnalystContent() {
                 {/* ================================================================
                     MAIN CONTENT AREA (Matches Mockup)
                     ================================================================ */}
-                <div className="flex-1 flex flex-col min-w-0 h-full">
+                <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                     {/* Top Header Bar - StartaAI PRO badge + User button */}
                     <header className="flex-shrink-0 h-14 px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827]">
                         <div className="flex items-center gap-2">

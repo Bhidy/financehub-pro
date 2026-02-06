@@ -72,7 +72,6 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
             LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
             WHERE t.market_code = 'EGX'
-              AND t.is_active = true
               AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
               AND (t.pe_ratio > 0 OR t.pb_ratio > 0)
         )
@@ -110,7 +109,6 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 50::numeric as gem_score
             FROM market_tickers
             WHERE market_code = 'EGX'
-              AND is_active = true
               AND market_cap > 100000000
               AND (pb_ratio > 0 OR pe_ratio > 0)
             ORDER BY pb_ratio ASC NULLS LAST

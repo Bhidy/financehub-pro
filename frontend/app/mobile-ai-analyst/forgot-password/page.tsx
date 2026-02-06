@@ -158,7 +158,7 @@ function ForgotPasswordContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="min-h-screen w-full flex overflow-hidden bg-white dark:bg-[#0A0F1C]">
+            <div className="min-h-screen w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C]">
                 {/* Left Panel - Premium Marketing */}
                 <div className="hidden lg:flex w-[48%] relative overflow-hidden">
                     {/* Base Gradient */}
@@ -196,7 +196,7 @@ function ForgotPasswordContent() {
                                 </div>
                                 <span className="text-xl font-bold text-white tracking-tight">Starta</span>
                                 <div className="ml-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
-                                    <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">PRO</span>
+                                    <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">BETA</span>
                                 </div>
                             </Link>
                         </motion.div>
@@ -315,7 +315,7 @@ function ForgotPasswordContent() {
     // MOBILE LAYOUT - Ultra Premium Single Column
     // ========================================================================
     return (
-        <div className="relative w-full min-h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-hidden">
+        <div className="relative w-full h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-y-auto">
             {/* Animated Background */}
             <div className="fixed inset-0">
                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-[#14B8A6]/5 to-transparent dark:from-[#14B8A6]/10" />

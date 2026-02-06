@@ -7,6 +7,9 @@ import asyncpg
 from typing import Dict, Any, Optional
 from datetime import datetime
 
+# NEW: Import bull/bear case generators for structured responses
+from ..bull_bear_generator import generate_bull_bear_cases, generate_data_card
+
 
 def _format_number(value: float, decimals: int = 2) -> Optional[str]:
     """Format number with commas and decimals."""
@@ -254,12 +257,60 @@ async def handle_stock_price(
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليلي الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
 
+    # NEW: Generate structured response components (bull/bear cases, data card)
+    stock_data_for_analysis = {
+        'symbol': symbol,
+        'name': name,
+        'price': price,
+        'change_percent': change_pct,
+        'pe_ratio': pe_ratio,
+        'pb_ratio': pb_ratio,
+        'roe': roe,
+        'debt_equity': debt_equity,
+        'profit_margin': profit_margin,
+        'dividend_yield': dividend_yield,
+        'market_cap': market_cap,
+        'high_52w': high_52w,
+        'low_52w': low_52w,
+        'sector': sector,
+        'volume': volume
+    }
+    
+    # Generate bull/bear cases based on stock data
+    bull_case, bear_case = generate_bull_bear_cases(stock_data_for_analysis)
+    
+    # Generate data card for current position
+    data_card = generate_data_card(
+        symbol=symbol,
+        price=price,
+        change=change,
+        change_pct=change_pct,
+        currency=currency,
+        volume=volume
+    )
+    
+    # Disclaimer card (NEW structured format)
+    disclaimer_card = {
+        'icon': '⚠️',
+        'title': 'Educational Analysis' if language == 'en' else 'تحليل تعليمي',
+        'text': 'This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline.' if language == 'en' else 'هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية.'
+    }
+    
+    # Follow-up prompt (NEW)
+    follow_up_prompt = f"Would you like to see {symbol}'s historical financials or a technical chart breakdown?" if language == 'en' else f"هل تريد رؤية القوائم المالية التاريخية لـ {symbol} أو تحليل الرسم البياني الفني؟"
+
     return {
         'success': True,
         'message': message,
         'cards': cards,
         'actions': base_actions,
-        'disclaimer': 'Data is for informational purposes only. This is not investment advice.' if language == 'en' else 'البيانات لأغراض إعلامية فقط. هذه ليست نصيحة استثمارية.'
+        'disclaimer': 'Data is for informational purposes only. This is not investment advice.' if language == 'en' else 'البيانات لأغراض إعلامية فقط. هذه ليست نصيحة استثمارية.',
+        # NEW: Structured response components for premium UI
+        'bull_case': bull_case,
+        'bear_case': bear_case,
+        'data_card': data_card,
+        'disclaimer_card': disclaimer_card,
+        'follow_up_prompt': follow_up_prompt
     }
 
 

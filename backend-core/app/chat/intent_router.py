@@ -173,8 +173,8 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
 
     Intent.COMPANY_PROFILE: (
-        ["profile", "about", "what does it do", "business model", "sector", "industry", "headquarters", "competitors"],
-        ["ملف الشركة", "نبذة", "نشاط الشركة", "قطاع", "صناعة", "منافسين", "ماذا تعمل"],
+        ["profile", "about", "what does it do", "business model", "sector", "industry", "headquarters", "competitors", "ceo", "chairman", "management", "founded", "history", "who runs"],
+        ["ملف الشركة", "نبذة", "نشاط الشركة", "قطاع", "صناعة", "منافسين", "ماذا تعمل", "الرئيس التنفيذي", "رئيس مجلس الادارة", "تاريخ التاسيس", "من يدير"],
         1.0
     ),
 
@@ -502,7 +502,19 @@ class IntentRouter:
                     missing_fields=[]
                 )
             
-        # 7. Chart Overrides (The "Visual Fix")
+        # 7. Buy/Sell Advice Override (The "Follow-up Fix")
+        # Explicitly routes "Should I buy [SYMBOL]" to STOCK_SNAPSHOT
+        if any(p in merged_text for p in ["should i buy", "is it a buy", "worth buying", "good to buy", "buy or sell"]):
+             # If we have a symbol, treat as snapshot to get full data
+             if entities.get('symbol') or (context and context.get('last_symbol')):
+                  return IntentResult(
+                      intent=Intent.STOCK_SNAPSHOT,
+                      confidence=1.0,
+                      entities=entities,
+                      missing_fields=[]
+                  )
+
+        # 8. Chart Overrides (The "Visual Fix")
         # Explicitly routes "Chart [Symbol]" to STOCK_CHART with 1.0 confidence
         if any(w in merged_text for w in ["chart", "graph", "price history", "شارت", "رسم بياني"]):
              if entities.get('symbol') or (context and context.get('last_symbol')):

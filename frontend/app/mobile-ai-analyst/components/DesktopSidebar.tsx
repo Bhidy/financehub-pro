@@ -447,8 +447,16 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                         onClick={onSettings}
                                         className="w-full p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-3 hover:border-[#13b8a6]/30 hover:shadow-md transition-all group"
                                     >
-                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-105 transition-transform">
-                                            {user?.full_name?.charAt(0) || "U"}
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-105 transition-transform overflow-hidden relative">
+                                            {user?.avatar_url ? (
+                                                <img
+                                                    src={user.avatar_url}
+                                                    alt={user.full_name || "User"}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                user?.full_name?.charAt(0) || "U"
+                                            )}
                                         </div>
                                         <div className="flex-1 min-w-0 text-left">
                                             <p className="text-xs font-bold text-slate-700 dark:text-white truncate">
@@ -509,9 +517,17 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         {isAuthenticated ? (
                             <button
                                 onClick={onSettings}
-                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-md hover:scale-105 transition-transform"
+                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-md hover:scale-105 transition-transform overflow-hidden relative"
                             >
-                                {user?.full_name?.charAt(0) || "U"}
+                                {user?.avatar_url ? (
+                                    <img
+                                        src={user.avatar_url}
+                                        alt={user.full_name || "User"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    user?.full_name?.charAt(0) || "U"
+                                )}
                             </button>
                         ) : (
                             <button

@@ -161,9 +161,224 @@
   --height-input: 3rem;
   /* 48px */
   --height-button: 2.75rem;
-  /* 44px */
-  --height-button-sm: 2rem;
-  /* 32px */
+  /* Brainwave Palette (Exact Source) */
+}
+
+/* ========================================================================
+     THEME VARIABLES (Dynamic Palette)
+     MOVED OUTSIDE @theme
+     ======================================================================== */
+
+/* DEFAULT (MIDNIGHT TEAL - PERMANENT DARK THEME) */
+:root {
+  --color-n-1: #FFFFFF;
+  --color-n-2: #CAC6DD;
+  --color-n-3: #ADA8C3;
+  --color-n-4: #757185;
+  --color-n-5: #3F3A52;
+  --color-n-6: #252134;
+  /* Card BG */
+  --color-n-7: #15131D;
+  --color-n-8: #0E0C15;
+  /* Main BG */
+  --color-n-9: #474060;
+  --color-n-10: #43435C;
+  --color-n-11: #1B1B2E;
+  --color-n-12: #2E2A41;
+  --color-n-13: #6C7275;
+}
+
+@theme {
+  --color-stroke-1: #26242C;
+
+  --color-color-1: #13b8a6;
+  /* Teal */
+  --color-color-2: #3B82F6;
+  /* Blue */
+  --color-color-3: #FF776F;
+  --color-color-4: #7ADB78;
+  --color-color-5: #3B82F6;
+  /* Replaced Purple */
+  --color-color-6: #13b8a6;
+  /* Replaced Pink */
+
+  /* Typography Variables */
+  --font-sora: "Sora",
+    sans-serif;
+  --font-code: "Source Code Pro",
+    monospace;
+  --font-grotesk: "Space Grotesk",
+    sans-serif;
+}
+
+/* Fonts moved to top */
+
+@layer utilities {
+  .font-code {
+    font-family: var(--font-code);
+  }
+
+  .font-grotesk {
+    font-family: var(--font-grotesk);
+  }
+
+  .font-sora {
+    font-family: var(--font-sora);
+  }
+
+  .bg-grid-pattern {
+    background-image: url('/assets/grid.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  .bg-conic-gradient {
+    background-image: conic-gradient(from 225deg, #13b8a6, #3B82F6, #0F172A, #14B8A6, #13b8a6);
+  }
+
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Brainwave Typography System (Standard CSS Implementation for Stability) */
+  .h1 {
+    font-weight: 600;
+    font-size: 2.5rem;
+    line-height: 3.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .h1 {
+      font-size: 2.75rem;
+      line-height: 3.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .h1 {
+      font-size: 3.25rem;
+      line-height: 4.0625rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .h1 {
+      font-size: 3.75rem;
+      line-height: 4.5rem;
+    }
+  }
+
+  .h2 {
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 2.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .h2 {
+      font-size: 2rem;
+      line-height: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .h2 {
+      font-size: 2.5rem;
+      line-height: 3.5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .h2 {
+      font-size: 3rem;
+      line-height: 1.25;
+    }
+  }
+
+  .h3 {
+    font-size: 2rem;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 768px) {
+    .h3 {
+      font-size: 2.5rem;
+    }
+  }
+
+  .h4 {
+    font-size: 2rem;
+    line-height: 1.5;
+  }
+
+  .h5 {
+    font-size: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .h6 {
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 2rem;
+  }
+
+  .body-1 {
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .body-1 {
+      font-size: 1rem;
+      line-height: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .body-1 {
+      font-size: 1.25rem;
+      line-height: 2rem;
+    }
+  }
+
+  .body-2 {
+    font-weight: 300;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .body-2 {
+      font-size: 1rem;
+    }
+  }
+
+  .caption {
+    font-size: 0.875rem;
+  }
+
+  .tagline {
+    font-family: var(--font-grotesk);
+    font-weight: 300;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .quote {
+    font-family: var(--font-code);
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .button {
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 }
 
 /* ============================================================================
@@ -209,6 +424,36 @@
   --card-bg: #FFFFFF;
   --card-border: #E2E8F0;
   color-scheme: light !important;
+
+  /* Inverted Color Scale for Light Theme */
+  --color-n-1: #0E0C15;
+  /* Was White, now Dark (Text) */
+  --color-n-2: #3F3A52;
+  /* Was Light Gray, now Dark Gray */
+  --color-n-3: #757185;
+  /* Mid Gray */
+  --color-n-4: #ADA8C3;
+  /* Lighter Gray */
+  --color-n-5: #CAC6DD;
+  /* Pale Gray */
+  --color-n-6: #FFFFFF;
+  /* Was Dark Card, now White Card */
+  --color-n-7: #F1F5F9;
+  /* Was Darker Card, now Light Surface (Slate 100) */
+  --color-n-8: #F8FAFC;
+  /* Was Main BG, now Light BG (Slate 50) */
+  --color-n-9: #E2E8F0;
+  /* Was Dark Purple, now Light Border */
+  --color-n-10: #CBD5E1;
+  /* Was Purple, now Slate 300 */
+  --color-n-11: #FFFFFF;
+  /* Was Dark Blue, now White */
+  --color-n-12: #F1F5F9;
+  /* Was Dark, now Light */
+  --color-n-13: #94A3B8;
+  /* Slate 400 */
+
+  --color-header-bg: #FFFFFF;
 }
 
 /* ============================================================================
@@ -239,9 +484,7 @@ body {
    zoom: 0.80 = 80% scale = 20% zoom out
    ============================================================================ */
 @media (min-width: 1024px) {
-  body {
-    zoom: 0.80;
-  }
+  /* Zoom removed for standard scale */
 }
 
 /* Arabic Font Support */
@@ -255,28 +498,11 @@ body {
 /* ============================================================================
    TYPOGRAPHY HIERARCHY
    ============================================================================ */
-h1,
-.h1 {
-  font-size: var(--text-h1);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-}
-
-h2,
-.h2 {
-  font-size: var(--text-h2);
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-}
-
-h3,
-.h3 {
-  font-size: var(--text-h3);
-  font-weight: 500;
-  line-height: 1.3;
-}
+/* Dashboard Typography (Commented out to use Brainwave System)
+h1, .h1 { font-size: var(--text-h1); font-weight: 700; ... }
+h2, .h2 { font-size: var(--text-h2); font-weight: 700; ... }
+h3, .h3 { font-size: var(--text-h3); font-weight: 500; ... }
+*/
 
 /* Numeric Data Optimization */
 .font-tabular,
@@ -570,8 +796,42 @@ input:invalid:not(:placeholder-shown),
 }
 
 /* ============================================================================
-   CUSTOM SCROLLBAR (Premium, Minimal)
+
+/* ============================================================================
+   CUSTOM ANIMATIONS (Ultra Premium)
    ============================================================================ */
+@keyframes floating {
+  0% {
+    transform: translate(0, 0px);
+  }
+
+  50% {
+    transform: translate(0, 15px);
+  }
+
+  100% {
+    transform: translate(0, 0px);
+  }
+}
+
+.animate-float {
+  animation: floating 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floating 7s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-float-slow {
+  animation: floating 8s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.animate-float-reverse {
+  animation: floating 7s ease-in-out infinite reverse;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -691,49 +951,4 @@ a:focus-visible {
   }
 }
 
-/* ============================================================================
-   ZOOM COMPENSATION (Desktop Only)
-   Compensate for body { zoom: 0.80 } to ensure full screen coverage on desktop.
-   100% / 0.80 = 125%
-   Mobile uses standard 100vh/100vw (no compensation needed).
-   ============================================================================ */
-@layer utilities {
-
-  /* Default: Mobile - No zoom compensation needed */
-  .h-screen {
-    height: 100vh !important;
-  }
-
-  .min-h-screen {
-    min-height: 100vh !important;
-  }
-
-  .w-screen {
-    width: 100vw !important;
-  }
-
-  .min-w-screen {
-    min-width: 100vw !important;
-  }
-}
-
-/* Desktop zoom compensation (≥1024px) */
-@media (min-width: 1024px) {
-  @layer utilities {
-    .h-screen {
-      height: 125vh !important;
-    }
-
-    .min-h-screen {
-      min-height: 125vh !important;
-    }
-
-    .w-screen {
-      width: 125vw !important;
-    }
-
-    .min-w-screen {
-      min-width: 125vw !important;
-    }
-  }
-}
+/* Zoom Compensation Removed */

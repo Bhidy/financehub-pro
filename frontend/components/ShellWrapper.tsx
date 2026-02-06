@@ -13,7 +13,7 @@ interface ShellWrapperProps {
 const ISOLATED_ROUTE_PREFIXES = ["/mobile-ai-analyst"];
 
 // Exact paths that are isolated (including root for mobile domains)
-const ISOLATED_EXACT_PATHS = ["/login", "/register", "/forgot-password", "/setting", "/settings"];
+const ISOLATED_EXACT_PATHS = ["/login", "/register", "/forgot-password", "/setting", "/settings", "/Home"];
 
 // Domains that should always show mobile-only experience (no sidebar)
 const MOBILE_ONLY_DOMAINS = ["startamarkets.com", "www.startamarkets.com"];
@@ -56,10 +56,10 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
         // Just render children in a neutral wrapper to prevent flash
         // This prevents the sidebar from appearing during hydration
         return (
-            <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-                <div className="flex-1 overflow-auto">
+            <div className="flex-1 flex flex-col min-h-screen relative">
+                <main className="flex-1">
                     {children}
-                </div>
+                </main>
             </div>
         );
     }

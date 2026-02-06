@@ -12,6 +12,7 @@ export interface User {
     email: string;
     full_name: string | null;
     phone: string | null;
+    avatar_url?: string | null;
     role: string;
 }
 
@@ -23,6 +24,7 @@ interface AuthContextType {
     register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     getToken: () => string | null;
+    updateUser: (userData: Partial<User>) => void;
 }
 
 interface RegisterData {
@@ -53,10 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const savedUser = localStorage.getItem(USER_KEY);
         const savedToken = localStorage.getItem(TOKEN_KEY);
+        const savedAvatar = localStorage.getItem('user_avatar_url');
 
         if (savedUser && savedToken) {
             try {
-                setUser(JSON.parse(savedUser));
+                const parsedUser = JSON.parse(savedUser);
+                if (savedAvatar) {
+                    parsedUser.avatar_url = savedAvatar;
+                }
+                setUser(parsedUser);
             } catch (e) {
                 console.error("Failed to parse saved user:", e);
                 localStorage.removeItem(USER_KEY);
@@ -133,7 +140,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = useCallback(() => {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        localStorage.removeItem('user_avatar_url');
         setUser(null);
+    }, []);
+
+    const updateUser = useCallback((userData: Partial<User>) => {
+        setUser((prev) => {
+            if (!prev) return null;
+            const updated = { ...prev, ...userData };
+            localStorage.setItem(USER_KEY, JSON.stringify(updated));
+            return updated;
+        });
     }, []);
 
     return (
@@ -146,6 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 register,
                 logout,
                 getToken,
+                updateUser,
             }}
         >
             {children}

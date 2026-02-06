@@ -4,7 +4,9 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import ShellWrapper from "@/components/ShellWrapper";
+import SmoothScroll from "@/components/SmoothScroll";
 import { ToastProvider } from "@/components/ToastProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 
 // Inter - Primary Brand Font (Google Fonts)
@@ -20,6 +22,30 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Brainwave Fonts
+import { Sora, Source_Code_Pro, Space_Grotesk } from "next/font/google";
+
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
+  variable: "--font-sora",
+  display: "swap",
+});
+
+const sourceCodePro = Source_Code_Pro({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-code",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["300"],
+  variable: "--font-grotesk",
   display: "swap",
 });
 
@@ -57,7 +83,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased flex h-screen overflow-hidden bg-[var(--background)] transition-colors duration-300`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
       >
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"
@@ -88,13 +114,16 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <BuildInfo />
         </Suspense>
+        <SmoothScroll />
         <Providers>
-          <ToastProvider>
-            {/* ShellWrapper conditionally renders sidebar based on route */}
-            <ShellWrapper>
-              {children}
-            </ShellWrapper>
-          </ToastProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              {/* ShellWrapper conditionally renders sidebar based on route */}
+              <ShellWrapper>
+                {children}
+              </ShellWrapper>
+            </ToastProvider>
+          </ThemeProvider>
         </Providers>
       </body>
     </html>

@@ -16,6 +16,8 @@ import UsageLimitModal from "@/components/ai/UsageLimitModal";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+// NEW: Structured response components for bull/bear cases
+import { InsightCard, DisclaimerCard, FollowUpPrompt } from "@/components/ai/StructuredResponseCards";
 
 function AIAnalystPageContent() {
     const router = useRouter();
@@ -286,13 +288,48 @@ function AIAnalystPageContent() {
                                         </div>
                                     ) : (
                                         <div className="w-full space-y-4">
-                                            <PremiumMessageRenderer content={msg.response?.conversational_text || msg.content} />
-
-                                            {/* Dynamic Components Rendered Here (Charts, Cards, etc.) */}
+                                            {/* Dynamic Components Rendered BEFORE Text (Data First) */}
                                             {msg.response && (
                                                 <>
                                                     {msg.response.chart && <ChartCard chart={msg.response.chart} />}
                                                     {msg.response.cards && <ChatCards cards={msg.response.cards} language={msg.response.language} onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }} onExampleClick={handleSuggestionClick} showExport={true} />}
+                                                </>
+                                            )}
+
+                                            <PremiumMessageRenderer content={msg.response?.conversational_text || msg.content} />
+
+                                            {/* Dynamic Components Rendered AFTER Text (Insights) */}
+                                            {msg.response && (
+                                                <>
+                                                    {/* NEW: Bull/Bear Case Cards - Structured Response */}
+                                                    {(msg.response.bull_case || msg.response.bear_case) && (
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {msg.response.bull_case && (
+                                                                <InsightCard
+                                                                    variant={msg.response.bull_case.variant || 'success'}
+                                                                    title={msg.response.bull_case.title}
+                                                                    items={msg.response.bull_case.items}
+                                                                />
+                                                            )}
+                                                            {msg.response.bear_case && (
+                                                                <InsightCard
+                                                                    variant={msg.response.bear_case.variant || 'warning'}
+                                                                    title={msg.response.bear_case.title}
+                                                                    items={msg.response.bear_case.items}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* NEW: Disclaimer Card - Structured Response */}
+                                                    {msg.response.disclaimer_card && (
+                                                        <DisclaimerCard
+                                                            icon={msg.response.disclaimer_card.icon}
+                                                            title={msg.response.disclaimer_card.title}
+                                                            text={msg.response.disclaimer_card.text}
+                                                        />
+                                                    )}
+
                                                     {msg.response.learning_section && (
                                                         <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl p-4">
                                                             <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2 text-sm"><Sparkles className="w-3 h-3" /> {msg.response.learning_section.title}</h4>

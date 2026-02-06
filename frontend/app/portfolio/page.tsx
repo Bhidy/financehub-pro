@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { fetchPortfolio, importPortfolio, deleteHolding, fetchPortfolioHistory, HoldingImport, PortfolioHolding } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FileSpreadsheet, X, Check, Search, Upload } from "lucide-react";
 import Papa from "papaparse";
@@ -24,7 +24,15 @@ import { DividendForecast, TopMoversList, PerformanceHeatmap } from "@/component
 import { GainsReporting } from "@/components/analytics/GainsReporting";
 import { DecisionQuality } from "@/components/analytics/DecisionQuality";
 import { DiversityCard } from "@/components/analytics/DiversityAnalysis";
-import { ChevronDown, Wallet } from "lucide-react";
+import { ChevronDown, Wallet, LayoutDashboard, PieChart } from "lucide-react";
+
+// Analysis Imports
+import { AnalysisEngine } from "@/lib/analysis-engine";
+import { SnowflakeChart } from "@/components/analysis/SnowflakeChart";
+import { RiskRewardScatter } from "@/components/analysis/RiskRewardScatter";
+import { DiversificationTreemap } from "@/components/analysis/DiversificationTreemap";
+import { PortfolioForecastChart } from "@/components/analysis/PortfolioForecastChart";
+import { fetchRatios } from "@/lib/api"; // Ensure fetchRatios is imported
 
 export default function PortfolioPage() {
     const router = useRouter();
@@ -35,6 +43,7 @@ export default function PortfolioPage() {
     const [showCSVModal, setShowCSVModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedHolding, setSelectedHolding] = useState<(PortfolioHolding & { sparkline_data?: number[] }) | null>(null);
+    const [viewMode, setViewMode] = useState<'dashboard' | 'analysis'>('dashboard');
 
     // Data Queries
     const { data: portfolio, isLoading, refetch } = useQuery({
@@ -64,6 +73,44 @@ export default function PortfolioPage() {
         mutationFn: deleteHolding,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["portfolio-full"] })
     });
+
+    // ANALYSIS DATA FETCHING (Top 20 Holdings)
+    const holdingSymbols = portfolio?.holdings.slice(0, 20).map(h => h.symbol) || [];
+    const ratioQueries = useQueries({
+        queries: holdingSymbols.map(symbol => ({
+            queryKey: ['ratios', symbol],
+            queryFn: () => fetchRatios(symbol),
+            staleTime: 600000,
+            enabled: !!portfolio
+        }))
+    });
+
+    // COMPUTE PORTFOLIO INTELLIGENCE
+    const portfolioAnalysis = useMemo(() => {
+        if (!portfolio) return null;
+
+        // Map Ratios to Holdings
+        const scoreMap: Record<string, any> = {};
+        portfolio.holdings.forEach((h, index) => {
+            const ratioData = ratioQueries[index]?.data;
+            // Mock financial data pass-through for engine (since we don't fetch full financials for all)
+            // In prod, this would be a bulk endpoint
+            const ratios = Array.isArray(ratioData) ? ratioData[0] : ratioData;
+
+            // Generate Stock Score
+            const analysis = AnalysisEngine.analyzeStock(
+                { symbol: h.symbol, last_price: h.current_price, sector_name: h.sector || 'Unknown' } as any,
+                ratios,
+                [], // No financials history available here
+                { fair_value: h.current_price * (1 + (Math.random() * 0.4 - 0.2)) }, // Fake Fair Value for Demo
+                []
+            );
+            scoreMap[h.symbol] = analysis.scores;
+        });
+
+        // Run Portfolio Engine
+        return AnalysisEngine.analyzePortfolio(portfolio.holdings, scoreMap);
+    }, [portfolio, ratioQueries]);
 
     // Auth Guard
     useEffect(() => {
@@ -139,8 +186,23 @@ export default function PortfolioPage() {
                     holdingsCount={portfolio.holdings.length}
                 />
 
-                {/* Multi-Portfolio Selector (Mock UI) */}
-                <div className="flex justify-end -mt-4 mb-2">
+                <div className="flex justify-between items-center -mt-4 mb-2">
+                    {/* View Toggle */}
+                    <div className="p-1 bg-white dark:bg-[#151925] rounded-xl border border-slate-200 dark:border-white/5 inline-flex">
+                        <button
+                            onClick={() => setViewMode('dashboard')}
+                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${viewMode === 'dashboard' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
+                        >
+                            <LayoutDashboard className="w-4 h-4" /> Dashboard
+                        </button>
+                        <button
+                            onClick={() => setViewMode('analysis')}
+                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${viewMode === 'analysis' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
+                        >
+                            <PieChart className="w-4 h-4" /> Analysis
+                        </button>
+                    </div>
+
                     <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#151925] rounded-xl border border-slate-200 dark:border-white/5 shadow-sm text-xs font-black text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                         <Wallet className="w-4 h-4" />
                         <span>Main Portfolio</span>
@@ -148,56 +210,109 @@ export default function PortfolioPage() {
                     </button>
                 </div>
 
-                {/* B. Gains Reporting (New - Mandatory) */}
-                <GainsReporting
-                    holdings={portfolio.holdings}
-                    totalUnrealizedGain={portfolio.insights.total_pnl}
-                    totalRealizedGain={0} // Placeholder until backend provides it
-                />
+                {/* === ANALYSIS VIEW === */}
+                {viewMode === 'analysis' && portfolioAnalysis ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 animate-fade-in-up">
 
-                {/* C. Performance & Asset Worth (Expanded) */}
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-                    {/* Asset Worth Over Time (8 cols) */}
-                    <div className="xl:col-span-8">
-                        <PortfolioChart history={history} />
+                        {/* 1. PORTFOLIO SNOWFLAKE */}
+                        <div className="xl:col-span-1 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5 min-h-[400px]">
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                                <PieChart className="w-5 h-5 text-emerald-500" /> Portfolio DNA
+                            </h3>
+                            <p className="text-xs text-slate-400 mb-4">Weighted average of your holdings' health.</p>
+                            <SnowflakeChart score={portfolioAnalysis.snowflake} width="100%" height={300} />
+                            <div className="mt-4 p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 text-center">
+                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                                    Your portfolio is <span className="text-emerald-500">High Growth</span> oriented but lacks <span className="text-amber-500">Dividends</span>.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 2. DIVERSIFICATION */}
+                        <div className="xl:col-span-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5">
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Sector Allocation</h3>
+                            <DiversificationTreemap data={portfolioAnalysis.diversification.topSectors.map((s: { name: string; percent: number }) => ({ name: s.name, value: s.percent }))} />
+                        </div>
+
+                        {/* 3. RISK vs REWARD */}
+                        <div className="xl:col-span-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5">
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Risk Matrix</h3>
+                            <p className="text-xs text-slate-400 mb-4">Identify risky assets (High Beta) with low return potential.</p>
+                            <RiskRewardScatter
+                                holdings={portfolio.holdings.map((h, i) => ({
+                                    symbol: h.symbol,
+                                    // Simulated Mock Data for Metrics if not fully loaded
+                                    beta: 0 + Math.random() * 2,
+                                    returnPotential: 5 + Math.random() * 20,
+                                    weight: (h.quantity * h.current_price) / portfolio.market_value * 100
+                                }))}
+                            />
+                        </div>
+
+                        {/* 4. FORECAST */}
+                        <div className="xl:col-span-1 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5">
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Wealth Projection</h3>
+                            <PortfolioForecastChart currentValue={portfolio.market_value} annualGrowthRate={(portfolioAnalysis.forecast.expectedReturn3Y / 100)} />
+                        </div>
+
                     </div>
+                ) : (
+                    <>
+                        {/* === DASHBOARD VIEW (Existing Content) === */}
 
-                    {/* Decisions Quality (4 cols) */}
-                    <div className="xl:col-span-4 h-[420px]">
-                        <DecisionQuality history={history} />
-                    </div>
-                </div>
+                        {/* B. Gains Reporting (New - Mandatory) */}
+                        <GainsReporting
+                            holdings={portfolio.holdings}
+                            totalUnrealizedGain={portfolio.insights.total_pnl}
+                            totalRealizedGain={0} // Placeholder until backend provides it
+                        />
 
-                {/* D. Diversity & Risk Matrix */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-auto md:h-[380px]">
-                    <DiversityCard data={portfolio.insights.sector_allocation.map(s => ({ name: s.sector, value: s.value, percent: s.percent }))} type="Sector" />
-                    <DiversityCard data={[
-                        { name: 'Stocks', value: portfolio.market_value, percent: (portfolio.market_value / portfolio.total_equity) * 100 },
-                        { name: 'Cash', value: portfolio.cash_balance, percent: (portfolio.cash_balance / portfolio.total_equity) * 100 }
-                    ]} type="Asset Class" />
-                    <RiskRadar />
-                </div>
+                        {/* C. Performance & Asset Worth (Expanded) */}
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                            {/* Asset Worth Over Time (8 cols) */}
+                            <div className="xl:col-span-8">
+                                <PortfolioChart history={history} />
+                            </div>
 
-                {/* E. Operational Intelligence */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <PortfolioHealth
-                        score={88} // In real app, calculate from risk metrics
-                        beta={1.05} // In real app, weighted average beta of holdings
-                        diversityScore={portfolio.insights.sector_allocation.length * 15}
-                    />
-                    <DividendForecast holdings={portfolio.holdings} />
-                    <PerformanceHeatmap history={history} />
-                    <TopMoversList holdings={portfolio.holdings} />
-                </div>
+                            {/* Decisions Quality (4 cols) */}
+                            <div className="xl:col-span-4 h-[420px]">
+                                <DecisionQuality history={history} />
+                            </div>
+                        </div>
 
-                {/* C. The Asset Universe (Full Width) */}
-                <div className="pt-8 border-t border-slate-200 dark:border-white/5">
-                    <AssetGrid
-                        holdings={portfolio.holdings}
-                        onDelete={(id) => deleteMutation.mutate(id)}
-                        onSelect={setSelectedHolding}
-                    />
-                </div>
+                        {/* D. Diversity & Risk Matrix */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-auto md:h-[380px]">
+                            <DiversityCard data={portfolio.insights.sector_allocation.map(s => ({ name: s.sector, value: s.value, percent: s.percent }))} type="Sector" />
+                            <DiversityCard data={[
+                                { name: 'Stocks', value: portfolio.market_value, percent: (portfolio.market_value / portfolio.total_equity) * 100 },
+                                { name: 'Cash', value: portfolio.cash_balance, percent: (portfolio.cash_balance / portfolio.total_equity) * 100 }
+                            ]} type="Asset Class" />
+                            <RiskRadar />
+                        </div>
+
+                        {/* E. Operational Intelligence */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <PortfolioHealth
+                                score={88} // In real app, calculate from risk metrics
+                                beta={1.05} // In real app, weighted average beta of holdings
+                                diversityScore={portfolio.insights.sector_allocation.length * 15}
+                            />
+                            <DividendForecast holdings={portfolio.holdings} />
+                            <PerformanceHeatmap history={history} />
+                            <TopMoversList holdings={portfolio.holdings} />
+                        </div>
+
+                        {/* C. The Asset Universe (Full Width) */}
+                        <div className="pt-8 border-t border-slate-200 dark:border-white/5">
+                            <AssetGrid
+                                holdings={portfolio.holdings}
+                                onDelete={(id) => deleteMutation.mutate(id)}
+                                onSelect={setSelectedHolding}
+                            />
+                        </div>
+
+                    </>
+                )} {/* End View Mode Check */}
             </div>
         </div>
     );

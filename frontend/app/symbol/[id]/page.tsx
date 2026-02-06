@@ -6,9 +6,11 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchAnalystRatings, fetchInsiderTrading,
-    fetchEarnings, fetchFairValues, fetchMarketBreadth, fetchIntraday,
+    fetchEarnings, fetchFairValues, fetchMarketBreadth, fetchIntraday, fetchRatios,
     Ticker
 } from "@/lib/api";
+import { AnalysisEngine } from "@/lib/analysis-engine";
+import { AnalysisSection } from "@/components/analysis/AnalysisSection";
 import { createChart, ColorType, CrosshairMode, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries, Time } from "lightweight-charts";
 import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
@@ -182,7 +184,7 @@ export default function SymbolDetailPage() {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null);
 
-    const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership" | "analysts" | "earnings" | "insider">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership" | "analysts" | "earnings" | "insider" | "deep-dive">("overview");
     const [chartPeriod, setChartPeriod] = useState("1m");
     const [chartStyle, setChartStyle] = useState<"candle" | "line" | "area">("area");
     const [isIntraday, setIsIntraday] = useState(false);
@@ -200,6 +202,7 @@ export default function SymbolDetailPage() {
     const { data: allEarnings = [] } = useQuery({ queryKey: ["earnings", symbol], queryFn: () => fetchEarnings(symbol), enabled: !!symbol });
     const { data: allFairValues = [] } = useQuery({ queryKey: ["fair-values"], queryFn: () => fetchFairValues(), enabled: !!symbol });
     const { data: marketBreadth = [] } = useQuery({ queryKey: ["market-breadth"], queryFn: () => fetchMarketBreadth(), enabled: !!symbol });
+    const { data: ratios } = useQuery({ queryKey: ["ratios", symbol], queryFn: () => fetchRatios(symbol), enabled: !!symbol });
 
     const analystRatings = useMemo(() => allAnalystRatings.filter((r: any) => r.symbol === symbol), [allAnalystRatings, symbol]);
     const insiderTrades = useMemo(() => allInsiderTrading.filter((t: any) => t.symbol === symbol), [allInsiderTrading, symbol]);
@@ -219,6 +222,26 @@ export default function SymbolDetailPage() {
             operating_cashflow: f.operating_cashflow || rp.operating_cashflow,
         };
     }), [financials]);
+
+    const analysisResult = useMemo(() => {
+        if (!stockData) return null;
+        // Transform API array to object if needed, or pass first item if ratios comes as array
+        const ratioObj = Array.isArray(ratios) && ratios.length > 0 ? ratios[0] : (ratios || {});
+        return AnalysisEngine.analyzeStock(stockData, ratioObj, parsedFinancials, fairValue, []);
+    }, [stockData, ratios, parsedFinancials, fairValue]);
+
+    const peers = useMemo(() => {
+        if (!stockData || !tickers) return [];
+        return tickers
+            .filter((t: Ticker) => t.sector_name === stockData.sector_name && t.symbol !== symbol)
+            .slice(0, 5)
+            .map((t: Ticker) => ({
+                symbol: t.symbol,
+                pe: Number(t.pe_ratio) || 0,
+                growth: Number(t.change_percent) * 2, // Mock growth if not usually available in list
+                marketCap: Number(t.market_cap) || 0
+            }));
+    }, [stockData, tickers, symbol]);
 
     const rawData = isIntraday ? intradayData : ohlcData;
     const chartData = useMemo(() => {
@@ -405,6 +428,7 @@ export default function SymbolDetailPage() {
                 <div className="flex items-center gap-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-2.5 shadow-xl border border-slate-100 dark:border-white/5 mb-8 overflow-x-auto">
                     {[
                         { id: "overview", label: "Overview", icon: Activity, color: "from-slate-700 to-slate-800" },
+                        { id: "deep-dive", label: "Deep Dive", icon: Sparkles, color: "from-indigo-600 to-violet-600" },
                         { id: "financials", label: "Financials", icon: FileText, color: "from-teal-600 to-emerald-600" },
                         { id: "ownership", label: "Ownership", icon: Users, color: "from-orange-500 to-amber-500" },
                         { id: "analysts", label: "Analysts", icon: Target, color: "from-cyan-500 to-blue-500" },
@@ -486,6 +510,18 @@ export default function SymbolDetailPage() {
                                     </div>
                                 </PremiumCard>
                             </>
+                        )}
+
+                        {activeTab === "deep-dive" && analysisResult && (
+                            <AnalysisSection
+                                analysis={analysisResult}
+                                ticker={stockData}
+                                financials={parsedFinancials}
+                                forecast={[]} // Pass empty forecast for now, component handles it
+                                peers={peers}
+                                ownership={shareholders.map((s: any) => ({ type: s.shareholder_type, percent: Number(s.ownership_percent) }))}
+                                fairValue={Number(fairValue?.fair_value) || 0}
+                            />
                         )}
 
                         {/* OTHER TABS - Same white theme styling */}

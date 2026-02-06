@@ -148,7 +148,7 @@ function MobileRegisterPageContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="min-h-screen w-full flex overflow-hidden bg-white dark:bg-[#0A0F1C]">
+            <div className="min-h-screen w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C]">
                 {/* Left Panel - Premium Marketing */}
                 <div className="hidden lg:flex w-[48%] relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0A0F1C] via-[#0D1425] to-[#0A1628]" />
@@ -181,7 +181,7 @@ function MobileRegisterPageContent() {
                                 </div>
                                 <span className="text-xl font-bold text-white tracking-tight">Starta</span>
                                 <div className="ml-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
-                                    <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">PRO</span>
+                                    <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">BETA</span>
                                 </div>
                             </Link>
                         </motion.div>
@@ -292,7 +292,7 @@ function MobileRegisterPageContent() {
     // MOBILE LAYOUT - Ultra Premium Single Column
     // ========================================================================
     return (
-        <div className="min-h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0B1121] flex flex-col font-sans transition-colors duration-300" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="h-[100dvh] w-full bg-[#F8FAFC] dark:bg-[#0B1121] flex flex-col font-sans transition-colors duration-300 overflow-y-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             {/* Background Effects */}
             <div className="fixed inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_50%_0%,_#14B8A6_0%,_#0B1121_50%)] opacity-20 pointer-events-none" />
 

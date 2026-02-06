@@ -249,3 +249,78 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
             {'label': '👥 Shareholders', 'label_ar': '👥 المساهمين', 'action_type': 'query', 'payload': f'{symbol} shareholders'},
         ]
     }
+
+async def handle_company_profile(conn: asyncpg.Connection, symbol: str, language: str = 'en') -> Dict[str, Any]:
+    """Handle company profile/info requests."""
+    # 1. Fetch from market_tickers (Basic Info)
+    ticker = await conn.fetchrow("SELECT name_en, name_ar, sector_name, industry, currency, market_cap, last_price, isin FROM market_tickers WHERE symbol = $1", symbol)
+    if not ticker: return {'success': False, 'message': "Not found"}
+
+    name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
+    sector = ticker['sector_name'] if ticker['sector_name'] else "N/A"
+    
+    # 2. Try to fetch from company_profiles for richer data (if it exists)
+    # We use a safe try/except block to avoid crashing if table doesn't exist yet
+    profile_data = {}
+    try:
+        profile_row = await conn.fetchrow("""
+            SELECT description, website, headquarters, founded_year, ceo, chairman
+            FROM company_profiles WHERE symbol = $1
+        """, symbol)
+        if profile_row:
+            profile_data = dict(profile_row)
+    except Exception:
+        # Table might not exist or schema diff
+        pass
+
+    # Construct Profile Data
+    data = {
+        'symbol': symbol,
+        'name': name,
+        'sector': sector,
+        'industry': ticker['industry'] or "General",
+        'market_cap': int(ticker['market_cap']) if ticker['market_cap'] else 0,
+        'price': float(ticker['last_price']) if ticker['last_price'] else 0,
+        'currency': ticker['currency'],
+        'isin': ticker['isin'],
+        'description': profile_data.get('description'),
+        'website': profile_data.get('website'),
+        'headquarters': profile_data.get('headquarters'),
+        'founded': profile_data.get('founded_year'),
+        'ceo': profile_data.get('ceo'),
+        'chairman': profile_data.get('chairman')
+    }
+
+    # Message Construction
+    if language == 'ar':
+        top = f"🏢 **ملف الشركة: {name} ({symbol})**"
+        lines = [
+            f"**القطاع:** {sector}",
+            f"**الصناعة:** {ticker['industry'] or '-'}",
+            f"**القيمة السوقية:** {(int(ticker['market_cap'])/1000000):.1f} مليون {ticker['currency']}" if ticker['market_cap'] else ""
+        ]
+        if data.get('ceo'): lines.append(f"**الرئيس التنفيذي:** {data['ceo']}")
+        if data.get('description'): lines.append(f"\n{data['description']}")
+    else:
+        top = f"🏢 **Company Profile: {name} ({symbol})**"
+        lines = [
+            f"**Sector:** {sector}",
+            f"**Industry:** {ticker['industry'] or '-'}",
+            f"**Market Cap:** {(int(ticker['market_cap'])/1000000):.1f}M {ticker['currency']}" if ticker['market_cap'] else ""
+        ]
+        if data.get('ceo'): lines.append(f"**CEO:** {data['ceo']}")
+        if data.get('description'): lines.append(f"\n{data['description']}")
+    
+    msg = top + "\n" + "\n".join([l for l in lines if l])
+
+    return {
+        'success': True,
+        'message': msg,
+        'cards': [
+            {'type': 'company_profile', 'title': 'Company Info', 'data': data}
+        ],
+        'actions': [
+             {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+             {'label': '👥 Shareholders', 'label_ar': '👥 المساهمين', 'action_type': 'query', 'payload': f'{symbol} shareholders'},
+        ]
+    }

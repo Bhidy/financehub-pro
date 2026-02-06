@@ -30,6 +30,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
     """
     try:
         # Fetch hidden gem candidates
+        # Note: ROE, profit_margin columns are in market_tickers (from stock_snapshot)
         query = """
         WITH sector_averages AS (
             SELECT 
@@ -51,9 +52,9 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 t.pe_ratio,
                 t.pb_ratio,
                 t.dividend_yield,
-                f.roe,
-                f.net_profit_margin,
-                f.revenue_growth,
+                t.roe,
+                t.profit_margin as net_profit_margin,
+                t.revenue_growth,
                 sa.avg_pb,
                 sa.avg_pe,
                 -- Calculate undervaluation score
@@ -68,7 +69,6 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                     ELSE 0
                 END as pe_discount
             FROM market_tickers t
-            LEFT JOIN financials_snapshot f ON t.symbol = f.symbol
             LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
             WHERE t.market_code = 'EGX'
               AND t.is_active = true
@@ -92,25 +92,24 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         rows = await conn.fetch(query)
         
         if not rows:
-            # Fallback to simpler query
+            # Fallback to simpler query using market_tickers columns directly
             fallback_query = """
             SELECT 
-                t.symbol,
-                t.name_en,
-                t.market_cap,
-                t.sector_name,
-                t.pe_ratio,
-                t.pb_ratio,
-                t.logo_url,
-                f.roe,
-                f.net_profit_margin
-            FROM market_tickers t
-            LEFT JOIN financials_snapshot f ON t.symbol = f.symbol
-            WHERE t.market_code = 'EGX'
-              AND t.is_active = true
-              AND t.market_cap BETWEEN 300000000 AND 10000000000
-              AND t.pb_ratio > 0 AND t.pb_ratio < 1.5
-            ORDER BY t.pb_ratio ASC
+                symbol,
+                name_en,
+                market_cap,
+                sector_name,
+                pe_ratio,
+                pb_ratio,
+                logo_url,
+                roe,
+                profit_margin as net_profit_margin
+            FROM market_tickers
+            WHERE market_code = 'EGX'
+              AND is_active = true
+              AND market_cap BETWEEN 300000000 AND 10000000000
+              AND pb_ratio > 0 AND pb_ratio < 1.5
+            ORDER BY pb_ratio ASC
             LIMIT 5
             """
             rows = await conn.fetch(fallback_query)

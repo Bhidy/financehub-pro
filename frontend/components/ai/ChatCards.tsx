@@ -30,6 +30,7 @@ function cn(...inputs: ClassValue[]) {
 }
 import { Card, ChartPayload, Action } from "@/hooks/useAIChat";
 import { FinancialTable } from "./AnalystUI";
+import { InsightCard } from "./InsightCard";
 
 // ============================================================
 // Stock Header Card
@@ -2319,6 +2320,13 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             return <FinancialTable financials={card.data} />;
         case "dividends_table":
             return <DividendsTableCard title={card.title} data={card.data} />;
+        // Insights (Bull/Bear) - Ultra Premium
+        case "bull_case":
+            return <InsightCard data={card.data} variant_override="bull" />;
+        case "bear_case":
+            return <InsightCard data={card.data} variant_override="bear" />;
+        case "insight":
+            return <InsightCard data={card.data} />;
         case "news_list":
             return <NewsListCard title={card.title} data={card.data as any} />;
         case "screener_results":

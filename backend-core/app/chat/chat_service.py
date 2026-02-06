@@ -29,11 +29,17 @@ Routes messages through the deterministic pipeline:
 """
 
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 import asyncpg
 
-from .schemas import ChatRequest, ChatResponse, Intent, Card, Action, ResponseMeta, CardType
+from .schemas import (
+    ChatRequest, ChatResponse, Intent, Card, Action, ResponseMeta, CardType,
+    # NEW: Structured Response Components
+    InsightCard, InsightCardVariant, DataCard, StockListItem,
+    MacroScoreCard, MacroFactor, ComparisonTable, ComparisonRow,
+    EducationalCard, DisclaimerCard
+)
 from .text_normalizer import normalize_text, extract_potential_symbols
 from .intent_router import IntentRouter, create_router
 from .symbol_resolver import SymbolResolver
@@ -58,7 +64,7 @@ from .handlers.market_handler import handle_market_summary, handle_most_active
 from .handlers.statistics_handler import handle_stock_statistics
 from .handlers.analysis_handler import (
     handle_technical_indicators, handle_ownership, 
-    handle_fair_value, handle_financial_health
+    handle_fair_value, handle_financial_health, handle_company_profile
 )
 from .handlers.news_handler import handle_news
 from .handlers.deep_dive_handler import (
@@ -401,6 +407,103 @@ class ChatService:
                         is_returning_user=is_returning_user
                     )
 
+                    # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)
+                    # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)
+                    if conversational_text:
+                        print("DEBUG: WRITING TO /tmp/debug_chat.log")
+                        with open("/tmp/debug_chat.log", "a") as f:
+                            f.write(f"\n\n--- [SESSION {session_id}] ---\n")
+                            f.write(conversational_text)
+                            f.write("\n------------------------------\n")
+
+                    # ------------------------------------------------------------------
+                    # ROBUST "FUZZY" INSIGHTS PARSER (ENTERPRISE GRADE)
+                    # ------------------------------------------------------------------
+                    if conversational_text:
+                        import re
+                        clean_text = conversational_text
+                        
+                        # Definition of Robust Patterns (Handle bold, caps, spacing)
+                        patterns = {
+                            'bull': r"(?:\[BULL_CASE\]|\*\*\[BULL_CASE\]\*\*|\[BULL CASE\]|BULL CASE[:\n])",
+                            'bear': r"(?:\[BEAR_CASE\]|\*\*\[BEAR_CASE\]\*\*|\[BEAR CASE\]|BEAR CASE[:\n])"
+                        }
+
+                        # Function to extract and clean
+                        def extract_section(text, start_pattern, end_pattern_list):
+                            # Find start
+                            match = re.search(start_pattern, text, re.IGNORECASE)
+                            if not match:
+                                return None, text
+                            
+                            start_idx = match.end()
+                            content_start = text[start_idx:]
+                            
+                            # Find nearest end
+                            nearest_end = len(content_start)
+                            for end_pat in end_pattern_list:
+                                end_match = re.search(end_pat, content_start, re.IGNORECASE)
+                                if end_match and end_match.start() < nearest_end:
+                                    nearest_end = end_match.start()
+                            
+                            # Extract raw content
+                            raw_content = content_start[:nearest_end]
+                            
+                            # Clean Bullet Points
+                            points = []
+                            for line in raw_content.split('\n'):
+                                line = line.strip()
+                                # Clean leading bullets (*, -, •, 1.)
+                                if line:
+                                    cleaned = re.sub(r"^[\-\*•\d\.]+\s*", "", line).strip()
+                                    if cleaned and len(cleaned) > 5: # Filter empty/short junk
+                                        points.append(cleaned)
+                            
+                            # Remove from original text (including header)
+                            # We use split/join to remove the exact section locally found
+                            full_section_str = text[match.start():start_idx + nearest_end]
+                            new_text = text.replace(full_section_str, "").strip()
+                            
+                            return points, new_text
+
+                        # 1. Extract BULL CASE (Stop at Bear or End)
+                        bull_points, clean_text = extract_section(
+                            clean_text, 
+                            patterns['bull'], 
+                            [patterns['bear']]
+                        )
+
+                        # 2. Extract BEAR CASE (Stop at End)
+                        bear_points, clean_text = extract_section(
+                            clean_text, 
+                            patterns['bear'], 
+                            []
+                        )
+
+                        # 3. Validation & Injection
+                        if bull_points:
+                            print(f"[ChatService] 📈 Extracted {len(bull_points)} BULL points (Robust)")
+                            # Prepend to ensure visibility, or Append? 
+                            # User wants: Chart -> Analysis -> Bull/Bear. So Append is correct.
+                            result_data.setdefault('cards', []).append({
+                                "type": "bull_case",
+                                "title": "BULL CASE ANALYSIS",
+                                "data": { "points": bull_points, "variant": "bull" }
+                            })
+                            
+                        if bear_points:
+                            print(f"[ChatService] 📉 Extracted {len(bear_points)} BEAR points (Robust)")
+                            result_data.setdefault('cards', []).append({
+                                "type": "bear_case",
+                                "title": "BEAR CASE RISKS",
+                                "data": { "points": bear_points, "variant": "bear" }
+                            })
+
+                        # 4. Final Text Cleanliness Check
+                        # Remove any lingering empty tags or artifacts
+                        clean_text = re.sub(r"\[BULL_CASE\]|\[BEAR_CASE\]", "", clean_text).strip()
+                        conversational_text = clean_text
+
                     # ... (Safety Fallback Logic) ...
                     if not conversational_text:
                         # ... existing fallback code ...
@@ -562,9 +665,22 @@ class ChatService:
                 
                 return result
                 
+            # CRITICAL FIX: Extract structured response components from handler result
+            # These are generated by price_handler.py and other handlers for premium UI
+            handler_bull_case = result_data.get('bull_case')
+            handler_bear_case = result_data.get('bear_case')
+            handler_data_card = result_data.get('data_card')
+            handler_disclaimer_card = result_data.get('disclaimer_card')
+            handler_follow_up = result_data.get('follow_up_prompt') or follow_up_prompt
+            
             response = self._build_response(
                 result_data, intent, intent_result.confidence, entities, start_time, language,
-                conversational_text, fact_explanations, learning_section, follow_up_prompt
+                conversational_text, fact_explanations, learning_section, handler_follow_up,
+                # NEW: Pass structured response components from handler
+                data_card=handler_data_card,
+                bull_case=handler_bull_case,
+                bear_case=handler_bear_case,
+                disclaimer_card=handler_disclaimer_card
             )
             
             # 9. Log analytics
@@ -872,6 +988,11 @@ class ChatService:
                 return handle_clarify_symbol(language=language)
             return await handle_dividends(self.conn, symbol, 10, language)
         
+        elif intent == Intent.COMPANY_PROFILE:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            return await handle_company_profile(self.conn, symbol, language)
+
         elif intent == Intent.COMPARE_STOCKS:
             compare_symbols = entities.get('compare_symbols', [])
             if not compare_symbols or len(compare_symbols) < 2:
@@ -1001,10 +1122,21 @@ class ChatService:
         language: str,
         conversational_text: Optional[str] = None,
         fact_explanations: Optional[Dict[str, str]] = None,
-        learning_section: Optional[Dict[str, Any]] = None,  # NEW
-        follow_up_prompt: Optional[str] = None  # NEW
+        learning_section: Optional[Dict[str, Any]] = None,
+        follow_up_prompt: Optional[str] = None,
+        # NEW: Structured Components (HTML Mockup Match)
+        data_card: Optional['DataCard'] = None,
+        bull_case: Optional['InsightCard'] = None,
+        bear_case: Optional['InsightCard'] = None,
+        insight_cards: Optional[List['InsightCard']] = None,
+        stock_list: Optional[List['StockListItem']] = None,
+        macro_score: Optional['MacroScoreCard'] = None,
+        comparison_table: Optional['ComparisonTable'] = None,
+        educational_cards: Optional[List['EducationalCard']] = None,
+        disclaimer_card: Optional['DisclaimerCard'] = None,
+        framework_text: Optional[str] = None
     ) -> ChatResponse:
-        """Build the final ChatResponse."""
+        """Build the final ChatResponse with structured components."""
         
         latency_ms = int((time.time() - start_time) * 1000)
         
@@ -1071,9 +1203,21 @@ class ChatService:
         return ChatResponse(
             message_text=final_message_text,
             conversational_text=conversational_text,
+            framework_text=framework_text,
             fact_explanations=fact_explanations,
-            learning_section=learning_section,  # NEW
-            follow_up_prompt=follow_up_prompt,  # NEW
+            # NEW: Structured Components
+            data_card=data_card,
+            bull_case=bull_case,
+            bear_case=bear_case,
+            insight_cards=insight_cards or [],
+            stock_list=stock_list or [],
+            macro_score=macro_score,
+            comparison_table=comparison_table,
+            educational_cards=educational_cards or [],
+            disclaimer_card=disclaimer_card,
+            # Existing
+            learning_section=learning_section,
+            follow_up_prompt=follow_up_prompt,
             language=language,
             cards=cards,
             chart=chart,
@@ -1086,7 +1230,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="4.4.0-STARTA-STRUCTURE"  # DEPLOYMENT VERIFICATION
+                backend_version="5.0.0-STRUCTURED-RESPONSE"  # DEPLOYMENT VERIFICATION
             )
         )
 

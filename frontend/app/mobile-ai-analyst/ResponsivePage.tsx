@@ -139,12 +139,12 @@ function ResponsiveAIAnalystContent() {
         }
     }, [searchParams]);
 
-    // Set sidebar state based on auth
-    useEffect(() => {
-        if (!isAuthLoading) {
-            setIsSidebarOpen(isAuthenticated);
-        }
-    }, [isAuthLoading, isAuthenticated]);
+    // Set sidebar state based on auth - REMOVED to keep closed by default
+    // useEffect(() => {
+    //     if (!isAuthLoading) {
+    //         setIsSidebarOpen(isAuthenticated);
+    //     }
+    // }, [isAuthLoading, isAuthenticated]);
 
     const {
         messages,
@@ -288,8 +288,7 @@ function ResponsiveAIAnalystContent() {
                             effectiveDesktop ? "w-full max-w-[90%]" : "w-full max-w-[95%]"
                         )}>
                             <div className="w-full space-y-4 px-2">
-                                <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
-
+                                {/* 1. Specialized UI Components (Chart & Cards) - NOW FIRST */}
                                 {m.response?.chart && (
                                     <div className="mb-2">
                                         <ChartCard chart={m.response.chart} />
@@ -304,6 +303,9 @@ function ResponsiveAIAnalystContent() {
                                         onExampleClick={handleExampleClick}
                                     />
                                 )}
+
+                                {/* 2. Premium Text Message Renderer (NOW AFTER DATA) */}
+                                <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
 
                                 {m.response?.fact_explanations && (
                                     <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5 px-2">
@@ -458,8 +460,16 @@ function ResponsiveAIAnalystContent() {
                                             : "bg-[#13b8a6] hover:bg-[#0f8f82]"
                                     )}
                                 >
-                                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">
-                                        {user?.full_name?.charAt(0) || "U"}
+                                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold overflow-hidden relative">
+                                        {user?.avatar_url ? (
+                                            <img
+                                                src={user.avatar_url}
+                                                alt={user.full_name || "User"}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            user?.full_name?.charAt(0) || "U"
+                                        )}
                                     </div>
                                     {user?.full_name?.split(' ')[0] || "User"}
                                 </button>
@@ -522,7 +532,7 @@ function ResponsiveAIAnalystContent() {
                                                         onChange={(e) => setQuery(e.target.value)}
                                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                                         placeholder={typewriterPlaceholder}
-                                                        className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 text-base"
+                                                        className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-base"
                                                     />
                                                     <button
                                                         onClick={handleSend}
@@ -620,7 +630,7 @@ function ResponsiveAIAnalystContent() {
                                         onChange={(e) => setQuery(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                         placeholder="Ask about Egyptian stocks..."
-                                        className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm"
+                                        className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm"
                                     />
                                     <button
                                         onClick={handleSend}
@@ -717,7 +727,7 @@ function ResponsiveAIAnalystContent() {
                                                         onChange={(e) => setQuery(e.target.value)}
                                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                                         placeholder="Compare HRHO vs..."
-                                                        className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium"
+                                                        className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm font-medium"
                                                     />
                                                     <button
                                                         onClick={handleSend}

@@ -33,7 +33,7 @@ type Tab = 'personal' | 'security' | 'app';
 
 export default function MobileSettingsPage() {
     const router = useRouter();
-    const { user, logout, isAuthenticated, isLoading } = useAuth();
+    const { user, logout, isAuthenticated, isLoading, updateUser } = useAuth();
     const { getRoute } = useMobileRoutes();
     const [activeTab, setActiveTab] = useState<Tab>('personal');
 
@@ -59,9 +59,9 @@ export default function MobileSettingsPage() {
             {/* ================================================================
                 DESKTOP LAYOUT - Two Column with Sidebar
                 ================================================================ */}
-            <div className="hidden lg:flex min-h-screen">
+            <div className="hidden lg:flex h-screen overflow-hidden">
                 {/* Left Sidebar */}
-                <div className="w-[320px] bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-white/5 flex flex-col">
+                <div className="w-[320px] bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-white/5 flex flex-col overflow-y-auto">
                     {/* Logo */}
                     <div className="p-6 border-b border-slate-100 dark:border-white/5">
                         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -158,7 +158,7 @@ export default function MobileSettingsPage() {
                     {/* Content */}
                     <div className="px-8 py-8 max-w-3xl">
                         <AnimatePresence mode="wait">
-                            {activeTab === 'personal' && <DesktopPersonalTab key="personal" user={user} />}
+                            {activeTab === 'personal' && <DesktopPersonalTab key="personal" user={user} updateUser={updateUser} />}
                             {activeTab === 'security' && <DesktopSecurityTab key="security" logout={logout} />}
                             {activeTab === 'app' && <DesktopAppTab key="app" />}
                         </AnimatePresence>
@@ -169,7 +169,7 @@ export default function MobileSettingsPage() {
             {/* ================================================================
                 MOBILE LAYOUT
                 ================================================================ */}
-            <div className="lg:hidden min-h-screen flex flex-col">
+            <div className="lg:hidden h-[100dvh] flex flex-col overflow-hidden">
                 {/* Header */}
                 <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-white/80 dark:bg-[#0A0F1C]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
                     <button
@@ -224,7 +224,7 @@ export default function MobileSettingsPage() {
                     {/* Tab Content */}
                     <div className="px-5">
                         <AnimatePresence mode="wait">
-                            {activeTab === 'personal' && <PersonalTab key="personal" user={user} />}
+                            {activeTab === 'personal' && <PersonalTab key="personal" user={user} updateUser={updateUser} />}
                             {activeTab === 'security' && <SecurityTab key="security" logout={logout} />}
                             {activeTab === 'app' && <AppTab key="app" />}
                         </AnimatePresence>
@@ -292,7 +292,7 @@ function DesktopProfileCard({ user }: { user: any }) {
                             <Check className="w-3 h-3" /> Verified
                         </span>
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full">
-                            <Sparkles className="w-3 h-3" /> Pro
+                            <Sparkles className="w-3 h-3" /> Beta
                         </span>
                     </div>
                 </div>
@@ -301,7 +301,7 @@ function DesktopProfileCard({ user }: { user: any }) {
     );
 }
 
-function DesktopPersonalTab({ user }: { user: any }) {
+function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) => void }) {
     const [isLoading, setIsLoading] = useState(false);
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
@@ -317,6 +317,7 @@ function DesktopPersonalTab({ user }: { user: any }) {
         setSuccessMsg("");
         try {
             await updateProfile(formData);
+            updateUser(formData);
             setSuccessMsg("Profile updated successfully");
         } catch (err: any) {
             setErrorMsg(err.response?.data?.detail || "Failed to update profile");
@@ -655,14 +656,14 @@ function MobileProfileHeader({ user }: { user: any }) {
                     <Check className="w-3 h-3" /> Verified
                 </span>
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full">
-                    <Sparkles className="w-3 h-3" /> Pro
+                    <Sparkles className="w-3 h-3" /> Beta
                 </span>
             </div>
         </div>
     );
 }
 
-function PersonalTab({ user }: { user: any }) {
+function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) => void }) {
     const [isLoading, setIsLoading] = useState(false);
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
@@ -678,6 +679,7 @@ function PersonalTab({ user }: { user: any }) {
         setSuccessMsg("");
         try {
             await updateProfile(formData);
+            updateUser(formData);
             setSuccessMsg("Profile updated successfully");
         } catch (err: any) {
             setErrorMsg(err.response?.data?.detail || "Failed to update profile");

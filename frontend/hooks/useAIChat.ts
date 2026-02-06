@@ -69,12 +69,74 @@ export interface ResponseMeta {
 export interface ChatResponse {
     message_text: string;
     conversational_text?: string; // New Hybrid Layer
+    framework_text?: string; // NEW: Analytical framework section
     fact_explanations?: Record<string, string>; // Legacy Fact Layer
-    learning_section?: {  // NEW: Educational bullets
+
+    // NEW: Structured Response Components (HTML Mockup Match)
+    data_card?: {
+        label?: string;
+        icon?: string;
+        price: string;
+        change: string;
+        change_positive: boolean;
+        volume_context?: string;
+    };
+    bull_case?: {
+        variant: 'success' | 'warning' | 'info' | 'neutral';
         title: string;
         items: string[];
     };
-    follow_up_prompt?: string;  // NEW: Soft follow-up suggestion
+    bear_case?: {
+        variant: 'success' | 'warning' | 'info' | 'neutral';
+        title: string;
+        items: string[];
+    };
+    insight_cards?: Array<{
+        variant: 'success' | 'warning' | 'info' | 'neutral';
+        title: string;
+        items: string[];
+    }>;
+    stock_list?: Array<{
+        ticker: string;
+        company_name: string;
+        score: number;
+        metrics: Record<string, string>;
+    }>;
+    macro_score?: {
+        score: number;
+        max_score?: number;
+        assessment: string;
+        factors: Array<{
+            name: string;
+            points: number;
+            max_points: number;
+            status: 'positive' | 'neutral' | 'negative';
+        }>;
+    };
+    comparison_table?: {
+        headers: string[];
+        rows: Array<{ metric: string; values: string[] }>;
+        personality_profiles?: Record<string, string>;
+    };
+    educational_cards?: Array<{
+        variant: 'definition' | 'example' | 'formula' | 'when_misleading';
+        title: string;
+        content: string;
+    }>;
+    disclaimer_card?: {
+        icon?: string;
+        title?: string;
+        text?: string;
+    };
+
+    // Existing structured components
+    learning_section?: {  // Educational bullets
+        title: string;
+        items: string[];
+    };
+    follow_up_prompt?: string;  // Soft follow-up suggestion
+
+    // UI elements
     message_text_ar?: string;
     language: "ar" | "en" | "mixed";
     cards: Card[];

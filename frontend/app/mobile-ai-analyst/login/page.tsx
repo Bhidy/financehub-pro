@@ -109,7 +109,7 @@ function LoginPageContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="min-h-screen w-full flex overflow-hidden">
+            <div className="min-h-screen w-full flex overflow-y-auto">
                 {/* ================================================================
                     LEFT PANEL - Premium Dark Gradient with Animated Effects
                     ================================================================ */}
@@ -424,7 +424,7 @@ function LoginPageContent() {
     // MOBILE LAYOUT - Ultra Premium Single Column
     // ========================================================================
     return (
-        <div className="relative w-full min-h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-hidden">
+        <div className="relative w-full h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-y-auto">
             {/* Animated Background */}
             <div className="fixed inset-0">
                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-[#14B8A6]/5 to-transparent dark:from-[#14B8A6]/10" />

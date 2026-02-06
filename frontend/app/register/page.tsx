@@ -135,7 +135,7 @@ function RegisterPageContent() {
     ];
 
     return (
-        <div className="min-h-screen w-full flex overflow-hidden bg-white dark:bg-[#0A0F1C]">
+        <div className="min-h-screen w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C]">
             {/* ================================================================
                 LEFT PANEL - Ultra Premium Dark Gradient with Benefits
                 ================================================================ */}
@@ -175,7 +175,7 @@ function RegisterPageContent() {
                             </div>
                             <span className="text-xl font-bold text-white tracking-tight">Starta</span>
                             <div className="ml-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
-                                <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">PRO</span>
+                                <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">BETA</span>
                             </div>
                         </div>
                     </motion.div>

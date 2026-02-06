@@ -157,6 +157,89 @@ class ChartType(str, Enum):
     FINANCIAL_GROWTH = "financial_growth"
 
 
+# ============================================================================
+# NEW: Structured Response Components (HTML Mockup Match)
+# ============================================================================
+
+class InsightCardVariant(str, Enum):
+    """Insight card visual variants."""
+    SUCCESS = "success"   # Green border - Bull Case
+    WARNING = "warning"   # Red border - Bear Case
+    INFO = "info"         # Blue border - Educational
+    NEUTRAL = "neutral"   # Gray border - General insight
+
+
+class InsightCard(BaseModel):
+    """Bull/Bear case insight card with icon and bullets."""
+    variant: InsightCardVariant
+    title: str  # e.g. "📈 Bull Case (+45% upside)"
+    items: List[str]  # Bullet points
+
+
+class DataCard(BaseModel):
+    """Current position data card (price, change, volume)."""
+    label: str = "CURRENT POSITION"
+    icon: str = "📊"
+    price: str  # e.g. "EGP 12.45"
+    change: str  # e.g. "+0.78 (6.67%)"
+    change_positive: bool
+    volume_context: Optional[str] = None  # e.g. "2.3M shares (28% above 3-month avg)"
+
+
+class StockListItem(BaseModel):
+    """Stock item in a screener list with score."""
+    ticker: str
+    company_name: str
+    score: int  # 0-100 undervaluation score
+    metrics: Dict[str, str]  # e.g. {"P/B": "0.9x", "P/E": "5.5x", "ROE": "18.2%"}
+
+
+class MacroFactor(BaseModel):
+    """Single macro scoring factor."""
+    name: str  # e.g. "GDP Growth"
+    points: int  # Points achieved
+    max_points: int  # Max possible
+    status: Literal["positive", "neutral", "negative"]
+
+
+class MacroScoreCard(BaseModel):
+    """Macro environment score card (0-100)."""
+    score: int  # 0-100
+    max_score: int = 100
+    assessment: str  # e.g. "Cautiously Constructive"
+    factors: List[MacroFactor]
+
+
+class ComparisonRow(BaseModel):
+    """Single row in peer comparison table."""
+    metric: str
+    values: List[str]  # One per stock being compared
+
+
+class ComparisonTable(BaseModel):
+    """Peer comparison table."""
+    headers: List[str]  # Stock tickers/names
+    rows: List[ComparisonRow]
+    personality_profiles: Optional[Dict[str, str]] = None  # {ticker: "The quality name..."}
+
+
+class EducationalCard(BaseModel):
+    """Educational definition/example card."""
+    variant: Literal["definition", "example", "formula", "when_misleading"]
+    title: str
+    content: str
+
+
+class DisclaimerCard(BaseModel):
+    """Disclaimer warning card."""
+    icon: str = "⚠️"
+    title: str = "Educational Analysis"
+    text: str = "This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline."
+
+
+# Extended ChatRequest to add market context
+
+
 class ChatRequest(BaseModel):
     """Incoming chat request."""
     message: str = Field(..., min_length=1, max_length=500)
@@ -200,18 +283,37 @@ class ResponseMeta(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """Full chat response."""
+    """Full chat response with structured components for premium UI."""
+    # Core text layers
     message_text: str  # The "Robotic" fallback or title
-    conversational_text: Optional[str] = None # The "Human" voice (Starta)
-    fact_explanations: Optional[Dict[str, str]] = None # Legacy - kept for compatibility
-    learning_section: Optional[Dict[str, Any]] = None  # NEW: {"title": "...", "items": ["..."]}
-    follow_up_prompt: Optional[str] = None  # NEW: Soft follow-up suggestion
+    conversational_text: Optional[str] = None  # The "Human" voice (Starta)
+    framework_text: Optional[str] = None  # NEW: Analytical framework section
+    
+    # Legacy compatibility
+    fact_explanations: Optional[Dict[str, str]] = None
+    
+    # NEW: Structured Response Components (HTML Mockup Match)
+    data_card: Optional[DataCard] = None  # Current position card
+    bull_case: Optional[InsightCard] = None  # Green bull case card
+    bear_case: Optional[InsightCard] = None  # Red bear case card
+    insight_cards: List[InsightCard] = Field(default_factory=list)  # Additional insights
+    stock_list: List[StockListItem] = Field(default_factory=list)  # Screener results
+    macro_score: Optional[MacroScoreCard] = None  # Macro environment score
+    comparison_table: Optional[ComparisonTable] = None  # Peer comparison
+    educational_cards: List[EducationalCard] = Field(default_factory=list)  # Definitions/examples
+    disclaimer_card: Optional[DisclaimerCard] = None  # Educational disclaimer
+    
+    # Existing structured components
+    learning_section: Optional[Dict[str, Any]] = None  # {\"title\": \"...\", \"items\": [\"...\"]}
+    follow_up_prompt: Optional[str] = None  # Soft follow-up suggestion
+    
+    # UI elements
     message_text_ar: Optional[str] = None
     language: Literal["ar", "en", "mixed"] = "en"
-    cards: List[Card] = Field(default_factory=list)
+    cards: List[Card] = Field(default_factory=list)  # Legacy card system
     chart: Optional[ChartPayload] = None
     actions: List[Action] = Field(default_factory=list)
-    disclaimer: Optional[str] = None
+    disclaimer: Optional[str] = None  # Legacy text disclaimer
     meta: ResponseMeta
 
 

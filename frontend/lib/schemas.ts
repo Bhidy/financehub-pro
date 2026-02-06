@@ -16,6 +16,9 @@ export const TickerSchema = z.object({
     name_ar: z.string().nullable().optional(),
     sector_name: z.string().nullable().optional(),
     volume: safeNumber,
+    pe_ratio: safeNumber,
+    market_cap: safeNumber,
+    book_value: safeNumber,
     market_code: z.string().nullable().optional(),
 });
 

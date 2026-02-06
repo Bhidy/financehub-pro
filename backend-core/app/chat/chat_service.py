@@ -1113,20 +1113,20 @@ class ChatService:
         
         elif intent == Intent.HIDDEN_GEMS:
              from .handlers.extended_scenarios import handle_hidden_gems
-             return await handle_hidden_gems(self.conn, language, context)
+             return await handle_hidden_gems(self.conn, language)
         
         elif intent == Intent.MACRO_SCORE or intent == Intent.MARKET_TIMING:
              from .handlers.extended_scenarios import handle_macro_score
-             return await handle_macro_score(self.conn, language, context)
+             return await handle_macro_score(self.conn, language)
         
         elif intent == Intent.INDEX_COMPOSITION:
              from .handlers.extended_scenarios import handle_index_composition
-             return await handle_index_composition(self.conn, language, context)
+             return await handle_index_composition(self.conn, language)
         
         elif intent == Intent.MACRO_VIEW:
              # Full macro view combines market summary + macro score
              from .handlers.extended_scenarios import handle_macro_score
-             return await handle_macro_score(self.conn, language, context)
+             return await handle_macro_score(self.conn, language)
 
         else:
             return handle_unknown(language)

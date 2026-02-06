@@ -30,7 +30,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
     """
     try:
         # Fetch hidden gem candidates
-        # Note: ROE, profit_margin columns are in market_tickers (from stock_snapshot)
+        # Note: ROE, profit_margin columns are in stock_statistics, not market_tickers
         query = """
         WITH sector_averages AS (
             SELECT 
@@ -52,9 +52,9 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 t.pe_ratio,
                 t.pb_ratio,
                 t.dividend_yield,
-                t.roe,
-                t.profit_margin as net_profit_margin,
-                t.revenue_growth,
+                ss.roe,
+                ss.profit_margin as net_profit_margin,
+                ss.revenue_growth,
                 sa.avg_pb,
                 sa.avg_pe,
                 -- Calculate undervaluation score
@@ -69,6 +69,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                     ELSE 0
                 END as pe_discount
             FROM market_tickers t
+            LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
             LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
             WHERE t.market_code = 'EGX'
               AND t.is_active = true
@@ -92,7 +93,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         rows = await conn.fetch(query)
         
         if not rows:
-            # Fallback to simpler query using market_tickers columns directly
+            # Fallback to simpler query without stock_statistics join
             fallback_query = """
             SELECT 
                 symbol,
@@ -102,8 +103,8 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 pe_ratio,
                 pb_ratio,
                 logo_url,
-                roe,
-                profit_margin as net_profit_margin
+                NULL as roe,
+                NULL as net_profit_margin
             FROM market_tickers
             WHERE market_code = 'EGX'
               AND is_active = true

@@ -404,7 +404,7 @@ function ResponsiveAIAnalystContent() {
                 {/* ================================================================
                     MAIN CONTENT AREA (Matches Mockup)
                     ================================================================ */}
-                <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+                <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
                     {/* Top Header Bar - StartaAI PRO badge + User button */}
                     <header className="flex-shrink-0 h-14 px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827]">
                         <div className="flex items-center gap-2">
@@ -503,7 +503,7 @@ function ResponsiveAIAnalystContent() {
                     </AnimatePresence>
 
                     {/* Main Content */}
-                    <main ref={mainRef} className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#0F172A]">
+                    <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto bg-[#F8FAFC] dark:bg-[#0F172A]">
                         <div className="max-w-4xl mx-auto px-6 py-8">
                             {/* DESIGN MODE CONTENT SWITCHING (Only if showWelcome is true) */}
                             {showWelcome ? (

@@ -106,12 +106,15 @@ export interface ChatResponse {
         score: number;
         max_score?: number;
         assessment: string;
+        assessment_detail?: string;  // NEW: Extended assessment
         factors: Array<{
             name: string;
             points: number;
             max_points: number;
             status: 'positive' | 'neutral' | 'negative';
         }>;
+        positives?: string[];  // NEW: What's working
+        negatives?: string[];  // NEW: Concerns
     };
     comparison_table?: {
         headers: string[];
@@ -127,6 +130,49 @@ export interface ChatResponse {
         icon?: string;
         title?: string;
         text?: string;
+    };
+
+    // NEW: Premium World-Class Components (Phase 2)
+    framework_card?: {
+        icon?: string;
+        title: string;
+        subtitle?: string;
+        items: string[];
+        border_color?: 'blue' | 'green' | 'amber' | 'teal';
+    };
+    character_cards?: Array<{
+        emoji: string;
+        nickname: string;
+        ticker: string;
+        company_name?: string;
+        profile: string;
+        good: string[];
+        bad: string[];
+    }>;
+    quantified_drivers?: {
+        title?: string;
+        icon?: string;
+        drivers: Array<{
+            name: string;
+            impact: string;
+            detail?: string;
+        }>;
+        total_impact?: string;
+    };
+    index_composition?: {
+        index_name: string;
+        icon?: string;
+        sectors: Array<{
+            name: string;
+            weight: string;
+            constituents: string[];
+        }>;
+        recent_changes?: {
+            added?: string[];
+            removed?: string[];
+        };
+        top_by_weight?: Array<{ ticker: string; weight: string }>;
+        characteristics?: string;
     };
 
     // Existing structured components

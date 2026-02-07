@@ -315,14 +315,25 @@ function ResponsiveAIAnalystContent() {
                                 )}
 
                                 {/* Data Cards - Keep for stock metrics display */}
-                                {m.response?.cards && m.response.cards.length > 0 && (
-                                    <ChatCards
-                                        cards={m.response.cards}
-                                        language={language}
-                                        onSymbolClick={handleSymbolClick}
-                                        onExampleClick={handleExampleClick}
-                                    />
-                                )}
+                                {/* Filter out cards that WorldClassMessage already renders to prevent duplicates */}
+                                {(() => {
+                                    const worldClassHandledTypes = [
+                                        'bull_case', 'bear_case', 'learning_section',
+                                        'disclaimer', 'disclaimer_card', 'follow_up_prompt',
+                                        'follow_up', 'error'
+                                    ];
+                                    const filteredCards = (m.response?.cards || []).filter(
+                                        (card: any) => !worldClassHandledTypes.includes(card.type)
+                                    );
+                                    return filteredCards.length > 0 ? (
+                                        <ChatCards
+                                            cards={filteredCards}
+                                            language={language}
+                                            onSymbolClick={handleSymbolClick}
+                                            onExampleClick={handleExampleClick}
+                                        />
+                                    ) : null;
+                                })()}
 
                                 {/* Fact Explanations (Legacy support) */}
                                 {m.response?.fact_explanations && (

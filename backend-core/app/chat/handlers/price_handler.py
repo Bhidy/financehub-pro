@@ -351,21 +351,23 @@ async def handle_stock_price(
     follow_up_prompt = f"Would you like to see {symbol}'s historical financials or a technical chart breakdown?" if language == 'en' else f"هل تريد رؤية القوائم المالية التاريخية لـ {symbol} أو تحليل الرسم البياني الفني؟"
 
     # Append structured components to cards list for rendering
+    # IMPORTANT: Convert Pydantic models to dicts for Card.data validation
     if data_card:
-        # Insert at the beginning or specific position? 
-        # Usually Data Card is first. But we already have 'snapshot' card (Line 212).
-        # snapshot card is legacy. data_card is the new "Current Position".
-        # Let's append it. Frontend renders in order.
-        cards.append({'type': 'data_card', 'data': data_card})
+        cards.append({'type': 'data_card', 'data': data_card.model_dump() if hasattr(data_card, 'model_dump') else data_card})
     
     if bull_case:
-        cards.append({'type': 'bull_case', 'title': 'Bull Case', 'data': bull_case})
+        cards.append({'type': 'bull_case', 'title': 'Bull Case', 'data': bull_case.model_dump() if hasattr(bull_case, 'model_dump') else bull_case})
         
     if bear_case:
-        cards.append({'type': 'bear_case', 'title': 'Bear Case Risks', 'data': bear_case})
+        cards.append({'type': 'bear_case', 'title': 'Bear Case Risks', 'data': bear_case.model_dump() if hasattr(bear_case, 'model_dump') else bear_case})
 
     if disclaimer_card:
         cards.append({'type': 'disclaimer_card', 'data': disclaimer_card})
+
+    # Convert Pydantic models to dicts for top-level response
+    bull_case_dict = bull_case.model_dump() if hasattr(bull_case, 'model_dump') and bull_case else None
+    bear_case_dict = bear_case.model_dump() if hasattr(bear_case, 'model_dump') and bear_case else None
+    data_card_dict = data_card.model_dump() if hasattr(data_card, 'model_dump') and data_card else None
 
     return {
         'success': True,
@@ -376,9 +378,9 @@ async def handle_stock_price(
         'follow_up_prompt': follow_up_prompt,
         # CRITICAL: Top-level structured components for WorldClassMessage rendering
         # These are extracted by chat_service._build_response() 
-        'bull_case': bull_case,
-        'bear_case': bear_case,
-        'data_card': data_card,
+        'bull_case': bull_case_dict,
+        'bear_case': bear_case_dict,
+        'data_card': data_card_dict,
         'disclaimer_card': disclaimer_card
     }
 

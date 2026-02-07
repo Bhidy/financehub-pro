@@ -674,6 +674,11 @@ class ChatService:
             handler_data_card = result_data.get('data_card')
             handler_disclaimer_card = result_data.get('disclaimer_card')
             handler_follow_up = result_data.get('follow_up_prompt') or follow_up_prompt
+            # NEW: Premium World-Class Components (Phase 2)
+            handler_framework_card = result_data.get('framework_card')
+            handler_character_cards = result_data.get('character_cards')
+            handler_quantified_drivers = result_data.get('quantified_drivers')
+            handler_index_composition = result_data.get('index_composition')
             
             response = self._build_response(
                 result_data, intent, intent_result.confidence, entities, start_time, language,
@@ -682,7 +687,12 @@ class ChatService:
                 data_card=handler_data_card,
                 bull_case=handler_bull_case,
                 bear_case=handler_bear_case,
-                disclaimer_card=handler_disclaimer_card
+                disclaimer_card=handler_disclaimer_card,
+                # NEW: Premium World-Class Components (Phase 2)
+                framework_card=handler_framework_card,
+                character_cards=handler_character_cards,
+                quantified_drivers=handler_quantified_drivers,
+                index_composition=handler_index_composition
             )
             
             # 9. Log analytics

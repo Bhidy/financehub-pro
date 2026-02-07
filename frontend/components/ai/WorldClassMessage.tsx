@@ -68,15 +68,18 @@ function FrameworkCard({ data }: { data: any }) {
 
 /** Bull Case Insight Card - Green left border */
 function BullCaseCard({ data }: { data: any }) {
-    if (!data || !data.points?.length) return null;
+    // Backend uses 'items', compatibility with 'points' as fallback
+    const items = data?.items || data?.points || [];
+    if (!data || !items.length) return null;
+
     return (
         <div className="border-l-4 border-l-emerald-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-emerald-50 to-emerald-50/30 dark:from-emerald-900/15 dark:to-transparent">
             <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                 <span>📈</span>
-                Bull Case {data.upside && `(+${data.upside}% upside)`}
+                {data.title || `Bull Case ${data.upside ? `(+${data.upside}% upside)` : ''}`}
             </div>
             <ul className="space-y-1.5 ml-1">
-                {(data.points || []).map((item: string, i: number) => (
+                {items.map((item: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
                         <span className="text-emerald-500 mt-0.5">•</span>
                         <span className="leading-relaxed">{item}</span>
@@ -89,15 +92,18 @@ function BullCaseCard({ data }: { data: any }) {
 
 /** Bear Case Insight Card - Red left border */
 function BearCaseCard({ data }: { data: any }) {
-    if (!data || !data.points?.length) return null;
+    // Backend uses 'items', compatibility with 'points' as fallback
+    const items = data?.items || data?.points || [];
+    if (!data || !items.length) return null;
+
     return (
         <div className="border-l-4 border-l-red-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-red-50 to-red-50/30 dark:from-red-900/15 dark:to-transparent">
             <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                 <span>📉</span>
-                Bear Case {data.downside && `(${data.downside}% downside)`}
+                {data.title || `Bear Case ${data.downside ? `(-${data.downside}% downside)` : ''}`}
             </div>
             <ul className="space-y-1.5 ml-1">
-                {(data.points || []).map((item: string, i: number) => (
+                {items.map((item: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
                         <span className="text-red-500 mt-0.5">•</span>
                         <span className="leading-relaxed">{item}</span>

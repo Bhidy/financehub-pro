@@ -189,14 +189,17 @@ function LearningSection({ data }: { data: any }) {
                 {data.title}
             </div>
             <ul className="space-y-1.5 ml-1">
-                {(data.items || []).map((item: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
-                        <span className="text-sky-500 mt-0.5">•</span>
-                        <span className="leading-relaxed" dangerouslySetInnerHTML={{
-                            __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-800 dark:text-slate-100">$1</strong>')
-                        }} />
-                    </li>
-                ))}
+                {(data.items || []).map((item: string, i: number) => {
+                    const itemStr = typeof item === 'string' ? item : String(item || '');
+                    return (
+                        <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                            <span className="text-sky-500 mt-0.5">•</span>
+                            <span className="leading-relaxed" dangerouslySetInnerHTML={{
+                                __html: itemStr.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-800 dark:text-slate-100">$1</strong>')
+                            }} />
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );
@@ -355,7 +358,9 @@ export function WorldClassMessage({ conversationalText, response }: WorldClassMe
     const textElements = parseConversationalText(conversationalText);
 
     // Check if we have bull/bear cases to render inline
-    const hasBullBear = response?.bull_case?.points?.length || response?.bear_case?.points?.length;
+    // Backend uses 'items', check both for compatibility
+    const hasBullBear = (response?.bull_case?.items?.length || response?.bull_case?.points?.length) ||
+        (response?.bear_case?.items?.length || response?.bear_case?.points?.length);
 
     // Check for disclaimer in text
     const hasInlineDisclaimer = conversationalText?.toLowerCase().includes("educational analysis") ||

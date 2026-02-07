@@ -1,0 +1,399 @@
+"use client";
+
+/**
+ * ============================================================================
+ * WORLD-CLASS MESSAGE RENDERER
+ * ============================================================================
+ * 
+ * This component renders AI chatbot responses in the EXACT style of the mockup:
+ * 
+ * Design Language:
+ * - Light gray background cards (#f8fafc in light mode)
+ * - Colored left-border insight cards (green=bull, red=bear, blue=neutral)
+ * - Flowing narrative paragraphs with inline formatting
+ * - Stock list items with detailed descriptions
+ * - Macro score cards with factor breakdowns
+ * - Comparison tables with color coding
+ * - Educational cards with examples
+ * - Amber-bordered disclaimer cards
+ * 
+ * This component:
+ * 1. Parses the conversational_text into structured sections
+ * 2. Integrates structured components (bull_case, bear_case, etc.) inline
+ * 3. Renders everything in a cohesive, premium flowing layout
+ * ============================================================================
+ */
+
+import React from "react";
+import clsx from "clsx";
+
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
+
+interface WorldClassMessageProps {
+    /** The conversational text from the LLM */
+    conversationalText: string;
+    /** Optional structured response components - accepts any ChatResponse type */
+    response?: any;
+}
+
+// =============================================================================
+// SUB-COMPONENTS - Matching Mockup Exactly
+// =============================================================================
+
+/** Framework Card - Light gray with criteria/methodology */
+function FrameworkCard({ data }: { data: any }) {
+    if (!data) return null;
+    return (
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 my-4 border border-slate-200 dark:border-slate-700/50">
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                {data.icon && <span>{data.icon}</span>}
+                {data.title}
+            </div>
+            {data.subtitle && (
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{data.subtitle}</p>
+            )}
+            <div className="space-y-1.5">
+                {(data.items || []).map((item: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="text-slate-400 dark:text-slate-500 mt-0.5">•</span>
+                        <span className="leading-relaxed">{item}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/** Bull Case Insight Card - Green left border */
+function BullCaseCard({ data }: { data: any }) {
+    if (!data || !data.points?.length) return null;
+    return (
+        <div className="border-l-4 border-l-emerald-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-emerald-50 to-emerald-50/30 dark:from-emerald-900/15 dark:to-transparent">
+            <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+                <span>📈</span>
+                Bull Case {data.upside && `(+${data.upside}% upside)`}
+            </div>
+            <ul className="space-y-1.5 ml-1">
+                {(data.points || []).map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="text-emerald-500 mt-0.5">•</span>
+                        <span className="leading-relaxed">{item}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+/** Bear Case Insight Card - Red left border */
+function BearCaseCard({ data }: { data: any }) {
+    if (!data || !data.points?.length) return null;
+    return (
+        <div className="border-l-4 border-l-red-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-red-50 to-red-50/30 dark:from-red-900/15 dark:to-transparent">
+            <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+                <span>📉</span>
+                Bear Case {data.downside && `(${data.downside}% downside)`}
+            </div>
+            <ul className="space-y-1.5 ml-1">
+                {(data.points || []).map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="text-red-500 mt-0.5">•</span>
+                        <span className="leading-relaxed">{item}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+/** Character Cards - Stock personality profiles with blue border */
+function CharacterCards({ data }: { data: any }) {
+    if (!data?.length) return null;
+    return (
+        <div className="space-y-3 my-4">
+            {(data || []).map((card: any, idx: number) => (
+                <div key={idx} className="border-l-4 border-l-sky-500 pl-4 py-3 pr-4 rounded-r-lg bg-gradient-to-r from-sky-50 to-sky-50/30 dark:from-sky-900/15 dark:to-transparent">
+                    <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+                        <span className="text-xl">{card.emoji}</span>
+                        {card.ticker} ({card.nickname})
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+                        <p><strong className="text-slate-700 dark:text-slate-200">The good:</strong> {Array.isArray(card.good) ? card.good.join(", ") : card.good}</p>
+                        <p><strong className="text-slate-700 dark:text-slate-200">The bad:</strong> {Array.isArray(card.bad) ? card.bad.join(", ") : card.bad}</p>
+                        <p><strong className="text-slate-700 dark:text-slate-200">The profile:</strong> {card.profile}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/** Macro Score Card - Prominent with factor breakdown */
+function MacroScoreCard({ data }: { data: any }) {
+    if (!data) return null;
+    return (
+        <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 dark:from-sky-900/20 dark:to-sky-800/10 border-2 border-sky-400 dark:border-sky-500/60 rounded-xl p-5 my-5">
+            <div className="flex justify-between items-center mb-4">
+                <div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🌍</span>
+                        Egyptian Market Environment
+                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Weighted composite of key factors
+                    </div>
+                </div>
+                <div className="text-4xl font-bold text-sky-600 dark:text-sky-400">
+                    {data.score}/{data.max_score || 100}
+                </div>
+            </div>
+            <div className="text-center text-base font-semibold text-sky-600 dark:text-sky-400 mb-4">
+                Assessment: {data.assessment}
+            </div>
+            {data.factors && data.factors.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                    {(data.factors || []).map((factor: any, i: number) => (
+                        <div key={i} className="flex justify-between items-center p-2.5 bg-white dark:bg-slate-800 rounded-lg text-sm">
+                            <span className="text-slate-600 dark:text-slate-400">{factor.label}</span>
+                            <span className={clsx(
+                                "font-semibold",
+                                factor.status === "positive" && "text-emerald-600 dark:text-emerald-400",
+                                factor.status === "negative" && "text-red-600 dark:text-red-400",
+                                factor.status === "neutral" && "text-amber-600 dark:text-amber-400"
+                            )}>
+                                {factor.points} {factor.status === "positive" ? "✓" : factor.status === "neutral" ? "~" : "✗"}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/** Learning Section - Blue bordered educational box */
+function LearningSection({ data }: { data: any }) {
+    if (!data) return null;
+    return (
+        <div className="border-l-4 border-l-sky-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-sky-50 to-sky-50/30 dark:from-sky-900/15 dark:to-transparent">
+            <div className="font-semibold text-sky-700 dark:text-sky-300 text-sm mb-2 flex items-center gap-2">
+                <span>📊</span>
+                {data.title}
+            </div>
+            <ul className="space-y-1.5 ml-1">
+                {(data.items || []).map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <span className="text-sky-500 mt-0.5">•</span>
+                        <span className="leading-relaxed" dangerouslySetInnerHTML={{
+                            __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-800 dark:text-slate-100">$1</strong>')
+                        }} />
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+/** Follow-Up Prompt - Soft gray box */
+function FollowUpPrompt({ content }: { content: string }) {
+    if (!content) return null;
+    return (
+        <div className="mt-4 px-4 py-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50">
+            <p className="text-sm text-slate-600 dark:text-slate-400 italic flex items-start gap-2">
+                <span>💡</span>
+                <span>{content}</span>
+            </p>
+        </div>
+    );
+}
+
+/** Disclaimer Card - Amber left border */
+function DisclaimerCard({ content }: { content?: string }) {
+    const text = content || "This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline.";
+    return (
+        <div className="border-l-4 border-l-amber-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-amber-50/80 to-amber-50/30 dark:from-amber-900/15 dark:to-transparent">
+            <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                <strong className="text-amber-700 dark:text-amber-400 font-semibold">⚠️ Educational Analysis:</strong>{" "}
+                {text}
+            </div>
+        </div>
+    );
+}
+
+// =============================================================================
+// TEXT PARSING UTILITIES
+// =============================================================================
+
+/** Parse markdown-style bold text */
+function parseBoldText(text: string): React.ReactNode {
+    if (!text) return null;
+
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+            return (
+                <strong key={i} className="font-semibold text-slate-900 dark:text-white">
+                    {part.slice(2, -2)}
+                </strong>
+            );
+        }
+        return part;
+    });
+}
+
+/** Parse a line and return the appropriate element */
+function parseLine(line: string, idx: number): React.ReactNode {
+    const trimmed = line.trim();
+
+    // Empty line
+    if (!trimmed) return null;
+
+    // Header line (starts and ends with **)
+    if (trimmed.startsWith("**") && trimmed.endsWith("**") && !trimmed.slice(2, -2).includes("**")) {
+        return (
+            <h4 key={idx} className="text-sm font-bold text-slate-900 dark:text-white mt-4 mb-2">
+                {trimmed.slice(2, -2)}
+            </h4>
+        );
+    }
+
+    // Bullet point
+    if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+        const content = trimmed.replace(/^[-•]\s*/, "");
+        return (
+            <div key={idx} className="flex items-start gap-2 ml-4 text-sm text-slate-600 dark:text-slate-300">
+                <span className="text-slate-400 dark:text-slate-500 mt-1">•</span>
+                <span className="leading-relaxed">{parseBoldText(content)}</span>
+            </div>
+        );
+    }
+
+    // Numbered list item
+    const numberedMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+    if (numberedMatch) {
+        return (
+            <div key={idx} className="flex items-start gap-2 ml-4 text-sm text-slate-600 dark:text-slate-300">
+                <span className="text-slate-500 dark:text-slate-400 font-medium w-5 flex-shrink-0">{numberedMatch[1]}.</span>
+                <span className="leading-relaxed">{parseBoldText(numberedMatch[2])}</span>
+            </div>
+        );
+    }
+
+    // Regular paragraph
+    return (
+        <p key={idx} className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            {parseBoldText(trimmed)}
+        </p>
+    );
+}
+
+/** Parse the entire conversational text into structured blocks */
+function parseConversationalText(text: string): React.ReactNode[] {
+    if (!text) return [];
+
+    const elements: React.ReactNode[] = [];
+    const lines = text.split("\n");
+    let inParagraph = false;
+    let paragraphLines: string[] = [];
+
+    const flushParagraph = () => {
+        if (paragraphLines.length > 0) {
+            const combinedText = paragraphLines.join(" ");
+            elements.push(
+                <p key={`para-${elements.length}`} className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed my-2">
+                    {parseBoldText(combinedText)}
+                </p>
+            );
+            paragraphLines = [];
+        }
+    };
+
+    lines.forEach((line, idx) => {
+        const trimmed = line.trim();
+
+        // Empty line ends current paragraph
+        if (!trimmed) {
+            flushParagraph();
+            return;
+        }
+
+        // Headers, bullets, and numbered items are separate
+        if (
+            (trimmed.startsWith("**") && trimmed.endsWith("**") && !trimmed.slice(2, -2).includes("**")) ||
+            trimmed.startsWith("- ") ||
+            trimmed.startsWith("• ") ||
+            /^\d+\.\s+/.test(trimmed)
+        ) {
+            flushParagraph();
+            elements.push(parseLine(line, idx));
+            return;
+        }
+
+        // Add to current paragraph
+        paragraphLines.push(trimmed);
+    });
+
+    flushParagraph();
+
+    return elements.filter(Boolean);
+}
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+export function WorldClassMessage({ conversationalText, response }: WorldClassMessageProps) {
+    // Parse the conversational text
+    const textElements = parseConversationalText(conversationalText);
+
+    // Check if we have bull/bear cases to render inline
+    const hasBullBear = response?.bull_case?.points?.length || response?.bear_case?.points?.length;
+
+    // Check for disclaimer in text
+    const hasInlineDisclaimer = conversationalText?.toLowerCase().includes("educational analysis") ||
+        conversationalText?.toLowerCase().includes("not investment advice") ||
+        conversationalText?.includes("⚠️");
+
+    return (
+        <div className="space-y-1">
+            {/* Framework Card - If present, show at top after first paragraph */}
+            {response?.framework_card && textElements.length > 0 && (
+                <>
+                    {textElements[0]}
+                    <FrameworkCard data={response.framework_card} />
+                    {textElements.slice(1)}
+                </>
+            )}
+
+            {/* No framework card - just render text */}
+            {!response?.framework_card && textElements}
+
+            {/* Bull Case Card */}
+            <BullCaseCard data={response?.bull_case} />
+
+            {/* Bear Case Card */}
+            <BearCaseCard data={response?.bear_case} />
+
+            {/* Character Cards */}
+            <CharacterCards data={response?.character_cards} />
+
+            {/* Macro Score Card */}
+            <MacroScoreCard data={response?.macro_score} />
+
+            {/* Learning Section */}
+            <LearningSection data={response?.learning_section} />
+
+            {/* Disclaimer - only if not already inline */}
+            {!hasInlineDisclaimer && hasBullBear && (
+                <DisclaimerCard content={response?.disclaimer} />
+            )}
+
+            {/* Follow-up Prompt */}
+            <FollowUpPrompt content={response?.follow_up_prompt || ""} />
+        </div>
+    );
+}
+
+export default WorldClassMessage;

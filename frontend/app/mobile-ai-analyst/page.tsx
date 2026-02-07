@@ -39,19 +39,16 @@ import { clsx } from "clsx";
 // Premium UI Components (Parity with Desktop)
 import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
-import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useMobileRoutes } from "./hooks/useMobileRoutes";
 
-// NEW: World-Class Premium Components
-import {
-    FrameworkCard,
-    CharacterCard,
-    QuantifiedDriversCard,
-    IndexCompositionCard,
-    MacroScorecardCard,
-    EnhancedDisclaimerCard,
-} from "@/components/ai/PremiumCards";
+// NEW: World-Class Unified Message Renderer
+// This component renders AI responses in the exact mockup style:
+// - Flowing narrative paragraphs
+// - Colored-border insight cards (green=bull, red=bear, blue=neutral)
+// - Framework cards, character cards, macro score cards
+// - Proper disclaimer styling with amber border
+import { WorldClassMessage } from "@/components/ai/WorldClassMessage";
 
 // Domain detection hook
 import { useDomainDetect } from "@/hooks/useDomainDetect";
@@ -324,31 +321,32 @@ function MobileAIAnalystPageContent() {
                                             <div className="flex flex-col gap-3 w-full max-w-[95%] animate-in zoom-in-95 slide-in-from-left-2 duration-300">
 
 
-                                                {/* Premium Text Message Renderer (NOW SECOND) with Enhanced Design */}
-                                                <div className="w-full space-y-4 px-2">
+                                                {/* ============================================================
+                                                    WORLD-CLASS MESSAGE RENDERER
+                                                    
+                                                    This unified component renders AI responses exactly like the mockup:
+                                                    - Flowing narrative paragraphs  
+                                                    - Colored-border insight cards (green=bull, red=bear)
+                                                    - Framework cards with criteria
+                                                    - Character cards with stock personalities
+                                                    - Macro score cards with factor breakdowns
+                                                    - Proper amber-bordered disclaimers
+                                                    - Follow-up prompts
+                                                   ============================================================ */}
+                                                <div className="w-full space-y-2 px-1">
+                                                    <WorldClassMessage
+                                                        conversationalText={m.response?.conversational_text || m.content}
+                                                        response={m.response}
+                                                    />
 
-                                                    <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
-
-                                                    {/* 2A. NEW: Premium Framework Card (Criteria/Methodology) */}
-                                                    {m.response?.framework_card && (
-                                                        <div className="mb-3">
-                                                            <FrameworkCard
-                                                                icon={m.response.framework_card.icon}
-                                                                title={m.response.framework_card.title}
-                                                                subtitle={m.response.framework_card.subtitle}
-                                                                items={m.response.framework_card.items}
-                                                                borderColor={m.response.framework_card.border_color || "blue"}
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* 2B. Specialized UI Components (Chart & Cards) */}
+                                                    {/* Chart - Keep separate for specialized rendering */}
                                                     {m.response?.chart && (
-                                                        <div className="mb-2">
+                                                        <div className="my-4">
                                                             <ChartCard chart={m.response.chart} />
                                                         </div>
                                                     )}
 
+                                                    {/* Data Cards - Keep for stock metrics display */}
                                                     {m.response?.cards && m.response.cards.length > 0 && (
                                                         <ChatCards
                                                             cards={m.response.cards}
@@ -358,100 +356,16 @@ function MobileAIAnalystPageContent() {
                                                         />
                                                     )}
 
-                                                    {/* 2C. NEW: Character Cards (Stock Personalities) */}
-                                                    {m.response?.character_cards && m.response.character_cards.length > 0 && (
-                                                        <div className="space-y-3 mb-3">
-                                                            {m.response.character_cards.map((card: any, cardIdx: number) => (
-                                                                <CharacterCard
-                                                                    key={cardIdx}
-                                                                    emoji={card.emoji}
-                                                                    nickname={card.nickname}
-                                                                    ticker={card.ticker}
-                                                                    companyName={card.company_name}
-                                                                    profile={card.profile}
-                                                                    good={card.good}
-                                                                    bad={card.bad}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    )}
-
-                                                    {/* 2D. NEW: Quantified Drivers Card */}
-                                                    {m.response?.quantified_drivers && (
-                                                        <div className="mb-3">
-                                                            <QuantifiedDriversCard
-                                                                title={m.response.quantified_drivers.title}
-                                                                icon={m.response.quantified_drivers.icon}
-                                                                drivers={m.response.quantified_drivers.drivers}
-                                                                totalImpact={m.response.quantified_drivers.total_impact}
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* 2E. NEW: Index Composition Card */}
-                                                    {m.response?.index_composition && (
-                                                        <div className="mb-3">
-                                                            <IndexCompositionCard
-                                                                indexName={m.response.index_composition.index_name}
-                                                                icon={m.response.index_composition.icon}
-                                                                sectors={m.response.index_composition.sectors}
-                                                                recentChanges={m.response.index_composition.recent_changes}
-                                                                topByWeight={m.response.index_composition.top_by_weight}
-                                                                characteristics={m.response.index_composition.characteristics}
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* 2F. NEW: Macro Scorecard */}
-                                                    {m.response?.macro_score && (
-                                                        <div className="mb-3">
-                                                            <MacroScorecardCard
-                                                                score={m.response.macro_score.score}
-                                                                maxScore={m.response.macro_score.max_score}
-                                                                assessment={m.response.macro_score.assessment}
-                                                                assessmentDetail={m.response.macro_score.assessment_detail}
-                                                                positives={m.response.macro_score.positives}
-                                                                negatives={m.response.macro_score.negatives}
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* 3. Fact Explanations (Legacy) */}
+                                                    {/* Fact Explanations (Legacy support) */}
                                                     {m.response?.fact_explanations && (
-                                                        <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5 px-2">
+                                                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
                                                             <FactExplanations explanations={m.response.fact_explanations} />
                                                         </div>
                                                     )}
 
-                                                    {/* 4. Learning Section (NEW - After Cards) */}
-                                                    {m.response?.learning_section && (
-                                                        <div className="mt-3 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
-                                                            <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-2">
-                                                                {m.response.learning_section.title}
-                                                            </h4>
-                                                            <ul className="space-y-1.5">
-                                                                {m.response.learning_section.items.map((item, i) => (
-                                                                    <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                                                                        <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-                                                                        <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-slate-900 dark:text-white font-semibold">$1</strong>') }} />
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 5. Follow-Up Prompt (NEW - At the End) */}
-                                                    {m.response?.follow_up_prompt && (
-                                                        <div className="mt-3 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-white/5">
-                                                            <p className="text-xs text-slate-600 dark:text-slate-400 italic">
-                                                                💡 {m.response.follow_up_prompt}
-                                                            </p>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 6. Follow-up Actions */}
+                                                    {/* Follow-up Actions */}
                                                     {m.response?.actions && m.response.actions.length > 0 && (
-                                                        <div className="pt-1">
+                                                        <div className="pt-2">
                                                             <ActionsBar
                                                                 actions={m.response.actions}
                                                                 onAction={handleAction}

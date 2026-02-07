@@ -5,13 +5,16 @@ import { clsx } from 'clsx';
 interface InsightCardProps {
     data: {
         title?: string;
-        points: string[];
+        points?: string[];  // Legacy 
+        items?: string[];   // New backend format
         variant?: 'bull' | 'bear';
     };
     variant_override?: 'bull' | 'bear';
 }
 
 export function InsightCard({ data, variant_override }: InsightCardProps) {
+    // Use items (new backend format) with fallback to points (legacy)
+    const bulletPoints = data?.items || data?.points || [];
     // Determine variant from data or override
     const variant = variant_override || data.variant || 'bull';
     const isBull = variant === 'bull';
@@ -51,7 +54,7 @@ export function InsightCard({ data, variant_override }: InsightCardProps) {
             </div>
 
             <ul className="space-y-3">
-                {data.points.map((point, idx) => (
+                {bulletPoints.map((point, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-[13px] font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
                         <span className={clsx("mt-1.5 w-1.5 h-1.5 rounded-full shrink-0", bulletColor)} />
                         <span>{point}</span>

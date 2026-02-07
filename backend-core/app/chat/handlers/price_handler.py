@@ -373,7 +373,13 @@ async def handle_stock_price(
         'cards': cards,
         'actions': base_actions,
         'disclaimer': 'Data is for informational purposes only. This is not investment advice.' if language == 'en' else 'البيانات لأغراض إعلامية فقط. هذه ليست نصيحة استثمارية.',
-        'follow_up_prompt': follow_up_prompt
+        'follow_up_prompt': follow_up_prompt,
+        # CRITICAL: Top-level structured components for WorldClassMessage rendering
+        # These are extracted by chat_service._build_response() 
+        'bull_case': bull_case,
+        'bear_case': bear_case,
+        'data_card': data_card,
+        'disclaimer_card': disclaimer_card
     }
 
 

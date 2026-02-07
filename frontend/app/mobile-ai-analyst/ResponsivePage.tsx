@@ -39,11 +39,13 @@ import { clsx } from "clsx";
 // Premium UI Components
 import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
-import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useMobileRoutes } from "./hooks/useMobileRoutes";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
+
+// NEW: World-Class Unified Message Renderer (Matches Mockup EXACTLY)
+import { WorldClassMessage } from "@/components/ai/WorldClassMessage";
 
 // Domain and Device detection
 import { useDomainDetect } from "@/hooks/useDomainDetect";
@@ -287,14 +289,32 @@ function ResponsiveAIAnalystContent() {
                             "flex flex-col gap-3 animate-in zoom-in-95 slide-in-from-left-2 duration-300",
                             effectiveDesktop ? "w-full max-w-[90%]" : "w-full max-w-[95%]"
                         )}>
-                            <div className="w-full space-y-4 px-2">
-                                {/* 1. Specialized UI Components (Chart & Cards) - NOW FIRST */}
+                            <div className="w-full space-y-2 px-1">
+                                {/* ============================================================
+                                    WORLD-CLASS MESSAGE RENDERER
+                                    
+                                    Renders AI responses EXACTLY like the mockup:
+                                    - Flowing narrative paragraphs  
+                                    - Colored-border insight cards (green=bull, red=bear)
+                                    - Framework cards with criteria
+                                    - Character cards with stock personalities
+                                    - Macro score cards with factor breakdowns
+                                    - Amber-bordered disclaimers
+                                    - Follow-up prompts
+                                   ============================================================ */}
+                                <WorldClassMessage
+                                    conversationalText={m.response?.conversational_text || m.content}
+                                    response={m.response}
+                                />
+
+                                {/* Chart - Keep separate for specialized rendering */}
                                 {m.response?.chart && (
-                                    <div className="mb-2">
+                                    <div className="my-4">
                                         <ChartCard chart={m.response.chart} />
                                     </div>
                                 )}
 
+                                {/* Data Cards - Keep for stock metrics display */}
                                 {m.response?.cards && m.response.cards.length > 0 && (
                                     <ChatCards
                                         cards={m.response.cards}
@@ -304,43 +324,16 @@ function ResponsiveAIAnalystContent() {
                                     />
                                 )}
 
-                                {/* 2. Premium Text Message Renderer (NOW AFTER DATA) */}
-                                <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
-
+                                {/* Fact Explanations (Legacy support) */}
                                 {m.response?.fact_explanations && (
-                                    <div className="mt-2 pt-2 border-t border-slate-50 dark:border-white/5 px-2">
+                                    <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
                                         <FactExplanations explanations={m.response.fact_explanations} />
                                     </div>
                                 )}
 
-                                {/* Layer 3: Learning Section */}
-                                {m.response?.learning_section && (
-                                    <div className="mt-3 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
-                                        <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-2">
-                                            {m.response.learning_section.title}
-                                        </h4>
-                                        <ul className="space-y-1.5">
-                                            {m.response.learning_section.items.map((item, i) => (
-                                                <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                                                    <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-                                                    <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-slate-900 dark:text-white font-semibold">$1</strong>') }} />
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {/* Layer 4: Follow-up Prompt */}
-                                {m.response?.follow_up_prompt && (
-                                    <div className="mt-3 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-white/5">
-                                        <p className="text-xs text-slate-600 dark:text-slate-400 italic">
-                                            💡 {m.response.follow_up_prompt}
-                                        </p>
-                                    </div>
-                                )}
-
+                                {/* Actions */}
                                 {m.response?.actions && m.response.actions.length > 0 && (
-                                    <div className="pt-1">
+                                    <div className="pt-2">
                                         <ActionsBar
                                             actions={m.response.actions}
                                             onAction={handleAction}

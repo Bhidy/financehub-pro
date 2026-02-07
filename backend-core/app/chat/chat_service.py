@@ -38,7 +38,9 @@ from .schemas import (
     # NEW: Structured Response Components
     InsightCard, InsightCardVariant, DataCard, StockListItem,
     MacroScoreCard, MacroFactor, ComparisonTable, ComparisonRow,
-    EducationalCard, DisclaimerCard
+    EducationalCard, DisclaimerCard,
+    # NEW: Premium World-Class Components (Phase 2)
+    FrameworkCard, CharacterCard, QuantifiedDriver, QuantifiedDriversCard, IndexCompositionCard
 )
 from .text_normalizer import normalize_text, extract_potential_symbols
 from .intent_router import IntentRouter, create_router
@@ -1153,7 +1155,12 @@ class ChatService:
         comparison_table: Optional['ComparisonTable'] = None,
         educational_cards: Optional[List['EducationalCard']] = None,
         disclaimer_card: Optional['DisclaimerCard'] = None,
-        framework_text: Optional[str] = None
+        framework_text: Optional[str] = None,
+        # NEW: Premium World-Class Components (Phase 2)
+        framework_card: Optional['FrameworkCard'] = None,
+        character_cards: Optional[List['CharacterCard']] = None,
+        quantified_drivers: Optional['QuantifiedDriversCard'] = None,
+        index_composition: Optional['IndexCompositionCard'] = None
     ) -> ChatResponse:
         """Build the final ChatResponse with structured components."""
         
@@ -1234,6 +1241,11 @@ class ChatService:
             comparison_table=comparison_table,
             educational_cards=educational_cards or [],
             disclaimer_card=disclaimer_card,
+            # NEW: Premium World-Class Components (Phase 2)
+            framework_card=framework_card,
+            character_cards=character_cards or [],
+            quantified_drivers=quantified_drivers,
+            index_composition=index_composition,
             # Existing
             learning_section=learning_section,
             follow_up_prompt=follow_up_prompt,
@@ -1249,7 +1261,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="5.0.0-STRUCTURED-RESPONSE"  # DEPLOYMENT VERIFICATION
+                backend_version="6.0.0-PREMIUM-WORLD-CLASS"  # PHASE 2 DEPLOYMENT
             )
         )
 

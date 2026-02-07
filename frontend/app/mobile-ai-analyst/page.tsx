@@ -43,6 +43,16 @@ import { PremiumMessageRenderer } from "@/components/ai/PremiumMessageRenderer";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useMobileRoutes } from "./hooks/useMobileRoutes";
 
+// NEW: World-Class Premium Components
+import {
+    FrameworkCard,
+    CharacterCard,
+    QuantifiedDriversCard,
+    IndexCompositionCard,
+    MacroScorecardCard,
+    EnhancedDisclaimerCard,
+} from "@/components/ai/PremiumCards";
+
 // Domain detection hook
 import { useDomainDetect } from "@/hooks/useDomainDetect";
 
@@ -215,9 +225,13 @@ function MobileAIAnalystPageContent() {
     const showWelcome = visibleMessages.length === 0;
 
     return (
-        <div className="relative w-full h-full min-h-[100dvh] bg-[#F8FAFC] dark:bg-[#0F172A] flex flex-col items-center overflow-hidden font-sans overscroll-none">
-            <div className="flex flex-col flex-1 min-h-0 w-full max-w-[500px] bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-white transition-all duration-300 relative shadow-2xl md:border-x border-slate-200/60 dark:border-white/[0.08]">
-                {/* Background Gradient - Midnight Teal subtle glow */}
+        // TRUSTED ENTERPRISE SHELL: Fixed Viewport, No Global Scroll
+        <div className="fixed inset-0 w-full h-full bg-[#F8FAFC] dark:bg-[#0F172A] flex justify-center overflow-hidden overscroll-none touch-none">
+
+            {/* Main App Container */}
+            <div className="w-full max-w-[500px] h-full flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-white relative shadow-2xl md:border-x border-slate-200/60 dark:border-white/[0.08] overflow-hidden">
+
+                {/* Background Gradient */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[#14B8A6]/5 via-transparent to-transparent dark:from-[#14B8A6]/5 dark:via-transparent dark:to-transparent pointer-events-none" />
 
                 <HistoryDrawer
@@ -240,20 +254,25 @@ function MobileAIAnalystPageContent() {
                 </AnimatePresence>
 
                 {/* Header (Stay fixed at top of flex-col) */}
-                <MobileHeader
-                    forceMarket={contextMarket}
-                    onNewChat={clearHistory}
-                    onOpenHistory={() => setIsHistoryOpen(true)}
-                    isAuthenticated={isAuthenticated}
-                    hasHistory={isAuthenticated}
-                    remainingQuestions={remainingQuestions}
-                    onLogin={() => router.push(getRoute('login'))}
-                    designMode="analyst"
-                    onToggleDesignMode={() => { }}
-                />
+                <div className="flex-none z-20">
+                    <MobileHeader
+                        forceMarket={contextMarket}
+                        onNewChat={clearHistory}
+                        onOpenHistory={() => setIsHistoryOpen(true)}
+                        isAuthenticated={isAuthenticated}
+                        hasHistory={isAuthenticated}
+                        remainingQuestions={remainingQuestions}
+                        onLogin={() => router.push(getRoute('login'))}
+                        designMode="analyst"
+                        onToggleDesignMode={() => { }}
+                    />
+                </div>
 
                 {/* Chat Area - min-h-0 is CRITICAL for flex scrolling */}
-                <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto scroll-smooth overscroll-contain px-0 w-full scrollbar-transparent relative pb-4">
+                <main
+                    ref={mainRef}
+                    className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden touch-auto overscroll-contain scroll-smooth relative z-0 pb-safe"
+                >
                     <div className="w-full space-y-6 px-4 py-4 min-h-full flex flex-col">
                         {showWelcome ? (
                             <div className="flex flex-col flex-1 items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 py-12">
@@ -310,7 +329,20 @@ function MobileAIAnalystPageContent() {
 
                                                     <PremiumMessageRenderer content={m.response?.conversational_text || m.content} />
 
-                                                    {/* 2. Specialized UI Components (Chart & Cards) */}
+                                                    {/* 2A. NEW: Premium Framework Card (Criteria/Methodology) */}
+                                                    {m.response?.framework_card && (
+                                                        <div className="mb-3">
+                                                            <FrameworkCard
+                                                                icon={m.response.framework_card.icon}
+                                                                title={m.response.framework_card.title}
+                                                                subtitle={m.response.framework_card.subtitle}
+                                                                items={m.response.framework_card.items}
+                                                                borderColor={m.response.framework_card.border_color || "blue"}
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {/* 2B. Specialized UI Components (Chart & Cards) */}
                                                     {m.response?.chart && (
                                                         <div className="mb-2">
                                                             <ChartCard chart={m.response.chart} />
@@ -324,6 +356,64 @@ function MobileAIAnalystPageContent() {
                                                             onSymbolClick={handleSymbolClick}
                                                             onExampleClick={handleExampleClick}
                                                         />
+                                                    )}
+
+                                                    {/* 2C. NEW: Character Cards (Stock Personalities) */}
+                                                    {m.response?.character_cards && m.response.character_cards.length > 0 && (
+                                                        <div className="space-y-3 mb-3">
+                                                            {m.response.character_cards.map((card: any, cardIdx: number) => (
+                                                                <CharacterCard
+                                                                    key={cardIdx}
+                                                                    emoji={card.emoji}
+                                                                    nickname={card.nickname}
+                                                                    ticker={card.ticker}
+                                                                    companyName={card.company_name}
+                                                                    profile={card.profile}
+                                                                    good={card.good}
+                                                                    bad={card.bad}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* 2D. NEW: Quantified Drivers Card */}
+                                                    {m.response?.quantified_drivers && (
+                                                        <div className="mb-3">
+                                                            <QuantifiedDriversCard
+                                                                title={m.response.quantified_drivers.title}
+                                                                icon={m.response.quantified_drivers.icon}
+                                                                drivers={m.response.quantified_drivers.drivers}
+                                                                totalImpact={m.response.quantified_drivers.total_impact}
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {/* 2E. NEW: Index Composition Card */}
+                                                    {m.response?.index_composition && (
+                                                        <div className="mb-3">
+                                                            <IndexCompositionCard
+                                                                indexName={m.response.index_composition.index_name}
+                                                                icon={m.response.index_composition.icon}
+                                                                sectors={m.response.index_composition.sectors}
+                                                                recentChanges={m.response.index_composition.recent_changes}
+                                                                topByWeight={m.response.index_composition.top_by_weight}
+                                                                characteristics={m.response.index_composition.characteristics}
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {/* 2F. NEW: Macro Scorecard */}
+                                                    {m.response?.macro_score && (
+                                                        <div className="mb-3">
+                                                            <MacroScorecardCard
+                                                                score={m.response.macro_score.score}
+                                                                maxScore={m.response.macro_score.max_score}
+                                                                assessment={m.response.macro_score.assessment}
+                                                                assessmentDetail={m.response.macro_score.assessment_detail}
+                                                                positives={m.response.macro_score.positives}
+                                                                negatives={m.response.macro_score.negatives}
+                                                            />
+                                                        </div>
                                                     )}
 
                                                     {/* 3. Fact Explanations (Legacy) */}

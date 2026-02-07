@@ -196,6 +196,66 @@ class ChartType(str, Enum):
 # NEW: Structured Response Components (HTML Mockup Match)
 # ============================================================================
 
+class FrameworkCard(BaseModel):
+    """Criteria/Methodology card with colored border (e.g., 'HIDDEN GEM CRITERIA').
+    
+    Visual: Colored left border, icon + uppercase title, bullet list.
+    Used for: Screener criteria, valuation frameworks, methodology explanations.
+    """
+    icon: str = "📊"  # Emoji icon
+    title: str  # e.g. "HIDDEN GEM CRITERIA"
+    subtitle: Optional[str] = None  # e.g. "Sector-Specific Framework"
+    items: List[str]  # Bullet points
+    border_color: Literal["blue", "green", "amber", "teal"] = "blue"
+
+
+class CharacterCard(BaseModel):
+    """Stock personality profile card (e.g., 'The 800-lb Gorilla').
+    
+    Visual: Emoji header, nickname, stock ticker, good/bad lists.
+    Used for: Comparison analyses, giving stocks memorable identities.
+    """
+    emoji: str  # 🏋️ 👋 💎 🌱
+    nickname: str  # "The 800-lb Gorilla"
+    ticker: str  # JUFO
+    company_name: Optional[str] = None
+    profile: str  # Brief personality description
+    good: List[str]  # What's good about this stock
+    bad: List[str]  # What's the concern
+
+
+class QuantifiedDriver(BaseModel):
+    """Single quantified driver with impact percentage."""
+    name: str  # e.g. "Raw Material Inflation"
+    impact: str  # e.g. "-3.0%"
+    detail: Optional[str] = None  # Additional context
+
+
+class QuantifiedDriversCard(BaseModel):
+    """Driver breakdown card with numbered, quantified impacts.
+    
+    Visual: Numbered list with percentages, color-coded impacts.
+    Used for: Margin analysis, performance attribution, risk decomposition.
+    """
+    title: str = "Here's what's actually driving it (quantified)"
+    icon: str = "📊"
+    drivers: List[QuantifiedDriver]
+    total_impact: Optional[str] = None  # e.g. "-5.3%"
+
+
+class IndexCompositionCard(BaseModel):
+    """Index composition breakdown (e.g., 'EGX 30 INDEX COMPOSITION').
+    
+    Visual: Sector breakdown with weights and constituent names.
+    """
+    index_name: str  # "EGX 30"
+    icon: str = "📊"
+    sectors: List[Dict[str, Any]]  # [{name: "Financials", weight: "40%", constituents: [...]}]
+    recent_changes: Optional[Dict[str, List[str]]] = None  # {added: [...], removed: [...]}
+    top_by_weight: Optional[List[Dict[str, str]]] = None  # [{ticker, weight}]
+    characteristics: Optional[str] = None  # Free-form text about index characteristics
+
+
 class InsightCardVariant(str, Enum):
     """Insight card visual variants."""
     SUCCESS = "success"   # Green border - Bull Case
@@ -337,6 +397,12 @@ class ChatResponse(BaseModel):
     comparison_table: Optional[ComparisonTable] = None  # Peer comparison
     educational_cards: List[EducationalCard] = Field(default_factory=list)  # Definitions/examples
     disclaimer_card: Optional[DisclaimerCard] = None  # Educational disclaimer
+    
+    # NEW: Premium World-Class Components (Phase 2)
+    framework_card: Optional['FrameworkCard'] = None  # Criteria/methodology box
+    character_cards: List['CharacterCard'] = Field(default_factory=list)  # Stock personality profiles
+    quantified_drivers: Optional['QuantifiedDriversCard'] = None  # Numbered driver breakdown
+    index_composition: Optional['IndexCompositionCard'] = None  # Index breakdown
     
     # Existing structured components
     learning_section: Optional[Dict[str, Any]] = None  # {\"title\": \"...\", \"items\": [\"...\"]}

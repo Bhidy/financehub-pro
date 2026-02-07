@@ -257,6 +257,82 @@ async def handle_compare_stocks(
     if language == 'ar':
         message = f"مقارنة شاملة بين {stocks_data[0]['name']} و {stocks_data[1]['name']}"
 
+    # ========================================================================
+    # NEW: Generate CharacterCards (Stock Personalities)
+    # ========================================================================
+    # These give each stock a memorable identity based on data-driven heuristics
+    character_cards = []
+    
+    for i, stock in enumerate(stocks_data):
+        other = stocks_data[1 - i]  # The other stock for comparison
+        
+        # Determine personality based on data
+        profile_emoji = "📊"
+        nickname = stock['symbol']
+        profile_text = ""
+        good_points = []
+        bad_points = []
+        
+        # Market Cap comparison
+        if stock.get('market_cap') and other.get('market_cap'):
+            if stock['market_cap'] > other['market_cap'] * 2:
+                profile_emoji = "🏋️"
+                nickname = "The 800-lb Gorilla"
+                profile_text = f"Dominates by size. Market cap {stock['market_cap'] / 1e9:.1f}B is massive."
+                good_points.append("Market leader with scale advantages")
+            elif stock['market_cap'] < other['market_cap'] / 2:
+                profile_emoji = "🌱"
+                nickname = "The Scrappy Underdog"
+                profile_text = f"Smaller but nimble. Could grow or get acquired."
+                good_points.append("More room to grow")
+                bad_points.append("Less market power")
+        
+        # Valuation positioning
+        if stock.get('pe_ratio') and other.get('pe_ratio'):
+            if stock['pe_ratio'] < other['pe_ratio']:
+                if not nickname or nickname == stock['symbol']:
+                    profile_emoji = "💰"
+                    nickname = "The Value Play"
+                    profile_text = f"Trading at a discount. P/E of {stock['pe_ratio']:.1f}x."
+                good_points.append(f"Cheaper at {stock['pe_ratio']:.1f}x P/E")
+            else:
+                bad_points.append(f"Pricier at {stock['pe_ratio']:.1f}x P/E")
+        
+        # Profitability
+        if stock.get('profit_margin') and other.get('profit_margin'):
+            if stock['profit_margin'] > other['profit_margin']:
+                good_points.append(f"Higher margins ({stock['profit_margin']:.1f}%)")
+            else:
+                bad_points.append(f"Lower margins ({stock['profit_margin']:.1f}%)")
+        
+        # Growth
+        if stock.get('revenue_growth'):
+            if stock['revenue_growth'] > 10:
+                good_points.append(f"Growing revenue ({stock['revenue_growth']:.1f}%)")
+            elif stock['revenue_growth'] < 0:
+                bad_points.append(f"Revenue declining ({stock['revenue_growth']:.1f}%)")
+        
+        # Dividend income
+        if stock.get('dividend_yield'):
+            if stock['dividend_yield'] > 3:
+                good_points.append(f"High dividend ({stock['dividend_yield']:.1f}%)")
+        
+        # Fallback profile
+        if not profile_text:
+            profile_text = f"A solid contender in this comparison."
+        if not nickname or nickname == stock['symbol']:
+            nickname = f"Stock #{i+1}"
+        
+        character_cards.append({
+            'emoji': profile_emoji,
+            'nickname': nickname,
+            'ticker': stock['symbol'],
+            'company_name': stock['name'],
+            'profile': profile_text,
+            'good': good_points[:3],  # Limit to 3
+            'bad': bad_points[:2]     # Limit to 2
+        })
+
     return {
         'success': True,
         'message': message,
@@ -271,6 +347,8 @@ async def handle_compare_stocks(
             }
         ],
         'chart': None, # Chart Removed as requested
+        # NEW: Character Cards for stock personalities
+        'character_cards': character_cards,
         'learning_section': {
             'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',
             'items': [

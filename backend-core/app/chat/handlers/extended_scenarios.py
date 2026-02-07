@@ -199,6 +199,19 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 {"type": "methodology", "data": methodology},
                 {"type": "hidden_gems", "data": {"title": "Hidden Gems", "stocks": gems}}
             ],
+            # NEW: Premium FrameworkCard for world-class UI
+            "framework_card": {
+                "icon": "🎯",
+                "title": "HIDDEN GEM CRITERIA",
+                "subtitle": "Multi-Factor Discovery Screen",
+                "items": [
+                    "Market Cap: EGP 500M - 5B (small/mid cap sweet spot)",
+                    "Valuation: >15% discount to sector average (P/B or P/E)",
+                    "Quality: ROE > 15% or positive net margins",
+                    "Coverage: Not in EGX 30 (underfollowed = opportunity)"
+                ],
+                "border_color": "teal"
+            },
             "learning_section": {
                 "title": "📊 Understanding Hidden Gems",
                 "items": [

@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starta | Master the EGX</title>
+    <meta name="description"
+        content="Starta is an institutional-grade AI platform for Egyptian Exchange investors with trusted analytics, valuation models, and bilingual market intelligence.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP & Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'var(--c-page)',
+                        surface: 'var(--c-surface)',
+                        panel: 'var(--c-panel)',
+                        main: 'var(--c-text-main)',
+                        muted: 'var(--c-text-muted)',
+                        border: 'var(--c-border)',
+                        starta: {
+                            teal: '#14B8A6',
+                            darkTeal: '#0F766E',
+                            accent: '#2DD4BF',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': 'var(--s-neon)',
+                        'premium': 'var(--s-premium)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            /* DARK THEME (Default) */
+            --c-page: #010101;
+            --c-surface: #0b0c0d;
+            --c-panel: rgba(18, 19, 20, 0.62);
+            --c-text-main: #eef2f6;
+            --c-text-muted: #9ca6b5;
+            --c-border: rgba(255, 255, 255, 0.08);
+            --grad-lux: radial-gradient(circle at 10% 5%, rgba(20, 184, 166, 0.14), transparent 45%), radial-gradient(circle at 90% 10%, rgba(45, 212, 191, 0.12), transparent 44%);
+            --grad-grid: linear-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+            --s-neon: 0 0 60px rgba(20, 184, 166, 0.14);
+            --s-premium: 0 24px 70px rgba(0, 0, 0, 0.5);
+            --glass-bg: rgba(14, 16, 16, 0.56);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-blur: 40px;
+            --c-metal: #2DD4BF;
+            --cursor-fill: #14B8A6;
+            --cursor-border: rgba(20, 184, 166, 0.4);
+            --cursor-blend: difference;
+        }
+
+        [data-theme="light"] {
+            /* LIGHT THEME */
+            --c-page: #f6f8fb;
+            --c-surface: #FFFFFF;
+            --c-panel: rgba(255, 255, 255, 0.82);
+            --c-text-main: #111827;
+            --c-text-muted: #5c6676;
+            --c-border: rgba(148, 163, 184, 0.2);
+            --grad-lux: radial-gradient(circle at 10% 5%, rgba(20, 184, 166, 0.1), transparent 45%), radial-gradient(circle at 90% 10%, rgba(45, 212, 191, 0.1), transparent 40%);
+            --grad-grid: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px);
+            --s-neon: 0 10px 34px rgba(20, 184, 166, 0.16);
+            --s-premium: 0 24px 60px rgba(131, 141, 161, 0.18);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            --glass-blur: 24px;
+            --c-metal: #0F766E;
+            --cursor-fill: #0F172A;
+            --cursor-border: rgba(15, 23, 42, 0.2);
+            --cursor-blend: normal;
+        }
+
+        /* RTL Adjustments */
+        html[dir="rtl"] body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        html[dir="rtl"] .font-display {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-weight: 700;
+        }
+
+        html[dir="rtl"] .tracking-widest {
+            letter-spacing: 0;
+        }
+
+        html[dir="rtl"] .tracking-tight {
+            letter-spacing: 0;
+        }
+
+        html[dir="rtl"] .border-l-2 {
+            border-left-width: 0;
+            border-right-width: 2px;
+        }
+
+        html[dir="rtl"] .border-l-4 {
+            border-left-width: 0;
+            border-right-width: 4px;
+        }
+
+        html[dir="rtl"] .rounded-tr-sm {
+            border-top-left-radius: 0.125rem;
+            border-top-right-radius: 1rem;
+        }
+
+        html[dir="rtl"] .rounded-tl-sm {
+            border-top-right-radius: 0.125rem;
+            border-top-left-radius: 1rem;
+        }
+
+        html[dir="rtl"] .arrow-icon {
+            transform: scaleX(-1);
+        }
+
+        /* Force Right Align in Arabic */
+        html[dir="rtl"] .rtl-text-right {
+            text-align: right;
+        }
+
+        html[dir="rtl"] .rtl-text-left {
+            text-align: left;
+        }
+
+        html[dir="rtl"] input {
+            text-align: right;
+        }
+
+        body {
+            background-color: var(--c-page);
+            color: var(--c-text-main);
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            cursor: auto;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* UI Components */
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--cursor-fill);
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            mix-blend-mode: var(--cursor-blend);
+            transition: background-color 0.3s;
+        }
+
+        .cursor-ring {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--cursor-border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9998;
+            pointer-events: none;
+            transition: all 0.15s ease-out, border-color 0.3s;
+            mix-blend-mode: var(--cursor-blend);
+        }
+
+        .glass-premium {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--s-premium);
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.5s, border-color 0.5s, box-shadow 0.5s;
+        }
+
+        .border-run::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            border-radius: inherit;
+            background: linear-gradient(90deg, transparent 0%, #14B8A6 50%, transparent 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            background-size: 200% 100%;
+            animation: borderRun 3s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes borderRun {
+            0% {
+                background-position: 100% 0;
+            }
+
+            100% {
+                background-position: -100% 0;
+            }
+        }
+
+        .heading-hero {
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            line-height: 1.04;
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            text-wrap: balance;
+        }
+
+        .section-title {
+            font-size: clamp(2.35rem, 4.6vw, 4rem);
+            line-height: 1.08;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            text-wrap: balance;
+        }
+
+        .section-title+p {
+            margin-top: 1rem;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-kerning: normal;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--c-text-main) 30%, #14B8A6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid-bg {
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+        }
+
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+            color: #14B8A6;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .processing-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(6px);
+            animation: processReveal 6.4s ease-in-out infinite;
+        }
+
+        .processing-line.delay-2 {
+            animation-delay: 0.8s;
+        }
+
+        .processing-line.delay-3 {
+            animation-delay: 1.6s;
+        }
+
+        .processing-dot {
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background: #14B8A6;
+            box-shadow: 0 0 12px rgba(20, 184, 166, 0.45);
+            animation: dotPulse 2.4s ease-in-out infinite;
+        }
+
+        .processing-line.delay-2 .processing-dot {
+            animation-delay: 0.2s;
+        }
+
+        .processing-line.delay-3 .processing-dot {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes processReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            15% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            70% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+        }
+
+        @keyframes dotPulse {
+
+            0%,
+            100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .section-tag {
+            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.26em;
+            color: var(--c-metal);
+            opacity: 1;
+            margin-bottom: 1.5rem;
+            display: block;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .section-premium {
+            padding-top: clamp(5.5rem, 10vw, 8.25rem) !important;
+            padding-bottom: clamp(5.5rem, 10vw, 8.25rem) !important;
+        }
+
+        .section-premium-xl {
+            padding-top: clamp(6.5rem, 12vw, 9.5rem) !important;
+            padding-bottom: clamp(6.5rem, 12vw, 9.5rem) !important;
+        }
+
+        .copy-premium {
+            font-size: clamp(1.02rem, 1.25vw, 1.15rem);
+            line-height: 1.78;
+            letter-spacing: 0.005em;
+            text-wrap: pretty;
+        }
+
+        .copy-soft {
+            font-size: clamp(0.95rem, 1.08vw, 1.02rem);
+            line-height: 1.7;
+            text-wrap: pretty;
+        }
+
+        .check-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 999px;
+            background: linear-gradient(145deg, var(--c-metal), #14B8A6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+            color: white;
+        }
+
+        .perspective-1000 {
+            perspective: 1200px;
+            perspective-origin: center center;
+        }
+
+        .rotate-y-12 {
+            transform: rotateY(-12deg) rotateX(2deg);
+            transform-style: preserve-3d;
+        }
+
+        .hover\:rotate-y-0:hover {
+            transform: rotateY(0deg) rotateX(0deg);
+        }
+
+        .shine-border::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            border: 1px solid rgba(45, 212, 191, 0.28);
+            background: linear-gradient(120deg, transparent 20%, rgba(45, 212, 191, 0.12) 45%, transparent 70%);
+            background-size: 200% 200%;
+            animation: borderShine 8s linear infinite;
+        }
+
+        @keyframes borderShine {
+            0% {
+                background-position: 100% 0;
+            }
+
+            100% {
+                background-position: -100% 0;
+            }
+        }
+
+        .lux-divider {
+            height: 1px;
+            width: min(980px, 90%);
+            margin: 0 auto;
+            background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.45), transparent);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #14B8A6 20%, #0f766e 100%);
+            color: #fff;
+            box-shadow: 0 18px 44px rgba(20, 184, 166, 0.22);
+            border: 1px solid rgba(45, 212, 191, 0.35);
+            transition: transform 0.28s ease, box-shadow 0.28s ease, filter 0.28s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 24px 52px rgba(20, 184, 166, 0.32);
+            filter: saturate(1.06);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(45, 212, 191, 0.45);
+            background: rgba(45, 212, 191, 0.08);
+            color: var(--c-text-main);
+            transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(45, 212, 191, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .premium-hover {
+            transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .premium-hover:hover {
+            transform: translateY(-6px);
+            border-color: rgba(45, 212, 191, 0.45);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.24);
+        }
+
+        .ultra-card {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--c-border);
+            background:
+                radial-gradient(120% 120% at 100% 0%, rgba(45, 212, 191, 0.14) 0%, rgba(45, 212, 191, 0) 48%),
+                linear-gradient(165deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.5));
+            box-shadow:
+                0 10px 30px rgba(16, 24, 40, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+        }
+
+        [data-theme="dark"] .ultra-card {
+            background:
+                radial-gradient(120% 120% at 100% 0%, rgba(45, 212, 191, 0.2) 0%, rgba(45, 212, 191, 0) 50%),
+                linear-gradient(165deg, rgba(12, 17, 28, 0.88), rgba(9, 14, 24, 0.72));
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .ultra-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(115deg, transparent 0%, rgba(45, 212, 191, 0.12) 34%, transparent 66%);
+            transform: translateX(-120%);
+            transition: transform 0.8s ease;
+        }
+
+        .ultra-card:hover {
+            transform: translateY(-7px);
+            border-color: rgba(45, 212, 191, 0.5);
+            box-shadow:
+                0 20px 52px rgba(15, 23, 42, 0.16),
+                0 0 0 1px rgba(45, 212, 191, 0.22);
+        }
+
+        [data-theme="dark"] .ultra-card:hover {
+            box-shadow:
+                0 24px 54px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(45, 212, 191, 0.26);
+        }
+
+        .ultra-card:hover::before {
+            transform: translateX(120%);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            width: 2.35rem;
+            height: 2.35rem;
+            border-radius: 999px;
+            border: 1px solid var(--c-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--c-text-main);
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: transform 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-1px);
+            color: #14B8A6;
+            border-color: rgba(20, 184, 166, 0.5);
+        }
+
+        .hero-orb {
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(36px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .hero-orb-a {
+            width: 220px;
+            height: 220px;
+            top: 10%;
+            right: 4%;
+            background: rgba(45, 212, 191, 0.3);
+        }
+
+        .hero-orb-b {
+            width: 180px;
+            height: 180px;
+            bottom: 14%;
+            left: 2%;
+            background: rgba(20, 184, 166, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .section-tag {
+                letter-spacing: 0.18em;
+            }
+
+            .section-title {
+                letter-spacing: -0.02em;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .cursor-dot,
+            .cursor-ring {
+                display: none !important;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .animate-float {
+            animation: float 10s ease-in-out infinite;
+        }
+
+        /* LIVE TICKER ANIMATIONS */
+        .flash-green {
+            animation: flashGreen 0.8s ease-out;
+        }
+
+        .flash-red {
+            animation: flashRed 0.8s ease-out;
+        }
+
+        .bg-flash-green {
+            animation: bgFlashGreen 0.5s ease-out;
+        }
+
+        .bg-flash-red {
+            animation: bgFlashRed 0.5s ease-out;
+        }
+
+        @keyframes flashGreen {
+            0% {
+                color: #22c55e;
+                text-shadow: 0 0 10px #22c55e;
+                transform: scale(1.05);
+            }
+
+            100% {
+                color: inherit;
+                text-shadow: none;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes flashRed {
+            0% {
+                color: #ef4444;
+                text-shadow: 0 0 10px #ef4444;
+                transform: scale(1.05);
+            }
+
+            100% {
+                color: inherit;
+                text-shadow: none;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes bgFlashGreen {
+            0% {
+                background-color: rgba(34, 197, 94, 0.2);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        @keyframes bgFlashRed {
+            0% {
+                background-color: rgba(239, 68, 68, 0.2);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        /* Phone Screen Styles */
+        .phone-screen {
+            background-color: #020202;
+            color: white;
+        }
+
+        .phone-bubble-user {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+
+        .phone-bubble-ai {
+            background-color: rgba(20, 184, 166, 0.05);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            color: #f1f5f9;
+        }
+
+        .phone-card {
+            background-color: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+
+        .marquee-content {
+            display: inline-flex;
+            animation: marquee 60s linear infinite;
+            gap: 6rem;
+        }
+
+        .marquee-content:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Checkmark Icons for Pricing */
+        .tick-circle {
+            width: 20px;
+            height: 20px;
+            background-color: #14B8A6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tick-icon {
+            width: 12px;
+            height: 12px;
+            color: white;
+        }
+
+        /* Button Gradients */
+        .btn-gradient-border {
+            position: relative;
+            background: #000;
+            color: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .btn-gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0.75rem;
+            padding: 1px;
+            background: linear-gradient(45deg, #14B8A6, #2DD4BF, #14B8A6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-starta-teal selection:text-white">
+
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+
+    <div class="fixed inset-0 z-[-3]" style="background: var(--c-page); transition: background 0.5s;"></div>
+    <div class="fixed inset-0 z-[-2] pointer-events-none"
+        style="background-image: var(--grad-grid); transition: background-image 0.5s;"></div>
+    <canvas id="stars" class="fixed inset-0 z-[-1] opacity-40 pointer-events-none"></canvas>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl transition-all duration-300">
+        <div class="max-w-screen-2xl mx-auto px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 group cursor-pointer">
+                <div
+                    class="w-8 h-8 bg-starta-teal rounded flex items-center justify-center font-bold text-white text-xl font-display group-hover:rotate-12 transition-transform">
+                    S</div>
+                <span class="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+            </div>
+
+            <!-- Menu -->
+            <div class="hidden lg:flex items-center gap-10">
+                <div class="flex gap-10 text-xs font-mono text-muted tracking-widest">
+                    <a href="#brain" class="hover:text-starta-teal transition-colors"
+                        data-key="nav_features">FEATURES</a>
+                    <a href="#mobile" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MOBILE</a>
+                    <a href="#roadmap" class="hover:text-starta-teal transition-colors"
+                        data-key="nav_roadmap">ROADMAP</a>
+                    <a href="#pricing" class="hover:text-starta-teal transition-colors"
+                        data-key="nav_pricing">PRICING</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 ml-3">
+                <button onclick="window.location.href='https://startamarkets.com'"
+                    class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
+                    data-key="nav_cta">
+                    Try Now
+                </button>
+                <div class="nav-controls">
+                    <button id="themeToggle" class="control-btn group relative" aria-label="Toggle theme">
+                        <svg class="w-5 h-5 absolute opacity-100 dark-icon transition-opacity duration-300" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <svg class="w-5 h-5 absolute opacity-0 light-icon transition-opacity duration-300" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                    <button id="langToggle" class="control-btn font-display">EN</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. HERO -->
+    <header
+        class="relative min-h-screen flex items-center justify-center pt-32 px-6 overflow-hidden section-premium-xl">
+        <div class="hero-orb hero-orb-a"></div>
+        <div class="hero-orb hero-orb-b"></div>
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] pointer-events-none"
+            style="background: var(--grad-lux); filter: blur(100px);"></div>
+        <div class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
+            <div class="space-y-8">
+                <h1 class="heading-hero font-display font-bold text-main tracking-tight" data-key="hero_title">
+                    Institutional-Grade<br>AI Research for the<br>
+                    <span class="text-gradient">Egyptian Market.</span>
+                </h1>
+                <p class="text-muted font-light max-w-xl copy-premium border-l-2 border-starta-teal/30 pl-6"
+                    data-key="hero_sub">
+                    Ask in plain language and get clear answers backed by <span
+                        class="text-main font-semibold">real-time EGX data</span>, disciplined valuation logic, and
+                    practical risk context.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <button onclick="window.location.href='https://startamarkets.com'"
+                        class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Try Now for
+                        Free</button>
+                </div>
+            </div>
+
+            <!-- Hero Visual: Mobile Simulation -->
+            <div class="relative perspective-1000 h-[620px] md:h-[700px] flex items-center justify-center">
+                <div
+                    class="glass-premium w-[320px] md:w-[380px] h-[620px] md:h-[720px] rounded-[2.5rem] md:rounded-[3rem] transform rotate-y-12 hover:rotate-y-0 transition-transform duration-1000 flex flex-col relative overflow-hidden border-run shadow-premium">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-b from-transparent via-starta-teal/5 to-transparent opacity-50">
+                    </div>
+                    <div class="p-8 h-full flex flex-col relative z-10">
+                        <div class="flex justify-between items-center mb-10">
+                            <span class="text-[10px] text-muted font-mono tracking-widest flex items-center gap-2"
+                                data-key="mockup_header">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE EGX FEED •
+                                12ms
+                            </span>
+                            <div class="flex gap-1">
+                                <div class="w-1 h-4 bg-starta-teal rounded-full"></div>
+                                <div class="w-1 h-2 bg-gray-500 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex-grow space-y-6">
+
+                            <!-- User Query Bubble -->
+                            <div class="self-end bg-panel p-4 rounded-2xl rounded-tr-sm text-sm text-main border border-border backdrop-blur-md shadow-sm max-w-[85%] min-h-[50px] flex items-center transition-all duration-300"
+                                id="user-bubble">
+                                <span id="hero-user-text"></span><span class="typing-cursor user-cursor"></span>
+                            </div>
+
+                            <!-- AI Response Bubble -->
+                            <div class="flex gap-4 items-start" id="ai-bubble" style="opacity: 0;">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-starta-teal flex-shrink-0 flex items-center justify-center font-bold text-white text-xs">
+                                    AI</div>
+                                <div class="space-y-3 w-full">
+                                    <div
+                                        class="glass-premium p-5 rounded-2xl rounded-tl-sm text-sm text-muted border border-starta-teal/20 min-h-[80px]">
+                                        <div id="hero-ai-header"
+                                            class="text-[10px] text-starta-teal font-bold mb-2 tracking-widest opacity-0">
+                                            ANALYSIS</div>
+                                        <span id="hero-ai-text" class="text-main leading-relaxed"></span><span
+                                            class="typing-cursor ai-cursor"></span>
+                                    </div>
+
+                                    <!-- Dynamic Data Card -->
+                                    <div id="hero-data-card"
+                                        class="glass-premium p-4 rounded-xl border border-border opacity-0 transform translate-y-4">
+                                        <div
+                                            class="flex justify-between text-[10px] text-muted mb-2 font-mono uppercase">
+                                            <span id="card-label-1">Metric</span>
+                                            <span id="card-label-2">Value</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm text-main font-bold mb-1">
+                                            <span id="card-metric">Net Interest Margin</span>
+                                            <span id="card-value">6.4%</span>
+                                        </div>
+                                        <div class="w-full h-1 bg-gray-700/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-starta-teal w-[75%] animate-pulse"></div>
+                                        </div>
+                                        <div id="card-context" class="text-[10px] text-green-500 mt-2 text-right">
+                                            Outperforming Sector Avg</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. SOCIAL PROOF (Ticker) -->
+    <section class="py-16 border-y border-border bg-surface overflow-hidden relative">
+        <div class="max-w-7xl mx-auto px-6 text-center mb-10">
+            <h4 class="text-xs font-mono text-muted tracking-[0.4em] uppercase" data-key="trusted_by">Follow Your
+                Prefered Stocks</h4>
+        </div>
+
+        <div class="marquee-container opacity-60 hover:opacity-100 transition-opacity duration-500">
+            <div class="marquee-content flex items-center">
+                <!-- Original Set -->
+                <span class="text-3xl font-display font-bold text-main mx-12">CIB</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">EFG HERMES</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">TMG HOLDING</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">ELSWEDY ELECTRIC</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">FAWRY</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">TELECOM EGYPT</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">E-FINANCE</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">ORASCOM CONST</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">ABU QIR</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">EZZ STEEL</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">MADINET MASR</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">PALM HILLS</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">SIDI KERIR</span>
+
+                <!-- Duplicate Set -->
+                <span class="text-3xl font-display font-bold text-main mx-12">CIB</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">EFG HERMES</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">TMG HOLDING</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">ELSWEDY ELECTRIC</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">FAWRY</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">TELECOM EGYPT</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">E-FINANCE</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">ORASCOM CONST</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">ABU QIR</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">EZZ STEEL</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">MADINET MASR</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">PALM HILLS</span>
+                <span class="text-3xl font-display font-bold text-main mx-12">SIDI KERIR</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. THE GAP -->
+    <section class="py-40 bg-page relative flex items-center justify-center section-premium-xl">
+        <div class="max-w-5xl mx-auto px-6 text-center reveal-text">
+            <span class="section-tag" data-key="gap_tag">THE PROBLEM</span>
+            <h2 class="section-title text-main mb-10 leading-tight" data-key="gap_title">
+                Data Without Insight <br>
+                is Just <span class="text-muted line-through decoration-starta-teal decoration-4">Noise</span>.
+            </h2>
+            <p class="text-2xl text-muted font-light leading-relaxed max-w-3xl mx-auto" data-key="gap_text">
+                You have charts. You have news. So why do you still feel uncertain? <br>
+                Starta translates the chaos of the ticker tape into a coherent, actionable thesis.
+            </p>
+        </div>
+    </section>
+
+    <!-- 4. THE BRAIN -->
+    <section id="brain" class="py-40 bg-surface border-t border-border relative overflow-hidden section-premium-xl">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div class="space-y-10 reveal-text">
+                <span class="section-tag" data-key="brain_tag">CORE LOGIC</span>
+                <h2 class="section-title text-main" data-key="brain_title">Meet Your New<br>Senior Analyst.</h2>
+                <div class="pl-6 border-l-2 border-starta-teal space-y-4">
+                    <h3 class="text-2xl text-main font-light" data-key="brain_sub">Institutional-Grade Logic.</h3>
+                    <p class="text-muted copy-premium" data-key="brain_text">
+                        Starta isn't a chatbot wrapper. We engineered it with the cognitive architecture of a senior
+                        equity analyst. It doesn't guess—it uses deterministic valuation models.
+                    </p>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="p-4 bg-panel rounded border border-border">
+                        <div class="text-starta-teal font-bold mb-1" data-key="brain_feat1_title">Deterministic</div>
+                        <div class="text-xs text-muted" data-key="brain_feat1_text">Hard-coded Math</div>
+                    </div>
+                    <div class="p-4 bg-panel rounded border border-border">
+                        <div class="text-starta-teal font-bold mb-1" data-key="brain_feat2_title">Zero Bias</div>
+                        <div class="text-xs text-muted" data-key="brain_feat2_text">Pure Data Driven</div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="relative h-[500px] w-full glass-premium rounded-2xl flex items-center justify-center border-run">
+                <div class="absolute inset-0 opacity-20" style="background-image: var(--grad-grid);"></div>
+                <div class="text-center space-y-8 z-10">
+                    <div
+                        class="w-28 h-28 mx-auto rounded-3xl border border-border bg-panel flex items-center justify-center text-3xl font-display tracking-[0.3em] text-starta-teal shadow-neon">
+                        AI</div>
+                    <div class="space-y-3 font-mono text-xs">
+                        <div class="text-starta-teal bg-starta-teal/10 px-3 py-1 rounded inline-block processing-line"
+                            data-key="brain_load1">
+                            <span class="processing-dot"></span><span>Analyzing market signals</span>
+                        </div><br>
+                        <div class="text-starta-teal bg-starta-teal/10 px-3 py-1 rounded inline-block processing-line delay-2"
+                            data-key="brain_load2">
+                            <span class="processing-dot"></span><span>Cross-checking EGX data</span>
+                        </div><br>
+                        <div class="text-main bg-panel px-3 py-1 rounded inline-block border border-border processing-line delay-3"
+                            data-key="brain_load3">
+                            <span class="processing-dot"></span><span>Insight ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. FEATURE: ZERO HALLUCINATION -->
+    <section class="py-32 bg-page border-t border-border section-premium">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal-text">
+            <span class="section-tag" data-key="trust_tag">TRUST ENGINE</span>
+            <h2 class="section-title text-main mb-8" data-key="trust_title">Zero Hallucinations.</h2>
+            <p class="text-muted copy-premium mb-12" data-key="trust_text">
+                In finance, accuracy is oxygen. Starta uses a <strong>Hybrid Deterministic Engine</strong>. The AI
+                writes the narrative, but the numbers are hard-locked to our secure database. It physically cannot fake
+                a dividend yield.
+            </p>
+        </div>
+    </section>
+
+    <!-- 6. FEATURE: NATIVE LINGUISTICS -->
+    <section class="py-32 bg-surface relative section-premium">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div
+                class="order-2 lg:order-1 glass-premium p-12 rounded-2xl flex flex-col items-center justify-center text-center h-[400px] border-run">
+                <h3
+                    class="font-arabic text-6xl text-transparent bg-clip-text bg-gradient-to-b from-main to-starta-teal font-bold mb-6 leading-relaxed">
+                    تحليل السوق<br>بذكاء
+                </h3>
+                <div class="flex gap-4 mt-4">
+                    <span class="px-4 py-2 bg-panel rounded text-xs text-muted font-mono border border-border"
+                        data-key="dialect_egy">EGYPTIAN DIALECT</span>
+                    <span class="px-4 py-2 bg-panel rounded text-xs text-muted font-mono border border-border"
+                        data-key="dialect_msa">MODERN STANDARD</span>
+                </div>
+            </div>
+            <div class="order-1 lg:order-2 space-y-8 reveal-text">
+                <span class="section-tag" data-key="lang_tag">NATIVE FLUENCY</span>
+                <h2 class="section-title text-main" data-key="lang_title">Fluent in Market<br>& Culture.</h2>
+                <p class="text-muted copy-premium" data-key="lang_text">
+                    Starta speaks <span class="text-main font-semibold">Market Arabic</span>. Whether formal or dialect
+                    ("بكام التجاري؟"), it understands the nuance, tickers, and dynamics of the EGX.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. FEATURE: REAL-TIME PULSE -->
+    <section class="py-32 bg-page border-t border-border section-premium">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-16 text-center reveal-text">
+                <span class="section-tag" data-key="live_tag">LIVE DATA</span>
+                <h2 class="section-title text-main" data-key="live_title">Instant Market Clarity.</h2>
+            </div>
+            <div class="glass-premium rounded-2xl overflow-hidden border border-border">
+                <div class="bg-panel px-6 py-4 flex justify-between items-center border-b border-border">
+                    <span class="text-xs font-bold text-starta-teal" data-key="live_feed_header">LIVE FEED</span>
+                    <div class="flex gap-4 text-[10px] font-mono text-muted">
+                        <span data-key="live_source">SOURCE: EGX DIRECT</span>
+                        <span id="marketTimestamp">UPDATED: --:--</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border">
+                    <!-- Ticker Items (Corrected Values) -->
+                    <div class="p-6 hover:bg-panel transition-colors group live-ticker-box">
+                        <div class="text-xs text-muted mb-2">EGX 30</div>
+                        <div class="text-2xl font-bold text-main mb-1 group-hover:text-starta-teal transition-colors live-data"
+                            data-value="49631.56">49,631.56</div>
+                        <div class="text-xs text-starta-teal font-mono live-change" data-value="1.33">▲ 1.33%</div>
+                    </div>
+                    <div class="p-6 hover:bg-panel transition-colors group live-ticker-box">
+                        <div class="text-xs text-muted mb-2">COMI</div>
+                        <div class="text-2xl font-bold text-main mb-1 group-hover:text-starta-teal transition-colors live-data"
+                            data-value="136.50">136.50</div>
+                        <div class="text-xs text-starta-teal font-mono live-change" data-value="2.63">▲ 2.63%</div>
+                    </div>
+                    <div class="p-6 hover:bg-panel transition-colors group live-ticker-box">
+                        <div class="text-xs text-muted mb-2">HRHO</div>
+                        <div class="text-2xl font-bold text-main mb-1 group-hover:text-starta-teal transition-colors live-data"
+                            data-value="29.38">29.38</div>
+                        <div class="text-xs text-starta-teal font-mono live-change" data-value="0.31">▲ 0.31%</div>
+                    </div>
+                    <div class="p-6 hover:bg-panel transition-colors group live-ticker-box">
+                        <div class="text-xs text-muted mb-2">FWRY</div>
+                        <div class="text-2xl font-bold text-main mb-1 group-hover:text-red-500 transition-colors live-data"
+                            data-value="18.60">18.60</div>
+                        <div class="text-xs text-red-500 font-mono live-change" data-value="-0.80">▼ 0.80%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. FEATURE: FUNDAMENTAL LENS -->
+    <section class="py-32 bg-surface section-premium">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 reveal-text">
+                <span class="section-tag" data-key="lens_tag">THE MICROSCOPE</span>
+                <h2 class="section-title text-main" data-key="lens_title">See Through the<br>Balance Sheet.</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div
+                    class="glass-premium ultra-card p-10 rounded-2xl border-l-2 border-transparent hover:border-starta-teal premium-hover">
+                    <h4 class="text-2xl font-bold text-main mb-4" data-key="lens_c1_title">Profitability Core</h4>
+                    <p class="text-muted leading-relaxed text-sm rtl-text-right" data-key="lens_c1_text">Deep dive into
+                        Margins, ROE, and ROA. Identify companies that efficiently generate cash.</p>
+                </div>
+                <!-- Card 2 -->
+                <div
+                    class="glass-premium ultra-card p-10 rounded-2xl border-l-2 border-transparent hover:border-starta-teal premium-hover">
+                    <h4 class="text-2xl font-bold text-main mb-4" data-key="lens_c2_title">Quality Score</h4>
+                    <p class="text-muted leading-relaxed text-sm rtl-text-right" data-key="lens_c2_text">9-point
+                        <strong>Piotroski F-Score</strong> scan. We filter out weak balance sheets before you even look
+                        at the price.</p>
+                </div>
+                <!-- Card 3 -->
+                <div
+                    class="glass-premium ultra-card p-10 rounded-2xl border-l-2 border-transparent hover:border-starta-teal premium-hover">
+                    <h4 class="text-2xl font-bold text-main mb-4" data-key="lens_c3_title">Intrinsic Value</h4>
+                    <p class="text-muted leading-relaxed text-sm rtl-text-right" data-key="lens_c3_text">Real-time
+                        <strong>Fair Value</strong> models (DCF, PEG, EV/EBITDA). Know exactly what a stock is worth.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. FEATURE: TECHNICAL ANALYSIS -->
+    <section class="py-32 bg-page border-t border-border section-premium">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="relative h-[450px] w-full glass-premium rounded-2xl overflow-hidden border border-border">
+                <svg class="absolute inset-0 w-full h-full text-starta-teal/20" preserveAspectRatio="none">
+                    <path d="M0,350 Q250,100 500,200 T1000,50 V400 H0 Z" fill="currentColor" />
+                    <path d="M0,350 Q250,100 500,200 T1000,50" fill="none" stroke="#14B8A6" stroke-width="2" />
+                </svg>
+                <div
+                    class="absolute top-10 right-10 glass-premium p-4 rounded border border-starta-teal/50 animate-float shadow-neon">
+                    <div class="text-[10px] text-starta-teal font-bold tracking-widest" data-key="tech_signal_label">
+                        SIGNAL DETECTED</div>
+                    <div class="text-3xl font-display font-bold text-main">RSI: 32</div>
+                    <div class="text-xs text-muted" data-key="tech_signal_desc">Oversold Condition</div>
+                </div>
+            </div>
+            <div class="space-y-8 reveal-text">
+                <span class="section-tag" data-key="tech_tag">THE TIMER</span>
+                <h2 class="section-title text-main" data-key="tech_title">Strategic Timing.</h2>
+                <p class="text-muted copy-premium" data-key="tech_text">
+                    Fundamental analysis reveals <em>Value</em>. Technical analysis identifies <em>Opportunity</em>.
+                    Starta monitors momentum (RSI) and trends to highlight potential entry and exit points.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. FEATURE: MACRO CONTEXT -->
+    <section id="macro" class="py-32 bg-surface section-premium">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="order-2 lg:order-1 glass-premium p-10 rounded-2xl border-l-4 border-starta-teal">
+                <div class="space-y-6">
+                    <div class="flex justify-between text-main border-b border-border pb-4 items-end live-ticker-box">
+                        <div>
+                            <div class="text-xs text-muted mb-1">USD / EGP</div>
+                            <div class="text-3xl font-bold font-mono live-data" data-value="48.50">48.50</div>
+                        </div>
+                        <span class="text-sm text-starta-teal font-mono live-change" data-value="0.5">▲ 0.5%</span>
+                    </div>
+                    <div class="flex justify-between text-main border-b border-border pb-4 items-end">
+                        <div>
+                            <div class="text-xs text-muted mb-1" data-key="macro_cbe">CBE RATES</div>
+                            <div class="text-3xl font-bold font-mono">27.25%</div>
+                        </div>
+                        <span class="text-sm text-muted font-mono" data-key="macro_hold">HOLD</span>
+                    </div>
+                </div>
+            </div>
+            <div class="order-1 lg:order-2 space-y-8 reveal-text">
+                <span class="section-tag" data-key="macro_tag">THE MACROSCOPE</span>
+                <h2 class="section-title text-main" data-key="macro_title">Sovereign Macro.</h2>
+                <p class="text-muted copy-premium" data-key="macro_text">
+                    Context is king. Starta constantly monitors FX rates, central bank decisions, and inflation prints
+                    to explain how sovereign forces impact your sector.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. FEATURE: SECTOR ROTATION -->
+    <section class="py-32 bg-page border-t border-border section-premium">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="mb-16"><span class="section-tag" data-key="sector_tag">HEATMAPS</span>
+                <h2 class="section-title text-main" data-key="sector_title">Sector Dynamics.</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div
+                    class="p-8 bg-panel ultra-card rounded-2xl border border-border hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <div class="font-bold text-main" data-key="sec_bank">Banking</div>
+                    <div class="text-xs text-green-500 font-mono mt-2 counter-anim" data-value="2.4" data-prefix="+">
+                        +0.0% Flow</div>
+                </div>
+                <div
+                    class="p-8 bg-panel ultra-card rounded-2xl border border-border hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <div class="font-bold text-main" data-key="sec_re">Real Estate</div>
+                    <div class="text-xs text-red-500 font-mono mt-2 counter-anim" data-value="-1.1" data-prefix="">-0.0%
+                        Flow</div>
+                </div>
+                <div
+                    class="p-8 bg-panel ultra-card rounded-2xl border border-border hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <div class="font-bold text-main" data-key="sec_nrg">Energy</div>
+                    <div class="text-xs text-green-500 font-mono mt-2 counter-anim" data-value="0.8" data-prefix="+">
+                        +0.0% Flow</div>
+                </div>
+                <div
+                    class="p-8 bg-panel ultra-card rounded-2xl border border-border hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <div class="font-bold text-main" data-key="sec_pharma">Pharma</div>
+                    <div class="text-xs text-muted font-mono mt-2">0.0% Flow</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 12. FEATURE: SMART SCREENERS -->
+    <section class="py-32 bg-surface relative section-premium">
+        <div class="max-w-5xl mx-auto px-6 text-center">
+            <span class="section-tag" data-key="screen_tag">DISCOVERY ENGINE</span>
+            <h2 class="section-title text-main mb-12" data-key="screen_title">Find the Needle.</h2>
+            <div
+                class="bg-page border border-border rounded-full p-2 flex items-center shadow-neon max-w-3xl mx-auto pl-6">
+                <span class="text-starta-teal mr-4 animate-pulse">_</span>
+                <span class="text-muted font-mono text-left w-full text-sm rtl-text-right"
+                    data-key="screen_placeholder">Show me undervalued Real Estate stocks with high growth...</span>
+                <div
+                    class="w-12 h-12 bg-starta-teal rounded-full flex items-center justify-center text-white arrow-icon">
+                    →</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 13. FEATURE: OWNERSHIP X-RAY -->
+    <section class="py-32 bg-page border-t border-border section-premium">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6 reveal-text">
+                <span class="section-tag" data-key="owner_tag">INSIDER TRACKING</span>
+                <h2 class="section-title text-main" data-key="owner_title">Follow the Whales.</h2>
+                <p class="text-muted copy-premium" data-key="owner_text">Starta reveals the major institutions, board
+                    members, and insiders holding the stock. Don't fight the smart money.</p>
+            </div>
+            <div class="glass-premium p-8 rounded-2xl shine-border ownership-card">
+                <div class="flex justify-between mb-2 text-main font-bold"><span
+                        data-key="owner_inst">Institutional</span><span class="counter-anim" data-value="65"
+                        data-suffix="%">0%</span></div>
+                <div class="w-full h-3 bg-panel rounded-full mb-6 overflow-hidden">
+                    <div class="h-full bg-starta-teal w-[0%] transition-all duration-1000 ease-out bar-anim"
+                        data-width="65%"></div>
+                </div>
+                <div class="flex justify-between mb-2 text-main font-bold"><span data-key="owner_free">Free
+                        Float</span><span class="counter-anim" data-value="35" data-suffix="%">0%</span></div>
+                <div class="w-full h-3 bg-panel rounded-full overflow-hidden">
+                    <div class="h-full bg-main w-[0%] transition-all duration-1000 ease-out bar-anim" data-width="35%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 14. FEATURE: NEWS SENTIMENT -->
+    <section class="py-32 bg-surface section-premium">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <span class="section-tag" data-key="news_tag">NLP ENGINE</span>
+            <h2 class="section-title text-main mb-12" data-key="news_title">Signal from Noise.</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div class="p-8 border border-border rounded-2xl bg-panel border-l-4 border-l-green-500">
+                    <div class="text-[10px] text-green-500 mb-2 font-bold tracking-widest" data-key="news_pos">POSITIVE
+                        SENTIMENT</div>
+                    <div class="text-main font-bold text-lg rtl-text-right" data-key="news_ex1">"Board approves record
+                        dividend distribution of 2.5 EGP."</div>
+                </div>
+                <div class="p-8 border border-border rounded-2xl bg-panel border-l-4 border-l-red-500">
+                    <div class="text-[10px] text-red-500 mb-2 font-bold tracking-widest" data-key="news_neg">NEGATIVE
+                        SENTIMENT</div>
+                    <div class="text-main font-bold text-lg rtl-text-right" data-key="news_ex2">"Supply chain
+                        disruptions impact Q3 gross margins."</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 15. PORTFOLIO HEALTH (Smart Portfolio Tracker) -->
+    <section class="py-32 bg-page border-t border-border section-premium">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div
+                class="glass-premium p-12 rounded-full h-80 w-80 flex flex-col items-center justify-center border-4 border-starta-teal mx-auto shine-border relative">
+                <div class="absolute inset-0 rounded-full border border-border animate-ping opacity-20"></div>
+                <div class="text-6xl font-bold text-main font-display counter-anim" data-value="92">0</div>
+                <div class="text-sm text-starta-teal font-bold tracking-widest mt-2" data-key="port_optimal">OPTIMAL
+                </div>
+                <div class="text-xs text-muted mt-1" data-key="port_score">Diversification Score</div>
+            </div>
+            <div class="space-y-6 reveal-text">
+                <span class="section-tag" data-key="port_tag">SMART PORTFOLIO TRACKER</span>
+                <h2 class="section-title text-main" data-key="port_title">Your Personal<br>Risk Manager.</h2>
+                <p class="text-muted copy-premium" data-key="port_text">
+                    Are you overexposed to Real Estate? Is your Beta too high? Starta analyzes your holdings for
+                    concentration risk and correlation traps.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 16. THE ACADEMY (Masterclass) -->
+    <section class="py-32 bg-surface section-premium">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="section-tag" data-key="acad_tag">STARTA MASTERCLASS</span>
+                <h2 class="section-title text-main" data-key="acad_title">The Knowledge Vault.</h2>
+                <p class="text-muted mt-4 max-w-2xl mx-auto" data-key="acad_sub">Comprehensive educational modules to
+                    elevate your financial IQ.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div
+                    class="glass-premium ultra-card p-8 rounded-2xl hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="acad_c1_title">Financial Statement Analysis
+                    </h4>
+                    <p class="text-sm text-muted" data-key="acad_c1_text">Master the Income Statement, Balance Sheet,
+                        and Cash Flow.</p>
+                </div>
+                <div
+                    class="glass-premium ultra-card p-8 rounded-2xl hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="acad_c2_title">Valuation Models 101</h4>
+                    <p class="text-sm text-muted" data-key="acad_c2_text">Learn DCF, Multiples, and how to find fair
+                        value.</p>
+                </div>
+                <div
+                    class="glass-premium ultra-card p-8 rounded-2xl hover:border-starta-teal/50 transition-all cursor-pointer group">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="acad_c3_title">Technical Analysis</h4>
+                    <p class="text-sm text-muted" data-key="acad_c3_text">Identify trends, support levels, and entry
+                        points.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 17. MOBILE ECOSYSTEM -->
+    <section id="mobile" class="py-32 bg-page border-t border-border text-center section-premium">
+        <span class="section-tag" data-key="mob_tag">EVERYWHERE</span>
+        <h2 class="section-title text-main mb-8" data-key="mob_title">Your AI Analyst<br>In Your Pocket.</h2>
+        <p class="text-muted mb-12 text-lg" data-key="mob_text">Native iOS and Android apps with instant chat, smart
+            alerts, and personalized financial answers anywhere.</p>
+        <div class="flex justify-center gap-6">
+            <button
+                class="flex items-center gap-3 px-8 py-4 bg-main text-page rounded-lg hover:bg-muted transition-colors font-bold">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.78 1.18-.19 2.31-.89 3.51-.84 1.54.06 2.7.79 3.49 1.92-3.03 1.8-2.5 5.5.01 6.49-1.03 2.19-2.3 4.26-2.09 4.62zM12.03 5.38c-.25-2.28 1.63-4.29 4.04-4.38.24 2.22-1.8 4.4-4.04 4.38z" />
+                </svg>
+                <span data-key="app_store">App Store</span>
+            </button>
+            <button
+                class="flex items-center gap-3 px-8 py-4 bg-transparent border border-border text-main rounded-lg hover:bg-panel transition-colors font-bold">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5h15c.83 0 1.5.67 1.5 1.5v17c0 .83-.67 1.5-1.5 1.5h-15c-.83 0-1.5-.67-1.5-1.5z" />
+                    <path d="M16.5 14h-9v-1h9v1zm0-3h-9v-1h9v1zm0-3h-9v-1h9v1zM6 8h2v2H6V8zm0 3h2v2H6v-2zm0 3h2v2H6v-2z"
+                        fill="#fff" fill-opacity="0" />
+                </svg>
+                <span data-key="google_play">Google Play</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: ROADMAP (Matches Attached Image) -->
+    <section id="roadmap" class="py-32 bg-surface border-t border-border relative section-premium">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-20 reveal-text">
+                <h2 class="section-title text-main" data-key="road_title">What we’re working on.</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Smart Portfolio -->
+                <div
+                    class="glass-premium ultra-card p-8 rounded-3xl border border-border hover:border-starta-teal/50 transition-all group cursor-default premium-hover">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="road_c1_title">Smart Portfolio</h4>
+                    <p class="text-muted copy-soft" data-key="road_c1_text">Automated rebalancing and risk analysis
+                        tailored to your holdings.</p>
+                </div>
+
+                <!-- Market Expansion -->
+                <div
+                    class="glass-premium ultra-card p-8 rounded-3xl border border-border hover:border-starta-teal/50 transition-all group cursor-default premium-hover">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="road_c2_title">Market Expansion</h4>
+                    <p class="text-muted copy-soft" data-key="road_c2_text">Deep dive coverage for Tadawul (TASI) and
+                        Gulf markets.</p>
+                </div>
+
+                <!-- News 2.0 -->
+                <div
+                    class="glass-premium ultra-card p-8 rounded-3xl border border-border hover:border-starta-teal/50 transition-all group cursor-default premium-hover">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="road_c3_title">News 2.0</h4>
+                    <p class="text-muted copy-soft" data-key="road_c3_text">Sentiment analysis on local news sources and
+                        social signals.</p>
+                </div>
+
+                <!-- Mobile App -->
+                <div
+                    class="glass-premium ultra-card p-8 rounded-3xl border border-border hover:border-starta-teal/50 transition-all group cursor-default premium-hover">
+                    <h4 class="text-xl font-bold text-main mb-2" data-key="road_c4_title">Mobile App</h4>
+                    <p class="text-muted copy-soft" data-key="road_c4_text">Native iOS and Android experience with push
+                        notifications.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="lux-divider"></div>
+
+    <section class="py-24 bg-surface section-premium">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-12 reveal-text">
+                <span class="section-tag" data-key="proof_tag">TRUST LAYER</span>
+                <h2 class="section-title text-main mb-4" data-key="proof_title">Built for Serious Capital.</h2>
+                <p class="text-muted max-w-3xl mx-auto copy-premium" data-key="proof_sub">Every insight is linked to
+                    deterministic models, auditable data tables, and transparent methodology.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-premium rounded-2xl p-7 border border-border">
+                    <div class="text-starta-teal text-xs font-mono tracking-[0.2em] mb-3" data-key="proof_c1_label">
+                        METHODOLOGY</div>
+                    <h3 class="text-xl font-display text-main mb-2" data-key="proof_c1_title">Valuation Notes</h3>
+                    <p class="text-muted copy-soft" data-key="proof_c1_text">DCF assumptions, discount rates, and
+                        sensitivity ranges are visible inside every premium report.</p>
+                </div>
+                <div class="glass-premium rounded-2xl p-7 border border-border">
+                    <div class="text-starta-teal text-xs font-mono tracking-[0.2em] mb-3" data-key="proof_c2_label">
+                        COMPLIANCE</div>
+                    <h3 class="text-xl font-display text-main mb-2" data-key="proof_c2_title">Data Integrity</h3>
+                    <p class="text-muted copy-soft" data-key="proof_c2_text">Numbers are sourced from signed feeds and
+                        immutable snapshots with timestamped revision history.</p>
+                </div>
+                <div class="glass-premium rounded-2xl p-7 border border-border">
+                    <div class="text-starta-teal text-xs font-mono tracking-[0.2em] mb-3" data-key="proof_c3_label">
+                        DELIVERY</div>
+                    <h3 class="text-xl font-display text-main mb-2" data-key="proof_c3_title">Institutional Exports</h3>
+                    <p class="text-muted copy-soft" data-key="proof_c3_text">Board-ready PDF and Excel packs include
+                        assumptions, scenario tables, and executive summaries.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 20. PRICING & CLOSE (Updated to match image) -->
+    <section id="pricing" class="py-40 bg-page border-t border-border relative section-premium-xl">
+        <div class="max-w-7xl mx-auto px-6 text-center mb-20">
+            <span class="section-tag" data-key="price_tag">CAPITAL ALLOCATION</span>
+            <h2 class="section-title text-main" data-key="price_title">Invest in Intelligence.</h2>
+        </div>
+
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 mb-32 items-start">
+
+            <!-- FREE PLAN -->
+            <div
+                class="glass-premium p-8 rounded-3xl border border-border hover:border-muted transition-all flex flex-col h-full premium-hover">
+                <div class="text-starta-teal font-display text-xl mb-2" data-key="p1_name">The Starter</div>
+                <p class="text-xs text-muted mb-8 h-8 rtl-text-right" data-key="p1_sub">Essential market data for the
+                    casual investor</p>
+                <h4 class="text-main font-bold mb-8 text-5xl tracking-tight" data-key="p1_price">Free</h4>
+                <button onclick="window.location.href='https://startamarkets.com'"
+                    class="w-full py-4 border border-border bg-surface text-main rounded-xl hover:bg-panel mb-8 text-xs font-bold tracking-widest uppercase transition-all shadow-sm"
+                    data-key="p1_btn">Get Started</button>
+                <div class="border-t border-border mb-8"></div>
+                <ul class="text-left space-y-4 text-sm text-muted">
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f1">5 chats per day with Starta AI Analyst</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f2">3 Institutional Downloads</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f3">3 Full Balance Sheets</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f4">3 5-Year Cash Flows</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f5">Financial Statements (TTM)</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f6">All Financial Ratios</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f7">Comprehensive Info</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p1_f8">3 PDF Exports</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ANALYST PLAN -->
+            <div
+                class="glass-premium p-8 rounded-3xl border border-starta-teal/50 shadow-neon flex flex-col h-full transform lg:-translate-y-6 shine-border relative z-10 premium-hover">
+                <div class="text-starta-teal font-display text-xl mb-2" data-key="p2_name">The Analyst</div>
+                <p class="text-xs text-muted mb-8 h-8 rtl-text-right" data-key="p2_sub">Real-time intelligence for
+                    active traders</p>
+                <div class="flex items-baseline gap-2 mb-2">
+                    <span class="text-xl text-muted font-bold" data-key="curr">EGP</span>
+                    <h4 class="text-main font-bold text-6xl tracking-tight">69</h4>
+                </div>
+                <p class="text-xs text-muted mb-8" data-key="p2_bill">Monthly or 662 EGP Annually (20% off)</p>
+                <button onclick="window.location.href='https://startamarkets.com'"
+                    class="w-full py-4 bg-transparent border border-starta-teal text-main rounded-xl mb-8 text-xs font-bold tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:bg-starta-teal hover:text-black bg-starta-teal/10 btn-gradient-border"
+                    data-key="p2_btn">Get Started</button>
+                <div class="border-t border-border mb-8"></div>
+                <ul class="text-left space-y-4 text-sm text-main font-medium">
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f1">Unlimited AI Analyst Chat</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f2">Unlimited Income Statements</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f3">Unlimited Balance Sheets</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f4">Unlimited Cash Flows</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f5">Full Financial History</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f6">Complete Ratios & KPIs</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f7">Advanced Excel Exports</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f8">Unlimited PDF Reports</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p2_f9">Daily Market Briefing</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- INSTITUTIONAL -->
+            <div
+                class="glass-premium p-8 rounded-3xl border border-border hover:border-muted transition-all flex flex-col h-full premium-hover">
+                <div class="text-starta-teal font-display text-xl mb-2" data-key="p3_name">Institutional</div>
+                <p class="text-xs text-muted mb-8 h-8 rtl-text-right" data-key="p3_sub">API access and raw data for
+                    funds</p>
+                <h4 class="text-main font-bold mb-8 text-5xl tracking-tight" data-key="p3_price">Custom</h4>
+                <button
+                    class="w-full py-4 border border-border bg-surface text-main rounded-xl hover:bg-panel mb-8 text-xs font-bold tracking-widest uppercase transition-all shadow-sm"
+                    data-key="p3_btn">Contact Sales</button>
+                <div class="border-t border-border mb-8"></div>
+                <ul class="text-left space-y-4 text-sm text-muted">
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f1">Direct API access to vector database</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f2">Custom risk modeling pipelines</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f3">Dedicated account manager</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f4">White-label reports</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f5">Custom Data Integration</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f6">Full Historical Tick Data Access</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f7">Custom AI Model Fine-Tuning</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f8">SLA-Backed 99.9% Uptime</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <div class="check-icon"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"></path>
+                            </svg></div><span data-key="p3_f9">Priority 24/7 Engineering Support</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <h2 class="section-title text-main mb-8" data-key="close_title">Decide With Confidence.</h2>
+            <p class="text-muted copy-premium mb-12" data-key="close_text">
+                Ask better questions, get clearer answers, and make every financial decision with confidence.
+            </p>
+            <button onclick="window.location.href='https://startamarkets.com'"
+                class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Try Starta
+                Now</button>
+            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">
+                &copy; 2026 Starta Financial Intelligence. Data provided by EGX.
+            </div>
+        </div>
+    </section>
+
+    <!-- JS LOGIC -->
+    <script>
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        // --- TRANSLATION ENGINE ---
+        const translations = {
+            en: {
+                nav_features: "FEATURES", nav_mobile: "MOBILE", nav_roadmap: "ROADMAP", nav_pricing: "PRICING", nav_cta: "TRY NOW",
+                hero_kicker: "Institutional AI Research",
+                hero_title: `AI that understands the market ...`,
+                hero_sub: `Smart analysis for the Egyptian stock market, powered by <span class="text-main font-semibold">real-time EGX data</span>.<br><br>Ask about any stock or market move and get clear, easy-to-understand insights built on real data — not noise.`,
+                hero_point1: "Instant Analyst Chat", hero_point2: "Valuation + Risk Context", hero_point3: "Arabic + English Fluency",
+                hero_btn: "Get Started",
+                mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE EGX FEED`,
+                trusted_by: "Follow Your Prefered Stocks",
+                gap_tag: "THE PROBLEM",
+                gap_title: `Data Without Insight <br>is Just <span class="text-muted line-through decoration-starta-teal decoration-4">Noise</span>.`,
+                gap_text: "Charts alone do not create edge. Starta converts market noise into a clear investment thesis with valuation anchors, catalysts, and risk scenarios.",
+                brain_tag: "CORE LOGIC", brain_title: "Meet Your New<br>Senior Analyst.", brain_sub: "Institutional Decision Logic.",
+                brain_text: "Starta is not a chat wrapper. It is built on analyst-grade frameworks that combine deterministic models, market context, and disciplined recommendation logic.",
+                brain_feat1_title: "Deterministic", brain_feat1_text: "Hard-coded Math", brain_feat2_title: "Zero Bias", brain_feat2_text: "Pure Data Driven",
+                trust_tag: "TRUST ENGINE", trust_title: "Trust, Not Guesswork.", trust_text: "Accuracy is non-negotiable. Starta runs on a <strong>hybrid deterministic engine</strong>: language is generated by AI, while every number is locked to verified financial datasets.",
+                lang_tag: "NATIVE FLUENCY", lang_title: "Fluent in Market<br>Arabic.", lang_text: `Starta understands <span class="text-main font-semibold">real investor Arabic</span>, from formal language to Egyptian dialect, and maps it instantly to EGX tickers, sectors, and valuation context.`,
+                live_tag: "LIVE DATA", live_title: "Live Market Pulse.", live_feed_header: "LIVE FEED", live_source: "SOURCE: EGX DIRECT",
+                lens_tag: "THE MICROSCOPE", lens_title: "See Through the<br>Balance Sheet.",
+                lens_c1_title: "Profitability Core", lens_c1_text: "Deep dive into Margins, ROE, and ROA. Identify companies that efficiently generate cash.",
+                lens_c2_title: "Quality Score", lens_c2_text: "9-point <strong>Piotroski F-Score</strong> scan. Filter out weak balance sheets.",
+                lens_c3_title: "Intrinsic Value", lens_c3_text: "Real-time <strong>Fair Value</strong> models (DCF, PEG). Know exactly what a stock is worth.",
+                tech_tag: "THE TIMER", tech_title: "Time Entries With Precision.", tech_text: "Fundamentals define value. Technical structure defines timing. Starta tracks momentum, trend strength, and critical levels to surface high-probability entries and exits.",
+                tech_signal_label: "SIGNAL DETECTED", tech_signal_desc: "Oversold Condition",
+                macro_tag: "THE MACROSCOPE", macro_title: "Macro Intelligence.", macro_text: "Macro drives multiples. Starta monitors FX, rates, and inflation so you can see how policy shocks and currency shifts reprice each sector.",
+                macro_cbe: "CBE RATES", macro_hold: "HOLD",
+                sector_tag: "HEATMAPS", sector_title: "Sector Dynamics.", sec_bank: "Banking", sec_re: "Real Estate", sec_nrg: "Energy", sec_pharma: "Pharma",
+                screen_tag: "DISCOVERY ENGINE", screen_title: "Find Alpha Faster.", screen_placeholder: "Show me undervalued Real Estate stocks with high growth...",
+                owner_tag: "INSIDER TRACKING", owner_title: "Track Smart Capital.", owner_text: "See who truly owns the stock: institutions, insiders, and concentration shifts that often signal conviction before price reacts.", owner_inst: "Institutional", owner_free: "Free Float",
+                news_tag: "NLP ENGINE", news_title: "News With Context.", news_pos: "POSITIVE SENTIMENT", news_ex1: "\"Board approves record dividend distribution of 2.5 EGP.\"", news_neg: "NEGATIVE SENTIMENT", news_ex2: "\"Supply chain disruptions impact Q3 gross margins.\"",
+                port_tag: "SMART PORTFOLIO TRACKER", port_title: "Protect Returns<br>Before Risk Hits.", port_text: "Starta stress-tests your portfolio for concentration, hidden correlation, and beta imbalance so risk is managed before drawdowns happen.", port_optimal: "OPTIMAL", port_score: "Diversification Score",
+                acad_tag: "STARTA MASTERCLASS", acad_title: "Starta Academy.", acad_sub: "Practical, market-ready education for investors who want institutional thinking.",
+                acad_c1_title: "Financial Analysis", acad_c1_text: "Master the Income Statement, Balance Sheet, and Cash Flow.",
+                acad_c2_title: "Valuation Models 101", acad_c2_text: "Learn DCF, Multiples, and how to find fair value.",
+                acad_c3_title: "Technical Analysis", acad_c3_text: "Identify trends, support levels, and entry points.",
+                mob_tag: "EVERYWHERE", mob_title: "Your AI Analyst<br>In Your Pocket.", mob_text: "Native iOS and Android apps with instant chat, smart alerts, and personalized financial answers anywhere.",
+                app_store: "App Store", google_play: "Google Play",
+                road_title: "What We're Building Next.", road_c1_title: "Smart Portfolio", road_c1_text: "Automated rebalancing tailored to your holdings.", road_c2_title: "Market Expansion", road_c2_text: "Deep dive coverage for Tadawul (TASI).", road_c3_title: "News 2.0", road_c3_text: "Sentiment analysis on local news sources.", road_c4_title: "Mobile App", road_c4_text: "Native iOS and Android experience.",
+                proof_tag: "TRUST LAYER", proof_title: "Built for Professional Investors.", proof_sub: "Each insight is tied to transparent models, auditable numbers, and institutional reporting standards.",
+                proof_c1_label: "METHODOLOGY", proof_c1_title: "Valuation Notes", proof_c1_text: "DCF assumptions, discount rates, and sensitivity ranges are visible inside every premium report.",
+                proof_c2_label: "COMPLIANCE", proof_c2_title: "Data Integrity", proof_c2_text: "Numbers are sourced from signed feeds and immutable snapshots with timestamped revision history.",
+                proof_c3_label: "DELIVERY", proof_c3_title: "Institutional Exports", proof_c3_text: "Board-ready PDF and Excel packs include assumptions, scenario tables, and executive summaries.",
+                price_tag: "CAPITAL ALLOCATION", price_title: "Choose Your Edge.",
+                p1_name: "The Starter", p1_sub: "Essential market data for the casual investor", p1_price: "Free", p1_btn: "Get Started", p1_f1: "5 chats per day with Starta AI Analyst", p1_f2: "3 Institutional Downloads", p1_f3: "3 Full Balance Sheets", p1_f4: "3 5-Year Cash Flows", p1_f5: "Financial Statements (TTM)", p1_f6: "All Financial Ratios", p1_f7: "Comprehensive Info", p1_f8: "3 PDF Exports",
+                p2_name: "The Analyst", p2_sub: "Real-time intelligence for active traders", curr: "EGP", p2_bill: "Monthly or 662 EGP Annually (20% off)", p2_btn: "Get Started", p2_f1: "Unlimited AI Chat", p2_f2: "Unlimited Income Statements", p2_f3: "Unlimited Balance Sheets", p2_f4: "Unlimited Cash Flows", p2_f5: "Full Financial History", p2_f6: "Complete Ratios & KPIs", p2_f7: "Advanced Excel Exports", p2_f8: "Unlimited PDF Reports", p2_f9: "Daily Market Briefing",
+                p3_name: "Institutional", p3_sub: "API access and raw data for funds", p3_price: "Custom", p3_btn: "Contact Sales", p3_f1: "Direct API Access", p3_f2: "Custom Risk Models", p3_f3: "Dedicated Account Mgr", p3_f4: "White-label Reports", p3_f5: "Custom Data Integration", p3_f6: "Historical Tick Data", p3_f7: "Model Fine-Tuning", p3_f8: "99.9% Uptime SLA", p3_f9: "Priority Support",
+                close_title: "Decide With Confidence.", close_text: "Ask better questions, get clearer answers, and make every financial decision with confidence.", close_btn: "Activate Starta",
+                brain_load1: "Analyzing market signals", brain_load2: "Cross-checking EGX data", brain_load3: "Insight ready", dialect_egy: "EGYPTIAN DIALECT", dialect_msa: "MODERN STANDARD"
+            },
+            ar: {
+                nav_features: "المزايا", nav_mobile: "الجوال", nav_roadmap: "خارطة الطريق", nav_pricing: "الأسعار", nav_cta: "جرّب الآن",
+                hero_kicker: "بحث استثماري مدعوم بالذكاء الاصطناعي",
+                hero_title: `ذكاء اصطناعي يفهم السوق…`,
+                hero_sub: `تحليل ذكي لسوق الأسهم المصري مدعوم بـ <span class="text-main font-semibold">بيانات EGX اللحظية</span>.<br><br>اسأل عن أي سهم أو حركة في السوق، واحصل على تحليل بسيط، واضح، ومبني على بيانات حقيقية — بدون تعقيد.`,
+                hero_point1: "محادثة تحليلية فورية", hero_point2: "تقييم واضح مع سياق المخاطر", hero_point3: "فهم عربي وإنجليزي باحترافية",
+                hero_btn: "ابدأ الآن",
+                mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> بث مباشر للبورصة المصرية`,
+                trusted_by: "تابع اسهمك المفضلة",
+                gap_tag: "المشكلة",
+                gap_title: `البيانات بلا فهم <br>ليست سوى <span class="text-muted line-through decoration-starta-teal decoration-4">ضوضاء</span>.`,
+                gap_text: "الرسوم البيانية والأخبار وحدها لا تكفي لاتخاذ قرار استثماري. ستارتا تحوّل بيانات السوق إلى تحليل واضح يشمل القيمة العادلة، أهم المحفزات، وأبرز المخاطر.",
+                brain_tag: "منطق المنصة", brain_title: "تعرّف على<br>محللك الجديد.", brain_sub: "منهجية مؤسسية لاتخاذ القرار.",
+                brain_text: "ستارتا ليست واجهة محادثة فقط، بل منظومة تحليلية مبنية على أطر احترافية تجمع النماذج الحتمية الدقيقة مع سياق السوق لإنتاج توصيات منضبطة.",
+                brain_feat1_title: "حتمي", brain_feat1_text: "نماذج قابلة للتحقق", brain_feat2_title: "منضبط", brain_feat2_text: "مدفوع بالبيانات",
+                trust_tag: "محرك الثقة", trust_title: "ثقة بلا تخمين.", trust_text: "في الاستثمار لا مجال للتخمين. تعمل ستارتا عبر <strong>محرك تحليلي موثوق</strong>: الذكاء الاصطناعي يشرح الصورة، بينما كل رقم مرتبط مباشرةً بمصادر مالية موثوقة.",
+                lang_tag: "اللغة والسياق", lang_title: "تفهم لغة<br>المستثمر المصري.", lang_text: `تفهم ستارتا <span class="text-main font-semibold">لغة المستثمر الفعلية</span> بالفصحى وباللهجة المصرية، وتربط سؤالك فورًا بالرموز والقطاعات وسياق التقييم داخل EGX.`,
+                live_tag: "بيانات مباشرة", live_title: "نبض السوق لحظةً بلحظة.", live_feed_header: "البث المباشر", live_source: "المصدر: EGX مباشر",
+                lens_tag: "المجهر المالي", lens_title: "اقرأ ما وراء<br>القوائم المالية.",
+                lens_c1_title: "جوهر الربحية", lens_c1_text: "تحليل عميق للهوامش والعوائد على رأس المال لتحديد الشركات القادرة على توليد النقد بكفاءة.",
+                lens_c2_title: "درجة الجودة", lens_c2_text: "فحص <strong>Piotroski F-Score</strong> لتصفية المراكز الضعيفة قبل اتخاذ أي قرار سعري.",
+                lens_c3_title: "القيمة العادلة", lens_c3_text: "نماذج <strong>القيمة العادلة</strong> اللحظية (DCF وPEG) لتعرف بدقة ما إذا كان السهم أقل أو أعلى من قيمته.",
+                tech_tag: "التوقيت", tech_title: "توقيت أدق للتنفيذ.", tech_text: "التحليل الأساسي يحدد القيمة، والتحليل الفني يحدد التوقيت. تراقب ستارتا الزخم والاتجاه والمستويات الحرجة لإبراز نقاط الدخول والخروج الأعلى احتمالًا.",
+                tech_signal_label: "تم رصد إشارة", tech_signal_desc: "منطقة تشبع بيعي",
+                macro_tag: "الاقتصاد الكلي", macro_title: "رؤية الاقتصاد الكلي.", macro_text: "العوامل الكلية تعيد تسعير القطاعات. تراقب ستارتا سعر الصرف والفائدة والتضخم لتوضّح أثر الصدمات الاقتصادية على محفظتك.",
+                macro_cbe: "سعر فائدة المركزي", macro_hold: "تثبيت",
+                sector_tag: "القطاعات", sector_title: "ديناميكيات القطاعات.", sec_bank: "البنوك", sec_re: "العقارات", sec_nrg: "الطاقة", sec_pharma: "الرعاية الصحية",
+                screen_tag: "محرك الاكتشاف", screen_title: "اعثر على الفرص أسرع.", screen_placeholder: "اعرض أسهمًا عقارية أقل من قيمتها مع نمو مرتفع...",
+                owner_tag: "ملكية السهم", owner_title: "تتبّع رأس المال الذكي.", owner_text: "اعرف من يملك السهم فعليًا: المؤسسات، المطلعون، وتغيرات التركز التي غالبًا ما تسبق حركة السعر.", owner_inst: "المؤسسات", owner_free: "التداول الحر",
+                news_tag: "محرك الأخبار", news_title: "خبر مالي ضمن سياقه.", news_pos: "إشارات إيجابية", news_ex1: "\"مجلس الإدارة يعتمد توزيع أرباح نقدية استثنائية بقيمة 2.5 جنيه.\"", news_neg: "إشارات سلبية", news_ex2: "\"اضطرابات سلسلة الإمداد تضغط على هوامش الربع الثالث.\"",
+                port_tag: "متابعة المحفظة الذكية", port_title: "احمِ العائد<br>قبل ارتفاع المخاطر.", port_text: "تجري ستارتا اختبارات ضغط لمحفظتك لكشف التركز والارتباطات الخفية واختلال بيتا قبل أن تتحول إلى خسائر.", port_optimal: "متوازن", port_score: "درجة التنويع",
+                acad_tag: "أكاديمية ستارتا", acad_title: "أكاديمية ستارتا", acad_sub: "محتوى عملي يساعدك على تبني عقلية استثمار مؤسسية في اتخاذ القرار.",
+                acad_c1_title: "تحليل القوائم المالية", acad_c1_text: "أتقن قراءة قائمة الدخل والميزانية العمومية والتدفقات النقدية.",
+                acad_c2_title: "أساسيات التقييم", acad_c2_text: "تعلّم نماذج التدفقات المخصومة والمضاعفات لتحديد القيمة العادلة بثقة.",
+                acad_c3_title: "التحليل الفني", acad_c3_text: "حدد الاتجاهات، مستويات الدعم والمقاومة، ونقاط الدخول والخروج.",
+                mob_tag: "في كل مكان", mob_title: "محللك الذكي<br>في جيبك.", mob_text: "تطبيقات أصلية على iOS وAndroid تتيح محادثة فورية، تنبيهات ذكية، وإجابات مالية مخصصة أينما كنت.",
+                road_title: "ما نعمل عليه الآن.", road_c1_title: "محفظة ذكية", road_c1_text: "إعادة توازن آلية وتحليل مخاطر مخصص لبنية محفظتك.", road_c2_title: "توسّع الأسواق", road_c2_text: "تغطية تحليلية أعمق للسوق السعودي (تاسي) وأسواق الخليج.", road_c3_title: "الأخبار 2.0", road_c3_text: "تحليل مشاعر متقدم لمصادر الأخبار المحلية والإشارات الاجتماعية.", road_c4_title: "تطبيق الجوال", road_c4_text: "تجربة أصلية كاملة مع تنبيهات لحظية مخصصة.",
+                proof_tag: "طبقة الثقة", proof_title: "مصمم للمستثمر المحترف.", proof_sub: "كل استنتاج في ستارتا مرتبط بنموذج واضح وأرقام قابلة للتدقيق ومعايير تقارير مؤسسية.",
+                proof_c1_label: "المنهجية", proof_c1_title: "ملاحظات التقييم", proof_c1_text: "افتراضات DCF ومعدلات الخصم وتحليل الحساسية متاحة داخل كل تقرير احترافي.",
+                proof_c2_label: "الامتثال", proof_c2_title: "سلامة البيانات", proof_c2_text: "الأرقام تأتي من تغذيات موثقة ولقطات غير قابلة للتعديل مع سجل مراجعات زمني.",
+                proof_c3_label: "التسليم", proof_c3_title: "مخرجات مؤسسية", proof_c3_text: "حزم PDF وExcel جاهزة للإدارة تتضمن الافتراضات والجداول والملخص التنفيذي.",
+                price_tag: "تخصيص رأس المال", price_title: "اختر ميزتك التنافسية.",
+                p1_name: "المبتدئ", p1_sub: "بيانات سوق أساسية للمستثمر الفردي", p1_price: "مجاني", p1_btn: "ابدأ الآن", p1_f1: "5 محادثات يومية مع محلل ستارتا", p1_f2: "3 تنزيلات مؤسسية", p1_f3: "3 ميزانيات عمومية كاملة", p1_f4: "3 قوائم تدفقات نقدية لخمس سنوات", p1_f5: "قوائم مالية (TTM)", p1_f6: "جميع النسب المالية", p1_f7: "بيانات شاملة عن الشركات", p1_f8: "3 تقارير PDF",
+                p2_name: "المحلل", p2_sub: "ذكاء لحظي للمتداول النشط", curr: "ج.م", p2_bill: "شهريًا أو 662 ج.م سنويًا (خصم 20%)", p2_btn: "ابدأ الآن", p2_f1: "محادثات غير محدودة مع المحلل", p2_f2: "قوائم دخل غير محدودة", p2_f3: "ميزانيات عمومية غير محدودة", p2_f4: "تدفقات نقدية غير محدودة", p2_f5: "سجل مالي تاريخي كامل", p2_f6: "نسب ومؤشرات أداء كاملة", p2_f7: "تصدير Excel متقدم", p2_f8: "تقارير PDF غير محدودة", p2_f9: "إحاطة سوق يومية",
+                p3_name: "المؤسسات", p3_sub: "وصول API وبيانات خام للصناديق", p3_price: "مخصص", p3_btn: "تواصل مع المبيعات", p3_f1: "وصول مباشر إلى API", p3_f2: "نماذج مخاطر مخصصة", p3_f3: "مدير حساب مخصص", p3_f4: "تقارير بعلامتك التجارية", p3_f5: "تكامل بيانات مخصص", p3_f6: "بيانات تاريخية دقيقة", p3_f7: "تخصيص نموذج الذكاء الاصطناعي", p3_f8: "اتفاقية إتاحة 99.9%", p3_f9: "دعم هندسي أولوية 24/7",
+                close_title: "قرارات أوضح بثقة.", close_text: "اطرح أسئلة أفضل، واحصل على إجابات أدق، واتخذ قراراتك المالية بثقة أكبر.", close_btn: "فعّل ستارتا الآن",
+                brain_load1: "جارٍ تحليل إشارات السوق", brain_load2: "جارٍ تدقيق بيانات EGX", brain_load3: "تم تجهيز الخلاصة", dialect_egy: "اللهجة المصرية", dialect_msa: "العربية الفصحى",
+                app_store: "متجر التطبيقات", google_play: "جوجل بلاي",
+                comp_title: "لماذا نتفوق.", comp_feat: "الميزة", comp_others: "منصات التداول", comp_logic: "منهجية مؤسسية", comp_arabic: "لغة السوق", comp_data: "دقة بيانات موثقة",
+                sec_tag: "البنية التحتية", sec_title: "أمان بمستوى مصرفي"
+            }
+        };
+
+        const langToggle = document.getElementById('langToggle');
+        function applyTranslations(lang) {
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+        }
+        applyTranslations(document.documentElement.lang);
+        langToggle.innerText = document.documentElement.lang === 'ar' ? 'EN' : 'AR';
+
+        langToggle.addEventListener('click', () => {
+            const currentLang = document.documentElement.lang;
+            const newLang = currentLang === 'en' ? 'ar' : 'en';
+
+            document.documentElement.lang = newLang;
+            document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+            langToggle.innerText = newLang === 'ar' ? 'EN' : 'AR';
+
+            // Restart Animation cleanly
+            scenarioIndex = 0;
+            if (timeline) timeline.kill(); // Stop current animation
+            playHeroSequence(); // Restart
+
+            gsap.to("body", {
+                opacity: 0, duration: 0.2, onComplete: () => {
+                    applyTranslations(newLang);
+                    setMarketTimestamp();
+                    gsap.to("body", { opacity: 1, duration: 0.2 });
+                }
+            });
+        });
+
+        // --- ROBUST ANIMATION ENGINE ---
+        let timeline;
+
+        const scenarios_en = [
+            { user: "Analyze CIB's margin growth vs sector.", aiHeader: "FUNDAMENTAL ANALYSIS", ai: "Net Interest Margin expanded by 45bps YoY to 6.4%, underscoring robust asset repricing. Fair Value model suggests 22% upside.", card: { l1: "Metric", l2: "Value", metric: "Net Interest Margin", value: "6.4%", context: "Outperforming Sector (5.8%)" } },
+            { user: "Is FWRY overvalued at 6.20?", aiHeader: "VALUATION CHECK", ai: "Trading at 45x P/E, FWRY commands a premium. However, 35% YoY revenue growth justifies the multiple relative to fintech peers.", card: { l1: "Current P/E", l2: "Hist. Avg", metric: "FWRY Valuation", value: "45.2x", context: "Premium to Sector (12x)" } },
+            { user: "Technical outlook for EFG Hermes?", aiHeader: "TECHNICAL SIGNAL", ai: "Bullish divergence detected on RSI (14). Price broke above the 50-day SMA at 18.50 EGP. Immediate resistance at 19.20.", card: { l1: "Indicator", l2: "Signal", metric: "RSI (14)", value: "Bullish", context: "Breakout Confirmed" } }
+        ];
+
+        const scenarios_ar = [
+            { user: "حلل نمو صافي الفائدة لدى التجاري الدولي مقارنة بالقطاع.", aiHeader: "تحليل أساسي", ai: "ارتفع معدل صافي الفائدة بمقدار 45 نقطة أساس ليصل إلى 6.4%، مما يؤكد قوة البنك في إعادة تسعير الأصول.", card: { l1: "المقياس", l2: "القيمة", metric: "معدل صافي الفائدة", value: "6.4%", context: "يتفوق على القطاع (5.8%)" } },
+            { user: "هل سهم فوري أعلى من قيمته عند 6.20؟", aiHeader: "فحص التقييم", ai: "عند مضاعف ربحية 45x، تتداول فوري بسعر أعلى من متوسط القطاع. لكن نمو الإيرادات بنسبة 35% يبرر هذا التقييم مقارنة بنظيراتها.", card: { l1: "مضاعف الربحية", l2: "المتوسط", metric: "تقييم فوري", value: "45.2x", context: "أعلى من متوسط القطاع (12x)" } },
+            { user: "النظرة الفنية لسهم هيرميس؟", aiHeader: "إشارة فنية", ai: "تم رصد تباين إيجابي على مؤشر RSI (14). السعر اخترق المتوسط المتحرك لـ 50 يوم عند 18.50 جنيه.", card: { l1: "المؤشر", l2: "الإشارة", metric: "RSI (14)", value: "صاعد", context: "تأكيد الاختراق" } }
+        ];
+
+        let scenarioIndex = 0;
+
+        function playHeroSequence() {
+            const isArabic = document.documentElement.lang === 'ar';
+            const currentScenarios = isArabic ? scenarios_ar : scenarios_en;
+            const current = currentScenarios[scenarioIndex];
+
+            // Kill previous timeline if exists
+            if (timeline) timeline.kill();
+
+            // Elements
+            const userText = document.getElementById('hero-user-text');
+            const aiText = document.getElementById('hero-ai-text');
+            const aiHeader = document.getElementById('hero-ai-header');
+            const dataCard = document.getElementById('hero-data-card');
+            const userBubble = document.getElementById('user-bubble');
+            const aiBubble = document.getElementById('ai-bubble');
+
+            timeline = gsap.timeline({
+                onComplete: () => {
+                    scenarioIndex = (scenarioIndex + 1) % currentScenarios.length;
+                    playHeroSequence();
+                }
+            });
+
+            // 0. Initial State (Instant Reset)
+            timeline.set(userText, { text: "" })
+                .set(aiText, { text: "" })
+                .set(aiHeader, { opacity: 0, text: current.aiHeader })
+                .set(dataCard, { opacity: 0, y: 10 })
+                .set(userBubble, { opacity: 1, scale: 1 })
+                .set(aiBubble, { opacity: 0, scale: 0.95 });
+
+            // 1. Type User Question
+            timeline.to(userText, {
+                text: current.user,
+                duration: 1.5,
+                ease: "none"
+            });
+
+            // 2. Pause & AI Reveal
+            timeline.to({}, { duration: 0.3 })
+                .to(aiBubble, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.2)" })
+                .to(aiHeader, { opacity: 1, duration: 0.3 }, "-=0.2");
+
+            // 3. Type AI Answer
+            timeline.to(aiText, {
+                text: current.ai,
+                duration: 3, // Reading speed
+                ease: "none"
+            });
+
+            // 4. Update & Show Data Card
+            timeline.call(() => {
+                document.getElementById('card-label-1').innerText = current.card.l1;
+                document.getElementById('card-label-2').innerText = current.card.l2;
+                document.getElementById('card-metric').innerText = current.card.metric;
+                document.getElementById('card-value').innerText = current.card.value;
+                document.getElementById('card-context').innerText = current.card.context;
+            })
+                .to(dataCard, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
+
+            // 5. Hold Reading Time
+            timeline.to({}, { duration: 3.5 });
+
+            // 6. Fade Out for Next Loop
+            timeline.to([userBubble, aiBubble], { opacity: 0, duration: 0.5 });
+        }
+
+        // Start
+        playHeroSequence();
+
+
+        // Theme Toggle Logic
+        const themeBtn = document.getElementById('themeToggle');
+        const darkIcon = document.querySelector('.dark-icon');
+        const lightIcon = document.querySelector('.light-icon');
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            darkIcon.style.opacity = '0';
+            lightIcon.style.opacity = '1';
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            if (current === 'light') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                darkIcon.style.opacity = '1';
+                lightIcon.style.opacity = '0';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                darkIcon.style.opacity = '0';
+                lightIcon.style.opacity = '1';
+            }
+            const navElement = document.querySelector('nav');
+            if (navElement) {
+                const light = document.documentElement.getAttribute('data-theme') === 'light';
+                navElement.style.backgroundColor = light ? 'rgba(246, 248, 251, 0.68)' : 'rgba(2, 8, 8, 0.52)';
+            }
+        });
+
+        // Animations
+        const texts = document.querySelectorAll('.reveal-text');
+        texts.forEach(text => {
+            gsap.fromTo(text, { y: 32, opacity: 0 }, { y: 0, opacity: 1, duration: 1.15, ease: 'power3.out', scrollTrigger: { trigger: text, start: 'top 82%' } });
+        });
+        gsap.utils.toArray('.section-tag').forEach(tag => {
+            gsap.fromTo(tag, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out', scrollTrigger: { trigger: tag, start: 'top 90%' } });
+        });
+        gsap.utils.toArray('.premium-hover').forEach(card => {
+            gsap.fromTo(card, { y: 24, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: card, start: 'top 90%' } });
+        });
+        gsap.to('.hero-orb-a', { x: 80, y: 50, duration: 8.5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+        gsap.to('.hero-orb-b', { x: -70, y: -45, duration: 10, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+        gsap.to('.perspective-1000', { y: -35, scrollTrigger: { trigger: 'header', start: 'top top', end: 'bottom top', scrub: 1 } });
+        const navControls = document.querySelector('.nav-controls');
+        if (navControls) gsap.fromTo(navControls, { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'power2.out' });
+        const navEl = document.querySelector('nav');
+        function navTone(scrolled) {
+            const light = document.documentElement.getAttribute('data-theme') === 'light';
+            if (!scrolled) return light ? 'rgba(246, 248, 251, 0.68)' : 'rgba(2, 8, 8, 0.52)';
+            return light ? 'rgba(246, 248, 251, 0.9)' : 'rgba(2, 8, 8, 0.82)';
+        }
+        gsap.set(navEl, { backgroundColor: navTone(false) });
+        window.addEventListener('scroll', () => {
+            const isScrolled = window.scrollY > 30;
+            gsap.to(navEl, { backgroundColor: navTone(isScrolled), duration: 0.35, overwrite: true });
+        });
+
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorRing = document.querySelector('.cursor-ring');
+        const useCustomCursor = window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (useCustomCursor) {
+            document.body.style.cursor = 'none';
+            window.addEventListener('mousemove', (e) => {
+                cursorDot.style.left = `${e.clientX}px`; cursorDot.style.top = `${e.clientY}px`;
+                cursorRing.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 250, fill: "forwards" });
+            });
+        } else {
+            cursorDot.style.display = 'none';
+            cursorRing.style.display = 'none';
+        }
+
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [], starsRaf = null;
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        for (let i = 0; i < 150; i++) stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 1.2, speed: Math.random() * 0.1 });
+        function animateStars() {
+            ctx.clearRect(0, 0, width, height);
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            ctx.fillStyle = isLight ? '#0F766E' : '#14B8A6';
+            stars.forEach(star => { ctx.globalAlpha = Math.random() * 0.4 + 0.1; ctx.beginPath(); ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2); ctx.fill(); star.y -= star.speed; if (star.y < 0) star.y = height; });
+            starsRaf = requestAnimationFrame(animateStars);
+        }
+        if (!starsRaf) animateStars();
+
+        function setMarketTimestamp() {
+            const timestampEl = document.getElementById('marketTimestamp');
+            if (!timestampEl) return;
+            const now = new Date();
+            const label = document.documentElement.lang === 'ar' ? 'آخر تحديث' : 'UPDATED';
+            timestampEl.innerText = `${label}: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+        setMarketTimestamp();
+        setInterval(setMarketTimestamp, 60000);
+        function simulateLiveFeed() {
+            const priceElements = document.querySelectorAll('.live-data');
+            const changeElements = document.querySelectorAll('.live-change');
+            if (!priceElements.length) return;
+            setInterval(() => {
+                const i = Math.floor(Math.random() * priceElements.length);
+                const priceEl = priceElements[i];
+                const changeEl = changeElements[i];
+                const old = parseFloat(priceEl.dataset.value || '0');
+                const oldChg = parseFloat(changeEl.dataset.value || '0');
+                const move = (Math.random() - 0.48) * (old * 0.0045);
+                const next = (old + move).toFixed(2);
+                const nextChg = (oldChg + (move > 0 ? 0.04 : -0.04)).toFixed(2);
+                const up = move > 0;
+                priceEl.innerText = next;
+                priceEl.dataset.value = next;
+                changeEl.innerText = `${up ? '▲' : '▼'} ${Math.abs(nextChg)}%`;
+                changeEl.dataset.value = nextChg;
+                changeEl.classList.remove('text-starta-teal', 'text-red-500', 'text-green-500');
+                changeEl.classList.add(up ? 'text-green-500' : 'text-red-500');
+                priceEl.classList.add(up ? 'flash-green' : 'flash-red');
+                const parent = priceEl.closest('.live-ticker-box');
+                if (parent) parent.classList.add(up ? 'bg-flash-green' : 'bg-flash-red');
+                setTimeout(() => {
+                    priceEl.classList.remove('flash-green', 'flash-red');
+                    if (parent) parent.classList.remove('bg-flash-green', 'bg-flash-red');
+                }, 700);
+            }, 1700);
+        }
+        simulateLiveFeed();
+
+        const counterElements = document.querySelectorAll('.counter-anim');
+        counterElements.forEach(el => {
+            const targetVal = parseFloat(el.dataset.value);
+            const prefix = el.dataset.prefix || ''; const suffix = el.dataset.suffix || '';
+            ScrollTrigger.create({ trigger: el, start: "top 85%", onEnter: () => { gsap.to(el, { innerHTML: targetVal, duration: 2, snap: { innerHTML: 0.1 }, onUpdate: function () { el.innerHTML = prefix + parseFloat(this.targets()[0].innerHTML).toFixed(1) + suffix + (el.innerText.includes('Flow') ? ' Flow' : ''); } }); } });
+        });
+
+        const barElements = document.querySelectorAll('.bar-anim');
+        barElements.forEach(el => { const width = el.dataset.width; ScrollTrigger.create({ trigger: el, start: "top 85%", onEnter: () => { el.style.width = width; } }); });
+
+    </script>
+</body>
+
+</html>

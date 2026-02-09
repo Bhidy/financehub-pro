@@ -1,11 +1,17 @@
 """
-Response Composer - 3-Layer Conversational Response Builder
+Response Composer - 8-Layer Premium Conversational Response Builder
 
-Phase 3 of Starta Conversational Design.
-Builds dynamic, non-repetitive responses using:
-① Human Opening (optional)
-② Data-Aware Commentary (core)
-③ Gentle Guidance (optional)
+World-Class Conversational AI Component.
+
+Builds ultra-premium, dynamic responses using 8 layers:
+① Personal Greeting (optional - for first message or explicit greetings)
+② Context Bridge (links to previous topic if follow-up)
+③ Human Opening (acknowledgment)
+④ Core Narrative (LLM-generated CFA-level analysis)
+⑤ Key Insight (🎯 actionable takeaway)
+⑥ Risk Warning (⚠️ when relevant)
+⑦ Learning Section (📊 educational - handled separately)
+⑧ Follow-up Prompt (💡 next action - handled separately)
 """
 
 import random
@@ -133,6 +139,127 @@ GUIDANCE_CATEGORIES = list(GUIDANCE_SUGGESTIONS.keys())
 
 
 # ============================================================================
+# LAYER ② - CONTEXT BRIDGE (Connect to previous conversation)
+# ============================================================================
+
+CONTEXT_BRIDGE_TEMPLATES = {
+    "continuation": {
+        "en": [
+            "Following up on {symbol}...",
+            "Continuing with {symbol}...",
+            "Back to {symbol}...",
+            "More on {symbol}...",
+        ],
+        "ar": [
+            "استكمالاً لـ {symbol}...",
+            "بخصوص {symbol}...",
+            "المزيد عن {symbol}...",
+        ]
+    },
+    "topic_shift": {
+        "en": [
+            "Now looking at {topic} for {symbol}...",
+            "Shifting to {topic}...",
+            "Let's check {topic} next...",
+        ],
+        "ar": [
+            "الآن نشوف {topic} لـ {symbol}...",
+            "خلينا نتفحص {topic}...",
+        ]
+    },
+    "confirmation": {
+        "en": [
+            "Got it. Here's what you asked for...",
+            "Absolutely. Diving deeper...",
+            "Sure thing. Here we go...",
+        ],
+        "ar": [
+            "تمام. ده اللي طلبته...",
+            "أكيد. نتعمق أكتر...",
+            "حاضر. يلا بينا...",
+        ]
+    }
+}
+
+
+# ============================================================================
+# LAYER ⑤ - KEY INSIGHT (Actionable takeaway)
+# ============================================================================
+
+KEY_INSIGHT_TEMPLATES = {
+    "bullish": {
+        "en": [
+            "🎯 **Key Insight**: The fundamentals suggest strength here.",
+            "🎯 **Takeaway**: Metrics point to a solid position.",
+            "🎯 **Bottom Line**: This looks financially healthy.",
+        ],
+        "ar": [
+            "🎯 **النقطة الأساسية**: الأساسيات تشير لقوة.",
+            "🎯 **الخلاصة**: المؤشرات إيجابية.",
+        ]
+    },
+    "bearish": {
+        "en": [
+            "🎯 **Key Insight**: Caution warranted based on current metrics.",
+            "🎯 **Takeaway**: Some warning signs to monitor.",
+            "🎯 **Bottom Line**: Worth watching closely.",
+        ],
+        "ar": [
+            "🎯 **النقطة الأساسية**: الحذر مطلوب.",
+            "🎯 **الخلاصة**: في علامات تحتاج متابعة.",
+        ]
+    },
+    "neutral": {
+        "en": [
+            "🎯 **Key Insight**: A balanced picture overall.",
+            "🎯 **Takeaway**: Mixed signals — dig deeper before deciding.",
+            "🎯 **Bottom Line**: Neither strongly bullish nor bearish.",
+        ],
+        "ar": [
+            "🎯 **النقطة الأساسية**: الصورة متوازنة.",
+            "🎯 **الخلاصة**: إشارات مختلطة.",
+        ]
+    }
+}
+
+
+# ============================================================================
+# LAYER ⑥ - RISK WARNING (When appropriate)
+# ============================================================================
+
+RISK_WARNING_TEMPLATES = {
+    "general": {
+        "en": [
+            "⚠️ *Always conduct your own research before investing.*",
+            "⚠️ *Past performance doesn't guarantee future results.*",
+        ],
+        "ar": [
+            "⚠️ *احرص على البحث بنفسك قبل الاستثمار.*",
+            "⚠️ *الأداء السابق لا يضمن النتائج المستقبلية.*",
+        ]
+    },
+    "high_risk": {
+        "en": [
+            "⚠️ **Risk Alert**: This stock shows elevated volatility.",
+            "⚠️ **Caution**: High risk indicators detected.",
+        ],
+        "ar": [
+            "⚠️ **تنبيه مخاطر**: السهم يظهر تقلبات عالية.",
+            "⚠️ **تحذير**: مؤشرات مخاطر مرتفعة.",
+        ]
+    },
+    "valuation": {
+        "en": [
+            "⚠️ *Note: Valuation appears stretched — verify with fundamentals.*",
+        ],
+        "ar": [
+            "⚠️ *ملاحظة: التقييم يبدو مرتفع — تأكد من الأساسيات.*",
+        ]
+    }
+}
+
+
+# ============================================================================
 # DATA-AWARE COMMENTARY TEMPLATES (Card type to context)
 # ============================================================================
 
@@ -159,12 +286,17 @@ CARD_CONTEXT_DESCRIPTIONS = {
 
 class ResponseComposer:
     """
-    Composes dynamic, non-repetitive responses.
+    Composes dynamic, non-repetitive 8-layer premium responses.
     
-    Each response is built from 3 optional layers:
-    ① Human Opening (50% chance, varies)
-    ② Data-Aware Commentary (always, from LLM)
-    ③ Gentle Guidance (30% chance, varies)
+    8-Layer Structure:
+    ① Personal Greeting (for first message)
+    ② Context Bridge (for follow-ups)
+    ③ Human Opening (acknowledgment)
+    ④ Core Narrative (LLM analysis)
+    ⑤ Key Insight (actionable takeaway)
+    ⑥ Risk Warning (when appropriate)
+    ⑦ Learning Section (handled separately)
+    ⑧ Follow-up Prompt (handled separately)
     """
     
     @classmethod
@@ -334,6 +466,139 @@ class ResponseComposer:
         
         # Combine with proper spacing
         full_response = " ".join(parts)
+        
+        return full_response, opening_category
+    
+    @classmethod
+    def get_context_bridge(
+        cls,
+        language: str,
+        bridge_type: str = "continuation",
+        symbol: Optional[str] = None,
+        topic: Optional[str] = None
+    ) -> Optional[str]:
+        """
+        Get a context bridge (Layer ②) for follow-up messages.
+        
+        Args:
+            language: 'en' or 'ar'
+            bridge_type: 'continuation', 'topic_shift', or 'confirmation'
+            symbol: Stock symbol for context
+            topic: New topic if shifting
+        """
+        lang_key = language if language in ['en', 'ar'] else 'en'
+        templates = CONTEXT_BRIDGE_TEMPLATES.get(bridge_type, CONTEXT_BRIDGE_TEMPLATES['continuation'])
+        template = random.choice(templates.get(lang_key, templates['en']))
+        
+        # Fill placeholders
+        result = template
+        if symbol:
+            result = result.replace('{symbol}', symbol)
+        if topic:
+            result = result.replace('{topic}', topic)
+        
+        return result
+    
+    @classmethod
+    def get_key_insight(
+        cls,
+        language: str,
+        sentiment: str = "neutral"
+    ) -> str:
+        """
+        Get a key insight (Layer ⑤).
+        
+        Args:
+            language: 'en' or 'ar'
+            sentiment: 'bullish', 'bearish', or 'neutral'
+        """
+        lang_key = language if language in ['en', 'ar'] else 'en'
+        templates = KEY_INSIGHT_TEMPLATES.get(sentiment, KEY_INSIGHT_TEMPLATES['neutral'])
+        return random.choice(templates.get(lang_key, templates['en']))
+    
+    @classmethod
+    def get_risk_warning(
+        cls,
+        language: str,
+        risk_type: str = "general"
+    ) -> str:
+        """
+        Get a risk warning (Layer ⑥).
+        
+        Args:
+            language: 'en' or 'ar'
+            risk_type: 'general', 'high_risk', or 'valuation'
+        """
+        lang_key = language if language in ['en', 'ar'] else 'en'
+        templates = RISK_WARNING_TEMPLATES.get(risk_type, RISK_WARNING_TEMPLATES['general'])
+        return random.choice(templates.get(lang_key, templates['en']))
+    
+    @classmethod
+    def compose_premium_response(
+        cls,
+        core_narrative: str,
+        language: str,
+        intent: Intent,
+        user_name: str = "Analyst",
+        is_follow_up: bool = False,
+        follow_up_type: str = "none",
+        active_symbol: Optional[str] = None,
+        sentiment: str = "neutral",
+        include_risk_warning: bool = False,
+        risk_type: str = "general",
+        last_opening_used: Optional[str] = None,
+        shown_card_types: Optional[List[str]] = None
+    ) -> Tuple[str, Optional[str]]:
+        """
+        Compose a premium 8-layer response (layers 1-6, 7-8 handled separately).
+        
+        Returns:
+            Tuple of (full_response, opening_category_used)
+        """
+        parts = []
+        opening_category = None
+        
+        # Layer ② - Context Bridge (for follow-ups)
+        if is_follow_up and active_symbol:
+            bridge = cls.get_context_bridge(
+                language=language,
+                bridge_type=follow_up_type if follow_up_type in ['continuation', 'topic_shift', 'confirmation'] else 'continuation',
+                symbol=active_symbol
+            )
+            if bridge:
+                parts.append(bridge)
+        
+        # Layer ③ - Human Opening (for non-follow-ups)
+        elif not is_follow_up:
+            opening, opening_category = cls.get_human_opening(
+                language=language,
+                user_name=user_name,
+                last_opening_used=last_opening_used,
+                force=False
+            )
+            if opening:
+                parts.append(opening)
+        
+        # Layer ④ - Core Narrative (always)
+        if core_narrative:
+            parts.append(core_narrative)
+        
+        # Layer ⑤ - Key Insight (for stock-related intents)
+        if intent in [
+            Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
+            Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
+            Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS
+        ]:
+            insight = cls.get_key_insight(language=language, sentiment=sentiment)
+            parts.append("\n\n" + insight)
+        
+        # Layer ⑥ - Risk Warning (when appropriate)
+        if include_risk_warning:
+            warning = cls.get_risk_warning(language=language, risk_type=risk_type)
+            parts.append("\n" + warning)
+        
+        # Combine
+        full_response = "".join(parts) if parts else core_narrative
         
         return full_response, opening_category
 

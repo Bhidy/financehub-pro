@@ -14,9 +14,6 @@
 
 "use client";
 
-// @ts-nocheck
-"use client";
-
 import { useState, useEffect, memo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -61,6 +58,7 @@ interface DesktopSidebarProps {
     onLogin: () => void;
     onSettings: () => void;
     onLogout: () => void;
+    lang?: 'en' | 'ar';
 }
 
 export const DesktopSidebar = memo(function DesktopSidebar({
@@ -73,7 +71,8 @@ export const DesktopSidebar = memo(function DesktopSidebar({
     user,
     onLogin,
     onSettings,
-    onLogout
+    onLogout,
+    lang = 'en'
 }: DesktopSidebarProps) {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -256,7 +255,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         animate={{ width: 280, opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="flex-shrink-0 h-full bg-slate-50 dark:bg-[#0F1419] border-r border-slate-200 dark:border-white/5 flex flex-col overflow-hidden relative z-20"
+                        className="flex-shrink-0 h-full bg-slate-50 dark:bg-[#0F1419] border-e border-slate-200 dark:border-white/5 flex flex-col overflow-hidden relative z-20"
                     >
                         {/* Header */}
                         <div className="flex-shrink-0 p-4 pb-2">
@@ -273,7 +272,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                     className="w-8 h-8 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5 flex items-center justify-center text-slate-400 hover:text-[#13b8a6] dark:hover:text-white transition-colors"
                                     title="Close Sidebar"
                                 >
-                                    <PanelLeftClose className="w-5 h-5" />
+                                    <PanelLeftClose className={clsx("w-5 h-5", lang === 'ar' && "rotate-180")} />
                                 </button>
                             </div>
 
@@ -366,14 +365,15 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                                 <>
                                                                     <button
                                                                         onClick={() => onSelectSession(session.session_id)}
-                                                                        className="flex-1 text-left px-3 py-2.5 truncate font-medium text-sm relative z-10 min-w-0"
+                                                                        className="flex-1 text-start px-3 py-2.5 truncate font-medium text-sm relative z-10 min-w-0"
                                                                     >
                                                                         {session.title || "New Conversation"}
                                                                     </button>
 
                                                                     {/* Options Button (Visible on Hover or Menu Open) */}
                                                                     <div className={clsx(
-                                                                        "absolute right-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center z-20 bg-gradient-to-l from-slate-100 via-slate-100 to-transparent dark:from-[#0F1419] dark:via-[#0F1419] pl-4",
+                                                                        "absolute opacity-0 group-hover:opacity-100 transition-opacity flex items-center z-20 bg-gradient-to-l from-slate-100 via-slate-100 to-transparent dark:from-[#0F1419] dark:via-[#0F1419] pl-4",
+                                                                        lang === 'ar' ? "left-1 bg-gradient-to-r pl-0 pr-4" : "right-1 bg-gradient-to-l pl-4 pr-0",
                                                                         menuOpenId === session.session_id && "opacity-100"
                                                                     )}>
                                                                         <button
@@ -394,14 +394,17 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                                                     initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                                                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                                                                     exit={{ opacity: 0, scale: 0.95 }}
-                                                                                    className="absolute right-0 top-8 w-32 bg-white dark:bg-[#1E293B] rounded-lg shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden z-50 origin-top-right"
+                                                                                    className={clsx(
+                                                                                        "absolute top-8 w-32 bg-white dark:bg-[#1E293B] rounded-lg shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden z-50",
+                                                                                        lang === 'ar' ? "left-0 origin-top-left" : "right-0 origin-top-right"
+                                                                                    )}
                                                                                 >
                                                                                     <button
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation();
                                                                                             startEditing(session);
                                                                                         }}
-                                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
+                                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-start"
                                                                                     >
                                                                                         <Edit2 className="w-3 h-3" /> Rename
                                                                                     </button>
@@ -411,7 +414,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                                                             setDeleteConfirmId(session.session_id); // Trigger Modal
                                                                                             setMenuOpenId(null);
                                                                                         }}
-                                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"
+                                                                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-start"
                                                                                     >
                                                                                         <Trash2 className="w-3 h-3" /> Delete
                                                                                     </button>
@@ -423,7 +426,10 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                                     {currentSessionId === session.session_id && (
                                                                         <motion.div
                                                                             layoutId="active-pill"
-                                                                            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#13b8a6] rounded-r-full"
+                                                                            className={clsx(
+                                                                                "absolute top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#13b8a6]",
+                                                                                lang === 'ar' ? "right-0 rounded-l-full" : "left-0 rounded-r-full"
+                                                                            )}
                                                                         />
                                                                     )}
                                                                 </>
@@ -458,7 +464,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                 user?.full_name?.charAt(0) || "U"
                                             )}
                                         </div>
-                                        <div className="flex-1 min-w-0 text-left">
+                                        <div className="flex-1 min-w-0 text-start">
                                             <p className="text-xs font-bold text-slate-700 dark:text-white truncate">
                                                 {user?.full_name || "User"}
                                             </p>
@@ -493,7 +499,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         initial={{ width: 0 }}
                         animate={{ width: 72 }}
                         exit={{ width: 0 }}
-                        className="flex-shrink-0 h-full bg-slate-50 dark:bg-[#0F1419] border-r border-slate-200 dark:border-white/5 flex flex-col items-center py-4 gap-3 z-20"
+                        className="flex-shrink-0 h-full bg-slate-50 dark:bg-[#0F1419] border-e border-slate-200 dark:border-white/5 flex flex-col items-center py-4 gap-3 z-20"
                     >
                         <div className="mb-4">
                             <button
@@ -501,7 +507,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                 className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-[#13b8a6] hover:border-[#13b8a6]/30 transition-all shadow-sm group"
                                 title="Open Sidebar"
                             >
-                                <PanelLeftOpen className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                <PanelLeftOpen className={clsx("w-5 h-5 group-hover:scale-110 transition-transform", lang === 'ar' && "rotate-180")} />
                             </button>
                         </div>
 

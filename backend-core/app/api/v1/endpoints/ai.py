@@ -125,7 +125,8 @@ async def ai_chat_endpoint(
     request: Request,
     authorization: Optional[str] = Header(None),
     x_device_fingerprint: Optional[str] = Header(None, alias="X-Device-Fingerprint"),
-    x_forwarded_for: Optional[str] = Header(None, alias="X-Forwarded-For")
+    x_forwarded_for: Optional[str] = Header(None, alias="X-Forwarded-For"),
+    x_language: Optional[str] = Header(None, alias="X-Language")
 ):
     """
     Process a chat message using deterministic intent routing.
@@ -228,7 +229,8 @@ async def ai_chat_endpoint(
                 session_id=session_id,
                 market=final_market,
                 history=req.history,
-                user_id=user_id # Pass persistent user ID for analytics
+                user_id=user_id, # Pass persistent user ID for analytics
+                language=x_language # Explicit language enforcement
             )
             
             # === HISTORY PERSISTENCE ===

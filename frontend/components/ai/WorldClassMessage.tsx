@@ -114,6 +114,30 @@ function BearCaseCard({ data }: { data: any }) {
     );
 }
 
+/** Key Insight Card - 🎯 The single most important takeaway (8-Layer Guarantee) */
+function KeyInsightCard({ data }: { data: any }) {
+    if (!data) return null;
+
+    // Support string or object format
+    const content = typeof data === 'string' ? data : data.content || data.text || data.insight;
+    if (!content) return null;
+
+    return (
+        <div className="border-l-4 border-l-violet-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-violet-50 to-violet-50/30 dark:from-violet-900/20 dark:to-transparent">
+            <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+                <span className="text-lg">🎯</span>
+                <span>{typeof data === 'object' && data.title ? data.title : 'Key Insight'}</span>
+            </div>
+            <div
+                className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium"
+                dangerouslySetInnerHTML={{
+                    __html: content.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-violet-700 dark:text-violet-300">$1</strong>')
+                }}
+            />
+        </div>
+    );
+}
+
 /** Character Cards - Stock personality profiles with blue border */
 function CharacterCards({ data }: { data: any }) {
     if (!data?.length) return null;
@@ -738,7 +762,8 @@ export function WorldClassMessage({ conversationalText, response }: WorldClassMe
         response?.stock_list || response?.comparison_table ||
         response?.educational_card || response?.positives ||
         response?.concerns || response?.mixed_signals ||
-        response?.price_display || response?.index_composition;
+        response?.price_display || response?.index_composition ||
+        response?.key_insight;
 
     // Check for disclaimer in text to avoid duplication
     const hasInlineDisclaimer = conversationalText?.toLowerCase().includes("educational analysis") ||
@@ -807,6 +832,12 @@ export function WorldClassMessage({ conversationalText, response }: WorldClassMe
                ============================================================ */}
             <BullCaseCard data={response?.bull_case} />
             <BearCaseCard data={response?.bear_case} />
+
+            {/* ============================================================
+                LAYER 8.5: KEY INSIGHT
+                🎯 Single most actionable takeaway (8-Layer Guarantee)
+               ============================================================ */}
+            <KeyInsightCard data={response?.key_insight} />
 
             {/* ============================================================
                 LAYER 9: POSITIVES/MIXED/CONCERNS

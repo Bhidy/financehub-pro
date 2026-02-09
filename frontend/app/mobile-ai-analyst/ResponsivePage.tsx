@@ -45,7 +45,7 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
 
 // NEW: World-Class Unified Message Renderer (Matches Mockup EXACTLY)
-import { WorldClassMessage } from "@/components/ai/WorldClassMessage";
+import { WorldClassMessage, FollowUpPrompt } from "@/components/ai/WorldClassMessage";
 
 // Domain and Device detection
 import { useDomainDetect } from "@/hooks/useDomainDetect";
@@ -359,10 +359,16 @@ function ResponsiveAIAnalystContent() {
                                     ) : null;
                                 })()}
 
-                                {/* Fact Explanations (Legacy support) */}
                                 {m.response?.fact_explanations && (
                                     <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
                                         <FactExplanations explanations={m.response.fact_explanations} />
+                                    </div>
+                                )}
+
+                                {/* Follow Up Prompt (Moved from WorldClassMessage for correct ordering) */}
+                                {m.response?.follow_up_prompt && (
+                                    <div className="pt-2">
+                                        <FollowUpPrompt content={m.response.follow_up_prompt} />
                                     </div>
                                 )}
 

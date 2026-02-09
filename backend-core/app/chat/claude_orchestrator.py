@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .schemas import Intent
-from .llm_clients import get_llm_client, MultiProviderLLM
+from .llm_clients import get_multi_llm, MultiProviderLLM
 from .context_assembler import (
     get_context_assembler, 
     ContextAssembler,
@@ -122,7 +122,7 @@ Return JSON format:
 }}"""
 
     def __init__(self, llm_client: Optional[MultiProviderLLM] = None):
-        self.llm_client = llm_client or get_llm_client()
+        self.llm_client = llm_client or get_multi_llm()
         self.context_assembler = get_context_assembler()
     
     async def classify(

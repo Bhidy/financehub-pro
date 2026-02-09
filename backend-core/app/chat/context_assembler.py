@@ -36,39 +36,126 @@ class FollowUpType(Enum):
     PRONOUN_REFERENCE = "pronoun_reference"  # "is it good?", "how is that?"
 
 
-# Follow-up detection patterns (English + Arabic)
+# ============================================================================
+# WORLD-CLASS FOLLOW-UP PATTERNS (50+ per language for enterprise-grade accuracy)
+# ============================================================================
+
 CONFIRMATION_PATTERNS = {
     "en": [
-        r"^(yes|yeah|yep|yup|sure|ok|okay|alright|go ahead|proceed|do it|show me)[\.\!\?]?$",
+        # Basic affirmatives
+        r"^(yes|yeah|yep|yup|sure|ok|okay|alright|right)[\.\!\?]?$",
+        r"^(go ahead|proceed|do it|show me|let's do it)[\.\!\?]?$",
         r"^(sounds good|looks good|perfect|great|nice|cool)[\.\!\?]?$",
+        r"^(absolutely|definitely|certainly|of course|for sure)[\.\!\?]?$",
+        r"^(please|please do|go for it|i'm interested)[\.\!\?]?$",
+        # Casual confirmations
+        r"^(yea|ya|uh huh|mhm|mm|mmm|ahuh)[\.\!\?]?$",
+        r"^(fine|good|that's fine|works for me)[\.\!\?]?$",
+        r"^(approved|confirmed|agreed|deal)[\.\!\?]?$",
+        # Requesting action
+        r"^(show|show it|show me that|let me see)[\.\!\?]?$",
+        r"^(continue|go on|carry on|keep going)[\.\!\?]?$",
+        r"^(next|what's next|and then|then what)[\.\!\?]?$",
+        # Emoji confirmations
+        r"^(👍|✅|👌|🙏|💯|✔️)$",
     ],
     "ar": [
-        r"^(نعم|أيوه|ايوه|اه|تمام|ماشي|حسناً|يلا|اوك|أوك)[\.\!\?]?$",
-        r"^(موافق|ممتاز|جميل|حلو)[\.\!\?]?$",
+        # Basic Arabic affirmatives
+        r"^(نعم|أيوه|ايوه|اه|آه|إي)[\.\!\?]?$",
+        r"^(تمام|ماشي|حسناً|حسنا|أوكي|أوك|اوك|اوكي)[\.\!\?]?$",
+        r"^(موافق|صحيح|بالظبط|مظبوط|طيب|كويس)[\.\!\?]?$",
+        # Egyptian dialect
+        r"^(يلا|يلا بينا|امشي|عال|شيك|تمام التمام)[\.\!\?]?$",
+        r"^(خلاص|أكيد|طبعاً|بالتأكيد)[\.\!\?]?$",
+        # Request action
+        r"^(ورّيني|وريني|أوريني|عايز أشوف|عاوز اشوف)[\.\!\?]?$",
+        r"^(كمّل|كمل|استمر|امشي|زي ما قلت)[\.\!\?]?$",
+        # Gulf dialect
+        r"^(زين|اوكي|اي|إيه|إيوا|صح)[\.\!\?]?$",
+        # Short forms
+        r"^(ا|اوه|آ)[\.\!\?]?$",
+        # Emoji
+        r"^(👍|✅|👌|🙏|💯|✔️)$",
     ]
 }
 
 EXPANSION_PATTERNS = {
     "en": [
+        # Request for more info
         r"(tell me more|more details?|explain|elaborate|go deeper|dive deeper)",
         r"(what does (that|this|it) mean|why is that|how come)",
         r"(expand on (that|this)|break (it|this|that) down)",
+        # Clarification requests
+        r"(can you clarify|clarify|what do you mean|i don't understand)",
+        r"(help me understand|walk me through|break it down for me)",
+        r"(give me more context|more info|more information)",
+        # Interest expressions
+        r"(interesting|that's interesting|tell more|go on|keep going)",
+        r"(what else|anything else|is there more|more please)",
+        r"(why|how|when|where)[\s\?]?$",
+        # Deep dive requests
+        r"(deep dive|full analysis|complete picture|comprehensive view)",
+        r"(drill down|zoom in|focus on|details on)",
     ],
     "ar": [
-        r"(أكثر|المزيد|وضّح|اشرح|فصّل|بالتفصيل)",
-        r"(يعني إيه|ليه كده|إزاي|ما معنى)",
-        r"(أكمل|استمر|زيد)",
+        # Request for more info
+        r"(أكثر|المزيد|وضّح|وضح|اشرح|فصّل|فصل|بالتفصيل)",
+        r"(يعني إيه|يعني ايه|ليه كده|ليه كدة|إزاي|ازاي|ما معنى)",
+        r"(أكمل|استمر|زيد|كمان)",
+        # Clarification
+        r"(مش فاهم|فهمني|وضحلي|اشرحلي)",
+        r"(قولي أكتر|قولي اكتر|عايز أفهم|عاوز افهم)",
+        # Interest
+        r"(إيه كمان|ايه تاني|فيه إيه تاني|وبعدين)",
+        r"(ليه|إزاي|فين|إمتى)[\s\?]?$",
+        # Deep dive
+        r"(تحليل كامل|صورة كاملة|بالتفصيل الممل)",
     ]
 }
 
 PRONOUN_PATTERNS = {
     "en": [
-        r"\b(it|this|that|the stock|the company)\b",
+        # Stock/company references
+        r"\b(it|this|that|the stock|the company|this one|that one)\b",
         r"^(is (it|this|that)|how is (it|this|that)|what about (it|this|that))",
+        # Questions about current entity
+        r"^(how('s| is)|what('s| is)|is (it|the))\b",
+        r"(should i.*\b(it|this|that)\b|buy (it|this)|sell (it|this))",
+        r"(good|bad|safe|risky|worth it|undervalued|overvalued)\?",
+        # Short questions implying context
+        r"^(and|but|so|also|what about|how about)",
     ],
     "ar": [
-        r"\b(السهم|الشركة|ده|دي|هذا|هذه)\b",
-        r"^(هل (هو|هي|ده|دي)|إيه (حالته|وضعه))",
+        # Stock/company references
+        r"\b(السهم|الشركة|ده|دي|دا|هذا|هذه|هو|هي)\b",
+        r"^(هل (هو|هي|ده|دي)|إيه (حالته|وضعه|أخباره))",
+        # Questions about current entity
+        r"^(إزاي|ازاي|عامل إزاي|عامل ازاي|إيه أخباره)",
+        r"(أشتري|ابيع|كويس|وحش|آمن|خطر)\?",
+        # Short questions implying context
+        r"^(و|بس|يعني|طب|وإيه عن|وايه عن)",
+    ]
+}
+
+# Topic shift keywords - when user asks about new topic but same entity
+TOPIC_SHIFT_KEYWORDS = {
+    "en": [
+        "dividend", "dividends", "financials", "financial", "balance sheet", "income",
+        "chart", "technical", "analysis", "compare", "comparison", "vs", "versus",
+        "valuation", "value", "fair value", "target", "price target", "forecast",
+        "growth", "revenue", "profit", "margin", "debt", "cash flow", "eps",
+        "pe", "p/e", "pb", "p/b", "roe", "roa", "risk", "safety", "health",
+        "news", "update", "latest", "recent", "history", "trend", "performance",
+        "buy", "sell", "hold", "recommendation", "rating", "sector", "industry",
+    ],
+    "ar": [
+        "توزيعات", "أرباح", "قوائم مالية", "ميزانية", "دخل", "إيرادات",
+        "رسم", "رسم بياني", "تحليل", "تحليل فني", "مقارنة", "مقابل",
+        "تقييم", "قيمة", "قيمة عادلة", "مستهدف", "سعر مستهدف", "توقعات",
+        "نمو", "ربح", "هامش", "ديون", "تدفق نقدي", "ربحية السهم",
+        "مضاعف", "عائد", "مخاطر", "أمان", "صحة مالية",
+        "أخبار", "تحديث", "جديد", "أداء", "اتجاه", "تاريخ",
+        "شراء", "بيع", "احتفاظ", "توصية", "تصنيف", "قطاع",
     ]
 }
 
@@ -297,12 +384,12 @@ class ContextAssembler:
             symbol = memory.active_entities.symbol.upper()
             if symbol not in message.upper():
                 # No symbol mentioned - might be using context
-                if any(kw in msg_lower for kw in [
-                    "dividend", "financials", "chart", "compare", "analysis",
-                    "توزيعات", "قوائم مالية", "رسم", "مقارنة", "تحليل"
-                ]):
+                # Check against comprehensive topic shift keywords
+                keywords = TOPIC_SHIFT_KEYWORDS.get(lang_key, [])
+                if any(kw in msg_lower for kw in keywords):
                     return FollowUpType.TOPIC_SHIFT, {
-                        "inherited_entities": memory.active_entities.to_dict()
+                        "inherited_entities": memory.active_entities.to_dict(),
+                        "detected_topic": next((kw for kw in keywords if kw in msg_lower), None)
                     }
         
         return FollowUpType.NONE, {}

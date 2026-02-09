@@ -495,7 +495,7 @@ function PriceDisplayCard({ data, lang = 'en' }: { data: any, lang?: Language })
             </div>
             {data.volume && (
                 <div className="text-sm text-slate-600 dark:text-slate-400">
-                    {translations[lang].chat.volume} <span className="dir-ltr inline-block">{data.volume?.toLocaleString()}</span> shares
+                    {translations[lang].chat.volume} <span className="dir-ltr inline-block">{data.volume?.toLocaleString()}</span> {translations[lang].chat.shares}
                     {data.volumeNote && <span className="text-emerald-600 dark:text-emerald-400 ms-1">({data.volumeNote})</span>}
                 </div>
             )}
@@ -515,7 +515,7 @@ function IndexCompositionCard({ data, lang = 'en' }: { data: any, lang?: Languag
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            🏛️ {data.title || "Index Composition"}
+                            🏛️ {data.title || translations[lang].chat.indexComposition}
                         </div>
                         {data.subtitle && (
                             <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{data.subtitle}</div>
@@ -537,7 +537,7 @@ function IndexCompositionCard({ data, lang = 'en' }: { data: any, lang?: Languag
                                 {sector.icon && <span>{sector.icon}</span>}
                                 {sector.name}
                             </div>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{sector.weight}% weight</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{sector.weight}% {translations[lang].chat.weight}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {sector.stocks?.map((stock: string, i: number) => (

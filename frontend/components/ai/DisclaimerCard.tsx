@@ -16,6 +16,7 @@ export interface DisclaimerCardProps {
         text: string;
         variant?: "warning" | "info" | "regulatory";
     };
+    language?: "en" | "ar";
 }
 
 const variantConfig = {
@@ -48,17 +49,20 @@ const variantConfig = {
     }
 };
 
-export function DisclaimerCard({ data }: DisclaimerCardProps) {
+export function DisclaimerCard({ data, language = "en" }: DisclaimerCardProps) {
     const variant = data.variant || "warning";
     const config = variantConfig[variant];
     const IconComponent = config.Icon;
+    const isRtl = language === "ar";
+    const defaultTitle = language === "ar" ? "تنبيه" : "Notice";
 
     return (
         <div className={clsx(
             "p-4 rounded-xl my-4 transition-all duration-300",
             config.bg,
-            config.border
-        )}>
+            config.border,
+            isRtl ? "border-r-4 border-l-0" : ""
+        )} dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div className={clsx(
@@ -74,12 +78,12 @@ export function DisclaimerCard({ data }: DisclaimerCardProps) {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    {data.title && (
+                    {(data.title || defaultTitle) && (
                         <h5 className={clsx(
                             "font-bold text-sm mb-1",
                             config.titleColor
                         )}>
-                            {data.title}
+                            {data.title || defaultTitle}
                         </h5>
                     )}
                     <p className={clsx(

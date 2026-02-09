@@ -70,31 +70,44 @@ export function PriceChart({ data, symbol }: { data: any[], symbol: string }) {
  * 📊 FinancialTable Component
  * Renders professional financial data grids
  */
-export function FinancialTable({ financials }: { financials: any[] }) {
+export function FinancialTable({ financials, language = "en" }: { financials: any[]; language?: "en" | "ar" }) {
     if (!financials || financials.length === 0) return null;
-
+    const isRtl = language === "ar";
+    const ui = language === "ar"
+        ? {
+            period: "الفترة",
+            netIncome: "صافي الربح",
+            assets: "الأصول",
+            roe: "العائد على حقوق الملكية",
+        }
+        : {
+            period: "Period",
+            netIncome: "Net Income",
+            assets: "Assets",
+            roe: "ROE",
+        };
     return (
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-100 bg-white">
-            <table className="w-full text-left border-collapse">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-100 bg-white" dir={isRtl ? "rtl" : "ltr"}>
+            <table className={clsx("w-full border-collapse", isRtl ? "text-right" : "text-left")}>
                 <thead>
                     <tr className="bg-slate-50 border-b border-slate-100">
-                        <th className="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Period</th>
-                        <th className="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Net Income</th>
-                        <th className="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Assets</th>
-                        <th className="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right text-blue-600">ROE</th>
+                        <th className={clsx("px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>{ui.period}</th>
+                        <th className={clsx("px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider", isRtl ? "text-left" : "text-right")}>{ui.netIncome}</th>
+                        <th className={clsx("px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider", isRtl ? "text-left" : "text-right")}>{ui.assets}</th>
+                        <th className={clsx("px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-blue-600", isRtl ? "text-left" : "text-right")}>{ui.roe}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {financials.map((row, i) => (
                         <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-blue-50/30 transition-colors">
-                            <td className="px-4 py-3 text-xs font-bold text-slate-700">{row.period} {row.fiscal_year}</td>
-                            <td className="px-4 py-3 text-xs font-mono text-right text-slate-900">
+                            <td className={clsx("px-4 py-3 text-xs font-bold text-slate-700", isRtl ? "text-right" : "text-left")}>{row.period} {row.fiscal_year}</td>
+                            <td className={clsx("px-4 py-3 text-xs font-mono text-slate-900", isRtl ? "text-left" : "text-right")}>
                                 {row.net_income_billions ? `${row.net_income_billions}B` : '-'}
                             </td>
-                            <td className="px-4 py-3 text-xs font-mono text-right text-slate-900">
+                            <td className={clsx("px-4 py-3 text-xs font-mono text-slate-900", isRtl ? "text-left" : "text-right")}>
                                 {row.total_assets_billions ? `${row.total_assets_billions}B` : '-'}
                             </td>
-                            <td className="px-4 py-3 text-xs font-mono text-right font-bold text-blue-600">
+                            <td className={clsx("px-4 py-3 text-xs font-mono font-bold text-blue-600", isRtl ? "text-left" : "text-right")}>
                                 {row.roe ? `${row.roe}%` : '-'}
                             </td>
                         </tr>

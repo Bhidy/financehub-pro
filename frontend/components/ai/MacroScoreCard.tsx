@@ -26,6 +26,7 @@ export interface MacroScoreCardProps {
         market?: string;
         as_of?: string;
     };
+    language?: "en" | "ar";
 }
 
 // Status color mapping
@@ -71,14 +72,6 @@ function getFactorIcon(name: string): React.ElementType {
     return factorIcons.default;
 }
 
-// Score color based on value
-function getScoreColor(score: number, maxScore: number): string {
-    const percentage = (score / maxScore) * 100;
-    if (percentage >= 75) return "text-emerald-600 dark:text-emerald-400";
-    if (percentage >= 50) return "text-amber-600 dark:text-amber-400";
-    return "text-red-600 dark:text-red-400";
-}
-
 function getScoreGradient(score: number, maxScore: number): string {
     const percentage = (score / maxScore) * 100;
     if (percentage >= 75) return "from-emerald-500 to-teal-600";
@@ -86,20 +79,44 @@ function getScoreGradient(score: number, maxScore: number): string {
     return "from-red-500 to-rose-600";
 }
 
-function getScoreAssessment(score: number): { label: string; color: string } {
-    if (score >= 75) return { label: "CONSTRUCTIVE", color: "bg-emerald-500" };
-    if (score >= 50) return { label: "MIXED", color: "bg-amber-500" };
-    if (score >= 25) return { label: "CAUTION", color: "bg-orange-500" };
-    return { label: "RISK-OFF", color: "bg-red-500" };
+function getScoreAssessment(score: number, maxScore: number, language: "en" | "ar"): { label: string; color: string } {
+    const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+    if (percentage >= 75) return { label: language === "ar" ? "إيجابي" : "CONSTRUCTIVE", color: "bg-emerald-500" };
+    if (percentage >= 50) return { label: language === "ar" ? "مختلط" : "MIXED", color: "bg-amber-500" };
+    if (percentage >= 25) return { label: language === "ar" ? "حذر" : "CAUTION", color: "bg-orange-500" };
+    return { label: language === "ar" ? "مخاطر مرتفعة" : "RISK-OFF", color: "bg-red-500" };
 }
 
-export function MacroScoreCard({ data }: MacroScoreCardProps) {
+export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
     const maxScore = data.max_score || 100;
-    const percentage = Math.round((data.score / maxScore) * 100);
-    const scoreInfo = getScoreAssessment(data.score);
+    const scoreInfo = getScoreAssessment(data.score, maxScore, language);
+    const isRtl = language === "ar";
+    const ui = language === "ar"
+        ? {
+            marketFallback: "مصر",
+            marketScore: "درجة السوق",
+            macroAssessment: "تقييم البيئة الاقتصادية",
+            assessment: "التقييم:",
+            constructive: "75-100: إيجابي",
+            mixed: "50-75: مختلط",
+            caution: "25-50: حذر",
+            riskOff: "0-25: مخاطر مرتفعة",
+            dataAsOf: "البيانات حتى",
+        }
+        : {
+            marketFallback: "Egypt",
+            marketScore: "Market Score",
+            macroAssessment: "Macro Environment Assessment",
+            assessment: "Assessment:",
+            constructive: "75-100: Constructive",
+            mixed: "50-75: Mixed",
+            caution: "25-50: Caution",
+            riskOff: "0-25: Risk-Off",
+            dataAsOf: "Data as of",
+        };
 
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300 hover:shadow-blue-500/5">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300 hover:shadow-blue-500/5" dir={isRtl ? "rtl" : "ltr"}>
             {/* Premium Header */}
             <div className={clsx(
                 "px-6 py-5 bg-gradient-to-r",
@@ -112,16 +129,18 @@ export function MacroScoreCard({ data }: MacroScoreCardProps) {
                         </div>
                         <div>
                             <h3 className="text-white font-bold text-xl tracking-tight">
-                                {data.market || "Egypt"} Market Score
+                                {isRtl
+                                    ? `${ui.marketScore} ${data.market || ui.marketFallback}`
+                                    : `${data.market || ui.marketFallback} ${ui.marketScore}`}
                             </h3>
                             <p className="text-white/80 text-sm mt-0.5 font-medium">
-                                Macro Environment Assessment
+                                {ui.macroAssessment}
                             </p>
                         </div>
                     </div>
 
                     {/* Large Score Display */}
-                    <div className="flex flex-col items-end">
+                    <div className={clsx("flex flex-col", isRtl ? "items-start" : "items-end")}>
                         <div className="flex items-baseline gap-1">
                             <span className="text-5xl font-black text-white tracking-tighter">
                                 {data.score}
@@ -142,8 +161,8 @@ export function MacroScoreCard({ data }: MacroScoreCardProps) {
 
             {/* Assessment Text */}
             <div className="px-6 py-4 bg-slate-50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
-                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                    <span className="font-semibold text-slate-900 dark:text-white">Assessment: </span>
+                <p className={clsx("text-slate-700 dark:text-slate-300 text-sm leading-relaxed", isRtl ? "text-right" : "text-left")}>
+                    <span className="font-semibold text-slate-900 dark:text-white">{ui.assessment} </span>
                     {data.assessment}
                 </p>
             </div>
@@ -214,19 +233,19 @@ export function MacroScoreCard({ data }: MacroScoreCardProps) {
                 <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span>75-100: Constructive</span>
+                        <span>{ui.constructive}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span>50-75: Mixed</span>
+                        <span>{ui.mixed}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-orange-500" />
-                        <span>25-50: Caution</span>
+                        <span>{ui.caution}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-red-500" />
-                        <span>0-25: Risk-Off</span>
+                        <span>{ui.riskOff}</span>
                     </div>
                 </div>
             </div>
@@ -234,7 +253,7 @@ export function MacroScoreCard({ data }: MacroScoreCardProps) {
             {/* Timestamp */}
             {data.as_of && (
                 <div className="px-6 py-2 text-center text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                    Data as of {new Date(data.as_of).toLocaleDateString()}
+                    {ui.dataAsOf} {new Date(data.as_of).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US")}
                 </div>
             )}
         </div>

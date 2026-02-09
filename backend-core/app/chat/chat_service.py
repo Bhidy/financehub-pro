@@ -29,6 +29,7 @@ Routes messages through the deterministic pipeline:
 """
 
 import time
+import re
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 import asyncpg
@@ -86,6 +87,69 @@ from .follow_up_generator import generate_follow_up
 from .context_assembler import get_context_assembler as get_conversation_memory
 from .claude_orchestrator import get_claude_orchestrator, ClaudeOrchestrator
 
+ARABIC_CHAR_RE = re.compile(r"[\u0600-\u06FF]")
+LATIN_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9/\-\.]*")
+ARABIC_KEEP_TOKENS = {
+    "EGX", "EGP", "USD", "SAR", "ROE", "ROA", "EPS", "EBITDA", "RSI", "MACD",
+    "PE", "PB", "P/E", "P/B", "EV", "TTM", "YTD", "Q1", "Q2", "Q3", "Q4",
+}
+ARABIC_TEXT_REPLACEMENTS = {
+    "N/A": "غير متاح",
+    "n/a": "غير متاح",
+    "No Data": "لا توجد بيانات",
+    "No data": "لا توجد بيانات",
+    "Data Unavailable": "البيانات غير متاحة",
+    "System Error": "خطأ في النظام",
+    "Educational Analysis": "تحليل تعليمي",
+    "BULL CASE ANALYSIS": "تحليل السيناريو الإيجابي",
+    "BEAR CASE RISKS": "مخاطر السيناريو السلبي",
+    "Current Position": "المركز الحالي",
+    "CURRENT POSITION": "المركز الحالي",
+    "Volume:": "الحجم:",
+    "shares": "سهم",
+    "Weight": "الوزن",
+    "weight": "الوزن",
+    "Revenue": "الإيرادات",
+    "Net Income": "صافي الربح",
+    "Market Heatmap": "خريطة حرارة السوق",
+    "Loss": "خسارة",
+    "Neutral": "محايد",
+    "Gain": "مكسب",
+    "Score": "النتيجة",
+    "Metric": "مؤشر",
+    "Constructive": "إيجابي",
+    "Mixed": "مختلط",
+    "Caution": "حذر",
+    "Risk-Off": "مخاطر مرتفعة",
+}
+ARABIC_CARD_TITLE_FALLBACK = {
+    "stock_header": "بيانات السهم",
+    "snapshot": "ملخص التداول",
+    "stats": "الإحصائيات",
+    "financials_table": "القوائم المالية",
+    "financial_explorer": "المستكشف المالي",
+    "dividends_table": "سجل التوزيعات",
+    "compare_table": "مقارنة",
+    "movers_table": "تحركات السوق",
+    "sector_list": "القطاعات",
+    "screener_results": "نتائج الفحص",
+    "technicals": "المؤشرات الفنية",
+    "ownership": "هيكل الملكية",
+    "fair_value": "القيمة العادلة",
+    "news_list": "الأخبار",
+    "error": "تنبيه",
+    "bull_case": "السيناريو الإيجابي",
+    "bear_case": "السيناريو السلبي",
+    "disclaimer_card": "تحليل تعليمي",
+}
+ARABIC_STRUCTURAL_KEYS = {
+    "logo_url", "payload", "symbol", "market_code", "session_id",
+    "action_type", "intent", "backend_version", "as_of", "query",
+    "type", "id", "timestamp",
+    # Preserve non-display enum/control values to avoid breaking UI logic.
+    "status", "variant", "direction", "format", "trend", "signal",
+}
+
 
 class ChatService:
     """Main chat orchestrator."""
@@ -103,6 +167,195 @@ class ChatService:
         # World-Class AI Components
         self.conversation_memory = get_conversation_memory()
         self.claude_orchestrator = get_claude_orchestrator() if self.USE_CLAUDE_ROUTING else None
+
+    @staticmethod
+    def _contains_arabic_text(text: Optional[str]) -> bool:
+        return bool(text and ARABIC_CHAR_RE.search(text))
+
+    @staticmethod
+    def _is_symbol_like_token(token: str) -> bool:
+        clean = re.sub(r"[^A-Za-z0-9]", "", token or "")
+        if not clean:
+            return False
+        if clean.upper() in ARABIC_KEEP_TOKENS:
+            return True
+        # Allow common ticker-like tokens only (A-Z, digits, short).
+        return clean.isalnum() and clean.isupper() and 1 <= len(clean) <= 6
+
+    def _has_english_leak(self, text: Optional[str]) -> bool:
+        if not text:
+            return False
+        for token in LATIN_TOKEN_RE.findall(text):
+            if self._is_symbol_like_token(token):
+                continue
+            return True
+        return False
+
+    def _sanitize_arabic_string(
+        self,
+        text: Optional[str],
+        fallback: Optional[str] = None
+    ) -> Optional[str]:
+        if text is None:
+            return None
+        if not isinstance(text, str):
+            return text
+        if text.startswith("http://") or text.startswith("https://"):
+            return text
+
+        out = text
+        for en_txt, ar_txt in ARABIC_TEXT_REPLACEMENTS.items():
+            out = out.replace(en_txt, ar_txt)
+
+        # Remove non-symbol English tokens while preserving tickers/standard acronyms.
+        def _replace_token(match: re.Match[str]) -> str:
+            token = match.group(0)
+            return token if self._is_symbol_like_token(token) else ""
+
+        out = LATIN_TOKEN_RE.sub(_replace_token, out)
+        out = re.sub(r"\s{2,}", " ", out).strip()
+        out = re.sub(r"\s+([،,.!?:؛])", r"\1", out)
+
+        if not out and fallback is not None:
+            return fallback
+        return out
+
+    def _sanitize_arabic_payload(self, value: Any, field_key: Optional[str] = None) -> Any:
+        if isinstance(value, dict):
+            sanitized = {}
+            for k, v in value.items():
+                if k in ARABIC_STRUCTURAL_KEYS:
+                    sanitized[k] = v
+                    continue
+                sanitized[k] = self._sanitize_arabic_payload(v, k)
+            return sanitized
+        if isinstance(value, list):
+            return [self._sanitize_arabic_payload(v, field_key) for v in value]
+        if isinstance(value, str):
+            if field_key in ARABIC_STRUCTURAL_KEYS:
+                return value
+            return self._sanitize_arabic_string(value, fallback="غير متاح")
+        return value
+
+    def _build_arabic_fallback_message(self, symbol: Optional[str] = None) -> str:
+        if symbol:
+            return f"إليك تحليل {symbol} بناءً على أحدث البيانات المتاحة حالياً."
+        return "إليك التحليل بناءً على أحدث البيانات المتاحة حالياً."
+
+    def _resolve_language(
+        self,
+        message: str,
+        forced_language: Optional[str],
+        normalized_language: Optional[str],
+        claude_language: Optional[str] = None
+    ) -> str:
+        # Explicit Arabic from UI always wins.
+        if forced_language == 'ar':
+            return 'ar'
+        # User Arabic text must produce Arabic response even if UI toggle is English.
+        if self._contains_arabic_text(message):
+            return 'ar'
+        # If explicit English and message has no Arabic, keep English.
+        if forced_language == 'en':
+            return 'en'
+        # Otherwise defer to orchestration results, then normalizer.
+        if claude_language in ('ar', 'en'):
+            return claude_language
+        if normalized_language in ('ar', 'en'):
+            return normalized_language
+        return 'en'
+
+    def _enforce_response_language(
+        self,
+        response: ChatResponse,
+        language: str,
+        symbol: Optional[str] = None
+    ) -> ChatResponse:
+        response.language = language
+
+        if language != 'ar':
+            return response
+
+        fallback_msg = self._build_arabic_fallback_message(symbol)
+
+        response.message_text = self._sanitize_arabic_string(
+            response.message_text,
+            fallback=fallback_msg
+        ) or fallback_msg
+
+        response.conversational_text = self._sanitize_arabic_string(
+            response.conversational_text,
+            fallback=fallback_msg
+        ) if response.conversational_text else fallback_msg
+
+        if self._has_english_leak(response.conversational_text):
+            response.conversational_text = fallback_msg
+
+        response.framework_text = self._sanitize_arabic_string(response.framework_text) if response.framework_text else None
+        response.follow_up_prompt = self._sanitize_arabic_string(
+            response.follow_up_prompt,
+            fallback="ما الجانب الذي ترغب أن أتعمق فيه بعد ذلك؟"
+        ) if response.follow_up_prompt else "ما الجانب الذي ترغب أن أتعمق فيه بعد ذلك؟"
+        response.disclaimer = self._sanitize_arabic_string(
+            response.disclaimer,
+            fallback="هذا تحليل تعليمي وليس توصية استثمارية."
+        ) if response.disclaimer else "هذا تحليل تعليمي وليس توصية استثمارية."
+        response.key_insight = self._sanitize_arabic_string(response.key_insight) if response.key_insight else None
+        response.message_text_ar = response.message_text
+
+        if response.fact_explanations:
+            response.fact_explanations = self._sanitize_arabic_payload(response.fact_explanations)
+
+        if response.learning_section:
+            title = response.learning_section.get("title")
+            items = response.learning_section.get("items", [])
+            response.learning_section["title"] = self._sanitize_arabic_string(
+                title,
+                fallback="📘 ماذا تعني هذه الأرقام"
+            ) or "📘 ماذا تعني هذه الأرقام"
+            response.learning_section["items"] = [
+                self._sanitize_arabic_string(i, fallback="تفصيل تعليمي متاح") or "تفصيل تعليمي متاح"
+                for i in items
+            ]
+
+        if response.cards:
+            for card in response.cards:
+                card_type = str(getattr(card, "type", "")).lower()
+                if card.title:
+                    sanitized_title = self._sanitize_arabic_string(card.title)
+                    if not sanitized_title or self._has_english_leak(sanitized_title):
+                        sanitized_title = ARABIC_CARD_TITLE_FALLBACK.get(card_type, "تفاصيل التحليل")
+                    card.title = sanitized_title
+                elif card_type in ARABIC_CARD_TITLE_FALLBACK:
+                    card.title = ARABIC_CARD_TITLE_FALLBACK[card_type]
+                card.data = self._sanitize_arabic_payload(card.data)
+
+        if response.actions:
+            for action in response.actions:
+                label = action.label_ar or action.label
+                safe_label = self._sanitize_arabic_string(label, fallback="تنفيذ") or "تنفيذ"
+                action.label = safe_label
+                action.label_ar = safe_label
+
+        if response.chart:
+            response.chart.title = self._sanitize_arabic_string(
+                response.chart.title,
+                fallback=f"الرسم البياني لـ {response.chart.symbol}"
+            ) or f"الرسم البياني لـ {response.chart.symbol}"
+            response.chart.data = self._sanitize_arabic_payload(response.chart.data)
+            response.chart.range = self._sanitize_arabic_string(response.chart.range) or response.chart.range
+
+        # Structured top-level payloads used by premium renderer.
+        for attr_name in [
+            "data_card", "bull_case", "bear_case", "insight_cards", "stock_list",
+            "macro_score", "comparison_table", "educational_cards", "disclaimer_card",
+            "framework_card", "character_cards", "quantified_drivers", "index_composition",
+        ]:
+            attr_val = getattr(response, attr_name, None)
+            if attr_val is not None:
+                setattr(response, attr_name, self._sanitize_arabic_payload(attr_val))
+
+        return response
     
     async def _get_user_name(self, user_id: Optional[str]) -> str:
         """Fetch the first name or smart-extract it from email."""
@@ -224,13 +477,14 @@ class ChatService:
             normalized = normalize_text(routing_text)
             
             # --- LANGUAGE ENFORCEMENT ---
-            # If explicit language was passed (like 'ar' from UI), force it.
-            # Otherwise use detected language.
-            if forced_language and forced_language in ['en', 'ar']:
-                language = forced_language
-                print(f"[ChatService] 🌍 Language Forcing: Detected '{normalized.language}' -> Overridden to '{language}'")
-            else:
-                language = normalized.language if normalized.language != 'mixed' else 'en'
+            # Highest priority: Arabic user input should always receive Arabic response.
+            language = self._resolve_language(
+                message=message,
+                forced_language=forced_language,
+                normalized_language=normalized.language,
+            )
+            if forced_language in ['en', 'ar']:
+                print(f"[ChatService] 🌍 Language Resolution: Detected '{normalized.language}' | Header '{forced_language}' -> Using '{language}'")
             # -----------------------------
             
             # 3. Check compliance
@@ -264,7 +518,12 @@ class ChatService:
                     if claude_result.confidence >= self.CLAUDE_ROUTING_THRESHOLD:
                         intent = claude_result.intent
                         entities = claude_result.entities or {}
-                        language = claude_result.language
+                        language = self._resolve_language(
+                            message=message,
+                            forced_language=forced_language,
+                            normalized_language=normalized.language,
+                            claude_language=claude_result.language
+                        )
                         confidence = claude_result.confidence
                         
                         # Track follow-up context
@@ -563,7 +822,7 @@ class ChatService:
                             # User wants: Chart -> Analysis -> Bull/Bear. So Append is correct.
                             result_data.setdefault('cards', []).append({
                                 "type": "bull_case",
-                                "title": "BULL CASE ANALYSIS",
+                                "title": "BULL CASE ANALYSIS" if language == 'en' else "تحليل السيناريو الإيجابي",
                                 "data": { "points": bull_points, "variant": "bull" }
                             })
                             
@@ -571,7 +830,7 @@ class ChatService:
                             print(f"[ChatService] 📉 Extracted {len(bear_points)} BEAR points (Robust)")
                             result_data.setdefault('cards', []).append({
                                 "type": "bear_case",
-                                "title": "BEAR CASE RISKS",
+                                "title": "BEAR CASE RISKS" if language == 'en' else "مخاطر السيناريو السلبي",
                                 "data": { "points": bear_points, "variant": "bear" }
                             })
 
@@ -739,6 +998,7 @@ class ChatService:
                 if not result.follow_up_prompt:
                     result.follow_up_prompt = follow_up_prompt
                 
+                result = self._enforce_response_language(result, language, actual_symbol)
                 return result
                 
             # CRITICAL FIX: Extract structured response components from handler result
@@ -781,6 +1041,7 @@ class ChatService:
                 # NEW: Key Insight (8-Layer)
                 key_insight=handler_key_insight
             )
+            response = self._enforce_response_language(response, language, actual_symbol)
             
             # 9. Log analytics
             await self._log_analytics(
@@ -881,9 +1142,10 @@ class ChatService:
             except Exception as super_fatal:
                 # If even the fallback fails, return a barebones object (Should never happen)
                 print(f"SUPER FATAL: {super_fatal}")
+                fatal_lang = 'ar' if self._contains_arabic_text(message) else 'en'
                 return ChatResponse(
-                    message_text="System Error. Please try again.",
-                    language="en",
+                    message_text="System Error. Please try again." if fatal_lang == 'en' else "خطأ في النظام. يرجى المحاولة مرة أخرى.",
+                    language=fatal_lang,
                     cards=[],
                     chart=None,
                     actions=[],
@@ -1352,13 +1614,25 @@ class ChatService:
             # Generate simple fallback based on intent or first card
             card_titles = [c.get('title', 'Data') for c in result.get('cards', [])]
             if card_titles:
-                final_message_text = f"Here is the {card_titles[0]}."
+                final_message_text = (
+                    f"Here is the {card_titles[0]}."
+                    if language == 'en' else
+                    f"إليك {card_titles[0]}."
+                )
             else:
-                final_message_text = "Here is the requested data."
+                final_message_text = (
+                    "Here is the requested data."
+                    if language == 'en' else
+                    "إليك البيانات المطلوبة."
+                )
                 
         # If we have a chart but no text
         if not conversational_text and not final_message_text and chart:
-            final_message_text = f"Here is the chart for {chart.symbol}."
+            final_message_text = (
+                f"Here is the chart for {chart.symbol}."
+                if language == 'en' else
+                f"إليك الرسم البياني لـ {chart.symbol}."
+            )
 
         return ChatResponse(
             message_text=final_message_text,
@@ -1408,8 +1682,9 @@ async def process_message(
     session_id: Optional[str] = None,
     market: Optional[str] = None,
     history: list = None,
-    user_id: Optional[str] = None
+    user_id: Optional[str] = None,
+    language: Optional[str] = None
 ) -> ChatResponse:
     """Convenience function to process a message."""
     service = ChatService(conn)
-    return await service.process_message(message, session_id, market, history, user_id)
+    return await service.process_message(message, session_id, market, history, user_id, language)

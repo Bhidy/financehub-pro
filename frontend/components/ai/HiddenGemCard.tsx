@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Gem, TrendingUp, Shield, BarChart3, Building2, Star, Sparkles } from "lucide-react";
+import { Gem, Star, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 
 // ============================================================================
@@ -26,9 +26,10 @@ export interface HiddenGemCardProps {
         stocks: HiddenGemStock[];
     };
     onStockClick?: (ticker: string) => void;
+    language?: "en" | "ar";
 }
 
-function ScoreBadge({ score }: { score: number }) {
+function ScoreBadge({ score, language }: { score: number; language: "en" | "ar" }) {
     const getScoreColor = () => {
         if (score >= 75) return "from-emerald-500 to-teal-500 shadow-emerald-500/30";
         if (score >= 60) return "from-blue-500 to-cyan-500 shadow-blue-500/30";
@@ -42,13 +43,35 @@ function ScoreBadge({ score }: { score: number }) {
             getScoreColor()
         )}>
             <span className="text-2xl font-black text-white leading-none">{score}</span>
-            <span className="text-[8px] font-bold text-white/80 uppercase tracking-wider">Score</span>
+            <span className="text-[8px] font-bold text-white/80 uppercase tracking-wider">{language === "ar" ? "التقييم" : "Score"}</span>
         </div>
     );
 }
 
-function GemStockItem({ stock, rank, onStockClick }: { stock: HiddenGemStock; rank: number; onStockClick?: (ticker: string) => void }) {
+function GemStockItem({
+    stock,
+    rank,
+    onStockClick,
+    language,
+}: {
+    stock: HiddenGemStock;
+    rank: number;
+    onStockClick?: (ticker: string) => void;
+    language: "en" | "ar";
+}) {
     const [imgError, setImgError] = React.useState(false);
+    const isRtl = language === "ar";
+    const ui = language === "ar"
+        ? {
+            topPick: "أفضل اختيار",
+            whyGem: "لماذا يعد فرصة مميزة",
+            undervaluation: "أقل من القيمة العادلة",
+        }
+        : {
+            topPick: "Top Pick",
+            whyGem: "Why it's a gem",
+            undervaluation: "Undervaluation",
+        };
 
     return (
         <div
@@ -59,6 +82,7 @@ function GemStockItem({ stock, rank, onStockClick }: { stock: HiddenGemStock; ra
                     ? "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-400 dark:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10"
                     : "bg-white dark:bg-[#1A1F2E] border-slate-200 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-lg"
             )}
+            dir={isRtl ? "rtl" : "ltr"}
         >
             <div className="flex items-start justify-between gap-4">
                 {/* Left: Stock Info */}
@@ -95,7 +119,7 @@ function GemStockItem({ stock, rank, onStockClick }: { stock: HiddenGemStock; ra
                                 {stock.is_top_pick && (
                                     <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-bold uppercase">
                                         <Star size={10} className="fill-current" />
-                                        Top Pick
+                                        {ui.topPick}
                                     </span>
                                 )}
                             </div>
@@ -143,7 +167,7 @@ function GemStockItem({ stock, rank, onStockClick }: { stock: HiddenGemStock; ra
                                         "text-[10px] font-bold uppercase tracking-wider mb-1",
                                         stock.is_top_pick ? "text-emerald-700 dark:text-emerald-400" : "text-blue-700 dark:text-blue-400"
                                     )}>
-                                        Why it's a gem
+                                        {ui.whyGem}
                                     </div>
                                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                                         {stock.why_its_a_gem}
@@ -156,9 +180,9 @@ function GemStockItem({ stock, rank, onStockClick }: { stock: HiddenGemStock; ra
 
                 {/* Right: Score */}
                 <div className="shrink-0">
-                    <ScoreBadge score={stock.score} />
+                    <ScoreBadge score={stock.score} language={language} />
                     <div className="text-center mt-2 text-[9px] text-slate-400 dark:text-slate-500 font-medium uppercase">
-                        Undervaluation
+                        {ui.undervaluation}
                     </div>
                 </div>
             </div>
@@ -166,9 +190,26 @@ function GemStockItem({ stock, rank, onStockClick }: { stock: HiddenGemStock; ra
     );
 }
 
-export function HiddenGemCard({ data, onStockClick }: HiddenGemCardProps) {
+export function HiddenGemCard({ data, onStockClick, language = "en" }: HiddenGemCardProps) {
+    const isRtl = language === "ar";
+    const ui = language === "ar"
+        ? {
+            hiddenGems: "فرص خفية",
+            subtitle: "فرص غير مكتشفة بأساسيات قوية",
+            significantValue: "75+: قيمة مرتفعة",
+            moderateValue: "60-75: قيمة متوسطة",
+            fairValue: "45-60: قيمة عادلة",
+        }
+        : {
+            hiddenGems: "Hidden Gems",
+            subtitle: "Undiscovered opportunities with strong fundamentals",
+            significantValue: "75+: Significant Value",
+            moderateValue: "60-75: Moderate Value",
+            fairValue: "45-60: Fair Value",
+        };
+
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 px-6 py-5">
                 <div className="flex items-center gap-4">
@@ -177,10 +218,10 @@ export function HiddenGemCard({ data, onStockClick }: HiddenGemCardProps) {
                     </div>
                     <div>
                         <h3 className="text-white font-bold text-xl tracking-tight">
-                            {data.title || "Hidden Gems"}
+                            {data.title || ui.hiddenGems}
                         </h3>
                         <p className="text-white/80 text-sm mt-0.5 font-medium">
-                            Undiscovered opportunities with strong fundamentals
+                            {ui.subtitle}
                         </p>
                     </div>
                 </div>
@@ -189,29 +230,30 @@ export function HiddenGemCard({ data, onStockClick }: HiddenGemCardProps) {
             {/* Stock List */}
             <div className="p-6 space-y-4">
                 {data.stocks.map((stock, idx) => (
-                    <GemStockItem
-                        key={stock.ticker}
-                        stock={stock}
-                        rank={idx + 1}
-                        onStockClick={onStockClick}
-                    />
-                ))}
-            </div>
+                        <GemStockItem
+                            key={stock.ticker}
+                            stock={stock}
+                            rank={idx + 1}
+                            onStockClick={onStockClick}
+                            language={language}
+                        />
+                    ))}
+                </div>
 
             {/* Score Legend */}
             <div className="px-6 py-3 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5">
                 <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span>75+: Significant Value</span>
+                        <span>{ui.significantValue}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-blue-500" />
-                        <span>60-75: Moderate Value</span>
+                        <span>{ui.moderateValue}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span>45-60: Fair Value</span>
+                        <span>{ui.fairValue}</span>
                     </div>
                 </div>
             </div>

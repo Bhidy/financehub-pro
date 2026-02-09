@@ -26,12 +26,19 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 // Brainwave Fonts
-import { Sora, Source_Code_Pro, Space_Grotesk } from "next/font/google";
+import { Sora, Source_Code_Pro, Space_Grotesk, Cairo } from "next/font/google";
 
 const sora = Sora({
   subsets: ["latin"],
   weight: ["300", "400", "600"],
   variable: "--font-sora",
+  display: "swap",
+});
+
+const cairo = Cairo({
+  subsets: ["arabic"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-arabic",
   display: "swap",
 });
 
@@ -83,7 +90,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${cairo.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
       >
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"

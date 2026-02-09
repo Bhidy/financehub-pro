@@ -24,7 +24,7 @@ const DollarSignIcon = (props: any) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
 );
 
-export function useAISuggestions() {
+export function useAISuggestions(lang: 'en' | 'ar' = 'en') {
     const { market } = useMarketSafe();
 
     const suggestionCategories = useMemo(() => {
@@ -32,6 +32,67 @@ export function useAISuggestions() {
         const stocks = isEgypt
             ? { main: "TMGH", second: "SWDY", bank: "COMI", pharma: "PHDC", growth: "FWRY", efficient: "ADIB", cagr: "EFIH" }
             : { main: "Aramco", second: "Al Rajhi", bank: "SNB", pharma: "2070", growth: "4030", efficient: "1120", cagr: "7010" };
+
+        const stocksAr = isEgypt
+            ? { main: "طلعت مصطفى", second: "السويدي", bank: "التجاري الدولي", pharma: "بالم هيلز", growth: "فوري", efficient: "مصرف أبوظبي", cagr: "اي اف جي" }
+            : { main: "أرامكو", second: "الراجحي", bank: "الأهلي", pharma: "2070", growth: "4030", efficient: "1120", cagr: "7010" };
+
+        if (lang === 'ar') {
+            return [
+                {
+                    id: 'smart_insights',
+                    label: '🧠 رؤى ذكية',
+                    suggestions: [
+                        { text: `هل ${stocksAr.main} مقيم بأقل من قيمته؟`, icon: Scale, gradient: "from-violet-600 to-indigo-600" },
+                        { text: `ما هي القيمة العادلة لـ ${stocksAr.second}؟`, icon: Target, gradient: "from-blue-600 to-cyan-600" },
+                        { text: `هل ${stocksAr.bank} آمن مالياً؟`, icon: ShieldCheck, gradient: "from-emerald-600 to-teal-600" },
+                        { text: `هل لدى ${stocksAr.growth} فرص نمو عالية؟`, icon: Rocket, gradient: "from-fuchsia-600 to-purple-600" },
+                        { text: "ملخص السوق", icon: PieChart, gradient: "from-blue-500 to-blue-600" },
+                    ]
+                },
+                {
+                    id: 'valuation',
+                    label: '💎 التقييم',
+                    suggestions: [
+                        { text: `هل ${stocksAr.main} مبالغ في تقييمه؟`, icon: Sparkles, gradient: "from-blue-500 to-blue-600" },
+                        { text: `مكرر الربحية لـ ${stocksAr.second}`, icon: DollarSignIcon, gradient: "from-cyan-500 to-blue-600" },
+                        { text: `نسبة PEG لـ ${stocksAr.bank}`, icon: Zap, gradient: "from-teal-500 to-cyan-600" },
+                        { text: `قارن بين ${stocksAr.main} و ${stocksAr.second}`, icon: BarChart3, gradient: "from-slate-500 to-slate-700" },
+                    ]
+                },
+                {
+                    id: 'health',
+                    label: '🏥 الصحة المالية',
+                    suggestions: [
+                        { text: `الصحة المالية لـ ${stocksAr.main}`, icon: ShieldCheck, gradient: "from-emerald-500 to-green-600" },
+                        { text: `كفاءة ${stocksAr.efficient}`, icon: Activity, gradient: "from-teal-500 to-cyan-600" },
+                        { text: `الديون لحقوق الملكية لـ ${stocksAr.second}`, icon: Zap, gradient: "from-red-500 to-orange-600" },
+                        { text: `أرني أكثر الأسهم أماناً`, icon: ShieldCheck, gradient: "from-emerald-600 to-teal-700" },
+                    ]
+                },
+                {
+                    id: 'growth',
+                    label: '🚀 النمو',
+                    suggestions: [
+                        { text: `هامش ربح ${stocksAr.bank}`, icon: PieChart, gradient: "from-pink-500 to-rose-600" },
+                        { text: `اتجاه الأرباح لـ ${stocksAr.main}`, icon: Activity, gradient: "from-cyan-500 to-teal-600" },
+                        { text: `من يمتلك ${stocksAr.main}؟`, icon: Building2, gradient: "from-slate-600 to-slate-800" },
+                        { text: `تداولات المطلعين ${stocksAr.second}`, icon: Newspaper, gradient: "from-red-500 to-rose-600" },
+                        { text: `مساهمي ${stocksAr.bank}`, icon: PieChart, gradient: "from-blue-500 to-blue-600" },
+                    ]
+                },
+                {
+                    id: 'dividends',
+                    label: '💵 التوزيعات',
+                    suggestions: [
+                        { text: `تاريخ توزيعات ${stocksAr.main}`, icon: Sparkles, gradient: "from-green-500 to-emerald-600" },
+                        { text: `عائد التوزيعات ${stocksAr.second}`, icon: TrendingUp, gradient: "from-lime-500 to-green-600" },
+                        { text: "أفضل 10 أسهم توزيعات بمصر", icon: DollarSignIcon, gradient: "from-amber-400 to-yellow-600" },
+                        { text: `نسبة التوزيع لـ ${stocksAr.bank}`, icon: PieChart, gradient: "from-teal-500 to-cyan-600" },
+                    ]
+                },
+            ];
+        }
 
         return [
             {
@@ -87,7 +148,7 @@ export function useAISuggestions() {
                 ]
             },
         ];
-    }, [market]);
+    }, [market, lang]);
 
     return suggestionCategories;
 }

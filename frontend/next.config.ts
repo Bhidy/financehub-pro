@@ -77,7 +77,7 @@ const nextConfig = {
     ];
 
     // Generate rewrites for all combinations of hosts and pages
-    const beforeFiles = mobileHosts.flatMap(host =>
+    const generatedRewrites = mobileHosts.flatMap(host =>
       pageMappings.map(({ source, destination }) => ({
         source,
         has: [{ type: 'host' as const, value: host }],
@@ -85,7 +85,16 @@ const nextConfig = {
       }))
     );
 
-    return { beforeFiles };
+    return {
+      beforeFiles: [
+        ...generatedRewrites,
+        // Map /home to static /home.html
+        {
+          source: '/home',
+          destination: '/home.html',
+        },
+      ],
+    };
   },
 
   // Headers for security

@@ -51,6 +51,7 @@ import { WorldClassMessage } from "@/components/ai/WorldClassMessage";
 import { useDomainDetect } from "@/hooks/useDomainDetect";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
 import { DesktopSidebar } from "./components/DesktopSidebar";
+import { translations, Language } from "./translations";
 
 /**
  * Responsive AI Analyst with Domain-Based Layout
@@ -63,6 +64,7 @@ function ResponsiveAIAnalystContent() {
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [theme, setTheme] = useState<"light" | "dark">("light");
+    const [lang, setLang] = useState<Language>("en");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [designMode, setDesignMode] = useState<'pro' | 'analyst'>('pro');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -79,18 +81,7 @@ function ResponsiveAIAnalystContent() {
     const contextMarket = "EGX";
 
     // Typewriter placeholders
-    const placeholderTexts = [
-        "Compare HRHO vs COMI...",
-        "Market Summary",
-        "Analyze the dividend history of TMGH",
-        "Show me the top gainers today",
-        "Is SWDY undervalued right now?",
-        "Financial health check for FWRY",
-        "Who are the major shareholders of ETEL?",
-        "Technical analysis for ORWE",
-        "Show me the banking sector performance",
-        "What is the PE ratio of ADIB?"
-    ];
+    const placeholderTexts = translations[lang].placeholders;
 
     const typewriterPlaceholder = useTypewriter(placeholderTexts);
 
@@ -108,8 +99,22 @@ function ResponsiveAIAnalystContent() {
             } else {
                 document.documentElement.classList.remove("dark");
             }
+
+            // Load saved language
+            const savedLang = localStorage.getItem("lang") as Language;
+            if (savedLang) {
+                setLang(savedLang);
+                document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
+            }
         }
     }, []);
+
+    const toggleLang = () => {
+        const newLang = lang === 'en' ? 'ar' : 'en';
+        setLang(newLang);
+        localStorage.setItem("lang", newLang);
+        document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+    };
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";
@@ -164,7 +169,8 @@ function ResponsiveAIAnalystContent() {
             if (!isAuthenticated) {
                 setShowUsageModal(true);
             }
-        }
+        },
+        lang: lang
     });
 
     // Handle session selection wrapper to ensure state updates
@@ -191,7 +197,8 @@ function ResponsiveAIAnalystContent() {
         prevMessageCount.current = messages.length;
     }, [messages.length, isAuthenticated, incrementUsage]);
 
-    const language = "en";
+    // Language context for cards
+    const language = lang;
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -305,6 +312,7 @@ function ResponsiveAIAnalystContent() {
                                 <WorldClassMessage
                                     conversationalText={m.response?.conversational_text || m.content}
                                     response={m.response}
+                                    lang={language}
                                 />
 
                                 {/* Chart - Keep separate for specialized rendering */}
@@ -377,7 +385,7 @@ function ResponsiveAIAnalystContent() {
                             <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                             <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce"></span>
                         </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium animate-pulse">Analyzing market data...</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium animate-pulse">{translations[lang].analyzing}</span>
                     </div>
                 </div>
             )}
@@ -390,13 +398,15 @@ function ResponsiveAIAnalystContent() {
     // ========================================================================
     if (effectiveDesktop) {
         // Popular analysis request cards - matches mockup exactly
+        // Popular analysis request cards - matches mockup exactly
+        const t = translations[lang];
         const popularRequests = [
-            { icon: '🎯', title: 'Fair Value Analysis', subtitle: 'Get comprehensive valuation', query: 'What is the fair value of SWDY?', color: 'teal' },
-            { icon: '✨', title: 'Dividend Deep Dive', subtitle: 'Historical dividend analysis', query: 'Show me stocks with highest dividends', color: 'teal' },
-            { icon: '📊', title: 'Financial Comparison', subtitle: 'Compare key metrics', query: 'Compare CIB and COMI', color: 'teal' },
-            { icon: '📈', title: 'Market Screener', subtitle: 'Find matching stocks', query: 'Show me top gainers today', color: 'coral' },
-            { icon: '💵', title: 'Price Analysis', subtitle: 'Technical price insights', query: 'Analyze price of TMGH', color: 'teal' },
-            { icon: '📉', title: 'Sector Performance', subtitle: 'Industry analysis', query: 'Show banking sector performance', color: 'coral' },
+            { icon: '🎯', title: t.cards.fairValue.title, subtitle: t.cards.fairValue.subtitle, query: t.cards.fairValue.query, color: 'teal' },
+            { icon: '✨', title: t.cards.dividendDeep.title, subtitle: t.cards.dividendDeep.subtitle, query: t.cards.dividendDeep.query, color: 'teal' },
+            { icon: '📊', title: t.cards.comparison.title, subtitle: t.cards.comparison.subtitle, query: t.cards.comparison.query, color: 'teal' },
+            { icon: '📈', title: t.cards.screener.title, subtitle: t.cards.screener.subtitle, query: t.cards.screener.query, color: 'coral' },
+            { icon: '💵', title: t.cards.price.title, subtitle: t.cards.price.subtitle, query: t.cards.price.query, color: 'teal' },
+            { icon: '📉', title: t.cards.sector.title, subtitle: t.cards.sector.subtitle, query: t.cards.sector.query, color: 'coral' },
         ];
 
         return (
@@ -415,6 +425,7 @@ function ResponsiveAIAnalystContent() {
                     onLogin={() => router.push(getRoute('login'))}
                     onLogout={logout}
                     onSettings={() => router.push(getRoute('setting'))}
+                    lang={lang}
                 />
 
                 {/* ================================================================
@@ -423,9 +434,9 @@ function ResponsiveAIAnalystContent() {
                 <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
                     {/* Top Header Bar - StartaAI PRO badge + User button */}
                     <header className="flex-shrink-0 h-14 px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827]">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" dir="ltr">
                             <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">STARTA</span>
-                            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#13b8a6]/10 text-[#13b8a6] text-[10px] font-black uppercase tracking-wider">BETA</span>
+                            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#13b8a6]/10 text-[#13b8a6] text-[10px] font-black uppercase tracking-wider">{translations[lang].beta}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -456,6 +467,14 @@ function ResponsiveAIAnalystContent() {
                                     Analyst
                                 </button>
                             </div>
+
+                            {/* Language Switcher */}
+                            <button
+                                onClick={toggleLang}
+                                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors uppercase"
+                            >
+                                {lang === 'en' ? 'AR' : 'EN'}
+                            </button>
 
                             {/* Dark Mode Toggle */}
                             <button
@@ -499,7 +518,7 @@ function ResponsiveAIAnalystContent() {
                                             : "bg-[#13b8a6] hover:bg-[#0f8f82]"
                                     )}
                                 >
-                                    Sign In
+                                    {translations[lang].signIn}
                                 </button>
                             )}
                         </div>
@@ -531,17 +550,17 @@ function ResponsiveAIAnalystContent() {
                                         </div>
 
                                         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3 text-center tracking-tight">
-                                            Starta Market Intelligence
+                                            {translations[lang].title}
                                         </h1>
                                         <p className="text-slate-500 dark:text-slate-400 text-base mb-10 text-center max-w-md leading-relaxed">
-                                            Begin understanding the Egyptian stock market with AI-powered insights
+                                            {translations[lang].subtitle}
                                         </p>
 
                                         {/* Centered Input (Pro) - Fixed Light Mode Background */}
                                         <div className="w-full mb-12">
                                             <div className="relative group">
                                                 <div className="absolute inset-0 bg-[#13b8a6]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                                <div className="relative flex items-center gap-3 p-2 pr-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                                <div className="relative flex items-center gap-3 p-2 pe-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
                                                     <input
                                                         type="text"
                                                         value={query}
@@ -568,18 +587,18 @@ function ResponsiveAIAnalystContent() {
                                         {/* Grid Layout for Desktop Popular Questions (Pro) */}
                                         <div className="w-full max-w-4xl">
                                             <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
-                                                Popular Analysis Requests
+                                                {translations[lang].popularRequests}
                                             </p>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                                                 {[
-                                                    { icon: <Target className="w-5 h-5" />, title: 'Market Summary', subtitle: 'ASK STARTA', query: 'Market Summary', color: 'teal' },
-                                                    { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', query: 'Dividend history TMGH', color: 'teal' },
-                                                    { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', query: 'PE ratio for SWDY', color: 'teal' },
+                                                    { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.marketSummary.title, subtitle: translations[lang].askStarta, query: translations[lang].cards.marketSummary.query, color: 'teal' },
+                                                    { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.dividend.title, subtitle: translations[lang].askStarta, query: translations[lang].cards.dividend.query, color: 'teal' },
+                                                    { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.peRatio.title, subtitle: translations[lang].askStarta, query: translations[lang].cards.peRatio.query, color: 'teal' },
                                                 ].map((item, idx) => (
                                                     <button
                                                         key={idx}
                                                         onClick={() => sendDirectMessage(item.query)}
-                                                        className="p-5 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#13b8a6]/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left group flex flex-col h-full"
+                                                        className="p-5 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#13b8a6]/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-start group flex flex-col h-full"
                                                     >
                                                         <div className={clsx(
                                                             "w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-lg transition-colors",
@@ -612,18 +631,18 @@ function ResponsiveAIAnalystContent() {
                                         </div>
 
                                         <h1 className="text-3xl font-black text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#13b8a6] to-slate-900 dark:from-white dark:via-[#13b8a6] dark:to-white">
-                                            Hello, {user?.full_name?.split(' ')[0] || "Trader"}
+                                            {translations[lang].hello}, {user?.full_name?.split(' ')[0] || translations[lang].trader}
                                         </h1>
                                         <p className="text-slate-500 dark:text-slate-400 text-base mb-10 text-center max-w-md">
-                                            I'm Starta. Ask me anything about <span className="text-[#13b8a6] font-bold">Egyptian</span> stocks.
+                                            {translations[lang].subtitle}
                                         </p>
 
                                         {/* Grid Layout for Desktop Popular Questions (Analyst Mode - Blue) - Sourced from Mobile Suggestions */}
                                         <div className="w-full max-w-4xl mt-8">
                                             <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
-                                                Recommended Analysis
+                                                {translations[lang].recommendedAnalysis}
                                             </p>
-                                            <AnalystDesktopGrid onSelect={sendDirectMessage} />
+                                            <AnalystDesktopGrid onSelect={sendDirectMessage} lang={lang} />
                                         </div>
                                     </div>
                                 )
@@ -645,7 +664,7 @@ function ResponsiveAIAnalystContent() {
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                                        placeholder="Ask about Egyptian stocks..."
+                                        placeholder={translations[lang].inputPlaceholder}
                                         className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm"
                                     />
                                     <button
@@ -714,6 +733,8 @@ function ResponsiveAIAnalystContent() {
                         onLogin={() => router.push(getRoute('login'))}
                         designMode={designMode}
                         onToggleDesignMode={() => setDesignMode(designMode === 'pro' ? 'analyst' : 'pro')}
+                        lang={lang}
+                        onToggleLang={toggleLang}
                     />
                 </div>
             </div>
@@ -730,10 +751,10 @@ function ResponsiveAIAnalystContent() {
                                         <BarChart3 className="w-8 h-8 text-white" />
                                     </div>
                                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 text-center tracking-tight">
-                                        Starta Market Intelligence
+                                        {translations[lang].title}
                                     </h1>
                                     <p className="text-slate-500 dark:text-slate-400 text-[13px] mb-10 text-center max-w-[280px] leading-relaxed font-medium">
-                                        Begin understanding the Egyptian stock market with AI-powered insights
+                                        {translations[lang].subtitle}
                                     </p>
 
                                     {/* Centered Input Mobile - Dark Theme */}
@@ -748,7 +769,7 @@ function ResponsiveAIAnalystContent() {
                                                     value={query}
                                                     onChange={(e) => setQuery(e.target.value)}
                                                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                                                    placeholder="Compare HRHO vs..."
+                                                    placeholder={translations[lang].inputPlaceholderPro}
                                                     className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm font-medium"
                                                 />
                                                 <button
@@ -768,12 +789,12 @@ function ResponsiveAIAnalystContent() {
                                     {/* Popular Questions Vertical List */}
                                     <div className="w-full space-y-3">
                                         <p className="text-center text-[10px] font-bold text-slate-400/80 uppercase tracking-widest mb-4">
-                                            Popular Questions
+                                            {translations[lang].popularRequests}
                                         </p>
                                         {[
-                                            { icon: <Target className="w-5 h-5" />, title: 'Market Summary', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
-                                            { icon: <Sparkles className="w-5 h-5" />, title: 'Dividend history TMGH', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
-                                            { icon: <CircleDollarSign className="w-5 h-5" />, title: 'PE ratio for SWDY', subtitle: 'ASK STARTA', color: 'bg-[#13b8a6]' },
+                                            { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.marketSummary.title, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.dividend.title, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.peRatio.title, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
                                         ].map((item, idx) => (
                                             <button
                                                 key={idx}
@@ -817,17 +838,17 @@ function ResponsiveAIAnalystContent() {
 
                                         <div className="space-y-3">
                                             <h2 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-slate-900 dark:from-white dark:via-blue-200 dark:to-white leading-[1.1]">
-                                                Hello, {user?.full_name?.split(' ')[0] || "Trader"}
+                                                {translations[lang].hello}, {user?.full_name?.split(' ')[0] || translations[lang].trader}
                                             </h2>
                                             <p className="text-slate-500 dark:text-slate-400 text-base font-medium leading-relaxed">
-                                                I'm Starta. Ask me anything about <span className="text-[#13b8a6] font-bold">Egyptian</span> stocks.
+                                                {translations[lang].subtitle}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Suggestions */}
                                     <div className="w-full relative z-10">
-                                        <MobileSuggestions onSelect={sendDirectMessage} />
+                                        <MobileSuggestions onSelect={sendDirectMessage} lang={lang} />
                                     </div>
                                 </>
                             )}
@@ -847,6 +868,7 @@ function ResponsiveAIAnalystContent() {
                             setQuery={setQuery}
                             onSend={handleSend}
                             isLoading={isLoading}
+                            lang={lang}
                         />
                     </div>
                 </div>

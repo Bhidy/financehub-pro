@@ -205,11 +205,14 @@ FINANCIAL_TERMS = {
     }
 }
 
-# Aliases for common variations
 TERM_ALIASES = {
     "return on equity": "roe",
     "pe": "pe_ratio",
     "p/e": "pe_ratio",
+    "p e": "pe_ratio",
+    "p e ratio": "pe_ratio",
+    "pe ratio": "pe_ratio",
+    "price-earnings": "pe_ratio",
     "price to earnings": "pe_ratio",
     "price earnings": "pe_ratio",
     "pb": "pb_ratio",

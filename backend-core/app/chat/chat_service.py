@@ -163,12 +163,14 @@ class ChatService:
         session_id: Optional[str] = None,
         market: Optional[str] = None,
         history: list = None,
-        user_id: Optional[str] = None  # Added user_id
+        user_id: Optional[str] = None,  # Added user_id
+        language: Optional[str] = None  # Added explicit language (from Header)
     ) -> ChatResponse:
         """
         Process a chat message and return a response.
         """
         start_time = time.time()
+        forced_language = language # Store initial passed language
         
         # ... (rest of method unchanged until analytics logging) ...
         
@@ -220,7 +222,16 @@ class ChatService:
         # 2. Normalize text (Using routing_text)
         try:
             normalized = normalize_text(routing_text)
-            language = normalized.language if normalized.language != 'mixed' else 'en'
+            
+            # --- LANGUAGE ENFORCEMENT ---
+            # If explicit language was passed (like 'ar' from UI), force it.
+            # Otherwise use detected language.
+            if forced_language and forced_language in ['en', 'ar']:
+                language = forced_language
+                print(f"[ChatService] 🌍 Language Forcing: Detected '{normalized.language}' -> Overridden to '{language}'")
+            else:
+                language = normalized.language if normalized.language != 'mixed' else 'en'
+            # -----------------------------
             
             # 3. Check compliance
             is_blocked, violation_type, block_message = check_compliance(routing_text)

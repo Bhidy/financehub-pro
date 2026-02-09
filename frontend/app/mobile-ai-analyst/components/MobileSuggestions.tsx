@@ -8,10 +8,11 @@ import { ChevronRight, Sparkles } from "lucide-react";
 
 interface MobileSuggestionsProps {
     onSelect: (text: string) => void;
+    lang?: 'en' | 'ar';
 }
 
-export function MobileSuggestions({ onSelect }: MobileSuggestionsProps) {
-    const suggestionCategories = useAISuggestions();
+export function MobileSuggestions({ onSelect, lang = 'en' }: MobileSuggestionsProps) {
+    const suggestionCategories = useAISuggestions(lang);
     const [activeTab, setActiveTab] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [showLeftFade, setShowLeftFade] = useState(false);

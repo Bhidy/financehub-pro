@@ -676,7 +676,7 @@ function parseLine(line: string, idx: number): React.ReactNode {
     // Header line (starts and ends with **)
     if (trimmed.startsWith("**") && trimmed.endsWith("**") && !trimmed.slice(2, -2).includes("**")) {
         return (
-            <h4 key={idx} className="text-sm font-bold text-slate-900 dark:text-white mt-4 mb-2">
+            <h4 key={idx} className="text-base font-bold text-slate-900 dark:text-white mt-6 mb-3 leading-snug tracking-tight">
                 {trimmed.slice(2, -2)}
             </h4>
         );
@@ -686,8 +686,8 @@ function parseLine(line: string, idx: number): React.ReactNode {
     if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
         const content = trimmed.replace(/^[-•]\s*/, "");
         return (
-            <div key={idx} className="flex items-start gap-2 ms-4 text-sm text-slate-600 dark:text-slate-300">
-                <span className="text-slate-400 dark:text-slate-500 mt-1">•</span>
+            <div key={idx} className="flex items-start gap-3 ms-1 text-sm text-slate-600 dark:text-slate-300 my-1.5">
+                <span className="text-slate-400 dark:text-slate-500 mt-1.5 text-xs">•</span>
                 <span className="leading-relaxed">{parseBoldText(content)}</span>
             </div>
         );
@@ -697,8 +697,8 @@ function parseLine(line: string, idx: number): React.ReactNode {
     const numberedMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
     if (numberedMatch) {
         return (
-            <div key={idx} className="flex items-start gap-2 ms-4 text-sm text-slate-600 dark:text-slate-300">
-                <span className="text-slate-500 dark:text-slate-400 font-medium w-5 flex-shrink-0">{numberedMatch[1]}.</span>
+            <div key={idx} className="flex items-start gap-3 ms-1 text-sm text-slate-600 dark:text-slate-300 my-1.5">
+                <span className="text-slate-500 dark:text-slate-400 font-bold w-4 flex-shrink-0 mt-0.5 text-xs">{numberedMatch[1]}.</span>
                 <span className="leading-relaxed">{parseBoldText(numberedMatch[2])}</span>
             </div>
         );
@@ -706,7 +706,7 @@ function parseLine(line: string, idx: number): React.ReactNode {
 
     // Regular paragraph
     return (
-        <p key={idx} className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+        <p key={idx} className="text-sm text-slate-700 dark:text-slate-300 leading-7 my-3">
             {parseBoldText(trimmed)}
         </p>
     );
@@ -793,8 +793,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
 
     return (
         <div
-            className={`space-y-1 w-full text-start ${fontClass}`}
+            className={`w-full text-start ${fontClass} bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 md:p-6 transition-all duration-300 hover:shadow-md`}
             dir={direction}
+            lang={lang}
         >
             {/* ============================================================
                 LAYER 1: OPENING TEXT + FRAMEWORK CARD

@@ -240,6 +240,7 @@ function getDeviceFingerprint(): string {
 export function useAIChat(config?: {
     market?: string;
     onUsageLimitReached?: () => void;  // Callback when guest limit is exceeded
+    lang?: 'en' | 'ar';
 }) {
     const [query, setQuery] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -311,7 +312,7 @@ export function useAIChat(config?: {
             let lastError;
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
-                    const response = await sendChatMessage(text, history, currentSessionId, config?.market, deviceFingerprint);
+                    const response = await sendChatMessage(text, history, currentSessionId, config?.market, deviceFingerprint, config?.lang);
                     return response;
                 } catch (err) {
                     lastError = err;

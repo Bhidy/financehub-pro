@@ -397,7 +397,8 @@ export const sendChatMessage = async (
     history: any[],
     session_id?: string | null,
     market?: string,
-    deviceFingerprint?: string  // CRITICAL: For guest usage tracking
+    deviceFingerprint?: string,  // CRITICAL: For guest usage tracking
+    language?: 'en' | 'ar'
 ) => {
     // UNIFIED ARCHITECTURE: Use Python Backend directly
     // This uses the 'api' instance which has the correct Base URL and Auth Headers
@@ -412,6 +413,10 @@ export const sendChatMessage = async (
     // This enables the backend to enforce the 5-question limit for guests
     if (deviceFingerprint) {
         headers['X-Device-Fingerprint'] = deviceFingerprint;
+    }
+
+    if (language) {
+        headers['X-Language'] = language;
     }
 
     const config = Object.keys(headers).length > 0 ? { headers } : {};

@@ -19,6 +19,8 @@ interface MobileHeaderProps {
     forceMarket?: string;
     designMode: 'pro' | 'analyst';
     onToggleDesignMode: () => void;
+    lang: 'en' | 'ar';
+    onToggleLang: () => void;
 }
 
 export function MobileHeader({
@@ -32,7 +34,9 @@ export function MobileHeader({
     remainingQuestions = 5,
     forceMarket,
     designMode,
-    onToggleDesignMode
+    onToggleDesignMode,
+    lang,
+    onToggleLang
 }: MobileHeaderProps) {
     const router = useRouter();
     const { market: contextMarket } = useMarketSafe();
@@ -55,7 +59,7 @@ export function MobileHeader({
                     <div className="flex flex-col gap-0.5">
                         <div className="font-black text-slate-900 dark:text-white text-lg leading-none tracking-tight transition-colors">STARTA</div>
                         <div className="flex items-center gap-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{displayMarket === 'EGX' ? 'Egypt' : 'Saudi'}</span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{displayMarket === 'EGX' ? (lang === 'ar' ? 'مصر' : 'Egypt') : (lang === 'ar' ? 'السعودية' : 'Saudi')}</span>
 
                             {/* Premium Mobile Mode Toggle - Compact */}
                             <button
@@ -88,7 +92,7 @@ export function MobileHeader({
                 <div className="flex items-center gap-2">
                     {!isAuthenticated && remainingQuestions !== undefined && remainingQuestions > 0 && (
                         <div className="px-2.5 py-1 bg-[#0F172A] dark:bg-slate-800 text-white dark:text-slate-200 rounded-full text-[10px] font-bold shadow-md shadow-slate-900/10 dark:shadow-none border border-transparent dark:border-white/[0.08]">
-                            <span className="text-[#13b8a6]">{remainingQuestions}</span> left
+                            <span className="text-[#13b8a6]">{remainingQuestions}</span> {lang === 'ar' ? 'متبقي' : 'left'}
                         </div>
                     )}
 
@@ -107,6 +111,13 @@ export function MobileHeader({
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all"
                     >
                         <MessageSquarePlus className="w-5 h-5" />
+                    </button>
+
+                    <button
+                        onClick={onToggleLang}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all text-xs font-bold"
+                    >
+                        {lang === 'en' ? 'AR' : 'EN'}
                     </button>
 
                     <button

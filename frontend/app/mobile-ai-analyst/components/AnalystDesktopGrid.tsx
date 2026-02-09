@@ -6,8 +6,8 @@ import { clsx } from "clsx";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function AnalystDesktopGrid({ onSelect }: { onSelect: (q: string) => void }) {
-    const suggestionCategories = useAISuggestions();
+export function AnalystDesktopGrid({ onSelect, lang = 'en' }: { onSelect: (q: string) => void, lang?: 'en' | 'ar' }) {
+    const suggestionCategories = useAISuggestions(lang);
     const [activeTab, setActiveTab] = useState(0);
 
     const activeSuggestions = (suggestionCategories[activeTab]?.suggestions || []).slice(0, 3);

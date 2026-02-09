@@ -4,31 +4,22 @@ import { useEffect, useRef, useState } from "react";
 import { Send, Mic, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { useTypewriter } from "@/hooks/useTypewriter";
+import { translations, Language } from "../translations";
 
 interface MobileInputProps {
     query: string;
     setQuery: (q: string) => void;
     onSend: () => void;
     isLoading: boolean;
+    lang?: Language;
 }
 
-export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputProps) {
+export function MobileInput({ query, setQuery, onSend, isLoading, lang = 'en' }: MobileInputProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isFocused, setIsFocused] = useState(false);
 
     // Typewriter placeholders
-    const placeholderTexts = [
-        "Ask Starta anything...",
-        "Market Summary",
-        "Analyze the dividend history of TMGH",
-        "Show me the top gainers today",
-        "Is SWDY undervalued right now?",
-        "Financial health check for FWRY",
-        "Who are the major shareholders of ETEL?",
-        "Technical analysis for ORWE",
-        "Show me the banking sector performance",
-        "What is the PE ratio of ADIB?"
-    ];
+    const placeholderTexts = translations[lang].placeholders;
 
     const typewriterPlaceholder = useTypewriter(placeholderTexts);
 
@@ -63,7 +54,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#3B82F6]/5 via-[#14B8A6]/5 to-[#3B82F6]/5 -z-10 blur-xl" />
                     )}
 
-                    <div className="flex items-end gap-2 p-1.5 pl-4">
+                    <div className="flex items-end gap-2 p-1.5 ps-4">
                         <textarea
                             ref={textareaRef}
                             value={query}
@@ -71,7 +62,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
                             onKeyDown={handleKeyDown}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            placeholder={isFocused ? "Ask Starta anything..." : typewriterPlaceholder}
+                            placeholder={isFocused ? translations[lang].inputPlaceholder : typewriterPlaceholder}
                             className="flex-1 bg-transparent border-none py-2.5 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[16px] leading-snug resize-none max-h-24 min-h-[44px] focus:ring-0 focus:outline-none font-medium"
                             style={{ fontSize: '16px' }} // HARD ENFORCEMENT for iOS
                             rows={1}
@@ -102,7 +93,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading }: MobileInputP
 
                 {/* Disclaimer */}
                 <p className="text-center text-[8px] text-slate-400 dark:text-slate-500 font-bold mt-2 uppercase tracking-widest opacity-80">
-                    AI-generated • Verify important info
+                    {translations[lang].aiDisclaimer}
                 </p>
             </div>
         </div>

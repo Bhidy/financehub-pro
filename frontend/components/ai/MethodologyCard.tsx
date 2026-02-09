@@ -23,16 +23,27 @@ export interface MethodologyCardProps {
         criteria: MethodologyCriterion[] | string[];
         note?: string;
     };
+    language?: "en" | "ar";
 }
 
-export function MethodologyCard({ data }: MethodologyCardProps) {
+export function MethodologyCard({ data, language = "en" }: MethodologyCardProps) {
     // Normalize criteria to objects
     const normalizedCriteria: MethodologyCriterion[] = data.criteria.map(c =>
         typeof c === 'string' ? { label: c } : c
     );
+    const isRtl = language === "ar";
+    const ui = language === "ar"
+        ? {
+            title: "منهجية الفحص",
+            framework: "إطار تحليل متعدد العوامل",
+        }
+        : {
+            title: "Screening Methodology",
+            framework: "Multi-Factor Analysis Framework",
+        };
 
     return (
-        <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-[#1A1F2E] dark:to-blue-900/10 rounded-2xl border border-slate-200 dark:border-white/10 shadow-lg overflow-hidden my-4 transition-all duration-300 hover:shadow-xl">
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-[#1A1F2E] dark:to-blue-900/10 rounded-2xl border border-slate-200 dark:border-white/10 shadow-lg overflow-hidden my-4 transition-all duration-300 hover:shadow-xl" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="px-5 py-4 bg-gradient-to-r from-blue-600 to-teal-500 flex items-center gap-3">
                 <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -40,8 +51,8 @@ export function MethodologyCard({ data }: MethodologyCardProps) {
                 </div>
                 <div>
                     <h4 className="font-bold text-white text-base">
-                        {data.icon && <span className="mr-2">{data.icon}</span>}
-                        {data.title || "Screening Methodology"}
+                        {data.icon && <span className={isRtl ? "ml-2" : "mr-2"}>{data.icon}</span>}
+                        {data.title || ui.title}
                     </h4>
                     {data.description && (
                         <p className="text-white/80 text-xs mt-0.5">{data.description}</p>
@@ -71,11 +82,11 @@ export function MethodologyCard({ data }: MethodologyCardProps) {
                                 <CheckCircle size={12} className="stroke-[2.5]" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                                <span className={clsx("text-sm font-medium text-slate-800 dark:text-slate-200", isRtl ? "text-right" : "text-left")}>
                                     {criterion.label}
                                 </span>
                                 {criterion.value && (
-                                    <span className="ml-2 text-sm text-slate-500 dark:text-slate-400">
+                                    <span className={clsx("text-sm text-slate-500 dark:text-slate-400", isRtl ? "mr-2" : "ml-2")}>
                                         ({criterion.value})
                                     </span>
                                 )}
@@ -89,7 +100,7 @@ export function MethodologyCard({ data }: MethodologyCardProps) {
                     <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
                         <div className="flex items-start gap-2">
                             <Filter size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-                            <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                            <p className={clsx("text-xs text-amber-800 dark:text-amber-300 leading-relaxed", isRtl ? "text-right" : "text-left")}>
                                 {data.note}
                             </p>
                         </div>
@@ -101,7 +112,7 @@ export function MethodologyCard({ data }: MethodologyCardProps) {
             <div className="px-5 py-2.5 bg-slate-100 dark:bg-white/[0.02] border-t border-slate-200 dark:border-white/5">
                 <div className="flex items-center justify-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <Layers size={12} />
-                    <span>Multi-Factor Analysis Framework</span>
+                    <span>{ui.framework}</span>
                 </div>
             </div>
         </div>

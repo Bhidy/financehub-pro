@@ -21,6 +21,7 @@ export interface EducationalCardProps {
         icon?: string;
         sections: EducationalSection[];
     };
+    language?: "en" | "ar";
 }
 
 // Section styling configuration
@@ -67,19 +68,19 @@ const sectionConfig = {
     }
 };
 
-function SectionContent({ section }: { section: EducationalSection }) {
+function SectionContent({ section, isRtl }: { section: EducationalSection; isRtl: boolean }) {
     const config = sectionConfig[section.type] || sectionConfig.definition;
     const Icon = config.icon;
 
     const renderContent = () => {
         if (Array.isArray(section.content)) {
             return (
-                <ul className="space-y-2 mt-2">
-                    {section.content.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                            <span className={clsx("mt-1.5 w-1.5 h-1.5 rounded-full shrink-0", config.iconColor.replace("text-", "bg-"))} />
-                            <span>{item}</span>
-                        </li>
+                    <ul className="space-y-2 mt-2">
+                        {section.content.map((item, idx) => (
+                            <li key={idx} className={clsx("flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300", isRtl ? "text-right" : "text-left")}>
+                                <span className={clsx("mt-1.5 w-1.5 h-1.5 rounded-full shrink-0", config.iconColor.replace("text-", "bg-"))} />
+                                <span>{item}</span>
+                            </li>
                     ))}
                 </ul>
             );
@@ -95,7 +96,7 @@ function SectionContent({ section }: { section: EducationalSection }) {
         }
 
         return (
-            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            <p className={clsx("mt-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed", isRtl ? "text-right" : "text-left")}>
                 {section.content}
             </p>
         );
@@ -120,15 +121,31 @@ function SectionContent({ section }: { section: EducationalSection }) {
     );
 }
 
-export function EducationalCard({ data }: EducationalCardProps) {
+export function EducationalCard({ data, language = "en" }: EducationalCardProps) {
     const [isExpanded, setIsExpanded] = useState(true);
+    const isRtl = language === "ar";
+    const ui = language === "ar"
+        ? {
+            financialTerm: "مصطلح مالي",
+            showLess: "عرض أقل",
+            showMore: "عرض المزيد",
+            moreSections: "أقسام إضافية",
+            educationalContent: "محتوى تعليمي • لأغراض التعلم",
+        }
+        : {
+            financialTerm: "Financial Term",
+            showLess: "Show Less",
+            showMore: "Show More",
+            moreSections: "more sections",
+            educationalContent: "Educational Content • For Learning Purposes",
+        };
 
     // Show first 2 sections by default, rest collapsed
     const visibleSections = isExpanded ? data.sections : data.sections.slice(0, 2);
     const hasMoreSections = data.sections.length > 2;
 
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 py-5">
                 <div className="flex items-center gap-4">
@@ -137,10 +154,10 @@ export function EducationalCard({ data }: EducationalCardProps) {
                     </div>
                     <div>
                         <div className="text-white/60 text-xs font-bold uppercase tracking-widest">
-                            Financial Term
+                            {ui.financialTerm}
                         </div>
                         <h3 className="text-white font-bold text-2xl tracking-tight mt-0.5">
-                            {data.icon && <span className="mr-2">{data.icon}</span>}
+                            {data.icon && <span className={isRtl ? "ml-2" : "mr-2"}>{data.icon}</span>}
                             {data.term}
                         </h3>
                     </div>
@@ -150,7 +167,7 @@ export function EducationalCard({ data }: EducationalCardProps) {
             {/* Sections */}
             <div className="p-6 space-y-4">
                 {visibleSections.map((section, idx) => (
-                    <SectionContent key={idx} section={section} />
+                    <SectionContent key={idx} section={section} isRtl={isRtl} />
                 ))}
             </div>
 
@@ -164,12 +181,12 @@ export function EducationalCard({ data }: EducationalCardProps) {
                         {isExpanded ? (
                             <>
                                 <ChevronUp size={16} />
-                                <span>Show Less</span>
+                                <span>{ui.showLess}</span>
                             </>
                         ) : (
                             <>
                                 <ChevronDown size={16} />
-                                <span>Show More ({data.sections.length - 2} more sections)</span>
+                                <span>{ui.showMore} ({data.sections.length - 2} {ui.moreSections})</span>
                             </>
                         )}
                     </button>
@@ -180,7 +197,7 @@ export function EducationalCard({ data }: EducationalCardProps) {
             <div className="px-6 py-3 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5">
                 <div className="flex items-center justify-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <BookOpen size={12} />
-                    <span>Educational Content • For Learning Purposes</span>
+                    <span>{ui.educationalContent}</span>
                 </div>
             </div>
         </div>

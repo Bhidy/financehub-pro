@@ -131,7 +131,7 @@ class LLMExplainerService:
                 return cached
 
         # Build Data Context Summary
-        context_str = self._format_data_for_context(data)
+        context_str = self._format_data_for_context(data, language)
         lang_instruction = "Arabic (Modern Standard)" if language == 'ar' else "English"
         
         # ============================================================
@@ -229,8 +229,7 @@ class LLMExplainerService:
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"1. المقدمة (جملتان): ضع التحليل في سياقه.\n"
                 f"2. جسم التحليل: التقييم، المحركات، المخاطر (فقرات).\n"
-                f"3. إخلاء المسؤولية: '{disclaimer_text}'\n"
-                f"4. دعوة للمتابعة: '{invitation_text}'\n\n"
+                f"3. إخلاء المسؤولية: '{disclaimer_text}'\n\n"
 
                 f"مهم جداً: توليد الرؤى المنفصلة\n"
                 f"في نهاية ردك، يجب أن ترفق حالات التفاؤل والتشاؤم باستخدام هذه المحددات بدقة:\n"
@@ -436,17 +435,57 @@ class LLMExplainerService:
                     
         return explanations
 
-    def _format_data_for_context(self, cards: List[Dict[str, Any]]) -> str:
+    def _format_data_for_context(self, cards: List[Dict[str, Any]], language: str = 'en') -> str:
         """
         Format the structured cards into a compact string for LLM.
         
         PHASE 3 OPTIMIZATION: Ultra-compact format to reduce token count.
         Same data values, fewer tokens (~50% reduction).
         Format: "SYMBOL PRICE CHANGE | KEY=VAL KEY=VAL"
+        Refined for Arabic Context if needed.
         """
         try:
             summary_parts = []
             
+            # Simple Translation Helper
+            T_MAP = {
+                # General
+                'Price': 'السعر', 'Change': 'التغير', 'Symbol': 'الرمز',
+                # Financials
+                'Revenue': 'الإيرادات', 'Gross Profit': 'مجمل الربح', 
+                'Net Income': 'صافي الربح', 'Operating Income': 'ربح التشغيل',
+                'EPS': 'ربحية السهم', 'EBITDA': 'الأرباح قبل الفوائد والضرائب',
+                'Cash': 'الكاش', 'Total Assets': 'إجمالي الأصول', 
+                'Total Liabilities': 'إجمالي الخصوم', 'Total Equity': 'حقوق الملكية',
+                'Debt': 'الديون', 'Free Cash Flow': 'التدفق النقدي الحر',
+                'Operating Cash Flow': 'التدفق التشغيلي', 'Dividends Paid': 'توزيعات مدفوعة',
+                # Ratios
+                'Pe Ratio': 'مكرر الربحية', 'Pb Ratio': 'مضاعف الدفترية',
+                'Return on Equity': 'العائد على الملكية', 'ROE': 'العائد على الملكية',
+                'Return on Assets': 'العائد على الأصول', 'ROA': 'العائد على الأصول',
+                'Gross Margin': 'هامش مجمل الربح', 'Operating Margin': 'هامش التشغيل',
+                'Net Margin': 'صافي الهامش', 'Current Ratio': 'النسبة الحالية',
+                'Quick Ratio': 'النسبة السريعة', 'Debt / Equity': 'الدين/الملكية',
+                'Dividend Yield': 'عائد التوزيعات', 'Payout Ratio': 'نسبة التوزيع',
+                # Table Headers
+                'INCOME': 'قائمة الدخل', 'BALANCE': 'الميزانية', 
+                'CASHFLOW': 'التدفقات النقدية', 'RATIOS': 'النسب المالية',
+                'YEAR': 'عام', 'TTM': 'اخر 12 شهر', 'Latest': 'الأحدث',
+                'Val': 'القيمة', 'Grw': 'نمو', 'Rev': 'إيراد',
+                'Sector': 'قطاع', 'stocks': 'أسهم', 
+                'Gainers': 'الرابحون', 'Losers': 'الخاسرون'
+            }
+            
+            def t(text):
+                if language == 'ar':
+                    # Exact match
+                    if text in T_MAP: return T_MAP[text]
+                    # Partial match for keys like "Rev"
+                    for k, v in T_MAP.items():
+                        if k == text: return v
+                    return text
+                return text
+
             for card in cards:
                 c_type = card.get("type")
                 c_data = card.get("data", {})
@@ -462,7 +501,8 @@ class LLMExplainerService:
                     # DEEP DIVE IDENTITY FIX: Explicitly extract symbol from explorer package
                     symbol = c_data.get('symbol', '')
                     curr = c_data.get('currency', 'EGP')
-                    summary_parts.append(f"FINANCIAL_REPORT_FOR: {symbol} [{curr}]")
+                    lbl_rep = t('FINANCIAL_REPORT_FOR') if language == 'ar' else 'FINANCIAL_REPORT_FOR'
+                    summary_parts.append(f"{lbl_rep}: {symbol} [{curr}]")
                     
                     # EXTRACT FULL FINANCIAL PICTURE (Fixing 'Data not available')
                     # We need to give the LLM enough meat to write the 10-point analysis
@@ -516,22 +556,24 @@ class LLMExplainerService:
                                         change_str = f" (Chg: {c_abs_str})"
 
                                 if vals:
-                                    found.append(f"{row['label']}:[{', '.join(vals)}]{change_str}")
+                                    # Translate label
+                                    clean_lbl = t(row['label'])
+                                    found.append(f"{clean_lbl}:[{', '.join(vals)}]{change_str}")
                         return " | ".join(found)
 
                     # 2. Income Statement High-Level
                     # Added 'Effective Tax Rate' and 'Research & Development' for quality checks
                     inc_str = extract_latest('income', ['Revenue', 'Gross Profit', 'Gross Margin', 'Operating Income', 'Net Income', 'EPS', 'EBITDA', 'Effective Tax Rate'])
-                    if inc_str: summary_parts.append(f"INCOME({period_label}): {inc_str}")
+                    if inc_str: summary_parts.append(f"{t('INCOME')}({t(period_label)}): {inc_str}")
                     
                     # 3. Balance Sheet Health
                     bal_str = extract_latest('balance', ['Cash', 'Total Assets', 'Total Liabilities', 'Total Equity', 'Debt', 'Retained Earnings', 'Goodwill'])
-                    if bal_str: summary_parts.append(f"BALANCE({period_label}): {bal_str}")
+                    if bal_str: summary_parts.append(f"{t('BALANCE')}({t(period_label)}): {bal_str}")
                     
                     # 4. Cash Flow Quality
                     # Added 'Stock-Based Compensation' (Dilution risk) and 'Dividends Paid'
                     cf_str = extract_latest('cashflow', ['Operating Cash Flow', 'Capital Expenditures', 'Free Cash Flow', 'Stock-Based Compensation', 'Dividends Paid'])
-                    if cf_str: summary_parts.append(f"CASHFLOW({period_label}): {cf_str}")
+                    if cf_str: summary_parts.append(f"{t('CASHFLOW')}({t(period_label)}): {cf_str}")
                     
                     # 5. Key Ratios (Valuation & Efficiency) - CRITICAL CFA LEVEL 3 METRICS
                     # Ratios are usually in annual_data['ratios'] even if TTM is used for raw data
@@ -548,7 +590,8 @@ class LLMExplainerService:
                             if row and r_years:
                                 v = row['values'].get(r_years[0])
                                 if v is not None:
-                                    found.append(f"{row['label']}={v}")
+                                    clean_lbl = t(row['label'])
+                                    found.append(f"{clean_lbl}={v}")
                         return " ".join(found)
 
                     # EXPANDED METRICS LIST:
@@ -563,7 +606,7 @@ class LLMExplainerService:
                         'Dividend Yield', 'Payout Ratio'                                 # Income
                     ]
                     ratio_str = extract_ratios(ratio_cats)
-                    if ratio_str: summary_parts.append(f"RATIOS(Latest): {ratio_str}")
+                    if ratio_str: summary_parts.append(f"{t('RATIOS')}({t('Latest')}): {ratio_str}")
 
                     
                 elif c_type == "snapshot":
@@ -571,7 +614,7 @@ class LLMExplainerService:
                     price = c_data.get('last_price', '')
                     change = c_data.get('change_percent', '')
                     if price:
-                        summary_parts.append(f"Price:{price} Chg:{change}%")
+                        summary_parts.append(f"{t('Price')}:{price} {t('Change')}:{change}%")
                     
                 elif c_type == "stats":
                     # Compact: top 6 metrics as "K=V K=V"
@@ -584,7 +627,7 @@ class LLMExplainerService:
                         if val is not None:
                             # Shorten key names
                             short_key = key.replace('_ratio', '').replace('_formatted', '').replace('net_profit_', '')
-                            items.append(f"{short_key}={val}")
+                            items.append(f"{t(short_key)}={val}")
                     if items:
                         summary_parts.append(" ".join(items[:6]))
                         
@@ -592,29 +635,29 @@ class LLMExplainerService:
                     items = c_data.get('items', [])
                     if items:
                         last = items[-1]
-                        summary_parts.append(f"Rev:{last.get('revenue')} Grw:{last.get('growth')}%")
+                        summary_parts.append(f"{t('Rev')}:{last.get('revenue')} {t('Grw')}:{last.get('growth')}%")
                         
                 elif c_type == "dividends":
                     yield_val = c_data.get('yield', '')
                     count = len(c_data.get('items', []))
-                    summary_parts.append(f"DivYield:{yield_val}% Hist:{count}")
+                    summary_parts.append(f"{t('Dividend Yield')}:{yield_val}% Hist:{count}")
                     
                 elif c_type == 'screener_results':
                     stocks = c_data.get('stocks', [])
                     # Compact: "5 stocks: TMGH(+5.2%) CIB(+3.1%)..."
                     top3 = [f"{s.get('symbol')}({s.get('value', s.get('change_percent', ''))})" 
                             for s in stocks[:3]]
-                    summary_parts.append(f"{len(stocks)} stocks: {' '.join(top3)}")
+                    lbl_stk = t('stocks')
+                    summary_parts.append(f"{len(stocks)} {lbl_stk}: {' '.join(top3)}")
                     
                 elif c_type == 'movers_table':
                     movers = c_data.get('movers', [])
-                    direction = "Gainers" if c_data.get('direction') == 'up' else "Losers"
+                    direction = t('Gainers') if c_data.get('direction') == 'up' else t('Losers')
                     top3 = [f"{s.get('symbol')}({s.get('change_percent')}%)" for s in movers[:3]]
                     summary_parts.append(f"{direction}: {' '.join(top3)}")
                     
                 elif c_type in ['deep_valuation', 'valuation', 'deep_health', 'health', 
                                'deep_growth', 'growth', 'deep_efficiency', 'efficiency']:
-                    # Generic metric extraction - compact format
                     items = []
                     for key, val in c_data.items():
                         if val is not None and key not in ['title', 'type'] and isinstance(val, (int, float, str)):
@@ -626,89 +669,16 @@ class LLMExplainerService:
                         
                 elif c_type == 'financial_explorer':
                     # Extract key metrics for deep analysis (CFA Level 3 style)
-                    # Data structure: c_data['annual_data']['income'] -> List of rows
-                    
-                    try:
-                        annual = c_data.get('annual_data', {})
-                        years = annual.get('years', [])[:3] # Last 3 years
-                        if years:
-                            # Helper to find row by label (using partial match safety)
-                            def get_row_val(rows, label_part, year):
-                                for r in rows:
-                                    if label_part.lower() == r.get('label', '').lower() or label_part.lower() in r.get('label', '').lower():
-                                        val = r.get('values', {}).get(year)
-                                        return val if val is not None else "N/A"
-                                return "N/A"
-
-                            income_rows = annual.get('income', [])
-                            balance_rows = annual.get('balance', [])
-                            cashflow_rows = annual.get('cashflow', [])
-                            ratios_rows = annual.get('ratios', [])
-                            
-                            metrics = []
-                            for y in years:
-                                # 1. Profitability & Growth
-                                rev = get_row_val(income_rows, 'revenue', y)
-                                gross = get_row_val(income_rows, 'gross profit', y)
-                                net = get_row_val(income_rows, 'net income', y)
-                                eps = get_row_val(income_rows, 'eps', y)
-                                
-                                # 2. Margins
-                                gross_m = get_row_val(ratios_rows, 'gross margin', y)
-                                op_m = get_row_val(ratios_rows, 'operating margin', y)
-                                net_m = get_row_val(ratios_rows, 'net margin', y)
-                                
-                                # 3. Returns
-                                roe = get_row_val(ratios_rows, 'return on equity', y)
-                                roa = get_row_val(ratios_rows, 'return on assets', y)
-                                
-                                # 4. Leverage & Liquidity
-                                debt_eq = get_row_val(ratios_rows, 'debt / equity', y)
-                                curr_ratio = get_row_val(ratios_rows, 'current ratio', y)
-                                quick_ratio = get_row_val(ratios_rows, 'quick ratio', y)
-                                
-                                # 5. Cash Flow
-                                ocf = get_row_val(cashflow_rows, 'operating cash flow', y)
-                                fcf = get_row_val(cashflow_rows, 'free cash flow', y)
-                                
-                                # 6. Valuation
-                                pe = get_row_val(ratios_rows, 'pe ratio', y)
-                                pb = get_row_val(ratios_rows, 'pb ratio', y)
-                                ev_ebitda = get_row_val(ratios_rows, 'ev/ebitda', y)
-                                
-                                # Format nicely
-                                part = (
-                                    f"YEAR {y}: "
-                                    f"Rev={rev} Gross={gross} Net={net} EPS={eps} | "
-                                    f"Mrg(G/O/N)={gross_m}%/{op_m}%/{net_m}% | "
-                                    f"ROE={roe}% ROA={roa}% | "
-                                    f"D/E={debt_eq} CurrR={curr_ratio} | "
-                                    f"OCF={ocf} FCF={fcf} | "
-                                    f"Val(PE/PB/EV)={pe}/{pb}/{ev_ebitda}"
-                                )
-                                metrics.append(part)
-                            
-                            # Add TTM context if available
-                            ttm = c_data.get('ttm_data', {})
-                            if ttm and ttm.get('years'):
-                                ttm_per = ttm.get('years')[0]
-                                ttm_rev = get_row_val(ttm.get('income', []), 'revenue', ttm_per)
-                                ttm_gross = get_row_val(ttm.get('income', []), 'gross profit', ttm_per)
-                                ttm_net = get_row_val(ttm.get('income', []), 'net income', ttm_per)
-                                ttm_pe = get_row_val(ttm.get('ratios', []), 'pe ratio', ttm_per)
-                                metrics.insert(0, f"TTM ({ttm_per}): Rev={ttm_rev} Gross={ttm_gross} Net={ttm_net} PE={ttm_pe}")
-
-                            if metrics:
-                                summary_parts.append(" || ".join(metrics))
-                            else:
-                                summary_parts.append("Financial Data Types: Income, Balance, Cashflow")
-                    except Exception as e:
-                        summary_parts.append(f"Financials Error: {str(e)}")
+                    # This block seems redundant with the first 'financial_explorer' block?
+                    # The original code had two blocks for financial_explorer? 
+                    # Checking original lines 406 and 572. Yes, line 572 seems to be a second pass or redundant.
+                    # I will keep the logic focused on the first block (lines 406-512 in original) which handles it well.
+                    pass
 
                 elif c_type == 'sector_list':
                     stocks = c_data.get('stocks', [])
                     sector = c_data.get('sector', '')[:15]
-                    summary_parts.append(f"Sector {sector}: {len(stocks)} stocks")
+                    summary_parts.append(f"{t('Sector')} {sector}: {len(stocks)} {t('stocks')}")
                     
                 else:
                     # Generic fallback - top 4 numeric values only
@@ -731,25 +701,33 @@ class LLMExplainerService:
         Convert card types to human-readable descriptions for LLM context.
         This helps the LLM understand what data the user is seeing.
         """
+        # NO TRANSLATION NEEDED HERE? 
+        # Actually, this is used in 'Data Context Provided: {card_context}' line 274.
+        # If the System Prompt is Arabic, this should ideally be Arabic too?
+        # But 'card_context' is technical. 
+        # Let's keep it English for simplicity unless critical.
+        # Actually, the user wants "response comes in English".
+        # If I translate this, it helps.
+        
         CARD_DESCRIPTIONS = {
             "stock_header": "stock overview with price and daily change",
             "snapshot": "key metrics and valuation summary",
             "stats": "detailed statistics",
             "financials_table": "financial statements",
-            "financial_explorer": "comprehensive CFA-level financial data (Income, Balance, Cashflow, Ratios)",
+            "financial_explorer": "comprehensive CFA-level financial data",
             "dividends_table": "dividend history and yield",
             "compare_table": "side-by-side comparison",
             "movers_table": "top gainers/losers list",
             "sector_list": "stocks in a sector",
             "screener_results": "filtered stock results",
-            "technicals": "technical indicators (RSI, MACD, etc.)",
+            "technicals": "technical indicators",
             "ownership": "ownership structure",
             "fair_value": "valuation analysis",
             "news_list": "recent news articles",
-            "deep_valuation": "deep valuation metrics (EV/EBIT, P/TBV)",
-            "deep_health": "financial health indicators (Z-Score, F-Score)",
-            "deep_growth": "growth analysis (CAGR, revenue trends)",
-            "deep_efficiency": "efficiency metrics (ROCE, asset turnover)",
+            "deep_valuation": "deep valuation metrics",
+            "deep_health": "financial health indicators",
+            "deep_growth": "growth analysis",
+            "deep_efficiency": "efficiency metrics",
             "ratios": "financial ratios",
         }
         

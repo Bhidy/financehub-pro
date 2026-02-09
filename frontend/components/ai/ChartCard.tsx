@@ -11,11 +11,52 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 interface ChartCardProps {
     chart: ChartPayload;
     height?: number;
+    language?: "en" | "ar";
 }
 
-export function ChartCard({ chart, height = 350 }: ChartCardProps) {
+export function ChartCard({ chart, height = 350, language = "en" }: ChartCardProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const isRtl = language === "ar";
+    const locale = isRtl ? "ar-EG" : "en-US";
+    const chartFontFamily = isRtl ? "Cairo, sans-serif" : "Inter, sans-serif";
+    const ui = useMemo(() => (
+        isRtl
+            ? {
+                unknown: "غير معروف",
+                value: "القيمة",
+                score: "النتيجة",
+                marketHeatmap: "خريطة حرارة السوق",
+                loss: "خسارة",
+                neutral: "محايد",
+                gain: "مكسب",
+                metric: "مؤشر",
+                revenue: "الإيرادات",
+                netIncome: "صافي الربح",
+                billion: "مليار",
+                million: "مليون",
+                performance: "الأداء (%)",
+                price: "السعر",
+                noChartData: "لا توجد بيانات للرسم البياني",
+            }
+            : {
+                unknown: "Unknown",
+                value: "Value",
+                score: "Score",
+                marketHeatmap: "Market Heatmap",
+                loss: "Loss",
+                neutral: "Neutral",
+                gain: "Gain",
+                metric: "Metric",
+                revenue: "Revenue",
+                netIncome: "Net Income",
+                billion: "Billion",
+                million: "Million",
+                performance: "Performance (%)",
+                price: "Price",
+                noChartData: "No chart data available",
+            }
+    ), [isRtl]);
 
     const { chartOptions, chartSeries } = useMemo(() => {
         if (!chart?.data?.length) {
@@ -46,22 +87,23 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height,
                     toolbar: { show: true },
                     animations: { enabled: true, speed: 500 },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 title: {
                     text: chart.title || `${chart.symbol} - ${chart.range}`,
-                    align: "left",
-                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                    align: isRtl ? "right" : "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 },
                 xaxis: {
                     type: "datetime",
-                    labels: { style: { colors: secondaryTextColor } }
+                    labels: { style: { colors: secondaryTextColor, fontFamily: chartFontFamily } }
                 },
                 yaxis: {
                     labels: {
                         formatter: (val) => val.toFixed(2),
-                        style: { colors: secondaryTextColor }
+                        style: { colors: secondaryTextColor, fontFamily: chartFontFamily }
                     }
                 },
                 grid: { borderColor }
@@ -70,7 +112,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
 
         } else if (isPieOrDonut) {
             const series = chart.data.map((d: any) => d.value || 0);
-            const labels = chart.data.map((d: any) => d.label || "Unknown");
+            const labels = chart.data.map((d: any) => d.label || ui.unknown);
 
             const options: ApexCharts.ApexOptions = {
                 chart: {
@@ -78,14 +120,15 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height,
                     toolbar: { show: true },
                     animations: { enabled: true },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 labels: labels,
                 title: {
                     text: chart.title,
-                    align: "left",
-                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                    align: isRtl ? "right" : "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 },
                 legend: {
                     position: 'bottom',
@@ -135,7 +178,8 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height,
                     toolbar: { show: true },
                     background: "transparent",
-                    stacked: false // Grouped bars side-by-side
+                    stacked: false, // Grouped bars side-by-side
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 plotOptions: {
@@ -150,27 +194,28 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 },
                 xaxis: {
                     categories: categories,
-                    labels: { style: { fontSize: "11px", colors: secondaryTextColor } }
+                    labels: { style: { fontSize: "11px", colors: secondaryTextColor, fontFamily: chartFontFamily } }
                 },
                 yaxis: {
-                    labels: { style: { colors: secondaryTextColor } }
+                    labels: { style: { colors: secondaryTextColor, fontFamily: chartFontFamily } }
                 },
                 title: {
                     text: chart.title,
-                    align: "left",
-                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                    align: isRtl ? "right" : "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 },
                 dataLabels: {
                     enabled: true,
-                    formatter: function (val: number) {
-                        return val.toFixed(1) + "%";
+                        formatter: function (val: number) {
+                            return val.toFixed(1) + "%";
+                        },
+                        offsetY: -20,
+                        style: {
+                            fontSize: '10px',
+                            colors: [primaryTextColor],
+                            fontFamily: chartFontFamily
+                        }
                     },
-                    offsetY: -20,
-                    style: {
-                        fontSize: '10px',
-                        colors: [primaryTextColor]
-                    }
-                },
                 grid: { borderColor },
                 colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"],
                 legend: {
@@ -193,7 +238,8 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height,
                     toolbar: { show: false },
                     animations: { enabled: true },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 xaxis: {
@@ -201,7 +247,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     labels: {
                         style: {
                             fontSize: "11px",
-                            fontFamily: "Inter, sans-serif",
+                            fontFamily: chartFontFamily,
                             colors: [secondaryTextColor]
                         }
                     }
@@ -209,8 +255,8 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 yaxis: { show: false },
                 title: {
                     text: chart.title,
-                    align: "left",
-                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                    align: isRtl ? "right" : "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 },
                 fill: { opacity: 0.2, colors: ["#8b5cf6"] },
                 stroke: { show: true, width: 2, colors: ["#8b5cf6"] },
@@ -226,7 +272,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
 
         } else if (chart.type === "heatmap" || (chart.type as any) === "treemap") {
             const series = [{
-                name: "Market Heatmap",
+                name: ui.marketHeatmap,
                 data: chart.data.map((d: any) => ({
                     x: d.label || d.symbol,
                     y: d.value || 0
@@ -238,7 +284,8 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     type: "heatmap",
                     height,
                     toolbar: { show: false },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 plotOptions: {
@@ -248,9 +295,9 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                         useFillColorAsStroke: false,
                         colorScale: {
                             ranges: [
-                                { from: -100, to: -2, color: '#ef4444', name: 'Loss' },
-                                { from: -2, to: 2, color: isDark ? '#475569' : '#94a3b8', name: 'Neutral' },
-                                { from: 2, to: 100, color: '#10b981', name: 'Gain' }
+                                { from: -100, to: -2, color: '#ef4444', name: ui.loss },
+                                { from: -2, to: 2, color: isDark ? '#475569' : '#94a3b8', name: ui.neutral },
+                                { from: 2, to: 100, color: '#10b981', name: ui.gain }
                             ]
                         }
                     }
@@ -258,22 +305,23 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 dataLabels: { enabled: false },
                 title: {
                     text: chart.title,
-                    align: "left",
-                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                    align: isRtl ? "right" : "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 }
             };
             return { chartOptions: options, chartSeries: series };
 
         } else if (chart.type === "radialBar" || chart.type === "gauge") {
             const series = chart.data.map((d: any) => d.value || 0);
-            const labels = chart.data.map((d: any) => d.label || "Metric");
+            const labels = chart.data.map((d: any) => d.label || ui.metric);
 
             const options: ApexCharts.ApexOptions = {
                 chart: {
                     type: "radialBar",
                     height,
                     animations: { enabled: true },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 plotOptions: {
@@ -290,13 +338,15 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                                 offsetY: -10,
                                 show: true,
                                 color: secondaryTextColor,
-                                fontSize: '14px'
+                                fontSize: '14px',
+                                fontFamily: chartFontFamily
                             },
                             value: {
                                 offsetY: 5,
                                 color: primaryTextColor,
                                 fontSize: '24px',
                                 show: true,
+                                fontFamily: chartFontFamily
                             }
                         }
                     }
@@ -320,7 +370,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                 title: {
                     text: chart.title,
                     align: "center",
-                    style: { fontSize: "16px", fontWeight: 600, color: primaryTextColor }
+                    style: { fontSize: "16px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 }
             };
             return { chartOptions: options, chartSeries: series };
@@ -328,14 +378,14 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
         } else if (isFinancialGrowth) {
             const series = [
                 {
-                    name: "Revenue",
+                    name: ui.revenue,
                     data: chart.data.map((d: any) => ({
                         x: d.time || d.label,
                         y: d.revenue || 0
                     }))
                 },
                 {
-                    name: "Net Income",
+                    name: ui.netIncome,
                     data: chart.data.map((d: any) => ({
                         x: d.time || d.label,
                         y: d.net_income || 0
@@ -350,17 +400,18 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     toolbar: { show: true },
                     zoom: { enabled: false },
                     background: "transparent",
-                    stacked: false
+                    stacked: false,
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
                 title: {
                     text: chart.title,
-                    align: "left",
-                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor }
+                    align: isRtl ? "right" : "left",
+                    style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily }
                 },
                 xaxis: {
                     categories: chart.data.map((d: any) => d.time || d.label),
-                    labels: { style: { fontSize: "11px", colors: secondaryTextColor } },
+                    labels: { style: { fontSize: "11px", colors: secondaryTextColor, fontFamily: chartFontFamily } },
                     tooltip: { enabled: false }
                 },
                 yaxis: {
@@ -371,7 +422,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                             if (val >= 1000) return (val / 1000).toFixed(2) + "K";
                             return val.toFixed(0);
                         },
-                        style: { colors: secondaryTextColor, fontSize: "10px" }
+                        style: { colors: secondaryTextColor, fontSize: "10px", fontFamily: chartFontFamily }
                     }
                 },
                 dataLabels: { enabled: false },
@@ -398,9 +449,9 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     theme: isDark ? 'dark' : 'light',
                     y: {
                         formatter: function (val: number) {
-                            if (val >= 1000000000) return (val / 1000000000).toFixed(2) + " Billion";
-                            if (val >= 1000000) return (val / 1000000).toFixed(2) + " Million";
-                            return val.toLocaleString();
+                            if (val >= 1000000000) return `${(val / 1000000000).toFixed(2)} ${ui.billion}`;
+                            if (val >= 1000000) return `${(val / 1000000).toFixed(2)} ${ui.million}`;
+                            return val.toLocaleString(locale);
                         }
                     }
                 },
@@ -434,21 +485,22 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height,
                     toolbar: { show: true },
                     zoom: { enabled: true },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
-                title: { text: chart.title, style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor } },
+                title: { text: chart.title, align: isRtl ? "right" : "left", style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily } },
                 xaxis: {
                     type: "datetime",
-                    labels: { style: { colors: secondaryTextColor, fontSize: '11px' } },
+                    labels: { style: { colors: secondaryTextColor, fontSize: '11px', fontFamily: chartFontFamily } },
                     tooltip: { enabled: false }
                 },
                 yaxis: {
                     labels: {
                         formatter: (val) => val.toFixed(2) + "%",
-                        style: { colors: secondaryTextColor, fontSize: '11px' }
+                        style: { colors: secondaryTextColor, fontSize: '11px', fontFamily: chartFontFamily }
                     },
-                    title: { text: "Performance (%)", style: { color: secondaryTextColor, fontSize: '10px' } }
+                    title: { text: ui.performance, style: { color: secondaryTextColor, fontSize: '10px', fontFamily: chartFontFamily } }
                 },
                 grid: {
                     borderColor: borderColor,
@@ -473,7 +525,7 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
 
         } else {
             const series = [{
-                name: "Price",
+                name: ui.price,
                 data: chart.data.map((d: any) => ({
                     x: new Date(d.time).getTime(),
                     y: d.close || d.value || 0
@@ -486,20 +538,21 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
                     height,
                     toolbar: { show: false },
                     zoom: { enabled: false },
-                    background: "transparent"
+                    background: "transparent",
+                    fontFamily: chartFontFamily
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
-                title: { text: chart.title, style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor } },
+                title: { text: chart.title, align: isRtl ? "right" : "left", style: { fontSize: "14px", fontWeight: 600, color: primaryTextColor, fontFamily: chartFontFamily } },
                 xaxis: {
                     type: "datetime",
-                    labels: { style: { colors: secondaryTextColor, fontSize: '11px' } },
+                    labels: { style: { colors: secondaryTextColor, fontSize: '11px', fontFamily: chartFontFamily } },
                     axisBorder: { show: false },
                     axisTicks: { show: false }
                 },
                 yaxis: {
                     labels: {
                         formatter: (val) => val.toFixed(2),
-                        style: { colors: secondaryTextColor, fontSize: '11px' }
+                        style: { colors: secondaryTextColor, fontSize: '11px', fontFamily: chartFontFamily }
                     }
                 },
                 grid: {
@@ -522,12 +575,12 @@ export function ChartCard({ chart, height = 350 }: ChartCardProps) {
             };
             return { chartOptions: options, chartSeries: series };
         }
-    }, [chart, height, isDark]);
+    }, [chart, height, isDark, chartFontFamily, isRtl, locale, ui]);
 
     if (!chartOptions || !chartSeries) {
         return (
             <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-xl text-center text-slate-500 dark:text-slate-400">
-                No chart data available
+                {ui.noChartData}
             </div>
         );
     }

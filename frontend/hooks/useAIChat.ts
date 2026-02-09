@@ -248,6 +248,7 @@ export function useAIChat(config?: {
     const [isHistoryLoading, setIsHistoryLoading] = useState(false);
     const [usageLimitReached, setUsageLimitReached] = useState(false);
     const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
+    const hasArabicChars = (text?: string) => /[\u0600-\u06FF]/.test(text || "");
 
     // Initialize device fingerprint and session on mount
     useEffect(() => {
@@ -282,9 +283,13 @@ export function useAIChat(config?: {
         }
     }, [sessionId]);
 
+    const systemMessageText = config?.lang === "ar"
+        ? "تم تهيئة المحادثة. جاهز للمساعدة."
+        : "Chat initialized. Ready to assist.";
+
     const SYSTEM_WELCOME_MESSAGE: Message = {
         role: "assistant",
-        content: "Chat initialized. Ready to assist."
+        content: systemMessageText
     };
 
     const [messages, setMessages] = useState<Message[]>([SYSTEM_WELCOME_MESSAGE]);
@@ -356,11 +361,13 @@ export function useAIChat(config?: {
         },
         onError: (err: any) => {
             console.error("AI Chat Error:", err);
+            const lastUserMessage = [...messagesRef.current].reverse().find(m => m.role === "user")?.content || "";
+            const isArabic = config?.lang === "ar" || hasArabicChars(lastUserMessage);
             setMessages(prev => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: `Connection error. Please try again.`
+                    content: isArabic ? "خطأ في الاتصال. يرجى المحاولة مرة أخرى." : "Connection error. Please try again."
                 }
             ]);
         }
@@ -414,7 +421,7 @@ export function useAIChat(config?: {
                             message_text: msg.content,
                             conversational_text: meta.conversational_text,
                             fact_explanations: meta.fact_explanations,
-                            language: "en",
+                            language: hasArabicChars(`${msg.content || ""} ${meta.conversational_text || ""}`) ? "ar" : "en",
                             cards: meta.cards || [],
                             chart: meta.chart,
                             actions: meta.actions || [],

@@ -15,6 +15,7 @@ from typing import List, Dict, Any, Optional
 from jose import JWTError, jwt
 import time
 import json
+import re
 from datetime import datetime
 from app.db.session import db
 from app.chat.chat_service import process_message
@@ -31,6 +32,24 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     market: Optional[str] = None
     history: List[Dict[str, Any]] = []
+
+
+ARABIC_CHAR_RE = re.compile(r"[\u0600-\u06FF]")
+
+
+def _resolve_response_language(
+    message: Optional[str],
+    header_language: Optional[str]
+) -> str:
+    # Arabic user text must always get Arabic UI copy, even if header says English.
+    has_arabic = bool(message and ARABIC_CHAR_RE.search(message))
+    if header_language == "ar":
+        return "ar"
+    if has_arabic:
+        return "ar"
+    if header_language == "en":
+        return "en"
+    return "en"
 
 
 async def verify_access(
@@ -137,13 +156,18 @@ async def ai_chat_endpoint(
     """
     start_time = time.time()
     session_id = req.session_id or f"sess_{int(time.time()*1000)}" # Fallback session ID
+    response_language = _resolve_response_language(req.message, x_language)
 
     try:
         if not db._pool:
             return {
-                "message_text": "Database connection not available. Please try again later.",
-                "message_text_ar": "الاتصال بقاعدة البيانات غير متاح. يرجى المحاولة لاحقاً.",
-                "language": "en",
+                "message_text": (
+                    "Database connection not available. Please try again later."
+                    if response_language == "en" else
+                    "الاتصال بقاعدة البيانات غير متاح حالياً. يرجى المحاولة لاحقاً."
+                ),
+                "message_text_ar": "الاتصال بقاعدة البيانات غير متاح حالياً. يرجى المحاولة لاحقاً.",
+                "language": response_language,
                 "cards": [],
                 "chart": None,
                 "actions": [],
@@ -163,15 +187,22 @@ async def ai_chat_endpoint(
         if not access.get("can_ask"):
             # Log this case for debugging - this should ONLY happen for guests
             print(f"[AI Chat] ⛔ Rate limit triggered - access: {access}")
+            primary_msg = (
+                "You've used your 5 free questions! Register for unlimited access."
+                if response_language == "en" else
+                "لقد استخدمت أسئلتك الخمسة المجانية. أنشئ حساباً للوصول غير المحدود."
+            )
+            register_label = "Register Now" if response_language == "en" else "سجل الآن"
+            login_label = "Login" if response_language == "en" else "تسجيل الدخول"
             return {
-                "message_text": "You've used your 5 free questions! Register for unlimited access.",
-                "message_text_ar": "لقد استخدمت أسئلتك الخمسة المجانية! سجل للحصول على وصول غير محدود.",
-                "language": "en",
+                "message_text": primary_msg,
+                "message_text_ar": "لقد استخدمت أسئلتك الخمسة المجانية. أنشئ حساباً للوصول غير المحدود.",
+                "language": response_language,
                 "cards": [],
                 "chart": None,
                 "actions": [
-                    {"label": "Register Now", "label_ar": "سجل الآن", "action_type": "navigate", "payload": "/register"},
-                    {"label": "Login", "label_ar": "تسجيل الدخول", "action_type": "navigate", "payload": "/login"}
+                    {"label": register_label, "label_ar": "سجل الآن", "action_type": "navigate", "payload": "/register"},
+                    {"label": login_label, "label_ar": "تسجيل الدخول", "action_type": "navigate", "payload": "/login"}
                 ],
                 "disclaimer": None,
                 "meta": {
@@ -311,14 +342,23 @@ async def ai_chat_endpoint(
         print(error_trace)
         
         # Return structured error
+        error_details = (
+            f"BACKEND_ERROR: {repr(e)}"
+            if response_language == "en"
+            else "حدث خلل غير متوقع أثناء المعالجة."
+        )
         return {
-            "message_text": "I encountered a system error. Please try again.",
+            "message_text": (
+                "I encountered a system error. Please try again."
+                if response_language == "en" else
+                "حدث خطأ في النظام. يرجى المحاولة مرة أخرى."
+            ),
             "message_text_ar": "عذراً، حدث خطأ في النظام. يرجى المحاولة مرة أخرى.",
-            "language": "en",
+            "language": response_language,
             "cards": [{
                 "type": "error", 
-                "title": "System Error", 
-                "data": {"error": f"BACKEND_ERROR: {repr(e)}"}
+                "title": "System Error" if response_language == "en" else "خطأ في النظام", 
+                "data": {"error": error_details}
             }],
             "chart": None,
             "actions": [],

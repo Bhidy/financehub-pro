@@ -18,6 +18,7 @@ import {
     ExternalLink,
     ChevronRight,
     Target,
+    FileText,
     Building2,
     Zap,
     Newspaper
@@ -39,6 +40,7 @@ import { MethodologyCard } from "./MethodologyCard";
 import { HiddenGemCard } from "./HiddenGemCard";
 import { IndexCompositionCard } from "./IndexCompositionCard";
 import { DisclaimerCard } from "./DisclaimerCard";
+import { translations } from "@/app/mobile-ai-analyst/translations";
 
 // ============================================================
 // Stock Header Card
@@ -53,14 +55,16 @@ interface StockHeaderProps {
         logo_url?: string;
         as_of?: string;
     };
+    language?: "en" | "ar";
 }
 
-export function StockHeaderCard({ data }: StockHeaderProps) {
+export function StockHeaderCard({ data, language = "en" }: StockHeaderProps) {
     // Add onError handler to fallback if image fails to load
     const [imgError, setImgError] = React.useState(false);
+    const isRtl = language === "ar";
 
     return (
-        <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl transition-all duration-300">
+        <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
             {data.logo_url && !imgError ? (
                 <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -72,19 +76,19 @@ export function StockHeaderCard({ data }: StockHeaderProps) {
                     />
                 </div>
             ) : (
-                <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-teal-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-900/20">
+                <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-teal-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-900/20" dir="ltr">
                     {data.symbol.slice(0, 2)}
                 </div>
             )}
             <div className="flex-1 min-w-0">
-                <div className="font-black text-slate-800 dark:text-white text-base truncate">{data.name}</div>
+                <div className="font-black text-slate-800 dark:text-white text-base truncate text-start">{data.name}</div>
                 <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    {data.symbol} <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.market_code} <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.currency}
+                    <span dir="ltr">{data.symbol}</span> <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.market_code} <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.currency}
                 </div>
             </div>
             {data.as_of && (
-                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-right uppercase tracking-tighter opacity-60">
-                    {new Date(data.as_of).toLocaleTimeString()}
+                <div className={`text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter opacity-60 ${isRtl ? "text-left" : "text-right"}`}>
+                    {new Date(data.as_of).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US')}
                 </div>
             )}
         </div>
@@ -107,22 +111,25 @@ interface SnapshotProps {
         prev_close: number;
         currency: string;
     };
+    language?: "en" | "ar";
 }
 
-export function SnapshotCard({ data }: SnapshotProps) {
+export function SnapshotCard({ data, language = "en" }: SnapshotProps) {
     const isPositive = (data.change_percent || 0) >= 0;
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
 
     return (
-        <div className="relative p-6 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl overflow-hidden group">
+        <div className="relative p-6 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl overflow-hidden group" dir={isRtl ? "rtl" : "ltr"}>
             <div className="absolute top-0 right-0 w-48 h-48 bg-[#14B8A6]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
 
             <div className="flex items-baseline justify-between mb-8 relative z-10">
                 <div className="flex flex-col">
-                    <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                    <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none text-start">
                         {formatNumber(data.last_price)}
                     </span>
                     <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
-                        Market Price <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">{data.currency}</span>
+                        {t.marketPrice} <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">{data.currency}</span>
                     </span>
                 </div>
                 <div className={clsx(
@@ -131,7 +138,7 @@ export function SnapshotCard({ data }: SnapshotProps) {
                         ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/10"
                         : "bg-red-500/5 border-red-500/10 text-red-500 dark:text-red-400 shadow-lg shadow-red-500/10"
                 )}>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5" dir="ltr">
                         {isPositive ? <TrendingUp size={22} className="stroke-[3]" /> : <TrendingDown size={22} className="stroke-[3]" />}
                         <span className="text-2xl font-black">{formatPercent(data.change_percent)}</span>
                     </div>
@@ -141,25 +148,25 @@ export function SnapshotCard({ data }: SnapshotProps) {
             <div className="grid grid-cols-4 gap-2 relative z-10 w-full">
                 {data.open !== null && data.open !== undefined && (
                     <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all">
-                        <div className="text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-black mb-1">Open</div>
+                        <div className="text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-black mb-1">{t.open}</div>
                         <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.open)}</div>
                     </div>
                 )}
                 {data.high !== null && data.high !== undefined && (
                     <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-emerald-200/50 dark:hover:border-emerald-500/20 transition-all">
-                        <div className="text-[9px] uppercase tracking-widest text-emerald-600 dark:text-emerald-500 font-black mb-1">High</div>
+                        <div className="text-[9px] uppercase tracking-widest text-emerald-600 dark:text-emerald-500 font-black mb-1">{t.high}</div>
                         <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.high)}</div>
                     </div>
                 )}
                 {data.low !== null && data.low !== undefined && (
                     <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-red-200/50 dark:hover:border-red-500/20 transition-all">
-                        <div className="text-[9px] uppercase tracking-widest text-red-500 dark:text-red-400 font-black mb-1">Low</div>
+                        <div className="text-[9px] uppercase tracking-widest text-red-500 dark:text-red-400 font-black mb-1">{t.low}</div>
                         <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.low)}</div>
                     </div>
                 )}
                 {data.volume !== null && data.volume !== undefined && data.volume > 0 && (
                     <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-blue-200/50 dark:hover:border-blue-500/20 transition-all">
-                        <div className="text-[9px] uppercase tracking-widest text-blue-500 dark:text-blue-400 font-black mb-1">Volume</div>
+                        <div className="text-[9px] uppercase tracking-widest text-blue-500 dark:text-blue-400 font-black mb-1">{t.volume}</div>
                         <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{formatNumber(data.volume, 0)}</div>
                     </div>
                 )}
@@ -185,25 +192,29 @@ interface StatsProps {
         beta?: number;
         eps?: number;
     };
+    language?: "en" | "ar";
 }
 
-export function StatsCard({ title, data }: StatsProps) {
+export function StatsCard({ title, data, language = "en" }: StatsProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     // Legacy mapping for known keys
     const knownStats: Record<string, any> = {
-        pe_ratio: { label: "P/E", icon: Target, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
-        pb_ratio: { label: "P/B", icon: BarChart3, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
-        dividend_yield: { label: "Yield", icon: DollarSign, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
+        pe_ratio: { label: isRtl ? "مكرر الربحية" : "P/E", icon: Target, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
+        pb_ratio: { label: isRtl ? "مضاعف الدفترية" : "P/B", icon: BarChart3, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", format: (v: number) => v.toFixed(2) },
+        dividend_yield: { label: isRtl ? t.yield : "Yield", icon: DollarSign, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
 
         // New Deep Stats
         roe: { label: "ROE", icon: TrendingUp, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => `${v.toFixed(2)}%` },
         debt_equity: { label: "D/E", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
-        net_profit_margin: { label: "Margin", icon: PieChart, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => `${v.toFixed(2)}%` },
+        net_profit_margin: { label: isRtl ? "هامش صافي الربح" : "Margin", icon: PieChart, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", format: (v: number) => `${v.toFixed(2)}%` },
 
-        beta: { label: "Beta", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
-        eps: { label: "EPS", icon: TrendingUp, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-500/10", format: (v: number) => v.toFixed(2) },
-        high_52w: { label: "High", icon: ArrowUpRight, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => v.toFixed(2) },
-        low_52w: { label: "Low", icon: ArrowDownRight, color: "text-red-500 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/10", format: (v: number) => v.toFixed(2) },
-        market_cap: { label: "Cap", icon: Building2, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", format: formatNumber },
+        beta: { label: isRtl ? "بيتا" : "Beta", icon: Activity, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", format: (v: number) => v.toFixed(2) },
+        eps: { label: isRtl ? "ربحية السهم" : "EPS", icon: TrendingUp, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-500/10", format: (v: number) => v.toFixed(2) },
+        high_52w: { label: t.high, icon: ArrowUpRight, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10", format: (v: number) => v.toFixed(2) },
+        low_52w: { label: t.low, icon: ArrowDownRight, color: "text-red-500 dark:text-red-400", bg: "bg-red-50 dark:bg-red-500/10", format: (v: number) => v.toFixed(2) },
+        market_cap: { label: isRtl ? "القيمة السوقية" : "Cap", icon: Building2, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", format: formatNumber },
     };
 
     // Process all data keys (both legacy and dynamic)
@@ -240,8 +251,8 @@ export function StatsCard({ title, data }: StatsProps) {
                         <Activity className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title || "Market Stats"}</h4>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Financial Metrics</div>
+                        <h4 className={`text-sm font-bold text-slate-800 dark:text-slate-100 ${isRtl ? "text-right" : "text-left"}`}>{title || t.marketStats}</h4>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{t.financialMetrics}</div>
                     </div>
                 </div>
             </div>
@@ -283,23 +294,28 @@ interface MoversProps {
         direction: "up" | "down" | "volume"; // Added volume
     };
     onSymbolClick?: (symbol: string) => void;
+    language?: "en" | "ar";
 }
 
-export function MoversTable({ title, data, onSymbolClick }: MoversProps) {
+export function MoversTable({ title, data, onSymbolClick, language = "en" }: MoversProps) {
     const isUp = data.direction === "up";
     const gradient = isUp ? "from-emerald-500 to-teal-600" : "from-red-500 to-rose-600";
     const bgGlow = isUp ? "bg-emerald-500/5" : "bg-red-500/5";
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
+    const defaultTitle = data.direction === 'up' ? t.topGainers : t.topLosers;
 
     return (
-        <div className={`p-5 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden relative ${bgGlow}`}>
+        <div className={`p-5 bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden relative ${bgGlow}`} dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-lg ${data.direction === 'up' ? 'from-emerald-500 to-teal-600 shadow-emerald-500/20' : data.direction === 'down' ? 'from-red-500 to-rose-600 shadow-red-500/20' : 'from-blue-500 to-indigo-600 shadow-blue-500/20'}`}>
                         {data.direction === 'up' ? <TrendingUp size={20} /> : data.direction === 'down' ? <TrendingDown size={20} /> : <BarChart3 size={20} />}
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title || (data.direction === 'up' ? 'Top Gainers' : 'Top Losers')}</h4>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Market Dynamics</div>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title || defaultTitle}</h4>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{t.marketDynamics}</div>
                     </div>
                 </div>
             </div>
@@ -366,11 +382,15 @@ interface CompareProps {
         stocks: Array<Record<string, any>>;
         metrics: Array<{ key: string; label: string }>;
     };
+    language?: "en" | "ar";
 }
 
-export function CompareTable({ title, data }: CompareProps) {
+export function CompareTable({ title, data, language = "en" }: CompareProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     return (
-        <div className="bg-white dark:bg-[#1A1F2E]/80 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-2xl overflow-hidden my-4 transition-all duration-300 hover:shadow-emerald-500/5">
+        <div className="bg-white dark:bg-[#1A1F2E]/80 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-2xl overflow-hidden my-4 transition-all duration-300 hover:shadow-emerald-500/5" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-[#0F172A] dark:via-[#1e293b] dark:to-[#0F172A] px-6 py-5 border-b border-slate-700/50 dark:border-white/5">
                 <div className="flex items-center gap-3">
@@ -378,8 +398,8 @@ export function CompareTable({ title, data }: CompareProps) {
                         <BarChart3 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h3 className="text-white font-bold text-lg tracking-tight">{title || "Head-to-Head Comparison"}</h3>
-                        <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-0.5">Deep Financial Analysis</p>
+                        <h3 className="text-white font-bold text-lg tracking-tight">{title || t.headToHead}</h3>
+                        <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-0.5">{t.deepAnalysis}</p>
                     </div>
                 </div>
             </div>
@@ -388,12 +408,12 @@ export function CompareTable({ title, data }: CompareProps) {
                 <table className="w-full text-sm">
                     <thead>
                         <tr>
-                            <th className="px-6 py-4 text-left bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5 w-1/3">
-                                <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Metric</span>
+                            <th className={`px-6 py-4 ${isRtl ? "text-right" : "text-left"} bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5 w-1/3`}>
+                                <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">{t.metric}</span>
                             </th>
                             {data.stocks.map((stock, i) => (
-                                <th key={stock.symbol} className="px-4 py-4 text-right bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5">
-                                    <div className="flex flex-col items-end gap-2">
+                                <th key={stock.symbol} className={`px-4 py-4 ${isRtl ? "text-left" : "text-right"} bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/5`}>
+                                    <div className={`flex flex-col ${isRtl ? "items-start" : "items-end"} gap-2`}>
                                         {/* Logo or Initials */}
                                         {stock.logo_url ? (
                                             <div className="w-10 h-10 bg-white rounded-lg p-1 shadow-sm border border-slate-100 dark:border-white/10 overflow-hidden">
@@ -413,8 +433,8 @@ export function CompareTable({ title, data }: CompareProps) {
                                             </div>
                                         )}
 
-                                        <div className="flex flex-col items-end">
-                                            <span className="font-black text-slate-800 dark:text-white text-base leading-none">{stock.symbol}</span>
+                                        <div className={`flex flex-col ${isRtl ? "items-start" : "items-end"}`}>
+                                            <span className="font-black text-slate-800 dark:text-white text-base leading-none" dir="ltr">{stock.symbol}</span>
                                             <span className={clsx(
                                                 "text-[9px] font-bold px-1.5 py-0.5 rounded-full mt-1",
                                                 i === 0 ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"
@@ -448,8 +468,8 @@ export function CompareTable({ title, data }: CompareProps) {
                                     if (metric.format === 'compact') displayVal = formatNumber(val, 0); // Need specialized compact logic if wanted
 
                                     return (
-                                        <td key={stock.symbol} className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                        <td key={stock.symbol} className={`px-6 py-4 ${isRtl ? "text-left" : "text-right"}`}>
+                                            <div className={`flex items-center ${isRtl ? "justify-start" : "justify-end"} gap-2`}>
                                                 {isWinner && (
                                                     <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0 animate-in zoom-in spin-in-180 duration-500">
                                                         <TrendingUp size={12} className="stroke-[3]" />
@@ -475,7 +495,7 @@ export function CompareTable({ title, data }: CompareProps) {
             {/* Footer Legend */}
             <div className="px-6 py-3 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5 flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                 <TrendingUp size={12} className="text-emerald-500" />
-                <span>Indicates the superior metric based on financial logic</span>
+                <span>{language === "ar" ? "يشير إلى المؤشر الأفضل وفق المنطق المالي" : "Indicates the superior metric based on financial logic"}</span>
             </div>
         </div>
     );
@@ -493,14 +513,18 @@ interface HelpProps {
         }>;
     };
     onExampleClick?: (text: string) => void;
+    language?: "en" | "ar";
 }
 
-export function HelpCard({ data, onExampleClick }: HelpProps) {
+export function HelpCard({ data, onExampleClick, language = "en" }: HelpProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     return (
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-teal-50 dark:from-blue-500/10 dark:to-teal-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-teal-50 dark:from-blue-500/10 dark:to-teal-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20" dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex items-center gap-2 mb-4 text-blue-700 dark:text-blue-400 font-semibold">
                 <HelpCircle size={18} />
-                What I Can Help With
+                {t.whatIHelpWith}
             </div>
             <div className="space-y-4">
                 {data.categories.map(cat => (
@@ -540,7 +564,7 @@ export function ActionsBar({ actions, language = "en", onAction }: ActionsBarPro
     // Client-side override: 
     // 1. Hide 1Y/MAX (Data unavailable)
     // 2. Inject 3M/6M (Data available, but backend buttons might be stale during deploy)
-    let processedActions = actions.filter(a => a.label !== '1Y' && a.label !== 'MAX');
+    const processedActions = actions.filter(a => a.label !== '1Y' && a.label !== 'MAX');
 
     // Check if this is a chart context (has "1M")
     const has1M = processedActions.some(a => a.label === '1M');
@@ -616,27 +640,32 @@ interface RatiosProps {
         peg_ratio?: number;
         fcf_yield?: number;
     };
+    language?: "en" | "ar";
 }
 
-export function RatiosCard({ title, data }: RatiosProps) {
-    const formatRatio = (v: number | null | undefined) => v !== null && v !== undefined ? v.toFixed(2) : "N/A";
-    const formatPct = (v: number | null | undefined) => v !== null && v !== undefined ? `${(v * 100).toFixed(1)}%` : "N/A";
+export function RatiosCard({ title, data, language = "en" }: RatiosProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
+    const noDataText = t.noData || (isRtl ? "غير متاح" : "N/A");
+    const formatRatio = (v: number | null | undefined) => v !== null && v !== undefined ? v.toFixed(2) : noDataText;
+    const formatPct = (v: number | null | undefined) => v !== null && v !== undefined ? `${(v * 100).toFixed(1)}%` : noDataText;
 
     const ratios = [
-        { label: "P/E", value: formatRatio(data.pe), color: "text-blue-600 dark:text-blue-400" },
-        { label: "P/B", value: formatRatio(data.pb), color: "text-blue-600 dark:text-blue-400" },
-        { label: "P/S", value: formatRatio(data.ps), color: "text-blue-600 dark:text-blue-400" },
+        { label: isRtl ? "مكرر الربحية" : "P/E", value: formatRatio(data.pe), color: "text-blue-600 dark:text-blue-400" },
+        { label: isRtl ? "مضاعف الدفترية" : "P/B", value: formatRatio(data.pb), color: "text-blue-600 dark:text-blue-400" },
+        { label: isRtl ? "مكرر المبيعات" : "P/S", value: formatRatio(data.ps), color: "text-blue-600 dark:text-blue-400" },
         { label: "ROE", value: formatPct(data.roe), color: "text-emerald-600 dark:text-emerald-400" },
         { label: "ROA", value: formatPct(data.roa), color: "text-emerald-600 dark:text-emerald-400" },
-        { label: "D/E", value: formatRatio(data.debt_equity), color: "text-amber-600 dark:text-amber-400" },
+        { label: isRtl ? "الدين/حقوق الملكية" : "D/E", value: formatRatio(data.debt_equity), color: "text-amber-600 dark:text-amber-400" },
         { label: "PEG", value: formatRatio(data.peg_ratio), color: "text-cyan-600 dark:text-cyan-400" },
-        { label: "Yield", value: formatPct(data.earnings_yield), color: "text-teal-600 dark:text-teal-400" },
-    ].filter(r => r.value !== "N/A");
+        { label: t.yield, value: formatPct(data.earnings_yield), color: "text-teal-600 dark:text-teal-400" },
+    ].filter(r => r.value !== noDataText);
 
     if (!ratios.length) return null;
 
     return (
-        <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm">
+        <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm" dir={isRtl ? "rtl" : "ltr"}>
             {title && (
                 <div className="flex items-center gap-2 mb-3 text-slate-700 dark:text-slate-300 font-semibold">
                     <BarChart3 size={16} />
@@ -653,7 +682,7 @@ export function RatiosCard({ title, data }: RatiosProps) {
             </div>
             {data.marketcap && (
                 <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10 text-center">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Market Cap: </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{isRtl ? "القيمة السوقية: " : "Market Cap: "}</span>
                     <span className="font-bold text-slate-800 dark:text-white">{formatNumber(data.marketcap)}</span>
                 </div>
             )}
@@ -680,9 +709,12 @@ interface FinancialsTableProps {
     years: (string | number)[];
     rows: StatementRow[];
     currency?: string;
+    language?: "en" | "ar";
 }
 
-export function FinancialsTableCard({ title, subtitle, years, rows, currency = "EGP" }: FinancialsTableProps) {
+export function FinancialsTableCard({ title, subtitle, years, rows, currency = "EGP", language = "en" }: FinancialsTableProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
     // Initial raw years
     const rawYears = [...new Set(years.map(y => String(y)))].slice(0, 7);
 
@@ -760,102 +792,85 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
 
     if (!validRows || validRows.length === 0) {
         return (
-            <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-2xl p-8 border border-slate-200 dark:border-white/10 text-center">
+            <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-2xl p-8 border border-slate-200 dark:border-white/10 text-center" dir={isRtl ? "rtl" : "ltr"}>
                 <Table className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500 mb-3" />
-                <div className="text-slate-600 dark:text-slate-300 font-medium">No detailed financial data available</div>
+                <div className="text-slate-600 dark:text-slate-300 font-medium">{t.noData}</div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-colors duration-300">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-colors duration-300" dir={isRtl ? "rtl" : "ltr"}>
             {/* Premium Header */}
             <div className="bg-gradient-to-r from-slate-800 via-teal-700 to-emerald-600 px-5 py-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="flex items-center gap-2 text-white font-bold text-lg">
                             <Table className="w-5 h-5" />
-                            {title || "Financial Statement"}
+                            {title || t.financials}
                         </div>
-                        {subtitle && (
-                            <div className="text-blue-100 text-sm mt-1 flex items-center gap-2">
-                                {subtitle} • <span className="bg-white/20 px-2 py-0.5 rounded text-xs">{currency}</span>
-                            </div>
-                        )}
+                        {subtitle && <div className="text-emerald-100 text-xs mt-1 font-medium">{subtitle}</div>}
                     </div>
-                    {/* Export Buttons */}
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleExportExcel}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-                            Excel
-                        </button>
-                        <button
-                            onClick={handleExportCSV}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-                            CSV
-                        </button>
+                    <div className="flex items-center gap-2">
+                        <span className="bg-white/10 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-bold text-white border border-white/10 uppercase tracking-widest">{currency}</span>
+                        <div className="flex gap-1">
+                            <button onClick={handleExportCSV} className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors" title={t.exportCsv}>
+                                <FileText size={14} />
+                            </button>
+                            <button onClick={handleExportExcel} className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors" title={t.exportExcel}>
+                                <Download size={14} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Premium Table */}
             <div className="overflow-x-auto">
-                <table className="w-full text-[13px] border-collapse">
-                    {/* Header Row */}
+                <table className="w-full text-sm border-collapse">
                     <thead>
-                        <tr className="bg-slate-50/80 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 backdrop-blur-md">
-                            <th className="px-5 py-3 text-left font-black text-slate-500 dark:text-slate-400 sticky left-0 bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-md z-10 min-w-[200px] uppercase tracking-widest text-[10px]">
-                                Line Item
+                        <tr className="bg-slate-50/80 dark:bg-white/[0.02] border-b border-slate-200 dark:border-white/5">
+                            <th className={`px-6 py-4 ${isRtl ? "text-right" : "text-left"} text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest w-1/3 min-w-[200px]`}>
+                                {t.lineItem}
                             </th>
-                            {uniqueYears.map(year => {
-                                const isFuture = Number(year) > new Date().getFullYear();
-                                return (
-                                    <th key={year} className="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-400 min-w-[100px]">
-                                        {isFuture ? "TTM" : year}
-                                    </th>
-                                );
-                            })}
+                            {uniqueYears.map((year, i) => (
+                                <th key={i} className={`px-6 py-4 ${isRtl ? "text-left" : "text-right"} text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest min-w-[100px]`}>
+                                    {year}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
-                    {/* Data Rows */}
-                    <tbody>
-                        {validRows.map((row, idx) => (
-                            <tr key={idx} className={getRowClass(row)}>
-                                <td
-                                    className="px-5 py-3 text-slate-700 dark:text-slate-300 sticky left-0 bg-white dark:bg-[#1A1F2E] z-10 border-r border-slate-100 dark:border-white/5"
-                                    style={{ paddingLeft: `${20 + (row.indent || 0) * 16}px` }}
-                                >
-                                    <span className={row.isSubtotal ? "font-bold text-slate-900 dark:text-white" : ""}>{row.label}</span>
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5 bg-white dark:bg-transparent">
+                        {validRows.map((row, i) => (
+                            <tr key={i} className={getRowClass(row)}>
+                                <td className={`px-6 py-4 ${isRtl ? "pl-6 pr-[24px]" : "pr-6 pl-[24px]"}`}>
+                                    <div className="flex items-center gap-2" style={isRtl ? { paddingRight: (row.indent || 0) * 16 } : { paddingLeft: (row.indent || 0) * 16 }}>
+                                        {row.isSubtotal && <div className="w-1 h-4 bg-blue-500 rounded-full mr-2" />}
+                                        <span className={clsx(
+                                            "truncate",
+                                            row.isSubtotal ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-300"
+                                        )}>
+                                            {row.label}
+                                        </span>
+                                    </div>
                                 </td>
-                                {uniqueYears.map(year => {
-                                    const val = row.values[year];
-                                    return (
-                                        <td
-                                            key={year}
-                                            className={`px-4 py-3 text-right font-mono tabular-nums ${getValueColor(row, val)}`}
-                                        >
-                                            {formatValue(val, row.format, row.label)}
-                                        </td>
-                                    );
-                                })}
+                                {uniqueYears.map((year, j) => (
+                                    <td key={j} className={`px-6 py-4 ${isRtl ? "text-left" : "text-right"} font-mono tabular-nums tracking-tight`}>
+                                        <span className={getValueColor(row, row.values[year])}>
+                                            {formatValue(row.values[year], row.format, row.label)}
+                                        </span>
+                                    </td>
+                                ))}
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Footer with disclaimer */}
-            <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                    All values in {currency} • Data source: StockAnalysis.com
-                </div>
-                <div className="text-xs text-slate-400 dark:text-slate-500">
-                    {rows.length} items • {uniqueYears.length} years
-                </div>
+            {/* Footer */}
+            <div className="bg-slate-50 dark:bg-white/[0.02] px-6 py-3 border-t border-slate-100 dark:border-white/5 flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
+                <span>{t.exploreInsights}</span>
+                <span>{years.length} {t.periods}</span>
             </div>
         </div>
     );
@@ -869,9 +884,26 @@ interface ExportToolbarProps {
     data: any;
     title?: string;
     onExport?: (format: 'excel' | 'pdf' | 'image') => void;
+    language?: "en" | "ar";
 }
 
-export function ExportToolbar({ data, title, onExport }: ExportToolbarProps) {
+export function ExportToolbar({ data, title, onExport, language = "en" }: ExportToolbarProps) {
+    const ui = language === "ar"
+        ? {
+            export: "تصدير:",
+            excel: "إكسل",
+            pdf: "PDF",
+            image: "صورة",
+            screenshotTip: "استخدم أداة لقطة الشاشة في المتصفح لالتقاط الرسم",
+        }
+        : {
+            export: "Export:",
+            excel: "Excel",
+            pdf: "PDF",
+            image: "Image",
+            screenshotTip: "Use browser screenshot (Cmd+Shift+4 on Mac) to capture",
+        };
+
     const handleExport = async (format: 'excel' | 'pdf' | 'image') => {
         if (onExport) {
             onExport(format);
@@ -888,30 +920,30 @@ export function ExportToolbar({ data, title, onExport }: ExportToolbarProps) {
             window.print();
         } else if (format === 'image') {
             // Screenshot notification
-            alert('Use browser screenshot (Cmd+Shift+4 on Mac) to capture');
+            alert(ui.screenshotTip);
         }
     };
 
     return (
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-            <span className="text-xs text-slate-500">Export:</span>
+            <span className="text-xs text-slate-500">{ui.export}</span>
             <button
                 onClick={() => handleExport('excel')}
                 className="flex items-center gap-1 px-2 py-1 text-xs bg-emerald-50 text-emerald-700 rounded hover:bg-emerald-100 transition-colors"
             >
-                📊 Excel
+                📊 {ui.excel}
             </button>
             <button
                 onClick={() => handleExport('pdf')}
                 className="flex items-center gap-1 px-2 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors"
             >
-                📄 PDF
+                📄 {ui.pdf}
             </button>
             <button
                 onClick={() => handleExport('image')}
                 className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
             >
-                📸 Image
+                📸 {ui.image}
             </button>
         </div>
     );
@@ -1048,7 +1080,9 @@ interface DeepHealthProps {
     };
 }
 
-export function DeepHealthCard({ data }: DeepHealthProps) {
+export function DeepHealthCard({ data, language = "en" }: DeepHealthProps & { language?: "en" | "ar" }) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
     // Safety check for null Z-Score (e.g. Banks)
     const safeZ = data.z_score ?? 0;
     const isSafe = safeZ > 2.99;
@@ -1063,14 +1097,14 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
     const strokeDasharray = `${gaugePercent * 2.51} 251`; // 251 = circumference of r=40
 
     return (
-        <div className="p-5 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900/40 dark:to-slate-800/40 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg">
+        <div className="p-5 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900/40 dark:to-slate-800/40 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
                     <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
                         <Activity className="text-blue-600 dark:text-blue-400 w-5 h-5" />
                     </div>
-                    🛡️ Financial Health Analysis
+                    🛡️ {language === "ar" ? "تحليل الصحة المالية" : "Financial Health Analysis"}
                 </div>
                 <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${bg} ${color} shadow-sm`}>
                     {data.status}
@@ -1119,8 +1153,8 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
                     </svg>
                     {/* Center Value */}
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-                        <div className={`text-3xl font-black ${color}`}>{data.z_score !== null ? data.z_score.toFixed(2) : "N/A"}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">Altman Z-Score</div>
+                        <div className={`text-3xl font-black ${color}`}>{data.z_score !== null ? data.z_score.toFixed(2) : t.noData}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">{language === "ar" ? "مؤشر ألتمان" : "Altman Z-Score"}</div>
                     </div>
                 </div>
             </div>
@@ -1128,7 +1162,7 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
             {/* Metrics Grid */}
             <div className="grid grid-cols-3 gap-3 mt-4">
                 <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-500/10 dark:to-blue-500/20 rounded-xl text-center shadow-sm">
-                    <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">F-Score</div>
+                    <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">{language === "ar" ? "مؤشر F" : "F-Score"}</div>
                     <div className="text-xl font-bold text-blue-800 dark:text-blue-200">{data.f_score}<span className="text-sm text-blue-500 dark:text-blue-400">/9</span></div>
                 </div>
                 {Object.entries(data.metrics).slice(0, 4).map(([key, val]) => {
@@ -1136,7 +1170,7 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
                     if (val === null || val === undefined) return (
                         <div key={key} className="p-3 bg-white dark:bg-white/5 rounded-xl text-center border border-slate-100 dark:border-white/10 shadow-sm opacity-50">
                             <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 truncate">{key}</div>
-                            <div className="font-bold text-slate-400 dark:text-slate-500">N/A</div>
+                            <div className="font-bold text-slate-400 dark:text-slate-500">{t.noData}</div>
                         </div>
                     );
                     if ((val as any) === "N/A") return null;
@@ -1153,15 +1187,15 @@ export function DeepHealthCard({ data }: DeepHealthProps) {
             <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Distress (&lt;1.81)</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "تعثر (<1.81)" : "Distress (<1.81)"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Grey Zone</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "منطقة رمادية" : "Grey Zone"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Safe (&gt;2.99)</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "آمن (>2.99)" : "Safe (>2.99)"}</span>
                 </div>
             </div>
         </div>
@@ -1179,7 +1213,8 @@ interface DeepValuationProps {
     };
 }
 
-export function DeepValuationCard({ data }: DeepValuationProps) {
+export function DeepValuationCard({ data, language = "en" }: DeepValuationProps & { language?: "en" | "ar" }) {
+    const isRtl = language === "ar";
     // Color based on verdict
     const isUndervalued = data.verdict?.toLowerCase().includes('under');
     const isOvervalued = data.verdict?.toLowerCase().includes('over');
@@ -1190,14 +1225,14 @@ export function DeepValuationCard({ data }: DeepValuationProps) {
     const maxVal = Math.max(...values, 1);
 
     return (
-        <div className="p-5 bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900/40 dark:to-cyan-900/20 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg">
+        <div className="p-5 bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900/40 dark:to-cyan-900/20 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
                     <div className="p-2 bg-cyan-100 dark:bg-cyan-500/20 rounded-lg">
                         <Target className="text-cyan-600 dark:text-cyan-400 w-5 h-5" />
                     </div>
-                    💎 Valuation Analysis
+                    💎 {language === "ar" ? "تحليل التقييم" : "Valuation Analysis"}
                 </div>
                 <span className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${verdictColor}`}>
                     {data.verdict}
@@ -1236,15 +1271,15 @@ export function DeepValuationCard({ data }: DeepValuationProps) {
             <div className="flex items-center gap-4 pt-3 border-t border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Undervalued</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "أقل من القيمة العادلة" : "Undervalued"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Fair Value</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "قيمة عادلة" : "Fair Value"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Overvalued</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "أعلى من القيمة العادلة" : "Overvalued"}</span>
                 </div>
             </div>
         </div>
@@ -1266,12 +1301,13 @@ interface DeepMetricsProps {
     accentColor?: "blue" | "emerald" | "slate";
 }
 
-export function DeepMetricsCard({ title, data, icon, accentColor = "blue" }: DeepMetricsProps) {
+export function DeepMetricsCard({ title, data, icon, accentColor = "blue", language = "en" }: DeepMetricsProps & { language?: "en" | "ar" }) {
     const isGrowth = title?.toLowerCase().includes("growth");
     const isEfficiency = title?.toLowerCase().includes("efficiency");
+    const isRtl = language === "ar";
 
     return (
-        <div className="p-5 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl transition-all duration-300">
+        <div className="p-5 bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3 text-slate-900 dark:text-white font-black text-lg tracking-tight">
@@ -1344,7 +1380,7 @@ export function DeepMetricsCard({ title, data, icon, accentColor = "blue" }: Dee
 
             <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    {isGrowth ? '📊 Analysis TTM' : '⚙️ Performance Ratios'}
+                    {isGrowth ? (language === "ar" ? "📊 تحليل آخر 12 شهر" : "📊 Analysis TTM") : (language === "ar" ? "⚙️ نسب الأداء" : "⚙️ Performance Ratios")}
                     <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                     {data.symbol}
                 </span>
@@ -1353,12 +1389,13 @@ export function DeepMetricsCard({ title, data, icon, accentColor = "blue" }: Dee
     );
 }
 
-export function OwnershipCard({ title, data }: OwnershipProps) {
+export function OwnershipCard({ title, data, language = "en" }: OwnershipProps & { language?: "en" | "ar" }) {
+    const isRtl = language === "ar";
     return (
-        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm" dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold">
                 <Building2 size={18} className="text-blue-600 dark:text-blue-400" />
-                {title || "Major Shareholders"}
+                {title || (language === "ar" ? "كبار المساهمين" : "Major Shareholders")}
             </div>
             <div className="space-y-3">
                 {data.shareholders.map((holder, i) => (
@@ -1372,7 +1409,7 @@ export function OwnershipCard({ title, data }: OwnershipProps) {
                                 {holder.percent.toFixed(2)}%
                             </div>
                             <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                                {formatNumber(holder.shares, 0)} sh
+                                {formatNumber(holder.shares, 0)} {language === "ar" ? "سهم" : "sh"}
                             </div>
                         </div>
                     </div>
@@ -1401,35 +1438,36 @@ interface FairValueProps {
     };
 }
 
-export function FairValueCard({ title, data }: FairValueProps) {
+export function FairValueCard({ title, data, language = "en" }: FairValueProps & { language?: "en" | "ar" }) {
+    const isRtl = language === "ar";
     return (
-        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm" dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold">
                 <Target size={18} className="text-blue-600 dark:text-blue-400" />
-                {title || "Valuation Analysis"}
+                {title || (language === "ar" ? "تحليل التقييم" : "Valuation Analysis")}
             </div>
 
             {/* Quick Ratios */}
             <div className="flex gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-white/10">
                 <div className="flex-1 text-center border-r border-slate-100 dark:border-white/10 last:border-0">
-                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">Current Price</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{language === "ar" ? "السعر الحالي" : "Current Price"}</div>
                     <div className="text-xl font-black text-slate-800 dark:text-white">
                         {formatNumber(data.current_price)} <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">{data.currency}</span>
                     </div>
                 </div>
                 <div className="flex-1 text-center border-r border-slate-100 dark:border-white/10 last:border-0">
-                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">P/E Ratio</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{language === "ar" ? "مكرر الربحية" : "P/E Ratio"}</div>
                     <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{data.pe?.toFixed(2) || '-'}</div>
                 </div>
                 <div className="flex-1 text-center">
-                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">P/B Ratio</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{language === "ar" ? "مضاعف الدفترية" : "P/B Ratio"}</div>
                     <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{data.pb?.toFixed(2) || '-'}</div>
                 </div>
             </div>
 
             {/* Models Table */}
             <div className="space-y-2">
-                <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Fair Value Models</div>
+                <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{language === "ar" ? "نماذج القيمة العادلة" : "Fair Value Models"}</div>
                 {data.models.map((m, i) => (
                     <div key={i} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-white/5 rounded-lg">
                         <div className="text-sm font-medium text-slate-700 dark:text-slate-300">{m.model}</div>
@@ -1463,11 +1501,15 @@ interface FundNavProps {
         returns_3m: number | null;
         manager: string | null;
     };
+    language?: "en" | "ar";
 }
 
-export function FundNavCard({ data }: FundNavProps) {
+export function FundNavCard({ data, language = "en" }: FundNavProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     return (
-        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden">
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden" dir={isRtl ? "rtl" : "ltr"}>
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-500/10 rounded-bl-full opacity-50 -z-0" />
 
@@ -1477,18 +1519,18 @@ export function FundNavCard({ data }: FundNavProps) {
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">
-                                Fund
+                                {t.mutualFunds}
                             </span>
                             {data.is_shariah && (
                                 <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                    <Target size={10} /> Shariah
+                                    <Target size={10} /> {t.shariah}
                                 </span>
                             )}
                         </div>
                         <h3 className="font-bold text-slate-800 dark:text-white text-lg leading-tight">{data.name}</h3>
                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
                             <Building2 size={12} />
-                            {data.manager || "Unknown Manager"}
+                            {data.manager || t.unknownManager}
                         </div>
                     </div>
                 </div>
@@ -1496,17 +1538,17 @@ export function FundNavCard({ data }: FundNavProps) {
                 {/* Main Stats (NAV & AUM) */}
                 <div className="flex items-end gap-6 mb-6">
                     <div>
-                        <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-0.5">NAV Price</div>
-                        <div className="flex items-baseline gap-1">
+                        <div className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-0.5">{t.navPrice}</div>
+                        <div className={`flex items-baseline gap-1 ${isRtl ? "flex-row-reverse justify-end" : ""}`}>
                             <span className="text-3xl font-black text-slate-800 dark:text-white">
-                                {data.nav ? formatNumber(data.nav) : "N/A"}
+                                {data.nav ? formatNumber(data.nav) : t.noData}
                             </span>
                             <span className="text-sm font-bold text-slate-400 dark:text-slate-500">{data.currency}</span>
                         </div>
                     </div>
                     {data.aum_millions && (
                         <div className="pb-1">
-                            <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-0.5">AUM</div>
+                            <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-0.5">{t.aum}</div>
                             <div className="text-lg font-bold text-slate-600 dark:text-slate-300">
                                 {formatNumber(data.aum_millions)} M
                             </div>
@@ -1517,9 +1559,9 @@ export function FundNavCard({ data }: FundNavProps) {
                 {/* Returns Grid */}
                 <div className="grid grid-cols-3 gap-2">
                     {[
-                        { label: "3 Month", value: data.returns_3m },
-                        { label: "YTD", value: data.returns_ytd },
-                        { label: "1 Year", value: data.returns_1y },
+                        { label: t.threeMonth, value: data.returns_3m },
+                        { label: t.ytd, value: data.returns_ytd },
+                        { label: t.oneYear, value: data.returns_1y },
                     ].map((item, i) => (
                         <div key={i} className="bg-slate-50 dark:bg-white/5 rounded-lg p-2 text-center border border-slate-100 dark:border-white/10">
                             <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase mb-1">{item.label}</div>
@@ -1548,18 +1590,22 @@ interface FundListProps {
         }>;
     };
     onSymbolClick?: (symbol: string) => void;
+    language?: "en" | "ar";
 }
 
-export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
+export function FundListCard({ title, data, onSymbolClick, language = "en" }: FundListProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden" dir={isRtl ? "rtl" : "ltr"}>
             <div className="px-4 py-3 border-b border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 flex items-center justify-between">
                 <div className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                     <PieChart size={16} className="text-blue-600 dark:text-blue-400" />
-                    {title || "Mutual Funds"}
+                    {title || t.mutualFunds}
                 </div>
                 <div className="text-xs font-medium text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-100 dark:border-white/10">
-                    {data.count} found
+                    {data.count} {t.found}
                 </div>
             </div>
 
@@ -1577,12 +1623,12 @@ export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
                             <div className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">{fund.name}</div>
                             <div className="flex items-center gap-2 mt-0.5">
                                 {fund.is_shariah && (
-                                    <span className="text-[9px] px-1 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium">Shariah</span>
+                                    <span className="text-[9px] px-1 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium">{t.shariah}</span>
                                 )}
                                 <span className="text-[10px] text-slate-400 dark:text-slate-500">ID: {fund.fund_id}</span>
                             </div>
                         </div>
-                        <div className="text-right">
+                        <div className={`${isRtl ? "text-left" : "text-right"}`}>
                             {fund.returns_ytd !== null && (
                                 <div className={`text-sm font-bold ${fund.returns_ytd >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                                     {fund.returns_ytd > 0 ? '+' : ''}{fund.returns_ytd.toFixed(1)}%
@@ -1590,7 +1636,7 @@ export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
                             )}
                             {fund.nav && (
                                 <div className="text-[10px] text-slate-400 dark:text-slate-500">
-                                    NAV {fund.nav.toFixed(2)}
+                                    {t.nav} {fund.nav.toFixed(2)}
                                 </div>
                             )}
                         </div>
@@ -1599,7 +1645,7 @@ export function FundListCard({ title, data, onSymbolClick }: FundListProps) {
             </div>
             {data.count > data.funds.length && (
                 <div className="p-2 text-center text-xs text-slate-400 italic bg-slate-50/30 dark:bg-slate-800/30">
-                    And {data.count - data.funds.length} more...
+                    {t.more}
                 </div>
             )}
         </div>
@@ -1617,11 +1663,15 @@ interface FundMoversProps {
         }>;
     };
     onSymbolClick?: (symbol: string) => void;
+    language?: "en" | "ar";
 }
 
-export function FundMoversCard({ title, data, onSymbolClick }: FundMoversProps) {
+export function FundMoversCard({ title, data, onSymbolClick, language = "en" }: FundMoversProps) {
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden" dir={isRtl ? "rtl" : "ltr"}>
             <div className="px-4 py-3 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 flex items-center gap-2">
                 <BarChart3 size={16} className="text-cyan-600 dark:text-cyan-400" />
                 <div className="font-bold text-slate-700 dark:text-slate-200">{title}</div>
@@ -1686,11 +1736,14 @@ interface FinancialExplorerProps {
         ttm_data?: PeriodDataset;
         [key: string]: any;
     };
+    language?: "en" | "ar";
 }
 
-function FinancialExplorerCard({ data }: FinancialExplorerProps) {
+function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps) {
     const [activeTab, setActiveTab] = useState<'income' | 'balance' | 'cashflow' | 'ratios' | 'kpis'>('income');
     const [displayType, setDisplayType] = useState<'annual' | 'quarterly' | 'ttm'>('annual');
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
 
     // Get the correct dataset based on displayType (annual vs quarterly vs TTM)
     let currentDataset = data.annual_data || data;
@@ -1782,7 +1835,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
 
 
     return (
-        <div className="bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-xl rounded-xl shadow-sm border border-slate-200/60 dark:border-white/10 overflow-hidden my-2 ring-1 ring-slate-100/50 dark:ring-white/5 w-full max-w-full group/card transition-all hover:shadow-md">
+        <div className="bg-white/95 dark:bg-[#1A1F2E]/95 backdrop-blur-xl rounded-xl shadow-sm border border-slate-200/60 dark:border-white/10 overflow-hidden my-2 ring-1 ring-slate-100/50 dark:ring-white/5 w-full max-w-full group/card transition-all hover:shadow-md" dir={isRtl ? "rtl" : "ltr"}>
             {/* Premium Header - Ultra Compact */}
             <div className="bg-slate-900 p-2.5 relative overflow-hidden">
                 {/* Decorative background glow */}
@@ -1795,32 +1848,32 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                         </div>
                         <div>
                             <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-sm text-white tracking-tight leading-none">{data.symbol} Financials</h3>
+                                <h3 className="font-bold text-sm text-white tracking-tight leading-none">{data.symbol} {t.financials}</h3>
                                 <span className="px-1 py-px rounded-full bg-white/10 text-[9px] font-bold text-white/70 border border-white/10 uppercase tracking-widest backdrop-blur-sm leading-none">
                                     {data.currency}
                                 </span>
                             </div>
-                            <div className="text-[10px] text-blue-200/80 font-medium mt-1">Numbers by Millions - Fiscal Year is Jan - Dec.</div>
+                            <div className="text-[10px] text-blue-200/80 font-medium mt-1">{t.numbersByMillions}</div>
                         </div>
                     </div>
 
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[10px] font-medium transition-all hover:text-white ml-auto md:ml-0"
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-[10px] font-medium transition-all hover:text-white ${isRtl ? "mr-auto md:mr-0" : "ml-auto md:ml-0"}`}
                     >
                         <Download className="w-2.5 h-2.5 opacity-60" />
-                        Export
+                        {t.export}
                     </button>
                 </div>
 
                 {/* Modern Pill Tabs - Ultra Compact */}
                 <div className="mt-2.5 flex flex-wrap gap-1">
                     {[
-                        { id: 'income', label: 'Income', icon: BarChart3 },
-                        { id: 'balance', label: 'Balance', icon: PieChart },
-                        { id: 'cashflow', label: 'Cash Flow', icon: TrendingUp },
-                        { id: 'ratios', label: 'Ratios', icon: Activity },
-                        { id: 'kpis', label: 'KPIs', icon: Target }
+                        { id: 'income', label: t.income, icon: BarChart3 },
+                        { id: 'balance', label: t.balance, icon: PieChart },
+                        { id: 'cashflow', label: t.cashFlow, icon: TrendingUp },
+                        { id: 'ratios', label: t.ratios, icon: Activity },
+                        { id: 'kpis', label: t.kpis, icon: Target }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -1844,23 +1897,27 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
             <div className="px-2.5 py-1.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between gap-1.5 backdrop-blur-sm">
                 <div className="text-[9px] font-medium text-slate-500 flex items-center gap-1">
                     <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                    Live Data
+                    {t.liveData}
                 </div>
 
                 <div className="bg-slate-200/50 p-0.5 rounded flex items-center">
-                    {['Annual', 'Quarterly', 'TTM'].map((type) => (
+                    {[
+                        { id: 'annual', label: t.annual },
+                        { id: 'quarterly', label: t.quarterly },
+                        { id: 'ttm', label: t.ttm }
+                    ].map((typeObj) => (
                         <button
-                            key={type}
-                            onClick={() => setDisplayType(type.toLowerCase() as any)}
+                            key={typeObj.id}
+                            onClick={() => setDisplayType(typeObj.id as any)}
                             className={`
                                 px-2 py-px rounded text-[9px] font-bold transition-all duration-200
-                                ${displayType === type.toLowerCase()
+                                ${displayType === typeObj.id
                                     ? 'bg-white text-slate-900 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700'
                                 }
                             `}
                         >
-                            {type}
+                            {typeObj.label}
                         </button>
                     ))}
                 </div>
@@ -1872,25 +1929,23 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                     <table className="w-full text-[11px] border-collapse">
                         <thead className="sticky top-0 z-20">
                             <tr>
-                                <th className="sticky left-0 top-0 z-30 bg-white/95 backdrop-blur-md px-3 py-1.5 text-left text-[9px] font-bold uppercase tracking-wider text-slate-500 border-b border-r border-slate-200 shadow-[4px_0_12px_-6px_rgba(0,0,0,0.05)] min-w-[140px] w-1/3">
-                                    Line Item
+                                <th className={`sticky left-0 top-0 z-30 bg-white/95 backdrop-blur-md px-3 py-1.5 ${isRtl ? "text-right border-l" : "text-left border-r"} text-[9px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 shadow-[4px_0_12px_-6px_rgba(0,0,0,0.05)] min-w-[140px] w-1/3`}>
+                                    {t.lineItem}
                                 </th>
                                 {uniqueYears.map(year => {
                                     // Logic to display TTM if year is current year + 1 (synthetic) or explicitly "TTM"
-                                    // Assuming backend sends 2027 for TTM (or current year + 1)
                                     const currentYear = new Date().getFullYear();
                                     const isTTM = parseInt(year) > currentYear || year.includes('TTM');
                                     let displayYear = year;
 
                                     if (isTTM && !year.includes('TTM')) {
-                                        displayYear = 'TTM';
+                                        displayYear = t.ttm;
                                     } else if (!isNaN(parseInt(year)) && !year.includes('Q')) {
-                                        // Prefix FY for annual years strictly
-                                        displayYear = `FY ${year}`;
+                                        displayYear = `${t.fy} ${year}`;
                                     }
 
                                     return (
-                                        <th key={year} className="px-3 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/95 backdrop-blur-md border-b border-slate-200 min-w-[70px]">
+                                        <th key={year} className={`px-3 py-1.5 ${isRtl ? "text-left" : "text-right"} text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-white/95 backdrop-blur-md border-b border-slate-200 min-w-[70px]`}>
                                             {displayYear}
                                         </th>
                                     );
@@ -1910,16 +1965,16 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                     >
                                         <td
                                             className={`
-                                                px-3 py-1.5 sticky left-0 z-10 border-r border-slate-50 group-hover:border-blue-100/30 transition-colors
+                                                px-3 py-1.5 sticky left-0 z-10 ${isRtl ? "border-l text-right" : "border-r text-left"} border-slate-50 group-hover:border-blue-100/30 transition-colors
                                                 ${row.label === 'Period Ending' ? '!bg-slate-100/90 text-[10px]' : ''}
                                                 ${row.isSubtotal
                                                     ? 'bg-slate-50/95 font-bold text-slate-800'
                                                     : 'bg-white/95 text-slate-600 font-medium'
                                                 }
                                             `}
-                                            style={{ paddingLeft: `${12 + (row.indent || 0) * 8}px` }}
+                                            style={isRtl ? { paddingRight: `${12 + (row.indent || 0) * 8}px` } : { paddingLeft: `${12 + (row.indent || 0) * 8}px` }}
                                         >
-                                            <div className="flex items-center justify-between gap-1.5">
+                                            <div className={`flex items-center justify-between gap-1.5 ${isRtl ? "flex-row-reverse" : ""}`}>
                                                 <span className={`truncate max-w-[140px] ${row.label === 'Period Ending' ? 'font-bold text-slate-700' : ''}`} title={row.label}>{row.label}</span>
                                                 {row.isGrowth && (
                                                     <span className="shrink-0 text-[8px] font-bold bg-slate-100 text-slate-400 px-1 rounded uppercase tracking-wider">
@@ -1934,7 +1989,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                                 <td
                                                     key={year}
                                                     className={`
-                                                        px-3 py-1.5 text-right font-mono tabular-nums
+                                                        px-3 py-1.5 ${isRtl ? "text-left" : "text-right"} font-mono tabular-nums
                                                         ${row.label === 'Period Ending' ? 'text-[10px] font-bold text-slate-800' : ''}
                                                         ${row.isGrowth
                                                             ? (typeof val === 'number' && val >= 0) ? 'text-emerald-600 font-bold' : (typeof val === 'number' ? 'text-rose-500 font-bold' : '')
@@ -1953,7 +2008,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                                     <td colSpan={uniqueYears.length + 1} className="py-6 text-center text-slate-400">
                                         <div className="flex flex-col items-center gap-1">
                                             <Table className="w-4 h-4 opacity-20" />
-                                            <span className="text-[10px]">No data available</span>
+                                            <span className="text-[10px]">{t.noData}</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -1963,7 +2018,7 @@ function FinancialExplorerCard({ data }: FinancialExplorerProps) {
                 </div>
                 <div className="bg-slate-50 px-3 py-1 border-t border-slate-200 text-[9px] text-slate-400 flex justify-between">
                     <span></span>
-                    <span>{uniqueYears.length} Periods</span>
+                    <span>{uniqueYears.length} {t.periods}</span>
                 </div>
             </div>
         </div>
@@ -1989,21 +2044,24 @@ interface NewsListProps {
             url?: string;
         }>;
     };
+    language?: "en" | "ar";
 }
 
-export function NewsListCard({ title, data }: NewsListProps) {
+export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
     if (!data.items || data.items.length === 0) return null;
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
 
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
             <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-transparent flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-sm">
                         <Newspaper size={20} className="stroke-[2.5]" />
                     </div>
-                    <span className="font-black text-slate-900 dark:text-white text-lg tracking-tight">{title || "Latest Headlines"}</span>
+                    <span className="font-black text-slate-900 dark:text-white text-lg tracking-tight">{title || t.latestHeadlines}</span>
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">Real-time</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">{t.realTime}</span>
             </div>
 
             <div className="divide-y divide-slate-50 dark:divide-white/5 max-h-[450px] overflow-y-auto scrollbar-hide">
@@ -2017,7 +2075,7 @@ export function NewsListCard({ title, data }: NewsListProps) {
                     >
                         <div className="flex items-start justify-between gap-4 mb-3">
                             <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
-                                {item.source || "Market News"}
+                                {item.source || t.marketNews}
                             </span>
                             {item.date && (
                                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
@@ -2026,11 +2084,11 @@ export function NewsListCard({ title, data }: NewsListProps) {
                                 </span>
                             )}
                         </div>
-                        <h4 className="text-[15px] font-black text-slate-900 dark:text-white leading-snug mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h4 className={`text-[15px] font-black text-slate-900 dark:text-white leading-snug mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${isRtl ? "text-right" : "text-left"}`}>
                             {item.title}
                         </h4>
                         {item.summary && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
+                            <p className={`text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium ${isRtl ? "text-right" : "text-left"}`}>
                                 {item.summary}
                             </p>
                         )}
@@ -2039,7 +2097,7 @@ export function NewsListCard({ title, data }: NewsListProps) {
             </div>
             <div className="px-6 py-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 text-center">
                 <button className="text-[11px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all flex items-center justify-center gap-2 select-none uppercase tracking-widest mx-auto group">
-                    Explore All Insights <ArrowUpRight size={14} className="stroke-[3] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    {t.exploreInsights} <ArrowUpRight size={14} className={`stroke-[3] group-hover:-translate-y-0.5 transition-transform ${isRtl ? "group-hover:-translate-x-0.5 rotate-180" : "group-hover:translate-x-0.5"}`} />
                 </button>
             </div>
         </div>
@@ -2068,9 +2126,10 @@ interface ScreenerResultsProps {
         metric: string;
     };
     onSymbolClick?: (symbol: string) => void;
+    language?: "en" | "ar";
 }
 
-export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResultsProps) {
+export function ScreenerResultsCard({ title, data, onSymbolClick, language = "en" }: ScreenerResultsProps) {
     const isPercentage = data.metric?.toLowerCase().includes("yield") ||
         data.metric?.toLowerCase().includes("percent") ||
         data.metric?.toLowerCase().includes("growth") ||
@@ -2078,14 +2137,17 @@ export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResu
         data.metric?.toLowerCase().includes("return") ||
         title?.toLowerCase().includes("dividend");
 
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden mt-2 transition-colors">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden mt-2 transition-colors" dir={isRtl ? "rtl" : "ltr"}>
             <div className="px-5 py-4 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/20 dark:to-slate-900 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                         <Target size={18} />
                     </div>
-                    <span className="font-black text-slate-800 dark:text-white text-lg">{title || "Screener Results"}</span>
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title || t.screenerResults}</span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 px-2 py-1 rounded-lg">
                     {data.metric?.replace(/_/g, " ")}
@@ -2103,10 +2165,10 @@ export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResu
                             {i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stock.symbol}</div>
-                            <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate">{stock.name}</div>
+                            <div className="font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-left" dir="ltr">{stock.symbol}</div>
+                            <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 truncate text-start">{stock.name}</div>
                         </div>
-                        <div className="text-right flex flex-col items-end">
+                        <div className={`flex flex-col ${isRtl ? "items-start" : "items-end"}`}>
                             <div className="font-black text-slate-900 dark:text-white">
                                 {stock.change_percent !== undefined
                                     ? formatNumber(stock.price || stock.value)
@@ -2123,7 +2185,7 @@ export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResu
                                 </div>
                             ) : (
                                 <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter mt-1">
-                                    {data.metric?.replace(/_/g, " ") || "Value"}
+                                    {data.metric?.replace(/_/g, " ") || t.value}
                                 </div>
                             )}
                         </div>
@@ -2131,7 +2193,7 @@ export function ScreenerResultsCard({ title, data, onSymbolClick }: ScreenerResu
                 ))}
             </div>
             <div className="bg-slate-50 dark:bg-white/5 px-4 py-2 text-[10px] text-slate-400 dark:text-slate-500 text-center tracking-wide uppercase font-bold">
-                Top 10 Matches based on {data.metric?.replace(/_/g, " ")}
+                {t.topMatches} {data.metric?.replace(/_/g, " ")}
             </div>
         </div>
     );
@@ -2192,23 +2254,26 @@ interface DividendsTableProps {
         total_annual?: number;
         currency: string;
     };
+    language?: "en" | "ar";
 }
 
-export function DividendsTableCard({ title, data }: DividendsTableProps) {
+export function DividendsTableCard({ title, data, language = "en" }: DividendsTableProps) {
     if (!data.dividends || data.dividends.length === 0) return null;
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
 
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/10 shadow-xl overflow-hidden" dir={isRtl ? "rtl" : "ltr"}>
             <div className="px-5 py-4 border-b border-slate-100 dark:border-white/10 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/20 dark:to-slate-900 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
                         <DollarSign size={18} />
                     </div>
-                    <span className="font-black text-slate-800 dark:text-white text-lg">{title || "Dividend History"}</span>
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title || t.dividendHistory}</span>
                 </div>
                 {data.current_yield && (
                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 px-2 py-1 rounded-lg">
-                        Yield: {data.current_yield.toFixed(2)}%
+                        {t.yield}: {data.current_yield.toFixed(2)}%
                     </span>
                 )}
             </div>
@@ -2217,17 +2282,17 @@ export function DividendsTableCard({ title, data }: DividendsTableProps) {
                 <table className="w-full text-sm">
                     <thead className="bg-slate-50 dark:bg-white/5 sticky top-0 backdrop-blur-sm z-10">
                         <tr>
-                            <th className="px-5 py-3 text-left font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider">Ex-Date</th>
-                            <th className="px-5 py-3 text-right font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider">Amount ({data.currency})</th>
+                            <th className={`px-5 py-3 ${isRtl ? "text-right" : "text-left"} font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider`}>{t.exDate}</th>
+                            <th className={`px-5 py-3 ${isRtl ? "text-left" : "text-right"} font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider`}>{t.amount} ({data.currency})</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-white/5">
                         {data.dividends.map((div, i) => (
                             <tr key={i} className="group hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                                <td className="px-5 py-3 font-bold text-slate-700 dark:text-slate-300 font-mono">
-                                    {div.ex_date ? new Date(div.ex_date).toLocaleDateString() : 'N/A'}
+                                <td className={`px-5 py-3 font-bold text-slate-700 dark:text-slate-300 font-mono ${isRtl ? "text-right" : "text-left"}`}>
+                                    {div.ex_date ? new Date(div.ex_date).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US') : t.noData}
                                 </td>
-                                <td className="px-5 py-3 text-right font-black text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                <td className={`px-5 py-3 font-black text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors ${isRtl ? "text-left" : "text-right"}`}>
                                     {formatNumber(div.amount)}
                                 </td>
                             </tr>
@@ -2238,7 +2303,7 @@ export function DividendsTableCard({ title, data }: DividendsTableProps) {
 
             {data.total_annual && (
                 <div className="px-5 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border-t border-emerald-100 dark:border-emerald-900/20 flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Last 12 Months Total</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">{t.last12Months}</span>
                     <span className="font-black text-emerald-700 dark:text-emerald-400 text-base">{formatNumber(data.total_annual)} <span className="text-xs opacity-50">{data.currency}</span></span>
                 </div>
             )}
@@ -2248,6 +2313,11 @@ export function DividendsTableCard({ title, data }: DividendsTableProps) {
 
 function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
     const type = (card.type || "").toLowerCase().trim();
+    const chatT = translations[language === "ar" ? "ar" : "en"].chat;
+    const rawErrorText = card?.data?.error;
+    const safeErrorText = (
+        language === "ar" && typeof rawErrorText === "string" && /[A-Za-z]/.test(rawErrorText)
+    ) ? chatT.unknownSystemFailure : (rawErrorText || chatT.unknownSystemFailure);
 
     // Handle error cards robustly, even if type is not explicitly "error"
     if (card.data?.error) {
@@ -2255,59 +2325,59 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
                 <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
                     <AlertTriangle size={14} />
-                    System Debug Entry
+                    {language === "ar" ? "سجل تشخيص النظام" : "System Debug Entry"}
                 </div>
-                <div className="text-sm font-medium">{card.data.error || "Unknown system failure"}</div>
+                <div className="text-sm font-medium">{safeErrorText}</div>
             </div>
         );
     }
 
     switch (type) {
         case "stock_header":
-            return <StockHeaderCard data={card.data} />;
+            return <StockHeaderCard data={card.data} language={language} />;
         case "snapshot":
-            return <SnapshotCard data={card.data} />;
+            return <SnapshotCard data={card.data} language={language} />;
         case "stats":
         case "statistics": // Alias
         case "metric": // Alias
-            return <StatsCard title={card.title} data={card.data} />;
+            return <StatsCard title={card.title} data={card.data} language={language} />;
         case "movers":
         case "movers_table":
-            return <MoversTable title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+            return <MoversTable title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
         case "compare":
         case "compare_table":
-            return <CompareTable title={card.title} data={card.data} />;
+            return <CompareTable title={card.title} data={card.data} language={language} />;
         case "help":
         case "suggestions": // Alias
-            return <HelpCard data={card.data} onExampleClick={onExampleClick} />;
+            return <HelpCard data={card.data} onExampleClick={onExampleClick} language={language} />;
         case "ratios":
-            return <RatiosCard title={card.title} data={card.data} />;
+            return <RatiosCard title={card.title} data={card.data} language={language} />;
         // Ultra Premium Deep Cards
         case "deep_health":
-            return <DeepHealthCard data={card.data} />;
+            return <DeepHealthCard data={card.data} language={language} />;
         case "deep_valuation":
-            return <DeepValuationCard data={card.data} />;
+            return <DeepValuationCard data={card.data} language={language} />;
         case "deep_efficiency":
-            return <DeepMetricsCard title={card.title} data={card.data} icon={<Zap className="text-blue-500" />} />;
+            return <DeepMetricsCard title={card.title} data={card.data} icon={<Zap className="text-blue-500" />} language={language} />;
         case "deep_growth":
-            return <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} />;
+            return <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} language={language} />;
         case "ownership":
-            return <OwnershipCard title={card.title} data={card.data} />;
+            return <OwnershipCard title={card.title} data={card.data} language={language} />;
         // Fund & Fair Value Cards (Enterprise)
         case "fund_nav":
-            return <FundNavCard data={card.data} />;
+            return <FundNavCard data={card.data} language={language} />;
         case "fund_list":
-            return <FundListCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+            return <FundListCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
         case "fund_movers":
-            return <FundMoversCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+            return <FundMoversCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
         case "fair_value":
-            return <FairValueCard title={card.title} data={card.data} />;
+            return <FairValueCard title={card.title} data={card.data} language={language} />;
         case "technicals":
             // Explicitly hidden as per user request
             return null;
         case "financial_explorer":
             // Ultra-Premium Financial Explorer (Tabbed Interface)
-            return <FinancialExplorerCard data={card.data} />;
+            return <FinancialExplorerCard data={card.data} language={language} />;
         case "financials":
             // Handle legacy structures
             if (card.data.rows) {
@@ -2318,16 +2388,17 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
                         years={card.data.years}
                         subtitle={card.data.subtitle}
                         currency={card.data.currency}
+                        language={language}
                     />
                 );
             }
             // Fallback for FinancialExplorer data sent as 'financials' intent
             if (card.data.annual_data || card.data.income) {
-                return <FinancialExplorerCard data={card.data} />;
+                return <FinancialExplorerCard data={card.data} language={language} />;
             }
-            return <FinancialTable financials={card.data} />;
+            return <FinancialTable financials={card.data} language={language} />;
         case "dividends_table":
-            return <DividendsTableCard title={card.title} data={card.data} />;
+            return <DividendsTableCard title={card.title} data={card.data} language={language} />;
         // Insights (Bull/Bear) - Ultra Premium
         case "bull_case":
             return <InsightCard data={card.data} variant_override="bull" />;
@@ -2341,27 +2412,27 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
         // ============================================================
         case "macro_score":
         case "market_timing":
-            return <MacroScoreCard data={card.data} />;
+            return <MacroScoreCard data={card.data} language={language} />;
         case "educational":
         case "define_term":
         case "definition":
-            return <EducationalCard data={card.data} />;
+            return <EducationalCard data={card.data} language={language} />;
         case "methodology":
         case "screening_criteria":
-            return <MethodologyCard data={card.data} />;
+            return <MethodologyCard data={card.data} language={language} />;
         case "hidden_gems":
         case "gem_list":
         case "discovery_list":
-            return <HiddenGemCard data={card.data} onStockClick={onSymbolClick} />;
+            return <HiddenGemCard data={card.data} onStockClick={onSymbolClick} language={language} />;
         case "index_composition":
         case "index_view":
-            return <IndexCompositionCard data={card.data} onStockClick={onSymbolClick} />;
+            return <IndexCompositionCard data={card.data} onStockClick={onSymbolClick} language={language} />;
         case "disclaimer":
         case "disclaimer_card":
-            return <DisclaimerCard data={card.data} />;
+            return <DisclaimerCard data={card.data} language={language} />;
 
         case "news_list":
-            return <NewsListCard title={card.title} data={card.data as any} />;
+            return <NewsListCard title={card.title} data={card.data as any} language={language} />;
         case "screener_results":
         case "sector_list": // Reuse screener card or fallback?
             // Sector list data usually different. Fallback to screener if compatible or TODO. 
@@ -2370,22 +2441,22 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             // Actually, handle_screener sends { sectors: [{name, ...}], metric } for sector_list.
             // ScreenerResults expects `stocks`. It might break.
             // Safest is to handle "dividends_table" which is THE user error.
-            return <ScreenerResultsCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} />;
+            return <ScreenerResultsCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
         case "error":
             return (
                 <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
                     <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
                         <AlertTriangle size={14} />
-                        System Error
+                        {chatT.systemError}
                     </div>
-                    <div className="text-sm font-medium">{card.data?.error || "An unknown error occurred."}</div>
+                    <div className="text-sm font-medium">{safeErrorText}</div>
                 </div>
             );
         default:
             // Fallback for unknown cards
             return (
                 <div className="p-4 bg-slate-50 dark:bg-slate-500/10 border border-slate-100 dark:border-slate-500/20 rounded-xl text-xs text-slate-500">
-                    Unsupported card type: {type}
+                    {language === "ar" ? chatT.unsupportedCard : `${chatT.unsupportedCard}: ${type}`}
                 </div>
             );
     }
@@ -2439,4 +2510,3 @@ function formatValue(val: any, format?: string, label?: string) {
 
     return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-

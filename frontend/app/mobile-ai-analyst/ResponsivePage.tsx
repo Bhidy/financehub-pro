@@ -199,8 +199,17 @@ function ResponsiveAIAnalystContent() {
         prevMessageCount.current = messages.length;
     }, [messages.length, isAuthenticated, incrementUsage]);
 
-    // Language context for cards
-    const language = lang;
+    const containsArabicChars = (text?: string) => /[\u0600-\u06FF]/.test(text || "");
+    const resolveMessageLanguage = (msg: any): Language => {
+        const responseLanguage = msg?.response?.language;
+        if (responseLanguage === "ar") return "ar";
+        if (responseLanguage === "en") {
+            const combined = `${msg?.response?.conversational_text || ""} ${msg?.response?.message_text || ""} ${msg?.content || ""}`;
+            return containsArabicChars(combined) ? "ar" : "en";
+        }
+        const combined = `${msg?.response?.conversational_text || ""} ${msg?.response?.message_text || ""} ${msg?.content || ""}`;
+        return containsArabicChars(combined) ? "ar" : "en";
+    };
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -258,7 +267,11 @@ function ResponsiveAIAnalystContent() {
         );
     }
 
-    const visibleMessages = messages.filter(m => m.content !== "Chat initialized. Ready to assist.");
+    const hiddenSystemMessages = new Set([
+        "Chat initialized. Ready to assist.",
+        "تم تهيئة المحادثة. جاهز للمساعدة."
+    ]);
+    const visibleMessages = messages.filter(m => !hiddenSystemMessages.has(m.content));
     const showWelcome = visibleMessages.length === 0;
 
     // For localhost, default to Starta behavior for development
@@ -296,10 +309,15 @@ function ResponsiveAIAnalystContent() {
                             {m.content}
                         </div>
                     ) : (
-                        <div className={clsx(
-                            "flex flex-col gap-3 animate-in zoom-in-95 slide-in-from-left-2 duration-300",
-                            effectiveDesktop ? "w-full max-w-[90%]" : "w-full max-w-[95%]"
-                        )}>
+                        <div
+                            className={clsx(
+                                "flex flex-col gap-3 animate-in zoom-in-95 slide-in-from-left-2 duration-300",
+                                effectiveDesktop ? "w-full max-w-[90%]" : "w-full max-w-[95%]",
+                                resolveMessageLanguage(m) === "ar" && "font-arabic"
+                            )}
+                            dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
+                            lang={resolveMessageLanguage(m)}
+                        >
                             <div className="w-full space-y-2 px-1">
                                 {/* ============================================================
                                     WORLD-CLASS MESSAGE RENDERER
@@ -316,13 +334,13 @@ function ResponsiveAIAnalystContent() {
                                 <WorldClassMessage
                                     conversationalText={m.response?.conversational_text || m.content}
                                     response={m.response}
-                                    lang={language}
+                                    lang={resolveMessageLanguage(m)}
                                 />
 
                                 {/* Chart - Keep separate for specialized rendering */}
                                 {m.response?.chart && (
                                     <div className="my-4">
-                                        <ChartCard chart={m.response.chart} />
+                                        <ChartCard chart={m.response.chart} language={resolveMessageLanguage(m)} />
                                     </div>
                                 )}
 
@@ -352,7 +370,7 @@ function ResponsiveAIAnalystContent() {
                                     return filteredCards.length > 0 ? (
                                         <ChatCards
                                             cards={filteredCards}
-                                            language={language}
+                                            language={resolveMessageLanguage(m)}
                                             onSymbolClick={handleSymbolClick}
                                             onExampleClick={handleExampleClick}
                                         />
@@ -361,13 +379,17 @@ function ResponsiveAIAnalystContent() {
 
                                 {m.response?.fact_explanations && (
                                     <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                                        <FactExplanations explanations={m.response.fact_explanations} />
+                                        <FactExplanations explanations={m.response.fact_explanations} language={resolveMessageLanguage(m)} />
                                     </div>
                                 )}
 
                                 {/* Follow Up Prompt (Moved from WorldClassMessage for correct ordering) */}
                                 {m.response?.follow_up_prompt && (
-                                    <div className="pt-2">
+                                    <div
+                                        className={clsx("pt-2", resolveMessageLanguage(m) === "ar" && "font-arabic")}
+                                        dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
+                                        lang={resolveMessageLanguage(m)}
+                                    >
                                         <FollowUpPrompt content={m.response.follow_up_prompt} />
                                     </div>
                                 )}
@@ -377,6 +399,7 @@ function ResponsiveAIAnalystContent() {
                                     <div className="pt-2">
                                         <ActionsBar
                                             actions={m.response.actions}
+                                            language={resolveMessageLanguage(m)}
                                             onAction={handleAction}
                                         />
                                     </div>

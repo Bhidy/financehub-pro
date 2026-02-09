@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PieChart as PieChartIcon, TrendingUp, TrendingDown, BarChart3, Building2, Layers } from "lucide-react";
+import { PieChart as PieChartIcon, TrendingUp, TrendingDown, BarChart3, Layers } from "lucide-react";
 import { clsx } from "clsx";
 
 // ============================================================================
@@ -43,19 +43,20 @@ export interface IndexCompositionCardProps {
         as_of?: string;
     };
     onStockClick?: (ticker: string) => void;
+    language?: "en" | "ar";
 }
 
 // Format large numbers
-function formatNumber(value: number): string {
-    if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`;
-    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
-    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
-    if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
-    return value.toFixed(2);
+function formatNumber(value: number, language: "en" | "ar"): string {
+    return new Intl.NumberFormat(language === "ar" ? "ar-EG" : "en-US", {
+        notation: "compact",
+        maximumFractionDigits: 1,
+    }).format(value);
 }
 
 // Sector weight badge component
-function SectorBadge({ sector }: { sector: SectorWeight }) {
+function SectorBadge({ sector, language }: { sector: SectorWeight; language: "en" | "ar" }) {
+    const stocksLabel = language === "ar" ? "أسهم" : "stocks";
     return (
         <div className="flex flex-col items-center gap-2">
             {/* Circular Weight Badge */}
@@ -76,7 +77,7 @@ function SectorBadge({ sector }: { sector: SectorWeight }) {
                     {sector.sector}
                 </div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-500">
-                    {sector.stock_count} stocks
+                    {sector.stock_count} {stocksLabel}
                 </div>
             </div>
         </div>
@@ -84,14 +85,27 @@ function SectorBadge({ sector }: { sector: SectorWeight }) {
 }
 
 // Top performer row
-function PerformerRow({ performer, rank, onStockClick }: { performer: TopPerformer; rank: number; onStockClick?: (ticker: string) => void }) {
+function PerformerRow({
+    performer,
+    rank,
+    onStockClick,
+    language,
+}: {
+    performer: TopPerformer;
+    rank: number;
+    onStockClick?: (ticker: string) => void;
+    language: "en" | "ar";
+}) {
     const [imgError, setImgError] = React.useState(false);
     const isPositive = performer.change_percent >= 0;
+    const isRtl = language === "ar";
+    const locale = language === "ar" ? "ar-EG" : "en-US";
 
     return (
         <div
             onClick={() => onStockClick?.(performer.ticker)}
             className="group flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer"
+            dir={isRtl ? "rtl" : "ltr"}
         >
             {/* Rank Badge */}
             <div className={clsx(
@@ -128,9 +142,9 @@ function PerformerRow({ performer, rank, onStockClick }: { performer: TopPerform
             </div>
 
             {/* Price & Change */}
-            <div className="text-right shrink-0">
+            <div className={clsx("shrink-0", isRtl ? "text-left" : "text-right")}>
                 <div className="font-bold text-sm text-slate-900 dark:text-white">
-                    {performer.price.toFixed(2)}
+                    {performer.price.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
                 <div className={clsx(
                     "text-xs font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-0.5",
@@ -139,18 +153,45 @@ function PerformerRow({ performer, rank, onStockClick }: { performer: TopPerform
                         : "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"
                 )}>
                     {isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                    {isPositive ? "+" : ""}{performer.change_percent.toFixed(2)}%
+                    {isPositive ? "+" : ""}{performer.change_percent.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                 </div>
             </div>
         </div>
     );
 }
 
-export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCardProps) {
+export function IndexCompositionCard({ data, onStockClick, language = "en" }: IndexCompositionCardProps) {
     const isPositive = (data.change_percent || 0) >= 0;
+    const isRtl = language === "ar";
+    const locale = language === "ar" ? "ar-EG" : "en-US";
+    const ui = language === "ar"
+        ? {
+            subtitle: "تكوين المؤشر وتحليله",
+            sectorWeights: "أوزان القطاعات",
+            topPerformers: "أفضل 5 أداءً",
+            indexStats: "إحصائيات المؤشر",
+            marketCap: "القيمة السوقية",
+            avgPe: "متوسط مكرر الربحية",
+            avgPb: "متوسط مكرر القيمة الدفترية",
+            divYield: "عائد التوزيعات",
+            ytd: "العائد منذ بداية العام",
+            dataAsOf: "البيانات حتى",
+        }
+        : {
+            subtitle: "Index Composition & Analysis",
+            sectorWeights: "Sector Weights",
+            topPerformers: "Top 5 Performers",
+            indexStats: "Index Statistics",
+            marketCap: "Market Cap",
+            avgPe: "Avg P/E",
+            avgPb: "Avg P/B",
+            divYield: "Div Yield",
+            ytd: "YTD Return",
+            dataAsOf: "Data as of",
+        };
 
     return (
-        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300">
+        <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5 overflow-hidden my-4 transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 px-6 py-5">
                 <div className="flex items-center justify-between">
@@ -163,16 +204,16 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                                 {data.index_name}
                             </h3>
                             <p className="text-white/60 text-sm mt-0.5 font-medium">
-                                Index Composition & Analysis
+                                {ui.subtitle}
                             </p>
                         </div>
                     </div>
 
                     {/* Index Level */}
                     {data.index_level && (
-                        <div className="text-right">
+                        <div className={isRtl ? "text-left" : "text-right"}>
                             <div className="text-3xl font-black text-white tracking-tighter">
-                                {formatNumber(data.index_level)}
+                                {formatNumber(data.index_level, language)}
                             </div>
                             {data.change_percent !== undefined && (
                                 <div className={clsx(
@@ -182,7 +223,7 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                                         : "bg-red-500/20 text-red-400"
                                 )}>
                                     {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                    {isPositive ? "+" : ""}{data.change_percent.toFixed(2)}%
+                                    {isPositive ? "+" : ""}{data.change_percent.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                 </div>
                             )}
                         </div>
@@ -195,12 +236,12 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                 <div className="flex items-center gap-2 mb-4">
                     <PieChartIcon size={16} className="text-slate-400" />
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                        Sector Weights
+                        {ui.sectorWeights}
                     </h4>
                 </div>
                 <div className="flex flex-wrap justify-center gap-6">
                     {data.sectors.map((sector, idx) => (
-                        <SectorBadge key={idx} sector={sector} />
+                        <SectorBadge key={idx} sector={sector} language={language} />
                     ))}
                 </div>
             </div>
@@ -210,7 +251,7 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                 <div className="flex items-center gap-2 mb-4">
                     <TrendingUp size={16} className="text-emerald-500" />
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                        Top 5 Performers
+                        {ui.topPerformers}
                     </h4>
                 </div>
                 <div className="space-y-1">
@@ -220,6 +261,7 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                             performer={performer}
                             rank={idx + 1}
                             onStockClick={onStockClick}
+                            language={language}
                         />
                     ))}
                 </div>
@@ -230,45 +272,45 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                 <div className="flex items-center gap-2 mb-4">
                     <BarChart3 size={16} className="text-blue-500" />
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">
-                        Index Statistics
+                        {ui.indexStats}
                     </h4>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl text-center">
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
-                            Market Cap
+                            {ui.marketCap}
                         </div>
                         <div className="text-lg font-black text-slate-800 dark:text-white">
-                            {formatNumber(data.stats.total_market_cap)}
+                            {formatNumber(data.stats.total_market_cap, language)}
                         </div>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl text-center">
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
-                            Avg P/E
+                            {ui.avgPe}
                         </div>
                         <div className="text-lg font-black text-slate-800 dark:text-white">
-                            {data.stats.avg_pe.toFixed(1)}x
+                            {data.stats.avg_pe.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}x
                         </div>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl text-center">
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
-                            Avg P/B
+                            {ui.avgPb}
                         </div>
                         <div className="text-lg font-black text-slate-800 dark:text-white">
-                            {data.stats.avg_pb.toFixed(2)}x
+                            {data.stats.avg_pb.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x
                         </div>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl text-center">
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
-                            Div Yield
+                            {ui.divYield}
                         </div>
                         <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">
-                            {data.stats.dividend_yield.toFixed(2)}%
+                            {data.stats.dividend_yield.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                         </div>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl text-center">
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold mb-1">
-                            YTD Return
+                            {ui.ytd}
                         </div>
                         <div className={clsx(
                             "text-lg font-black",
@@ -276,7 +318,7 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
                                 ? "text-emerald-600 dark:text-emerald-400"
                                 : "text-red-600 dark:text-red-400"
                         )}>
-                            {data.stats.ytd_return >= 0 ? "+" : ""}{data.stats.ytd_return.toFixed(1)}%
+                            {data.stats.ytd_return >= 0 ? "+" : ""}{data.stats.ytd_return.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
                         </div>
                     </div>
                 </div>
@@ -286,7 +328,7 @@ export function IndexCompositionCard({ data, onStockClick }: IndexCompositionCar
             {data.as_of && (
                 <div className="px-6 py-2 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5 text-center">
                     <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                        Data as of {new Date(data.as_of).toLocaleDateString()}
+                        {ui.dataAsOf} {new Date(data.as_of).toLocaleDateString(locale)}
                     </span>
                 </div>
             )}

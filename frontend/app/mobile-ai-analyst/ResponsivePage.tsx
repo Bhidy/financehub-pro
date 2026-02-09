@@ -104,6 +104,7 @@ function ResponsiveAIAnalystContent() {
             const savedLang = localStorage.getItem("lang") as Language;
             if (savedLang) {
                 setLang(savedLang);
+                document.documentElement.lang = savedLang;
                 document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
             }
         }
@@ -113,6 +114,7 @@ function ResponsiveAIAnalystContent() {
         const newLang = lang === 'en' ? 'ar' : 'en';
         setLang(newLang);
         localStorage.setItem("lang", newLang);
+        document.documentElement.lang = newLang;
         document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
     };
 

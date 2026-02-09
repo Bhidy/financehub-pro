@@ -448,7 +448,7 @@ class ConversationContext(BaseModel):
     compare_symbols: Optional[List[str]] = None
     expires_at: datetime
     
-    # Phase 1: Enhanced Session State (NEW)
+    # Phase 1: Enhanced Session State
     turn_count: int = 0  # Message count in this session
     greeting_shown: bool = False  # Track if greeting was shown
     last_greeting_category: Optional[str] = None  # Prevent repetition
@@ -456,4 +456,34 @@ class ConversationContext(BaseModel):
     last_cards_shown: Optional[List[str]] = None  # Card types shown
     user_name: Optional[str] = None  # Cached for personalization
     detected_language: str = "en"  # ar/en
-
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # WORLD-CLASS CONVERSATIONAL AI: Context Continuity (NEW)
+    # ═══════════════════════════════════════════════════════════════════
+    
+    # Conversation Memory (Last 10 turns)
+    # Format: [{"role": "user"|"assistant", "content": str, "intent": str,
+    #          "entities": dict, "timestamp": str}]
+    conversation_history: List[Dict[str, Any]] = []
+    
+    # Active Entities (carry across turns)
+    # Format: {"symbol": "COMI", "sector": "Banks", "market": "EGX", 
+    #          "metric": "PE", "comparison_target": ["CIB"]}
+    active_entities: Dict[str, Any] = {}
+    
+    # User Profile for Personalization
+    # Format: {"name": str, "preferred_language": "ar"|"en", 
+    #          "detail_level": "basic"|"professional"|"expert"}
+    user_profile: Dict[str, Any] = {}
+    
+    # Pending Suggestions (from follow-up prompts)
+    # Format: ["compare", "deep_dive", "financials"]
+    # When user says "yes"/"ok", execute first pending suggestion
+    pending_suggestions: List[str] = []
+    
+    # Last Response Sentiment (for consistency)
+    last_response_sentiment: str = "neutral"  # bullish|bearish|neutral
+    
+    # Follow-up Tracking
+    last_followup_type: Optional[str] = None  # confirmation|expansion|topic_shift|pronoun
+    is_in_followup_chain: bool = False  # Track multi-turn follow-up sequences

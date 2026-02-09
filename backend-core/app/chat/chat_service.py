@@ -82,16 +82,27 @@ from .response_composer import (
 )
 from .learning_section_generator import generate_learning_section
 from .follow_up_generator import generate_follow_up
+# Phase 4: Claude-Native Architecture (World-Class AI)
+from .context_assembler import get_context_assembler as get_conversation_memory
+from .claude_orchestrator import get_claude_orchestrator, ClaudeOrchestrator
 
 
 class ChatService:
     """Main chat orchestrator."""
+    
+    # WORLD-CLASS MODE: Claude AI is the PRIMARY routing engine
+    USE_CLAUDE_ROUTING = True  # Toggle for A/B testing
+    CLAUDE_ROUTING_THRESHOLD = 0.6  # Minimum confidence to use Claude result
+    CLAUDE_FIRST = True  # NEW: Use Claude first, keyword as fallback
     
     def __init__(self, conn: asyncpg.Connection):
         self.conn = conn
         self.router = create_router()
         self.resolver = SymbolResolver(conn)
         self.context_store = get_context_store()
+        # World-Class AI Components
+        self.conversation_memory = get_conversation_memory()
+        self.claude_orchestrator = get_claude_orchestrator() if self.USE_CLAUDE_ROUTING else None
     
     async def _get_user_name(self, user_id: Optional[str]) -> str:
         """Fetch the first name or smart-extract it from email."""
@@ -217,10 +228,62 @@ class ChatService:
                 result = handle_blocked(violation_type, block_message, language)
                 return self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language)
             
-            # 4. Route intent (Using routing_text)
-            intent_result = self.router.route(routing_text, context_dict)
-            intent = intent_result.intent
-            entities = intent_result.entities
+            # 4. Route intent - CLAUDE-FIRST ARCHITECTURE (World-Class 2.0)
+            # ------------------------------------------------------------------
+            # Strategy: Use Claude AI as PRIMARY for intent understanding.
+            # Fall back to keyword routing only if Claude fails or is disabled.
+            # This ensures TRUE conversational AI understanding.
+            # ------------------------------------------------------------------
+            intent = Intent.UNKNOWN
+            entities = {}
+            confidence = 0.0
+            
+            if self.USE_CLAUDE_ROUTING and self.CLAUDE_FIRST and self.claude_orchestrator:
+                try:
+                    # CLAUDE-FIRST: Call Claude AI for intelligent routing
+                    real_user_name = await self._get_user_name(user_id) if user_id else "Analyst"
+                    
+                    claude_result = await self.claude_orchestrator.classify(
+                        message=message,  # Original message (not paraphrased)
+                        session_id=session_id,
+                        user_name=real_user_name,
+                        user_id=user_id
+                    )
+                    
+                    if claude_result.confidence >= self.CLAUDE_ROUTING_THRESHOLD:
+                        intent = claude_result.intent
+                        entities = claude_result.entities or {}
+                        language = claude_result.language
+                        confidence = claude_result.confidence
+                        
+                        # Track follow-up context
+                        if claude_result.is_follow_up:
+                            # Merge inherited entities
+                            for key, val in claude_result.inherited_entities.items():
+                                if val and key not in entities:
+                                    entities[key] = val
+                        
+                        print(f"🧠 Claude AI (PRIMARY): {intent.value} | Entities: {entities} | Confidence: {confidence:.2f}")
+                    else:
+                        # Claude confidence too low, fall back to keyword
+                        print(f"⚠️ Claude low confidence ({claude_result.confidence:.2f}), using keyword fallback")
+                        intent_result = self.router.route(routing_text, context_dict)
+                        intent = intent_result.intent
+                        entities = intent_result.entities
+                        confidence = intent_result.confidence if hasattr(intent_result, 'confidence') else 0.8
+                        
+                except Exception as claude_err:
+                    print(f"⚠️ Claude routing error: {claude_err}, using keyword fallback")
+                    intent_result = self.router.route(routing_text, context_dict)
+                    intent = intent_result.intent
+                    entities = intent_result.entities
+                    confidence = intent_result.confidence if hasattr(intent_result, 'confidence') else 0.8
+            else:
+                # Fallback: Keyword-based routing (legacy mode)
+                intent_result = self.router.route(routing_text, context_dict)
+                intent = intent_result.intent
+                entities = intent_result.entities
+                confidence = intent_result.confidence if hasattr(intent_result, 'confidence') else 0.8
             
             # Force market code in entities if provided explicitly
             if market:
@@ -681,7 +744,7 @@ class ChatService:
             handler_index_composition = result_data.get('index_composition')
             
             response = self._build_response(
-                result_data, intent, intent_result.confidence, entities, start_time, language,
+                result_data, intent, confidence, entities, start_time, language,
                 conversational_text, fact_explanations, learning_section, handler_follow_up,
                 # NEW: Pass structured response components from handler
                 data_card=handler_data_card,
@@ -703,7 +766,7 @@ class ChatService:
                 normalized_text=normalized.normalized,
                 language=language,
                 intent=intent,
-                confidence=intent_result.confidence,
+                confidence=confidence,
                 entities=entities,
                 symbol=actual_symbol,
                 resolver_method=resolver_method,
@@ -715,6 +778,41 @@ class ChatService:
                 latency_ms=int((time.time() - start_time) * 1000),
                 actions=result_data.get('actions', [])
             )
+            
+            # ═══════════════════════════════════════════════════════════════
+            # 10. UPDATE CONVERSATION CONTEXT (World-Class Memory)
+            # ═══════════════════════════════════════════════════════════════
+            # Store this turn for follow-up understanding
+            try:
+                from .context_assembler import get_context_assembler
+                context_assembler = get_context_assembler()
+                
+                # Extract pending suggestions from follow-up prompt for next turn
+                pending_suggestions = []
+                if follow_up_prompt:
+                    # Parse follow-up for suggested actions
+                    if "compare" in follow_up_prompt.lower() or "قارن" in follow_up_prompt:
+                        pending_suggestions.append("compare")
+                    if "financials" in follow_up_prompt.lower() or "مالية" in follow_up_prompt:
+                        pending_suggestions.append("financials")
+                    if "dividend" in follow_up_prompt.lower() or "توزيعات" in follow_up_prompt:
+                        pending_suggestions.append("dividends")
+                    if "chart" in follow_up_prompt.lower() or "رسم" in follow_up_prompt:
+                        pending_suggestions.append("chart")
+                
+                # Update context assembler with this turn
+                context_assembler.update_after_response(
+                    session_id=session_id,
+                    user_message=message,
+                    assistant_response=conversational_text or "",
+                    intent=intent.value,
+                    entities={"symbol": actual_symbol, "sector": entities.get("sector"), "market": last_market},
+                    language=language,
+                    suggestions=pending_suggestions
+                )
+                print(f"[ChatService] 🧠 Updated conversation memory for session {session_id[:8]}...")
+            except Exception as ctx_err:
+                print(f"[ChatService] ⚠️ Context update error (non-fatal): {ctx_err}")
             
             return response
         except Exception as global_ex:

@@ -244,18 +244,7 @@ function LearningSection({ data }: { data: any }) {
     );
 }
 
-/** Follow-Up Prompt - Soft gray box */
-function FollowUpPrompt({ content }: { content: string }) {
-    if (!content) return null;
-    return (
-        <div className="mt-4 px-4 py-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50">
-            <p className="text-sm text-slate-600 dark:text-slate-400 italic flex items-start gap-2">
-                <span>💡</span>
-                <span>{content}</span>
-            </p>
-        </div>
-    );
-}
+
 
 /** Disclaimer Card - Amber start border */
 function DisclaimerCard({ content, title, lang = 'en' }: { content?: string; title?: string, lang?: Language }) {
@@ -892,10 +881,21 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
 
             {/* ============================================================
                 LAYER 5: FOLLOW-UP (Conversation Driver)
+                MOVED TO PARENT COMPONENT FOR POSITIONING CONTROL
                ============================================================ */}
-            {response?.follow_up_prompt && (
-                <FollowUpPrompt content={response.follow_up_prompt} />
-            )}
+        </div>
+    );
+}
+
+/** Follow-Up Prompt - Soft gray box */
+export function FollowUpPrompt({ content }: { content: string }) {
+    if (!content) return null;
+    return (
+        <div className="mt-4 px-4 py-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50">
+            <p className="text-sm text-slate-600 dark:text-slate-400 italic flex items-start gap-2">
+                <span>💡</span>
+                <span>{content}</span>
+            </p>
         </div>
     );
 } 

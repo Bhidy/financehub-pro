@@ -64,7 +64,7 @@ export const translations = {
         }
     },
     ar: {
-        title: "ذكاء سوق ستارتا",
+        title: "مُحلّل ستارتا الذكي",
         subtitle: "ابدأ في فهم البورصة المصرية برؤى مدعومة بالذكاء الاصطناعي",
         inputPlaceholder: "اسأل عن الأسهم المصرية...",
         inputPlaceholderPro: "قارن بين التجاري الدولي و...",

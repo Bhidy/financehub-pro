@@ -283,7 +283,9 @@ function ResponsiveAIAnalystContent() {
                     key={idx}
                     className={clsx(
                         "flex flex-col w-full message-item",
-                        m.role === 'user' ? "items-end" : "items-start"
+                        m.role === 'user'
+                            ? "items-end rtl:items-start" // User: Right (LTR: End, RTL: Start)
+                            : "items-start rtl:items-end" // Bot: Left (LTR: Start, RTL: End)
                     )}
                 >
                     {m.role === 'user' ? (

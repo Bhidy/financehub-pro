@@ -72,11 +72,17 @@ function BullCaseCard({ data }: { data: any }) {
     const items = data?.items || data?.points || [];
     if (!data || !items.length) return null;
 
+    // Detect if content is Arabic for fallback title
+    const isArabic = items.some((item: string) => /[\u0600-\u06FF]/.test(item));
+    const fallbackTitle = isArabic
+        ? `إيجابيات ${data.upside ? `(+${data.upside}% صعود محتمل)` : ''}`
+        : `Bull Case ${data.upside ? `(+${data.upside}% upside)` : ''}`;
+
     return (
         <div className="border-l-4 border-l-emerald-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-emerald-50 to-emerald-50/30 dark:from-emerald-900/15 dark:to-transparent">
             <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                 <span>📈</span>
-                {data.title || `Bull Case ${data.upside ? `(+${data.upside}% upside)` : ''}`}
+                {data.title || fallbackTitle}
             </div>
             <ul className="space-y-1.5 ml-1">
                 {items.map((item: string, i: number) => (
@@ -96,11 +102,17 @@ function BearCaseCard({ data }: { data: any }) {
     const items = data?.items || data?.points || [];
     if (!data || !items.length) return null;
 
+    // Detect if content is Arabic for fallback title
+    const isArabic = items.some((item: string) => /[\u0600-\u06FF]/.test(item));
+    const fallbackTitle = isArabic
+        ? `سلبيات ${data.downside ? `(-${data.downside}% هبوط محتمل)` : ''}`
+        : `Bear Case ${data.downside ? `(-${data.downside}% downside)` : ''}`;
+
     return (
         <div className="border-l-4 border-l-red-500 pl-4 py-3 pr-4 rounded-r-lg my-4 bg-gradient-to-r from-red-50 to-red-50/30 dark:from-red-900/15 dark:to-transparent">
             <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                 <span>📉</span>
-                {data.title || `Bear Case ${data.downside ? `(-${data.downside}% downside)` : ''}`}
+                {data.title || fallbackTitle}
             </div>
             <ul className="space-y-1.5 ml-1">
                 {items.map((item: string, i: number) => (

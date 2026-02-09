@@ -49,9 +49,11 @@ METRIC_DEFINITIONS = {
     "roe": {
         "en": [
             "**ROE (Return on Equity)**: Shows how efficiently the company uses shareholders' money to generate profit.",
+            "**ROE**: Measures profitability relative to shareholders' equity. Higher is better.",
         ],
         "ar": [
-            "**العائد على حقوق الملكية**: يقيس كفاءة الشركة في استخدام أموال المساهمين لتحقيق الأرباح.",
+            "**العائد على حقوق الملكية (ROE)**: يقيس كفاءة الشركة في استخدام أموال المساهمين لتحقيق الأرباح.",
+            "**ROE**: كلما ارتفع، كانت الشركة أكثر كفاءة في تحقيق الأرباح.",
         ]
     },
     "z_score": {
@@ -65,9 +67,11 @@ METRIC_DEFINITIONS = {
     "eps": {
         "en": [
             "**EPS (Earnings Per Share)**: The profit each share earns. Higher EPS often means better profitability.",
+            "**EPS**: Net income divided by outstanding shares. Key metric for per-share profitability.",
         ],
         "ar": [
             "**ربحية السهم (EPS)**: الربح الذي يحققه كل سهم. ارتفاعه يعني ربحية أفضل.",
+            "**EPS**: صافي الدخل مقسوم على عدد الأسهم. مقياس أساسي للربحية.",
         ]
     },
     "pb_ratio": {
@@ -89,9 +93,117 @@ METRIC_DEFINITIONS = {
     "operating_margin": {
         "en": [
             "**Operating Margin**: Profit from operations as a percentage of revenue. Higher is better.",
+            "**Operating Margin**: Shows how much profit a company makes from its core business.",
         ],
         "ar": [
             "**هامش التشغيل**: الربح التشغيلي كنسبة من الإيرادات. أعلى يعني أفضل.",
+            "**هامش التشغيل**: يوضح مدى ربحية الشركة من نشاطها الأساسي.",
+        ]
+    },
+    # NEW: Additional metrics for comprehensive Arabic coverage
+    "debt_to_equity": {
+        "en": [
+            "**D/E Ratio**: Measures financial leverage. Below 1.0 is generally conservative.",
+        ],
+        "ar": [
+            "**نسبة الديون/حقوق الملكية**: تقيس الرافعة المالية. أقل من 1 يعتبر محافظ.",
+        ]
+    },
+    "revenue_growth": {
+        "en": [
+            "**Revenue Growth**: Year-over-year change in sales. Positive growth indicates expansion.",
+        ],
+        "ar": [
+            "**نمو الإيرادات**: التغير السنوي في المبيعات. النمو الإيجابي يعني توسع.",
+        ]
+    },
+    "net_margin": {
+        "en": [
+            "**Net Margin**: Percentage of revenue that becomes profit after all expenses.",
+        ],
+        "ar": [
+            "**هامش صافي الربح**: نسبة الإيرادات التي تتحول لأرباح بعد كل المصروفات.",
+        ]
+    },
+    # WORLD-CLASS: Extended Arabic Financial Metrics
+    "ev_ebitda": {
+        "en": [
+            "**EV/EBITDA**: Enterprise value relative to earnings. Lower means potentially undervalued.",
+        ],
+        "ar": [
+            "**قيمة المنشأة/الأرباح قبل الفوائد**: مقياس تقييم. انخفاضه قد يعني تقييم منخفض.",
+        ]
+    },
+    "free_cash_flow": {
+        "en": [
+            "**Free Cash Flow**: Cash available after capital expenditures. Key for dividends and growth.",
+        ],
+        "ar": [
+            "**التدفق النقدي الحر**: النقد المتاح بعد الإنفاق الرأسمالي. أساسي للتوزيعات والنمو.",
+        ]
+    },
+    "roa": {
+        "en": [
+            "**ROA (Return on Assets)**: Shows how efficiently the company uses total assets to generate profit.",
+        ],
+        "ar": [
+            "**العائد على الأصول (ROA)**: يقيس كفاءة استخدام الشركة لأصولها في تحقيق الأرباح.",
+        ]
+    },
+    "gross_margin": {
+        "en": [
+            "**Gross Margin**: Profit after cost of goods sold. Shows pricing power and efficiency.",
+        ],
+        "ar": [
+            "**هامش الربح الإجمالي**: الربح بعد تكلفة البضاعة. يوضح القدرة التسعيرية والكفاءة.",
+        ]
+    },
+    "beta": {
+        "en": [
+            "**Beta**: Measures stock volatility vs market. Above 1 = more volatile, below 1 = less volatile.",
+        ],
+        "ar": [
+            "**بيتا**: يقيس تقلب السهم مقارنة بالسوق. فوق 1 = أكثر تقلباً، تحت 1 = أقل تقلباً.",
+        ]
+    },
+    "piotroski_score": {
+        "en": [
+            "**Piotroski Score**: Financial health score (0-9). Higher is better, 8-9 indicates strong fundamentals.",
+        ],
+        "ar": [
+            "**مؤشر بيوتروسكي**: درجة الصحة المالية (0-9). 8-9 تعني أساسيات قوية.",
+        ]
+    },
+    "quick_ratio": {
+        "en": [
+            "**Quick Ratio**: Liquidity without inventory. Above 1.0 shows strong short-term solvency.",
+        ],
+        "ar": [
+            "**النسبة السريعة**: سيولة بدون المخزون. فوق 1 يعني ملاءة قوية على المدى القصير.",
+        ]
+    },
+    "interest_coverage": {
+        "en": [
+            "**Interest Coverage**: How easily a company can pay interest. Higher = more comfortable.",
+        ],
+        "ar": [
+            "**تغطية الفوائد**: قدرة الشركة على دفع الفوائد. أعلى = أكثر راحة.",
+        ]
+    },
+    "eps_growth": {
+        "en": [
+            "**EPS Growth**: Year-over-year earnings per share change. Positive indicates improving profitability.",
+        ],
+        "ar": [
+            "**نمو ربحية السهم**: التغير السنوي في الأرباح لكل سهم. إيجابي يعني تحسن الربحية.",
+        ]
+    },
+    "asset_turnover": {
+        "en": [
+            "**Asset Turnover**: How efficiently assets generate revenue. Higher = more efficient operations.",
+        ],
+        "ar": [
+            "**دوران الأصول**: كفاءة توليد الإيرادات من الأصول. أعلى = عمليات أكثر كفاءة.",
         ]
     },
 }

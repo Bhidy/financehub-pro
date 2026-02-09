@@ -407,6 +407,7 @@ class ChatResponse(BaseModel):
     # Existing structured components
     learning_section: Optional[Dict[str, Any]] = None  # {\"title\": \"...\", \"items\": [\"...\"]}
     follow_up_prompt: Optional[str] = None  # Soft follow-up suggestion
+    key_insight: Optional[str] = None  # 🎯 Key takeaway insight for the stock
     
     # UI elements
     message_text_ar: Optional[str] = None

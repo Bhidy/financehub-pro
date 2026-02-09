@@ -743,6 +743,17 @@ class ChatService:
             handler_quantified_drivers = result_data.get('quantified_drivers')
             handler_index_composition = result_data.get('index_composition')
             
+            # NEW: Key Insight (8-Layer Completeness)
+            handler_key_insight = result_data.get('key_insight')
+            if not handler_key_insight and intent in [
+                Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
+                Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
+                Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS, Intent.STOCK_PRICE
+            ]:
+                # Generate key insight based on sentiment
+                from .response_composer import ResponseComposer
+                handler_key_insight = ResponseComposer.get_key_insight(language=language, sentiment='neutral')
+            
             response = self._build_response(
                 result_data, intent, confidence, entities, start_time, language,
                 conversational_text, fact_explanations, learning_section, handler_follow_up,
@@ -755,7 +766,9 @@ class ChatService:
                 framework_card=handler_framework_card,
                 character_cards=handler_character_cards,
                 quantified_drivers=handler_quantified_drivers,
-                index_composition=handler_index_composition
+                index_composition=handler_index_composition,
+                # NEW: Key Insight (8-Layer)
+                key_insight=handler_key_insight
             )
             
             # 9. Log analytics
@@ -1268,7 +1281,9 @@ class ChatService:
         framework_card: Optional['FrameworkCard'] = None,
         character_cards: Optional[List['CharacterCard']] = None,
         quantified_drivers: Optional['QuantifiedDriversCard'] = None,
-        index_composition: Optional['IndexCompositionCard'] = None
+        index_composition: Optional['IndexCompositionCard'] = None,
+        # NEW: Key Insight (8-Layer)
+        key_insight: Optional[str] = None
     ) -> ChatResponse:
         """Build the final ChatResponse with structured components."""
         
@@ -1357,6 +1372,7 @@ class ChatService:
             # Existing
             learning_section=learning_section,
             follow_up_prompt=follow_up_prompt,
+            key_insight=key_insight,  # 🎯 NEW: Key Insight (8-Layer)
             language=language,
             cards=cards,
             chart=chart,

@@ -37,6 +37,22 @@ class ContextStore:
         
         if existing:
             # Update existing context - increment turn_count
+            # Handle conversation_history append
+            conversation_history = existing.conversation_history.copy() if existing.conversation_history else []
+            if 'new_message' in kwargs:
+                conversation_history.append(kwargs.pop('new_message'))
+                # Keep only last 10 turns
+                if len(conversation_history) > 10:
+                    conversation_history = conversation_history[-10:]
+            
+            # Merge active_entities
+            active_entities = existing.active_entities.copy() if existing.active_entities else {}
+            if 'active_entities' in kwargs:
+                active_entities.update(kwargs.pop('active_entities'))
+            
+            # Handle pending_suggestions
+            pending_suggestions = kwargs.get('pending_suggestions', existing.pending_suggestions) or []
+            
             updates = {
                 'session_id': session_id,
                 'last_symbol': kwargs.get('last_symbol', existing.last_symbol),
@@ -53,6 +69,14 @@ class ContextStore:
                 'last_cards_shown': kwargs.get('last_cards_shown', existing.last_cards_shown),
                 'user_name': kwargs.get('user_name', existing.user_name),
                 'detected_language': kwargs.get('detected_language', existing.detected_language),
+                # World-Class Context (NEW)
+                'conversation_history': conversation_history,
+                'active_entities': active_entities,
+                'user_profile': kwargs.get('user_profile', existing.user_profile) or {},
+                'pending_suggestions': pending_suggestions,
+                'last_response_sentiment': kwargs.get('last_response_sentiment', existing.last_response_sentiment),
+                'last_followup_type': kwargs.get('last_followup_type', existing.last_followup_type),
+                'is_in_followup_chain': kwargs.get('is_in_followup_chain', existing.is_in_followup_chain),
             }
             ctx = ConversationContext(**updates)
         else:
@@ -73,6 +97,14 @@ class ContextStore:
                 last_cards_shown=kwargs.get('last_cards_shown'),
                 user_name=kwargs.get('user_name'),
                 detected_language=kwargs.get('detected_language', 'en'),
+                # World-Class Context (NEW) - Initialize empty
+                conversation_history=[],
+                active_entities={},
+                user_profile={},
+                pending_suggestions=[],
+                last_response_sentiment='neutral',
+                last_followup_type=None,
+                is_in_followup_chain=False,
             )
         
         self._store[session_id] = ctx

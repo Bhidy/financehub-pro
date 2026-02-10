@@ -68,10 +68,16 @@ class SymbolResolver:
         Resolve a query to a single best stock/fund symbol.
         Uses ranked scoring to pick the best match.
         
+        ENTERPRISE ENFORCEMENT: 
+        Strictly forces EGX market resolution. Ignores market_code param if passed.
+        
         Returns:
             ResolvedSymbol or None
         """
-        candidates = await self.resolve_with_candidates(query, market_code, limit=5)
+        # FORCE EGX MARKET ONLY
+        target_market = "EGX"
+        
+        candidates = await self.resolve_with_candidates(query, target_market, limit=5)
         
         if not candidates:
             return None
@@ -582,8 +588,9 @@ class SymbolResolver:
         return []
     
     async def get_suggestions(self, query: str, limit: int = 5) -> List[ResolvedSymbol]:
-        """Get symbol suggestions for autocomplete."""
-        candidates = await self.resolve_with_candidates(query, None, limit)
+        """Get symbol suggestions for autocomplete. FORCE EGX ONLY."""
+        target_market = "EGX"
+        candidates = await self.resolve_with_candidates(query, target_market, limit)
         
         return [
             ResolvedSymbol(

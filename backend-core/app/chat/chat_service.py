@@ -46,7 +46,7 @@ from .schemas import (
 from .text_normalizer import normalize_text, extract_potential_symbols
 from .intent_router import IntentRouter, create_router
 from .symbol_resolver import SymbolResolver
-from .compliance import check_compliance, get_disclaimer
+from .compliance import check_compliance, get_disclaimer, COMPLIANCE_RESPONSE_AR
 from .context_store import get_context_store, ContextStore
 
 # Handlers
@@ -717,10 +717,17 @@ class ChatService:
             # -----------------------------
             
             # 3. Check compliance
-            is_blocked, violation_type, block_message = check_compliance(routing_text)
+            # IMPORTANT: Run compliance on the ORIGINAL user message first.
+            # Paraphrasing can translate Arabic -> English, causing Arabic users to see English blocked copy.
+            is_blocked, violation_type, block_message = check_compliance(message)
+            if (not is_blocked) and routing_text and routing_text != message:
+                is_blocked, violation_type, block_message = check_compliance(routing_text)
             if is_blocked:
+                if language == "ar":
+                    block_message = COMPLIANCE_RESPONSE_AR
                 result = handle_blocked(violation_type, block_message, language)
-                return self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language)
+                response = self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language)
+                return self._enforce_response_language(response, language)
             
             # 4. Route intent - CLAUDE-FIRST ARCHITECTURE (World-Class 2.0)
             # ------------------------------------------------------------------

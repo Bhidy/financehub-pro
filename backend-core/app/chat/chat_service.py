@@ -109,6 +109,9 @@ ARABIC_TEXT_REPLACEMENTS = {
     "shares": "سهم",
     "Weight": "الوزن",
     "weight": "الوزن",
+    "EGP": "جنيه",
+    "USD": "دولار",
+    "SAR": "ريال",
     "Revenue": "الإيرادات",
     "Net Income": "صافي الربح",
     "Market Heatmap": "خريطة حرارة السوق",
@@ -173,6 +176,19 @@ class ChatService:
         return bool(text and ARABIC_CHAR_RE.search(text))
 
     @staticmethod
+    def _is_arabic_letter(ch: str) -> bool:
+        if not ch:
+            return False
+        cp = ord(ch)
+        return (
+            0x0600 <= cp <= 0x06FF or
+            0x0750 <= cp <= 0x077F or
+            0x08A0 <= cp <= 0x08FF or
+            0xFB50 <= cp <= 0xFDFF or
+            0xFE70 <= cp <= 0xFEFF
+        )
+
+    @staticmethod
     def _is_symbol_like_token(token: str) -> bool:
         clean = re.sub(r"[^A-Za-z0-9]", "", token or "")
         if not clean:
@@ -213,6 +229,11 @@ class ChatService:
             return token if self._is_symbol_like_token(token) else ""
 
         out = LATIN_TOKEN_RE.sub(_replace_token, out)
+        # Strict Arabic mode: remove any non-Arabic alphabetic glyphs (e.g. CJK/Latin leakage).
+        out = "".join(
+            ch for ch in out
+            if (not ch.isalpha()) or self._is_arabic_letter(ch)
+        )
         out = re.sub(r"\s{2,}", " ", out).strip()
         out = re.sub(r"\s+([،,.!?:؛])", r"\1", out)
 

@@ -1416,6 +1416,10 @@ class ChatService:
             handler_framework_card = result_data.get('framework_card')
             handler_character_cards = result_data.get('character_cards')
             handler_quantified_drivers = result_data.get('quantified_drivers')
+            
+            # Initialize potentially missing specific handler outputs to None
+            handler_index_composition = result_data.get('index_composition')
+            handler_key_insight = result_data.get('key_insight')
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
             # Handle both object (ChatResponse) and dict return types

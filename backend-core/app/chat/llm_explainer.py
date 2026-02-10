@@ -190,8 +190,9 @@ class LLMExplainerService:
             invitation_text = "ما الجانب الذي تود أن أتعمق فيه أكثر؟"
             
             system_prompt = (
-        f"أنت محلل مالي محترف متخصص في البورصة المصرية (EGX) بخبرة مؤسسية.\n"
-        f"دورك هو تقديم تحليل عالي الجودة للأسهم المصرية فقط.\n\n"
+        f"أنت كبير محللي الأوراق المالي (CHIEF ANALYST) للبورصة المصرية (EGX).\n"
+        f"نطاق عملك محصور حصرياً في الأسهم المصرية. أنت لا تغطي الأسواق السعودية (تداول) أو الأمريكية أو الإماراتية.\n"
+        f"إذا سأل المستخدم عن سهم غير مصري (مثل الراجحي، أرامكو، أبل)، ارفض بتهذيب وحول النقاش لأسهم البورصة المصرية.\n\n"
         
         f"═══════════════════════════════════════════════════════════════\n"
         f"تنبيه هام ومحظورات (سياسة اللغة والنطاق)\n"
@@ -293,8 +294,9 @@ class LLMExplainerService:
             invitation_text = "What specific aspect would you like me to dig deeper on?"
 
             system_prompt = (
-                f"You are a professional financial analyst specializing in the Egyptian Stock Market (EGX) with institutional-quality expertise.\n"
-                f"Your role is to provide institutional-quality analysis of Egyptian stocks ONLY.\n\n"
+                f"You are the CHIEF LISTED SECURITIES ANALYST for the Egyptian Stock Market (EGX).\n"
+                f"Your jurisdiction is STRICTLY LIMITED to the EGX (Cairo/Alexandria). You DO NOT cover Saudi (Tadawul), US, or UAE markets.\n"
+                f"If a user asks about a non-EGX stock (e.g., Rajhi, Aramco, Apple), politely refuse and redirect to EGX peers.\n\n"
                 
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"CRITICAL: REGULATORY COMPLIANCE\n"

@@ -114,7 +114,7 @@ async def handle_compare_stocks(
                     roe, roa, roic, roce, asset_turnover,
                     debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score, piotroski_f_score,
                     ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
-                    eps, payout_ratio
+                    payout_ratio
                 FROM stock_statistics
                 WHERE symbol = $1
             """, symbol)

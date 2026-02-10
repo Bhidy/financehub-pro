@@ -1417,14 +1417,18 @@ class ChatService:
             handler_character_cards = result_data.get('character_cards')
             handler_quantified_drivers = result_data.get('quantified_drivers')
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
-            if not handler_framework_card and result.conversational_text:
-                handler_framework_card = self._parse_framework(result.conversational_text)
+            # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
+            # Handle both object (ChatResponse) and dict return types
+            llm_text = getattr(result, 'conversational_text', None) or result_data.get('conversational_text')
+
+            if not handler_framework_card and llm_text:
+                handler_framework_card = self._parse_framework(llm_text)
                 
-            if not handler_quantified_drivers and result.conversational_text:
-                handler_quantified_drivers = self._parse_drivers(result.conversational_text)
+            if not handler_quantified_drivers and llm_text:
+                handler_quantified_drivers = self._parse_drivers(llm_text)
                 
-            if not handler_educational_cards and result.conversational_text:
-                learning = self._parse_learning(result.conversational_text)
+            if not handler_educational_cards and llm_text:
+                learning = self._parse_learning(llm_text)
                 if learning:
                     handler_educational_cards = [
                         {"variant": "definition", "title": item['term'], "content": item['definition']}

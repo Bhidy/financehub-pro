@@ -91,7 +91,7 @@ async def handle_compare_stocks(
                         pe_ratio, pb_ratio, dividend_yield, market_cap,
                         high_52w, low_52w, beta, logo_url
                     FROM market_tickers
-                    WHERE symbol = $1
+                    WHERE symbol = $1 AND market_code = 'EGX'
                 """, cand)
              if row:
                  found_symbol = cand

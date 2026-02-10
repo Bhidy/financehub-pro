@@ -287,6 +287,9 @@ class StockListItem(BaseModel):
     company_name: str
     score: int  # 0-100 undervaluation score
     metrics: Dict[str, str]  # e.g. {"P/B": "0.9x", "P/E": "5.5x", "ROE": "18.2%"}
+    description: Optional[str] = None
+    badge: Optional[str] = None
+    highlighted: bool = False
 
 
 class MacroFactor(BaseModel):

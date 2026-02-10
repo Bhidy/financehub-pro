@@ -8,7 +8,11 @@ const BACKEND_AI_URL = 'https://starta.46-224-223-172.sslip.io/api/v1/ai/chat';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { message, history = [], session_id = null } = body;
+        const { message, history = [], session_id = null, language } = body;
+        const headerLanguage = request.headers.get('x-language');
+        const resolvedLanguage = (language === 'ar' || language === 'en')
+            ? language
+            : (headerLanguage === 'ar' || headerLanguage === 'en' ? headerLanguage : null);
 
         if (!message || typeof message !== 'string') {
             return NextResponse.json(
@@ -29,8 +33,16 @@ export async function POST(request: NextRequest) {
         // Proxy to Hetzner deterministic backend
         const response = await fetch(BACKEND_AI_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, history, session_id })
+            headers: {
+                'Content-Type': 'application/json',
+                ...(resolvedLanguage ? { 'X-Language': resolvedLanguage } : {})
+            },
+            body: JSON.stringify({
+                message,
+                history,
+                session_id,
+                ...(resolvedLanguage ? { language: resolvedLanguage } : {})
+            })
         });
 
         if (!response.ok) {

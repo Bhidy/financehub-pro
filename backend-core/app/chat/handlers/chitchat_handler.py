@@ -159,6 +159,27 @@ async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
     
     if not definition:
         # Return helpful suggestions
+        if language == 'ar':
+            return {
+                'success': True,
+                'message': f"لا يتوفر لدي تعريف تفصيلي للمصطلح '{term}' حالياً. جرب السؤال عن: ROE، P/E، P/B أو EBITDA.",
+                'cards': [
+                    {
+                        'type': 'help',
+                        'data': {
+                            'title': 'مصطلحات متاحة',
+                            'categories': [
+                                {'title': 'جرّب هذه الأسئلة:', 'examples': ['ما هو ROE؟', 'اشرح مضاعف الربحية', 'ما هو EBITDA؟']}
+                            ]
+                        }
+                    }
+                ],
+                'actions': [
+                    {'label': '📊 ما هو ROE؟', 'label_ar': '📊 ما هو ROE؟', 'action_type': 'query', 'payload': 'ما هو ROE؟'},
+                    {'label': '💰 ما هو P/E؟', 'label_ar': '💰 ما هو P/E؟', 'action_type': 'query', 'payload': 'ما هو P/E؟'},
+                    {'label': '📈 ما هو EBITDA؟', 'label_ar': '📈 ما هو EBITDA؟', 'action_type': 'query', 'payload': 'ما هو EBITDA؟'}
+                ]
+            }
         return {
             'success': True,
             'message': f"I don't have a detailed definition for '{term}' yet. Try asking about: ROE, P/E, P/B, EBITDA, or Dividend Yield." if language == 'en' else f"ليس لدي تعريف لـ '{term}' بعد. جرب السؤال عن: ROE, P/E, P/B.",
@@ -190,4 +211,3 @@ async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
             {'label': '💎 Undervalued Stocks', 'action_type': 'query', 'payload': 'undervalued stocks'}
         ]
     }
-

@@ -54,7 +54,7 @@ async def handle_stock_statistics(
             ss.beta_5y, ss.rsi_14, ss.ma_50d, ss.ma_200d,
             ss.roce as live_roce, -- Restore ROCE from live stats
             ss.ebitda_margin as live_ebitda_margin, -- Fix missing column in history
-            mt.name_en, mt.name_ar, mt.last_price, mt.market_code, mt.currency,
+            mt.name_en, mt.name_ar, mt.last_price, mt.market_code, mt.currency, mt.sector_name,
             mt.pe_ratio as mt_pe, mt.pb_ratio as mt_pb, mt.dividend_yield,
             mt.market_cap as live_cap,
             fr.roe, fr.roa, fr.roic,
@@ -74,7 +74,7 @@ async def handle_stock_statistics(
     if not stats_record:
         # Fallback to market_tickers if no statistics
         ticker = await conn.fetchrow("""
-            SELECT symbol, name_en, name_ar, market_code, currency, last_price,
+            SELECT symbol, name_en, name_ar, market_code, currency, last_price, sector_name,
                    pe_ratio, pb_ratio, dividend_yield, market_cap
             FROM market_tickers WHERE symbol = $1
         """, symbol)
@@ -92,16 +92,28 @@ async def handle_stock_statistics(
         return {
             'success': True,
             'message': f"📊 **{name}** ({symbol}) - Basic Statistics" if language == 'en' else f"📊 **{name}** ({symbol}) - إحصائيات أساسية",
-            'cards': [{
-                'type': 'stats',
-                'title': 'Basic Statistics',
-                'data': {
-                    'pe_ratio': safe_float(ticker['pe_ratio']),
-                    'pb_ratio': safe_float(ticker['pb_ratio']),
-                    'dividend_yield': safe_float(ticker['dividend_yield']),
-                    'market_cap': int(ticker['market_cap']) if ticker['market_cap'] else None,
+            'cards': [
+                {
+                    'type': 'stock_header',
+                    'data': {
+                        'symbol': symbol,
+                        'name': name,
+                        'market_code': ticker['market_code'],
+                        'currency': ticker['currency'] or 'EGP',
+                        'sector': ticker.get('sector_name')
+                    }
+                },
+                {
+                    'type': 'stats',
+                    'title': 'Basic Statistics',
+                    'data': {
+                        'pe_ratio': safe_float(ticker['pe_ratio']),
+                        'pb_ratio': safe_float(ticker['pb_ratio']),
+                        'dividend_yield': safe_float(ticker['dividend_yield']),
+                        'market_cap': int(ticker['market_cap']) if ticker['market_cap'] else None,
+                    }
                 }
-            }]
+            ]
         }
     
     # Safely convert Record to dict to allow .get() access
@@ -222,7 +234,8 @@ async def handle_stock_statistics(
                     'symbol': symbol,
                     'name': name,
                     'market_code': stats['market_code'],
-                    'currency': currency
+                    'currency': currency,
+                    'sector': stats.get('sector_name')
                 }
             },
             {

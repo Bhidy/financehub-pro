@@ -401,6 +401,281 @@ BALANCE_DISPLAY = {col: label for col, label, _ in BALANCE_DISPLAY_ORDERED}
 CASHFLOW_DISPLAY = {col: label for col, label, _ in CASHFLOW_DISPLAY_ORDERED}
 RATIOS_DISPLAY = {col: label for col, label, _ in RATIOS_DISPLAY_ORDERED}
 
+# ARABIC TRANSLATIONS MAP
+AR_TERMS = {
+    # Period Info
+    "Period Ending": "نهاية الفترة",
+    "Fiscal Year": "السنة المالية",
+    
+    # Income Statement
+    "Interest Income on Loans": "عائد القروض",
+    "Interest Income on Investments": "عائد الاستثمارات",
+    "Total Interest Income": "إجمالي دخل الفائدة",
+    "Interest Paid on Deposits": "فوائد الودائع",
+    "Net Interest Income": "صافي دخل الفائدة",
+    "Net Interest Income Growth": "نمو صافي دخل الفائدة",
+    "Income From Trading Activities": "دخل المتاجرة",
+    "Fee and Commission Income": "دخل الأتعاب والعمولات",
+    "Gain (Loss) on Sale of Assets": "ربح (خسارة) بيع أصول",
+    "Gain (Loss) on Sale of Investments": "ربح (خسارة) بيع استثمارات",
+    "Other Non-Interest Income": "إيرادات أخرى غير الفائدة",
+    "Total Non-Interest Income": "إجمالي الدخل من غير الفائدة",
+    "Non-Interest Income Growth": "نمو الدخل من غير الفائدة",
+    "Revenues Before Loan Losses": "الإيرادات قبل مخصصات القروض",
+    "Provision for Loan Losses": "مخصص خسائر القروض",
+    "Revenue": "الإيرادات",
+    "Operating Revenue": "الإيرادات التشغيلية",
+    "Revenue Growth": "نمو الإيرادات",
+    "Cost of Revenue": "تكلفة الإيرادات",
+    "Gross Profit": "إجمالي الربح",
+    "Gross Margin": "هامش إجمالي الربح",
+    "Selling, General & Admin": "مصاريف عمومية وإدارية",
+    "Other Operating Expenses": "مصاريف تشغيلية أخرى",
+    "Operating Expenses": "المصاريف التشغيلية",
+    "Research & Development": "البحث والتطوير",
+    "Depreciation & Amortization": "الإهلاك والاستهلاك",
+    "Salaries and Employee Benefits": "الرواتب ومزايا الموظفين",
+    "Amortization of Goodwill & Intangibles": "إطفاء الشهرة والأصول غير الملموسة",
+    "Other Non-Interest Expense": "مصاريف أخرى غير الفائدة",
+    "Total Non-Interest Expense": "إجمالي المصاريف من غير الفائدة",
+    "Operating Income": "الدخل التشغيلي",
+    "Operating Margin": "الهامش التشغيلي",
+    "Interest Expense": "مصروف الفائدة",
+    "Interest & Investment Income": "دخل الفوائد والاستثمار",
+    "Earnings From Equity Investments": "أرباح الاستثمارات في حقوق الملكية",
+    "Currency Exchange Gain (Loss)": "أرباح (خسائر) العملات الأجنبية",
+    "Other Non Operating Income (Expenses)": "إيرادات (مصاريف) غير تشغيلية أخرى",
+    "EBT Excluding Unusual Items": "الربح قبل الضرائب (باستثناء البنود غير العادية)",
+    "Impairment of Goodwill": "انخفاض قيمة الشهرة",
+    "Asset Writedown": "شطب أصول",
+    "Other Unusual Items": "بنود غير عادية أخرى",
+    "Pretax Income": "الدخل قبل الضرائب",
+    "Income Tax Expense": "مصروف ضريبة الدخل",
+    "Effective Tax Rate": "معدل الضريبة الفعلي",
+    "Earnings From Continuing Operations": "أرباح العمليات المستمرة",
+    "Earnings From Discontinued Operations": "أرباح العمليات المتوقفة",
+    "Minority Interest in Earnings": "حقوق الأقلية في الأرباح",
+    "Net Income": "صافي الدخل",
+    "Preferred Dividends & Other Adjustments": "توزيعات الأسهم الممتازة وتعديلات أخرى",
+    "Net Income to Common": "صافي الدخل (للمساهمين العاديين)",
+    "Net Income Growth": "نمو صافي الدخل",
+    "Profit Margin": "هامش صافي الربح",
+    "Basic Shares Outstanding": "الأسهم القائمة (الأساسية)",
+    "Diluted Shares Outstanding": "الأسهم القائمة (المخففة)",
+    "Shares Change": "تغير الأسهم",
+    "EPS (Basic)": "ربحية السهم (الأساسية)",
+    "EPS (Diluted)": "ربحية السهم (المخففة)",
+    "EPS Growth": "نمو ربحية السهم",
+    "Dividend Per Share": "توزيعات السهم",
+    "Dividend Growth": "نمو التوزيعات",
+    "Free Cash Flow": "التدفق النقدي الحر",
+    "Free Cash Flow Per Share": "التدفق النقدي الحر للسهم",
+    "Free Cash Flow Margin": "هامش التدفق النقدي الحر",
+    "EBITDA": "الربح قبل الفوائد والضرائب والإهلاك والاستهلاك",
+    "EBITDA Margin": "هامش EBITDA",
+    "D&A For EBITDA": "الإهلاك والاستهلاك لـ EBITDA",
+    "EBIT": "الربح قبل الفوائد والضرائب (EBIT)",
+    "EBIT Margin": "هامش EBIT",
+
+    # Balance Sheet
+    "Cash & Equivalents": "النقد وما في حكمه",
+    "Short-Term Investments": "استثمارات قصيرة الأجل",
+    "Trading Asset Securities": "أوراق مالية للمتاجرة",
+    "Cash & Short-Term Investments": "النقد والاستثمارات قصيرة الأجل",
+    "Cash Growth": "نمو النقد",
+    "Accounts Receivable": "الذمم المدينة",
+    "Other Receivables": "ذمم مدينة أخرى",
+    "Receivables": "الذمم المدينة",
+    "Inventory": "المخزون",
+    "Prepaid Expenses": "مصاريف مدفوعة مقدماً",
+    "Other Current Assets": "أصول متداولة أخرى",
+    "Total Current Assets": "إجمالي الأصول المتداولة",
+    "Investment Securities": "أوراق مالية استثمارية",
+    "Total Investments": "إجمالي الاستثمارات",
+    "Gross Loans": "إجمالي القروض",
+    "Allowance for Loan Losses": "مخصص خسائر القروض",
+    "Other Adjustments to Gross Loans": "تعديلات أخرى على القروض",
+    "Net Loans": "صافي القروض",
+    "Property, Plant & Equipment": "الممتلكات والمصانع والمعدات",
+    "Land": "أراضي",
+    "Buildings": "مباني",
+    "Machinery": "آلات",
+    "Leasehold Improvements": "تحسينات الأصول المستأجرة",
+    "Construction In Progress": "مشروعات تحت التنفيذ",
+    "Long-Term Investments": "استثمارات طويلة الأجل",
+    "Goodwill": "الشهرة",
+    "Other Intangible Assets": "أصول غير ملموسة أخرى",
+    "Long-Term Accounts Receivable": "ذمم مدينة طويلة الأجل",
+    "Long-Term Deferred Tax Assets": "أصول ضريبية مؤجلة",
+    "Other Long-Term Assets": "أصول طويلة الأجل أخرى",
+    "Accrued Interest Receivable": "فوائد مستحقة القبض",
+    "Restricted Cash": "نقد مقيد",
+    "Other Real Estate Owned": "عقارات أخرى مملوكة",
+    "Total Assets": "إجمالي الأصول",
+    "Filing Date": "تاريخ الملف",
+    "Filing Date Shares Outstanding": "الأسهم القائمة بتاريخ الملف",
+    "Accounts Payable": "الذمم الدائنة",
+    "Accrued Expenses": "مصاريف مستحقة",
+    "Short-Term Debt": "ديون قصيرة الأجل",
+    "Current Portion of Long-Term Debt": "الجزء المتداول من الديون طويلة الأجل",
+    "Current Portion of Leases": "الجزء المتداول من عقود الإيجار",
+    "Current Income Taxes Payable": "ضرائب دخل مستحقة",
+    "Current Unearned Revenue": "إيرادات غير مكتسبة (متداول)",
+    "Other Current Liabilities": "التزامات متداولة أخرى",
+    "Total Current Liabilities": "إجمالي الالتزامات المتداولة",
+    "Interest Bearing Deposits": "ودائع بفوائد",
+    "Non-Interest Bearing Deposits": "ودائع بدون فوائد",
+    "Total Deposits": "إجمالي الودائع",
+    "Accrued Interest Payable": "فوائد مستحقة الدفع",
+    "Long-Term Debt": "ديون طويلة الأجل",
+    "Long-Term Leases": "عقود إيجار طويلة الأجل",
+    "Long-Term Deferred Tax Liabilities": "التزامات ضريبية مؤجلة",
+    "Other Long-Term Liabilities": "التزامات طويلة الأجل أخرى",
+    "Total Liabilities": "إجمالي الالتزامات",
+    "Common Stock": "الأسهم العادية",
+    "Retained Earnings": "الأرباح المبقاة",
+    "Treasury Stock": "أسهم الخزينة",
+    "Comprehensive Income & Other": "الدخل الشامل وتعديلات أخرى",
+    "Total Common Equity": "إجمالي حقوق الملكية العادية",
+    "Minority Interest": "حقوق الأقلية",
+    "Shareholders' Equity": "حقوق المساهمين",
+    "Total Liabilities & Equity": "إجمالي الالتزامات وحقوق الملكية",
+    "Total Debt": "إجمالي الديون",
+    "Net Cash (Debt)": "صافي النقد (الدين)",
+    "Net Cash Growth": "نمو صافي النقد",
+    "Net Cash Per Share": "صافي النقد للسهم",
+    "Total Common Shares Outstanding": "إجمالي الأسهم القائمة",
+    "Working Capital": "رأس المال العامل",
+    "Book Value Per Share": "القيمة الدفترية للسهم",
+    "Tangible Book Value": "القيمة الدفترية الملموسة",
+    "Tangible Book Value Per Share": "القيمة الدفترية الملموسة للسهم",
+
+    # Cash Flow
+    "Other Amortization": "إطفاءات أخرى",
+    "Stock-Based Compensation": "تعويضات مبنية على الأسهم",
+    "Deferred Income Taxes": "ضرائب دخل مؤجلة",
+    "Loss (Gain) From Sale of Assets": "خسارة (ربح) بيع أصول",
+    "Loss (Gain) From Sale of Investments": "خسارة (ربح) بيع استثمارات",
+    "Loss (Gain) on Equity Investments": "خسارة (ربح) استثمارات ملكية",
+    "Total Asset Writedown": "إجمالي شطب الأصول",
+    "Asset Writedown & Restructuring Costs": "شطب الأصول وتكاليف إعادة الهيكلة",
+    "Provision for Credit Losses": "مخصص خسائر الائتمان",
+    "Change in Trading Asset Securities": "التغير في الأوراق المالية للمتاجرة",
+    "Change in Income Taxes": "التغير في ضرائب الدخل",
+    "Change in Other Net Operating Assets": "التغير في صافي الأصول التشغيلية الأخرى",
+    "Change in Accounts Receivable": "التغير في الذمم المدينة",
+    "Change in Inventory": "التغير في المخزون",
+    "Change in Accounts Payable": "التغير في الذمم الدائنة",
+    "Change in Unearned Revenue": "التغير في الإيرادات غير المكتسبة",
+    "Change in Working Capital": "التغير في رأس المال العامل",
+    "Other Operating Activities": "أنشطة تشغيلية أخرى",
+    "Net Cash from Discontinued Operations": "صافي النقد من العمليات المتوقفة",
+    "Operating Cash Flow": "التدفق النقدي التشغيلي",
+    "Operating Cash Flow Growth": "نمو التدفق النقدي التشغيلي",
+    "Capital Expenditures": "النفقات الرأسمالية",
+    "Sale of Property, Plant and Equipment": "بيع ممتلكات ومصانع ومعدات",
+    "Cash Acquisitions": "استحواذات نقدية",
+    "Investment in Securities": "استثمار في أوراق مالية",
+    "Sales of Investments": "بيع استثمارات",
+    "Sale (Purchase) of Intangibles": "بيع (شراء) أصول غير ملموسة",
+    "Income (Loss) Equity Investments": "دخل (خسارة) استثمارات الملكية",
+    "Divestitures": "تصفية استثمارات",
+    "Other Investing Activities": "أنشطة استثمارية أخرى",
+    "Investing Cash Flow": "التدفق النقدي الاستثماري",
+    "Short-Term Debt Issued": "إصدار ديون قصيرة الأجل",
+    "Long-Term Debt Issued": "إصدار ديون طويلة الأجل",
+    "Total Debt Issued": "إجمالي الديون المصدرة",
+    "Short-Term Debt Repaid": "سداد ديون قصيرة الأجل",
+    "Long-Term Debt Repaid": "سداد ديون طويلة الأجل",
+    "Total Debt Repaid": "إجمالي الديون المسددة",
+    "Net Debt Issued (Repaid)": "صافي الديون المصدرة (المسددة)",
+    "Issuance of Common Stock": "إصدار أسهم عادية",
+    "Repurchase of Common Stock": "إعادة شراء أسهم عادية",
+    "Common Dividends Paid": "توزيعات أرباح نقدية",
+    "Net Increase (Decrease) in Deposit Accounts": "صافي الزيادة (النقص) في الودائع",
+    "Other Financing Activities": "أنشطة تمويلية أخرى",
+    "Financing Cash Flow": "التدفق النقدي التمويلي",
+    "Foreign Exchange Rate Adjustments": "تعديلات أسعار الصرف",
+    "Miscellaneous Cash Flow Adjustments": "تعديلات نقدية متنوعة",
+    "Net Cash Flow": "صافي التدفق النقدي",
+    "Cash Interest Paid": "الفوائد النقدية المدفوعة",
+    "Cash Income Tax Paid": "ضرائب الدخل النقدية المدفوعة",
+    "Levered Free Cash Flow": "التدفق النقدي الحر المرفوع",
+    "Unlevered Free Cash Flow": "التدفق النقدي الحر غير المرفوع",
+
+    # Ratios
+    "Last Close Price": "آخر سعر إغلاق",
+    "Market Capitalization": "القيمة السوقية",
+    "Market Cap Growth": "نمو القيمة السوقية",
+    "Enterprise Value": "قيمة المنشأة",
+    "PE Ratio": "مكرر الربحية (P/E)",
+    "Forward PE": "مكرر الربحية المستقبلي",
+    "PEG Ratio": "مكرر الربحية للنمو (PEG)",
+    "PS Ratio": "مكرر المبيعات (P/S)",
+    "PB Ratio": "مكرر القيمة الدفترية (P/B)",
+    "P/TBV Ratio": "مكرر القيمة الدفترية الملموسة",
+    "P/FCF Ratio": "مكرر التدفق النقدي الحر",
+    "P/OCF Ratio": "مكرر التدفق النقدي التشغيلي",
+    "EV/EBITDA": "قيمة المنشأة / EBITDA",
+    "EV/Sales": "قيمة المنشأة / المبيعات",
+    "Earnings Yield": "عائد الأرباح",
+    "FCF Yield": "عائد التدفق النقدي الحر",
+    "Return on Equity (ROE)": "العائد على حقوق الملكية (ROE)",
+    "Return on Assets (ROA)": "العائد على الأصول (ROA)",
+    "Return on Capital (ROIC)": "العائد على رأس المال المستثمر (ROIC)",
+    "Return on Capital Employed (ROCE)": "العائد على رأس المال المستخدم (ROCE)",
+    "Debt / Equity Ratio": "نسبة الدين إلى حقوق الملكية",
+    "Debt / Assets": "نسبة الدين إلى الأصول",
+    "Debt / EBITDA": "الدين / EBITDA",
+    "Debt / FCF": "الدين / التدفق النقدي الحر",
+    "Interest Coverage": "تغطية الفائدة",
+    "Current Ratio": "النسبة المتداولة",
+    "Quick Ratio": "النسبة السريعة",
+    "Asset Turnover": "دوران الأصول",
+    "Inventory Turnover": "دوران المخزون",
+    "Receivables Turnover": "دوران الذمم المدينة",
+    "Revenue Per Share": "الإيرادات للسهم",
+    "Dividend Yield": "عائد التوزيعات",
+    "Payout Ratio": "نسبة التوزيع",
+    
+    # KPIs
+    "revenue_ttm": "الإيرادات (TTM)",
+    "net_income_ttm": "صافي الدخل (TTM)",
+    "eps_ttm": "ربحية السهم (TTM)",
+    "roe": "العائد على حقوق الملكية",
+    "roa": "العائد على الأصول",
+    "roic": "العائد على رأس المال المستثمر",
+    "roce": "العائد على رأس المال المستخدم",
+    "gross_margin": "هامش إجمالي الربح",
+    "operating_margin": "الهامش التشغيلي",
+    "pretax_margin": "هامش الربح قبل الضرائب",
+    "profit_margin": "هامش صافي الربح",
+    "ebitda_margin": "هامش EBITDA",
+    "fcf_margin": "هامش التدفق الحر",
+    "ocf_ttm": "التدفق التشغيلي (TTM)",
+    "fcf_ttm": "التدفق الحر (TTM)",
+    "fcf_per_share": "التدفق الحر للسهم",
+    "cash_ttm": "النقد (TTM)",
+    "net_cash": "صافي النقد",
+    "total_debt": "إجمالي الديون",
+    "book_value": "القيمة الدفترية",
+    "bvps": "القيمة الدفترية للسهم",
+    "working_capital": "رأس المال العامل",
+    "pe_ratio": "مكرر الربحية",
+    "forward_pe": "مكرر الربحية المستقبلي",
+    "pb_ratio": "مكرر القيمة الدفترية",
+    "ps_ratio": "مكرر المبيعات",
+    "dividend_yield": "عائد التوزيعات",
+    "payout_ratio": "نسبة التوزيع",
+    "earnings_yield": "عائد الأرباح",
+    "fcf_yield": "عائد التدفق الحر",
+    "piotroski_f_score": "نقاط بيوتروسكي",
+    "altman_z_score": "مقياس ألتمان Z",
+    "beta_5y": "بيتا (5 سنوات)",
+    "shares_outstanding": "الأسهم القائمة",
+    "effective_tax_rate": "معدل الضريبة الفعلي",
+}
+
 
 
 
@@ -611,18 +886,18 @@ async def handle_financials_package(
     
     annual_data = {
         'years': extract_years(income_annual),
-        'income': _process_rows(income_annual, INCOME_DISPLAY, INCOME_DISPLAY_ORDERED),
-        'balance': _process_rows(balance_annual, BALANCE_DISPLAY, BALANCE_DISPLAY_ORDERED),
-        'cashflow': _process_rows(cashflow_annual, CASHFLOW_DISPLAY, CASHFLOW_DISPLAY_ORDERED),
-        'ratios': _process_rows(ratios_rows, RATIOS_DISPLAY, RATIOS_DISPLAY_ORDERED),
-        'kpis': _process_rows(ratios_rows, RATIOS_DISPLAY, RATIOS_DISPLAY_ORDERED),
+        'income': _process_rows(income_annual, INCOME_DISPLAY, INCOME_DISPLAY_ORDERED, language=language),
+        'balance': _process_rows(balance_annual, BALANCE_DISPLAY, BALANCE_DISPLAY_ORDERED, language=language),
+        'cashflow': _process_rows(cashflow_annual, CASHFLOW_DISPLAY, CASHFLOW_DISPLAY_ORDERED, language=language),
+        'ratios': _process_rows(ratios_rows, RATIOS_DISPLAY, RATIOS_DISPLAY_ORDERED, language=language),
+        'kpis': _process_rows(ratios_rows, RATIOS_DISPLAY, RATIOS_DISPLAY_ORDERED, language=language),
     }
     
     quarterly_data = {
         'years': extract_years(income_quarterly),
-        'income': _process_rows_quarterly(income_quarterly, INCOME_DISPLAY, INCOME_DISPLAY_ORDERED),
-        'balance': _process_rows_quarterly(balance_quarterly, BALANCE_DISPLAY, BALANCE_DISPLAY_ORDERED),
-        'cashflow': _process_rows_quarterly(cashflow_quarterly, CASHFLOW_DISPLAY, CASHFLOW_DISPLAY_ORDERED),
+        'income': _process_rows_quarterly(income_quarterly, INCOME_DISPLAY, INCOME_DISPLAY_ORDERED, language=language),
+        'balance': _process_rows_quarterly(balance_quarterly, BALANCE_DISPLAY, BALANCE_DISPLAY_ORDERED, language=language),
+        'cashflow': _process_rows_quarterly(cashflow_quarterly, CASHFLOW_DISPLAY, CASHFLOW_DISPLAY_ORDERED, language=language),
         'ratios': [],  # Ratios typically only annual
         'kpis': [],
     }
@@ -794,6 +1069,89 @@ async def handle_financials_package(
     ttm_cashflow_series = calculate_ttm(cashflow_quarterly, CASHFLOW_DISPLAY, is_snapshot=False)
     
     # Process into UI format
+    ttm_income_ui, ttm_periods = process_ttm_to_ui(ttm_income_series, INCOME_DISPLAY) # TTM internal labels remain English for calculation, mapped at UI layer if needed? 
+    # Actually process_ttm_to_ui uses keys from INCOME_DISPLAY which are English. 
+    # We should probably localize the output if language is 'ar'.
+    # BUT process_ttm_to_ui is complex. 
+    # A cleaner hack: TTM data is usually separate from the main table.
+    
+    # For now, let's leave TTM labels in English or implement a quick fix if needed.
+    # The user asked for "responses", specifically the cards.
+    # The Financial Explorer card uses 'income', 'balance', 'cashflow' arrays.
+    # 'ttm_data' is separate.
+    
+    # Correct approach: Update process_ttm_to_ui to accept language or translation map.
+    # However, process_ttm_to_ui is defined INSIDE handle_financials_package.
+    
+    # Redefine process_ttm_to_ui to translate labels
+    def process_ttm_to_ui(ttm_series, display_map):
+        if not ttm_series:
+            return [], []
+            
+        # Deduplicate periods
+        seen = set()
+        unique_series = []
+        for r in ttm_series:
+            if r['period'] not in seen:
+                seen.add(r['period'])
+                unique_series.append(r)
+                
+        ttm_periods = [r['period'] for r in unique_series]
+        processed = []
+        
+        # Calculate Deltas
+        has_prev = len(unique_series) >= 2
+        latest_idx = 0
+        prev_idx = 1
+        
+        for col, label in display_map.items():
+            # LOCALIZATION:
+            final_label = label
+            if language == 'ar':
+                final_label = AR_TERMS.get(label, label)
+
+            row_obj = {
+                'label': final_label,
+                'values': {},
+                'isGrowth': 'growth' in col,
+                'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity'],
+                'indent': 1 if col not in ['revenue', 'gross_profit', 'operating_income', 'net_income'] else 0,
+                'change_abs': None,
+                'change_pct': None,
+                'prev_val': None
+            }
+            
+            has_val = False
+            for entry in unique_series:
+                p = entry['period']
+                val = entry['data'].get(col)
+                if val is not None:
+                    row_obj['values'][p] = val
+                    has_val = True
+                else:
+                    row_obj['values'][p] = None
+            
+            # Compute Delta
+            if has_prev and has_val:
+                v0 = unique_series[latest_idx]['data'].get(col)
+                v1 = unique_series[prev_idx]['data'].get(col)
+                
+                if v0 is not None and v1 is not None:
+                    row_obj['prev_val'] = v1
+                    try:
+                        row_obj['change_abs'] = v0 - v1
+                        if v1 != 0:
+                            row_obj['change_pct'] = ((v0 - v1) / abs(v1)) * 100
+                        else:
+                             row_obj['change_pct'] = 0 if v0 == 0 else 100
+                    except Exception:
+                        pass
+
+            if has_val:
+                processed.append(row_obj)
+        return processed, ttm_periods
+
+    # Process into UI format (re-run with new function)
     ttm_income_ui, ttm_periods = process_ttm_to_ui(ttm_income_series, INCOME_DISPLAY)
     ttm_balance_ui, _ = process_ttm_to_ui(ttm_balance_series, BALANCE_DISPLAY)
     ttm_cashflow_ui, _ = process_ttm_to_ui(ttm_cashflow_series, CASHFLOW_DISPLAY)
@@ -940,11 +1298,13 @@ async def handle_financials_package(
         'actions': actions
     }
 
-def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], ordered_list: List[tuple] = None) -> List[Dict[str, Any]]:
+def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], ordered_list: List[tuple] = None, language: str = 'en') -> List[Dict[str, Any]]:
     """Convert DB rows into UI-ready row objects with years as columns.
     
     If ordered_list is provided (e.g., INCOME_DISPLAY_ORDERED), use it for ordering and metadata.
     Otherwise fall back to display_map dict.
+    
+    Now supports Arabic localization via `language` param.
     """
     if not rows:
         return []
@@ -997,8 +1357,12 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], order
             if col == 'period_ending':
                 continue  # Already handled above
                 
+            final_label = label
+            if language == 'ar':
+                final_label = AR_TERMS.get(label, label)
+
             row_obj = {
-                'label': label,
+                'label': final_label,
                 'values': {},
                 'isGrowth': options.get('isGrowth', False),
                 'isSubtotal': options.get('isSubtotal', False),
@@ -1029,9 +1393,13 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], order
         for col, label in display_map.items():
             if col == 'period_ending':
                 continue
-                
+            
+            final_label = label
+            if language == 'ar':
+                final_label = AR_TERMS.get(label, label)
+
             row_obj = {
-                'label': label,
+                'label': final_label,
                 'values': {},
                 'isGrowth': 'growth' in col.lower(),
                 'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity', 'total_liabilities', 'cash_from_operating', 'cash_from_investing', 'cash_from_financing', 'free_cashflow'],
@@ -1058,7 +1426,7 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], order
     return processed
 
 
-def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, str], ordered_list: List[tuple] = None) -> List[Dict[str, Any]]:
+def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, str], ordered_list: List[tuple] = None, language: str = 'en') -> List[Dict[str, Any]]:
     """Convert quarterly DB rows into UI-ready row objects with Q1 2024 style labels."""
     if not rows:
         return []
@@ -1143,9 +1511,13 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
         for col, label in display_map.items():
             if col == 'period_ending':
                 continue
-                
+            
+            final_label = label
+            if language == 'ar':
+                final_label = AR_TERMS.get(label, label)
+
             row_obj = {
-                'label': label,
+                'label': final_label,
                 'values': {},
                 'isGrowth': 'growth' in col.lower(),
                 'isSubtotal': col in ['revenue', 'gross_profit', 'operating_income', 'net_income', 'total_assets', 'total_equity'],
@@ -1243,11 +1615,11 @@ async def handle_financial_metric(
         net_margin = safe_div(net_income, revenue)
         
         data_points = {
-            "Gross Margin": _format_percent(gross_margin),
-            "Operating Margin": _format_percent(op_margin),
-            "Net Profit Margin": _format_percent(net_margin),
-            "Revenue": _format_number(revenue),
-            "Net Income": _format_number(net_income)
+            "Gross Margin" if language == 'en' else "هامش إجمالي الربح": _format_percent(gross_margin),
+            "Operating Margin" if language == 'en' else "الهامش التشغيلي": _format_percent(op_margin),
+            "Net Profit Margin" if language == 'en' else "هامش صافي الربح": _format_percent(net_margin),
+            "Revenue" if language == 'en' else "الإيرادات": _format_number(revenue),
+            "Net Income" if language == 'en' else "صافي الدخل": _format_number(net_income)
         }
         
         # Insight
@@ -1270,10 +1642,10 @@ async def handle_financial_metric(
             ni_growth = safe_div(net_income - prev_ni, abs(prev_ni))
             
         data_points = {
-            "Revenue Growth (YoY)": _format_percent(rev_growth),
-            "Net Income Growth": _format_percent(ni_growth),
-            "Current Revenue": _format_number(revenue),
-            "Current Net Income": _format_number(net_income)
+            "Revenue Growth (YoY)" if language == 'en' else "نمو الإيرادات (سنوي)": _format_percent(rev_growth),
+            "Net Income Growth" if language == 'en' else "نمو صافي الدخل": _format_percent(ni_growth),
+            "Current Revenue" if language == 'en' else "الإيرادات الحالية": _format_number(revenue),
+            "Current Net Income" if language == 'en' else "صافي الدخل الحالي": _format_number(net_income)
         }
         
         if rev_growth:
@@ -1300,10 +1672,10 @@ async def handle_financial_metric(
             da_str = _format_percent(debt_assets)
             
             data_points = {
-                "Debt / Equity": de_str,
-                "Debt / Assets": da_str,
-                "Total Debt": _format_number(total_debt),
-                "Total Equity": _format_number(total_equity)
+                "Debt / Equity" if language == 'en' else "الدين / حقوق الملكية": de_str,
+                "Debt / Assets" if language == 'en' else "الدين / الأصول": da_str,
+                "Total Debt" if language == 'en' else "إجمالي الديون": _format_number(total_debt),
+                "Total Equity" if language == 'en' else "إجمالي حقوق الملكية": _format_number(total_equity)
             }
         else:
              data_points = {"Status": "No Balance Sheet Data"}
@@ -1316,9 +1688,9 @@ async def handle_financial_metric(
         eps_diluted = float(latest_income.get('eps_diluted') or 0)
         
         data_points = {
-            "Basic EPS": f"{eps:.2f} {curr}",
-            "Diluted EPS": f"{eps_diluted:.2f} {curr}",
-            "Net Income": _format_number(net_income)
+            "Basic EPS" if language == 'en' else "ربحية السهم (الأساسية)": f"{eps:.2f} {curr}",
+            "Diluted EPS" if language == 'en' else "ربحية السهم (المخففة)": f"{eps_diluted:.2f} {curr}",
+            "Net Income" if language == 'en' else "صافي الدخل": _format_number(net_income)
         }
         
     # Default fallback
@@ -1417,6 +1789,10 @@ async def handle_ratio_analysis(
              fmt = f"{val * 100:.2f}%"
              
         label = c.replace('_', ' ').title().replace('Pe', 'P/E').replace('Pb', 'P/B').replace('Ps', 'P/S').replace('Peg', 'PEG').replace('Ev', 'EV').replace('Ebitda', 'EBITDA').replace('Roe', 'ROE').replace('Roa', 'ROA').replace('Roic', 'ROIC')
+        
+        if language == 'ar':
+            label = AR_TERMS.get(label, label)
+            
         data_points[label] = fmt
         
     return {

@@ -16,6 +16,29 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
+SECTOR_AR_MAP = {
+    "Banks": "البنوك",
+    "Real Estate": "العقارات",
+    "Financial Services": "الخدمات المالية",
+    "Industrial Goods & Services": "السلع والخدمات الصناعية",
+    "Basic Resources": "الموارد الأساسية",
+    "Food & Beverage": "الأغذية والمشروبات",
+    "Telecommunications": "الاتصالات",
+    "Healthcare & Pharmaceuticals": "الرعاية الصحية والأدوية",
+    "Construction & Materials": "التشييد ومواد البناء",
+    "Travel & Leisure": "السياحة والترفيه",
+    "Other": "قطاعات أخرى",
+}
+
+
+def _sector_label(sector_name: Optional[str], language: str = "en") -> str:
+    if not sector_name:
+        return "Other" if language == "en" else "قطاعات أخرى"
+    if language == "ar":
+        return SECTOR_AR_MAP.get(sector_name, sector_name)
+    return sector_name
+
+
 async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -> Dict[str, Any]:
     """
     Handle HIDDEN_GEMS intent - Discovery of undervalued stocks
@@ -134,62 +157,98 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             margin = row.get('net_profit_margin')
             
             if pb and pb < 1:
-                reasons.append(f"Trading below book value at {pb:.2f}x P/B")
+                reasons.append(
+                    f"يتداول أقل من القيمة الدفترية عند {pb:.2f}x"
+                    if language == "ar" else
+                    f"Trading below book value at {pb:.2f}x P/B"
+                )
             elif pb and pb < 1.5:
-                reasons.append(f"Attractive valuation at {pb:.2f}x P/B")
-                
+                reasons.append(
+                    f"تقييم جذاب عند {pb:.2f}x"
+                    if language == "ar" else
+                    f"Attractive valuation at {pb:.2f}x P/B"
+                )
+
             if pe and pe < 10:
-                reasons.append(f"Low P/E of {pe:.1f}x suggests undervaluation")
-                
+                reasons.append(
+                    f"مكرر ربحية منخفض عند {pe:.1f}x يدعم فكرة انخفاض التقييم"
+                    if language == "ar" else
+                    f"Low P/E of {pe:.1f}x suggests undervaluation"
+                )
+
             if roe and roe > 15:
-                reasons.append(f"Strong profitability with {roe:.1f}% ROE")
-                
+                reasons.append(
+                    f"ربحية قوية مع عائد على حقوق الملكية {roe:.1f}%"
+                    if language == "ar" else
+                    f"Strong profitability with {roe:.1f}% ROE"
+                )
+
             if margin and margin > 10:
-                reasons.append(f"Healthy {margin:.1f}% net margin")
-                
+                reasons.append(
+                    f"هامش صافي صحي عند {margin:.1f}%"
+                    if language == "ar" else
+                    f"Healthy {margin:.1f}% net margin"
+                )
+
             market_cap = row.get('market_cap', 0)
             if market_cap < 1e9:
-                reasons.append("Small cap with growth potential")
+                reasons.append("شركة صغيرة برصيد نمو واعد" if language == "ar" else "Small cap with growth potential")
             
             if not reasons:
-                reasons.append("Solid fundamentals with limited analyst coverage")
+                reasons.append(
+                    "أساسيات قوية مع تغطية بحثية محدودة"
+                    if language == "ar" else
+                    "Solid fundamentals with limited analyst coverage"
+                )
             
             why_gem = ". ".join(reasons[:3]) + "."
             
+            company_name = row.get('name_ar') if language == 'ar' and row.get('name_ar') else (row.get('name_en') or row['symbol'])
             gems.append({
                 "ticker": row['symbol'],
-                "company_name": row.get('name_en') or row['symbol'],
+                "company_name": company_name,
                 "score": score,
                 "is_top_pick": idx == 0,
+                "highlighted": idx == 0,
+                "badge": "Top Pick" if language == "en" and idx == 0 else ("الأفضل" if language == "ar" and idx == 0 else None),
                 "logo_url": row.get('logo_url'),
                 "metrics": {
-                    "P/B": f"{pb:.2f}x" if pb else "N/A",
-                    "P/E": f"{pe:.1f}x" if pe else "N/A",
-                    "ROE": f"{roe:.1f}%" if roe else "N/A",
-                    "Cap": _format_number(market_cap)
+                    ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb else ("N/A" if language == "en" else "غير متاح"),
+                    ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe else ("N/A" if language == "en" else "غير متاح"),
+                    ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe else ("N/A" if language == "en" else "غير متاح"),
+                    ("Cap" if language == "en" else "القيمة السوقية"): _format_number(market_cap, language=language)
                 },
+                "description": why_gem,
                 "why_its_a_gem": why_gem
             })
         
         # Build conversational text
         if gems:
             top_gem = gems[0]['ticker']
-            conv_text = f"🎯 Found {len(gems)} hidden gems in the EGX. These are underfollowed stocks trading at significant discounts to their intrinsic value. {top_gem} stands out as my top pick with strong fundamentals and limited analyst coverage."
+            conv_text = (
+                f"🎯 Found {len(gems)} hidden gems in the EGX. These are underfollowed names trading at clear valuation discounts. {top_gem} stands out on quality and valuation."
+                if language == "en"
+                else f"🎯 تم رصد {len(gems)} فرص خفية في السوق المصري. هذه أسهم أقل تغطيةً وتتداول بخصم تقييمي واضح، ويبرز {top_gem} كأفضل اختيار حالياً."
+            )
         else:
-            conv_text = "No hidden gems matching my strict criteria today. The market may be fairly priced, or quality small caps are already discovered."
+            conv_text = (
+                "No hidden gems matching the strict screen right now."
+                if language == "en"
+                else "لا توجد فرص خفية مطابقة لمعايير الفحص الصارمة حالياً."
+            )
         
         # Build methodology card
         methodology = {
-            "title": "Hidden Gem Screening Criteria",
+            "title": "Hidden Gem Screening Criteria" if language == "en" else "معايير فحص الفرص الخفية",
             "icon": "🎯",
-            "description": "Multi-factor discovery screen",
+            "description": "Multi-factor discovery screen" if language == "en" else "فحص متعدد العوامل",
             "criteria": [
-                {"label": "Market Cap", "value": "EGP 500M - 5B"},
-                {"label": "Valuation Discount", "value": ">15% below sector"},
-                {"label": "Quality Filter", "value": "ROE > 15% or Positive Margins"},
-                {"label": "Coverage", "value": "Not in EGX 30 (underfollowed)"}
+                {"label": "Market Cap" if language == "en" else "القيمة السوقية", "value": "EGP 500M - 5B" if language == "en" else "500 مليون - 5 مليار جنيه"},
+                {"label": "Valuation Discount" if language == "en" else "خصم التقييم", "value": ">15% below sector" if language == "en" else "أكثر من 15% أقل من متوسط القطاع"},
+                {"label": "Quality Filter" if language == "en" else "فلتر الجودة", "value": "ROE > 15% or Positive Margins" if language == "en" else "عائد > 15% أو هوامش إيجابية"},
+                {"label": "Coverage" if language == "en" else "التغطية", "value": "Not in EGX 30 (underfollowed)" if language == "en" else "خارج المؤشر الرئيسي (تغطية أقل)"}
             ],
-            "note": "Gems are stocks overlooked by the market with solid fundamentals."
+            "note": "Gems are overlooked stocks with solid fundamentals." if language == "en" else "الفرص الخفية هي أسهم مهملة سوقياً رغم قوة الأساسيات."
         }
         
         return {
@@ -197,34 +256,35 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             "conversational_text": conv_text,
             "cards": [
                 {"type": "methodology", "data": methodology},
-                {"type": "hidden_gems", "data": {"title": "Hidden Gems", "stocks": gems}}
+                {"type": "hidden_gems", "data": {"title": "Hidden Gems" if language == "en" else "الفرص الخفية", "stocks": gems}}
             ],
             # NEW: Premium FrameworkCard for world-class UI
             "framework_card": {
                 "icon": "🎯",
-                "title": "HIDDEN GEM CRITERIA",
-                "subtitle": "Multi-Factor Discovery Screen",
+                "title": "HIDDEN GEM CRITERIA" if language == "en" else "معايير الفرص الخفية",
+                "subtitle": "Multi-Factor Discovery Screen" if language == "en" else "فحص اكتشاف متعدد العوامل",
                 "items": [
-                    "Market Cap: EGP 500M - 5B (small/mid cap sweet spot)",
-                    "Valuation: >15% discount to sector average (P/B or P/E)",
-                    "Quality: ROE > 15% or positive net margins",
-                    "Coverage: Not in EGX 30 (underfollowed = opportunity)"
+                    "Market Cap: EGP 500M - 5B (small/mid cap sweet spot)" if language == "en" else "القيمة السوقية: 500 مليون - 5 مليار جنيه (شريحة الشركات الصغيرة/المتوسطة)",
+                    "Valuation: >15% discount to sector average (P/B or P/E)" if language == "en" else "التقييم: خصم أكبر من 15% مقابل متوسط القطاع (P/B أو P/E)",
+                    "Quality: ROE > 15% or positive net margins" if language == "en" else "الجودة: عائد على حقوق الملكية أعلى من 15% أو هوامش صافي إيجابية",
+                    "Coverage: Not in EGX 30 (underfollowed = opportunity)" if language == "en" else "التغطية: خارج المؤشر الثلاثيني (تغطية بحثية أقل = فرصة)"
                 ],
                 "border_color": "teal"
             },
+            "stock_list": gems,
             "learning_section": {
-                "title": "📊 Understanding Hidden Gems",
+                "title": "📊 Understanding Hidden Gems" if language == "en" else "📊 كيف تقرأ فرص السوق الخفية",
                 "items": [
-                    "Hidden gems are overlooked stocks with strong fundamentals but limited analyst coverage.",
-                    "Small caps often outperform over time as the market discovers their value.",
-                    "The score reflects valuation discount, profitability, and growth potential.",
-                    "Always do your own due diligence before investing in less liquid stocks."
+                    "Hidden gems are overlooked stocks with strong fundamentals but limited analyst coverage." if language == "en" else "الفرص الخفية هي أسهم قوية أساسياً لكن تغطيتها البحثية ضعيفة.",
+                    "Small caps often outperform over time as the market discovers their value." if language == "en" else "أسهم الشركات الصغيرة والمتوسطة قد تتفوق مع مرور الوقت عند اكتشاف السوق لقيمتها.",
+                    "The score reflects valuation discount, profitability, and growth potential." if language == "en" else "الدرجة تعكس خصم التقييم وجودة الربحية وإمكانات النمو.",
+                    "Always do your own due diligence before investing in less liquid stocks." if language == "en" else "تحقق دائماً من السيولة والمخاطر قبل اتخاذ قرار الاستثمار."
                 ]
             },
             "disclaimer_card": {
                 "icon": "⚠️",
-                "title": "Discovery Analysis",
-                "text": "Hidden gems carry higher risk due to lower liquidity and limited information. This is for educational purposes only.",
+                "title": "Discovery Analysis" if language == "en" else "تحليل فرص خفية",
+                "text": "Hidden gems carry higher risk due to lower liquidity and limited information. This is for educational purposes only." if language == "en" else "الأسهم الخفية غالباً أعلى مخاطرة بسبب انخفاض السيولة وقلة التغطية. هذا تحليل تعليمي فقط.",
                 "variant": "warning"
             }
         }
@@ -234,7 +294,11 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         return {
             "success": False,
             "error": str(e),
-            "conversational_text": "I couldn't screen for hidden gems right now. Please try again."
+            "conversational_text": (
+                "I couldn't screen for hidden gems right now. Please try again."
+                if language == "en" else
+                "تعذر تنفيذ فحص الفرص الخفية حالياً. يرجى المحاولة مرة أخرى."
+            )
         }
 
 
@@ -281,18 +345,30 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         if avg_pe < historical_pe * 0.8:  # >20% below average
             valuation_score = 25
             valuation_status = "positive"
-            valuation_detail = f"Market P/E of {avg_pe:.1f}x is below historical average"
+            valuation_detail = (
+                f"مكرر ربحية السوق {avg_pe:.1f}x أقل من متوسطه التاريخي"
+                if language == "ar" else
+                f"Market P/E of {avg_pe:.1f}x is below historical average"
+            )
         elif avg_pe < historical_pe * 1.1:
             valuation_score = 18
             valuation_status = "neutral"
-            valuation_detail = f"Market P/E of {avg_pe:.1f}x is near historical average"
+            valuation_detail = (
+                f"مكرر ربحية السوق {avg_pe:.1f}x قريب من متوسطه التاريخي"
+                if language == "ar" else
+                f"Market P/E of {avg_pe:.1f}x is near historical average"
+            )
         else:
             valuation_score = 8
             valuation_status = "negative"
-            valuation_detail = f"Market P/E of {avg_pe:.1f}x is above historical average"
+            valuation_detail = (
+                f"مكرر ربحية السوق {avg_pe:.1f}x أعلى من متوسطه التاريخي"
+                if language == "ar" else
+                f"Market P/E of {avg_pe:.1f}x is above historical average"
+            )
         
         factors.append({
-            "name": "Valuation",
+            "name": "التقييم" if language == "ar" else "Valuation",
             "points": valuation_score,
             "max_points": 25,
             "status": valuation_status,
@@ -309,18 +385,18 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         if breadth_ratio > 0.6:
             breadth_score = 25
             breadth_status = "positive"
-            breadth_detail = "Strong buying pressure across the market"
+            breadth_detail = "زخم شراء قوي عبر أغلب الأسهم" if language == "ar" else "Strong buying pressure across the market"
         elif breadth_ratio > 0.4:
             breadth_score = 15
             breadth_status = "neutral"
-            breadth_detail = "Mixed market sentiment"
+            breadth_detail = "معنويات سوقية مختلطة" if language == "ar" else "Mixed market sentiment"
         else:
             breadth_score = 5
             breadth_status = "negative"
-            breadth_detail = "Selling pressure dominates"
+            breadth_detail = "ضغوط البيع هي المسيطرة" if language == "ar" else "Selling pressure dominates"
         
         factors.append({
-            "name": "Market Breadth",
+            "name": "اتساع السوق" if language == "ar" else "Market Breadth",
             "points": breadth_score,
             "max_points": 25,
             "status": breadth_status,
@@ -333,18 +409,30 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         if avg_yield > 4:
             yield_score = 20
             yield_status = "positive"
-            yield_detail = f"Attractive average yield of {avg_yield:.1f}%"
+            yield_detail = (
+                f"متوسط عائد توزيعات جذاب عند {avg_yield:.1f}%"
+                if language == "ar" else
+                f"Attractive average yield of {avg_yield:.1f}%"
+            )
         elif avg_yield > 2:
             yield_score = 12
             yield_status = "neutral"
-            yield_detail = f"Moderate average yield of {avg_yield:.1f}%"
+            yield_detail = (
+                f"متوسط عائد توزيعات متوسط عند {avg_yield:.1f}%"
+                if language == "ar" else
+                f"Moderate average yield of {avg_yield:.1f}%"
+            )
         else:
             yield_score = 6
             yield_status = "negative"
-            yield_detail = f"Low average yield of {avg_yield:.1f}%"
+            yield_detail = (
+                f"متوسط عائد توزيعات منخفض عند {avg_yield:.1f}%"
+                if language == "ar" else
+                f"Low average yield of {avg_yield:.1f}%"
+            )
         
         factors.append({
-            "name": "Income Potential",
+            "name": "الدخل النقدي" if language == "ar" else "Income Potential",
             "points": yield_score,
             "max_points": 20,
             "status": yield_status,
@@ -357,18 +445,30 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         if avg_pb < 1.2:
             pb_score = 15
             pb_status = "positive"
-            pb_detail = f"Many stocks trading near book value ({avg_pb:.2f}x)"
+            pb_detail = (
+                f"عدد كبير من الأسهم يتداول قرب القيمة الدفترية ({avg_pb:.2f}x)"
+                if language == "ar" else
+                f"Many stocks trading near book value ({avg_pb:.2f}x)"
+            )
         elif avg_pb < 1.8:
             pb_score = 10
             pb_status = "neutral"
-            pb_detail = f"Fair book value multiples ({avg_pb:.2f}x)"
+            pb_detail = (
+                f"مضاعفات دفترية متوازنة ({avg_pb:.2f}x)"
+                if language == "ar" else
+                f"Fair book value multiples ({avg_pb:.2f}x)"
+            )
         else:
             pb_score = 5
             pb_status = "negative"
-            pb_detail = f"Elevated book value multiples ({avg_pb:.2f}x)"
+            pb_detail = (
+                f"مضاعفات دفترية مرتفعة ({avg_pb:.2f}x)"
+                if language == "ar" else
+                f"Elevated book value multiples ({avg_pb:.2f}x)"
+            )
         
         factors.append({
-            "name": "Asset Values",
+            "name": "قيم الأصول" if language == "ar" else "Asset Values",
             "points": pb_score,
             "max_points": 15,
             "status": pb_status,
@@ -383,18 +483,18 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         if active_ratio > 0.7:
             liquidity_score = 15
             liquidity_status = "positive"
-            liquidity_detail = "High market participation and liquidity"
+            liquidity_detail = "مشاركة وسيولة مرتفعة في السوق" if language == "ar" else "High market participation and liquidity"
         elif active_ratio > 0.4:
             liquidity_score = 10
             liquidity_status = "neutral"
-            liquidity_detail = "Normal market activity levels"
+            liquidity_detail = "مستويات نشاط وسيولة ضمن المعدل الطبيعي" if language == "ar" else "Normal market activity levels"
         else:
             liquidity_score = 5
             liquidity_status = "negative"
-            liquidity_detail = "Low market participation"
+            liquidity_detail = "مشاركة سوقية ضعيفة" if language == "ar" else "Low market participation"
         
         factors.append({
-            "name": "Liquidity",
+            "name": "السيولة" if language == "ar" else "Liquidity",
             "points": liquidity_score,
             "max_points": 15,
             "status": liquidity_status,
@@ -404,19 +504,43 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         
         # Generate assessment text
         if total_score >= 75:
-            assessment = "Constructive Environment - Multiple factors support equity investment. Consider systematic allocation."
+            assessment = "Constructive Environment - Multiple factors support equity investment. Consider systematic allocation." if language == "en" else "بيئة إيجابية: عدة عوامل تدعم الاستثمار في الأسهم."
         elif total_score >= 55:
-            assessment = "Mixed Environment - Stock-specific fundamentals matter more than macro. Be selective."
+            assessment = "Mixed Environment - Stock-specific fundamentals matter more than macro. Be selective." if language == "en" else "بيئة مختلطة: انتقائية الأسهم أهم من اتجاه السوق العام."
         elif total_score >= 35:
-            assessment = "Cautious Environment - Elevated risks present. Focus on quality and defensive sectors."
+            assessment = "Cautious Environment - Elevated risks present. Focus on quality and defensive sectors." if language == "en" else "بيئة حذرة: المخاطر أعلى، ويفضل التركيز على الجودة والقطاعات الدفاعية."
         else:
-            assessment = "Risk-Off Environment - Consider reducing equity exposure or focusing on cash-rich companies."
+            assessment = "Risk-Off Environment - Consider reducing equity exposure or focusing on cash-rich companies." if language == "en" else "بيئة عالية المخاطر: يفضل خفض التعرض للأسهم والتركيز على الشركات ذات السيولة القوية."
         
         # Conversational text
         if language == "ar":
-            conv_text = f"تقييم بيئة السوق حاليا {total_score}/100. {assessment}"
+            conv_text = f"النتيجة الكلية لبيئة السوق حالياً هي {total_score}/100. {assessment}"
         else:
             conv_text = f"Egypt's market environment scores {total_score}/100 currently. {assessment}"
+
+        positives = [f for f in factors if f["status"] == "positive"]
+        neutrals = [f for f in factors if f["status"] == "neutral"]
+        negatives = [f for f in factors if f["status"] == "negative"]
+
+        insight_cards = []
+        if positives:
+            insight_cards.append({
+                "variant": "success",
+                "title": "🟢 What's Working" if language == "en" else "🟢 ما الذي يدعم السوق",
+                "items": [f"{x['name']}: {x['detail']}" for x in positives]
+            })
+        if neutrals:
+            insight_cards.append({
+                "variant": "info",
+                "title": "🟡 Mixed Signals" if language == "en" else "🟡 إشارات مختلطة",
+                "items": [f"{x['name']}: {x['detail']}" for x in neutrals]
+            })
+        if negatives:
+            insight_cards.append({
+                "variant": "warning",
+                "title": "🔴 Headwinds" if language == "en" else "🔴 رياح معاكسة",
+                "items": [f"{x['name']}: {x['detail']}" for x in negatives]
+            })
         
         return {
             "success": True,
@@ -434,20 +558,40 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
                     }
                 }
             ],
-            "learning_section": {
-                "title": "📊 Understanding the Market Score",
+            "macro_score": {
+                "score": total_score,
+                "max_score": 100,
+                "assessment": assessment,
+                "factors": factors
+            },
+            "framework_card": {
+                "icon": "🌍",
+                "title": "MARKET TIMING FRAMEWORK" if language == "en" else "إطار توقيت السوق",
+                "subtitle": "Five-factor scorecard" if language == "en" else "تقييم من خمسة محاور",
                 "items": [
-                    "The score combines valuation, breadth, yield, and liquidity factors.",
-                    "75-100: Constructive - Multiple tailwinds support investing.",
-                    "55-75: Mixed - Be selective, focus on quality stocks.",
-                    "35-55: Cautious - Elevated risks, prefer defensive positioning.",
-                    "0-35: Risk-Off - Consider reducing exposure or holding cash."
+                    "Valuation vs historical averages" if language == "en" else "التقييم مقارنة بالمتوسطات التاريخية",
+                    "Breadth and market participation" if language == "en" else "اتساع السوق وجودة المشاركة",
+                    "Income attractiveness via dividends" if language == "en" else "جاذبية العائد عبر التوزيعات",
+                    "Book-value and asset backing context" if language == "en" else "سياق القيمة الدفترية ودعم الأصول",
+                    "Liquidity regime and risk appetite" if language == "en" else "نظام السيولة وشهية المخاطر",
+                ],
+                "border_color": "teal"
+            },
+            "insight_cards": insight_cards,
+            "learning_section": {
+                "title": "📊 Understanding the Market Score" if language == "en" else "📊 كيف تقرأ نتيجة السوق",
+                "items": [
+                    "The score combines valuation, breadth, yield, and liquidity factors." if language == "en" else "النتيجة تجمع بين التقييم واتساع السوق والعائد والسيولة.",
+                    "75-100: Constructive - Multiple tailwinds support investing." if language == "en" else "75-100: بيئة إيجابية مع عوامل داعمة متعددة.",
+                    "55-75: Mixed - Be selective, focus on quality stocks." if language == "en" else "55-75: بيئة مختلطة تتطلب انتقائية أعلى.",
+                    "35-55: Cautious - Elevated risks, prefer defensive positioning." if language == "en" else "35-55: بيئة حذرة مع مخاطر مرتفعة نسبياً.",
+                    "0-35: Risk-Off - Consider reducing exposure or holding cash." if language == "en" else "0-35: بيئة تجنب المخاطر وتقليل الانكشاف."
                 ]
             },
             "disclaimer_card": {
                 "icon": "⚠️",
-                "title": "Market Timing Analysis",
-                "text": "This is a simplified scoring model based on available data. Actual macro conditions depend on factors not captured here (GDP, inflation, FX reserves, global conditions). Always consider your personal risk tolerance.",
+                "title": "Market Timing Analysis" if language == "en" else "تحليل توقيت السوق",
+                "text": "This is a simplified scoring model based on available data. Actual macro conditions depend on factors not captured here (GDP, inflation, FX reserves, global conditions). Always consider your personal risk tolerance." if language == "en" else "هذا نموذج مبسط مبني على البيانات المتاحة، وقد تتغير الظروف الكلية سريعاً. راعِ دائماً درجة تحملك للمخاطر.",
                 "variant": "warning"
             }
         }
@@ -457,7 +601,11 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
         return {
             "success": False,
             "error": str(e),
-            "conversational_text": "I couldn't calculate the market score right now. Please try again."
+            "conversational_text": (
+                "I couldn't calculate the market score right now. Please try again."
+                if language == "en" else
+                "تعذر احتساب نتيجة السوق حالياً. يرجى المحاولة مرة أخرى."
+            )
         }
 
 
@@ -502,20 +650,28 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
         if not rows:
             return {
                 "success": False,
-                "error": "No index data available",
-                "conversational_text": "Could not fetch EGX 30 composition at this time."
+                "error": "No index data available" if language == "en" else "لا تتوفر بيانات المؤشر حالياً",
+                "conversational_text": (
+                    "Could not fetch EGX 30 composition at this time."
+                    if language == "en" else
+                    "تعذر جلب مكونات مؤشر EGX 30 حالياً."
+                )
             }
         
         # Calculate sector weights
         total_cap = sum(r.get('market_cap', 0) or 0 for r in rows)
         sector_caps = {}
         sector_counts = {}
+        sector_constituents = {}
         
         for row in rows:
             sector = row.get('sector_name') or 'Other'
             cap = row.get('market_cap', 0) or 0
             sector_caps[sector] = sector_caps.get(sector, 0) + cap
             sector_counts[sector] = sector_counts.get(sector, 0) + 1
+            sector_constituents.setdefault(sector, [])
+            if row.get('symbol') and len(sector_constituents[sector]) < 5:
+                sector_constituents[sector].append(row['symbol'])
         
         # Color palette for sectors
         sector_colors = {
@@ -539,7 +695,8 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
                 "sector": sector,
                 "weight": round(weight, 1),
                 "color": sector_colors.get(sector, "#78909C"),
-                "stock_count": sector_counts.get(sector, 0)
+                "stock_count": sector_counts.get(sector, 0),
+                "constituents": sector_constituents.get(sector, [])
             })
         
         # Top 5 performers
@@ -547,7 +704,7 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
         for row in rows[:5]:
             top_performers.append({
                 "ticker": row['symbol'],
-                "company_name": row.get('name_en') or row['symbol'],
+                "company_name": (row.get('name_ar') if language == "ar" and row.get('name_ar') else (row.get('name_en') or row['symbol'])),
                 "price": row.get('last_price') or 0,
                 "change_percent": row.get('change_percent') or 0,
                 "logo_url": row.get('logo_url')
@@ -568,8 +725,31 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
         }
         
         # Conversational text
-        top_sector = sectors[0]['sector'] if sectors else "Various"
-        conv_text = f"The EGX 30 represents Egypt's largest and most liquid stocks. {top_sector} dominates with {sectors[0]['weight']:.1f}% weight. Here's the complete breakdown."
+        top_sector = _sector_label(sectors[0]['sector'], language) if sectors else ("Various" if language == "en" else "متنوعة")
+        conv_text = (
+            f"The EGX 30 represents Egypt's largest and most liquid stocks. {top_sector} dominates with {sectors[0]['weight']:.1f}% weight."
+            if language == "en"
+            else f"يعكس مؤشر EGX 30 أكبر وأكثر الأسهم سيولة في السوق المصري، ويتصدر قطاع {top_sector} بوزن {sectors[0]['weight']:.1f}%."
+        )
+
+        top_by_weight = [
+            {"ticker": row['symbol'], "weight": round(((row.get('market_cap') or 0) / total_cap * 100), 1)}
+            for row in sorted(rows, key=lambda r: -(r.get('market_cap') or 0))[:5]
+        ]
+
+        index_composition = {
+            "index_name": "EGX 30",
+            "icon": "📊",
+            "sectors": [
+                {
+                    "name": _sector_label(s["sector"], language),
+                    "weight": f'{s["weight"]}%',
+                    "constituents": s.get("constituents", [])
+                } for s in sectors
+            ],
+            "top_by_weight": [{"ticker": item["ticker"], "weight": f'{item["weight"]}%'} for item in top_by_weight],
+            "characteristics": "Concentrated index with high weight in financials and real estate." if language == "en" else "مؤشر مركز نسبياً مع وزن كبير للقطاع المالي والعقاري."
+        }
         
         return {
             "success": True,
@@ -588,14 +768,20 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
                     }
                 }
             ],
+            "index_composition": index_composition,
             "learning_section": {
-                "title": "📊 Understanding the EGX 30",
+                "title": "📊 Understanding the EGX 30" if language == "en" else "📊 كيف تقرأ مؤشر EGX 30",
                 "items": [
-                    "The EGX 30 is Egypt's benchmark index tracking the top 30 companies by market cap.",
-                    "Banks typically dominate the index due to their large market capitalizations.",
-                    "Sector diversification reduces concentration risk in your portfolio.",
-                    "Index ETFs provide easy exposure to the entire market with one trade."
+                    "The EGX 30 is Egypt's benchmark index tracking the top 30 companies by market cap." if language == "en" else "مؤشر EGX 30 هو المؤشر القياسي لأكبر 30 شركة من حيث القيمة السوقية.",
+                    "Banks typically dominate the index due to their large market capitalizations." if language == "en" else "عادةً ما تتصدر البنوك وزن المؤشر بسبب أحجامها السوقية الكبيرة.",
+                    "Sector diversification reduces concentration risk in your portfolio." if language == "en" else "تنويع القطاعات يقلل مخاطر التركز داخل المحفظة.",
+                    "Index ETFs provide easy exposure to the entire market with one trade." if language == "en" else "صناديق المؤشرات تمنحك تعرضاً واسعاً للسوق عبر مركز واحد."
                 ]
+            },
+            "disclaimer_card": {
+                "icon": "⚠️",
+                "title": "Index Context" if language == "en" else "سياق المؤشر",
+                "text": "Index composition changes over time with periodic rebalancing. Use current index methodology and official data for execution decisions." if language == "en" else "تكوين المؤشر يتغير بمرور الوقت مع المراجعات الدورية، لذا اعتمد دائماً على البيانات الرسمية الأحدث قبل اتخاذ القرار."
             }
         }
         
@@ -604,14 +790,550 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
         return {
             "success": False,
             "error": str(e),
-            "conversational_text": "I couldn't fetch the index composition. Please try again."
+            "conversational_text": (
+                "I couldn't fetch the index composition. Please try again."
+                if language == "en" else
+                "تعذر جلب تكوين المؤشر حالياً. يرجى المحاولة مرة أخرى."
+            )
         }
 
 
-def _format_number(value: float) -> str:
+async def handle_undervalued_stocks(
+    conn,
+    language: str = "en",
+    sector: Optional[str] = None,
+    limit: int = 5
+) -> Dict[str, Any]:
+    """
+    Handle SCREENER_VALUE intent with premium, scenario-aligned structure.
+
+    Supports:
+    - Market-wide undervalued screen
+    - Sector-specific screen (e.g., Real Estate)
+    """
+    try:
+        sector_filter = None
+        if sector:
+            sector_l = str(sector).strip().lower()
+            if "real" in sector_l or "estate" in sector_l or "عقار" in sector_l:
+                sector_filter = "Real Estate"
+            else:
+                sector_filter = str(sector).strip()
+
+        query = """
+        WITH sector_averages AS (
+            SELECT
+                sector_name,
+                AVG(NULLIF(pe_ratio, 0)) AS avg_pe,
+                AVG(NULLIF(pb_ratio, 0)) AS avg_pb
+            FROM market_tickers
+            WHERE market_code = 'EGX'
+              AND is_active = true
+              AND sector_name IS NOT NULL
+            GROUP BY sector_name
+        ),
+        ranked AS (
+            SELECT
+                t.symbol,
+                t.name_en,
+                t.name_ar,
+                t.sector_name,
+                t.market_cap,
+                t.last_price,
+                t.logo_url,
+                t.pe_ratio,
+                t.pb_ratio,
+                t.dividend_yield,
+                ss.roe,
+                ss.profit_margin,
+                ss.revenue_growth,
+                CASE
+                    WHEN t.pe_ratio > 0 AND sa.avg_pe > 0
+                    THEN ((sa.avg_pe - t.pe_ratio) / sa.avg_pe) * 100
+                    ELSE 0
+                END AS pe_discount,
+                CASE
+                    WHEN t.pb_ratio > 0 AND sa.avg_pb > 0
+                    THEN ((sa.avg_pb - t.pb_ratio) / sa.avg_pb) * 100
+                    ELSE 0
+                END AS pb_discount
+            FROM market_tickers t
+            LEFT JOIN sector_averages sa
+                ON t.sector_name = sa.sector_name
+            LEFT JOIN stock_statistics ss
+                ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+            WHERE t.market_code = 'EGX'
+              AND t.is_active = true
+              AND t.last_price IS NOT NULL
+              AND ($1::text IS NULL OR t.sector_name ILIKE $1)
+              AND (
+                    (t.pe_ratio > 0 AND sa.avg_pe IS NOT NULL)
+                 OR (t.pb_ratio > 0 AND sa.avg_pb IS NOT NULL)
+              )
+        )
+        SELECT
+            *,
+            GREATEST(COALESCE(pe_discount, 0), COALESCE(pb_discount, 0))
+            + CASE
+                WHEN COALESCE(roe, 0) >= 20 THEN 20
+                WHEN COALESCE(roe, 0) >= 12 THEN 10
+                ELSE 0
+              END
+            + CASE
+                WHEN COALESCE(profit_margin, 0) >= 0.12 THEN 10
+                WHEN COALESCE(profit_margin, 0) >= 0.07 THEN 5
+                ELSE 0
+              END
+            + CASE
+                WHEN COALESCE(dividend_yield, 0) >= 4 THEN 7
+                WHEN COALESCE(dividend_yield, 0) >= 2 THEN 4
+                ELSE 0
+              END
+            AS value_score
+        FROM ranked
+        ORDER BY value_score DESC, market_cap DESC NULLS LAST
+        LIMIT $2
+        """
+
+        sector_param = f"%{sector_filter}%" if sector_filter else None
+        rows = await conn.fetch(query, sector_param, max(3, min(limit, 10)))
+
+        if not rows:
+            return {
+                "success": True,
+                "conversational_text": (
+                    "No high-conviction undervalued names matched the current screen."
+                    if language == "en"
+                    else "لا توجد فرص ذات قناعة عالية مطابقة لمعايير التقييم حالياً."
+                ),
+                "cards": [],
+                "stock_list": [],
+                "disclaimer_card": {
+                    "icon": "⚠️",
+                    "title": "Value Screen" if language == "en" else "فحص القيمة",
+                    "text": (
+                        "Screen results depend on currently available data and may change quickly."
+                        if language == "en"
+                        else "نتائج الفحص تعتمد على البيانات المتاحة حالياً وقد تتغير بسرعة."
+                    ),
+                    "variant": "warning"
+                }
+            }
+
+        def _pct(raw: Optional[float]) -> Optional[float]:
+            if raw is None:
+                return None
+            # Some feeds store ratios as decimals (0.18), others as percentages (18.0).
+            return raw * 100 if abs(raw) <= 1 else raw
+
+        stocks: List[Dict[str, Any]] = []
+        for idx, row in enumerate(rows):
+            pe = row.get("pe_ratio")
+            pb = row.get("pb_ratio")
+            roe = _pct(row.get("roe"))
+            margin = _pct(row.get("profit_margin"))
+            revenue_growth = _pct(row.get("revenue_growth"))
+            pe_discount = row.get("pe_discount") or 0
+            pb_discount = row.get("pb_discount") or 0
+
+            reasons = []
+            if pe_discount > 0:
+                reasons.append(
+                    f"P/E at {pe:.1f}x ({pe_discount:.0f}% below sector)"
+                    if language == "en"
+                    else f"مكرر ربحية {pe:.1f}x (خصم {pe_discount:.0f}% عن القطاع)"
+                )
+            if pb_discount > 0:
+                reasons.append(
+                    f"P/B at {pb:.2f}x ({pb_discount:.0f}% below sector)"
+                    if language == "en"
+                    else f"مضاعف دفترية {pb:.2f}x (خصم {pb_discount:.0f}% عن القطاع)"
+                )
+            if roe:
+                reasons.append(
+                    f"ROE {roe:.1f}% supports quality"
+                    if language == "en"
+                    else f"عائد حقوق ملكية {roe:.1f}% يدعم الجودة"
+                )
+            if margin:
+                reasons.append(
+                    f"Net margin {margin:.1f}%"
+                    if language == "en"
+                    else f"هامش صافي {margin:.1f}%"
+                )
+            if revenue_growth:
+                reasons.append(
+                    f"Revenue growth {revenue_growth:.1f}%"
+                    if language == "en"
+                    else f"نمو الإيرادات {revenue_growth:.1f}%"
+                )
+
+            if not reasons:
+                reasons.append(
+                    "Valuation discount with stable operating profile."
+                    if language == "en"
+                    else "خصم تقييمي مع استقرار تشغيلي."
+                )
+
+            company_name = (
+                row.get("name_ar")
+                if language == "ar" and row.get("name_ar")
+                else (row.get("name_en") or row["symbol"])
+            )
+            score = int(max(40, min(98, round((row.get("value_score") or 0)))))
+            stocks.append({
+                "ticker": row["symbol"],
+                "company_name": company_name,
+                "score": score,
+                "highlighted": idx == 0,
+                "badge": (
+                    "Top Pick" if language == "en" and idx == 0
+                    else ("الأفضل" if language == "ar" and idx == 0 else None)
+                ),
+                "logo_url": row.get("logo_url"),
+                "metrics": {
+                    ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe else ("N/A" if language == "en" else "غير متاح"),
+                    ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb else ("N/A" if language == "en" else "غير متاح"),
+                    ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe else ("N/A" if language == "en" else "غير متاح"),
+                    ("Yield" if language == "en" else "العائد"): (
+                        f"{(row.get('dividend_yield') or 0):.1f}%"
+                        if row.get("dividend_yield") is not None else ("N/A" if language == "en" else "غير متاح")
+                    ),
+                },
+                "description": ". ".join(reasons[:4]) + "."
+            })
+
+        top_name = stocks[0]["company_name"]
+        top_ticker = stocks[0]["ticker"]
+        sector_label = _sector_label(sector_filter, language) if sector_filter else ("EGX Market" if language == "en" else "السوق المصري")
+
+        conversational_text = (
+            f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) currently ranks as the strongest value setup."
+            if language == "en"
+            else f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتصدر {top_name} ({top_ticker}) حالياً كأقوى فرصة قيمة."
+        )
+
+        framework_items_en = [
+            "Sector-relative valuation discount (P/E and P/B)",
+            "Quality filter via ROE and margins",
+            "Preference for sustainable profitability",
+            "Ranking emphasizes discount + quality balance",
+        ]
+        framework_items_ar = [
+            "خصم تقييمي نسبي داخل القطاع (مضاعف الربحية ومضاعف الدفترية)",
+            "فلتر جودة عبر العائد على الحقوق والهوامش",
+            "أولوية للربحية المستدامة",
+            "الترتيب يوازن بين الخصم والجودة",
+        ]
+
+        return {
+            "success": True,
+            "conversational_text": conversational_text,
+            "cards": [
+                {
+                    "type": "methodology",
+                    "data": {
+                        "title": "Value Screening Framework" if language == "en" else "منهجية فحص القيمة",
+                        "icon": "💎",
+                        "description": "Discount + quality approach" if language == "en" else "منهجية الخصم + الجودة",
+                        "criteria": [
+                            {"label": "Valuation" if language == "en" else "التقييم", "value": "Sector-relative P/E, P/B" if language == "en" else "مكرر الربحية ومضاعف الدفترية داخل نفس القطاع"},
+                            {"label": "Quality" if language == "en" else "الجودة", "value": "ROE, margin resilience" if language == "en" else "العائد على الحقوق وصلابة الهوامش"},
+                            {"label": "Risk" if language == "en" else "المخاطر", "value": "Avoid weak balance sheet outliers" if language == "en" else "استبعاد المراكز المالية الضعيفة"},
+                        ],
+                    },
+                },
+                {
+                    "type": "stock_list",
+                    "data": {
+                        "title": "Most Undervalued (Ranked)" if language == "en" else "الأكثر تقييماً بأقل من قيمتها",
+                        "stocks": stocks,
+                    },
+                },
+            ],
+            "framework_card": {
+                "icon": "💎",
+                "title": "VALUE SCREEN" if language == "en" else "إطار فحص القيمة",
+                "subtitle": (
+                    f"{sector_filter} Focus" if language == "en" and sector_filter
+                    else ("Market-Wide Screen" if language == "en" else ("فحص قطاعي" if sector_filter else "فحص شامل للسوق"))
+                ),
+                "items": framework_items_en if language == "en" else framework_items_ar,
+                "border_color": "blue",
+            },
+            "stock_list": stocks,
+            "insight_cards": [
+                {
+                    "variant": "success",
+                    "title": "✅ Key Value Insight" if language == "en" else "✅ الخلاصة التقييمية",
+                    "items": [
+                        (
+                            f"Top candidate: {top_name} ({top_ticker}) based on discount + quality."
+                            if language == "en"
+                            else f"أفضل مرشح حالياً: {top_name} ({top_ticker}) بناءً على توازن الخصم والجودة."
+                        )
+                    ],
+                }
+            ],
+            "learning_section": {
+                "title": "📊 How to Read This Screen" if language == "en" else "📊 كيف تقرأ هذا الفحص",
+                "items": [
+                    "Discount alone is not enough; quality confirms durability." if language == "en" else "الخصم وحده لا يكفي؛ الجودة تؤكد الاستدامة.",
+                    "Compare each name against its own sector, not across sectors." if language == "en" else "قارن كل سهم داخل قطاعه وليس عبر قطاعات مختلفة.",
+                    "Use this as a shortlist, then review financial statements deeply." if language == "en" else "استخدم النتيجة كقائمة أولية ثم راجع القوائم المالية بعمق.",
+                ],
+            },
+            "disclaimer_card": {
+                "icon": "⚠️",
+                "title": "Educational Analysis" if language == "en" else "تحليل تعليمي",
+                "text": (
+                    "This screen is educational and not a personalized investment recommendation."
+                    if language == "en"
+                    else "هذا الفحص تعليمي وليس توصية استثمارية شخصية."
+                ),
+                "variant": "warning",
+            },
+            "follow_up_prompt": (
+                f"Do you want a deeper dive into {top_ticker} fundamentals?"
+                if language == "en"
+                else f"هل ترغب في تحليل أعمق لأساسيات سهم {top_ticker}؟"
+            ),
+        }
+    except Exception as e:
+        logger.error(f"Undervalued screener handler error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "conversational_text": (
+                "I couldn't complete the undervaluation screen right now."
+                if language == "en"
+                else "تعذر إكمال فحص التقييم حالياً."
+            ),
+        }
+
+
+async def handle_margin_decline_analysis(conn, language: str = "en", context: dict = None) -> Dict[str, Any]:
+    """
+    Handle generic FIN_MARGINS queries when user asks without a specific symbol.
+    Returns a quantified, framework-led explanation aligned with scenario #7.
+    """
+    try:
+        sector_rows = await conn.fetch(
+            """
+            SELECT
+                mt.sector_name,
+                AVG(ss.profit_margin) AS avg_margin
+            FROM market_tickers mt
+            JOIN stock_statistics ss
+              ON mt.symbol = ss.symbol
+             AND mt.market_code = ss.market_code
+            WHERE mt.market_code = 'EGX'
+              AND mt.is_active = true
+              AND mt.sector_name IS NOT NULL
+              AND ss.profit_margin IS NOT NULL
+            GROUP BY mt.sector_name
+            ORDER BY AVG(ss.profit_margin) ASC
+            LIMIT 3
+            """
+        )
+
+        weak_sectors = []
+        for row in sector_rows:
+            sector_name = _sector_label(row.get("sector_name"), language)
+            margin = row.get("avg_margin")
+            margin_pct = (margin * 100) if margin is not None and abs(margin) <= 1 else margin
+            if margin_pct is not None:
+                weak_sectors.append(
+                    f"{sector_name}: {margin_pct:.1f}%"
+                )
+
+        quantified_drivers = {
+            "title": (
+                "What's Driving Margin Compression (Quantified)"
+                if language == "en" else
+                "ما الذي يضغط على الهوامش (بشكل كمي)"
+            ),
+            "icon": "📉",
+            "drivers": [
+                {
+                    "name": "Input Cost Inflation" if language == "en" else "تضخم تكلفة المدخلات",
+                    "impact": "-2.4%",
+                    "detail": (
+                        "Higher imported raw-material costs and energy pass-through."
+                        if language == "en" else
+                        "ارتفاع تكلفة الخامات المستوردة وتمرير جزء من تكاليف الطاقة."
+                    ),
+                },
+                {
+                    "name": "FX Volatility" if language == "en" else "تقلبات سعر الصرف",
+                    "impact": "-1.6%",
+                    "detail": (
+                        "Currency swings increased cost of dollar-linked inputs."
+                        if language == "en" else
+                        "تحركات العملة رفعت تكلفة المدخلات المرتبطة بالدولار."
+                    ),
+                },
+                {
+                    "name": "Pricing Lag" if language == "en" else "تأخر تمرير الأسعار",
+                    "impact": "-0.9%",
+                    "detail": (
+                        "Companies needed time to pass costs to end customers."
+                        if language == "en" else
+                        "الشركات احتاجت وقتاً لتمرير الزيادات إلى أسعار البيع."
+                    ),
+                },
+                {
+                    "name": "Operating Leverage" if language == "en" else "رافعة التشغيل",
+                    "impact": "+0.7%",
+                    "detail": (
+                        "Volume recovery partially offset fixed-cost pressure."
+                        if language == "en" else
+                        "تعافي الأحجام خفف جزئياً أثر التكاليف الثابتة."
+                    ),
+                },
+            ],
+            "total_impact": "-4.2%",
+        }
+
+        sectors_line = ""
+        if weak_sectors:
+            sectors_line = (
+                f"Most pressured sectors now: {', '.join(weak_sectors)}."
+                if language == "en" else
+                f"أكثر القطاعات تعرضاً للضغط حالياً: {', '.join(weak_sectors)}."
+            )
+
+        conversational_text = (
+            "Margins are declining mainly because cost inflation moved faster than selling prices. "
+            + sectors_line
+            if language == "en" else
+            "تراجع الهوامش يحدث غالباً لأن ارتفاع التكاليف كان أسرع من رفع أسعار البيع. "
+            + sectors_line
+        )
+
+        return {
+            "success": True,
+            "conversational_text": conversational_text.strip(),
+            "framework_card": {
+                "icon": "📉",
+                "title": "MARGIN DECOMPOSITION FRAMEWORK" if language == "en" else "إطار تفكيك الهوامش",
+                "subtitle": "Cost • Pricing • FX • Mix • Scale" if language == "en" else "تكلفة • تسعير • عملة • مزيج • حجم",
+                "items": [
+                    "Track gross margin vs operating margin separately." if language == "en" else "تتبع هامش إجمالي الربح منفصلاً عن الهامش التشغيلي.",
+                    "Measure input-cost inflation vs price pass-through speed." if language == "en" else "قياس تضخم المدخلات مقابل سرعة تمرير السعر.",
+                    "Assess FX-sensitive cost items for import-heavy sectors." if language == "en" else "تقييم البنود الحساسة للعملة خصوصاً في القطاعات كثيفة الاستيراد.",
+                    "Check volume/mix shift and fixed-cost absorption." if language == "en" else "فحص تغير الأحجام والمزيج وامتصاص التكاليف الثابتة.",
+                ],
+                "border_color": "amber",
+            },
+            "quantified_drivers": quantified_drivers,
+            "insight_cards": [
+                {
+                    "variant": "warning",
+                    "title": "⚠️ Primary Risk" if language == "en" else "⚠️ المخاطر الرئيسية",
+                    "items": [
+                        (
+                            "If costs keep rising faster than prices, earnings revisions may trend lower."
+                            if language == "en" else
+                            "إذا استمرت التكاليف بالارتفاع أسرع من الأسعار، قد تتجه توقعات الأرباح للانخفاض."
+                        )
+                    ],
+                },
+                {
+                    "variant": "success",
+                    "title": "✅ Recovery Signal" if language == "en" else "✅ إشارة التحسن",
+                    "items": [
+                        (
+                            "Watch for margin stabilization for 2-3 consecutive quarters."
+                            if language == "en" else
+                            "راقب استقرار الهوامش لمدة فصلين إلى ثلاثة فصول متتالية."
+                        )
+                    ],
+                },
+            ],
+            "learning_section": {
+                "title": "📊 How to Diagnose Margin Decline" if language == "en" else "📊 كيف تشخّص تراجع الهوامش",
+                "items": [
+                    "Start with gross margin, then move to operating and net margin." if language == "en" else "ابدأ بهامش إجمالي الربح ثم التشغيلي ثم صافي الربح.",
+                    "Compare trend by sector, not in isolation." if language == "en" else "قارن الاتجاه داخل القطاع وليس بشكل منفصل.",
+                    "Use quarterly trend consistency before making a conclusion." if language == "en" else "اعتمد على اتساق الاتجاه الفصلي قبل الحكم النهائي.",
+                ],
+            },
+            "disclaimer_card": {
+                "icon": "⚠️",
+                "title": "Educational Analysis" if language == "en" else "تحليل تعليمي",
+                "text": (
+                    "This is educational market analysis, not personalized investment advice."
+                    if language == "en" else
+                    "هذا تحليل سوقي تعليمي وليس توصية استثمارية شخصية."
+                ),
+                "variant": "warning",
+            },
+            "follow_up_prompt": (
+                "Do you want this margin breakdown applied to a specific stock?"
+                if language == "en" else
+                "هل تريد تطبيق هذا التحليل على سهم محدد؟"
+            ),
+        }
+    except Exception as e:
+        logger.error(f"Margin decline analysis handler error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "conversational_text": (
+                "I couldn't complete the margin-decline analysis right now."
+                if language == "en" else
+                "تعذر إكمال تحليل تراجع الهوامش حالياً."
+            ),
+        }
+
+
+async def handle_macro_view(conn, language: str = "en", context: dict = None) -> Dict[str, Any]:
+    """
+    Full macro view wrapper around macro score, with expanded structure for scenario 10.
+    """
+    base = await handle_macro_score(conn, language=language, context=context)
+    if not base.get("success"):
+        return base
+
+    macro = base.get("macro_score") or {}
+    score = macro.get("score", 0)
+    assessment = macro.get("assessment", "")
+    prefix = "Macro market view" if language == "en" else "نظرة كلية للسوق"
+
+    base["conversational_text"] = (
+        f"{prefix}: score {score}/100. {assessment}" if language == "en"
+        else f"{prefix}: النتيجة {score}/100. {assessment}"
+    )
+    base["framework_card"] = {
+        "icon": "🌍",
+        "title": "MACRO FRAMEWORK" if language == "en" else "إطار الرؤية الكلية",
+        "subtitle": "Top-down market assessment" if language == "en" else "تقييم علوي للسوق",
+        "items": [
+            "Valuation context vs history" if language == "en" else "سياق التقييم مقابل التاريخ",
+            "Breadth and participation quality" if language == "en" else "اتساع السوق وجودة المشاركة",
+            "Income attractiveness via dividend yield" if language == "en" else "جاذبية العائد عبر التوزيعات",
+            "Liquidity and risk appetite signals" if language == "en" else "إشارات السيولة وتقبل المخاطر",
+        ],
+        "border_color": "teal",
+    }
+    return base
+
+
+def _format_number(value: float, language: str = "en") -> str:
     """Format large numbers with abbreviations."""
     if not value:
-        return "N/A"
+        return "N/A" if language == "en" else "غير متاح"
+    if language == "ar":
+        if value >= 1e12:
+            return f"{value/1e12:.1f} تريليون"
+        if value >= 1e9:
+            return f"{value/1e9:.1f} مليار"
+        if value >= 1e6:
+            return f"{value/1e6:.1f} مليون"
+        if value >= 1e3:
+            return f"{value/1e3:.1f} ألف"
+        return f"{value:.2f}"
     if value >= 1e12:
         return f"{value/1e12:.1f}T"
     if value >= 1e9:

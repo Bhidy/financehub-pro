@@ -1,0 +1,36 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+if {[llength $argv] == 0} {
+    puts "Usage: ./run_egx_verification.exp <host> <password>"
+    exit 1
+}
+
+# 1. Copy the verification script to the server
+spawn scp -o StrictHostKeyChecking=no scripts/verify_egx_only_remote.py root@$host:/opt/starta/scripts/
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    eof
+}
+
+# 2. Execute it inside the container
+spawn ssh -o StrictHostKeyChecking=no root@$host
+expect "password:"
+send "$password\r"
+expect "#"
+
+# Helper: Copy from host to container explicitly (since prod might not bind mount)
+send "docker cp /opt/starta/scripts/verify_egx_only_remote.py starta-backend-1:/app/scripts/\r"
+expect "#"
+
+# Run inside Docker
+send "docker exec -it starta-backend-1 python3 /app/scripts/verify_egx_only_remote.py\r"
+expect {
+    "✅ Professional Titles: PASSED" { puts "\nSpec Verification Passed!"; exit 0 }
+    "❌" { puts "\nSpec Verification FAILED!"; exit 1 }
+    timeout { puts "\nTimeout waiting for verification."; exit 1 }
+    eof
+}

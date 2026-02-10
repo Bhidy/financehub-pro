@@ -97,7 +97,11 @@ async def handle_compare_stocks(
                  found_symbol = cand
                  break
         
-        # If still no row, stick to original symbol, handled by 'if row:' check below
+        if not row:
+            # STRICT EGX FILTER: If not found in EGX, skip it.
+            # This prevents Saudi (TDWL) stocks from leaking in if they share a ticker.
+            print(f"[COMPARE] Skipped non-EGX or unknown symbol: {symbol}")
+            continue
         
         # Update symbol for subsequent queries to match the valid DB ticker
         symbol = found_symbol

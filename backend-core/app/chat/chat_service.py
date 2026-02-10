@@ -1069,7 +1069,9 @@ class ChatService:
                             result_data.setdefault('cards', []).append({
                                 "type": "bull_case",
                                 "title": "BULL CASE ANALYSIS" if language == 'en' else "تحليل السيناريو الإيجابي",
-                                "data": { "points": bull_points, "variant": "bull" }
+                                # NOTE: Structured InsightCard.variant is strict enum ('success'|'warning'|'info'|'neutral').
+                                # Use allowed values to avoid schema validation errors.
+                                "data": { "points": bull_points, "variant": "success" }
                             })
                             
                         if bear_points:
@@ -1077,7 +1079,7 @@ class ChatService:
                             result_data.setdefault('cards', []).append({
                                 "type": "bear_case",
                                 "title": "BEAR CASE RISKS" if language == 'en' else "مخاطر السيناريو السلبي",
-                                "data": { "points": bear_points, "variant": "bear" }
+                                "data": { "points": bear_points, "variant": "warning" }
                             })
 
                         # 4. Final Text Cleanliness Check
@@ -1265,6 +1267,89 @@ class ChatService:
             handler_quantified_drivers = result_data.get('quantified_drivers')
             handler_index_composition = result_data.get('index_composition')
 
+            def _coerce_educational_cards(raw: Any) -> Optional[List[Dict[str, Any]]]:
+                """
+                Normalize educational payloads into ChatResponse.educational_cards schema:
+                [{variant: 'definition'|'formula'|'example'|'when_misleading', title: str, content: str}, ...]
+
+                Handlers historically returned richer objects (definition/formula/example/sections).
+                We keep those in legacy cards, but the structured field must match schemas.py.
+                """
+                if not raw:
+                    return None
+
+                def _mk(variant: str, title: str, content: Any) -> Optional[Dict[str, Any]]:
+                    if content is None:
+                        return None
+                    text = str(content).strip()
+                    if not text:
+                        return None
+                    return {"variant": variant, "title": str(title).strip() or ("Educational" if language == "en" else "تعريف"), "content": text}
+
+                # Already-structured list
+                if isinstance(raw, list):
+                    out: List[Dict[str, Any]] = []
+                    for item in raw:
+                        coerced = _coerce_educational_cards(item)
+                        if coerced:
+                            out.extend(coerced)
+                    return out or None
+
+                # Single educational card (dict)
+                if isinstance(raw, dict):
+                    # Shape A: already matches schema
+                    if raw.get("variant") and raw.get("title") and raw.get("content") is not None:
+                        d = _mk(str(raw.get("variant")), str(raw.get("title")), raw.get("content"))
+                        return [d] if d else None
+
+                    title_root = raw.get("title") or raw.get("term") or ("Educational Note" if language == "en" else "ملاحظة تعليمية")
+                    out: List[Dict[str, Any]] = []
+
+                    # Shape B: rich object from educational_content.py
+                    if raw.get("definition"):
+                        out.append(_mk("definition", f"{title_root}", raw.get("definition")))
+                    if raw.get("formula"):
+                        out.append(_mk("formula", ("Formula" if language == "en" else "المعادلة"), raw.get("formula")))
+                    if raw.get("example"):
+                        out.append(_mk("example", ("Example" if language == "en" else "مثال"), raw.get("example")))
+
+                    # Shape C: section-based payload (legacy educational card)
+                    sections = raw.get("sections") if isinstance(raw.get("sections"), list) else []
+                    for sec in sections:
+                        if not isinstance(sec, dict):
+                            continue
+                        sec_type = str(sec.get("type") or "").lower()
+                        sec_title = sec.get("title") or title_root
+                        sec_content = sec.get("content")
+                        sec_items = sec.get("items") if isinstance(sec.get("items"), list) else []
+
+                        if sec_type in ("definition", "formula", "example"):
+                            out.append(_mk(sec_type, sec_title, sec_content))
+                            continue
+
+                        if sec_type in ("caveats", "when_misleading", "misleading"):
+                            text = sec_content
+                            if not text and sec_items:
+                                text = "\n".join([f"- {x}" for x in sec_items if str(x).strip()])
+                            out.append(_mk("when_misleading", sec_title, text))
+                            continue
+
+                        if sec_type in ("application", "how_i_use_it", "practical", "practical_application"):
+                            text = sec_content
+                            if not text and sec_items:
+                                text = "\n".join([f"- {x}" for x in sec_items if str(x).strip()])
+                            # Map to 'example' for schema compatibility.
+                            out.append(_mk("example", sec_title, text))
+                            continue
+
+                    out = [x for x in out if x]
+                    return out or None
+
+                # Unknown type
+                return None
+
+            handler_educational_cards = _coerce_educational_cards(handler_educational_cards) or None
+
             # Normalize and backfill structured components from legacy cards when needed.
             cards_payload = result_data.get('cards') or []
             for card in cards_payload:
@@ -1323,8 +1408,8 @@ class ChatService:
                     handler_index_composition = card_data
 
                 if card_type in ('educational', 'definition', 'define_term') and not handler_educational_cards:
-                    if card_data:
-                        handler_educational_cards = [card_data]
+                    # Coerce legacy educational card payload into structured educational_cards schema.
+                    handler_educational_cards = _coerce_educational_cards(card_data) or handler_educational_cards
 
                 if card_type in ('compare_table', 'comparison_table') and not handler_comparison_table:
                     if card_data.get('headers') and card_data.get('rows'):
@@ -1493,7 +1578,11 @@ class ChatService:
                     cards=[fallback_card],
                     chart=None,
                     actions=[],
-                    disclaimer="System Error Recovery Mode",
+                    disclaimer=(
+                        "System Error Recovery Mode"
+                        if lang == "en" else
+                        "وضع التعافي من خطأ النظام"
+                    ),
                     meta=ResponseMeta(
                         intent="SYSTEM_ERROR",
                         confidence=0.0,

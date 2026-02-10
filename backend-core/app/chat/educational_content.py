@@ -286,29 +286,29 @@ def format_educational_response(content: Dict[str, Any], language: str = "en") -
                 "conversational_text": "سؤال ممتاز. هذا شرح عملي ومؤسسي لمؤشر العائد على حقوق الملكية.",
                 "educational_cards": [
                     {
-                        "title": "العائد على حقوق الملكية (ROE)",
-                        "subtitle": "مؤشر جودة الربحية وكفاءة استخدام أموال المساهمين",
-                        "definition": "يقيس العائد على حقوق الملكية كفاءة الشركة في تحقيق أرباح من أموال المساهمين.",
-                        "formula": "ROE = صافي الربح / حقوق الملكية",
-                        "example": "إذا حققت شركة صافي ربح 2.7 مليار جنيه وحقوق ملكية 7.1 مليار جنيه، فإن ROE يقارب 38.6%.",
-                        "sections": [
-                            {
-                                "title": "⚠️ متى قد يكون مضللاً",
-                                "items": [
-                                    "الاقتراض المرتفع قد يرفع ROE بشكل مصطنع.",
-                                    "الأرباح الاستثنائية لمرة واحدة قد تشوه القراءة.",
-                                    "يجب مقارنة ROE داخل نفس القطاع وليس بين قطاعات مختلفة."
-                                ]
-                            },
-                            {
-                                "title": "🎯 كيف أستخدمه عملياً",
-                                "items": [
-                                    "ابحث عن ROE أعلى من متوسط القطاع مع مديونية منضبطة.",
-                                    "قيّم استمرارية ROE عبر عدة سنوات وليس سنة واحدة.",
-                                    "اربط ROE بالهوامش وجودة التدفقات النقدية."
-                                ]
-                            }
-                        ]
+                        "variant": "definition",
+                        "title": "العائد على حقوق الملكية",
+                        "content": "يقيس العائد على حقوق الملكية كفاءة الشركة في تحقيق أرباح من أموال المساهمين. ببساطة: لكل 100 جنيه حقوق ملكية، كم تحقق الشركة من أرباح؟"
+                    },
+                    {
+                        "variant": "formula",
+                        "title": "المعادلة",
+                        "content": "العائد على حقوق الملكية = صافي الربح / حقوق الملكية"
+                    },
+                    {
+                        "variant": "example",
+                        "title": "مثال عملي",
+                        "content": "إذا حققت شركة صافي ربح 2.7 مليار جنيه وحقوق ملكية 7.1 مليار جنيه، فإن العائد على حقوق الملكية يقارب 38.6%."
+                    },
+                    {
+                        "variant": "when_misleading",
+                        "title": "متى قد يكون مضللاً",
+                        "content": "- الاقتراض المرتفع قد يرفع العائد بشكل مصطنع.\n- الأرباح الاستثنائية لمرة واحدة قد تشوه القراءة.\n- الأفضل مقارنة المؤشر داخل نفس القطاع."
+                    },
+                    {
+                        "variant": "example",
+                        "title": "كيف أستخدمه عملياً",
+                        "content": "- ابحث عن عائد أعلى من متوسط القطاع مع مديونية منضبطة.\n- قيّم استمرارية المؤشر عبر عدة سنوات وليس سنة واحدة.\n- اربطه بالهوامش وجودة التدفقات النقدية."
                     }
                 ],
                 "cards": [
@@ -348,7 +348,7 @@ def format_educational_response(content: Dict[str, Any], language: str = "en") -
                                     "content": "أفضل شركات ذات ROE أعلى من متوسط القطاع مع مديونية منضبطة واستقرار عبر عدة سنوات."
                                 }
                             ],
-                            "related_metrics": ["ROA", "ROCE", "D/E"]
+                            "related_metrics": ["العائد على الأصول", "العائد على رأس المال المستثمر", "نسبة الدين إلى حقوق الملكية"]
                         }
                     }
                 ],
@@ -375,21 +375,29 @@ def format_educational_response(content: Dict[str, Any], language: str = "en") -
             "conversational_text": f"إليك شرحاً تعليمياً مبسطاً لمؤشر: {term_text}.",
             "educational_cards": [
                 {
+                    "variant": "definition",
                     "title": term_text,
-                    "subtitle": "شرح تعليمي مبسط",
-                    "definition": content.get("definition", ""),
-                    "formula": content.get("formula", ""),
-                    "example": content.get("example", {}).get("text", ""),
-                    "sections": [
-                        {
-                            "title": "⚠️ ملاحظات مهمة",
-                            "items": content.get("caveats", [])
-                        },
-                        {
-                            "title": "🎯 التطبيق العملي",
-                            "items": [content.get("practical_application", "")]
-                        }
-                    ]
+                    "content": content.get("definition", "") or "شرح تعليمي مبسط لهذا المؤشر."
+                },
+                {
+                    "variant": "formula",
+                    "title": "المعادلة",
+                    "content": content.get("formula", "") or "غير متاح"
+                },
+                {
+                    "variant": "example",
+                    "title": "مثال",
+                    "content": content.get("example", {}).get("text", "") or "غير متاح"
+                },
+                {
+                    "variant": "when_misleading",
+                    "title": "ملاحظات مهمة",
+                    "content": "\n".join([f"- {x}" for x in (content.get("caveats", []) or []) if str(x).strip()]) or "راجع السياق القطاعي ولا تعتمد على المؤشر منفرداً."
+                },
+                {
+                    "variant": "example",
+                    "title": "التطبيق العملي",
+                    "content": content.get("practical_application", "") or "استخدم المؤشر مع مؤشرات أخرى وراجع اتجاهه عبر عدة سنوات."
                 }
             ],
             "cards": [
@@ -451,21 +459,29 @@ def format_educational_response(content: Dict[str, Any], language: str = "en") -
         "conversational_text": f"Here's a comprehensive breakdown of {content['term']}:",
         "educational_cards": [
             {
+                "variant": "definition",
                 "title": content["term"],
-                "subtitle": "Educational breakdown",
-                "definition": content.get("definition", ""),
-                "formula": content.get("formula", ""),
-                "example": content.get("example", {}).get("text", ""),
-                "sections": [
-                    {
-                        "title": "⚠️ Important Caveats",
-                        "items": content.get("caveats", [])
-                    },
-                    {
-                        "title": "🎯 Practical Application",
-                        "items": [content.get("practical_application", "")]
-                    }
-                ]
+                "content": content.get("definition", "")
+            },
+            {
+                "variant": "formula",
+                "title": "Formula",
+                "content": content.get("formula", "")
+            },
+            {
+                "variant": "example",
+                "title": content.get("example", {}).get("title", "Example"),
+                "content": content.get("example", {}).get("text", "")
+            },
+            {
+                "variant": "when_misleading",
+                "title": "When It's Misleading",
+                "content": "\n".join([f"- {x}" for x in (content.get("caveats", []) or []) if str(x).strip()]) or "Always compare within sector and validate with multiple metrics."
+            },
+            {
+                "variant": "example",
+                "title": "How I Use It",
+                "content": content.get("practical_application", "")
             }
         ],
         "cards": [
@@ -539,21 +555,21 @@ def format_unknown_term_response(term: str, language: str = "en") -> Dict[str, A
                         "categories": [
                             {
                                 "title": "الربحية",
-                                "examples": ["ما هو ROE؟", "اشرح مضاعف الربحية", "ما هو EBITDA؟"]
+                                "examples": ["اشرح العائد على حقوق الملكية", "اشرح هوامش الربح", "اشرح ربحية السهم"]
                             },
                             {
                                 "title": "التقييم",
-                                "examples": ["ما هو P/E؟", "ما هو P/B؟", "اشرح EV/EBITDA"]
+                                "examples": ["اشرح مضاعف الربحية", "اشرح مضاعف القيمة الدفترية", "اشرح قيمة المنشأة إلى الأرباح التشغيلية"]
                             },
                             {
                                 "title": "المتانة المالية",
-                                "examples": ["ما هي نسبة الدين إلى حقوق الملكية؟", "ما هو التدفق النقدي الحر؟", "ما هي القيمة السوقية؟"]
+                                "examples": ["اشرح نسبة الدين إلى حقوق الملكية", "اشرح التدفق النقدي الحر", "اشرح القيمة السوقية"]
                             }
                         ]
                     }
                 }
             ],
-            "follow_up_prompt": "يمكنك أن تسأل مثلاً: ما هو ROE أو ما هو مضاعف الربحية."
+            "follow_up_prompt": "يمكنك أن تسأل مثلاً: ما معنى العائد على حقوق الملكية؟ أو ما معنى مضاعف الربحية؟"
         }
 
     return {

@@ -21,7 +21,7 @@
 "use client";
 
 import { useState, useRef, useEffect, Suspense, useCallback } from "react";
-import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart } from "lucide-react";
+import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart, ArrowLeftRight, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
 import { useTypewriter } from "@/hooks/useTypewriter";
@@ -622,29 +622,38 @@ function ResponsiveAIAnalystContent() {
                                             <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
                                                 {translations[lang].popularRequests}
                                             </p>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
                                                 {[
-                                                    { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.marketSummary.title, subtitle: translations[lang].askStarta, query: translations[lang].cards.marketSummary.query, color: 'teal' },
-                                                    { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.dividend.title, subtitle: translations[lang].askStarta, query: translations[lang].cards.dividend.query, color: 'teal' },
-                                                    { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.peRatio.title, subtitle: translations[lang].askStarta, query: translations[lang].cards.peRatio.query, color: 'teal' },
+                                                    { icon: <TrendingUp className="w-5 h-5" />, title: translations[lang].cards.scenario_jufo.title, subtitle: translations[lang].cards.scenario_jufo.subtitle, query: translations[lang].cards.scenario_jufo.query, color: 'teal' },
+                                                    { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.scenario_undervalued.title, subtitle: translations[lang].cards.scenario_undervalued.subtitle, query: translations[lang].cards.scenario_undervalued.query, color: 'teal' },
+                                                    { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.scenario_hidden_gems.title, subtitle: translations[lang].cards.scenario_hidden_gems.subtitle, query: translations[lang].cards.scenario_hidden_gems.query, color: 'coral' },
+                                                    { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.scenario_market_timing.title, subtitle: translations[lang].cards.scenario_market_timing.subtitle, query: translations[lang].cards.scenario_market_timing.query, color: 'teal' },
+                                                    { icon: <ArrowLeftRight className="w-5 h-5" />, title: translations[lang].cards.scenario_compare_peers.title, subtitle: translations[lang].cards.scenario_compare_peers.subtitle, query: translations[lang].cards.scenario_compare_peers.query, color: 'teal' },
+                                                    { icon: <BookOpen className="w-5 h-5" />, title: translations[lang].cards.scenario_roe.title, subtitle: translations[lang].cards.scenario_roe.subtitle, query: translations[lang].cards.scenario_roe.query, color: 'coral' },
+                                                    { icon: <BarChart3 className="w-5 h-5" />, title: translations[lang].cards.scenario_margins.title, subtitle: translations[lang].cards.scenario_margins.subtitle, query: translations[lang].cards.scenario_margins.query, color: 'teal' },
+                                                    { icon: <TrendingUp className="w-5 h-5" />, title: translations[lang].cards.scenario_real_estate.title, subtitle: translations[lang].cards.scenario_real_estate.subtitle, query: translations[lang].cards.scenario_real_estate.query, color: 'teal' },
+                                                    { icon: <PieChart className="w-5 h-5" />, title: translations[lang].cards.scenario_egx30.title, subtitle: translations[lang].cards.scenario_egx30.subtitle, query: translations[lang].cards.scenario_egx30.query, color: 'coral' },
+                                                    { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.scenario_macro.title, subtitle: translations[lang].cards.scenario_macro.subtitle, query: translations[lang].cards.scenario_macro.query, color: 'teal' }
                                                 ].map((item, idx) => (
                                                     <button
                                                         key={idx}
                                                         onClick={() => sendDirectMessage(item.query)}
-                                                        className="p-5 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#13b8a6]/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-start group flex flex-col h-full"
+                                                        className="p-3.5 rounded-xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#13b8a6]/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-start group flex flex-col items-center justify-center h-full gap-2"
                                                     >
                                                         <div className={clsx(
-                                                            "w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-lg transition-colors",
+                                                            "w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors",
                                                             item.color === 'coral' ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10" : "bg-[#13b8a6]/10 text-[#13b8a6] dark:bg-[#13b8a6]/10"
                                                         )}>
                                                             {item.icon}
                                                         </div>
-                                                        <p className="text-sm font-bold text-slate-800 dark:text-white mb-1 group-hover:text-[#13b8a6] transition-colors">
-                                                            {item.title}
-                                                        </p>
-                                                        <p className="text-xs text-slate-400 leading-relaxed">
-                                                            {item.subtitle}
-                                                        </p>
+                                                        <div className="text-center">
+                                                            <p className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-[#13b8a6] transition-colors line-clamp-1">
+                                                                {item.title}
+                                                            </p>
+                                                            <p className="text-[10px] text-slate-400 leading-tight line-clamp-1">
+                                                                {item.subtitle}
+                                                            </p>
+                                                        </div>
                                                     </button>
                                                 ))}
                                             </div>

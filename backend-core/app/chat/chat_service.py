@@ -1805,6 +1805,8 @@ class ChatService:
         import json
         
         try:
+            resolved_user_id = None
+            
             # Resolve user_id to integer if it's an email
             if user_id and '@' in str(user_id):
                 try:

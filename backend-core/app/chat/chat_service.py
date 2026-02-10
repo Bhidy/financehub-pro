@@ -553,7 +553,7 @@ class ChatService:
                     SELECT symbol
                     FROM market_tickers
                     WHERE symbol <> $1
-                      AND market_code = COALESCE($2, market_code)
+                      AND market_code = 'EGX'
                       AND sector_name = $3
                     ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
                     LIMIT $4
@@ -571,7 +571,7 @@ class ChatService:
                     SELECT symbol
                     FROM market_tickers
                     WHERE symbol <> $1
-                      AND market_code = COALESCE($2, market_code)
+                      AND market_code = 'EGX'
                     ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
                     LIMIT $3
                     """,

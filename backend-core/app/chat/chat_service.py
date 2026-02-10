@@ -546,46 +546,48 @@ class ChatService:
         )
 
         peers: List[str] = []
-        if sector:
-            rows = await self.conn.fetch(
-                """
-                SELECT symbol
-                FROM market_tickers
-                WHERE symbol <> $1
-                  AND market_code = COALESCE($2, market_code)
-                  AND sector_name = $3
-                  AND is_active = true
-                ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
-                LIMIT $4
-                """,
-                primary_symbol,
-                market,
-                sector,
-                limit
-            )
-            peers = [r["symbol"] for r in rows if r.get("symbol")]
+        try:
+            if sector:
+                rows = await self.conn.fetch(
+                    """
+                    SELECT symbol
+                    FROM market_tickers
+                    WHERE symbol <> $1
+                      AND market_code = COALESCE($2, market_code)
+                      AND sector_name = $3
+                    ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
+                    LIMIT $4
+                    """,
+                    primary_symbol,
+                    market,
+                    sector,
+                    limit
+                )
+                peers = [r["symbol"] for r in rows if r.get("symbol")]
 
-        if len(peers) < limit:
-            rows = await self.conn.fetch(
-                """
-                SELECT symbol
-                FROM market_tickers
-                WHERE symbol <> $1
-                  AND market_code = COALESCE($2, market_code)
-                  AND is_active = true
-                ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
-                LIMIT $3
-                """,
-                primary_symbol,
-                market,
-                limit + 2
-            )
-            for row in rows:
-                sym = row.get("symbol")
-                if sym and sym not in peers:
-                    peers.append(sym)
-                if len(peers) >= limit:
-                    break
+            if len(peers) < limit:
+                rows = await self.conn.fetch(
+                    """
+                    SELECT symbol
+                    FROM market_tickers
+                    WHERE symbol <> $1
+                      AND market_code = COALESCE($2, market_code)
+                    ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
+                    LIMIT $3
+                    """,
+                    primary_symbol,
+                    market,
+                    limit + 2
+                )
+                for row in rows:
+                    sym = row.get("symbol")
+                    if sym and sym not in peers:
+                        peers.append(sym)
+                    if len(peers) >= limit:
+                        break
+        except Exception as e:
+            print(f"[ChatService] ⚠️ Failed to infer peers for {primary_symbol}: {e}")
+            return []
 
         return peers[:limit]
 

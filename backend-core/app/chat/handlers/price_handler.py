@@ -110,7 +110,32 @@ async def handle_stock_price(
     debt_equity = float(data['debt_equity']) if data['debt_equity'] else None
     profit_margin = float(data['profit_margin'] * 100) if data['profit_margin'] else None # Convert decimal to %
 
-    sector = data['sector_name'] or "N/A"
+    SECTOR_AR_MAP = {
+        'Banks': 'بنوك',
+        'Basic Resources': 'موارد أساسية',
+        'Building Materials': 'مواد بناء',
+        'Chemicals': 'كيماويات',
+        'Construction & Materials': 'تشييد ومواد بناء',
+        'Education Services': 'خدمات تعليمية',
+        'Energy & Support Services': 'طاقة وخدمات مساندة',
+        'Financial Services (excluding Banks)': 'خدمات مالية غير مصرفية',
+        'Food, Beverages & Tobacco': 'أغذية ومشروبات',
+        'Health Care & Pharmaceuticals': 'رعاية صحية وأدوية',
+        'Industrial Goods, Services and Automobiles': 'سلع صناعية وسيارات',
+        'IT, Media & Communication Services': 'اتصالات وإعلام',
+        'Paper & Packaging': 'ورق وتغليف',
+        'Real Estate': 'عقارات',
+        'Shipping & Transportation Services': 'خدمات نقل وشحن',
+        'Textile & Durables': 'منسوجات وسلع معمرة',
+        'Trade & Distributors': 'تجارة وموزعون',
+        'Travel & Leisure': 'سياحة وترفيه',
+        'Utilities': 'مرافق'
+    }
+
+    sector_raw = data['sector_name'] or "N/A"
+    sector = sector_raw
+    if language == 'ar':
+        sector = SECTOR_AR_MAP.get(sector_raw, sector_raw)
     
     # Trend analysis
     # Trend analysis
@@ -267,7 +292,7 @@ async def handle_stock_price(
         
         cards.append({
             'type': 'valuation_score', # Recognized by LLM Context
-            'title': 'Starta Valuation Score',
+            'title': 'Starta Valuation Score' if language == 'en' else 'نتيجة تقييم ستارتا',
             'data': {
                 'total_score': score_res.total_score,
                 'valuation_score': score_res.valuation_score,
@@ -285,7 +310,7 @@ async def handle_stock_price(
         
         cards.append({
             'type': 'macro_context', # Recognized by LLM Context
-            'title': 'Macro Environment',
+            'title': 'Macro Environment' if language == 'en' else 'البيئة الاقتصادية الكلية',
             'data': macro_ctx
         })
 
@@ -323,12 +348,12 @@ async def handle_stock_price(
         'market_cap': market_cap,
         'high_52w': high_52w,
         'low_52w': low_52w,
-        'sector': sector,
+        'sector': sector_raw, # Use raw English sector for logic lookup
         'volume': volume
     }
     
     # Generate bull/bear cases based on stock data
-    bull_case, bear_case = generate_bull_bear_cases(stock_data_for_analysis)
+    bull_case, bear_case = generate_bull_bear_cases(stock_data_for_analysis, language=language)
     
     # Generate data card for current position
     data_card = generate_data_card(
@@ -337,7 +362,8 @@ async def handle_stock_price(
         change=change,
         change_pct=change_pct,
         currency=currency,
-        volume=volume
+        volume=volume,
+        language=language
     )
     
     # Disclaimer card (NEW structured format)
@@ -356,10 +382,10 @@ async def handle_stock_price(
         cards.append({'type': 'data_card', 'data': data_card.model_dump() if hasattr(data_card, 'model_dump') else data_card})
     
     if bull_case:
-        cards.append({'type': 'bull_case', 'title': 'Bull Case', 'data': bull_case.model_dump() if hasattr(bull_case, 'model_dump') else bull_case})
+        cards.append({'type': 'bull_case', 'title': 'Bull Case' if language == 'en' else 'الحالة الإيجابية', 'data': bull_case.model_dump() if hasattr(bull_case, 'model_dump') else bull_case})
         
     if bear_case:
-        cards.append({'type': 'bear_case', 'title': 'Bear Case Risks', 'data': bear_case.model_dump() if hasattr(bear_case, 'model_dump') else bear_case})
+        cards.append({'type': 'bear_case', 'title': 'Bear Case Risks' if language == 'en' else 'مخاطر الحالة السلبية', 'data': bear_case.model_dump() if hasattr(bear_case, 'model_dump') else bear_case})
 
     if disclaimer_card:
         cards.append({'type': 'disclaimer_card', 'data': disclaimer_card})

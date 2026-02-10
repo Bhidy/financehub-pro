@@ -53,8 +53,18 @@ INTENT_DESCRIPTIONS = {
     "DEEP_GROWTH": "Growth metrics (CAGR, revenue growth)",
     "DEEP_EFFICIENCY": "Efficiency ratios (ROCE, asset turnover)",
     "MARKET_SUMMARY": "Overall market/index status",
+    "MARKET_STATUS": "Market status and summary",
+    "MARKET_TIMING": "Is this a good time to buy in general",
+    "MACRO_VIEW": "Comprehensive top-down macro market view",
+    "INDEX_COMPOSITION": "Current EGX 30 constituents and weights",
     "HIDDEN_GEMS": "Undervalued/undiscovered stocks",
     "MACRO_SCORE": "Macroeconomic market conditions score",
+    "SCREENER_VALUE": "Most undervalued stocks in market or sector",
+    "SCREENER_DEEP": "Screen stocks by specific deep metric",
+    "SCREENER_GROWTH": "Find highest growth stocks",
+    "SCREENER_SAFETY": "Find safest stocks by risk metrics",
+    "SCREENER_INCOME": "Find highest dividend or income stocks",
+    "FIN_MARGINS": "Analyze why margins are changing or declining",
     "GREETING": "User saying hello/hi",
     "GOODBYE": "User saying bye/goodbye",
     "GRATITUDE": "User saying thanks",
@@ -114,7 +124,8 @@ Return JSON format:
         "symbol": "SYMBOL or null",
         "sector": "sector name or null",
         "metric": "specific metric or null",
-        "compare_with": ["symbols to compare"] or null
+        "compare_symbols": ["symbols to compare"] or null,
+        "market_code": "market code like EGX or null"
     }},
     "language": "en or ar",
     "confidence": 0.0 to 1.0,
@@ -166,7 +177,7 @@ Return JSON format:
         # Build intent list for prompt
         intent_list = "\n".join([
             f"- {intent}: {INTENT_DESCRIPTIONS.get(intent, 'Various queries')}"
-            for intent in VALID_INTENTS[:40]  # Limit for token efficiency
+            for intent in VALID_INTENTS
         ])
         
         # Format context for LLM
@@ -261,7 +272,24 @@ Return JSON format:
             
             # Clean up entities
             entities = {k: v for k, v in entities.items() if v is not None}
-            
+
+            # Backward compatibility with older key name from some models
+            if entities.get("compare_with") and not entities.get("compare_symbols"):
+                entities["compare_symbols"] = entities.get("compare_with")
+            entities.pop("compare_with", None)
+
+            # Normalize compare symbols into uppercase list
+            if entities.get("compare_symbols"):
+                compare_symbols = entities["compare_symbols"]
+                if isinstance(compare_symbols, str):
+                    compare_symbols = [compare_symbols]
+                if isinstance(compare_symbols, list):
+                    entities["compare_symbols"] = [
+                        str(sym).upper() for sym in compare_symbols if str(sym).strip()
+                    ]
+                else:
+                    entities.pop("compare_symbols", None)
+
             # Normalize symbol to uppercase
             if entities.get("symbol"):
                 entities["symbol"] = entities["symbol"].upper()

@@ -484,10 +484,10 @@ body {
   /* Zoom removed for standard scale */
 }
 
-/* Typography enforcement */
+/* Typography enforcement (Strict) */
 [lang="en"],
 [dir="ltr"] {
-  font-family: var(--font-sans);
+  font-family: var(--font-inter) !important;
 }
 
 [lang="en"] .font-mono,
@@ -496,22 +496,25 @@ body {
 [dir="ltr"] code,
 [lang="en"] pre,
 [dir="ltr"] pre {
-  font-family: var(--font-sans) !important;
+  font-family: var(--font-jetbrains) !important;
 }
 
-/* Arabic Font Support */
+/* Arabic Font Support (Strict) */
 [lang="ar"],
 [dir="rtl"],
 .rtl,
 .font-arabic {
-  font-family: var(--font-arabic-stack) !important;
+  font-family: var(--font-arabic) !important;
   direction: rtl;
 }
 
-[lang="ar"] *,
-[dir="rtl"] *,
-.rtl * {
-  font-family: var(--font-arabic-stack);
+/* Force all child elements to respect the direction font */
+[dir="rtl"] *:not(.font-mono):not(code):not(pre) {
+  font-family: var(--font-arabic) !important;
+}
+
+[dir="ltr"] *:not(.font-mono):not(code):not(pre) {
+  font-family: var(--font-inter) !important;
 }
 
 /* ============================================================================

@@ -34,7 +34,18 @@ export const translations = {
             comparison: { title: "Financial Comparison", subtitle: "Compare key metrics", query: "Compare CIB and COMI" },
             screener: { title: "Market Screener", subtitle: "Find matching stocks", query: "Show me top gainers today" },
             price: { title: "Price Analysis", subtitle: "Technical price insights", query: "Analyze price of TMGH" },
-            sector: { title: "Sector Performance", subtitle: "Industry analysis", query: "Show banking sector performance" }
+            sector: { title: "Sector Performance", subtitle: "Industry analysis", query: "Show banking sector performance" },
+            // Predefined Scenarios (English)
+            scenario_jufo: { title: "Should I Buy JUFO?", subtitle: "Investment Thesis", query: "Should I buy JUFO?" },
+            scenario_undervalued: { title: "Most Undervalued", subtitle: "Value opportunities", query: "What are the most undervalued stocks?" },
+            scenario_hidden_gems: { title: "Hidden Gems", subtitle: "Mid-cap discoveries", query: "What are the hidden gems in the market?" },
+            scenario_market_timing: { title: "Good Time to Buy?", subtitle: "Macro market timing", query: "Is this a good time to buy stocks?" },
+            scenario_compare_peers: { title: "Compare JUFO", subtitle: "Peer comparison", query: "Compare JUFO to its competitors" },
+            scenario_roe: { title: "What is ROE?", subtitle: "Educational concept", query: "What does ROE mean?" },
+            scenario_margins: { title: "Margin Trends", subtitle: "Profitability analysis", query: "Why are margins declining?" },
+            scenario_real_estate: { title: "Undervalued RE", subtitle: "Sector specific", query: "Show me undervalued real estate stocks" },
+            scenario_egx30: { title: "EGX 30 Stocks", subtitle: "Index breakdown", query: "Show me EGX 30 constituents" },
+            scenario_macro: { title: "Macro View", subtitle: "Market environment", query: "Give me a macro market view" }
         },
         chat: {
             bullCase: "Bull Case",
@@ -160,7 +171,18 @@ export const translations = {
             comparison: { title: "مقارنة مالية", subtitle: "قارن المؤشرات الرئيسية", query: "قارن بين التجاري الدولي وبلتون" },
             screener: { title: "ماسح السوق", subtitle: "ابحث عن الأسهم المناسبة", query: "أرني الأسهم الأكثر ربحاً اليوم" },
             price: { title: "تحليل السعر", subtitle: "رؤى فنية للسعر", query: "حلل سعر طلعت مصطفى" },
-            sector: { title: "أداء القطاعات", subtitle: "تحليل قطاعي", query: "أرني أداء قطاع البنوك" }
+            sector: { title: "أداء القطاعات", subtitle: "تحليل قطاعي", query: "أرني أداء قطاع البنوك" },
+            // Predefined Scenarios (Arabic)
+            scenario_jufo: { title: "هل أشتري جهينة؟", subtitle: "تحليل استثماري", query: "هل يجب أن أشتري سهم جهينة (JUFO)؟" },
+            scenario_undervalued: { title: "الأكثر انخفاضاً", subtitle: "فرص القيمة", query: "ما هي الأسهم الأكثر تقييماً بأقل من قيمتها؟" },
+            scenario_hidden_gems: { title: "الجواهر الخفية", subtitle: "أسهم متوسطة واعدة", query: "ما هي الجواهر الخفية في السوق؟" },
+            scenario_market_timing: { title: "وقت الشراء؟", subtitle: "توقيت السوق", query: "هل هذا وقت جيد للشراء؟" },
+            scenario_compare_peers: { title: "مقارنة جهينة", subtitle: "مقارنة المنافسين", query: "قارن سهم جهينة (JUFO) بمنافسيه" },
+            scenario_roe: { title: "ما هو العائد (ROE)؟", subtitle: "مفهوم تعليمي", query: "ماذا يعني العائد على حقوق الملكية (ROE)؟" },
+            scenario_margins: { title: "اتجاهات الهوامش", subtitle: "تحليل الربحية", query: "لماذا تنخفض هوامش الربح؟" },
+            scenario_real_estate: { title: "عقارات رخيصة", subtitle: "قطاع العقارات", query: "أرني أسهم عقارية مقيمة بأقل من قيمتها" },
+            scenario_egx30: { title: "مكونات EGX 30", subtitle: "تفصيل المؤشر", query: "أرني مكونات مؤشر EGX 30" },
+            scenario_macro: { title: "نظرة شامله للسوق", subtitle: "بيئة السوق", query: "أعطني نظرة شمولية للسوق (Macro View)" }
         },
         chat: {
             bullCase: "السيناريو الإيجابي",

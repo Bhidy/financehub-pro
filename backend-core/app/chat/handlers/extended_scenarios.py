@@ -330,7 +330,7 @@ async def handle_macro_score(conn, language: str = "en", context: dict = None) -
             AVG(dividend_yield) FILTER (WHERE dividend_yield > 0) as avg_yield,
             SUM(market_cap) as total_market_cap
         FROM market_tickers
-        WHERE market_code = 'EGX' AND is_active = true
+        WHERE market_code = 'EGX'
         """
         
         market_stats = await conn.fetchrow(market_query)
@@ -636,8 +636,7 @@ async def handle_index_composition(conn, language: str = "en", context: dict = N
                 dividend_yield,
                 logo_url
             FROM market_tickers
-            WHERE market_code = 'EGX' 
-              AND is_active = true
+            WHERE market_code = 'EGX'
               AND market_cap > 0
             ORDER BY market_cap DESC
             LIMIT 30
@@ -828,7 +827,6 @@ async def handle_undervalued_stocks(
                 AVG(NULLIF(pb_ratio, 0)) AS avg_pb
             FROM market_tickers
             WHERE market_code = 'EGX'
-              AND is_active = true
               AND sector_name IS NOT NULL
             GROUP BY sector_name
         ),
@@ -863,7 +861,6 @@ async def handle_undervalued_stocks(
             LEFT JOIN stock_statistics ss
                 ON t.symbol = ss.symbol AND t.market_code = ss.market_code
             WHERE t.market_code = 'EGX'
-              AND t.is_active = true
               AND t.last_price IS NOT NULL
               AND ($1::text IS NULL OR t.sector_name ILIKE $1)
               AND (
@@ -1128,7 +1125,6 @@ async def handle_margin_decline_analysis(conn, language: str = "en", context: di
               ON mt.symbol = ss.symbol
              AND mt.market_code = ss.market_code
             WHERE mt.market_code = 'EGX'
-              AND mt.is_active = true
               AND mt.sector_name IS NOT NULL
               AND ss.profit_margin IS NOT NULL
             GROUP BY mt.sector_name

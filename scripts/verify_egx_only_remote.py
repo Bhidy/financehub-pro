@@ -5,7 +5,7 @@ import os
 import json
 
 # Add app to path
-sys.path.append('/app')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../backend-core')))
 
 from app.chat.chat_service import ChatService
 from app.chat.handlers.compare_handler import handle_compare_stocks
@@ -47,7 +47,7 @@ async def verify_egx_only():
         # TEST 2: Professional Titles in Compare Handler
         print("\nDATA CHECK 2: Verifying Professional Titles")
         # Use two real EGX stocks
-        syms = ['COMI', 'EAST'] 
+        syms = ['COMI', 'ETEL'] 
         result = await handle_compare_stocks(conn, syms, language='en')
         
         if not result['success']:

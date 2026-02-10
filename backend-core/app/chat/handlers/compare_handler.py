@@ -79,7 +79,6 @@ async def handle_compare_stocks(
         if "." not in symbol:
              # Add market suffixes based on common patterns
              candidates.append(f"{symbol}.CA") # Egypt
-             candidates.append(f"{symbol}.SR") # Saudi
         
         row = None
         found_symbol = symbol
@@ -304,18 +303,18 @@ async def handle_compare_stocks(
         if stock.get('market_cap') and other.get('market_cap'):
             if stock['market_cap'] > other['market_cap'] * 2:
                 profile_emoji = "🏋️"
-                nickname = "العملاق المهيمن" if language == 'ar' else "The 800-lb Gorilla"
+                nickname = "القائد السوقي" if language == 'ar' else "Market Leader"
                 profile_text = (
                     f"مهيمن بالحجم. القيمة السوقية {stock['market_cap'] / 1e9:.1f} مليار." if language == 'ar'
-                    else f"Dominates by size. Market cap {stock['market_cap'] / 1e9:.1f}B is massive."
+                    else f"Dominant Scale. Market cap {stock['market_cap'] / 1e9:.1f}B."
                 )
-                good_points.append("قائد سوقي بمزايا الحجم" if language == 'ar' else "Market leader with scale advantages")
+                good_points.append("مزايا الحجم والقيادة" if language == 'ar' else "Scale leadership advantages")
             elif stock['market_cap'] < other['market_cap'] / 2:
                 profile_emoji = "🌱"
-                nickname = "الواعد المرن" if language == 'ar' else "The Scrappy Underdog"
+                nickname = "المنافس الصاعد" if language == 'ar' else "Emerging Challenger"
                 profile_text = (
-                    "أصغر حجماً لكنه مرن، وقد يحقق نمواً أعلى." if language == 'ar'
-                    else "Smaller but nimble. Could grow or get acquired."
+                    "أصغر حجماً لكنه يتمتع بالمرونة وإمكانات النمو." if language == 'ar'
+                    else "Smaller capitalization with potential agility."
                 )
                 good_points.append("مساحة نمو أكبر" if language == 'ar' else "More room to grow")
                 bad_points.append("قوة سوقية أقل" if language == 'ar' else "Less market power")
@@ -325,10 +324,10 @@ async def handle_compare_stocks(
             if stock['pe_ratio'] < other['pe_ratio']:
                 if not nickname or nickname == stock['symbol']:
                     profile_emoji = "💰"
-                    nickname = "رهان القيمة" if language == 'ar' else "The Value Play"
+                    nickname = "فرصة قيمة" if language == 'ar' else "Value Opportunity"
                     profile_text = (
-                        f"يتداول بخصم سعري. مكرر الربحية {stock['pe_ratio']:.1f}x." if language == 'ar'
-                        else f"Trading at a discount. P/E of {stock['pe_ratio']:.1f}x."
+                        f"يتداول بمضاعفات جذابة. مكرر الربحية {stock['pe_ratio']:.1f}x." if language == 'ar'
+                        else f"Attractive valuation. P/E of {stock['pe_ratio']:.1f}x."
                     )
                 good_points.append(
                     f"أرخص عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
@@ -376,9 +375,9 @@ async def handle_compare_stocks(
         
         # Fallback profile
         if not profile_text:
-            profile_text = "منافس قوي ضمن هذه المقارنة." if language == 'ar' else "A solid contender in this comparison."
+            profile_text = "أداء قوي ضمن القطاع." if language == 'ar' else "Strong sector performer."
         if not nickname or nickname == stock['symbol']:
-            nickname = f"السهم رقم {i+1}" if language == 'ar' else f"Stock #{i+1}"
+            nickname = f"السهم المنافس {i+1}" if language == 'ar' else f"Peer Stock {i+1}"
         
         character_cards.append({
             'emoji': profile_emoji,

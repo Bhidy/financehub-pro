@@ -268,16 +268,20 @@ class ChatService:
             return token if self._is_symbol_like_token(token) else ""
 
         out = LATIN_TOKEN_RE.sub(_replace_token, out)
-        # Strict Arabic mode: remove any non-Arabic alphabetic glyphs (e.g. CJK/Latin leakage).
+        # Strict Arabic mode: remove any non-Arabic alphabetic glyphs.
+        # We keep ALL-CAPS ticker-like tokens (e.g., COMI, EGX30, ROE) for finance UI fidelity.
         out = "".join(
             ch for ch in out
-            if (not ch.isalpha()) or self._is_arabic_letter(ch)
+            if (not ch.isalpha()) or self._is_arabic_letter(ch) or ("A" <= ch <= "Z")
         )
         out = re.sub(r"\s{2,}", " ", out).strip()
         out = re.sub(r"\s+([،,.!?:؛])", r"\1", out)
 
         if not out and fallback is not None:
-            return fallback
+            # IMPORTANT: sanitize fallback too. Otherwise Arabic mode can leak English
+            # when callers pass ticker/symbol into the fallback text.
+            sanitized_fallback = self._sanitize_arabic_string(fallback, fallback=None)
+            return sanitized_fallback if sanitized_fallback else fallback
         return out
 
     def _sanitize_arabic_payload(self, value: Any, field_key: Optional[str] = None) -> Any:
@@ -908,6 +912,20 @@ class ChatService:
             
             # Important: ensure result is a dict and has success
             result_data = result if isinstance(result, dict) else {}
+
+            # Extended scenarios ship their own narrative and learning sections that must not
+            # be overwritten by the generic LLM narrator (keeps UI consistent with the rules).
+            EXTENDED_INTENTS = {
+                Intent.HIDDEN_GEMS,
+                Intent.MACRO_SCORE,
+                Intent.MARKET_TIMING,
+                Intent.MACRO_VIEW,
+                Intent.INDEX_COMPOSITION,
+                Intent.SCREENER_VALUE,
+            }
+            is_extended_intent = intent in EXTENDED_INTENTS
+            handler_conversational_text = result_data.get('conversational_text')
+            handler_learning_section = result_data.get('learning_section')
             
             # --- INITIALIZE PREMIUM LAYERS ---
             # Pre-declare to avoid UnboundLocalError in catastrophic failure paths
@@ -984,20 +1002,22 @@ class ChatService:
                     
                     # DYNAMIC TOKEN LIMIT: Increase for deep dives
                     explainer.MAX_TOKENS = 1000 if is_deep_dive else 400
-
-                    conversational_text = await explainer.generate_narrative(
-                        query=message, 
-                        intent=intent.value,
-                        data=result_data.get('cards', []),
-                        language=language,
-                        user_name=real_user_name,
-                        allow_greeting=final_allow_greeting, 
-                        is_returning_user=is_returning_user
-                    )
+                    if is_extended_intent and handler_conversational_text:
+                        conversational_text = handler_conversational_text
+                    else:
+                        conversational_text = await explainer.generate_narrative(
+                            query=message,
+                            intent=intent.value,
+                            data=result_data.get('cards', []),
+                            language=language,
+                            user_name=real_user_name,
+                            allow_greeting=final_allow_greeting,
+                            is_returning_user=is_returning_user
+                        )
 
                     # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)
                     # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)
-                    if conversational_text:
+                    if conversational_text and not is_extended_intent:
                         print("DEBUG: WRITING TO /tmp/debug_chat.log")
                         with open("/tmp/debug_chat.log", "a") as f:
                             f.write(f"\n\n--- [SESSION {session_id}] ---\n")
@@ -1174,9 +1194,9 @@ class ChatService:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
                     # 2. Learning Section (Educational bullet points) - ALWAYS REQUIRED
-                    learning_section = None
+                    learning_section = handler_learning_section if isinstance(handler_learning_section, dict) else None
                     card_types = [c.get('type', '') for c in result_data.get('cards', [])]
-                    if result_data.get('cards'):
+                    if (not learning_section) and result_data.get('cards'):
                         learning_section = generate_learning_section(
                             card_types=card_types,
                             card_data=result_data.get('cards', []),
@@ -1206,6 +1226,14 @@ class ChatService:
                 except Exception as ex:
                     print(f"LLM Hybrid Layer Error (Non-Fatal): {ex}")
             # -------------------------------------------------------------
+
+            # If a handler provides a narrative (especially scenario handlers), do not drop it.
+            if not conversational_text and handler_conversational_text:
+                conversational_text = handler_conversational_text
+
+            # Keep handler-provided learning sections (extended scenarios ship curated content).
+            if not learning_section and isinstance(handler_learning_section, dict):
+                learning_section = handler_learning_section
             
             # 7. Update context
             # CRITICAL FIX: Mark history has content to prevent future "First Message" flags in this session
@@ -2101,7 +2129,19 @@ class ChatService:
         
         # Fallback mechanism: If LLM fails (no conversational_text) and no system message,
         # generate a generic message based on content to prevent empty bubbles.
-        final_message_text = result.get('message', '')
+        # Prefer explicit handler message, then conversational text, then fallback.
+        final_message_text = (
+            result.get('message')
+            or result.get('message_text')
+            or result.get('conversational_text')
+            or ''
+        )
+        if not final_message_text:
+            final_message_text = (
+                "Here is the analysis based on the latest available data."
+                if language == 'en' else
+                "إليك التحليل بناءً على أحدث البيانات المتاحة حالياً."
+            )
         if not conversational_text and not final_message_text and cards:
             # Generate simple fallback based on intent or first card
             card_titles = [c.get('title', 'Data') for c in result.get('cards', [])]

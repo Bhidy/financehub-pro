@@ -355,14 +355,14 @@ function ResponsiveAIAnalystContent() {
                                         'follow_up', 'error',
                                         // New ultra-premium types (matching all 10 mockup scenarios)
                                         'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
-                                        'comparison_table', 'peer_comparison',
-                                        'educational_card', 'definition', 'metric_explanation',
+                                        'comparison_table', 'compare_table', 'peer_comparison',
+                                        'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
                                         'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
                                         'price_display', 'current_position', 'stock_position',
                                         'index_composition', 'egx_constituents',
                                         'insight', 'insights', 'warning_card', 'reality_check',
                                         'character_cards', 'stock_personalities',
-                                        'macro_score', 'market_environment', 'framework_card'
+                                        'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria'
                                     ];
                                     const filteredCards = (m.response?.cards || []).filter(
                                         (card: any) => !worldClassHandledTypes.includes(card.type)

@@ -177,12 +177,12 @@ export const translations = {
             scenario_undervalued: { title: "الأكثر انخفاضاً", subtitle: "فرص القيمة", query: "ما هي الأسهم الأكثر تقييماً بأقل من قيمتها؟" },
             scenario_hidden_gems: { title: "الجواهر الخفية", subtitle: "أسهم متوسطة واعدة", query: "ما هي الجواهر الخفية في السوق؟" },
             scenario_market_timing: { title: "وقت الشراء؟", subtitle: "توقيت السوق", query: "هل هذا وقت جيد للشراء؟" },
-            scenario_compare_peers: { title: "مقارنة جهينة", subtitle: "مقارنة المنافسين", query: "قارن سهم جهينة (JUFO) بمنافسيه" },
-            scenario_roe: { title: "ما هو العائد (ROE)؟", subtitle: "مفهوم تعليمي", query: "ماذا يعني العائد على حقوق الملكية (ROE)؟" },
+            scenario_compare_peers: { title: "مقارنة جهينة", subtitle: "مقارنة المنافسين", query: "قارن سهم جهينة بمنافسيه" },
+            scenario_roe: { title: "ما هو العائد على حقوق الملكية؟", subtitle: "مفهوم تعليمي", query: "ماذا يعني العائد على حقوق الملكية؟" },
             scenario_margins: { title: "اتجاهات الهوامش", subtitle: "تحليل الربحية", query: "لماذا تنخفض هوامش الربح؟" },
             scenario_real_estate: { title: "عقارات رخيصة", subtitle: "قطاع العقارات", query: "أرني أسهم عقارية مقيمة بأقل من قيمتها" },
-            scenario_egx30: { title: "مكونات EGX 30", subtitle: "تفصيل المؤشر", query: "أرني مكونات مؤشر EGX 30" },
-            scenario_macro: { title: "نظرة شامله للسوق", subtitle: "بيئة السوق", query: "أعطني نظرة شمولية للسوق (Macro View)" }
+            scenario_egx30: { title: "مكونات المؤشر الثلاثيني", subtitle: "تفصيل المؤشر", query: "أرني مكونات المؤشر الثلاثيني" },
+            scenario_macro: { title: "نظرة شاملة للسوق", subtitle: "بيئة السوق", query: "أعطني نظرة شمولية للسوق" }
         },
         chat: {
             bullCase: "السيناريو الإيجابي",

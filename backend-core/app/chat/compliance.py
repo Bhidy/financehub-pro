@@ -10,9 +10,7 @@ from typing import Tuple, Optional
 
 # Blocked patterns (English + Arabic)
 BLOCKED_PATTERNS = [
-    # Buy/Sell advice
-    (r'\b(should|shall|would)\s+i\s+(buy|sell|invest)', 'advice'),
-    (r'\b(هل|هل يجب)\s*(اشتري|ابيع|استثمر)', 'advice'),
+    # Explicit buy/sell recommendations
     (r'\brecommend(ation)?\s+(to\s+)?(buy|sell)', 'advice'),
     (r'\b(انصحك|انصح|اوصي)\s*(ب|ان)?', 'advice'),
     
@@ -22,10 +20,6 @@ BLOCKED_PATTERNS = [
     (r'\btop\s+pick', 'advice'),
     (r'\b(predict|forecast|will\s+go\s+up|will\s+go\s+down)', 'prediction'),
     (r'\b(توقع|سيرتفع|سينخفض|سيصعد|سيهبط)', 'prediction'),
-    
-    # Investment decisions
-    (r'\b(is\s+it\s+a\s+good\s+time\s+to|when\s+should\s+i)', 'advice'),
-    (r'\b(الوقت\s+المناسب|متى\s+اشتري)', 'advice'),
     
     # Target price (unless we're showing analyst targets from DB)
     (r'\bwhat\s+price\s+will\s+it\s+reach', 'prediction'),

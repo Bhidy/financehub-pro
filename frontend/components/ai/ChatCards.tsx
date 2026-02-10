@@ -50,8 +50,11 @@ interface StockHeaderProps {
     data: {
         symbol: string;
         name: string;
+        description?: string;
         market_code: string;
         currency: string;
+        sector?: string;
+        sector_ar?: string;
         logo_url?: string;
         as_of?: string;
     };
@@ -62,6 +65,23 @@ export function StockHeaderCard({ data, language = "en" }: StockHeaderProps) {
     // Add onError handler to fallback if image fails to load
     const [imgError, setImgError] = React.useState(false);
     const isRtl = language === "ar";
+    const sectorArMap: Record<string, string> = {
+        "Banks": "البنوك",
+        "Real Estate": "العقارات",
+        "Financial Services": "الخدمات المالية",
+        "Industrial Goods & Services": "السلع والخدمات الصناعية",
+        "Basic Resources": "الموارد الأساسية",
+        "Food & Beverage": "الأغذية والمشروبات",
+        "Telecommunications": "الاتصالات",
+        "Healthcare & Pharmaceuticals": "الرعاية الصحية والأدوية",
+        "Construction & Materials": "التشييد ومواد البناء",
+        "Travel & Leisure": "السياحة والترفيه",
+    };
+    const resolvedDescription = data.description
+        || (language === "ar"
+            ? (data.sector_ar || (data.sector ? (sectorArMap[data.sector] || data.sector) : undefined))
+            : data.sector)
+        || (language === "ar" ? "سهم مدرج في السوق" : "Listed equity");
 
     return (
         <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-xl transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
@@ -85,6 +105,14 @@ export function StockHeaderCard({ data, language = "en" }: StockHeaderProps) {
                 <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                     <span dir="ltr">{data.symbol}</span> <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.market_code} <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" /> {data.currency}
                 </div>
+                {resolvedDescription && (
+                    <div className={clsx(
+                        "mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate",
+                        language === "ar" ? "normal-case tracking-normal" : "uppercase tracking-wide"
+                    )}>
+                        {resolvedDescription}
+                    </div>
+                )}
             </div>
             {data.as_of && (
                 <div className={`text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter opacity-60 ${isRtl ? "text-left" : "text-right"}`}>

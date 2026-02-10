@@ -30,7 +30,7 @@ Routes messages through the deterministic pipeline:
 
 import time
 import re
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import asyncpg
 
@@ -115,6 +115,7 @@ ARABIC_TEXT_REPLACEMENTS = {
     "Revenue": "الإيرادات",
     "Net Income": "صافي الربح",
     "Market Heatmap": "خريطة حرارة السوق",
+    "EGX": "البورصة المصرية",
     "Loss": "خسارة",
     "Neutral": "محايد",
     "Gain": "مكسب",
@@ -124,6 +125,44 @@ ARABIC_TEXT_REPLACEMENTS = {
     "Mixed": "مختلط",
     "Caution": "حذر",
     "Risk-Off": "مخاطر مرتفعة",
+    # Sector translations (to prevent English leakage in Arabic mode)
+    "Banks": "البنوك",
+    "Real Estate": "العقارات",
+    "Financial Services": "الخدمات المالية",
+    "Industrial Goods & Services": "السلع والخدمات الصناعية",
+    "Basic Resources": "الموارد الأساسية",
+    "Food & Beverage": "الأغذية والمشروبات",
+    "Telecommunications": "الاتصالات",
+    "Healthcare & Pharmaceuticals": "الرعاية الصحية والأدوية",
+    "Construction & Materials": "التشييد ومواد البناء",
+    "Travel & Leisure": "السياحة والترفيه",
+    "Listed equity": "سهم مدرج في السوق",
+    "P/E": "مضاعف الربحية",
+    "P/B": "مضاعف القيمة الدفترية",
+    "PE": "مضاعف الربحية",
+    "PB": "مضاعف القيمة الدفترية",
+    "ROE": "العائد على حقوق الملكية",
+    "ROA": "العائد على الأصول",
+    "EPS": "ربحية السهم",
+    "D/E": "نسبة الدين إلى حقوق الملكية",
+    "PEG": "مكرر الربحية إلى النمو",
+    "EV/EBITDA": "قيمة المنشأة إلى الأرباح التشغيلية",
+    "EV/Sales": "قيمة المنشأة إلى المبيعات",
+    "EV": "قيمة المنشأة",
+    "YTD": "منذ بداية العام",
+    "FY": "السنة المالية",
+    "Q1": "الربع الأول",
+    "Q2": "الربع الثاني",
+    "Q3": "الربع الثالث",
+    "Q4": "الربع الرابع",
+    "Top Pick": "الأفضل",
+    "Head-to-Head Comparison": "مقارنة مباشرة",
+    "Comparison Snapshot": "خلاصة المقارنة",
+    "Framework": "إطار التحليل",
+    "Metric": "المؤشر",
+    "Metrics": "المؤشرات",
+    "Factor": "العامل",
+    "Factors": "العوامل",
 }
 ARABIC_CARD_TITLE_FALLBACK = {
     "stock_header": "بيانات السهم",
@@ -242,6 +281,20 @@ class ChatService:
         return out
 
     def _sanitize_arabic_payload(self, value: Any, field_key: Optional[str] = None) -> Any:
+        # Support Pydantic objects (v1/v2) so top-level structured fields
+        # are sanitized as well, not just plain dict payloads.
+        if hasattr(value, "model_dump") or hasattr(value, "dict"):
+            try:
+                raw = value.model_dump() if hasattr(value, "model_dump") else value.dict()
+            except Exception:
+                raw = None
+            if isinstance(raw, dict):
+                sanitized_raw = self._sanitize_arabic_payload(raw, field_key)
+                try:
+                    return value.__class__(**sanitized_raw)
+                except Exception:
+                    return sanitized_raw
+
         if isinstance(value, dict):
             sanitized = {}
             for k, v in value.items():
@@ -262,6 +315,161 @@ class ChatService:
         if symbol:
             return f"إليك تحليل {symbol} بناءً على أحدث البيانات المتاحة حالياً."
         return "إليك التحليل بناءً على أحدث البيانات المتاحة حالياً."
+
+    def _apply_intent_overrides(
+        self,
+        message: str,
+        intent: Intent,
+        entities: Dict[str, Any]
+    ) -> Tuple[Intent, Dict[str, Any]]:
+        """
+        Deterministic overrides for enterprise scenario coverage.
+        Ensures the 10 predefined scenario prompts always route to the intended intent.
+        """
+        msg = (message or "").strip()
+        msg_lower = msg.lower()
+        updated = dict(entities or {})
+
+        has_real_estate = (
+            bool(re.search(r"\b(real[\s-]?estate|property)\b", msg_lower))
+            or any(tok in msg for tok in ["عقار", "عقاري", "العقارات", "الإسكان", "الاسكان"])
+        )
+        if has_real_estate and not updated.get("sector"):
+            updated["sector"] = "Real Estate"
+
+        is_hidden_gems = (
+            bool(re.search(r"\bhidden\s+gems?\b", msg_lower))
+            or any(tok in msg for tok in ["الجواهر الخفية", "فرص خفية", "الفرص الخفية"])
+        )
+        if is_hidden_gems:
+            return Intent.HIDDEN_GEMS, updated
+
+        is_macro_view = (
+            bool(re.search(r"\b(macro\s+(market\s+)?view|top[-\s]?down\s+view|market\s+environment)\b", msg_lower))
+            or any(tok in msg for tok in ["نظرة شمولية", "نظرة شاملة", "ماكرو", "الرؤية الكلية", "بيئة السوق"])
+        )
+        if is_macro_view:
+            return Intent.MACRO_VIEW, updated
+
+        is_index_composition = (
+            bool(re.search(r"\begx\s*30\b.*\b(constituents|composition|stocks|members)\b", msg_lower))
+            or bool(re.search(r"\b(constituents|composition)\b.*\begx\s*30\b", msg_lower))
+            or any(tok in msg for tok in ["مكونات مؤشر egx 30", "مكونات egx30", "مكونات egx 30", "مؤشر egx 30"])
+        )
+        if is_index_composition:
+            return Intent.INDEX_COMPOSITION, updated
+
+        is_good_time = (
+            bool(re.search(r"\b(good\s+time\s+to\s+buy|is\s+this\s+a\s+good\s+time\s+to\s+buy|market\s+timing)\b", msg_lower))
+            or any(tok in msg for tok in ["وقت جيد للشراء", "توقيت السوق", "هل الوقت مناسب للشراء", "هل هذا وقت جيد للشراء"])
+        )
+        if is_good_time and not updated.get("symbol"):
+            return Intent.MARKET_TIMING, updated
+
+        is_compare_peers = (
+            bool(re.search(r"\bcompare\b.*\b(peer|peers|competitors?)\b", msg_lower))
+            or any(tok in msg for tok in ["قارن", "منافس", "منافسيه", "نظرائه", "نظائره"])
+        )
+        if is_compare_peers:
+            return Intent.COMPARE_STOCKS, updated
+
+        is_roe_definition = (
+            ("roe" in msg_lower and bool(re.search(r"\b(what\s+does|what\s+is|meaning\s+of|mean)\b", msg_lower)))
+            or ("العائد على حقوق الملكية" in msg)
+            or ("ماذا يعني" in msg and "ROE" in msg.upper())
+        )
+        if is_roe_definition:
+            updated["term"] = "ROE"
+            return Intent.DEFINE_TERM, updated
+
+        is_margins_decline = (
+            bool(re.search(r"\bwhy\b.*\bmargins?\b.*\b(declin|fall|drop)\w*", msg_lower))
+            or bool(re.search(r"\bdeclining\s+margins?\b", msg_lower))
+            or any(tok in msg for tok in ["لماذا تنخفض الهوامش", "لماذا الهوامش", "تراجع الهوامش", "انخفاض الهوامش"])
+        )
+        if is_margins_decline:
+            return Intent.FIN_MARGINS, updated
+
+        is_most_undervalued = (
+            bool(re.search(r"\b(most\s+undervalued|undervalued\s+stocks|undervalued\s+real[\s-]?estate|cheap\s+stocks|value\s+stocks)\b", msg_lower))
+            or any(tok in msg for tok in ["الأكثر تقييماً بأقل", "أقل من قيمتها", "الأسهم المقيمة بأقل", "أسهم رخيصة"])
+        )
+        if is_most_undervalued and not updated.get("symbol"):
+            return Intent.SCREENER_VALUE, updated
+
+        is_should_buy = (
+            bool(re.search(r"\bshould\s+i\s+(buy|invest)\b", msg_lower))
+            or any(tok in msg for tok in ["هل يجب أن أشتري", "هل اشتري", "هل أشتري", "هل هذا السهم جيد للشراء"])
+        )
+        if is_should_buy:
+            if updated.get("symbol"):
+                return Intent.STOCK_SNAPSHOT, updated
+            return Intent.MARKET_TIMING, updated
+
+        return intent, updated
+
+    async def _infer_peer_symbols(
+        self,
+        primary_symbol: str,
+        market_code: Optional[str] = None,
+        limit: int = 2
+    ) -> List[str]:
+        """Infer peer symbols from the same sector, fallback to largest names in market."""
+        if not primary_symbol:
+            return []
+
+        market = market_code or await self.conn.fetchval(
+            "SELECT market_code FROM market_tickers WHERE symbol = $1",
+            primary_symbol
+        )
+        sector = await self.conn.fetchval(
+            "SELECT sector_name FROM market_tickers WHERE symbol = $1",
+            primary_symbol
+        )
+
+        peers: List[str] = []
+        if sector:
+            rows = await self.conn.fetch(
+                """
+                SELECT symbol
+                FROM market_tickers
+                WHERE symbol <> $1
+                  AND market_code = COALESCE($2, market_code)
+                  AND sector_name = $3
+                  AND is_active = true
+                ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
+                LIMIT $4
+                """,
+                primary_symbol,
+                market,
+                sector,
+                limit
+            )
+            peers = [r["symbol"] for r in rows if r.get("symbol")]
+
+        if len(peers) < limit:
+            rows = await self.conn.fetch(
+                """
+                SELECT symbol
+                FROM market_tickers
+                WHERE symbol <> $1
+                  AND market_code = COALESCE($2, market_code)
+                  AND is_active = true
+                ORDER BY market_cap DESC NULLS LAST, volume DESC NULLS LAST
+                LIMIT $3
+                """,
+                primary_symbol,
+                market,
+                limit + 2
+            )
+            for row in rows:
+                sym = row.get("symbol")
+                if sym and sym not in peers:
+                    peers.append(sym)
+                if len(peers) >= limit:
+                    break
+
+        return peers[:limit]
 
     def _resolve_language(
         self,
@@ -575,6 +783,17 @@ class ChatService:
                 intent = intent_result.intent
                 entities = intent_result.entities
                 confidence = intent_result.confidence if hasattr(intent_result, 'confidence') else 0.8
+
+            # Deterministic scenario coverage overrides (10-scenario enterprise set)
+            overridden_intent, overridden_entities = self._apply_intent_overrides(
+                message=message,
+                intent=intent,
+                entities=entities
+            )
+            if overridden_intent != intent:
+                print(f"[ChatService] 🎯 Intent override: {intent.value} -> {overridden_intent.value}")
+                intent = overridden_intent
+            entities = overridden_entities
             
             # Force market code in entities if provided explicitly
             if market:
@@ -602,6 +821,12 @@ class ChatService:
             
             # Candidate selection logic: Prefer extraction (better alias/stopword support)
             candidate = potential_symbols[0] if potential_symbols else symbol
+            if not candidate and entities.get('compare_symbols'):
+                compare_symbols = entities.get('compare_symbols')
+                if isinstance(compare_symbols, list) and compare_symbols:
+                    candidate = compare_symbols[0]
+                elif isinstance(compare_symbols, str):
+                    candidate = compare_symbols
             
             # Resolve if candidate exists
             resolved_symbol = None
@@ -1029,11 +1254,124 @@ class ChatService:
             handler_data_card = result_data.get('data_card')
             handler_disclaimer_card = result_data.get('disclaimer_card')
             handler_follow_up = result_data.get('follow_up_prompt') or follow_up_prompt
+            handler_insight_cards = result_data.get('insight_cards')
+            handler_stock_list = result_data.get('stock_list')
+            handler_macro_score = result_data.get('macro_score')
+            handler_comparison_table = result_data.get('comparison_table')
+            handler_educational_cards = result_data.get('educational_cards')
             # NEW: Premium World-Class Components (Phase 2)
             handler_framework_card = result_data.get('framework_card')
             handler_character_cards = result_data.get('character_cards')
             handler_quantified_drivers = result_data.get('quantified_drivers')
             handler_index_composition = result_data.get('index_composition')
+
+            # Normalize and backfill structured components from legacy cards when needed.
+            cards_payload = result_data.get('cards') or []
+            for card in cards_payload:
+                card_type = str(card.get('type', '')).lower()
+                card_data = card.get('data') or {}
+
+                if card_type == 'data_card' and not handler_data_card:
+                    handler_data_card = card_data
+
+                if card_type == 'bull_case' and not handler_bull_case:
+                    points = card_data.get('items') or card_data.get('points') or []
+                    handler_bull_case = {
+                        'variant': card_data.get('variant', 'success'),
+                        'title': card.get('title') or card_data.get('title') or ('Bull Case' if language == 'en' else 'السيناريو الإيجابي'),
+                        'items': points
+                    }
+
+                if card_type == 'bear_case' and not handler_bear_case:
+                    points = card_data.get('items') or card_data.get('points') or []
+                    handler_bear_case = {
+                        'variant': card_data.get('variant', 'warning'),
+                        'title': card.get('title') or card_data.get('title') or ('Bear Case' if language == 'en' else 'السيناريو السلبي'),
+                        'items': points
+                    }
+
+                if card_type in ('insight', 'insights') and card_data:
+                    handler_insight_cards = (handler_insight_cards or []) + [card_data]
+
+                if card_type in ('hidden_gems', 'stock_list', 'discovery_list') and not handler_stock_list:
+                    handler_stock_list = card_data.get('stocks') if isinstance(card_data, dict) else None
+
+                if card_type in ('macro_score', 'market_timing') and not handler_macro_score:
+                    handler_macro_score = card_data
+
+                if card_type in ('methodology', 'framework_card', 'screening_criteria') and not handler_framework_card:
+                    if isinstance(card_data, dict):
+                        framework_items = card_data.get('items')
+                        if not framework_items and isinstance(card_data.get('criteria'), list):
+                            framework_items = [
+                                f"{c.get('label', '')}: {c.get('value', '')}".strip(": ")
+                                for c in card_data.get('criteria', [])
+                                if isinstance(c, dict)
+                            ]
+                        handler_framework_card = {
+                            'icon': card_data.get('icon', '📊'),
+                            'title': card_data.get('title') or ('Framework' if language == 'en' else 'إطار التحليل'),
+                            'subtitle': card_data.get('subtitle') or card_data.get('description'),
+                            'items': framework_items or [],
+                            'border_color': card_data.get('border_color', 'blue')
+                        }
+
+                if card_type in ('disclaimer_card', 'disclaimer') and not handler_disclaimer_card:
+                    handler_disclaimer_card = card_data
+
+                if card_type == 'index_composition' and not handler_index_composition:
+                    handler_index_composition = card_data
+
+                if card_type in ('educational', 'definition', 'define_term') and not handler_educational_cards:
+                    if card_data:
+                        handler_educational_cards = [card_data]
+
+                if card_type in ('compare_table', 'comparison_table') and not handler_comparison_table:
+                    if card_data.get('headers') and card_data.get('rows'):
+                        handler_comparison_table = card_data
+                    elif card_data.get('stocks') and card_data.get('metrics'):
+                        stocks = card_data.get('stocks', [])
+                        metrics = card_data.get('metrics', [])
+
+                        def _format_cmp_value(raw_value: Any, fmt: Optional[str]) -> str:
+                            if raw_value is None:
+                                return "N/A" if language == 'en' else "غير متاح"
+                            try:
+                                num = float(raw_value)
+                            except Exception:
+                                return str(raw_value)
+
+                            if fmt == 'pct':
+                                return f"{num:.2f}%"
+                            if fmt == 'compact':
+                                if abs(num) >= 1_000_000_000:
+                                    return f"{num/1_000_000_000:.2f}B"
+                                if abs(num) >= 1_000_000:
+                                    return f"{num/1_000_000:.2f}M"
+                                if abs(num) >= 1_000:
+                                    return f"{num/1_000:.2f}K"
+                            return f"{num:.2f}"
+
+                        headers = ['Metric'] + [s.get('symbol', '') for s in stocks]
+                        rows = []
+                        for metric in metrics:
+                            key = metric.get('key')
+                            if not key:
+                                continue
+                            rows.append({
+                                'metric': metric.get('label', key),
+                                'values': [
+                                    _format_cmp_value(stock.get(key), metric.get('format'))
+                                    for stock in stocks
+                                ],
+                                'winner_symbol': metric.get('winner_symbol')
+                            })
+
+                        handler_comparison_table = {
+                            'title': card.get('title') or ('Peer Comparison' if language == 'en' else 'مقارنة الأقران'),
+                            'headers': headers,
+                            'rows': rows
+                        }
             
             # NEW: Key Insight (8-Layer Completeness)
             handler_key_insight = result_data.get('key_insight')
@@ -1053,6 +1391,11 @@ class ChatService:
                 data_card=handler_data_card,
                 bull_case=handler_bull_case,
                 bear_case=handler_bear_case,
+                insight_cards=handler_insight_cards,
+                stock_list=handler_stock_list,
+                macro_score=handler_macro_score,
+                comparison_table=handler_comparison_table,
+                educational_cards=handler_educational_cards,
                 disclaimer_card=handler_disclaimer_card,
                 # NEW: Premium World-Class Components (Phase 2)
                 framework_card=handler_framework_card,
@@ -1412,7 +1755,27 @@ class ChatService:
 
         elif intent == Intent.COMPARE_STOCKS:
             compare_symbols = entities.get('compare_symbols', [])
-            if not compare_symbols or len(compare_symbols) < 2:
+            if isinstance(compare_symbols, str):
+                compare_symbols = [compare_symbols]
+            compare_symbols = [str(s).upper() for s in compare_symbols if str(s).strip()]
+
+            # If compare query references one stock + peers, infer peers automatically.
+            if symbol and symbol not in compare_symbols:
+                compare_symbols = [symbol] + compare_symbols
+
+            if len(compare_symbols) < 2 and symbol:
+                inferred_peers = await self._infer_peer_symbols(
+                    primary_symbol=symbol,
+                    market_code=market_code,
+                    limit=2
+                )
+                for peer in inferred_peers:
+                    if peer not in compare_symbols and peer != symbol:
+                        compare_symbols.append(peer)
+                    if len(compare_symbols) >= 2:
+                        break
+
+            if len(compare_symbols) < 2:
                 return {
                     'success': False,
                     'message': "Please specify two stocks to compare (e.g., 'Compare COMI vs SWDY')" if language == 'en' else "يرجى تحديد سهمين للمقارنة (مثال: قارن بين COMI و SWDY)",
@@ -1461,6 +1824,9 @@ class ChatService:
 
         # Deep Financials (New Phase 14)
         elif intent in [Intent.FIN_MARGINS, Intent.FIN_DEBT, Intent.FIN_CASH, Intent.FIN_GROWTH, Intent.FIN_EPS]:
+            if intent == Intent.FIN_MARGINS and not symbol:
+                from .handlers.extended_scenarios import handle_margin_decline_analysis
+                return await handle_margin_decline_analysis(self.conn, language)
             if not symbol: return handle_clarify_symbol(language=language)
             return await handle_financial_metric(self.conn, symbol, intent, language)
             
@@ -1498,11 +1864,21 @@ class ChatService:
              return await handle_deep_screener(self.conn, metric='altman_z_score', direction='desc', limit=10, market_code=market_code, language=language)
              
         elif intent == Intent.SCREENER_VALUE:
-             # Route to Deep Screener with PE Ratio (Cheapest first)
+             from .handlers.extended_scenarios import handle_undervalued_stocks
+             sector = entities.get('sector')
              try:
-                 return await handle_deep_screener(self.conn, metric='pe_ratio', direction='asc', limit=10, market_code=market_code, language=language)
+                 return await handle_undervalued_stocks(
+                     self.conn,
+                     language=language,
+                     sector=sector,
+                     limit=5
+                 )
              except Exception:
-                 return await handle_screener_pe(self.conn, threshold=15.0, market_code=market_code, limit=10, language=language)
+                 # Fallback if extended screener fails
+                 try:
+                     return await handle_deep_screener(self.conn, metric='pe_ratio', direction='asc', limit=10, market_code=market_code, language=language)
+                 except Exception:
+                     return await handle_screener_pe(self.conn, threshold=15.0, market_code=market_code, limit=10, language=language)
              
         elif intent == Intent.SCREENER_INCOME:
              # Route to Dividend Leaders
@@ -1541,9 +1917,8 @@ class ChatService:
              return await handle_index_composition(self.conn, language)
         
         elif intent == Intent.MACRO_VIEW:
-             # Full macro view combines market summary + macro score
-             from .handlers.extended_scenarios import handle_macro_score
-             return await handle_macro_score(self.conn, language)
+             from .handlers.extended_scenarios import handle_macro_view
+             return await handle_macro_view(self.conn, language)
 
         else:
             return handle_unknown(language)

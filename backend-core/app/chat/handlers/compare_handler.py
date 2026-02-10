@@ -23,6 +23,33 @@ def safe_float(val: Any) -> Any:
     except: return None
 
 
+def _format_compact_number(value: Optional[float]) -> str:
+    if value is None:
+        return "N/A"
+    if abs(value) >= 1_000_000_000:
+        return f"{value/1_000_000_000:.2f}B"
+    if abs(value) >= 1_000_000:
+        return f"{value/1_000_000:.2f}M"
+    if abs(value) >= 1_000:
+        return f"{value/1_000:.2f}K"
+    return f"{value:.2f}"
+
+
+def _format_compare_value(value: Any, fmt: Optional[str], language: str = "en") -> str:
+    if value is None:
+        return "N/A" if language == "en" else "غير متاح"
+    try:
+        num = float(value)
+    except Exception:
+        return str(value)
+
+    if fmt == "pct":
+        return f"{num:.2f}%"
+    if fmt == "compact":
+        return _format_compact_number(num)
+    return f"{num:.2f}"
+
+
 
 
 async def handle_compare_stocks(
@@ -172,8 +199,8 @@ async def handle_compare_stocks(
             {'key': 'forward_pe', 'label': 'Fwd P/E', 'label_ar': 'مكرر مستقبلي', 'direction': 'min'},
             {'key': 'peg_ratio', 'label': 'PEG Ratio', 'label_ar': 'PEG', 'direction': 'min'},
             {'key': 'pb_ratio', 'label': 'P/B Ratio', 'label_ar': 'مضاعف الدفترية', 'direction': 'min'},
-            {'key': 'ev_ebitda', 'label': 'EV/EBITDA', 'label_ar': 'EV/EBITDA', 'direction': 'min'},
-            {'key': 'ev_sales', 'label': 'EV/Sales', 'label_ar': 'EV/Sales', 'direction': 'min'},
+            {'key': 'ev_ebitda', 'label': 'EV/EBITDA', 'label_ar': 'قيمة المنشأة إلى الأرباح التشغيلية', 'direction': 'min'},
+            {'key': 'ev_sales', 'label': 'EV/Sales', 'label_ar': 'قيمة المنشأة إلى المبيعات', 'direction': 'min'},
         ],
         'Profitability': [
             {'key': 'profit_margin', 'label': 'Net Margin', 'label_ar': 'هامش صافي الربح', 'format': 'pct', 'direction': 'max'},
@@ -193,8 +220,8 @@ async def handle_compare_stocks(
             {'key': 'eps_growth', 'label': 'EPS Growth', 'label_ar': 'نمو ربح السهم', 'format': 'pct', 'direction': 'max'},
         ],
         'Health': [
-            {'key': 'altman_z_score', 'label': 'Altman Z-Score', 'label_ar': 'مؤشر أمان (Z)', 'direction': 'max'},
-            {'key': 'piotroski_f_score', 'label': 'Piotroski F-Score', 'label_ar': 'مؤشر قوة (F)', 'direction': 'max'},
+            {'key': 'altman_z_score', 'label': 'Altman Z-Score', 'label_ar': 'مؤشر أمان ألتمان', 'direction': 'max'},
+            {'key': 'piotroski_f_score', 'label': 'Piotroski F-Score', 'label_ar': 'مؤشر قوة بيوتروسكي', 'direction': 'max'},
             {'key': 'debt_equity', 'label': 'Debt / Equity', 'label_ar': 'الديون للملكية', 'direction': 'min'},
             {'key': 'current_ratio', 'label': 'Current Ratio', 'label_ar': 'النسبة الحالية', 'direction': 'max'},
             {'key': 'interest_coverage', 'label': 'Interest Cov.', 'label_ar': 'تغطية الفوائد', 'direction': 'max'},
@@ -277,51 +304,81 @@ async def handle_compare_stocks(
         if stock.get('market_cap') and other.get('market_cap'):
             if stock['market_cap'] > other['market_cap'] * 2:
                 profile_emoji = "🏋️"
-                nickname = "The 800-lb Gorilla"
-                profile_text = f"Dominates by size. Market cap {stock['market_cap'] / 1e9:.1f}B is massive."
-                good_points.append("Market leader with scale advantages")
+                nickname = "العملاق المهيمن" if language == 'ar' else "The 800-lb Gorilla"
+                profile_text = (
+                    f"مهيمن بالحجم. القيمة السوقية {stock['market_cap'] / 1e9:.1f} مليار." if language == 'ar'
+                    else f"Dominates by size. Market cap {stock['market_cap'] / 1e9:.1f}B is massive."
+                )
+                good_points.append("قائد سوقي بمزايا الحجم" if language == 'ar' else "Market leader with scale advantages")
             elif stock['market_cap'] < other['market_cap'] / 2:
                 profile_emoji = "🌱"
-                nickname = "The Scrappy Underdog"
-                profile_text = f"Smaller but nimble. Could grow or get acquired."
-                good_points.append("More room to grow")
-                bad_points.append("Less market power")
+                nickname = "الواعد المرن" if language == 'ar' else "The Scrappy Underdog"
+                profile_text = (
+                    "أصغر حجماً لكنه مرن، وقد يحقق نمواً أعلى." if language == 'ar'
+                    else "Smaller but nimble. Could grow or get acquired."
+                )
+                good_points.append("مساحة نمو أكبر" if language == 'ar' else "More room to grow")
+                bad_points.append("قوة سوقية أقل" if language == 'ar' else "Less market power")
         
         # Valuation positioning
         if stock.get('pe_ratio') and other.get('pe_ratio'):
             if stock['pe_ratio'] < other['pe_ratio']:
                 if not nickname or nickname == stock['symbol']:
                     profile_emoji = "💰"
-                    nickname = "The Value Play"
-                    profile_text = f"Trading at a discount. P/E of {stock['pe_ratio']:.1f}x."
-                good_points.append(f"Cheaper at {stock['pe_ratio']:.1f}x P/E")
+                    nickname = "رهان القيمة" if language == 'ar' else "The Value Play"
+                    profile_text = (
+                        f"يتداول بخصم سعري. مكرر الربحية {stock['pe_ratio']:.1f}x." if language == 'ar'
+                        else f"Trading at a discount. P/E of {stock['pe_ratio']:.1f}x."
+                    )
+                good_points.append(
+                    f"أرخص عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
+                    else f"Cheaper at {stock['pe_ratio']:.1f}x P/E"
+                )
             else:
-                bad_points.append(f"Pricier at {stock['pe_ratio']:.1f}x P/E")
+                bad_points.append(
+                    f"أغلى عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
+                    else f"Pricier at {stock['pe_ratio']:.1f}x P/E"
+                )
         
         # Profitability
         if stock.get('profit_margin') and other.get('profit_margin'):
             if stock['profit_margin'] > other['profit_margin']:
-                good_points.append(f"Higher margins ({stock['profit_margin']:.1f}%)")
+                good_points.append(
+                    f"هوامش ربح أعلى ({stock['profit_margin']:.1f}%)" if language == 'ar'
+                    else f"Higher margins ({stock['profit_margin']:.1f}%)"
+                )
             else:
-                bad_points.append(f"Lower margins ({stock['profit_margin']:.1f}%)")
+                bad_points.append(
+                    f"هوامش ربح أقل ({stock['profit_margin']:.1f}%)" if language == 'ar'
+                    else f"Lower margins ({stock['profit_margin']:.1f}%)"
+                )
         
         # Growth
         if stock.get('revenue_growth'):
             if stock['revenue_growth'] > 10:
-                good_points.append(f"Growing revenue ({stock['revenue_growth']:.1f}%)")
+                good_points.append(
+                    f"نمو قوي بالإيرادات ({stock['revenue_growth']:.1f}%)" if language == 'ar'
+                    else f"Growing revenue ({stock['revenue_growth']:.1f}%)"
+                )
             elif stock['revenue_growth'] < 0:
-                bad_points.append(f"Revenue declining ({stock['revenue_growth']:.1f}%)")
+                bad_points.append(
+                    f"تراجع الإيرادات ({stock['revenue_growth']:.1f}%)" if language == 'ar'
+                    else f"Revenue declining ({stock['revenue_growth']:.1f}%)"
+                )
         
         # Dividend income
         if stock.get('dividend_yield'):
             if stock['dividend_yield'] > 3:
-                good_points.append(f"High dividend ({stock['dividend_yield']:.1f}%)")
+                good_points.append(
+                    f"عائد توزيعات مرتفع ({stock['dividend_yield']:.1f}%)" if language == 'ar'
+                    else f"High dividend ({stock['dividend_yield']:.1f}%)"
+                )
         
         # Fallback profile
         if not profile_text:
-            profile_text = f"A solid contender in this comparison."
+            profile_text = "منافس قوي ضمن هذه المقارنة." if language == 'ar' else "A solid contender in this comparison."
         if not nickname or nickname == stock['symbol']:
-            nickname = f"Stock #{i+1}"
+            nickname = f"السهم رقم {i+1}" if language == 'ar' else f"Stock #{i+1}"
         
         character_cards.append({
             'emoji': profile_emoji,
@@ -333,9 +390,56 @@ async def handle_compare_stocks(
             'bad': bad_points[:2]     # Limit to 2
         })
 
+    # Build top-level comparison table payload for WorldClassMessage renderer
+    comparison_rows = []
+    for metric in flat_metrics[:16]:
+        key = metric.get('key')
+        if not key:
+            continue
+        comparison_rows.append({
+            'metric': metric.get('label', key),
+            'values': [
+                _format_compare_value(stock.get(key), metric.get('format'), language)
+                for stock in stocks_data
+            ],
+            'winner_symbol': metric.get('winner_symbol')
+        })
+
+    comparison_table = {
+        'title': 'Peer Comparison' if language == 'en' else 'مقارنة الأقران',
+        'icon': '⚖️',
+        'headers': ['Metric' if language == 'en' else 'المؤشر'] + [stock['symbol'] for stock in stocks_data],
+        'rows': comparison_rows
+    }
+
+    framework_card = {
+        'icon': '🧭',
+        'title': 'COMPARISON FRAMEWORK' if language == 'en' else 'إطار المقارنة',
+        'subtitle': 'Valuation • Quality • Growth • Risk' if language == 'en' else 'تقييم • جودة • نمو • مخاطر',
+        'items': [
+            'Valuation: P/E, P/B, EV/EBITDA' if language == 'en' else 'التقييم: مضاعف الربحية ومضاعف الدفترية وقيمة المنشأة إلى الأرباح التشغيلية',
+            'Profitability: margins and capital efficiency' if language == 'en' else 'الربحية: الهوامش وكفاءة رأس المال',
+            'Growth momentum: revenue, earnings, EPS' if language == 'en' else 'زخم النمو: الإيرادات والأرباح وربحية السهم',
+            'Risk profile: leverage and balance-sheet resilience' if language == 'en' else 'ملف المخاطر: الرافعة المالية ومتانة المركز المالي',
+        ],
+        'border_color': 'blue',
+    }
+
+    disclaimer_card = {
+        'icon': '⚠️',
+        'title': 'Educational Comparison' if language == 'en' else 'مقارنة تعليمية',
+        'text': (
+            'This comparison is educational and not a personalized investment recommendation.'
+            if language == 'en'
+            else 'هذه المقارنة تعليمية وليست توصية استثمارية شخصية.'
+        ),
+        'variant': 'warning'
+    }
+
     return {
         'success': True,
         'message': message,
+        'conversational_text': message,
         'cards': [
             {
                 'type': 'compare_table',
@@ -347,20 +451,73 @@ async def handle_compare_stocks(
             }
         ],
         'chart': None, # Chart Removed as requested
+        'comparison_table': comparison_table,
+        'framework_card': framework_card,
         # NEW: Character Cards for stock personalities
         'character_cards': character_cards,
+        'insight_cards': [
+            {
+                'variant': 'info',
+                'title': '🧠 Comparison Snapshot' if language == 'en' else '🧠 خلاصة المقارنة',
+                'items': [
+                    (
+                        f"{stocks_data[0]['symbol']} vs {stocks_data[1]['symbol']}: review valuation, profitability, growth, and risk together."
+                        if language == 'en'
+                        else f"مقارنة {stocks_data[0]['symbol']} مع {stocks_data[1]['symbol']} يجب أن تجمع بين التقييم والربحية والنمو والمخاطر."
+                    )
+                ]
+            }
+        ],
+        'disclaimer_card': disclaimer_card,
         'learning_section': {
             'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',
             'items': [
-                "**Profitability:** " + (f"{stocks_data[0]['symbol']} leads with higher margins" if (stocks_data[0].get('profit_margin') or 0) > (stocks_data[1].get('profit_margin') or 0) else f"{stocks_data[1]['symbol']} leads efficiency"),
-                "**Valuation:** " + (f"{stocks_data[0]['symbol']} is trading at a discount (Lower P/E)" if (stocks_data[0].get('pe_ratio') or 999) < (stocks_data[1].get('pe_ratio') or 999) else f"{stocks_data[1]['symbol']} is trading at a discount"),
-                "**Growth:** Check the Revenue Growth metric to see who is expanding faster."
+                (
+                    "**Profitability:** " + (
+                        f"{stocks_data[0]['symbol']} leads with higher margins"
+                        if (stocks_data[0].get('profit_margin') or 0) > (stocks_data[1].get('profit_margin') or 0)
+                        else f"{stocks_data[1]['symbol']} leads efficiency"
+                    )
+                ) if language == 'en' else (
+                    "**الربحية:** " + (
+                        f"{stocks_data[0]['symbol']} يتفوق بهوامش أعلى"
+                        if (stocks_data[0].get('profit_margin') or 0) > (stocks_data[1].get('profit_margin') or 0)
+                        else f"{stocks_data[1]['symbol']} يتفوق في الكفاءة التشغيلية"
+                    )
+                ),
+                (
+                    "**Valuation:** " + (
+                        f"{stocks_data[0]['symbol']} is trading at a discount (Lower P/E)"
+                        if (stocks_data[0].get('pe_ratio') or 999) < (stocks_data[1].get('pe_ratio') or 999)
+                        else f"{stocks_data[1]['symbol']} is trading at a discount"
+                    )
+                ) if language == 'en' else (
+                    "**التقييم:** " + (
+                        f"{stocks_data[0]['symbol']} يتداول بخصم سعري (مضاعف ربحية أقل)"
+                        if (stocks_data[0].get('pe_ratio') or 999) < (stocks_data[1].get('pe_ratio') or 999)
+                        else f"{stocks_data[1]['symbol']} يتداول بخصم سعري"
+                    )
+                ),
+                (
+                    "**Growth:** Check revenue growth to see who is expanding faster."
+                    if language == 'en' else
+                    "**النمو:** راقب نمو الإيرادات لتحديد الشركة الأسرع في التوسع."
+                )
             ]
         },
         'follow_up_prompt': f"Which one has better dividends?" if language == 'en' else "أيهما يوزع أرباح أفضل؟",
         'actions': [
-            {'label': f'{symbols[0]} Financials', 'action_type': 'query', 'payload': f'Show financials for {symbols[0]}'},
-            {'label': f'{symbols[1]} Financials', 'action_type': 'query', 'payload': f'Show financials for {symbols[1]}'},
+            {
+                'label': f'💰 {symbols[0]} Financials',
+                'label_ar': f'💰 القوائم المالية {symbols[0]}',
+                'action_type': 'query',
+                'payload': f'Show financials for {symbols[0]}'
+            },
+            {
+                'label': f'💰 {symbols[1]} Financials',
+                'label_ar': f'💰 القوائم المالية {symbols[1]}',
+                'action_type': 'query',
+                'payload': f'Show financials for {symbols[1]}'
+            },
         ]
     }
-

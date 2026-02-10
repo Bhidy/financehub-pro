@@ -1414,7 +1414,20 @@ class ChatService:
             handler_framework_card = result_data.get('framework_card')
             handler_character_cards = result_data.get('character_cards')
             handler_quantified_drivers = result_data.get('quantified_drivers')
-            handler_index_composition = result_data.get('index_composition')
+            # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
+            if not handler_framework_card and result.conversational_text:
+                handler_framework_card = self._parse_framework(result.conversational_text)
+                
+            if not handler_quantified_drivers and result.conversational_text:
+                handler_quantified_drivers = self._parse_drivers(result.conversational_text)
+                
+            if not handler_educational_cards and result.conversational_text:
+                learning = self._parse_learning(result.conversational_text)
+                if learning:
+                    handler_educational_cards = [
+                        {"variant": "definition", "title": item['term'], "content": item['definition']}
+                        for item in learning['items']
+                    ]
 
             def _coerce_educational_cards(raw: Any) -> Optional[List[Dict[str, Any]]]:
                 """
@@ -1783,12 +1796,11 @@ class ChatService:
         
         try:
             # Resolve user_id to integer if it's an email
-            resolved_user_id = None
             if user_id and '@' in str(user_id):
                 try:
                     resolved_user_id = await self.conn.fetchval("SELECT id FROM users WHERE email = $1", str(user_id))
                 except:
-                    resolved_user_id = None
+                    pass
             elif user_id:
                 try:
                     resolved_user_id = int(str(user_id))
@@ -2321,6 +2333,79 @@ class ChatService:
         )
 
 
+    def _parse_framework(self, text: str) -> Optional[Dict[str, Any]]:
+        """Parse [FRAMEWORK] section."""
+        match = re.search(r'\[FRAMEWORK\]\s*(.*?)(?=\[|$)', text, re.DOTALL)
+        if not match:
+            return None
+            
+        content = match.group(1).strip()
+        lines = content.split('\n')
+        
+        framework = {"items": []}
+        for line in lines:
+            line = line.strip()
+            if line.lower().startswith('title:'):
+                framework['title'] = line.split(':', 1)[1].strip()
+            elif line.lower().startswith('subtitle:'):
+                framework['subtitle'] = line.split(':', 1)[1].strip()
+            elif line.startswith('-'):
+                framework['items'].append(line[1:].strip())
+        
+        return framework if framework['items'] else None
+
+    def _parse_drivers(self, text: str) -> Optional[Dict[str, Any]]:
+        """Parse [QUANTIFIED_DRIVERS] section."""
+        match = re.search(r'\[QUANTIFIED_DRIVERS\]\s*(.*?)(?=\[|$)', text, re.DOTALL)
+        if not match:
+            return None
+            
+        content = match.group(1).strip()
+        drivers = []
+        for line in content.split('\n'):
+            line = line.strip()
+            if line.startswith('-'):
+                # Format: - Name: Impact - Explanation
+                parts = line[1:].split(':', 1)
+                if len(parts) >= 2:
+                    driver = {"name": parts[0].strip()}
+                    rest = parts[1].strip()
+                    # Try to separate impact and explanation
+                    if '-' in rest:
+                        impact_parts = rest.split('-', 1)
+                        driver['impact'] = impact_parts[0].strip()
+                        driver['explanation'] = impact_parts[1].strip()
+                    else:
+                        driver['impact'] = ""
+                        driver['explanation'] = rest
+                    drivers.append(driver)
+        
+        return {"drivers": drivers} if drivers else None
+
+    def _parse_learning(self, text: str) -> Optional[Dict[str, Any]]:
+        """Parse [LEARNING] section."""
+        match = re.search(r'\[LEARNING\]\s*(.*?)(?=\[|$)', text, re.DOTALL)
+        if not match:
+            return None
+            
+        content = match.group(1).strip()
+        items = []
+        title = "Key Concepts"
+        
+        for line in content.split('\n'):
+            line = line.strip()
+            if line.lower().startswith('title:'):
+                title = line.split(':', 1)[1].strip()
+            elif line.startswith('-'):
+                # Format: - Concept: Definition
+                parts = line[1:].split(':', 1)
+                if len(parts) >= 2:
+                    items.append({
+                        "term": parts[0].strip(),
+                        "definition": parts[1].strip()
+                    })
+        
+        return {"title": title, "items": items} if items else None
 
 async def process_message(
     conn: asyncpg.Connection,

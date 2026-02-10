@@ -107,6 +107,33 @@ const ARABIC_BLOCKED_TOKENS = new Set([
     "N", "A"
 ]);
 
+// Keys that are control/structural (not user-facing text). We must preserve them
+// or we will break rendering logic/actions in Arabic mode.
+const ARABIC_STRUCTURAL_KEYS = new Set([
+    "type",
+    "variant",
+    "status",
+    "highlight",
+    "direction",
+    "format",
+    "trend",
+    "signal",
+    "border_color",
+    "action_type",
+    "payload",
+    "intent",
+    "backend_version",
+    "as_of",
+    "query",
+    "id",
+    "timestamp",
+    "symbol",
+    "ticker",
+    "market_code",
+    "currency",
+    "logo_url",
+]);
+
 function localizeMetricLabel(label: string, lang: Language = "en"): string {
     if (!label) return label;
     if (lang !== "ar") return label;
@@ -141,16 +168,24 @@ function sanitizeArabicString(value: string): string {
     return out || "غير متاح";
 }
 
-function sanitizeArabicPayload<T = any>(value: T): T {
+function sanitizeArabicPayload<T = any>(value: T, fieldKey?: string): T {
     if (value === null || value === undefined) return value;
-    if (typeof value === "string") return sanitizeArabicString(value) as T;
+    if (typeof value === "string") {
+        if (fieldKey && ARABIC_STRUCTURAL_KEYS.has(fieldKey)) return value;
+        return sanitizeArabicString(value) as T;
+    }
     if (Array.isArray(value)) {
-        return value.map((item) => sanitizeArabicPayload(item)) as T;
+        return value.map((item) => sanitizeArabicPayload(item, fieldKey)) as T;
     }
     if (typeof value === "object") {
         const result: Record<string, any> = {};
         Object.entries(value as Record<string, any>).forEach(([k, v]) => {
-            result[k] = sanitizeArabicPayload(v);
+            if (ARABIC_STRUCTURAL_KEYS.has(k)) {
+                // Preserve structural/control fields exactly.
+                result[k] = v;
+            } else {
+                result[k] = sanitizeArabicPayload(v, k);
+            }
         });
         return result as T;
     }
@@ -729,6 +764,53 @@ function ComparisonTableCard({ data }: { data: any }) {
 /** Educational Card - Metric explanations (Scenario 6) */
 function EducationalCard({ data, lang = 'en' }: { data: any, lang?: Language }) {
     if (!data) return null;
+
+    // Schema shape from backend: { variant: 'definition'|'formula'|'example'|'when_misleading', title, content }
+    // Keep backwards compatibility with the richer legacy shape (definition/formula/example/sections).
+    if (typeof data.content === "string" && data.variant) {
+        const variant = String(data.variant);
+        const title = data.title || (lang === "ar" ? "شرح تعليمي" : "Educational Note");
+        const content = data.content;
+
+        if (variant === "when_misleading") {
+            return (
+                <div className="my-4">
+                    <WarningCard
+                        data={{
+                            title,
+                            content: content.split("\n").map((x: string) => x.trim()).filter(Boolean),
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <div className="my-4 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+                <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 dark:from-sky-900/20 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l px-4 py-3 border-b border-slate-200 dark:border-slate-700/50">
+                    <div className="text-lg font-bold text-sky-700 dark:text-sky-300 flex items-center gap-2">
+                        📚 {title}
+                    </div>
+                </div>
+                <div className="p-4 space-y-4">
+                    {variant === "formula" ? (
+                        <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-3 border-s-4 border-s-sky-500">
+                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">{translations[lang].chat.formula}</div>
+                            <code className="text-sm font-mono text-slate-800 dark:text-slate-200 dir-ltr block text-start">{content}</code>
+                        </div>
+                    ) : variant === "example" ? (
+                        <div className="bg-sky-50 dark:bg-sky-900/20 rounded-lg p-3 border-s-4 border-s-sky-500">
+                            <div className="text-xs font-semibold text-sky-600 dark:text-sky-400 uppercase mb-1">{translations[lang].chat.example}</div>
+                            <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{content}</div>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{content}</p>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="my-4 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
             <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 dark:from-sky-900/20 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l px-4 py-3 border-b border-slate-200 dark:border-slate-700/50">

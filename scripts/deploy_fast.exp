@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+
+# Fast Deploy Script
+# Skips 'docker system prune -a' to preserve base image.
+# Uses 'starta-backend' which is now lightweight (<60s build).
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+# Command Explanation:
+# 1. cd /opt/starta
+# 2. git pull (Update code)
+# 3. docker compose build (Fast rebuild of app layer only)
+# 4. docker compose up -d --force-recreate (Restart containers)
+# Note: We DO NOT prune -a, only -f (dangling) to keep the base image.
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- FAST BUILD ---' && docker compose -f docker-compose.prod.yml build && echo '--- RESTARTING ---' && docker compose -f docker-compose.prod.yml up -d --force-recreate && echo '--- PRUNING DANGLING ---' && docker system prune -f && echo '--- HEALTH CHECK ---' && sleep 5 && docker ps && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        send_user "\n✅ Fast Deployment Completed.\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ Timeout waiting for deployment.\n"
+        exit 1
+    }
+    eof
+}

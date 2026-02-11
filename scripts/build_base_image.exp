@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+
+set timeout 1800
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- BUILDING BASE IMAGE ---' && docker build -f Dockerfile.base -t starta-base:latest . && echo '--- BASE IMAGE BUILT ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- BASE IMAGE BUILT ---" {
+        send_user "\n✅ Base Image Built Successfully.\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ Timeout waiting for base image build.\n"
+        exit 1
+    }
+    eof
+}

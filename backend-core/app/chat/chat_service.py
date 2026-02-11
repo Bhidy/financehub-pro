@@ -1356,25 +1356,25 @@ class ChatService:
                         if original_text != conversational_text:
                             print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
 
-                    # 2. Learning Section (Educational bullet points) - ALWAYS REQUIRED
-                    learning_section = handler_learning_section if isinstance(handler_learning_section, dict) else None
-                    card_types = [c.get('type', '') for c in result_data.get('cards', [])]
-                    if (not learning_section) and result_data.get('cards'):
-                        learning_section = generate_learning_section(
-                            card_types=card_types,
-                            card_data=result_data.get('cards', []),
-                            language=language
-                        )
+                    # 2. Learning Section (Educational bullet points) - DISABLED PER USER REQUEST
+                    # learning_section = handler_learning_section if isinstance(handler_learning_section, dict) else None
+                    # card_types = [c.get('type', '') for c in result_data.get('cards', [])]
+                    # if (not learning_section) and result_data.get('cards'):
+                    #     learning_section = generate_learning_section(
+                    #         card_types=card_types,
+                    #         card_data=result_data.get('cards', []),
+                    #         language=language
+                    #     )
                     
                     # FALLBACK: If no learning section generated but we have cards, force one
-                    if not learning_section and result_data.get('cards'):
-                        learning_section = {
-                            "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
-                            "items": [
-                                "**P/E Ratio**: Shows how much investors pay for each unit of profit." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح.",
-                                "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
-                            ]
-                        }
+                    # if not learning_section and result_data.get('cards'):
+                    #     learning_section = {
+                    #         "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
+                    #         "items": [
+                    #             "**P/E Ratio**: Shows how much investors pay for each unit of profit." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح.",
+                    #             "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
+                    #         ]
+                    #     }
                     
                     # 3. Soft Follow-Up Prompt (Intent-based suggestion) - ALWAYS REQUIRED
                     follow_up_prompt = generate_follow_up(
@@ -1395,8 +1395,9 @@ class ChatService:
                 conversational_text = handler_conversational_text
 
             # Keep handler-provided learning sections (extended scenarios ship curated content).
-            if not learning_section and isinstance(handler_learning_section, dict):
-                learning_section = handler_learning_section
+            # DISABLED PER USER REQUEST
+            # if not learning_section and isinstance(handler_learning_section, dict):
+            #    learning_section = handler_learning_section
             
             # 7. Update context
             # CRITICAL FIX: Mark history has content to prevent future "First Message" flags in this session
@@ -1415,19 +1416,19 @@ class ChatService:
             # ====================================================================
             # Layer 1: Greeting/Opening (handled above)
             # Layer 2: Cards (from handler)
-            # Layer 3: Learning Section (MUST be present)
+            # Layer 3: Learning Section (DISABLED)
             # Layer 4: Follow-up Prompt (MUST be present)
             
-            # GUARANTEE Layer 3: Learning Section
-            if not learning_section:
-                learning_section = {
-                    "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
-                    "items": [
-                        "**P/E Ratio**: Shows how much investors pay for each unit of profit. Lower can mean undervalued." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح. الانخفاض قد يعني فرصة.",
-                        "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
-                    ]
-                }
-                print(f"[ChatService] 📘 Injected fallback learning_section")
+            # GUARANTEE Layer 3: Learning Section - DISABLED
+            # if not learning_section:
+            #     learning_section = {
+            #         "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
+            #         "items": [
+            #             "**P/E Ratio**: Shows how much investors pay for each unit of profit. Lower can mean undervalued." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح. الانخفاض قد يعني فرصة.",
+            #             "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
+            #         ]
+            #     }
+            #     print(f"[ChatService] 📘 Injected fallback learning_section")
             
             # GUARANTEE Layer 4: Follow-up Prompt
             if not follow_up_prompt:

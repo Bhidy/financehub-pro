@@ -54,7 +54,7 @@ from .handlers.price_handler import handle_stock_price, handle_stock_snapshot
 from .handlers.chart_handler import handle_stock_chart
 from .handlers.screener_handler import (
     handle_top_gainers, handle_top_losers, handle_sector_stocks,
-    handle_dividend_leaders, handle_screener_pe, handle_deep_screener
+    handle_dividend_leaders, handle_screener_pe
 )
 from .handlers.system_handler import (
     handle_help, handle_clarify_symbol, handle_unknown, handle_blocked
@@ -73,8 +73,10 @@ from .handlers.news_handler import handle_news
 from .handlers.deep_dive_handler import (
     handle_deep_safety, handle_deep_valuation, handle_deep_efficiency, handle_deep_growth
 )
-from .middleware.paraphraser import get_paraphraser # New Middleware
-from .llm_explainer import get_explainer
+from .handlers.deep_dive_handler import (
+    handle_deep_safety, handle_deep_valuation, handle_deep_efficiency, handle_deep_growth
+)
+from .handlers.universal_screener import handle_universal_screener
 # Phase 2 & 3: World-Class Conversational Framework
 from .greeting_controller import get_greeting_controller, GreetingController
 from .response_composer import (
@@ -1945,7 +1947,7 @@ class ChatService:
         # ===== ULTRA PREMIUM DEEP HANDLERS (PHASE 7) =====
         elif intent == Intent.DEEP_SAFETY:
              if not symbol:
-                 return await handle_deep_screener(self.conn, metric='altman_z_score', direction='desc', limit=10, market_code=market_code, language=language)
+                 return await handle_universal_screener(self.conn, Intent.SCREENER_DEEP, {'filters': [{'metric': 'z_score', 'operator': 'gt', 'value': 2.99}], 'sort_by': 'z_score', 'direction': 'desc', 'limit': 10}, language)
              return await handle_deep_safety(self.conn, symbol, market=market_code, lang=language)
 
         elif intent == Intent.DEEP_VALUATION:
@@ -1960,12 +1962,12 @@ class ChatService:
 
         elif intent == Intent.DEEP_EFFICIENCY:
              if not symbol:
-                 return await handle_deep_screener(self.conn, metric='roce', direction='desc', limit=10, market_code=market_code, language=language)
+                 return await handle_universal_screener(self.conn, Intent.SCREENER_DEEP, {'filters': [], 'sort_by': 'roce', 'direction': 'desc', 'limit': 10}, language)
              return await handle_deep_efficiency(self.conn, symbol, market=market_code, lang=language)
 
         elif intent == Intent.DEEP_GROWTH:
              if not symbol:
-                 return await handle_deep_screener(self.conn, metric='revenue_growth', direction='desc', limit=10, market_code=market_code, language=language)
+                 return await handle_universal_screener(self.conn, Intent.SCREENER_DEEP, {'filters': [], 'sort_by': 'revenue_growth', 'direction': 'desc', 'limit': 10}, language)
              return await handle_deep_growth(self.conn, symbol, market=market_code, lang=language)
         
         elif intent == Intent.TOP_GAINERS:
@@ -1992,13 +1994,10 @@ class ChatService:
             threshold = entities.get('threshold', 15.0) # Default PE 15
             return await handle_screener_pe(self.conn, threshold, market_code, limit=20, language=language)
         
-        elif intent == Intent.SCREENER_DEEP:
-            metric = entities.get('metric')
-            direction = entities.get('direction', 'desc')
-            if not metric:
-                msg = "Please specify a metric (e.g., Highest ROE, Best Margins, Lowest Debt)." if language == 'en' else "الرجاء تحديد المعيار (مثال: أعلى عائد، أفضل هامش، أقل ديون)."
-                return {'success': True, 'message': msg, 'cards': []}
-            return await handle_deep_screener(self.conn, metric, direction, limit=10, market_code=market_code, language=language)
+        elif intent == Intent.SCREENER_DEEP or intent == Intent.SCREENER_VALUE or intent == Intent.SCREENER_SAFETY or intent == Intent.SCREENER_GROWTH:
+            # Universal Handler for all complex screenings
+            # It handles filters, sort_by, and sector extracted by ClaudeOrchestrator
+            return await handle_universal_screener(self.conn, intent, entities, language)
             
         elif intent == Intent.MARKET_SUMMARY:
             return await handle_market_summary(self.conn, market_code or 'EGX', language)

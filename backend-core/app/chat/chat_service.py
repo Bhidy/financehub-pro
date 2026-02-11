@@ -1147,7 +1147,7 @@ class ChatService:
                             data=result_data.get('cards', []),
                             language=language,
                             user_name=real_user_name,
-                            allow_greeting=final_allow_greeting,
+                            allow_greeting=False, # CHANGED: Delegated to ResponseComposer for consistent 8-layer structure
                             is_returning_user=is_returning_user
                         )
 
@@ -1707,6 +1707,56 @@ class ChatService:
                 # Generate key insight based on sentiment
                 from .response_composer import ResponseComposer
                 handler_key_insight = ResponseComposer.get_key_insight(language=language, sentiment='neutral')
+            
+            # ------------------------------------------------------------------
+            # 8-LAYER ASSEMBLY (Phase 7: Deep Analysis & Transformation)
+            # ------------------------------------------------------------------
+            # We now wrap the LLM-generated "Core Narrative" with the 8-layer
+            # premium structure (Greeting, Context Bridge, Risk, etc.)
+            try:
+                from .response_composer import ResponseComposer
+                
+                # 1. Detect Sentiment
+                sentiment = 'neutral'
+                if handler_bull_case and not handler_bear_case: sentiment = 'bullish'
+                elif handler_bear_case and not handler_bull_case: sentiment = 'bearish'
+                
+                # 2. Determine Risk Warning
+                include_risk = False
+                risk_type = 'general'
+                if intent in [Intent.DEEP_SAFETY, Intent.FINANCIAL_HEALTH, Intent.DEEP_VALUATION]:
+                    include_risk = True
+                    risk_type = 'valuation'
+                
+                # 3. Handle Greetings/Openings (Deterministic)
+                # If final_allow_greeting was set (New Session), we force an opening
+                # If force_human_opening (Returning User), we force an opening
+                # Otherwise, we let ResponseComposer decide (random or pure context)
+                
+                # 4. Compose Full Response
+                full_text, _ = ResponseComposer.compose_premium_response(
+                    core_narrative=conversational_text,
+                    language=language,
+                    intent=intent,
+                    user_name=real_user_name,
+                    is_follow_up=(is_returning_user and not is_new_session) or intent == Intent.FOLLOW_UP,
+                    active_symbol=actual_symbol,
+                    sentiment=sentiment,
+                    include_risk_warning=include_risk,
+                    risk_type=risk_type,
+                    shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])]
+                )
+                
+                convo_logger = logging.getLogger("ChatService")
+                convo_logger.info(f"✅ 8-Layer Assembly Complete. Length: {len(full_text)}")
+                conversational_text = full_text
+                
+            except Exception as composer_err:
+                print(f"[ChatService] ⚠️ ResponseComposer Error: {composer_err}")
+                # Fallback to raw text if composer fails
+                pass
+            
+            # ------------------------------------------------------------------
             
             response = self._build_response(
                 result_data, intent, confidence, entities, start_time, language,

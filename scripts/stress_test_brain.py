@@ -58,7 +58,7 @@ class BrainTester:
     def verify_universal_screener(self):
         """Test Case 1: Complex Universal Screener Query."""
         logger.info("\n🧪 TEST 1: Universal Screener (Dynamic SQL)...")
-        query = "Show me cheap stocks with high growth" # Relaxed to debug sector
+        query = "Show me cheap industrial stocks with high growth"
         data = self.send_message(query)
         
         if not data: return False

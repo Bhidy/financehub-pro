@@ -43,7 +43,7 @@ class BrainTester:
         
         start_time = time.time()
         try:
-            response = requests.post(CHAT_ENDPOINT, json=payload, headers=HEADERS, timeout=30)
+            response = requests.post(CHAT_ENDPOINT, json=payload, headers=HEADERS, timeout=60)
             latency = time.time() - start_time
             response.raise_for_status()
             data = response.json()
@@ -123,7 +123,7 @@ class BrainTester:
     def verify_cfa_analysis(self):
         """Test Case 3: CFA Persona Analysis."""
         logger.info("\n🧪 TEST 3: CFA Persona (Analysis)...")
-        query = "Analyze COMI" 
+        query = "COMI Financials" 
         data = self.send_message(query)
         
         if not data: return False

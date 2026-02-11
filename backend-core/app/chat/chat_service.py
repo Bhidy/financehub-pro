@@ -1439,21 +1439,50 @@ class ChatService:
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
             # Handle both object (ChatResponse) and dict return types
-            llm_text = getattr(result, 'conversational_text', None) or result_data.get('conversational_text')
+            llm_text = conversational_text or getattr(result, 'conversational_text', None) or result_data.get('conversational_text')
 
-            if not handler_framework_card and llm_text:
-                handler_framework_card = self._parse_framework(llm_text)
+            if llm_text:
+                import re
                 
-            if not handler_quantified_drivers and llm_text:
-                handler_quantified_drivers = self._parse_drivers(llm_text)
+                # Parse FRAMEWORK
+                if not handler_framework_card:
+                    handler_framework_card = self._parse_framework(llm_text)
+                    if handler_framework_card:
+                        # Strip from text (Case Insensitive)
+                        llm_text = re.sub(r"\[FRAMEWORK\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                        print(f"[ChatService] 📊 Extracted FRAMEWORK from narrative")
                 
-            if not handler_educational_cards and llm_text:
-                learning = self._parse_learning(llm_text)
-                if learning:
-                    handler_educational_cards = [
-                        {"variant": "definition", "title": item['term'], "content": item['definition']}
-                        for item in learning['items']
-                    ]
+                # Parse QUANTIFIED DRIVERS
+                if not handler_quantified_drivers:
+                    handler_quantified_drivers = self._parse_drivers(llm_text)
+                    if handler_quantified_drivers:
+                         # Strip from text (Case Insensitive)
+                        llm_text = re.sub(r"\[QUANTIFIED_DRIVERS\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                        print(f"[ChatService] 🚗 Extracted DRIVERS from narrative")
+                
+                # Parse LEARNING
+                # (Note: handler_educational_cards might be populated by handler, but we prioritize LLM if handler didn't provide specific ones? 
+                # Actually, handler usually provides data cards, not learning. So LLM is primary.)
+                if not handler_educational_cards:
+                    learning = self._parse_learning(llm_text)
+                    if learning:
+                        handler_educational_cards = [
+                            {"variant": "definition", "title": item['term'], "content": item['definition']}
+                            for item in learning['items']
+                        ]
+                         # Strip from text (Case Insensitive)
+                        llm_text = re.sub(r"\[LEARNING\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                        print(f"[ChatService] 🎓 Extracted LEARNING from narrative")
+
+                # Parse KEY INSIGHT (if tagged with [KEY_INSIGHT])
+                match_insight = re.search(r"\[KEY_INSIGHT\]\s*(.*?)(?=\[|$)", llm_text, re.DOTALL | re.IGNORECASE)
+                if match_insight:
+                     # Use this as the handler_key_insight
+                     handler_key_insight = match_insight.group(1).strip()
+                     llm_text = re.sub(r"\[KEY_INSIGHT\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                
+                # Update conversational_text with stripped version
+                conversational_text = llm_text
 
             def _coerce_educational_cards(raw: Any) -> Optional[List[Dict[str, Any]]]:
                 """
@@ -2360,7 +2389,7 @@ class ChatService:
 
     def _parse_framework(self, text: str) -> Optional[Dict[str, Any]]:
         """Parse [FRAMEWORK] section."""
-        match = re.search(r'\[FRAMEWORK\]\s*(.*?)(?=\[|$)', text, re.DOTALL)
+        match = re.search(r'\[FRAMEWORK\]\s*(.*?)(?=\[|$)', text, re.DOTALL | re.IGNORECASE)
         if not match:
             return None
             
@@ -2381,7 +2410,7 @@ class ChatService:
 
     def _parse_drivers(self, text: str) -> Optional[Dict[str, Any]]:
         """Parse [QUANTIFIED_DRIVERS] section."""
-        match = re.search(r'\[QUANTIFIED_DRIVERS\]\s*(.*?)(?=\[|$)', text, re.DOTALL)
+        match = re.search(r'\[QUANTIFIED_DRIVERS\]\s*(.*?)(?=\[|$)', text, re.DOTALL | re.IGNORECASE)
         if not match:
             return None
             
@@ -2409,7 +2438,7 @@ class ChatService:
 
     def _parse_learning(self, text: str) -> Optional[Dict[str, Any]]:
         """Parse [LEARNING] section."""
-        match = re.search(r'\[LEARNING\]\s*(.*?)(?=\[|$)', text, re.DOTALL)
+        match = re.search(r'\[LEARNING\]\s*(.*?)(?=\[|$)', text, re.DOTALL | re.IGNORECASE)
         if not match:
             return None
             

@@ -1,0 +1,19 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -v -o StrictHostKeyChecking=no root@$ip "uptime"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for response"
+        exit 1
+    }
+    eof
+}

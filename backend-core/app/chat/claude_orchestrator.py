@@ -98,38 +98,54 @@ class ClaudeOrchestrator:
     """
     
     # System prompt for intent classification
-    CLASSIFICATION_PROMPT = """You are an intent classifier for a financial chatbot serving Egyptian and MENA stock markets.
+    CLASSIFICATION_PROMPT = """You are the Semantic Router for a financial chatbot.
+Your role is to classify user intent and extract structured parameters for database queries.
 
-Given the user's message and conversation context, classify the intent and extract entities.
-
-IMPORTANT RULES:
-1. Return ONLY valid JSON, no other text
-2. If message is a follow-up ("yes", "ok", "أيوه"), inherit entities from context
-3. Detect language from the message (en/ar)
-4. Extract stock symbols in UPPERCASE (e.g., COMI, TMGH, CIB)
-5. For Arabic stock names, try to identify the likely symbol
-
-VALID INTENTS:
+### AVAILABLE INTENTS:
 {intent_list}
 
-CONTEXT (from previous conversation):
+### PARAMETER EXTRACTION RULES:
+1. **Symbol**: Extract stock ticker (e.g., COMI, TMGH). Map Arabic names to symbols if possible.
+2. **Sector**: Map to standard sectors (Banks, Basic Resources, Healthcare, Real Estate, etc.).
+3. **Screener Arguments**:
+   - **Metric**: The database column to filter/sort by (e.g., pe_ratio, dividend_yield, revenue_growth, profit_margin).
+   - **Operator**: 'gt' (greater than), 'lt' (less than), 'eq' (equal).
+   - **Value**: The numerical threshold.
+   - **Direction**: 'desc' (High/Best) or 'asc' (Low/Cheapest).
+
+### EXAMPLES:
+User: "Show me the best chemical stocks"
+JSON: {{"intent": "TOP_GAINERS", "entities": {{"sector": "Basic Resources"}}, "confidence": 0.95}}
+
+User: "Cheap banks with high yield"
+JSON: {{"intent": "SCREENER_DEEP", "entities": {{"sector": "Banks", "filters": [{{"metric": "pe_ratio", "operator": "lt", "value": 15}}, {{"metric": "dividend_yield", "operator": "gt", "value": 0}}], "sort_by": "dividend_yield"}}, "confidence": 0.9}}
+
+User: "Compare COMI and HRHO"
+JSON: {{"intent": "COMPARE_STOCKS", "entities": {{"compare_symbols": ["COMI", "HRHO"]}}, "confidence": 0.95}}
+
+### CONTEXT:
 {context}
 
-USER MESSAGE: {message}
+### USER MESSAGE:
+{message}
 
 Return JSON format:
 {{
     "intent": "INTENT_NAME",
     "entities": {{
         "symbol": "SYMBOL or null",
-        "sector": "sector name or null",
-        "metric": "specific metric or null",
-        "compare_symbols": ["symbols to compare"] or null,
-        "market_code": "market code like EGX or null"
+        "sector": "Sector Name or null",
+        "market_code": "EGX",
+        "filters": [
+           {{"metric": "metric_name", "operator": "gt/lt", "value": 123}}
+        ],
+        "sort_by": "metric_name",
+        "limit": 10,
+        "compare_symbols": ["SYM1", "SYM2"]
     }},
     "language": "en or ar",
-    "confidence": 0.0 to 1.0,
-    "reasoning": "brief explanation"
+    "confidence": 0.0-1.0,
+    "reasoning": "Limit to 10 words"
 }}"""
 
     def __init__(self, llm_client: Optional[MultiProviderLLM] = None):
@@ -191,11 +207,12 @@ Return JSON format:
         )
         
         try:
-            # Call Claude for classification
+            # Call Claude (now Groq Llama 3) for classification
             response = await self.llm_client.complete(
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=300,
-                temperature=0.1  # Low temp for consistent classification
+                temperature=0.1,  # Low temp for consistent classification
+                model_override="llama-3.3-70b-versatile" # Force Groq Llama 3 70B
             )
             
             # Parse response
@@ -234,6 +251,12 @@ Return JSON format:
                 parts.append(f"Current stock: {entities['symbol']}")
             if entities.get("sector"):
                 parts.append(f"Current sector: {entities['sector']}")
+            if entities.get("last_intent"):
+                parts.append(f"Last Intent: {entities['last_intent']}")
+            if entities.get("filters"):
+                parts.append(f"Current Filters: {entities['filters']}")
+            if entities.get("sort_by"):
+                parts.append(f"Current Sort: {entities['sort_by']}")
         
         if context.get("conversation_history"):
             parts.append(f"\nRecent conversation:\n{context['conversation_history']}")

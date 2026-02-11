@@ -200,8 +200,8 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
 
     Intent.TOP_GAINERS: (
-        ["top gainers", "best performing", "highest rising", "green stocks", "market leaders", "top movers", "top up"],
-        ["الاكثر ارتفاعا", "الرابحين", "الاسهم الخضراء", "اعلى صعود", "متصدرين", "اكبر الرابحين", "اعلى الاسهم"],
+        ["top gainers", "best performing", "highest rising", "green stocks", "market leaders", "top movers", "top up", "best stocks", "top stocks", "best shares"],
+        ["الاكثر ارتفاعا", "الرابحين", "الاسهم الخضراء", "اعلى صعود", "متصدرين", "اكبر الرابحين", "اعلى الاسهم", "افضل اسهم", "احسن اسهم", "افضل الاسهم"],
         1.5
     ),
 
@@ -212,8 +212,8 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
     
     Intent.SCREENER_PE: (
-        ["low pe", "cheap pe", "pe under", "pe below"],
-        ["مكرر منخفض", "مضاعف ربحية اقل", "اسهم رخيصة"],
+        ["low pe", "cheap pe", "pe under", "pe below", "cheap stocks", "undervalued stocks"],
+        ["مكرر منخفض", "مضاعف ربحية اقل", "اسهم رخيصة", "ارخص اسهم", "اسهم لقطة"],
         1.2
     ),
 
@@ -729,7 +729,10 @@ class IntentRouter:
             # Banking
             'bank': 'Banks', 'banks': 'Banks', 'banking': 'Banks', 'بنوك': 'Banks',
             # Basic Resources
+            # Basic Resources (Chemicals, Petrochemicals, Fertilizers built-in)
             'basic resources': 'Basic Resources', 'resources': 'Basic Resources', 'موارد اساسية': 'Basic Resources',
+            'chemicals': 'Basic Resources', 'chemical': 'Basic Resources', 'petrochemicals': 'Basic Resources', 'fertilizers': 'Basic Resources', 
+            'كيماويات': 'Basic Resources', 'بتروكيماويات': 'Basic Resources', 'سماد': 'Basic Resources', 'الاسمدة': 'Basic Resources', 'اسمدة': 'Basic Resources',
             # Building Materials
             'building': 'Building Materials', 'construction material': 'Building Materials', 'مواد بناء': 'Building Materials',
             # Construction

@@ -4,7 +4,7 @@ set timeout 30
 set host [lindex $argv 0]
 set password [lindex $argv 1]
 
-spawn ssh -o StrictHostKeyChecking=no root@$host "docker exec starta-backend-1 tail -n 200 /tmp/debug_chat.log"
+spawn ssh -o StrictHostKeyChecking=no root@$host "docker logs starta-backend-1 --tail 500"
 
 expect "password:"
 send "$password\r"

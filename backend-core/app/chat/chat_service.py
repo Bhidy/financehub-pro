@@ -1225,7 +1225,7 @@ class ChatService:
 
                         # 3. Validation & Injection
                         if bull_points:
-                            print(f"[ChatService] 📈 Extracted {len(bull_points)} BULL points (Robust)")
+                            logger.info(f"[ChatService] 📈 Extracted {len(bull_points)} BULL points (Robust)")
                             # Prepend to ensure visibility, or Append? 
                             # User wants: Chart -> Analysis -> Bull/Bear. So Append is correct.
                             result_data.setdefault('cards', []).append({
@@ -1237,7 +1237,7 @@ class ChatService:
                             })
                             
                         if bear_points:
-                            print(f"[ChatService] 📉 Extracted {len(bear_points)} BEAR points (Robust)")
+                            logger.info(f"[ChatService] 📉 Extracted {len(bear_points)} BEAR points (Robust)")
                             result_data.setdefault('cards', []).append({
                                 "type": "bear_case",
                                 "title": "BEAR CASE RISKS" if language == 'en' else "مخاطر السيناريو السلبي",
@@ -1446,6 +1446,7 @@ class ChatService:
 
             if llm_text:
                 import re
+                logger.info(f"[ChatService] Parsing Dynamic Layers (Text Len: {len(llm_text)}). Start: {llm_text[:100]}...")
                 
                 # Parse FRAMEWORK
                 if not handler_framework_card:
@@ -1453,7 +1454,7 @@ class ChatService:
                     if handler_framework_card:
                         # Strip from text (Case Insensitive)
                         llm_text = re.sub(r"\[FRAMEWORK\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
-                        print(f"[ChatService] 📊 Extracted FRAMEWORK from narrative")
+                        logger.info(f"[ChatService] 📊 Extracted FRAMEWORK from narrative")
                 
                 # Parse QUANTIFIED DRIVERS
                 if not handler_quantified_drivers:
@@ -1461,7 +1462,7 @@ class ChatService:
                     if handler_quantified_drivers:
                          # Strip from text (Case Insensitive)
                         llm_text = re.sub(r"\[QUANTIFIED_DRIVERS\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
-                        print(f"[ChatService] 🚗 Extracted DRIVERS from narrative")
+                        logger.info(f"[ChatService] 🚗 Extracted DRIVERS from narrative")
                 
                 # Parse LEARNING
                 # (Note: handler_educational_cards might be populated by handler, but we prioritize LLM if handler didn't provide specific ones? 
@@ -1475,7 +1476,7 @@ class ChatService:
                         ]
                          # Strip from text (Case Insensitive)
                         llm_text = re.sub(r"\[LEARNING\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
-                        print(f"[ChatService] 🎓 Extracted LEARNING from narrative")
+                        logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
 
                 # Parse KEY INSIGHT (if tagged with [KEY_INSIGHT])
                 match_insight = re.search(r"\[KEY_INSIGHT\]\s*(.*?)(?=\[|$)", llm_text, re.DOTALL | re.IGNORECASE)

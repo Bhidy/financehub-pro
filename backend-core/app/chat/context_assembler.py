@@ -33,7 +33,9 @@ class FollowUpType(Enum):
     EXPANSION = "expansion"  # "tell me more", "explain", "details"
     TOPIC_SHIFT = "topic_shift"  # New topic but same entity
     COMPARISON_ADD = "comparison_add"  # "compare with X"
+    COMPARISON_ADD = "comparison_add"  # "compare with X"
     PRONOUN_REFERENCE = "pronoun_reference"  # "is it good?", "how is that?"
+    LIST_REFERENCE = "list_reference" # "which of them", "filter these", "sort by PE"
 
 
 # ============================================================================
@@ -178,6 +180,9 @@ class ActiveEntities:
     sector: Optional[str] = None
     market: Optional[str] = None
     metric: Optional[str] = None  # e.g., "PE", "dividends", "financials"
+    filters: List[Dict[str, Any]] = field(default_factory=list) # For Universal Screener
+    sort_by: Optional[str] = None
+    last_intent: Optional[str] = None
     compare_symbols: List[str] = field(default_factory=list)
     last_updated: datetime = field(default_factory=datetime.utcnow)
     
@@ -195,6 +200,9 @@ class ActiveEntities:
             "sector": self.sector,
             "market": self.market,
             "metric": self.metric,
+            "filters": self.filters,
+            "sort_by": self.sort_by,
+            "last_intent": self.last_intent,
             "compare_symbols": self.compare_symbols,
         }
 
@@ -378,8 +386,16 @@ class ContextAssembler:
                         "inherited_entities": memory.active_entities.to_dict()
                     }
         
+        # 3.5 Check List References (Referring to previous screener results)
+        if memory.get_last_intent() in ["SCREENER_DEEP", "SCREENER_VALUE", "SCREENER_GROWTH", "SECTOR_STOCKS", "TOP_GAINERS", "TOP_LOSERS"]:
+            for pattern in LIST_REFERENCE_PATTERNS.get(lang_key, []):
+                if re.search(pattern, msg_lower, re.IGNORECASE):
+                     return FollowUpType.LIST_REFERENCE, {
+                        "inherited_entities": memory.active_entities.to_dict(),
+                        "refers_to": "last_results"
+                    }
+        
         # 4. Check if this is a topic shift with same entity
-        # (new question but still about the same stock)
         if memory.active_entities.symbol:
             symbol = memory.active_entities.symbol.upper()
             if symbol not in message.upper():

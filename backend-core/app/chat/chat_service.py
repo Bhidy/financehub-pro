@@ -1166,7 +1166,10 @@ class ChatService:
                         # Definition of Robust Patterns (Handle bold, caps, spacing)
                         patterns = {
                             'bull': r"(?:\[BULL_CASE\]|\*\*\[BULL_CASE\]\*\*|\[BULL CASE\]|BULL CASE[:\n])",
-                            'bear': r"(?:\[BEAR_CASE\]|\*\*\[BEAR_CASE\]\*\*|\[BEAR CASE\]|BEAR CASE[:\n])"
+                            'bear': r"(?:\[BEAR_CASE\]|\*\*\[BEAR_CASE\]\*\*|\[BEAR CASE\]|BEAR CASE[:\n])",
+                            'framework': r"(?:\[FRAMEWORK\]|\*\*\[FRAMEWORK\]\*\*|FRAMEWORK[:\n])",
+                            'learning': r"(?:\[LEARNING\]|\*\*\[LEARNING\]\*\*|LEARNING[:\n])",
+                            'drivers': r"(?:\[QUANTIFIED_DRIVERS\]|QUANTIFIED DRIVERS[:\n])"
                         }
 
                         # Function to extract and clean
@@ -1206,18 +1209,18 @@ class ChatService:
                             
                             return points, new_text
 
-                        # 1. Extract BULL CASE (Stop at Bear or End)
+                        # 1. Extract BULL CASE (Stop at Bear, Framework, Learning or End)
                         bull_points, clean_text = extract_section(
                             clean_text, 
                             patterns['bull'], 
-                            [patterns['bear']]
+                            [patterns['bear'], patterns['framework'], patterns['learning']]
                         )
 
-                        # 2. Extract BEAR CASE (Stop at End)
+                        # 2. Extract BEAR CASE (Stop at Framework, Learning or End)
                         bear_points, clean_text = extract_section(
                             clean_text, 
                             patterns['bear'], 
-                            []
+                            [patterns['framework'], patterns['learning'], patterns['drivers']]
                         )
 
                         # 3. Validation & Injection

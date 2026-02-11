@@ -33,7 +33,6 @@ class FollowUpType(Enum):
     EXPANSION = "expansion"  # "tell me more", "explain", "details"
     TOPIC_SHIFT = "topic_shift"  # New topic but same entity
     COMPARISON_ADD = "comparison_add"  # "compare with X"
-    COMPARISON_ADD = "comparison_add"  # "compare with X"
     PRONOUN_REFERENCE = "pronoun_reference"  # "is it good?", "how is that?"
     LIST_REFERENCE = "list_reference" # "which of them", "filter these", "sort by PE"
 

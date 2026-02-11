@@ -184,6 +184,8 @@ SYMBOL_STOPWORDS = {
     'top', 'best', 'worst', 'gainers', 'losers', 'movers', 'all', 'list',
     # Common false positives
     'info', 'data', 'quote', 'quotes', 'help', 'please', 'thank', 'thanks',
+    # Pronouns & Common False Positives
+    'its', 'this', 'that', 'these', 'those', 'are', 'was', 'has', 'had', 'have',
 }
 
 # Arabic stopwords for N-gram filtering

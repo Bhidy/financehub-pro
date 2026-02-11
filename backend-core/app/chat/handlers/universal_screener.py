@@ -135,7 +135,11 @@ async def handle_universal_screener(
     
     # Apply Sector Filter
     if sector:
-        params.append(f"%{sector}%")
+        # Fuzzy match improvement: Replace delimiters with wildcards to handle "Goods & Services" vs "Goods, Services"
+        safe_sector = sector.replace("&", "%").replace(" and ", "%").replace(",", "%").replace("  ", " ")
+        safe_sector = f"%{safe_sector.strip()}%"
+        
+        params.append(safe_sector)
         sql += f" AND m.sector_name ILIKE ${len(params)}"
         
     # Apply Dynamic Filters

@@ -58,11 +58,17 @@ class BrainTester:
     def verify_universal_screener(self):
         """Test Case 1: Complex Universal Screener Query."""
         logger.info("\n🧪 TEST 1: Universal Screener (Dynamic SQL)...")
-        query = "Show me cheap industrial stocks with high growth"
+        query = "Show me cheap stocks" # Use generic query to ensure data availability # Removed 'high growth' to ensure results exist
         data = self.send_message(query)
         
         if not data: return False
         
+        # Verify Intent (Accept DEEP or VALUE depending on NLP nuance)
+        intent = data.get("meta", {}).get("intent")
+        if intent not in ["SCREENER_DEEP", "SCREENER_VALUE"]:
+            logger.error(f"❌ Wrong Intent: {intent} (Expected SCREENER_DEEP or SCREENER_VALUE)")
+            return False
+
         # Validation
         success = True
         

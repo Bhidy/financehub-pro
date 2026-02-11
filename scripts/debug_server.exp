@@ -1,12 +1,19 @@
-#!/usr/bin/expect -f
+#!/usr/bin/expect
 
-set timeout 30
-set host [lindex $argv 0]
+set timeout 20
+set ip [lindex $argv 0]
 set password [lindex $argv 1]
 
-spawn ssh -o StrictHostKeyChecking=no root@$host "docker logs starta-caddy-1 --tail 100 2>&1"
+spawn ssh -o StrictHostKeyChecking=no root@$ip "uptime && docker ps --format '{{.Names}} {{.Status}}'"
 
-expect "password:"
-send "$password\r"
-
-expect eof
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for response"
+        exit 1
+    }
+    eof
+}

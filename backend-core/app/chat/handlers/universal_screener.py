@@ -135,12 +135,34 @@ async def handle_universal_screener(
     
     # Apply Sector Filter
     if sector:
-        # Fuzzy match improvement: Replace delimiters with wildcards to handle "Goods & Services" vs "Goods, Services"
-        safe_sector = sector.replace("&", "%").replace(" and ", "%").replace(",", "%").replace("  ", " ")
-        safe_sector = f"%{safe_sector.strip()}%"
+        # ROBUST SECTOR MATCHING (Enterprise)
+        # 1. Explicit Mappings for common mismatches
+        SECTOR_ALIASES = {
+            # "industrial": "Basic Resources", # REMOVED: EGX has specific Industrial sector
+            "medical": "Healthcare",
+            "finance": "Financial Services",
+            "construction": "Construction & Materials"
+        }
         
-        params.append(safe_sector)
-        sql += f" AND m.sector_name ILIKE ${len(params)}"
+        # Check alias (case-insensitive)
+        alias_target = SECTOR_ALIASES.get(sector.lower().split()[0])
+        if alias_target:
+            sector = alias_target
+            
+        # 2. Token-Based Fuzzy Match
+        # Split into significant tokens: "Industrial Goods & Services" -> ["Industrial", "Goods", "Services"]
+        clean_sector = sector.replace("&", " ").replace(",", " ").replace(" and ", " ")
+        tokens = [t for t in clean_sector.split() if len(t) > 2 and t.lower() not in ["the", "for", "and"]]
+        
+        if tokens:
+            # Construct: sector ILIKE '%Token1%' AND sector ILIKE '%Token2%' ...
+            for token in tokens:
+                params.append(f"%{token}%")
+                sql += f" AND m.sector_name ILIKE ${len(params)}"
+        else:
+            # Fallback for short words
+            params.append(f"%{sector}%")
+            sql += f" AND m.sector_name ILIKE ${len(params)}"
         
     # Apply Dynamic Filters
     query_description_parts = []

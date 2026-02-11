@@ -237,7 +237,8 @@ async def handle_universal_screener(
             "market_cap": float(row['market_cap'] or 0),
             "value": float(metric_val or 0), # Generic value field for card
             "metric_value": float(metric_val or 0), 
-            "metric_label": sort_by or "Price"
+            "metric_label": sort_by or "Price",
+            "sector": row['sector_name']  # Added for debugging & UI
         })
         
     title = f"Screener Results"

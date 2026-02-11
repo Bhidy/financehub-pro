@@ -30,9 +30,13 @@ Routes messages through the deterministic pipeline:
 
 import time
 import re
+import logging
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import asyncpg
+
+# Configure Logger
+logger = logging.getLogger(__name__)
 
 from .schemas import (
     ChatRequest, ChatResponse, Intent, Card, Action, ResponseMeta, CardType,

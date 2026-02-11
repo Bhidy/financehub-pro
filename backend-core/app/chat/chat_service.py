@@ -1094,10 +1094,13 @@ class ChatService:
             learning_section = None
             follow_up_prompt = None
             
+            # Fetch real user name for personalization (Moved up for global scope)
+            real_user_name = await self._get_user_name(user_id)
+
             if result_data.get('success', True) and intent not in NO_NARRATIVE_INTENTS:
                 try:
-                    # Fetch real user name for personalization
-                    real_user_name = await self._get_user_name(user_id)
+                    # Fetch real user name - MOVED UP
+                    # real_user_name = await self._get_user_name(user_id)
                     
                     # DETERMINISTIC STATE CONTROL (The "Starta" Fix)
                     # 1. Check DB for EXACT message count for this session
@@ -1287,46 +1290,8 @@ class ChatService:
                         print(f"[ChatService] ⚠️ LLM Narrative failed. Using safety fallback: '{conversational_text}'")
 
                     # -------------------------------------------------------------
-                    # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
+                    # PHASE 3: MOVED BELOW TO COVER ALL PATHS
                     # -------------------------------------------------------------
-                    # ENTERPRISE FIX: Compose response for ALL cases (new session & returning)
-                    if conversational_text:
-                        # Get the context for tracking
-                        ctx = self.context_store.get(session_id)
-                        last_opening = ctx.last_opening_used if ctx else None
-                        
-                        # Get card types for context
-                        card_types = [c.get('type', '') for c in result_data.get('cards', [])]
-                        
-                        # Compose full 3-layer response
-                        # IF DEEP DIVE: Disable all wrappers (Opening + Guidance) to keep strictly professional
-                        should_wrap = not is_deep_dive
-                        
-                        composer = get_response_composer()
-                        full_response, opening_category = composer.compose_full_response(
-                            core_narrative=conversational_text,
-                            language=language,
-                            intent=intent,
-                            user_name=real_user_name,
-                            last_opening_used=last_opening,
-                            shown_card_types=card_types,
-                            include_opening=force_human_opening if should_wrap else False,
-                            include_guidance=True if should_wrap else False, 
-                            force_opening=force_human_opening if should_wrap else False
-                        )
-                        
-                        # Update the conversational text with composed response
-                        conversational_text = full_response
-                        
-                        # Track what we used for next time
-                        if opening_category:
-                            self.context_store.set(
-                                session_id,
-                                last_opening_used=opening_category,
-                                last_cards_shown=card_types
-                            )
-                        
-                        print(f"[ChatService] ✨ Response composed with opening='{opening_category}'")
 
                     # -------------------------------------------------------------
                     # PHASE 4: THE "NUCLEAR" REGEX FILTER (FAIL-SAFE)
@@ -1393,6 +1358,82 @@ class ChatService:
             # If a handler provides a narrative (especially scenario handlers), do not drop it.
             if not conversational_text and handler_conversational_text:
                 conversational_text = handler_conversational_text
+
+            # -------------------------------------------------------------
+            # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
+            # -------------------------------------------------------------
+            # MOVED HERE: Apply to ALL responses (Success OR Failure) to ensure Voice Consistency
+            if conversational_text and intent != Intent.BLOCKED:
+                try:
+                    # Get the context for tracking
+                    ctx = self.context_store.get(session_id)
+                    last_opening = ctx.last_opening_used if ctx else None
+                    
+                    # Get card types for context
+                    card_types = [c.get('type', '') for c in result_data.get('cards', [])]
+                    
+                    # Compose full 3-layer response
+                    # IF DEEP DIVE: Disable all wrappers (Opening + Guidance) to keep strictly professional
+                    # NEW EXCEPTION: If failure (success=False), allows allow greeting to soften the blow.
+                    is_failure = not result_data.get('success', True)
+                    # "is_deep_dive" variable from above scope (lines 1136) might not be set if we skipped the block
+                    # Re-calculate small logic for "should_wrap"
+                    # Default to wrapping unless we know it's a deep dive and successful
+                    
+                    # Logic needs access to 'is_deep_dive'. Let's redefine it safely here or assume wrap for failures.
+                    safe_is_deep_dive = False
+                    if result_data.get('success', True):
+                         # Re-check types string
+                         ct_str = [str(c).lower() for c in card_types]
+                         safe_is_deep_dive = (
+                            'financial_explorer' in ct_str or 
+                            'financials_table' in ct_str or
+                            intent.value in [
+                                'FINANCIALS', 'FINANCIALS_ANNUAL', 'REVENUE_TREND', 
+                                'FIN_MARGINS', 'FIN_DEBT', 'FIN_CASH', 'FIN_GROWTH', 
+                                'DEEP_VALUATION', 'DEEP_SAFETY', 'DEEP_EFFICIENCY', 'DEEP_GROWTH', 
+                                'FAIR_VALUE', 'COMPANY_PROFILE'
+                            ]
+                        )
+                    
+                    # We wrap if it's NOT a deep dive, OR if it failed (errors need love too)
+                    should_wrap = (not safe_is_deep_dive) or is_failure
+                    
+                    # Force opening logic
+                    # We need 'force_human_opening' from above block. If undefined, default to False.
+                    # But for errors, we might WANT to force opening like "Got it, Mohamed..."
+                    safe_force_opening = locals().get('force_human_opening', False)
+                    # If failure, force opening to acknowledge the user
+                    if is_failure:
+                        safe_force_opening = True  # "Got it, Mohamed. I couldn't find..."
+                    
+                    composer = get_response_composer()
+                    full_response, opening_category = composer.compose_full_response(
+                        core_narrative=conversational_text,
+                        language=language,
+                        intent=intent,
+                        user_name=real_user_name,
+                        last_opening_used=last_opening,
+                        shown_card_types=card_types,
+                        include_opening=safe_force_opening if should_wrap else False,
+                        include_guidance=True if should_wrap else False, 
+                        force_opening=safe_force_opening if should_wrap else False
+                    )
+                    
+                    # Update the conversational text with composed response
+                    conversational_text = full_response
+                    
+                    # Track what we used for next time
+                    if opening_category:
+                        self.context_store.set(
+                            session_id,
+                            last_opening_used=opening_category,
+                            last_cards_shown=card_types
+                        )
+                    
+                    print(f"[ChatService] ✨ Response composed (Global) with opening='{opening_category}'")
+                except Exception as e:
+                    print(f"[ChatService] ⚠️ Response Composer Failed: {e}")
 
             # Keep handler-provided learning sections (extended scenarios ship curated content).
             # DISABLED PER USER REQUEST

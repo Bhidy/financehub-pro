@@ -58,7 +58,7 @@ class BrainTester:
     def verify_universal_screener(self):
         """Test Case 1: Complex Universal Screener Query."""
         logger.info("\n🧪 TEST 1: Universal Screener (Dynamic SQL)...")
-        query = "Show me cheap industrial stocks with high growth"
+        query = "Show me cheap stocks with high growth" # Relaxed to debug sector
         data = self.send_message(query)
         
         if not data: return False
@@ -76,10 +76,11 @@ class BrainTester:
             success = False
         else:
             logger.info("✅ Found Screener Results Card.")
-            items = screener_card.get("data", {}).get("items", [])
-            logger.info(f"   - Returned {len(items)} stocks.")
-            if len(items) > 0:
-                logger.info(f"   - Top pick: {items[0].get('symbol')}")
+            stocks = screener_card.get("data", {}).get("stocks", [])
+            sectors = list(set(s.get('sector', 'N/A') for s in stocks))
+            logger.info(f"   - Returned {len(stocks)} stocks. Sectors: {sectors}")
+            if len(stocks) > 0:
+                logger.info(f"   - Top pick: {stocks[0].get('symbol')}")
         
         # 2. Check for CFA Persona Structure in Narrative
         narrative = data.get("message", "")

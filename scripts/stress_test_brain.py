@@ -19,7 +19,7 @@ import logging
 # Configuration
 API_URL = "https://starta.46-224-223-172.sslip.io/api/v1"
 # API_URL = "http://localhost:8000/api/v1" # Local Debug
-CHAT_ENDPOINT = f"{API_URL}/chat"
+CHAT_ENDPOINT = f"{API_URL}/ai/chat"
 HEADERS = {"Content-Type": "application/json"}
 
 # Logging Setup
@@ -72,6 +72,7 @@ class BrainTester:
         
         if not screener_card:
             logger.error("❌ Failed: No SCREENER_RESULTS card found.")
+            logger.error(f"Response Dump: {json.dumps(data, indent=2)}")
             success = False
         else:
             logger.info("✅ Found Screener Results Card.")
@@ -107,6 +108,7 @@ class BrainTester:
         
         if not screener_card:
             logger.error("❌ Failed: Contextual filter did not return new screener results.")
+            logger.error(f"Response Dump: {json.dumps(data, indent=2)}")
             success = False
         else:
             logger.info("✅ Found Refined Results.")
@@ -138,8 +140,8 @@ class BrainTester:
         
         if missing:
             logger.error(f"❌ Narrative FAILED CFA Structure Check. Missing: {missing}")
-            # logger.debug(f"Full Narrative: {narrative}")
-            success = False
+            logger.error(f"Response Dump: {json.dumps(data, indent=2)}")
+            return False
         else:
             logger.info("✅ Narrative passed CFA Structure Check (All 4 Layers present).")
             

@@ -1,34 +1,30 @@
-# FinanceHub Pro Backend - Hugging Face Spaces Dockerfile
-# HF Spaces uses port 7860 by default
+# FinanceHub Pro Backend - Production Dockerfile
+# Optimized for Speed: Uses pre-built 'starta-base:latest'
+# Deploy time: <60 seconds
 
-FROM python:3.11-slim
+FROM starta-base:latest
 
 WORKDIR /app
 
-# Install system dependencies for asyncpg
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Arguments
+ARG CACHEBUST=1
 
-# Cache bust - change this to force rebuild
-ARG CACHEBUST=20260116-1120-ForceRootRebuild
-
-# Copy requirements from backend folder
-COPY backend-core/requirements.txt .
-
-# Install Python packages
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy backend application code
+# Copy Application Code (The only thing that changes frequently)
 COPY backend-core/app ./app
 COPY backend-core/engine ./engine
+COPY backend-core/scripts ./scripts
+COPY backend-core/data_pipeline ./data_pipeline
 
-# Set python path
+# Ensure run script is present (if applicable, or just CMD)
+COPY backend-core/run.sh ./run.sh
+RUN chmod +x run.sh
+
+# Environment
 ENV PYTHONPATH=/app
+ENV PORT=7860
 
-# HF Spaces uses port 7860
+# Port
 EXPOSE 7860
 
-# Run uvicorn on port 7860 (HF Spaces default)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Command
+CMD ["./run.sh"]

@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+
+# Set timeout to 10 minutes (600 seconds)
+set timeout 600
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+# Command Explanation:
+# 1. cd /opt/starta: Go to app dir
+# 2. git pull origin main: Update code
+# 3. docker compose up -d --build --force-recreate: Rebuild app container ONLY (uses cache for deps)
+# 4. docker ps: Verify
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- REBUILDING (SMART) ---' && docker compose -f docker-compose.prod.yml up -d --build --force-recreate && echo '--- HEALTH CHECK ---' && sleep 5 && docker ps && echo '--- SMART DEPLOY DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- SMART DEPLOY DONE ---" {
+        send_user "\n✅ Smart Deployment Completed.\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ Timeout waiting for deployment.\n"
+        exit 1
+    }
+    eof
+}

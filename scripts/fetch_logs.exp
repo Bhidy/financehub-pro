@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+    
+    set timeout 20
+    set host [lindex $argv 0]
+    set password [lindex $argv 1]
+    set container [lindex $argv 2]
+
+    if {[llength $argv] < 3} {
+        puts "Usage: ./fetch_logs.exp <host> <password> <container>"
+        exit 1
+    }
+
+    spawn ssh -o StrictHostKeyChecking=no root@$host "docker logs --tail 200 $container"
+
+    expect {
+        "password:" {
+            send "$password\r"
+            exp_continue
+        }
+        eof
+    }

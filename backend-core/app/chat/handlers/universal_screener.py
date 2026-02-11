@@ -138,7 +138,8 @@ async def handle_universal_screener(
         # ROBUST SECTOR MATCHING (Enterprise)
         # 1. Explicit Mappings for common mismatches
         SECTOR_ALIASES = {
-            # "industrial": "Basic Resources", # REMOVED: EGX has specific Industrial sector
+            "industrial": "Basic Resources", # Common mapping in EGX
+            "industrials": "Basic Resources",
             "medical": "Healthcare",
             "finance": "Financial Services",
             "construction": "Construction & Materials"
@@ -171,6 +172,20 @@ async def handle_universal_screener(
         metric_key = f.get('metric')
         operator_key = f.get('operator')
         value = f.get('value')
+        
+        # PERCENTAGE SCALING FIX (Enterprise)
+        # If user says "10% margin", Claude sends 10. DB likely stores 0.10.
+        # We auto-scale if value is > 1.0 for percentage fields.
+        PERCENTAGE_METRICS = {
+            "revenue_growth", "profit_growth", "eps_growth", "sales_growth",
+            "gross_margin", "operating_margin", "net_margin", "profit_margin",
+            "roe", "roa", "roce", "dividend_yield", "change_percent", "change"
+        }
+        
+        if metric_key in PERCENTAGE_METRICS and isinstance(value, (int, float)) and abs(value) > 1.0:
+            original_val = value
+            value = value / 100.0
+            # logger.info(f"Scaled {metric_key}: {original_val} -> {value}")
         
         db_col = METRIC_MAP.get(metric_key)
         sql_op = OPERATOR_MAP.get(operator_key)

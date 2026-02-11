@@ -1496,30 +1496,31 @@ class ChatService:
                 # Parse LEARNING
                 # (Note: handler_educational_cards might be populated by handler, but we prioritize LLM if handler didn't provide specific ones? 
                 # Actually, handler usually provides data cards, not learning. So LLM is primary.)
-                if not handler_educational_cards:
-                    learning = self._parse_learning(llm_text)
-                    if learning:
-                        handler_educational_cards = [
-                            {"variant": "definition", "title": item['term'], "content": item['definition']}
-                            for item in learning['items']
-                        ]
-                         # Strip from text (Case Insensitive)
-                        llm_text = re.sub(r"\[LEARNING\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
-                        logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
-                    else:
-                        # FALLBACK: Generate programmatically if LLM failed (Guarantees UI Layer 3)
-                        try:
-                            cards = result_data.get('cards', [])
-                            if cards:
-                                fallback_defs = explainer.extract_fact_explanations(cards, language)
-                                if fallback_defs:
-                                    handler_educational_cards = [
-                                        {"variant": "definition", "title": term, "content": definition}
-                                        for term, definition in fallback_defs.items()
-                                    ]
-                                    logger.info(f"[ChatService] 📘 Injected Programmatic Fallback for LEARNING ({len(handler_educational_cards)} items)")
-                        except Exception as fb_ex:
-                            logger.error(f"[ChatService] Fallback Learning Generation Failed: {fb_ex}")
+                # Parse LEARNING - DISABLED PER USER REQUEST (Phase 9)
+                # if not handler_educational_cards:
+                #     learning = self._parse_learning(llm_text)
+                #     if learning:
+                #         handler_educational_cards = [
+                #             {"variant": "definition", "title": item['term'], "content": item['definition']}
+                #             for item in learning['items']
+                #         ]
+                #          # Strip from text (Case Insensitive)
+                #         llm_text = re.sub(r"\[LEARNING\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                #         logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
+                #     else:
+                #         # FALLBACK: Generate programmatically if LLM failed (Guarantees UI Layer 3)
+                #         try:
+                #             cards = result_data.get('cards', [])
+                #             if cards:
+                #                 fallback_defs = explainer.extract_fact_explanations(cards, language)
+                #                 if fallback_defs:
+                #                     handler_educational_cards = [
+                #                         {"variant": "definition", "title": term, "content": definition}
+                #                         for term, definition in fallback_defs.items()
+                #                     ]
+                #                     logger.info(f"[ChatService] 📘 Injected Programmatic Fallback for LEARNING ({len(handler_educational_cards)} items)")
+                #         except Exception as fb_ex:
+                #             logger.error(f"[ChatService] Fallback Learning Generation Failed: {fb_ex}")
 
                 # Parse KEY INSIGHT (if tagged with [KEY_INSIGHT])
                 match_insight = re.search(r"\[KEY_INSIGHT\]\s*(.*?)(?=\[|$)", llm_text, re.DOTALL | re.IGNORECASE)

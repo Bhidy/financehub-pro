@@ -89,6 +89,7 @@ from .follow_up_generator import generate_follow_up
 from .context_assembler import get_context_assembler as get_conversation_memory
 from .claude_orchestrator import get_claude_orchestrator, ClaudeOrchestrator
 from .middleware.paraphraser import get_paraphraser
+from .llm_explainer import get_explainer
 
 ARABIC_CHAR_RE = re.compile(r"[\u0600-\u06FF]")
 LATIN_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9/\-\.]*")

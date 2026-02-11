@@ -968,6 +968,30 @@ class ChatService:
             
             # Candidate selection logic: Prefer extraction (better alias/stopword support)
             candidate = potential_symbols[0] if potential_symbols else symbol
+            
+            # --- CRITICAL FIX FOR COMPARISON BUG ---
+            # If intent is COMPARE_STOCKS, we must grab ALL potential symbols, not just the first one.
+            # This prevents fallback to Context (last_symbol) when multiple valid symbols exist
+            # but Claude extraction might have missed them or returned low confidence.
+            if intent == Intent.COMPARE_STOCKS and potential_symbols:
+                existing_compare = entities.get('compare_symbols', [])
+                if isinstance(existing_compare, str):
+                    existing_compare = [existing_compare]
+                elif existing_compare is None:
+                    existing_compare = []
+                
+                # Merge potential symbols into compare_symbols (avoiding duplicates)
+                current_upper = [str(x).upper() for x in existing_compare]
+                for s in potential_symbols:
+                    s_upper = str(s).upper()
+                    if s_upper not in current_upper:
+                        existing_compare.append(s_upper)
+                        current_upper.append(s_upper)
+                
+                entities['compare_symbols'] = existing_compare
+                print(f"[ChatService] 🔍 Enhanced Compare Symbols from Regex: {entities['compare_symbols']}")
+            # ---------------------------------------
+            
             if not candidate and entities.get('compare_symbols'):
                 compare_symbols = entities.get('compare_symbols')
                 if isinstance(compare_symbols, list) and compare_symbols:

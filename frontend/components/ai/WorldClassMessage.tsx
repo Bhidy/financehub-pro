@@ -34,11 +34,21 @@ import clsx from "clsx";
 
 import { translations, Language } from "@/app/mobile-ai-analyst/translations";
 
+interface StructuredNarrative {
+    personal_greeting?: string;
+    context_bridge?: string;
+    human_opening?: string;
+    core_narrative: string;
+    key_insight?: string;
+    risk_warning?: string;
+    follow_up_prompt?: string;
+}
+
 interface WorldClassMessageProps {
     /** The conversational text from the LLM */
     conversationalText: string;
     /** Optional structured response components - accepts any ChatResponse type */
-    response?: any;
+    response?: any & { structured_narrative?: StructuredNarrative };
     /** Language for translations */
     lang?: Language;
 }
@@ -497,6 +507,56 @@ function KeyInsightCard({ data, lang = 'en' }: { data: any, lang?: Language }) {
                     __html: content.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-violet-700 dark:text-violet-300">$1</strong>')
                 }}
             />
+        </div>
+    );
+}
+
+// =============================================================================
+// LAYER COMPONENTS (PHASE 1: 7-LAYER STRUCTURE)
+// =============================================================================
+
+function PersonalGreeting({ text }: { text: string }) {
+    if (!text) return null;
+    return (
+        <div className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 select-none">
+            {text}
+        </div>
+    );
+}
+
+function ContextBridge({ text }: { text: string }) {
+    if (!text) return null;
+    return (
+        <div className="text-sm text-slate-500 dark:text-slate-400 italic mb-3 border-l-2 border-slate-200 dark:border-slate-700 pl-3 leading-relaxed">
+            {text}
+        </div>
+    );
+}
+
+function HumanOpening({ text }: { text: string }) {
+    if (!text) return null;
+    return (
+        <div className="text-[15px] font-medium text-slate-800 dark:text-slate-200 mb-2 leading-relaxed">
+            {text}
+        </div>
+    );
+}
+
+function CoreNarrative({ text }: { text: string }) {
+    if (!text) return null;
+    // Uses the existing parsing logic but wrapped
+    const elements = parseConversationalText(text);
+    return <div className="space-y-4">{elements}</div>;
+}
+
+function RiskWarning({ text, lang = 'en' }: { text: string; lang?: Language }) {
+    if (!text) return null;
+    return (
+        <div className="mt-4 mb-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg flex items-start gap-2">
+            <span className="text-amber-500 mt-0.5 text-xs">⚠️</span>
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-400 leading-normal">
+                {text}
+            </span>
         </div>
     );
 }
@@ -1325,19 +1385,46 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
             lang={lang}
         >
             {/* ============================================================
-                LAYER 1: OPENING TEXT + FRAMEWORK CARD
-                Narrative introduction with optional methodology card
+                LAYER 1: TEXT NARRATIVE (Standard or 7-Layer)
                ============================================================ */}
-            {normalizedFrameworkCard && textElements.length > 0 && (
-                <>
-                    {textElements[0]}
-                    <FrameworkCard data={normalizedFrameworkCard} />
-                    {textElements.slice(1)}
-                </>
-            )}
 
-            {/* If no framework section, just render the text (Standard flow) */}
-            {!normalizedFrameworkCard && textElements}
+            {/* NEW: 7-Layer Structured Rendering */}
+            {safeResponse?.structured_narrative ? (
+                <div className="mb-6 space-y-1">
+                    {/* Layer 1: Personal Greeting */}
+                    <PersonalGreeting text={safeResponse.structured_narrative.personal_greeting} />
+
+                    {/* Layer 2: Context Bridge */}
+                    <ContextBridge text={safeResponse.structured_narrative.context_bridge} />
+
+                    {/* Layer 3: Human Opening */}
+                    <HumanOpening text={safeResponse.structured_narrative.human_opening} />
+
+                    {/* Layer 4: Core Narrative */}
+                    <div className="mt-3">
+                        <CoreNarrative text={safeResponse.structured_narrative.core_narrative} />
+                    </div>
+
+                    {/* Layer 5: Key Insight (If passed in structured narrative) */}
+                    {safeResponse.structured_narrative.key_insight && (
+                        <KeyInsightCard data={safeResponse.structured_narrative.key_insight} lang={lang} />
+                    )}
+
+                    {/* Layer 6: Risk Warning */}
+                    <RiskWarning text={safeResponse.structured_narrative.risk_warning} lang={lang} />
+                </div>
+            ) : (
+                /* Fallback: Old Monolithic Logic */
+                normalizedFrameworkCard && textElements.length > 0 ? (
+                    <>
+                        {textElements[0]}
+                        <FrameworkCard data={normalizedFrameworkCard} />
+                        {textElements.slice(1)}
+                    </>
+                ) : (
+                    textElements
+                )
+            )}
 
             {/* ============================================================
                 LAYER 2: PREMIUM DATA & INSIGHT COMPONENTS
@@ -1427,8 +1514,10 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
 
             {/* ============================================================
                 LAYER 5: FOLLOW-UP (Conversation Driver)
-                MOVED TO PARENT COMPONENT FOR POSITIONING CONTROL
                ============================================================ */}
+            {(safeResponse?.structured_narrative?.follow_up_prompt || safeResponse?.follow_up_prompt) && (
+                <FollowUpPrompt content={safeResponse.structured_narrative?.follow_up_prompt || safeResponse.follow_up_prompt} />
+            )}
         </div>
     );
 }

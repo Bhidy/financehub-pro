@@ -411,7 +411,21 @@ class IntentRouter:
         # 1. Technical Analysis Overrides
         if any(w in merged_text for w in ["technicals", "technical analysis", "support", "resistance", "rsi", "macd", "pivot"]):
              # Check if we have a symbol context or entity
-             if entities.get('symbol') or (context and context.get('last_symbol')):
+             has_symbol = entities.get('symbol') or (context and context.get('last_symbol'))
+             
+             if not has_symbol:
+                 # HEURISTIC FALLBACK: Check for 3-5 letter uppercase word (potential ticker)
+                 # This allows "Show COMI technicals" to route correctly even if entity extraction skipped it.
+                 import re
+                 # Use case-insensitive search for flexibility
+                 match = re.search(r'\b[A-Z0-9]{3,5}\b', text, re.IGNORECASE) 
+                 if match:
+                     has_symbol = True
+                     # Inject into entities so ChatService sees it
+                     if not entities.get('symbol'):
+                         entities['symbol'] = match.group(0).upper()
+            
+             if has_symbol:
                  return IntentResult(
                     intent=Intent.TECHNICAL_INDICATORS,
                     confidence=1.0, # Absolute certainty
@@ -511,7 +525,9 @@ class IntentRouter:
         
         # Generic Sector Override
         # If we successfully extracted a 'sector' entity in _extract_entities, route to SECTOR_STOCKS
-        if entities.get('sector'):
+        # CRITICAL FIX: Only if NO symbol is present. If symbol exists (e.g. "Analyze Bank CIB"), 
+        # we want the specific stock intent, not the sector list.
+        if entities.get('sector') and not entities.get('symbol'):
              # Ensure it's not a false positive for a stock symbol (e.g. "Food") if that was a ticker
              # But sector map is robust.
              return IntentResult(intent=Intent.SECTOR_STOCKS, confidence=0.95, entities=entities, missing_fields=[])

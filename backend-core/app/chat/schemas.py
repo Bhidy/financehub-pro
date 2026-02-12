@@ -151,6 +151,8 @@ class CardType(str, Enum):
     
     # Extended Scenario Card Types (Enterprise Phase)
     MACRO_SCORE = "macro_score"
+    VALUATION_SCORE = "valuation_score"
+    MACRO_CONTEXT = "macro_context"
     EDUCATIONAL = "educational"
     METHODOLOGY = "methodology"
     HIDDEN_GEMS = "hidden_gems"

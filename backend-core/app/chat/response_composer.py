@@ -550,7 +550,9 @@ class ResponseComposer:
         shown_card_types: Optional[List[str]] = None,
         include_opening: bool = True,
         include_guidance: bool = True,
-        force_opening: bool = False
+        force_opening: bool = False,
+        # Phase 3: Explicit 7-Layer Flags
+        detected_insight: Optional[str] = None
     ) -> Tuple[str, Optional['StructuredNarrative'], Optional[str]]:
         """
         Compose a premium 8-layer response (layers 1-6, 7-8 handled separately).
@@ -569,11 +571,8 @@ class ResponseComposer:
         struct_insight = None
         struct_warning = None
         
-        # Layer ① - Personal Greeting (Explicitly separate if forcing opening or new session)
-        # Note: We keep this simple for now. If 'include_opening' is T, we might get a name in Layer 3.
-        # But specifically, if we want a "Personal Greeting" as Layer 1, we can synthesis it.
+        # Layer ① - Personal Greeting (Only on forced opening or explicit new session)
         if force_opening or (include_opening and not is_follow_up):
-             # Simple localized greeting
              if language == 'ar':
                  struct_greeting = f"أهلاً {user_name.split()[0]}"
              else:
@@ -606,8 +605,12 @@ class ResponseComposer:
         if core_narrative:
             parts.append(core_narrative)
         
-        # Layer ⑤ - Key Insight (for stock-related intents)
-        if intent in [
+        # Layer ⑤ - Key Insight (Priority: Explicit > Sentiment-Generated)
+        if detected_insight:
+            # Use the "Thought Process" derived insight if available
+            struct_insight = detected_insight
+            parts.append("\n\n" + detected_insight)
+        elif intent in [
             Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
             Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
             Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS
@@ -622,10 +625,10 @@ class ResponseComposer:
             parts.append("\n" + warning)
             struct_warning = warning
             
-        # Combine for legacy text
+        # Combine for legacy text (Legacy clients get a coherent paragraph)
         full_response_text = "".join(parts) if parts else core_narrative
         
-        # Construct Structured Object
+        # Construct Structured Object (The 7-Layer Payload)
         structured_narrative = StructuredNarrative(
             personal_greeting=struct_greeting,
             context_bridge=struct_bridge,

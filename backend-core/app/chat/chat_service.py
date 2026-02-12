@@ -1167,7 +1167,7 @@ class ChatService:
             if user_id and intent not in [Intent.GREETING, Intent.IDENTITY, Intent.MOOD, Intent.GRATITUDE]:
                  try:
                      # Use the user's latest query for retrieval
-                     retrieval_query = message_text
+                     retrieval_query = message
                      if conversational_text: # If we have a rephrased query or similar
                          pass # Use raw message for now
                      

@@ -45,7 +45,9 @@ from .schemas import (
     MacroScoreCard, MacroFactor, ComparisonTable, ComparisonRow,
     EducationalCard, DisclaimerCard,
     # NEW: Premium World-Class Components (Phase 2)
-    FrameworkCard, CharacterCard, QuantifiedDriver, QuantifiedDriversCard, IndexCompositionCard
+    FrameworkCard, CharacterCard, QuantifiedDriver, QuantifiedDriversCard, IndexCompositionCard,
+    # NEW: 7-Layer Structure
+    StructuredNarrative
 )
 from .text_normalizer import normalize_text, extract_potential_symbols
 from .intent_router import IntentRouter, create_router

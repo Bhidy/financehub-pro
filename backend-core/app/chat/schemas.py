@@ -369,15 +369,18 @@ class Action(BaseModel):
     payload: str  # Query text or URL
 
 
-class ResponseMeta(BaseModel):
-    """Response metadata."""
-    intent: str
-    confidence: float
-    entities: Dict[str, Any] = Field(default_factory=dict)
-    latency_ms: int = 0
-    cached: bool = False
-    as_of: Optional[datetime] = None
-    backend_version: str = "3.0" # Incremented for Hybrid Chat
+class StructuredNarrative(BaseModel):
+    """
+    The 7-Layer Structured Response for World-Class UI.
+    Splits the monolithic text into distinct semantic components.
+    """
+    personal_greeting: Optional[str] = Field(None, description="Layer 1: Hello, Mohamed")
+    context_bridge: Optional[str] = Field(None, description="Layer 2: Continuing with [Symbol]...")
+    human_opening: Optional[str] = Field(None, description="Layer 3: Natural conversational opening")
+    core_narrative: str = Field(..., description="Layer 4: The main analysis text")
+    key_insight: Optional[str] = Field(None, description="Layer 5: The 'One Thing' takeaway (Green/Red Card)")
+    risk_warning: Optional[str] = Field(None, description="Layer 6: Compliance or volatility warning (Amber Banner)")
+    follow_up_prompt: Optional[str] = Field(None, description="Layer 7: Suggested next question")
 
 
 class ChatResponse(BaseModel):

@@ -547,17 +547,38 @@ class ResponseComposer:
         include_risk_warning: bool = False,
         risk_type: str = "general",
         last_opening_used: Optional[str] = None,
-        shown_card_types: Optional[List[str]] = None
-    ) -> Tuple[str, Optional[str]]:
+        shown_card_types: Optional[List[str]] = None,
+        include_opening: bool = True,
+        include_guidance: bool = True,
+        force_opening: bool = False
+    ) -> Tuple[str, Optional['StructuredNarrative'], Optional[str]]:
         """
         Compose a premium 8-layer response (layers 1-6, 7-8 handled separately).
-        
         Returns:
-            Tuple of (full_response, opening_category_used)
+            Tuple of (full_response_text, structured_narrative, opening_category_used)
         """
+        from .schemas import StructuredNarrative
+        
         parts = []
         opening_category = None
         
+        # Components for Structured Response
+        struct_greeting = None
+        struct_bridge = None
+        struct_opening = None
+        struct_insight = None
+        struct_warning = None
+        
+        # Layer ① - Personal Greeting (Explicitly separate if forcing opening or new session)
+        # Note: We keep this simple for now. If 'include_opening' is T, we might get a name in Layer 3.
+        # But specifically, if we want a "Personal Greeting" as Layer 1, we can synthesis it.
+        if force_opening or (include_opening and not is_follow_up):
+             # Simple localized greeting
+             if language == 'ar':
+                 struct_greeting = f"أهلاً {user_name.split()[0]}"
+             else:
+                 struct_greeting = f"Hi {user_name.split()[0]}"
+
         # Layer ② - Context Bridge (for follow-ups)
         if is_follow_up and active_symbol:
             bridge = cls.get_context_bridge(
@@ -567,17 +588,19 @@ class ResponseComposer:
             )
             if bridge:
                 parts.append(bridge)
+                struct_bridge = bridge
         
         # Layer ③ - Human Opening (for non-follow-ups)
-        elif not is_follow_up:
+        elif include_opening and not is_follow_up:
             opening, opening_category = cls.get_human_opening(
                 language=language,
                 user_name=user_name,
                 last_opening_used=last_opening_used,
-                force=False
+                force=force_opening
             )
             if opening:
                 parts.append(opening)
+                struct_opening = opening
         
         # Layer ④ - Core Narrative (always)
         if core_narrative:
@@ -591,16 +614,29 @@ class ResponseComposer:
         ]:
             insight = cls.get_key_insight(language=language, sentiment=sentiment)
             parts.append("\n\n" + insight)
+            struct_insight = insight
         
         # Layer ⑥ - Risk Warning (when appropriate)
         if include_risk_warning:
             warning = cls.get_risk_warning(language=language, risk_type=risk_type)
             parts.append("\n" + warning)
+            struct_warning = warning
+            
+        # Combine for legacy text
+        full_response_text = "".join(parts) if parts else core_narrative
         
-        # Combine
-        full_response = "".join(parts) if parts else core_narrative
+        # Construct Structured Object
+        structured_narrative = StructuredNarrative(
+            personal_greeting=struct_greeting,
+            context_bridge=struct_bridge,
+            human_opening=struct_opening,
+            core_narrative=core_narrative,
+            key_insight=struct_insight,
+            risk_warning=struct_warning,
+            follow_up_prompt=None # Handled in chat_service
+        )
         
-        return full_response, opening_category
+        return full_response_text, structured_narrative, opening_category
 
 
 # ============================================================================

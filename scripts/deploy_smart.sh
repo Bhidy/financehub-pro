@@ -60,9 +60,9 @@ ssh -o StrictHostKeyChecking=no root@46.224.223.172 "
     git fetch origin && \
     git reset --hard origin/main && \
     echo '--- 2. BUILDING (WITH CACHE) ---' && \
-    docker compose -f docker-compose.prod.yml build starta-backend && \
+    docker compose -f docker-compose.prod.yml build backend && \
     echo '--- 3. RESTARTING BACKEND ---' && \
-    docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate starta-backend && \
+    docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate backend && \
     echo '--- 4. CLEANING DANGLING LAYERS ---' && \
     docker image prune -f && \
     echo '--- 5. HEALTH CHECK ---' && \

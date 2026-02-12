@@ -59,7 +59,21 @@ export const MarketOverview = () => {
     // No Loading state needed here - managed by parent <Suspense>
     const { data } = useSuspenseQuery({
         queryKey: ['market-overview'],
-        queryFn: marketsApi.getOverview,
+        queryFn: async () => {
+            try {
+                return await marketsApi.getOverview();
+            } catch (error) {
+                console.warn("MarketOverview fetch failed (likely build time or offline). Using fallback.");
+                // Fallback for build time or error
+                return {
+                    market_pulse: { up: 0, down: 0, count: 0, volume_total: 0, liquidity_ratio: 0 },
+                    top_gainers: [],
+                    top_losers: [],
+                    most_active: [],
+                    sectors: []
+                };
+            }
+        },
         refetchInterval: 30000 // Real-time pulse every 30s
     });
 

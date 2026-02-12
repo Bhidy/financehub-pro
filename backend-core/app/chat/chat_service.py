@@ -1007,10 +1007,30 @@ class ChatService:
                 resolved_symbol = await self.resolver.resolve(candidate, entities.get('market_code'))
                 resolver_method = "extraction"
                 
-            # Try last symbol from context if still unresolved and intent needs it
-            if not resolved_symbol and context_dict.get('last_symbol') and intent not in [Intent.UNKNOWN, Intent.HELP]:
+            # --- CONTEXT RELEVANCE FIX (The "JUFO" Killer) ---
+            # Only certain intents should inherit the last symbol from context.
+            # This prevents "JUFO" (or any previous stock) from leaking into unrelated queries.
+            # e.g., "Hello" or "Market Status" should NEVER pick up a stock context.
+            CONTEXT_AWARE_INTENTS = [
+                Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART, 
+                Intent.STOCK_STAT, Intent.FINANCIALS, Intent.FINANCIALS_ANNUAL, 
+                Intent.DIVIDENDS, Intent.TECHNICAL_INDICATORS, Intent.NEWS,
+                Intent.FAIR_VALUE, Intent.FINANCIAL_HEALTH, Intent.COMPANY_PROFILE,
+                Intent.OWNERSHIP, Intent.REVENUE_TREND, Intent.FIN_MARGINS,
+                Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.DEEP_GROWTH, 
+                Intent.DEEP_EFFICIENCY, Intent.FOLLOW_UP,
+                # Extended Scenarios needing symbol
+                Intent.MARKET_TIMING # "Is now a good time to buy [Context]?"
+            ]
+
+            # Try last symbol from context ONLY if intent allows it
+            should_use_context = intent in CONTEXT_AWARE_INTENTS
+            if not resolved_symbol and context_dict.get('last_symbol') and should_use_context:
                 resolved_symbol = await self.resolver.resolve(context_dict['last_symbol'], entities.get('market_code'))
                 resolver_method = "context"
+                print(f"[ChatService] 🔗 Context Fallback: Using '{context_dict['last_symbol']}' for {intent}")
+            elif not resolved_symbol and context_dict.get('last_symbol') and not should_use_context:
+                print(f"[ChatService] 🛑 Context Blocked: Ignored '{context_dict['last_symbol']}' for {intent} (Not Context-Aware)")
                 
             # If resolved, update entities and context
             actual_symbol = None

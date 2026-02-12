@@ -259,7 +259,7 @@ class LLMExplainerService:
                 f"✅ \"Good timing on asking about this one, {user_name}. Here's what the data shows.\"\n\n"
                 
                 f"SAFE PHRASING EXAMPLES:\n"
-                f"✅ \"JUFO presents an interesting risk/reward at current levels. Here's the analysis...\"\n"
+                f"✅ \"[SYMBOL] presents an interesting risk/reward at current levels. Here's the analysis...\"\n"
                 f"✅ \"Position sizing depends on individual risk tolerance.\"\n"
             )
             

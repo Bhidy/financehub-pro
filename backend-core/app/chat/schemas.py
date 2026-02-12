@@ -394,6 +394,7 @@ class ChatResponse(BaseModel):
     fact_explanations: Optional[Dict[str, str]] = None
     
     # NEW: Structured Response Components (HTML Mockup Match)
+    structured_narrative: Optional[StructuredNarrative] = None  # NEW: 7-Layer Structure
     data_card: Optional[DataCard] = None  # Current position card
     bull_case: Optional[InsightCard] = None  # Green bull case card
     bear_case: Optional[InsightCard] = None  # Red bear case card

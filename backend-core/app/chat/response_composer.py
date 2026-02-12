@@ -503,7 +503,9 @@ class ResponseComposer:
     def get_key_insight(
         cls,
         language: str,
-        sentiment: str = "neutral"
+        language: str,
+        sentiment: str = "neutral",
+        user_level: str = "INTERMEDIATE"
     ) -> str:
         """
         Get a key insight (Layer ⑤).
@@ -511,8 +513,19 @@ class ResponseComposer:
         Args:
             language: 'en' or 'ar'
             sentiment: 'bullish', 'bearish', or 'neutral'
+            user_level: 'NOVICE', 'INTERMEDIATE', 'EXPERT'
         """
         lang_key = language if language in ['en', 'ar'] else 'en'
+        
+        # NOVICE OVERRIDE: Simplify insights
+        if user_level == "NOVICE":
+             if sentiment == "bullish":
+                 return "🎯 **Simple Insight**: This looks good. The company is strong." if lang_key == "en" else "🎯 **ببساطة**: الوضع يبدو جيد. الشركة قوية."
+             elif sentiment == "bearish":
+                 return "🎯 **Simple Insight**: Be careful. There are risks here." if lang_key == "en" else "🎯 **ببساطة**: خد بالك. في مخاطر هنا."
+             else:
+                 return "🎯 **Simple Insight**: It's balanced. Not clearly good or bad." if lang_key == "en" else "🎯 **ببساطة**: الوضع متوازن. لا حلو ولا وحش."
+
         templates = KEY_INSIGHT_TEMPLATES.get(sentiment, KEY_INSIGHT_TEMPLATES['neutral'])
         return random.choice(templates.get(lang_key, templates['en']))
     
@@ -552,7 +565,9 @@ class ResponseComposer:
         include_guidance: bool = True,
         force_opening: bool = False,
         # Phase 3: Explicit 7-Layer Flags
-        detected_insight: Optional[str] = None
+        detected_insight: Optional[str] = None,
+        # Phase 4: Personalization
+        user_level: str = "INTERMEDIATE"
     ) -> Tuple[str, Optional['StructuredNarrative'], Optional[str]]:
         """
         Compose a premium 8-layer response (layers 1-6, 7-8 handled separately).
@@ -615,7 +630,7 @@ class ResponseComposer:
             Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
             Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS
         ]:
-            insight = cls.get_key_insight(language=language, sentiment=sentiment)
+            insight = cls.get_key_insight(language=language, sentiment=sentiment, user_level=user_level)
             parts.append("\n\n" + insight)
             struct_insight = insight
         

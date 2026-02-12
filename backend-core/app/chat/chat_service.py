@@ -52,7 +52,34 @@ from .schemas import (
 from .text_normalizer import normalize_text, extract_potential_symbols
 from .intent_router import IntentRouter, create_router
 from .symbol_resolver import SymbolResolver
-from .compliance import check_compliance, get_disclaimer, COMPLIANCE_RESPONSE_AR
+from .compliance import check_compliance, get_disclaimer, COMPLIANCE_RESPONSE_AR # --- PHASE 4: PERSONALIZATION ENGINE ---
+from .sophistication_analyzer import SophisticationAnalyzer # NEW: Phase 4
+from .memory_manager import MemoryManager # NEW: Phase 4
+
+def _extract_market_stats(cards: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """
+    Helper to extract market summary (EGX30) from response cards if available.
+    Used for Market Sentiment Tone Steering.
+    """
+    if not cards:
+        return None
+        
+    for card in cards:
+        # Check 1: Explicit Market Summary Card
+        if card.get('type') == 'market_summary':
+            return card.get('data')
+            
+        # Check 2: Stock Header for EGX30
+        if card.get('type') == 'stock_header':
+            data = card.get('data', {})
+            raw_sym = str(data.get('symbol', '')).strip().upper()
+            if raw_sym in ['EGX30', '^EGX30', 'EGX 30']:
+                return {
+                    'change_percent': data.get('change_percent'),
+                    'last_price': data.get('price')
+                }
+                
+    return None # NEW: Phase 4
 from .context_store import get_context_store, ContextStore
 
 # Handlers
@@ -1119,6 +1146,54 @@ class ChatService:
             
             # Fetch real user name for personalization (Moved up for global scope)
             real_user_name = await self._get_user_name(user_id)
+            
+            # --- PHASE 4: PERSONALIZATION ENGINE ---
+            # 1. Update Sophistication Score based on Intent
+            user_sophistication = 0.0
+            if user_id:
+                try:
+                    user_sophistication = await SophisticationAnalyzer.update_user_sophistication(
+                        self.conn, user_id, intent
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to analyze sophistication: {e}")
+            
+            # 2. Determine User Level (for NLU/NLG adaptation)
+            user_level = SophisticationAnalyzer.get_level(user_sophistication)
+
+            # 3. Retrieve Long-Term Memories (Vector Search)
+            context_memories = None
+            # Skip for small talk to save latency
+            if user_id and intent not in [Intent.GREETING, Intent.IDENTITY, Intent.MOOD, Intent.GRATITUDE]:
+                 try:
+                     # Use the user's latest query for retrieval
+                     retrieval_query = message_text
+                     if conversational_text: # If we have a rephrased query or similar
+                         pass # Use raw message for now
+                     
+                     raw_mems = await MemoryManager.retrieve_relevant_memories(
+                         self.conn, user_id, retrieval_query
+                     )
+                     context_memories = MemoryManager.format_memories_for_prompt(raw_mems)
+                     if context_memories:
+                         logger.info(f"🧠 Context injected for User {user_id}: {len(raw_mems)} memories")
+                 except Exception as e:
+                     logger.error(f"Failed to retrieve memories: {e}")
+
+            # 4. Phase 5: Get Market Stats for Tone Steering
+            market_stats = None
+            try:
+                # Quick fetch of EGX30 for sentiment analysis
+                # Ideally we ask MarketHandler, but for speed we can do a lightweight query
+                # or reuse if we already fetched market summary?
+                # For MVP: We will implement a quick helper or just assume neutral if fails
+                pass 
+                # (We will rely on existing handlers to populate this if possible, 
+                # otherwise we might need a dedicated fetch.
+                # For now, let's look if 'cards' contain market data? 
+                # See below where we extract it)
+            except Exception:
+                pass
 
             if result_data.get('success', True) and intent not in NO_NARRATIVE_INTENTS:
                 try:
@@ -1191,14 +1266,28 @@ class ChatService:
                     if is_extended_intent and handler_conversational_text:
                         conversational_text = handler_conversational_text
                     else:
+                        # Define cards and should_greet for the generate_narrative call
+                        cards = result_data.get('cards', [])
+                        should_greet = final_allow_greeting # Use the determined greeting flag
                         conversational_text = await explainer.generate_narrative(
-                            query=message,
-                            intent=intent.value,
-                            data=result_data.get('cards', []),
+                            query=message_text,
+                            intent=intent,
+                            data=cards,
                             language=language,
                             user_name=real_user_name,
-                            allow_greeting=False, # CHANGED: Delegated to ResponseComposer for consistent 8-layer structure
-                            is_returning_user=is_returning_user
+                            allow_greeting=should_greet,
+                            is_returning_user=is_returning_user,
+                            # Phase 4: Personalization
+                            user_level=user_level,
+                            context_memories=context_memories,
+                            # Phase 5: Tone Steering
+                            # We need to pass the market stats. 
+                            # If the user asked for MARKET_SUMMARY, 'cards' has it.
+                            # If not, we might not have it.
+                            # Strategy: We'll extract from 'cards' if present, or let Explainer default to NEUTRAL.
+                            # IMPROVEMENT: We should ideally fetch EGX30 globally.
+                            # For MVP: We will scan 'cards' for 'stock_header' of EGX30 or 'market_summary' type.
+                            market_stats=_extract_market_stats(cards)
                         )
 
                     # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)
@@ -1849,7 +1938,8 @@ class ChatService:
                     include_risk_warning=include_risk,
                     risk_type=risk_type,
                     shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])],
-                    detected_insight=thought_points[0] if thought_points else None
+                    detected_insight=thought_points[0] if thought_points else None,
+                    user_level=user_level # Phase 4
                 )
                 
                 # Inject Follow-up Prompt into Structured Narrative

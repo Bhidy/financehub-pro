@@ -18,6 +18,8 @@ import hashlib
 from typing import Dict, Any, Optional, List
 from app.core.config import settings
 from .llm_clients import get_multi_llm
+from .guardrails.market_sentiment import MarketSentimentAnalyzer, MarketTone
+from .guardrails.numeric_verifier import NumericVerifier
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -35,7 +37,7 @@ NARRATIVE_CACHE: Dict[str, tuple] = {}  # {cache_key: (narrative, timestamp)}
 CACHE_TTL_SECONDS = 300  # 5 minutes
 CACHE_STATS = {"hits": 0, "misses": 0}
 
-def _get_cache_key(intent: str, data: List[Dict], language: str, allow_greeting: bool) -> str:
+def _get_cache_key(intent: str, data: List[Dict], language: str, allow_greeting: bool, user_level: str, memory_hash: str) -> str:
     """Generate a cache key from the request parameters."""
     # Extract symbol from data for more specific caching
     symbol = ""
@@ -43,7 +45,7 @@ def _get_cache_key(intent: str, data: List[Dict], language: str, allow_greeting:
         if card.get("type") == "stock_header":
             symbol = card.get("data", {}).get("symbol", "")
             break
-    key_str = f"{intent}:{symbol}:{language}:{allow_greeting}"
+    key_str = f"{intent}:{symbol}:{language}:{allow_greeting}:{user_level}:{memory_hash}"
     return hashlib.md5(key_str.encode()).hexdigest()
 
 def _get_cached_narrative(cache_key: str) -> Optional[str]:
@@ -108,7 +110,12 @@ class LLMExplainerService:
         language: str = "en",
         user_name: str = "Analyst",
         allow_greeting: bool = False, # CHANGED FROM is_first_message
-        is_returning_user: bool = False
+        is_returning_user: bool = False,
+        # Phase 4: Personalization
+        user_level: str = "INTERMEDIATE",
+        context_memories: Optional[str] = None,
+        # Phase 5: Tone Steering
+        market_stats: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         """
         Generates the 'Conversational Voice' (Narrative) layer.
@@ -123,7 +130,8 @@ class LLMExplainerService:
         # PHASE 5: Check cache first (only for non-greeting responses, as greetings are personalized)
         cache_key = None
         if not allow_greeting and data:
-            cache_key = _get_cache_key(intent, data, language, allow_greeting)
+            mem_hash = hashlib.md5((context_memories or "").encode()).hexdigest()
+            cache_key = _get_cache_key(intent, data, language, allow_greeting, user_level, mem_hash)
             cached = _get_cached_narrative(cache_key)
             if cached:
                 # Personalize cached response with current user's name
@@ -133,6 +141,12 @@ class LLMExplainerService:
         # Build Data Context Summary
         context_str = self._format_data_for_context(data, language)
         lang_instruction = "Arabic (Modern Standard)" if language == 'ar' else "English"
+
+        # Phase 5: Determine Market Tone
+        market_tone = MarketSentimentAnalyzer.analyze_market_mood(market_stats)
+        tone_instruction = MarketSentimentAnalyzer.get_tone_instruction(market_tone)
+        if market_tone != MarketTone.NEUTRAL:
+            logger.info(f"🎨 Market Tone Injected: {market_tone} ({tone_instruction[:30]}...)")
         
         # ============================================================
         # WORLD-CLASS CONVERSATIONAL FRAMEWORK (TOKEN-OPTIMIZED)
@@ -284,7 +298,13 @@ class LLMExplainerService:
                 f"   - GOOD: 'At 8x PE, the stock trades at a 30% discount to peers.'\n"
                 f"2. **INSIGHTS FIRST**: Lead with the conclusion. Use data to support it.\n"
                 f"3. **MINIMAL NUMBERS**: Don't just list numbers. Synthesize them.\n"
-                f"4. **PROFESSIONAL TONE**: Direct, objective, slightly contrarian if data supports it.\n\n"
+                f"4. **PROFESSIONAL TONE**: Direct, objective, slightly contrarian if data supports it.\n"
+                f"5. **ADAPTATION ({user_level} Level)**:\n"
+                f"   - NOVICE: Use analogies. Explain *why* a metric matters. Avoid jargon.\n"
+                f"   - EXPERT: Be concise. Assume deep knowledge. Focus on second-order effects.\n"
+                f"   - INTERMEDIATE: Balanced. Define complex terms but keep analysis professional.\n"
+                f"6. **MARKET CONTEXT**:\n"
+                f"   {tone_instruction}\n\n"
 
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"═══════════════════════════════════════════════════════════════\n"
@@ -327,8 +347,9 @@ class LLMExplainerService:
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"SESSION CONTEXT\n"
                 f"═══════════════════════════════════════════════════════════════\n"
-                f"User: {user_name}\n"
+                f"User: {user_name} ({user_level} Investor)\n"
                 f"Greeting: {'REQUIRED' if allow_greeting else 'SKIP (Start Analysis Immediately)'}\n"
+                f"Past Interactions (Memory): {context_memories if context_memories else 'None'}\n"
                 f"Data Context: {card_context}\n\n"
                 f"IMPORTANT: You MUST include the [LEARNING] section at the end. It is required for the UI.\n"
                 f"BEGIN RESPONSE IN **{lang_name.upper()}**."
@@ -356,8 +377,14 @@ class LLMExplainerService:
         )
         
         # PHASE 5: Store result in cache if valid
-        if result and cache_key:
-            _cache_narrative(cache_key, result)
+        if result:
+            # Run Post-Generation Verification (Non-blocking)
+            mismatches = NumericVerifier.verify_response(result, data)
+            if mismatches:
+                logger.warning(f"🚨 CHALLENGER DETECTED {len(mismatches)} HALLUCINATIONS in Narrative")
+
+            if cache_key and not mismatches: # Only cache verified responses
+                _cache_narrative(cache_key, result)
         
         return result
 

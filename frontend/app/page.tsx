@@ -12,4 +12,4 @@
  * DO NOT modify this structure without explicit user request.
  */
 
-export { default } from "./mobile-ai-analyst/ResponsivePage";
+export { default } from "@/components/chatbot/ResponsivePage";

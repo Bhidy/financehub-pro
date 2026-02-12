@@ -32,7 +32,7 @@ import clsx from "clsx";
 // TYPE DEFINITIONS
 // =============================================================================
 
-import { translations, Language } from "@/app/mobile-ai-analyst/translations";
+import { translations, Language } from "@/components/chatbot/translations";
 
 interface StructuredNarrative {
     personal_greeting?: string;
@@ -1512,12 +1512,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
                 />
             )}
 
-            {/* ============================================================
-                LAYER 5: FOLLOW-UP (Conversation Driver)
-               ============================================================ */}
-            {(safeResponse?.structured_narrative?.follow_up_prompt || safeResponse?.follow_up_prompt) && (
-                <FollowUpPrompt content={safeResponse.structured_narrative?.follow_up_prompt || safeResponse.follow_up_prompt} />
-            )}
+
         </div>
     );
 }

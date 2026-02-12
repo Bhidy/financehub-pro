@@ -106,14 +106,14 @@ npx vercel --prod
 
 ### Backend Deployment (Hetzner VPS)
 
-The backend is deployed via Docker on Hetzner. Use the deployment script:
+The backend is deployed via the Smart Deployment protocol.
 
 ```bash
-# Deploy to Hetzner
-./deploy_to_hetzner.sh
+# Deploy to Hetzner (Smart Update)
+./scripts/deploy_smart.sh
 
 # Verify deployment
-curl https://starta.46-224-223-172.sslip.io/health
+python3 scripts/verify_live_7layer.py
 ```
 
 ---
@@ -177,7 +177,7 @@ Set in `.env` file on Hetzner (managed via `deploy_to_hetzner.sh`):
 
 **Prevention:**
 1. Frontend: Use `vercel --prod` command
-2. Backend: Use `./deploy_to_hetzner.sh`
+2. Backend: Use `./scripts/deploy_smart.sh`
 
 ### Issue 4: Environment Variables (Secrets) Not Updating
 

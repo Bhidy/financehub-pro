@@ -163,13 +163,24 @@ curl https://starta.46-224-223-172.sslip.io/health
 > **VIOLATION OF THESE RULES CAUSES SYSTEM FAILURE.**
 > Future Agents: You MUST follow these protocols accurately.
 
-### 1. The "Nuclear" Deployment Strategy
-**NEVER** attempt to "patch" the running server with `git pull` and `docker compose up`. The state will desync.
-**ALWAYS** use the Immutable Strategy:
-1.  **Stop & Prune:** `docker compose down` AND `docker system prune -af` (Free disk space).
-2.  **Rebuild:** `docker compose build --build-arg CACHEBUST=$(date +%s)` (Force fresh code).
-3.  **Start:** `docker compose up -d --force-recreate`.
-4.  **Reference Script:** Use `scripts/restore_production.exp`.
+### 1. The "Smart" Deployment Strategy (Standard)
+**NEVER** use manual `git pull` on the server.
+**ALWAYS** use the automated Smart Deployment script. This handles git sync, targeted caching, and zero-downtime rolling updates.
+
+1.  **Run Locally:**
+    ```bash
+    ./scripts/deploy_smart.sh
+    ```
+2.  **Verify:**
+    ```bash
+    python3 scripts/verify_live_7layer.py
+    ```
+
+**Fallback (Emergency Only):**
+If Smart Deployment fails repeatedly, use the "Nuclear" option:
+```bash
+./scripts/deploy_production.sh backend nuclear
+```
 
 ### 2. Infrastructure Constraints (Disk & CPU)
 -   **NO GPU/CUDA:** The server is a standard VPS. Installing default `torch` will fill the disk (2.5GB+).
@@ -228,17 +239,16 @@ curl https://starta.46-224-223-172.sslip.io/health
    git add . && git commit -m "Your message" && git push origin main
    ```
 
-#### Deployment Command (Single Step)
+#### Deployment Command (Standard)
+```bash
+./scripts/deploy_smart.sh
+```
+
+#### Emergency Fallback (Nuclear)
+Use ONLY if disk is full or Docker is corrupted.
 ```bash
 ./scripts/deploy_production.sh backend nuclear
 ```
-
-#### What the Nuclear Script Does (In Order)
-1. `docker compose down` - Stop containers
-2. `docker system prune -af` - Clear all caches (CRITICAL for disk space)
-3. `git pull origin main` - Fetch latest code
-4. `docker compose up -d --build --force-recreate` - Fresh rebuild
-5. `sleep 10 && docker ps` - Health check
 
 #### Post-Deployment Verification
 ```bash

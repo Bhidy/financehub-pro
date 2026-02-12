@@ -79,6 +79,7 @@ async def handle_compare_stocks(
         if "." not in symbol:
              # Add market suffixes based on common patterns
              candidates.append(f"{symbol}.CA") # Egypt
+             candidates.append(f"{symbol}.SE") # Saudi
         
         row = None
         found_symbol = symbol
@@ -91,16 +92,15 @@ async def handle_compare_stocks(
                         pe_ratio, pb_ratio, dividend_yield, market_cap,
                         high_52w, low_52w, beta, logo_url
                     FROM market_tickers
-                    WHERE symbol = $1 AND market_code = 'EGX'
+                    WHERE symbol = $1
                 """, cand)
              if row:
                  found_symbol = cand
                  break
         
         if not row:
-            # STRICT EGX FILTER: If not found in EGX, skip it.
-            # This prevents Saudi (TDWL) stocks from leaking in if they share a ticker.
-            print(f"[COMPARE] Skipped non-EGX or unknown symbol: {symbol}")
+            # Skip if not found
+            print(f"[COMPARE] Skipped unknown symbol: {symbol}")
             continue
         
         # Update symbol for subsequent queries to match the valid DB ticker

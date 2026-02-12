@@ -428,10 +428,12 @@ export function useAIChat(config?: {
                             meta: {
                                 intent: meta.intent || "UNKNOWN",
                                 confidence: meta.confidence || 1.0,
-                                entities: {}, // Not fully preserved in simple migration
+                                entities: {},
                                 latency_ms: 0,
                                 cached: true
-                            }
+                            },
+                            // CRITICAL: Spread all other top-level fields (structured_narrative, comparison_table, etc.)
+                            ...meta
                         } as ChatResponse;
                     }
                 } catch (e) {

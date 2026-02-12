@@ -24,16 +24,9 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    // CRITICAL: Detect if returning to startamarkets.com which uses clean URLs
-    const isCleanDomain = returnOrigin?.includes("startamarkets.com") ?? false;
-
-    // Clean domains use "/" for home, others use "/mobile-ai-analyst"
-    const successRedirect = isMobile
-        ? (isCleanDomain ? "/" : "/mobile-ai-analyst")
-        : "/ai-analyst";
-    const loginRedirect = isMobile
-        ? (isCleanDomain ? "/login" : "/mobile-ai-analyst/login")
-        : "/login";
+    // Unified Routing: Redirect always to root paths
+    const successRedirect = "/";
+    const loginRedirect = "/login";
 
     // Handle errors from Google
     if (error) {

@@ -1,33 +1,33 @@
 ---
-description: How to deploy the backend to Hetzner production safely (Nuclear Option).
+description: How to deploy the backend to Hetzner production using the Smart Deployment protocol.
 ---
 
-# Deploy Backend to Hetzner (Immutable Strategy)
+# Deploy Backend to Hetzner (Smart Strategy)
 
-This workflow enforces the "Nuclear" immutable deployment strategy to prevent state drift and caching issues.
+This workflow uses the "Smart Deployment" protocol (`scripts/deploy_smart.sh`) to safely and quickly update the backend service.
 
 ## 1. Prerequisites
 - SSH Access to Hetzner (Root)
-- `scripts/restore_production.exp` exists locally
+- `scripts/deploy_smart.sh` exists locally
+- You have committed your changes (the script pushes to git)
 
 ## 2. Execute Deployment
-Run the automated expect script which handles:
-- Stopping all containers
-- Pruning Docker system (images, volumes, networks)
-- Pulling fresh code
-- Rebuilding with `CACHEBUST` (CPU-only PyTorch)
-- Restarting services (Backend + Caddy)
+Run the automated smart deployment script which handles:
+- Pushing local changes to GitHub
+- SSHing into the server
+- Pulling the latest code
+- Rebuilding only changed layers
+- Rolling update of the `backend` service
 
 ```bash
 # Wait 10s before auto-running to allow user to check args
-# This script is the MANDATORY fix for "stale code" or "false success" deployments.
-./scripts/restore_production.exp 46.224.223.172 'StartaProd2026!'
+./scripts/deploy_smart.sh
 ```
 // turbo-all
 
 ## 3. Verify Deployment
-After the script completes, verify SSL and Logic.
+After the script completes, verify SSL and Logic using the 7-layer verification script.
 
 ```bash
-python3 scripts/verify_full_system.py
+python3 scripts/verify_live_7layer.py
 ```

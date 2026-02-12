@@ -40,7 +40,7 @@ import { MethodologyCard } from "./MethodologyCard";
 import { HiddenGemCard } from "./HiddenGemCard";
 import { IndexCompositionCard } from "./IndexCompositionCard";
 import { DisclaimerCard } from "./DisclaimerCard";
-import { translations } from "@/app/mobile-ai-analyst/translations";
+import { translations } from "@/components/chatbot/translations";
 
 // ============================================================
 // Stock Header Card

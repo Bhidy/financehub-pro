@@ -60,13 +60,52 @@ async def handle_compare_stocks(
     """
     Handle COMPARE_STOCKS intent.
     """
-    if not symbols or len(symbols) < 2:
+    # AUTO-PEER LOGIC: If only 1 symbol, find a competitor in same sector
+    if not symbols:
         return {
             'success': False,
             'error': 'insufficient_symbols',
-            'message': "Please specify two stocks to compare" if language == 'en' else "يرجى تحديد سهمين للمقارنة"
+            'message': "Please specify a stock to compare" if language == 'en' else "يرجى تحديد سهم للمقارنة"
         }
-    
+        
+    if len(symbols) == 1:
+        # Fetch sector of the first symbol
+        first_symbol = symbols[0]
+        # Normalize first
+        candidates = [first_symbol]
+        if "." not in first_symbol: candidates.append(f"{first_symbol}.CA")
+        
+        sector_row = None
+        for cand in candidates:
+             sector_row = await conn.fetchrow("SELECT sector_name, market_code FROM market_tickers WHERE symbol = $1", cand)
+             if sector_row:
+                 first_symbol = cand # Use correct symbol
+                 break
+        
+        if sector_row and sector_row['sector_name']:
+            # Find largest competitor in same sector (excluding self)
+            peer_row = await conn.fetchrow("""
+                SELECT symbol FROM market_tickers 
+                WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
+                ORDER BY market_cap DESC LIMIT 1
+            """, sector_row['sector_name'], first_symbol, sector_row['market_code'])
+            
+            if peer_row:
+                symbols.append(peer_row['symbol'])
+                # Append to list so loop below processes both
+            else:
+                 return {
+                    'success': False,
+                    'error': 'no_peers_found',
+                    'message': f"No competitors found for {first_symbol}" if language == 'en' else f"لا يوجد منافسين لـ {first_symbol}"
+                }
+        else:
+             return {
+                'success': False,
+                'error': 'symbol_not_found',
+                'message': f"Could not find stock {first_symbol}" if language == 'en' else f"لم يتم العثور على السهم {first_symbol}"
+            }
+
     symbols = symbols[:2]
     
     # 1. Fetch Fundamental Data (Smart Metrics)
@@ -79,7 +118,7 @@ async def handle_compare_stocks(
         if "." not in symbol:
              # Add market suffixes based on common patterns
              candidates.append(f"{symbol}.CA") # Egypt
-             candidates.append(f"{symbol}.SE") # Saudi
+             # candidates.append(f"{symbol}.SE") # Saudi - DISABLED per user request (EGX Only)
         
         row = None
         found_symbol = symbol

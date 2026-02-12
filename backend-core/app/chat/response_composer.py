@@ -627,7 +627,13 @@ class ResponseComposer:
         elif intent in [
             Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
             Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
-            Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS
+            Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS, Intent.STOCK_PRICE,
+            # Expanded List for 100% Coverage
+            Intent.SCREENER_PE, Intent.SCREENER_DEEP, Intent.SCREENER_GROWTH, 
+            Intent.SCREENER_VALUE, Intent.SCREENER_SAFETY, Intent.SCREENER_INCOME,
+            Intent.MARKET_STATUS, Intent.MARKET_SUMMARY, Intent.MARKET_MOST_ACTIVE,
+            Intent.HIDDEN_GEMS, Intent.INDEX_COMPOSITION, Intent.TOP_GAINERS, Intent.TOP_LOSERS,
+            Intent.STOCK_STAT, Intent.TECHNICAL_INDICATORS, Intent.MACRO_SCORE
         ]:
             insight = cls.get_key_insight(language=language, sentiment=sentiment, user_level=user_level)
             parts.append("\n\n" + insight)

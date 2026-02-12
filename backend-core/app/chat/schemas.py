@@ -383,6 +383,17 @@ class StructuredNarrative(BaseModel):
     follow_up_prompt: Optional[str] = Field(None, description="Layer 7: Suggested next question")
 
 
+class ResponseMeta(BaseModel):
+    """Metadata for the chat response."""
+    intent: str
+    confidence: float
+    entities: Dict[str, Any] = Field(default_factory=dict)
+    latency_ms: int = 0
+    error: Optional[str] = None
+    authenticated: bool = False
+    auth_debug: Optional[Dict[str, Any]] = None
+
+
 class ChatResponse(BaseModel):
     """Full chat response with structured components for premium UI."""
     # Core text layers

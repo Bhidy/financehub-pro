@@ -1466,6 +1466,11 @@ class ChatService:
             if not conversational_text and handler_conversational_text:
                 conversational_text = handler_conversational_text
 
+            # CRITICAL FIX: If handler returns error message but no conversational_text, 
+            # promote the message so ResponseComposer can wrap it nicely (e.g. "Sorry, I couldn't find...")
+            if not conversational_text and result_data.get('message') and not result_data.get('success', True):
+                conversational_text = result_data.get('message')
+
             # -------------------------------------------------------------
             # PHASE 3: 3-LAYER RESPONSE COMPOSER (World-Class Framework)
             # -------------------------------------------------------------
@@ -1507,24 +1512,21 @@ class ChatService:
                     should_wrap = (not safe_is_deep_dive) or is_failure
                     
                     # Force opening logic
-                    # We need 'force_human_opening' from above block. If undefined, default to False.
-                    # But for errors, we might WANT to force opening like "Got it, Mohamed..."
-                    safe_force_opening = locals().get('force_human_opening', False)
-                    # If failure, force opening to acknowledge the user
-                    if is_failure:
-                        safe_force_opening = True  # "Got it, Mohamed. I couldn't find..."
-                    
-                    composer = get_response_composer()
-                    full_response, _, opening_category = composer.compose_premium_response(
+                    # 4. Compose Full Response
+                    full_text, structured, opening_category = ResponseComposer.compose_premium_response(
                         core_narrative=conversational_text,
                         language=language,
                         intent=intent,
                         user_name=real_user_name,
-                        last_opening_used=last_opening,
-                        shown_card_types=card_types,
-                        include_opening=safe_force_opening if should_wrap else False,
-                        include_guidance=True if should_wrap else False, 
-                        force_opening=safe_force_opening if should_wrap else False
+                        is_follow_up=(is_returning_user and not is_new_session) or intent == Intent.FOLLOW_UP,
+                        follow_up_type='continuation', # Default
+                        active_symbol=actual_symbol,
+                        sentiment=sentiment,
+                        include_risk_warning=include_risk,
+                        risk_type=risk_type,
+                        shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])],
+                        detected_insight=thought_points[0] if thought_points else None,
+                        user_level=user_level # Phase 4
                     )
                     
                     # Update the conversational text with composed response
@@ -1876,7 +1878,13 @@ class ChatService:
             if not handler_key_insight and intent in [
                 Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
                 Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
-                Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS, Intent.STOCK_PRICE
+                Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS, Intent.STOCK_PRICE,
+                # Expanded List for 100% Coverage (Phase 8 Fix)
+                Intent.SCREENER_PE, Intent.SCREENER_DEEP, Intent.SCREENER_GROWTH, 
+                Intent.SCREENER_VALUE, Intent.SCREENER_SAFETY, Intent.SCREENER_INCOME,
+                Intent.MARKET_STATUS, Intent.MARKET_SUMMARY, Intent.MARKET_MOST_ACTIVE,
+                Intent.HIDDEN_GEMS, Intent.INDEX_COMPOSITION, Intent.TOP_GAINERS, Intent.TOP_LOSERS,
+                Intent.STOCK_STAT, Intent.TECHNICAL_INDICATORS, Intent.MACRO_SCORE
             ]:
                 # Generate key insight based on sentiment
                 from .response_composer import ResponseComposer
@@ -1940,6 +1948,11 @@ class ChatService:
             
             # ------------------------------------------------------------------
             
+            # CRITICAL FIX: Ensure 7-Layer Key Insight overrides default/regex if present
+            if 'structured' in locals() and structured and structured.key_insight:
+                handler_key_insight = structured.key_insight
+                print(f"[ChatService] 🎯 Using 7-Layer Key Insight: {handler_key_insight[:50]}...")
+
             response = self._build_response(
                 result_data, intent, confidence, entities, start_time, language,
                 conversational_text, fact_explanations, learning_section, handler_follow_up,

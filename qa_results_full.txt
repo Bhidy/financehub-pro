@@ -1,0 +1,132 @@
+================================================================================
+🔬 COMPREHENSIVE 7-LAYER QA TEST
+📅 2026-02-12 21:58:43
+🎯 Testing 30 queries against production API
+================================================================================
+
+[1/30] Testing: What is the price of COMI?... (en)
+  ✅ PERFECT | Layers: 4/7 | Intent: STOCK_PRICE
+
+[2/30] Testing: Analyze EFIH... (en)
+  ✅ PERFECT | Layers: 5/7 | Intent: STOCK_SNAPSHOT
+
+[3/30] Testing: Show me FWRY financials... (en)
+  ✅ PERFECT | Layers: 4/7 | Intent: FINANCIALS
+
+[4/30] Testing: Compare COMI and HRHO... (en)
+  ✅ PERFECT | Layers: 4/7 | Intent: COMPARE_STOCKS
+
+[5/30] Testing: What are the best value stocks?... (en)
+  ✅ PASS    | Layers: 3/7 | Intent: SCREENER_PE
+    ⚠️ top-level key_insight missing
+
+[6/30] Testing: Show me the market summary... (en)
+  ✅ PASS    | Layers: 4/7 | Intent: MARKET_STATUS
+    ⚠️ top-level key_insight missing
+
+[7/30] Testing: What is AMOC dividend history?... (en)
+  ✅ PASS    | Layers: 4/7 | Intent: DEFINE_TERM
+    ⚠️ top-level key_insight missing
+
+[8/30] Testing: Tell me about hidden gems in EGX... (en)
+  ✅ PASS    | Layers: 3/7 | Intent: HIDDEN_GEMS
+    ⚠️ top-level key_insight missing
+
+[9/30] Testing: What is EGX30 composition?... (en)
+  ✅ PASS    | Layers: 4/7 | Intent: INDEX_COMPOSITION
+    ⚠️ top-level key_insight missing
+
+[10/30] Testing: Show COMI technical indicators... (en)
+  ❌ FAIL    | Layers: 0/7 | Intent: UNKNOWN
+    ❌ structured_narrative is NULL
+    ❌ conversational_text is NULL
+    ⚠️ top-level key_insight missing
+
+[11/30] Testing: What is SWDY PE ratio?... (en)
+  ✅ PASS    | Layers: 4/7 | Intent: STOCK_STAT
+    ⚠️ top-level key_insight missing
+
+[12/30] Testing: Give me ORWE analysis... (en)
+  ✅ PERFECT | Layers: 4/7 | Intent: STOCK_SNAPSHOT
+
+[13/30] Testing: What is the macro outlook for Egypt?... (en)
+  ✅ PASS    | Layers: 3/7 | Intent: MACRO_SCORE
+    ⚠️ top-level key_insight missing
+
+[14/30] Testing: Show me top gainers today... (en)
+  ✅ PASS    | Layers: 3/7 | Intent: TOP_GAINERS
+    ⚠️ top-level key_insight missing
+
+[15/30] Testing: Analyze CLHO stock... (en)
+  ✅ PERFECT | Layers: 4/7 | Intent: STOCK_SNAPSHOT
+
+[16/30] Testing: ايه سعر سهم كومي؟... (ar)
+  ✅ PERFECT | Layers: 4/7 | Intent: STOCK_PRICE
+
+[17/30] Testing: حلل سهم فوري... (ar)
+  ✅ PERFECT | Layers: 3/7 | Intent: STOCK_PRICE
+
+[18/30] Testing: قارن بين COMI و HRHO... (ar)
+  ✅ PERFECT | Layers: 4/7 | Intent: COMPARE_STOCKS
+
+[19/30] Testing: ايه أفضل أسهم القيمة؟... (ar)
+  ✅ PASS    | Layers: 3/7 | Intent: FIN_CASH
+    ⚠️ top-level key_insight missing
+
+[20/30] Testing: ملخص السوق... (ar)
+  ✅ PASS    | Layers: 4/7 | Intent: MARKET_STATUS
+    ⚠️ top-level key_insight missing
+
+[21/30] Testing: ايه توزيعات أرباح AMOC؟... (ar)
+  ✅ PASS    | Layers: 4/7 | Intent: SECTOR_STOCKS
+    ⚠️ top-level key_insight missing
+
+[22/30] Testing: الأسهم المخفية في البورصة... (ar)
+  ✅ PASS    | Layers: 3/7 | Intent: SECTOR_STOCKS
+    ⚠️ top-level key_insight missing
+
+[23/30] Testing: تركيبة مؤشر EGX30... (ar)
+  ✅ PASS    | Layers: 3/7 | Intent: TOP_LOSERS
+    ⚠️ top-level key_insight missing
+
+[24/30] Testing: المؤشرات الفنية لسهم COMI... (ar)
+  ✅ PASS    | Layers: 3/7 | Intent: MARKET_STATUS
+    ⚠️ top-level key_insight missing
+
+[25/30] Testing: تحليل سهم EFIH... (ar)
+  ✅ PASS    | Layers: 4/7 | Intent: GRATITUDE
+    ⚠️ top-level key_insight missing
+
+[26/30] Testing: ايه النظرة الكلية لمصر؟... (ar)
+  ✅ PASS    | Layers: 3/7 | Intent: SECTOR_STOCKS
+    ⚠️ top-level key_insight missing
+
+[27/30] Testing: أعلى الأسهم ارتفاعاً اليوم... (ar)
+  ✅ PASS    | Layers: 3/7 | Intent: TOP_GAINERS
+    ⚠️ top-level key_insight missing
+
+[28/30] Testing: بيانات SWDY المالية... (ar)
+  ✅ PERFECT | Layers: 3/7 | Intent: STOCK_PRICE
+
+[29/30] Testing: حلل سهم CLHO... (ar)
+  ✅ PERFECT | Layers: 4/7 | Intent: STOCK_SNAPSHOT
+
+[30/30] Testing: ايه سهم أوراسكوم للتنمية؟... (ar)
+  ✅ PERFECT | Layers: 4/7 | Intent: STOCK_PRICE
+
+================================================================================
+📊 QA SUMMARY
+================================================================================
+  Total Tests:  30
+  ✅ PERFECT:   12
+  ✅ PASS:      17
+  ❌ FAIL:      1
+  Pass Rate:    96.7%
+  Avg Layers:   3.6/7
+  EN Pass Rate: 93.3% (14/15)
+  AR Pass Rate: 100.0% (15/15)
+
+❌ FAILED QUERIES:
+  [10] Show COMI technical indicators... | ❌ structured_narrative is NULL, ❌ conversational_text is NULL, ⚠️ top-level key_insight missing
+
+================================================================================

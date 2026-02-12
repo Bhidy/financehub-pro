@@ -1115,6 +1115,7 @@ class ChatService:
             fact_explanations = None
             learning_section = None
             follow_up_prompt = None
+            thought_points = None
             
             # Fetch real user name for personalization (Moved up for global scope)
             real_user_name = await self._get_user_name(user_id)
@@ -1847,7 +1848,8 @@ class ChatService:
                     sentiment=sentiment,
                     include_risk_warning=include_risk,
                     risk_type=risk_type,
-                    shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])]
+                    shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])],
+                    detected_insight=thought_points[0] if thought_points else None
                 )
                 
                 # Inject Follow-up Prompt into Structured Narrative

@@ -503,7 +503,6 @@ class ResponseComposer:
     def get_key_insight(
         cls,
         language: str,
-        language: str,
         sentiment: str = "neutral",
         user_level: str = "INTERMEDIATE"
     ) -> str:

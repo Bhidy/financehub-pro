@@ -245,6 +245,11 @@ class LLMExplainerService:
         f"المستخدم: {user_name}\n"
         f"البيانات: {card_context}\n\n"
         f"هام جداً: لا تستخدم كلمة 'سردية' أو أقواس فارغة (). ابدأ التحليل مباشرة.\n"
+        f"مطلوب: قبل كتابة الرد، قم بتحليل البيانات وتحديد التوجه في بلوك خاص:\n"
+        f"[THOUGHT_PROCESS]\n"
+        f"تحليل سريع: (مثال: السهم مقيم بأقل من قيمته، النمو قوي...)\n"
+        f"التوجه: (إيجابي/سلبي)\n"
+        f"[/THOUGHT_PROCESS]\n"
     )        
         else:
             # ============================================================
@@ -285,6 +290,11 @@ class LLMExplainerService:
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"MANDATORY STRUCTURE (Protected UI Elements)\n"
                 f"═══════════════════════════════════════════════════════════════\n"
+                f"MANDATORY THINKING STEP (HIDDEN):\n"\
+                f"Before writing the response, you MUST analyze the data in a [THOUGHT_PROCESS] block.\n"\
+                f"Identify the key signal, decide the thesis (Bull/Bear), and plan the narrative.\n"\
+                f"Example: [THOUGHT_PROCESS] PE is 4x (Undervalued). Growth is 20%. Thesis: Strong Buy. [/THOUGHT_PROCESS]\n\n"\
+                \
                 f"You MUST use these tags. The App depends on them to render cards:\n\n"
                 f"1. **Narrative**:\n"
                 f"   - Para 1: Executive Summary / Thesis.\n"

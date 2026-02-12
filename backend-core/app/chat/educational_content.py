@@ -21,7 +21,7 @@ FINANCIAL_TERMS = {
         "formula": "ROE = Net Income / Shareholders' Equity",
         "example": {
             "title": "Egyptian Context Example",
-            "text": "JUFO has 38.6% ROE - meaning for every EGP 100 of equity, it generates EGP 38.60 in annual profit. This is exceptional by EGX standards where 15-20% is considered good."
+            "text": "Company A has 38.6% ROE - meaning for every EGP 100 of equity, it generates EGP 38.60 in annual profit. This is exceptional by EGX standards where 15-20% is considered good."
         },
         "caveats": [
             "High leverage can artificially inflate ROE (debt substitutes equity)",

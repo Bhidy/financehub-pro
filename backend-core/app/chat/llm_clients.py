@@ -33,72 +33,22 @@ class LLMProvider:
 
 # Provider configurations
 def get_providers() -> List[LLMProvider]:
-    """Get all configured providers in priority order."""
+    """Get all configured providers in priority order.
+    
+    SIMPLIFIED: Claude (Anthropic) is the ONLY provider.
+    User has paid unlimited Claude subscription - no need for free-tier fallbacks.
+    This ensures consistent, high-quality financial analysis.
+    """
     providers = []
     
-    # Priority 1: Claude (Anthropic) - Most intelligent, best for financial analysis
+    # ONLY PROVIDER: Claude (Anthropic) - Paid unlimited subscription
     if anthropic_key := settings.ANTHROPIC_API_KEY:
         providers.append(LLMProvider(
             name="anthropic",
             base_url="https://api.anthropic.com/v1",
             api_key=anthropic_key,
             models=["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022"],
-            timeout=8.0
-        ))
-    
-    # Priority 2: Groq (fastest inference)
-    if groq_key := settings.GROQ_API_KEY:
-        providers.append(LLMProvider(
-            name="groq",
-            base_url="https://api.groq.com/openai/v1",
-            api_key=groq_key,
-            models=["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama3-8b-8192"],
-            timeout=5.0
-        ))
-    
-    # Priority 3: Cerebras (generous free tier: 14,400 RPD)
-    # Note: These are Optional in settings, so check if they exist
-    cerebras_key = getattr(settings, "CEREBRAS_API_KEY", os.environ.get("CEREBRAS_API_KEY"))
-    if cerebras_key:
-        providers.append(LLMProvider(
-            name="cerebras",
-            base_url="https://api.cerebras.ai/v1",
-            api_key=cerebras_key,
-            models=["llama3.1-8b"],
-            timeout=8.0
-        ))
-    
-    # Priority 4: Mistral (1B tokens/month free)
-    mistral_key = getattr(settings, "MISTRAL_API_KEY", os.environ.get("MISTRAL_API_KEY"))
-    if mistral_key:
-        providers.append(LLMProvider(
-            name="mistral",
-            base_url="https://api.mistral.ai/v1",
-            api_key=mistral_key,
-            models=["mistral-small-latest", "open-mistral-7b"],
-            timeout=8.0
-        ))
-    
-    # Priority 5: Together AI ($25 free credits)
-    together_key = getattr(settings, "TOGETHER_API_KEY", os.environ.get("TOGETHER_API_KEY"))
-    if together_key:
-        providers.append(LLMProvider(
-            name="together",
-            base_url="https://api.together.xyz/v1",
-            api_key=together_key,
-            models=["meta-llama/Llama-3.2-3B-Instruct-Turbo", "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"],
-            timeout=10.0
-        ))
-    
-    # Priority 6: OpenRouter (50 RPD free)
-    openrouter_key = settings.OPENROUTER_API_KEY 
-    if openrouter_key:
-        providers.append(LLMProvider(
-            name="openrouter",
-            base_url="https://openrouter.ai/api/v1",
-            api_key=openrouter_key,
-            models=["meta-llama/llama-3.2-3b-instruct:free", "google/gemma-2-9b-it:free"],
-            timeout=10.0
+            timeout=10.0  # Generous timeout for quality responses
         ))
     
     return providers

@@ -55,7 +55,7 @@ export default function GoogleLoginButton({
 
             // CRITICAL: startamarkets.com is ALWAYS a mobile-only domain
             const isStartaDomain = hostname === 'startamarkets.com' || hostname === 'www.startamarkets.com';
-            const isMobileFlow = isMobile ?? (isStartaDomain || currentPath.includes("/mobile-ai-analyst"));
+            const isMobileFlow = isMobile ?? isStartaDomain;
 
             // 1. ENTERPRISE FIX: Use internal Next.js Proxy to avoid CORS/Network issues
             // This calls our local route /api/auth/google/url/route.ts service-side

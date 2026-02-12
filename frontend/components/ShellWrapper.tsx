@@ -10,10 +10,12 @@ interface ShellWrapperProps {
 
 // Routes that should be completely isolated (no sidebar, no search)
 // Uses prefix matching for nested routes
-const ISOLATED_ROUTE_PREFIXES = ["/mobile-ai-analyst"];
+// Routes that should be completely isolated (no sidebar, no search)
+// Uses prefix matching for nested routes
+const ISOLATED_ROUTE_PREFIXES: string[] = [];
 
 // Exact paths that are isolated (including root for mobile domains)
-const ISOLATED_EXACT_PATHS = ["/login", "/register", "/forgot-password", "/setting", "/settings", "/Home", "/home"];
+const ISOLATED_EXACT_PATHS = ["/", "/login", "/register", "/forgot-password", "/setting", "/settings", "/Home", "/home"];
 
 // Domains that should always show mobile-only experience (no sidebar)
 const MOBILE_ONLY_DOMAINS = ["startamarkets.com", "www.startamarkets.com"];

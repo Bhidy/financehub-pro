@@ -1247,19 +1247,19 @@ class ChatService:
                         'financial' in str(intent.value).lower()
                     )
 
-                    # ENTERPRISE RULE: NEVER show greeting in ongoing conversation unless forced
+                    # ENTERPRISE GREETING LOGIC (Chief Expert Standard)
+                    # 1. New Session: ALWAYS greet (Human Opening), regardless of intent.
+                    # 2. Ongoing: NEVER greet (Keep flow).
+                    
                     final_allow_greeting = False
                     force_human_opening = False
                     
                     if is_new_session:
-                        # First message of session - ALWAYS show greeting unless deep dive
-                        final_allow_greeting = not is_deep_dive
-                        if is_deep_dive: print(f"[ChatService] 🚫 Suppressing greeting for Deep Dive")
-                        else: print(f"[ChatService] 👋 Allowing greeting: New session")
+                        final_allow_greeting = True
+                        logger.info(f"[ChatService] 👋 Allowing greeting: New session")
                     else:
-                        # Returning user - force human opening ONLY if NOT deep dive
-                        force_human_opening = not is_deep_dive
-                        if not is_deep_dive: print(f"[ChatService] 💬 Force human opening: Returning user")
+                        force_human_opening = False
+                        logger.info(f"[ChatService] 💬 Suppressing greeting: Returning user")
                     
                     # DYNAMIC TOKEN LIMIT: Increase for deep dives
                     explainer.MAX_TOKENS = 1000 if is_deep_dive else 400
@@ -1423,28 +1423,10 @@ class ChatService:
                     # -------------------------------------------------------------
                     # Even if the LLM hallucinates a greeting, we physically rip it out.
                     # Run this if we explicitly disallowed greetings.
-                    if (not final_allow_greeting) and conversational_text:
-                        import re
-                        # Patterns to strip: "Welcome back [Name] .", "Welcome [Name] .", "Hello .", "Hi ."
-                        # Updated to handle Markdown bolding/italics and whitespace
-                        # Added patterns for secondary filler sentences ("I'm Starta", "I'll help", "Ready to")
-                        patterns = [
-                            r"^[\s\W]*(Welcome back|Welcome|Hello|Hi|Greetings).*?[\.\!\?]",
-                            r"^[\s\W]*(I am|I'm|I’m)\s+(Starta|here|ready|happy).*?[\.\!\?]",
-                            r"^[\s\W]*(I will|I’ll|I'll)\s+(help|guide|assist).*?[\.\!\?]",
-                            r"^[\s\W]*(Ready to|Let's|Let’s)\s+(continue|explore|analyze|start).*?[\.\!\?]"
-                        ]
-                        
-                        original_text = conversational_text
-                        prev_text = None
-                        # Loop until no more changes (to strip consecutive repetitive sentences)
-                        while prev_text != conversational_text:
-                            prev_text = conversational_text
-                            for pattern in patterns:
-                                conversational_text = re.sub(pattern, "", conversational_text, flags=re.IGNORECASE | re.MULTILINE).strip()
-                            
-                        if original_text != conversational_text:
-                            print(f"[ChatService] ☢️ NUCLEAR: Stripped greeting from '{original_text[:20]}...' -> '{conversational_text[:20]}...'")
+                    # 4. (DISABLED) NUCLEAR REGEX FILTER
+                    # We disabled strict stripping to ensure "Welcome" messages (Layer 1) are preserved
+                    # for new sessions.
+                    pass
 
                     # 2. Learning Section (Educational bullet points) - DISABLED PER USER REQUEST
                     # learning_section = handler_learning_section if isinstance(handler_learning_section, dict) else None
@@ -1943,8 +1925,9 @@ class ChatService:
                 )
                 
                 # Inject Follow-up Prompt into Structured Narrative
-                if structured and follow_up_prompt:
-                    structured.follow_up_prompt = follow_up_prompt
+                # PRIORITY FIX: Use handler's prompt (specific) if available, else generic
+                if structured:
+                    structured.follow_up_prompt = handler_follow_up or follow_up_prompt
                 
                 convo_logger = logging.getLogger("ChatService")
                 convo_logger.info(f"✅ 8-Layer Assembly Complete. Length: {len(full_text)}")

@@ -642,12 +642,19 @@ class ResponseComposer:
         # Combine for legacy text (Legacy clients get a coherent paragraph)
         full_response_text = "".join(parts) if parts else core_narrative
         
+        # Ensure core_narrative always has content (resilience)
+        safe_core = core_narrative or (
+            "Here is the analysis based on the latest available data."
+            if language == 'en' else
+            "إليك التحليل بناءً على أحدث البيانات المتاحة."
+        )
+        
         # Construct Structured Object (The 7-Layer Payload)
         structured_narrative = StructuredNarrative(
             personal_greeting=struct_greeting,
             context_bridge=struct_bridge,
             human_opening=struct_opening,
-            core_narrative=core_narrative,
+            core_narrative=safe_core,
             key_insight=struct_insight,
             risk_warning=struct_warning,
             follow_up_prompt=None # Handled in chat_service

@@ -16,7 +16,7 @@ Builds ultra-premium, dynamic responses using 8 layers:
 
 import random
 from typing import Optional, List, Dict, Tuple
-from .schemas import Intent, CardType
+from .schemas import Intent, CardType, StructuredNarrative
 
 
 # ============================================================================

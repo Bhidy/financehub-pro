@@ -1270,7 +1270,7 @@ class ChatService:
                         cards = result_data.get('cards', [])
                         should_greet = final_allow_greeting # Use the determined greeting flag
                         conversational_text = await explainer.generate_narrative(
-                            query=message_text,
+                            query=message,
                             intent=intent,
                             data=cards,
                             language=language,

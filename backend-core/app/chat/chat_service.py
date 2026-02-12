@@ -1428,7 +1428,7 @@ class ChatService:
                         safe_force_opening = True  # "Got it, Mohamed. I couldn't find..."
                     
                     composer = get_response_composer()
-                    full_response, opening_category = composer.compose_full_response(
+                    full_response, _, opening_category = composer.compose_premium_response(
                         core_narrative=conversational_text,
                         language=language,
                         intent=intent,
@@ -1821,18 +1821,23 @@ class ChatService:
                 # Otherwise, we let ResponseComposer decide (random or pure context)
                 
                 # 4. Compose Full Response
-                full_text, _ = ResponseComposer.compose_premium_response(
+                full_text, structured, _ = ResponseComposer.compose_premium_response(
                     core_narrative=conversational_text,
                     language=language,
                     intent=intent,
                     user_name=real_user_name,
                     is_follow_up=(is_returning_user and not is_new_session) or intent == Intent.FOLLOW_UP,
+                    follow_up_type='continuation', # Default
                     active_symbol=actual_symbol,
                     sentiment=sentiment,
                     include_risk_warning=include_risk,
                     risk_type=risk_type,
                     shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])]
                 )
+                
+                # Inject Follow-up Prompt into Structured Narrative
+                if structured and follow_up_prompt:
+                    structured.follow_up_prompt = follow_up_prompt
                 
                 convo_logger = logging.getLogger("ChatService")
                 convo_logger.info(f"✅ 8-Layer Assembly Complete. Length: {len(full_text)}")
@@ -1864,7 +1869,9 @@ class ChatService:
                 quantified_drivers=handler_quantified_drivers,
                 index_composition=handler_index_composition,
                 # NEW: Key Insight (8-Layer)
-                key_insight=handler_key_insight
+                key_insight=handler_key_insight,
+                # NEW: Structured Narrative
+                structured_narrative=structured if 'structured' in locals() else None
             )
             response = self._enforce_response_language(response, language, actual_symbol)
             
@@ -2415,7 +2422,9 @@ class ChatService:
         quantified_drivers: Optional['QuantifiedDriversCard'] = None,
         index_composition: Optional['IndexCompositionCard'] = None,
         # NEW: Key Insight (8-Layer)
-        key_insight: Optional[str] = None
+        key_insight: Optional[str] = None,
+        # NEW: 7-Layer Structured Narrative
+        structured_narrative: Optional[Any] = None
     ) -> ChatResponse:
         """Build the final ChatResponse with structured components."""
         
@@ -2529,6 +2538,7 @@ class ChatService:
             learning_section=learning_section,
             follow_up_prompt=follow_up_prompt,
             key_insight=key_insight,  # 🎯 NEW: Key Insight (8-Layer)
+            structured_narrative=structured_narrative, # 🏗️ NEW: 7-Layer Structure
             language=language,
             cards=cards,
             chart=chart,

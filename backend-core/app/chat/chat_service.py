@@ -1222,7 +1222,8 @@ class ChatService:
                             'bear': r"(?:\[BEAR_CASE\]|\*\*\[BEAR_CASE\]\*\*|\[BEAR CASE\]|BEAR CASE[:\n])",
                             'framework': r"(?:\[FRAMEWORK\]|\*\*\[FRAMEWORK\]\*\*|FRAMEWORK[:\n])",
                             'learning': r"(?:\[LEARNING\]|\*\*\[LEARNING\]\*\*|LEARNING[:\n])",
-                            'drivers': r"(?:\[QUANTIFIED_DRIVERS\]|QUANTIFIED DRIVERS[:\n])"
+                            'drivers': r"(?:\[QUANTIFIED_DRIVERS\]|QUANTIFIED DRIVERS[:\n])",
+                            'thought': r"(?:\[THOUGHT_PROCESS\]|\*\*\[THOUGHT_PROCESS\]\*\*|THOUGHT PROCESS[:\n])"
                         }
 
                         # Function to extract and clean
@@ -1261,6 +1262,18 @@ class ChatService:
                             new_text = text.replace(full_section_str, "").strip()
                             
                             return points, new_text
+
+                        # 0. Extract THOUGHT PROCESS (Hidden Reasoning)
+                        # We extract this first to remove it from the narrative
+                        thought_points, clean_text = extract_section(
+                            clean_text,
+                            patterns['thought'],
+                            [patterns['bull'], patterns['bear'], patterns['framework'], patterns['learning']]
+                        )
+                        if thought_points:
+                             # Just log it for now (Shadow Mode)
+                             logger.info(f"[CoT] 🧠 Hidden Reasoning: {thought_points}")
+                             # We could store this in the DB later for debugging
 
                         # 1. Extract BULL CASE (Stop at Bear, Framework, Learning or End)
                         bull_points, clean_text = extract_section(

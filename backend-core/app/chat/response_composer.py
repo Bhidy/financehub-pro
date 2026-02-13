@@ -668,11 +668,15 @@ class ResponseComposer:
         if core_narrative:
             parts.append(core_narrative)
         
-        # Layer ⑤ - Key Insight (Priority: Explicit > Sentiment-Generated)
+        # CRITICAL FIX: Prevent duplication. If Insight is shown as a CARD, do not append to TEXT.
+        # expanded to include my_framework (My Take) and cases, as they serve as the insight.
+        insight_in_cards = shown_card_types and any(ct in shown_card_types for ct in ['key_insight', 'insight', 'daily_insight', 'my_framework', 'bull_case', 'bear_case'])
+        
         if detected_insight:
             # Use the "Thought Process" derived insight if available
             struct_insight = detected_insight
-            parts.append("\n\n" + detected_insight)
+            if not insight_in_cards:
+                parts.append("\n\n" + detected_insight)
         elif intent in [
             Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
             Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
@@ -685,8 +689,9 @@ class ResponseComposer:
             Intent.STOCK_STAT, Intent.TECHNICAL_INDICATORS, Intent.MACRO_SCORE
         ]:
             insight = cls.get_key_insight(language=language, sentiment=sentiment, user_level=user_level)
-            parts.append("\n\n" + insight)
             struct_insight = insight
+            if not insight_in_cards:
+                parts.append("\n\n" + insight)
         
         # Layer ⑥ - Risk Warning (when appropriate)
         if include_risk_warning:

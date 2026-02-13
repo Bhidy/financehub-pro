@@ -711,15 +711,20 @@ class IntentRouter:
         # Handle follow-up queries
         if confidence < self.confidence_threshold and context:
             # Might be a follow-up
-            if context.get('last_symbol') and not entities.get('symbol'):
+            # CRITICAL FIX: Only classify as follow-up if NO new symbol is present.
+            # "What about COMI?" -> Symbol 'COMI' found -> NOT a follow-up (Start new context)
+            # "What about it?" -> No symbol -> Follow-up (Use context)
+            
+            # Check for potential ticker in text (Safety Net)
+            has_potential_ticker = False
+            import re
+            if re.search(r'\b[A-Z0-9]{3,5}\b', text, re.IGNORECASE):
+                has_potential_ticker = True
+                
+            if context.get('last_symbol') and not entities.get('symbol') and not has_potential_ticker:
                 entities['symbol'] = context['last_symbol']
                 best_intent = Intent.FOLLOW_UP
                 confidence = 0.5
-        
-        # Default to unknown if very low confidence
-        # Increased threshold to 0.4 to filter out weak keyword matches
-        if confidence < 0.4 and best_intent not in [Intent.HELP]:
-            best_intent = Intent.UNKNOWN
         
         return IntentResult(
             intent=best_intent,

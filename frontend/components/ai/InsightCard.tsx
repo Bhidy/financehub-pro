@@ -1,5 +1,4 @@
-import React from 'react';
-import { TrendingUp, AlertTriangle } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Info } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface InsightCardProps {
@@ -7,9 +6,9 @@ interface InsightCardProps {
         title?: string;
         points?: string[];  // Legacy 
         items?: string[];   // New backend format
-        variant?: 'bull' | 'bear';
+        variant?: 'bull' | 'bear' | 'info';
     };
-    variant_override?: 'bull' | 'bear';
+    variant_override?: 'bull' | 'bear' | 'info';
 }
 
 export function InsightCard({ data, variant_override }: InsightCardProps) {
@@ -18,26 +17,36 @@ export function InsightCard({ data, variant_override }: InsightCardProps) {
     // Determine variant from data or override
     const variant = variant_override || data.variant || 'bull';
     const isBull = variant === 'bull';
+    const isBear = variant === 'bear';
+    const isInfo = variant === 'info';
 
     // Styling constants (Strict Adherence to Mockup)
     const containerClasses = isBull
         ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/20"
-        : "bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-500/20";
+        : isBear
+            ? "bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-500/20"
+            : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-500/20";
 
     const titleColor = isBull
         ? "text-emerald-800 dark:text-emerald-200"
-        : "text-red-800 dark:text-red-200";
+        : isBear
+            ? "text-red-800 dark:text-red-200"
+            : "text-blue-800 dark:text-blue-200";
 
     const iconBg = isBull
         ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-        : "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400";
+        : isBear
+            ? "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400"
+            : "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400";
 
     const bulletColor = isBull
         ? "bg-emerald-500"
-        : "bg-red-500";
+        : isBear
+            ? "bg-red-500"
+            : "bg-blue-500";
 
-    const Icon = isBull ? TrendingUp : AlertTriangle;
-    const defaultTitle = isBull ? "Bull Case Analysis" : "Bear Case Risks";
+    const Icon = isBull ? TrendingUp : isBear ? AlertTriangle : Info;
+    const defaultTitle = isBull ? "Bull Case Analysis" : isBear ? "Bear Case Risks" : "Key Insights";
 
     return (
         <div className={clsx(

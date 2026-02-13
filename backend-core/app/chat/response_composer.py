@@ -341,7 +341,8 @@ class ResponseComposer:
         user_name: str = "Trader",
         last_opening_used: Optional[str] = None,
         use_name: bool = True,
-        force: bool = False  # NEW: Force opening (no random skip)
+        force: bool = False,  # NEW: Force opening (no random skip)
+        is_follow_up: bool = False  # Whether this is a follow-up query
     ) -> Tuple[Optional[str], Optional[str]]:
         """
         Get a human opening (Layer ①).
@@ -352,6 +353,7 @@ class ResponseComposer:
             last_opening_used: Last used category (to avoid repetition)
             use_name: Whether to use name-based openings
             force: If True, ALWAYS return an opening (no 50% skip)
+            is_follow_up: If True, use neutral openings only
         
         Returns:
             Tuple of (opening_text or None, category_used or None)
@@ -480,7 +482,8 @@ class ResponseComposer:
                 language=language,
                 user_name=user_name,
                 last_opening_used=last_opening_used,
-                force=force_opening  # Pass force flag
+                force=force_opening,  # Pass force flag
+                is_follow_up=False  # compose_full_response doesn't track follow-ups
             )
             if opening:
                 parts.append(opening)
@@ -642,7 +645,8 @@ class ResponseComposer:
                 language=language,
                 user_name=user_name,
                 last_opening_used=last_opening_used,
-                force=force_opening
+                force=force_opening,
+                is_follow_up=is_follow_up
             )
             if opening:
                 parts.append(opening)

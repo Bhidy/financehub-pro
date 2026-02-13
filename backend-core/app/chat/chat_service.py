@@ -995,8 +995,19 @@ class ChatService:
             symbol = entities.get('symbol')
             potential_symbols = extract_potential_symbols(routing_text)
             
-            # Candidate selection logic: Prefer extraction (better alias/stopword support)
-            candidate = potential_symbols[0] if potential_symbols else symbol
+            # CRITICAL FIX: Prefer Claude's entity symbol over regex extraction.
+            # The paraphraser introduces false positives (e.g. "Hal el 3a3ra fel COMI?" ->
+            # regex extracts HAL, FEL, COMI — but HAL/FEL are paraphraser artifacts, not stocks).
+            # Claude's classification is the authoritative symbol source.
+            if symbol and len(symbol) >= 3:
+                candidate = symbol  # Trust Claude's classification as primary
+                print(f"[ChatService] 🎯 Using Claude's entity symbol: '{candidate}' (from entities)")
+            elif potential_symbols:
+                candidate = potential_symbols[0]  # Fallback to regex extraction
+                print(f"[ChatService] 🔍 Using regex-extracted symbol: '{candidate}' (from {potential_symbols})")
+            else:
+                candidate = None
+                print(f"[ChatService] ⚠️ No symbol candidate found")
             
             # --- CRITICAL FIX FOR COMPARISON BUG ---
             # If intent is COMPARE_STOCKS, we must grab ALL potential symbols, not just the first one.

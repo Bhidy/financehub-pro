@@ -186,6 +186,9 @@ SYMBOL_STOPWORDS = {
     'info', 'data', 'quote', 'quotes', 'help', 'please', 'thank', 'thanks',
     # Pronouns & Common False Positives
     'its', 'this', 'that', 'these', 'those', 'are', 'was', 'has', 'had', 'have',
+    # Paraphraser Franco-Arabic artifacts (prevent false symbol extraction from slang translations)
+    'hal', 'fel', 'eih', 'ana', 'enta', 'elly', 'mesh', 'msh', 'kda', 'bas',
+    'leh', 'enta', 'shuf', 'analysis', 'ouz', 'aoz',
 }
 
 # Arabic stopwords for N-gram filtering

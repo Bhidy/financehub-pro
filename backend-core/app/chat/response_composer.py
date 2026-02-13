@@ -189,35 +189,38 @@ CONTEXT_BRIDGE_TEMPLATES = {
 KEY_INSIGHT_TEMPLATES = {
     "bullish": {
         "en": [
-            "🎯 **Key Insight**: The fundamentals suggest strength here.",
-            "🎯 **Takeaway**: Metrics point to a solid position.",
-            "🎯 **Bottom Line**: This looks financially healthy.",
+            "🎯 **Key Insight**: Trading at a significant discount to historical averages with improving fundamentals.",
+            "🎯 **Takeaway**: Quality business at a discounted valuation — the risk/reward skews positive.",
+            "🎯 **Bottom Line**: Metrics confirm financial strength — this one deserves a closer look.",
         ],
         "ar": [
-            "🎯 **النقطة الأساسية**: الأساسيات تشير لقوة.",
-            "🎯 **الخلاصة**: المؤشرات إيجابية.",
+            "🎯 **النقطة الأساسية**: يتداول بخصم كبير عن المتوسطات التاريخية مع تحسن الأساسيات.",
+            "🎯 **الخلاصة**: عمل عالي الجودة بتقييم مخفض — نسبة المخاطرة/العائد إيجابية.",
+            "🎯 **المحصلة**: المؤشرات تؤكد قوة مالية — يستحق نظرة أعمق.",
         ]
     },
     "bearish": {
         "en": [
-            "🎯 **Key Insight**: Caution warranted based on current metrics.",
-            "🎯 **Takeaway**: Some warning signs to monitor.",
-            "🎯 **Bottom Line**: Worth watching closely.",
+            "🎯 **Key Insight**: Valuation appears stretched relative to earnings power — caution warranted.",
+            "🎯 **Takeaway**: Multiple warning flags in the data — this requires careful monitoring.",
+            "🎯 **Bottom Line**: Risk indicators elevated — consider position sizing carefully.",
         ],
         "ar": [
-            "🎯 **النقطة الأساسية**: الحذر مطلوب.",
-            "🎯 **الخلاصة**: في علامات تحتاج متابعة.",
+            "🎯 **النقطة الأساسية**: التقييم يبدو مرتفعاً مقارنة بقوة الأرباح — الحذر مطلوب.",
+            "🎯 **الخلاصة**: عدة علامات تحذيرية في البيانات — يتطلب متابعة دقيقة.",
+            "🎯 **المحصلة**: مؤشرات المخاطر مرتفعة — ادرس حجم المركز بعناية.",
         ]
     },
     "neutral": {
         "en": [
-            "🎯 **Key Insight**: A balanced picture overall.",
-            "🎯 **Takeaway**: Mixed signals — dig deeper before deciding.",
-            "🎯 **Bottom Line**: Neither strongly bullish nor bearish.",
+            "🎯 **Key Insight**: Mixed signals — some metrics show strength while others flag caution.",
+            "🎯 **Takeaway**: Neither clearly overvalued nor undervalued — wait for a catalyst or dig deeper.",
+            "🎯 **Bottom Line**: The story here is nuanced — different angles tell different tales.",
         ],
         "ar": [
-            "🎯 **النقطة الأساسية**: الصورة متوازنة.",
-            "🎯 **الخلاصة**: إشارات مختلطة.",
+            "🎯 **النقطة الأساسية**: إشارات مختلطة — بعض المؤشرات قوية وأخرى تحذيرية.",
+            "🎯 **الخلاصة**: لا مبالغة في التقييم ولا تخفيض — انتظر محفزاً أو تعمق أكثر.",
+            "🎯 **المحصلة**: القصة هنا دقيقة — كل زاوية تحكي حكاية مختلفة.",
         ]
     }
 }
@@ -254,6 +257,46 @@ RISK_WARNING_TEMPLATES = {
         ],
         "ar": [
             "⚠️ *ملاحظة: التقييم يبدو مرتفع — تأكد من الأساسيات.*",
+        ]
+    },
+    "methodology_note": {
+        "en": [
+            "⚠️ *Methodology Note: This screen uses sector-specific valuation metrics. Banks and financials were evaluated using P/B, while consumer and industrial stocks used P/E. Always verify with individual company analysis.*",
+        ],
+        "ar": [
+            "⚠️ *ملاحظة منهجية: يستخدم هذا الفحص مقاييس تقييم خاصة بالقطاع. البنوك تم تقييمها بمضاعف القيمة الدفترية، بينما الشركات الاستهلاكية والصناعية بمكرر الربحية. تحقق دائماً من التحليل الفردي.*",
+        ]
+    },
+    "portfolio_note": {
+        "en": [
+            "⚠️ *Portfolio Note: No single metric tells the full story. Consider diversification, position sizing, and your personal risk tolerance before acting on any comparison.*",
+        ],
+        "ar": [
+            "⚠️ *ملاحظة المحفظة: لا يوجد مؤشر واحد يحكي القصة كاملة. فكر في التنويع وحجم المركز ومدى تحملك للمخاطر قبل اتخاذ قرار.*",
+        ]
+    },
+    "macro_note": {
+        "en": [
+            "⚠️ *Macro Note: Market timing is inherently uncertain. These factors provide a framework for thinking, not a crystal ball. Position sizes should reflect conviction level.*",
+        ],
+        "ar": [
+            "⚠️ *ملاحظة ماكرو: توقيت السوق غير مؤكد بطبيعته. هذه العوامل تقدم إطاراً للتفكير وليس كرة بلورية. حجم المراكز يجب أن يعكس مستوى القناعة.*",
+        ]
+    },
+    "educational_note": {
+        "en": [
+            "⚠️ *Educational Note: This explanation is simplified for clarity. Real-world application requires considering multiple factors simultaneously. Always cross-reference with company-specific context.*",
+        ],
+        "ar": [
+            "⚠️ *ملاحظة تعليمية: هذا الشرح مبسط للوضوح. التطبيق الفعلي يتطلب مراعاة عوامل متعددة في نفس الوقت. قارن دائماً مع سياق الشركة المحددة.*",
+        ]
+    },
+    "liquidity_warning": {
+        "en": [
+            "⚠️ *Liquidity Warning: Some of these names trade with limited daily volume. Entry and exit may impact price. Consider using limit orders.*",
+        ],
+        "ar": [
+            "⚠️ *تحذير سيولة: بعض هذه الأسهم يتم تداولها بحجم يومي محدود. الدخول والخروج قد يؤثر على السعر. فكر في استخدام أوامر محددة.*",
         ]
     }
 }

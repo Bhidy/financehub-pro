@@ -1311,6 +1311,8 @@ class ChatService:
                             'bull': r"(?:\[BULL_CASE\]|\*\*\[BULL_CASE\]\*\*|\[BULL CASE\]|BULL CASE[:\n])",
                             'bear': r"(?:\[BEAR_CASE\]|\*\*\[BEAR_CASE\]\*\*|\[BEAR CASE\]|BEAR CASE[:\n])",
                             'framework': r"(?:\[FRAMEWORK\]|\*\*\[FRAMEWORK\]\*\*|FRAMEWORK[:\n])",
+                            'my_framework': r"(?:\[MY_FRAMEWORK\]|\*\*\[MY_FRAMEWORK\]\*\*|MY FRAMEWORK[:\n])",
+                            'methodology': r"(?:\[METHODOLOGY\]|\*\*\[METHODOLOGY\]\*\*|METHODOLOGY[:\n])",
                             'learning': r"(?:\[LEARNING\]|\*\*\[LEARNING\]\*\*|LEARNING[:\n])",
                             'drivers': r"(?:\[QUANTIFIED_DRIVERS\]|QUANTIFIED DRIVERS[:\n])",
                             'thought': r"(?:\[THOUGHT_PROCESS\]|\*\*\[THOUGHT_PROCESS\]\*\*|THOUGHT PROCESS[:\n])"
@@ -1358,25 +1360,39 @@ class ChatService:
                         thought_points, clean_text = extract_section(
                             clean_text,
                             patterns['thought'],
-                            [patterns['bull'], patterns['bear'], patterns['framework'], patterns['learning']]
+                            [patterns['bull'], patterns['bear'], patterns['framework'], patterns['my_framework'], patterns['methodology'], patterns['learning']]
                         )
                         if thought_points:
                              # Just log it for now (Shadow Mode)
                              logger.info(f"[CoT] 🧠 Hidden Reasoning: {thought_points}")
                              # We could store this in the DB later for debugging
 
-                        # 1. Extract BULL CASE (Stop at Bear, Framework, Learning or End)
+                        # 1. Extract BULL CASE (Stop at Bear, Framework, My Framework, Methodology, Learning or End)
                         bull_points, clean_text = extract_section(
                             clean_text, 
                             patterns['bull'], 
-                            [patterns['bear'], patterns['framework'], patterns['learning']]
+                            [patterns['bear'], patterns['framework'], patterns['my_framework'], patterns['methodology'], patterns['learning']]
                         )
 
-                        # 2. Extract BEAR CASE (Stop at Framework, Learning or End)
+                        # 2. Extract BEAR CASE (Stop at Framework, My Framework, Methodology, Learning or End)
                         bear_points, clean_text = extract_section(
                             clean_text, 
                             patterns['bear'], 
-                            [patterns['framework'], patterns['learning'], patterns['drivers']]
+                            [patterns['framework'], patterns['my_framework'], patterns['methodology'], patterns['learning'], patterns['drivers']]
+                        )
+
+                        # 2.5 Extract MY_FRAMEWORK (Personal Analyst Interpretation)
+                        my_framework_points, clean_text = extract_section(
+                            clean_text,
+                            patterns['my_framework'],
+                            [patterns['methodology'], patterns['learning'], patterns['framework'], patterns['drivers']]
+                        )
+
+                        # 2.6 Extract METHODOLOGY (Screening Criteria)
+                        methodology_points, clean_text = extract_section(
+                            clean_text,
+                            patterns['methodology'],
+                            [patterns['my_framework'], patterns['learning'], patterns['framework'], patterns['drivers']]
                         )
 
                         # 3. Validation & Injection
@@ -1400,9 +1416,27 @@ class ChatService:
                                 "data": { "points": bear_points, "variant": "warning" }
                             })
 
+                        # 3.5 Inject MY_FRAMEWORK as a card
+                        if my_framework_points:
+                            logger.info(f"[ChatService] 🎯 Extracted {len(my_framework_points)} MY_FRAMEWORK points")
+                            result_data.setdefault('cards', []).append({
+                                "type": "my_framework",
+                                "title": "🎯 My Take" if language == 'en' else "🎯 رأيي",
+                                "data": { "points": my_framework_points, "variant": "info" }
+                            })
+                            
+                        # 3.6 Inject METHODOLOGY as a card
+                        if methodology_points:
+                            logger.info(f"[ChatService] 📋 Extracted {len(methodology_points)} METHODOLOGY points")
+                            result_data.setdefault('cards', []).append({
+                                "type": "methodology",
+                                "title": "📋 Screening Methodology" if language == 'en' else "📋 منهجية الفحص",
+                                "data": { "points": methodology_points, "variant": "neutral" }
+                            })
+
                         # 4. Final Text Cleanliness Check
                         # Remove any lingering empty tags or artifacts
-                        clean_text = re.sub(r"\[BULL_CASE\]|\[BEAR_CASE\]", "", clean_text).strip()
+                        clean_text = re.sub(r"\[BULL_CASE\]|\[BEAR_CASE\]|\[MY_FRAMEWORK\]|\[METHODOLOGY\]", "", clean_text).strip()
                         conversational_text = clean_text
 
                     # ... (Safety Fallback Logic) ...

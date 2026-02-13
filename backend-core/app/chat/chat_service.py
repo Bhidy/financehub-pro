@@ -2698,6 +2698,9 @@ class ChatService:
         # Prepare shown_card_types for deduplication logic
         shown_card_types = [c.type.value for c in cards]
         
+        # Extract symbol from entities
+        symbol = entities.get('symbol')
+        
         # Determine if this is a follow-up query based on intent
         is_follow_up = (intent == Intent.FOLLOW_UP)
 

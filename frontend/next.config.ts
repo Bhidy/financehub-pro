@@ -24,6 +24,20 @@ if (process.env.VERCEL) {
 }
 
 /** @type {import('next').NextConfig} */
+const LEGACY_HOME_REDIRECTS = [
+  {
+    source: '/home',
+    destination: '/',
+    permanent: true,
+  },
+  {
+    source: '/Home',
+    destination: '/',
+    permanent: true,
+  },
+];
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   // Output standalone build for Docker/Railway deployment
   // Output standalone build for Docker/Railway deployment
@@ -63,6 +77,9 @@ const nextConfig = {
   // Rewrites for custom domain
   // REMOVED: All routing is now handled by the root app/ directory
   // async rewrites() { ... }
+  async redirects() {
+    return LEGACY_HOME_REDIRECTS;
+  },
 
   // Headers for security
   async headers() {

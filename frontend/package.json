@@ -3,6 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "scripts": {
+    "prebuild": "npm run verify:routes",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -10,7 +11,8 @@
     "check-types": "tsc --noEmit",
     "format": "prettier --write .",
     "pull-env": "vercel env pull .env.local",
-    "verify": "npx tsx scripts/verify-prod.ts"
+    "verify": "npx tsx scripts/verify-prod.ts",
+    "verify:routes": "node scripts/verify-route-aliases.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

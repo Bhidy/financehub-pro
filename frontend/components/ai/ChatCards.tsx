@@ -2380,10 +2380,10 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             return <HelpCard data={card.data} onExampleClick={onExampleClick} language={language} />;
         case "ratios":
             return <RatiosCard title={card.title} data={card.data} language={language} />;
-        // Ultra Premium Deep Cards
         case "deep_health":
             return <DeepHealthCard data={card.data} language={language} />;
         case "deep_valuation":
+        case "valuation_score": // Added alias for backend compatibility
             return <DeepValuationCard data={card.data} language={language} />;
         case "deep_efficiency":
             return <DeepMetricsCard title={card.title} data={card.data} icon={<Zap className="text-blue-500" />} language={language} />;
@@ -2391,6 +2391,9 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             return <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} language={language} />;
         case "ownership":
             return <OwnershipCard title={card.title} data={card.data} language={language} />;
+        case "macro_context":
+        case "macro_score":
+            return <MacroScoreCard data={card.data} language={language} />;
         // Fund & Fair Value Cards (Enterprise)
         case "fund_nav":
             return <FundNavCard data={card.data} language={language} />;

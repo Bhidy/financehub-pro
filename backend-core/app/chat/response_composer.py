@@ -26,56 +26,62 @@ from .schemas import Intent, CardType, StructuredNarrative
 HUMAN_OPENINGS = {
     "acknowledgment": {
         "en": [
-            "Good question.",
-            "Let's take a clear look.",
-            "That's worth looking into.",
-            "Interesting choice.",
-            "Let me check that for you.",
+            "This is a critical question for understanding current market dynamics. Let's analyze the latest data to give you a clear, evidence-based answer.",
+            "That is a very relevant point to investigate given recent market movements. I have pulled the specific metrics needed to clarify the situation.",
+            "You've touched on a key factor that many investors are watching right now. Let's dive into the details to see what the numbers actually say.",
+            "It is important to look closely at this specific aspect of the stock. I will break down the relevant figures to help you see the full picture.",
+            "Let's examine this carefully, as the details often tell a different story than the headlines. Here is the data-driven analysis you need.",
         ],
         "ar": [
-            "سؤال ممتاز.",
-            "خلينا نشوف كويس.",
-            "ده يستاهل نتفحصه.",
-            "اختيار مهم.",
+            "هذا سؤال جوهري لفهم ديناميكيات السوق الحالية. دعنا نحلل أحدث البيانات لنعطيك إجابة واضحة مبنية على الحقائق.",
+            "هذه نقطة ممتازة للبحث فيها نظراً لتحركات السوق الأخيرة. لقد قمت بسحب المؤشرات المحددة لتوضيح الموقف بالكامل.",
+            "لقد لمست عاملاً رئيسياً يراقبه العديد من المستثمرين حالياً. دعنا نتعمق في التفاصيل لنرى ما تقوله الأرقام بالفعل.",
+            "من المهم جداً النظر بدقة في هذا الجانب المحدد من السهم. سأقوم بتفصيل الأرقام ذات الصلة لتكتمل لديك الصورة.",
+            "دعنا نفحص هذا الأمر بعناية، فالتفاصيل غالباً ما تروي قصة مختلفة عن العناوين. إليك التحليل المبني على البيانات.",
         ]
     },
     "acknowledgment_with_name": {
         "en": [
-            "Good question.",
-            "Alright, let's take a clear look.",
-            "This is a smart thing to check.",
-            "Got it. Let me show you.",
+            "That's an excellent point to raise, {name}. I've reviewed the latest live data to provide you with a comprehensive breakdown.",
+            "I'm glad you asked about this, {name}. Let's look at the underlying fundamentals together to validate your improved perspective.",
+            "You are asking the right questions, {name}. To give you the best answer, I have synthesized the key technical and fundamental indicators below.",
+            "Got it, {name}. I have analyzed the most recent market sessions to give you a precise answer to this specific inquiry.",
+            "This is a smart angle to explore, {name}. Let me walk you through the data so we can determine the best course of action together.",
         ],
         "ar": [
-            "سؤال ممتاز.",
-            "تمام، خلينا نشوف.",
-            "فهمتك. أوريك.",
+            "هذه نقطة ممتازة لطرحها يا {name}. لقد راجعت أحدث البيانات الحية لأقدم لك تحليلاً شاملاً وتفصيلياً.",
+            "سعيد أنك سألت عن هذا الأمر يا {name}. دعنا ننظر في الأساسيات الكامنة معاً للتحقق من هذه الزاوية المهمة.",
+            "أنت تسأل الأسئلة الصحيحة يا {name}. لكي أعطيك أفضل إجابة، قمت بدمج المؤشرات الفنية والأساسية الرئيسية أدناه.",
+            "فهمت قصدك يا {name}. لقد قمت بتحليل جلسات التداول الأخيرة لأعطيك إجابة دقيقة على هذا الاستفسار المحدد.",
+            "هذه زاوية ذكية للاستكشاف يا {name}. دعني أستعرض معك البيانات لنتمكن من تحديد أفضل مسار للعمل معاً.",
         ]
     },
     "affirmation": {
         "en": [
-            "You're asking the right question.",
-            "That's a sensible way to look at it.",
-            "This helps clarify the picture.",
-            "Smart angle to explore.",
+            "You are absolutely focusing on the right metrics here. Validating this specific angle reveals the true underlying trend of the asset.",
+            "That is a sensible way to approach this analysis. By looking at these specific indicators, we can cut through the market noise.",
+            "This specific query helps clarify the bigger picture significantly. Let's see how the data supports this improved strategic view.",
+            "Smart angle to explore—investors often overlook this detail. Here is the evidence that confirms why this matters right now.",
         ],
         "ar": [
-            "سؤالك في محله.",
-            "ده تفكير صح.",
-            "ده بيوضح الصورة.",
+            "أنت تركز تماماً على المقاييس الصحيحة هنا. التحقق من هذه الزاوية يكشف الاتجاه الحقيقي للأصل.",
+            "هذه طريقة منطقية جداً لمقاربة التحليل. بالنظر إلى هذه المؤشرات المحددة، يمكننا تجاوز ضجيج السوق.",
+            "هذا الاستفسار يساعد في توضيح الصورة الكبيرة بشكل كبير. دعنا نرى كيف تدعم البيانات هذه النظرة الاستراتيجية.",
+            "زاوية ذكية للاستكشاف—غالباً ما يغفل المستثمرون عن هذا التفصيل. إليك الدليل الذي يؤكد أهمية هذا الأمر الآن.",
         ]
     },
     "neutral": {
         "en": [
-            "Let's see what the data shows.",
-            "Here's what we're looking at.",
-            "Let me break this down.",
-            "Here's the picture.",
+            "I have pulled the latest real-time data for you. Let's examine the technicals and fundamentals together to see the full context.",
+            "Here is exactly what the current market data is showing us. I've highlighted the most critical points for your review.",
+            "Let me break this down into clear, actionable insights. The following analysis covers both the risks and the opportunities.",
+            "Here is the complete picture based on today's session activity. Let's go through the numbers step-by-step.",
         ],
         "ar": [
-            "خلينا نشوف البيانات.",
-            "ده اللي قدامنا.",
-            "أفصّلهالك.",
+            "لقد سحبت لك أحدث البيانات الفورية. دعنا نفحص الجوانب الفنية والأساسية معاً لنرى السياق الكامل.",
+            "إليك بالضبط ما تظهره بيانات السوق الحالية. لقد قمت بإبراز النقاط الأكثر أهمية لمراجعتها.",
+            "دعني أفصل لك هذا إلى رؤى واضحة وقابلة للتنفيذ. التحليل التالي يغطي كلاً من المخاطر والفرص المتاحة.",
+            "إليك الصورة الكاملة بناءً على نشاط جلسة اليوم. دعنا نستعرض الأرقام خطوة بخطوة.",
         ]
     }
 }

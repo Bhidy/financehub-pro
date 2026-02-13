@@ -14,6 +14,7 @@ import os
 import json
 import logging
 import time
+import re
 import hashlib
 from typing import Dict, Any, Optional, List
 from app.core.config import settings
@@ -105,36 +106,34 @@ class LLMExplainerService:
     def _clean_response(self, response: str) -> str:
         """
         Remove internal template markers and placeholders that should not be shown to users.
-        This includes:
-        - [THOUGHT_PROCESS] blocks (used for Chain-of-Thought reasoning)
-        - {name} placeholders
-        - Default "Analyst" string
-        - Extra whitespace
+        DEFENSIVE: If ANY cleaning fails, returns original response rather than crashing.
         """
         if not response:
             return response
+        
+        try:
+            # Remove THOUGHT_PROCESS blocks (hidden reasoning)
+            response = re.sub(r'\[THOUGHT_PROCESS\].*?\[/THOUGHT_PROCESS\]', '', response, flags=re.DOTALL)
             
-        # Remove THOUGHT_PROCESS blocks (hidden reasoning)
-        response = re.sub(r'\[THOUGHT_PROCESS\].*?\[/THOUGHT_PROCESS\]', '', response, flags=re.DOTALL)
-        
-        # Remove name placeholders
-        response = re.sub(r'\{name\}', '', response)
-        
-        # Remove default "Analyst" string
-        response = response.replace('Analyst', '')
-        response = response.replace('analyst', '')
-        
-        # Clean up artifacts from removal
-        response = re.sub(r',\s*\.', '.', response)  # Fix orphaned commas
-        response = re.sub(r'\s+,', ',', response)  # Fix spaces before commas
-        response = re.sub(r'Hi\s*,', '', response)  # Remove "Hi ,"
-        response = re.sub(r'Hello\s*,', '', response)  # Remove "Hello ,"
-        
-        # Clean up extra whitespace
-        response = re.sub(r'\n{3,}', '\n\n', response)  # Max 2 newlines
-        response = re.sub(r'  +', ' ', response)  # Multiple spaces to single
-        
-        return response.strip()
+            # Remove name placeholders
+            response = re.sub(r'\{name\}', '', response)
+            
+            # Remove default "Analyst" string (case-sensitive to avoid false positives)
+            response = response.replace('Hi Analyst', '')
+            response = response.replace('Hello Analyst', '')
+            
+            # Clean up artifacts from removal
+            response = re.sub(r',\s*\.', '.', response)  # Fix orphaned commas
+            response = re.sub(r'\s+,', ',', response)  # Fix spaces before commas
+            
+            # Clean up extra whitespace
+            response = re.sub(r'\n{3,}', '\n\n', response)  # Max 2 newlines
+            response = re.sub(r'  +', ' ', response)  # Multiple spaces to single
+            
+            return response.strip()
+        except Exception as e:
+            logging.warning(f"_clean_response failed (returning original): {e}")
+            return response
 
     async def generate_narrative(
         self, 

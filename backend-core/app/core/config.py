@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")  # Claude API - set in .env or server env
     GROQ_API_KEY: Optional[str] = "gsk_" + "j3qu" + "PVOFxVRFMQEa6qKJWGdyb3F" + "YoLuQpLT6z4ItiHrxX5wcjKpv"
+    CEREBRAS_API_KEY: Optional[str] = os.getenv("CEREBRAS_API_KEY")
+    MISTRAL_API_KEY: Optional[str] = os.getenv("MISTRAL_API_KEY")
     OPENROUTER_API_KEY: Optional[str] = None  # Backup provider
     
     # Email (Resend)

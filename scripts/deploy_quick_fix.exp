@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+set timeout 600
+set timestamp [clock seconds]
+spawn ssh root@46.224.223.172 "cd /opt/starta && git pull && docker compose -f docker-compose.prod.yml up -d --build"
+expect "password:"
+send "***REMOVED-CREDENTIAL***\r"
+expect eof

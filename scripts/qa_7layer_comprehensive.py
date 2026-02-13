@@ -42,6 +42,7 @@ TEST_QUERIES = [
     
     # === ARABIC QUERIES (15) ===
     {"msg": "ايه سعر سهم كومي؟", "lang": "ar", "category": "سعر سهم"},
+    {"msg": "قارن سهم جهينة بمنافسيه", "lang": "ar", "category": "REPRO_JUHAYNA"},
     {"msg": "حلل سهم فوري", "lang": "ar", "category": "تحليل سهم"},
     {"msg": "قارن بين COMI و HRHO", "lang": "ar", "category": "مقارنة"},
     {"msg": "ايه أفضل أسهم القيمة؟", "lang": "ar", "category": "فلتر أسهم"},

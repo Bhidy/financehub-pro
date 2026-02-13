@@ -861,17 +861,17 @@ class ChatService:
         # 1. Paraphrase Slang (The "Universal Translator")
         # ------------------------------------------------------------------
         # If the input is slang/ambiguous, we map it to a clear intent first.
-        paraphraser = get_paraphraser()
-        paraphrased_intent_query = await paraphraser.paraphrase(message)
-        
-        # Use paraphrased text for routing, but keep original for conversational context
-        routing_text = paraphrased_intent_query if paraphrased_intent_query else message
-        if paraphrased_intent_query:
-            print(f"👻 Slang Detected! Routing using: '{routing_text}' (Original: {message})")
-        # ------------------------------------------------------------------
-
-        # 2. Normalize text (Using routing_text)
         try:
+            paraphraser = get_paraphraser()
+            paraphrased_intent_query = await paraphraser.paraphrase(message)
+            
+            # Use paraphrased text for routing, but keep original for conversational context
+            routing_text = paraphrased_intent_query if paraphrased_intent_query else message
+            if paraphrased_intent_query:
+                print(f"👻 Slang Detected! Routing using: '{routing_text}' (Original: {message})")
+            # ------------------------------------------------------------------
+    
+            # 2. Normalize text (Using routing_text)
             normalized = normalize_text(routing_text)
             
             # --- LANGUAGE ENFORCEMENT ---
@@ -2114,6 +2114,8 @@ class ChatService:
                 )
                 
                 return ChatResponse(
+                    success=False, # Explicitly mark as failure
+                    message=err_msg, # Explicitly set message for frontend/QA
                     message_text=err_msg,
                     language=lang,
                     cards=[fallback_card],

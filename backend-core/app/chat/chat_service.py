@@ -768,7 +768,7 @@ class ChatService:
             def clean_name(name_potential):
                 if not name_potential: return "Analyst"
                 # Remove emojis/special chars
-                import re
+                # Remove emojis/special chars
                 cleaned = re.sub(r'[^\w\s\u0600-\u06FF]', '', name_potential)
                 if not cleaned: return "Analyst"
                 # Capitalize first letter
@@ -794,7 +794,7 @@ class ChatService:
                 # If "mohamed.ali", take "mohamed"
                 name_part = local_part.split('.')[0]
                 # Remove numbers from end (e.g. mohamed123 -> mohamed)
-                import re
+                # Remove numbers from end (e.g. mohamed123 -> mohamed)
                 name_part = re.sub(r'\d+$', '', name_part)
                 return clean_name(name_part)
                 
@@ -820,6 +820,16 @@ class ChatService:
         """
         Process a chat message and return a response.
         """
+        # ========================================================================
+        # DIAGNOSTIC LOGGING - PHASE 1
+        # ========================================================================
+        print(f"\n🔬 [DIAG-START] process_message called")
+        print(f"   message: {message[:100] if message else 'None'}...")
+        print(f"   session_id: {session_id}")
+        print(f"   user_id: {user_id}")
+        print(f"   language: {language}")
+        # ========================================================================
+        
         start_time = time.time()
         forced_language = language # Store initial passed language
         
@@ -861,6 +871,7 @@ class ChatService:
         # 1. Paraphrase Slang (The "Universal Translator")
         # ------------------------------------------------------------------
         # If the input is slang/ambiguous, we map it to a clear intent first.
+        print(f"🔬 [DIAG-STEP-1] Starting Paraphrasing...")
         try:
             paraphraser = get_paraphraser()
             paraphrased_intent_query = await paraphraser.paraphrase(message)
@@ -869,13 +880,17 @@ class ChatService:
             routing_text = paraphrased_intent_query if paraphrased_intent_query else message
             if paraphrased_intent_query:
                 print(f"👻 Slang Detected! Routing using: '{routing_text}' (Original: {message})")
+            print(f"✅ [DIAG-STEP-1] Paraphrasing COMPLETE")
             # ------------------------------------------------------------------
     
             # 2. Normalize text (Using routing_text)
+            print(f"🔬 [DIAG-STEP-2] Starting Normalization...")
             normalized = normalize_text(routing_text)
+            print(f"✅ [DIAG-STEP-2] Normalization COMPLETE - lang: {normalized.language}")
             
             # --- LANGUAGE ENFORCEMENT ---
             # Highest priority: Arabic user input should always receive Arabic response.
+            print(f"🔬 [DIAG-STEP-3] Resolving Language...")
             language = self._resolve_language(
                 message=message,
                 forced_language=forced_language,
@@ -883,23 +898,28 @@ class ChatService:
             )
             if forced_language in ['en', 'ar']:
                 print(f"[ChatService] 🌍 Language Resolution: Detected '{normalized.language}' | Header '{forced_language}' -> Using '{language}'")
+            print(f"✅ [DIAG-STEP-3] Language resolved to: {language}")
             # -----------------------------
             
             # 3. Check compliance
+            print(f"🔬 [DIAG-STEP-4] Checking Compliance...")
             # IMPORTANT: Run compliance on the ORIGINAL user message first.
             # Paraphrasing can translate Arabic -> English, causing Arabic users to see English blocked copy.
             is_blocked, violation_type, block_message = check_compliance(message)
             if (not is_blocked) and routing_text and routing_text != message:
                 is_blocked, violation_type, block_message = check_compliance(routing_text)
             if is_blocked:
+                print(f"🚫 [DIAG-STEP-4] Content BLOCKED - {violation_type}")
                 if language == "ar":
                     block_message = COMPLIANCE_RESPONSE_AR
                 result = handle_blocked(violation_type, block_message, language)
                 response = self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language, context=None)
                 return self._enforce_response_language(response, language)
+            print(f"✅ [DIAG-STEP-4] Compliance check PASSED")
             
             # 4. Route intent - CLAUDE-FIRST ARCHITECTURE (World-Class 2.0)
             # ------------------------------------------------------------------
+            print(f"🔬 [DIAG-STEP-5] Starting Intent Routing...")
             # Strategy: Use Claude AI as PRIMARY for intent understanding.
             # Fall back to keyword routing only if Claude fails or is disabled.
             # This ensures TRUE conversational AI understanding.
@@ -974,6 +994,8 @@ class ChatService:
             # Force market code in entities if provided explicitly
             if market:
                 entities['market_code'] = market
+            
+            print(f"✅ [DIAG-STEP-5] Intent Routing COMPLETE - intent: {intent.value}, conf: {confidence}, entities: {list(entities.keys())}")
             
             # Common stopwords...
             STOPWORDS = {
@@ -2095,9 +2117,12 @@ class ChatService:
             # -------------------------------------------------------------
             # GLOBAL ERROR BOUNDARY (THE SAFETY NET)
             # -------------------------------------------------------------
-            print(f"CRITICAL: Uncaught Exception in ChatService: {global_ex}")
+            print(f"💥💥💥 [DIAG-FATAL] CRITICAL: Uncaught Exception in ChatService")
+            print(f"   Exception Type: {type(global_ex).__name__}")
+            print(f"   Exception Message: {str(global_ex)}")
             import traceback
             traceback.print_exc()
+            print(f"💥💥💥 [DIAG-FATAL] END OF EXCEPTION DETAILS")
             
             # Fallback Card
             try:

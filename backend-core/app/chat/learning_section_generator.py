@@ -12,11 +12,11 @@ from typing import List, Dict, Any, Optional
 METRIC_DEFINITIONS = {
     "pe_ratio": {
         "en": [
-            "**P/E Ratio**: Shows how much investors pay for each unit of profit. Lower can mean undervalued.",
-            "**P/E Ratio**: A valuation metric comparing price to earnings. High P/E often signals growth expectations.",
+            "**P/E Ratio** (Price-to-Earnings): Formula: Price per Share ÷ EPS. Shows how much investors pay per unit of profit. Lower P/E may mean undervalued, but always compare within the same sector. ⚠️ Banks often have different P/E ranges than consumer stocks. EGX benchmarks: Banks 5-8x, Consumer 12-18x, Real Estate 8-14x.",
+            "**P/E Ratio**: A valuation metric comparing price to earnings. High P/E signals growth expectations; low P/E could be a bargain or a value trap. Always check alongside growth rate (PEG ratio).",
         ],
         "ar": [
-            "**مضاعف الربحية (P/E)**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح. الانخفاض قد يعني فرصة.",
+            "**مضاعف الربحية (P/E)**: المعادلة: سعر السهم ÷ ربحية السهم. يقيس كم يدفع المستثمرون مقابل كل وحدة ربح. الانخفاض قد يعني فرصة، لكن قارن دائماً داخل نفس القطاع. معايير البورصة: بنوك 5-8x، استهلاكي 12-18x.",
         ]
     },
     "market_cap": {
@@ -48,12 +48,11 @@ METRIC_DEFINITIONS = {
     },
     "roe": {
         "en": [
-            "**ROE (Return on Equity)**: Shows how efficiently the company uses shareholders' money to generate profit.",
-            "**ROE**: Measures profitability relative to shareholders' equity. Higher is better.",
+            "**ROE (Return on Equity)**: Formula: Net Income ÷ Shareholders' Equity. Measures how efficiently a company generates profit from shareholders' money. Example: JUFO's 38.6% ROE = EGP 38.60 profit per EGP 100 equity. ⚠️ Caveat: High leverage inflates ROE — always check alongside D/E ratio. Benchmarks: Banks 15-20%, Consumer 18-25%, Real Estate 12-18%.",
+            "**ROE**: The gold standard of profitability metrics. Shows return generated on shareholders' capital. Higher is better, but verify it's not artificially inflated by excessive debt.",
         ],
         "ar": [
-            "**العائد على حقوق الملكية (ROE)**: يقيس كفاءة الشركة في استخدام أموال المساهمين لتحقيق الأرباح.",
-            "**ROE**: كلما ارتفع، كانت الشركة أكثر كفاءة في تحقيق الأرباح.",
+            "**العائد على حقوق الملكية (ROE)**: المعادلة: صافي الدخل ÷ حقوق المساهمين. يقيس كفاءة تحويل أموال المساهمين إلى أرباح. ⚠️ تحذير: الرافعة العالية تضخم المؤشر — راجع نسبة الدين/الملكية دائماً. المعايير: بنوك 15-20%، استهلاكي 18-25%.",
         ]
     },
     "z_score": {
@@ -66,20 +65,19 @@ METRIC_DEFINITIONS = {
     },
     "eps": {
         "en": [
-            "**EPS (Earnings Per Share)**: The profit each share earns. Higher EPS often means better profitability.",
-            "**EPS**: Net income divided by outstanding shares. Key metric for per-share profitability.",
+            "**EPS (Earnings Per Share)**: Formula: Net Income ÷ Shares Outstanding. The profit each share earns. Higher EPS = better profitability. Compare YoY growth to see if earnings are improving. ⚠️ One-time gains can inflate EPS temporarily.",
+            "**EPS**: Net income divided by outstanding shares. Key for calculating P/E and tracking profitability trends over time.",
         ],
         "ar": [
-            "**ربحية السهم (EPS)**: الربح الذي يحققه كل سهم. ارتفاعه يعني ربحية أفضل.",
-            "**EPS**: صافي الدخل مقسوم على عدد الأسهم. مقياس أساسي للربحية.",
+            "**ربحية السهم (EPS)**: المعادلة: صافي الدخل ÷ عدد الأسهم. الربح الذي يحققه كل سهم. ارتفاعه يعني ربحية أفضل. ⚠️ الأرباح الاستثنائية قد تضخم الرقم مؤقتاً.",
         ]
     },
     "pb_ratio": {
         "en": [
-            "**P/B Ratio**: Compares stock price to book value. Below 1.0 may indicate undervaluation.",
+            "**P/B Ratio** (Price-to-Book): Formula: Market Price ÷ Book Value per Share. Below 1.0 may mean the stock trades below its asset value — potential bargain. ⚠️ Critical for banks. Irrelevant for tech/service companies with few tangible assets. EGX benchmarks: Banks 0.8-1.5x, Real Estate 0.5-1.2x.",
         ],
         "ar": [
-            "**مضاعف القيمة الدفترية**: يقارن السعر بالقيمة الدفترية. أقل من 1 قد يعني تقييم منخفض.",
+            "**مضاعف القيمة الدفترية (P/B)**: المعادلة: سعر السوق ÷ القيمة الدفترية. أقل من 1 قد يعني أن السهم يتداول تحت قيمة أصوله. ⚠️ مهم للبنوك، غير مفيد لشركات الخدمات. المعايير: بنوك 0.8-1.5x، عقارات 0.5-1.2x.",
         ]
     },
     "current_ratio": {
@@ -103,10 +101,10 @@ METRIC_DEFINITIONS = {
     # NEW: Additional metrics for comprehensive Arabic coverage
     "debt_to_equity": {
         "en": [
-            "**D/E Ratio**: Measures financial leverage. Below 1.0 is generally conservative.",
+            "**D/E Ratio** (Debt-to-Equity): Formula: Total Debt ÷ Shareholders' Equity. Below 1.0 is conservative; above 2.0 is high leverage. ⚠️ Banks naturally carry higher D/E. Always check alongside Free Cash Flow and Interest Coverage to assess real risk. EGX ranges: Industrials <0.8, Real Estate 0.5-1.5.",
         ],
         "ar": [
-            "**نسبة الديون/حقوق الملكية**: تقيس الرافعة المالية. أقل من 1 يعتبر محافظ.",
+            "**نسبة الديون/حقوق الملكية (D/E)**: المعادلة: إجمالي الدين ÷ حقوق الملكية. أقل من 1 محافظ، فوق 2 رافعة عالية. ⚠️ راجع التدفق النقدي الحر وتغطية الفوائد لتقييم المخاطر الحقيقية.",
         ]
     },
     "revenue_growth": {

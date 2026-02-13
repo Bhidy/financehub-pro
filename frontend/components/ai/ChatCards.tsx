@@ -2432,6 +2432,8 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
             return <InsightCard data={card.data} variant_override="bull" />;
         case "bear_case":
             return <InsightCard data={card.data} variant_override="bear" />;
+        case "my_framework":
+            return <InsightCard data={{ ...card.data, title: card.title }} variant_override="info" />;
         case "insight":
             return <InsightCard data={card.data} />;
 

@@ -2348,12 +2348,11 @@ class ChatService:
                     if len(compare_symbols) >= 2:
                         break
 
-            if len(compare_symbols) < 2:
-                return {
-                    'success': False,
-                    'message': "Please specify two stocks to compare (e.g., 'Compare COMI vs SWDY')" if language == 'en' else "يرجى تحديد سهمين للمقارنة (مثال: قارن بين COMI و SWDY)",
-                    'cards': []
-                }
+            # DELEGATE VALIDATION TO HANDLER (Chief Expert Architecture)
+            # We allow single symbol to pass through because handle_compare_stocks
+            # now has smart logic to auto-discover peers from the same sector.
+            # if len(compare_symbols) < 2:
+            #    return { ... } -> REMOVED
             
             # Resolve symbols through symbol resolver (handles aliases like CIB→COMI)
             resolver = SymbolResolver(self.conn)

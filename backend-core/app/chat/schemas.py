@@ -398,6 +398,10 @@ class ResponseMeta(BaseModel):
 
 class ChatResponse(BaseModel):
     """Full chat response with structured components for premium UI."""
+    # Status fields (Added for Error Handling & QA)
+    success: bool = True
+    message: Optional[str] = None # Detailed error message if success=False
+
     # Core text layers
     message_text: str  # The "Robotic" fallback or title
     conversational_text: Optional[str] = None  # The "Human" voice (Starta)

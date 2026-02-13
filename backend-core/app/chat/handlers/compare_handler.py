@@ -126,7 +126,7 @@ async def handle_compare_stocks(
         for cand in candidates:
              row = await conn.fetchrow("""
                     SELECT 
-                        symbol, name_en, name_ar, market_code, currency,
+                        symbol, name_en, name_ar, market_code, currency, sector_name,
                         last_price, change_percent, volume,
                         pe_ratio, pb_ratio, dividend_yield, market_cap,
                         high_52w, low_52w, beta, logo_url
@@ -186,6 +186,7 @@ async def handle_compare_stocks(
             data_point = {
                 'symbol': ticker_stats['symbol'],
                 'name': name,
+                'sector_name': ticker_stats.get('sector_name'), # For auto-peer fallback
                 'market_code': ticker_stats['market_code'],
                 'currency': ticker_stats['currency'],
                 'logo_url': ticker_stats.get('logo_url'),
@@ -218,6 +219,101 @@ async def handle_compare_stocks(
                 if data_point.get('debt_equity') is None: data_point['debt_equity'] = safe_float(r_stats.get('debt_equity_ratio'))
 
             stocks_data.append(data_point)
+
+    # === ROBUST FALLBACK (Chief Expert Fix) ===
+    # If garbage collection left us with 1 valid stock (e.g. "Juhayna vs Garbage"),
+    # we must find a peer to compare against instead of failing.
+    if len(stocks_data) == 1:
+        valid_stock = stocks_data[0]
+        sector_name = valid_stock.get('sector_name')
+        market_code = valid_stock.get('market_code', 'EGX')
+        current_symbol = valid_stock['symbol']
+        
+        if sector_name:
+             # Find largest peer
+             peer_row = await conn.fetchrow("""
+                SELECT symbol FROM market_tickers 
+                WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
+                ORDER BY market_cap DESC LIMIT 1
+            """, sector_name, current_symbol, market_code)
+             
+             if peer_row:
+                 peer_symbol = peer_row['symbol']
+                 # FETCH PEER DATA (Duplicated logic for safety/speed without refactor)
+                 # 1. Ticker
+                 p_row = await conn.fetchrow("""
+                    SELECT 
+                        symbol, name_en, name_ar, market_code, currency, sector_name,
+                        last_price, change_percent, volume,
+                        pe_ratio, pb_ratio, dividend_yield, market_cap,
+                        high_52w, low_52w, beta, logo_url
+                    FROM market_tickers
+                    WHERE symbol = $1
+                 """, peer_symbol)
+                 
+                 if p_row:
+                     # 2. Stats
+                     p_stats = await conn.fetchrow("""
+                        SELECT 
+                            revenue_growth, profit_growth as net_income_growth, eps_growth,
+                            gross_margin, operating_margin, profit_margin, ebitda_margin,
+                            roe, roa, roic, roce, asset_turnover,
+                            debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score, piotroski_f_score,
+                            ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
+                            payout_ratio
+                        FROM stock_statistics
+                        WHERE symbol = $1
+                     """, peer_symbol)
+                     
+                     # 3. Ratios
+                     p_ratios = await conn.fetchrow("""
+                        SELECT 
+                            gross_margin, net_margin as profit_margin, 
+                            roe, debt_equity as debt_equity_ratio
+                        FROM financial_ratios_history 
+                        WHERE symbol = $1 AND period_type = 'annual'
+                        ORDER BY fiscal_year DESC 
+                        LIMIT 1
+                     """, peer_symbol)
+                     
+                     # Construct Peer Data Point
+                     p_dict = dict(p_row)
+                     p_name = p_dict['name_ar'] if language == 'ar' else p_dict['name_en']
+                     
+                     peer_data = {
+                        'symbol': p_dict['symbol'],
+                        'name': p_name,
+                        'sector_name': p_dict.get('sector_name'),
+                        'market_code': p_dict['market_code'],
+                        'currency': p_dict['currency'],
+                        'logo_url': p_dict.get('logo_url'),
+                        'price': safe_float(p_dict.get('last_price')),
+                        'change_percent': safe_float(p_dict.get('change_percent')),
+                        'market_cap': int(p_dict['market_cap']) if p_dict.get('market_cap') else None,
+                        'volume': int(p_dict['volume']) if p_dict.get('volume') else None,
+                        'high_52w': safe_float(p_dict.get('high_52w')),
+                        'low_52w': safe_float(p_dict.get('low_52w')),
+                        'beta': safe_float(p_dict.get('beta')),
+                        'dividend_yield': safe_float(p_dict.get('dividend_yield')),
+                        'pe_ratio': safe_float(p_dict.get('pe_ratio')),
+                        'pb_ratio': safe_float(p_dict.get('pb_ratio')),
+                     }
+                     
+                     if p_stats:
+                         for k, v in dict(p_stats).items():
+                             peer_data[k] = safe_float(v)
+                             
+                     if peer_data.get('profit_margin') is None and peer_data.get('net_margin') is not None:
+                         peer_data['profit_margin'] = peer_data.get('net_margin')
+                         
+                     if p_ratios:
+                         pr = dict(p_ratios)
+                         if peer_data.get('gross_margin') is None: peer_data['gross_margin'] = safe_float(pr.get('gross_margin'))
+                         if peer_data.get('profit_margin') is None: peer_data['profit_margin'] = safe_float(pr.get('profit_margin'))
+                         if peer_data.get('roe') is None: peer_data['roe'] = safe_float(pr.get('roe'))
+                         if peer_data.get('debt_equity') is None: peer_data['debt_equity'] = safe_float(pr.get('debt_equity_ratio'))
+                         
+                     stocks_data.append(peer_data)
 
     if len(stocks_data) < 2:
         missing = [s for s in symbols if s not in [d['symbol'] for d in stocks_data]]

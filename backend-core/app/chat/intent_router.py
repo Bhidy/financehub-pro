@@ -467,7 +467,6 @@ class IntentRouter:
              if not has_symbol:
                  # HEURISTIC FALLBACK: Check for 3-5 letter uppercase word (potential ticker)
                  # This allows "Show COMI technicals" to route correctly even if entity extraction skipped it.
-                 import re
                  # Use case-insensitive search for flexibility
                  match = re.search(r'\b[A-Z0-9]{3,5}\b', text, re.IGNORECASE) 
                  if match:
@@ -717,7 +716,6 @@ class IntentRouter:
             
             # Check for potential ticker in text (Safety Net)
             has_potential_ticker = False
-            import re
             if re.search(r'\b[A-Z0-9]{3,5}\b', text, re.IGNORECASE):
                 has_potential_ticker = True
                 

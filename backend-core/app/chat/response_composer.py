@@ -14,6 +14,7 @@ Builds ultra-premium, dynamic responses using 8 layers:
 ⑧ Follow-up Prompt (💡 next action - handled separately)
 """
 
+import re
 import random
 from typing import Optional, List, Dict, Tuple
 from .schemas import Intent, CardType, StructuredNarrative
@@ -763,7 +764,6 @@ def is_follow_up_question(message: str, language: str = "en") -> bool:
     """
     Detect if a message is a follow-up to a previous question.
     """
-    import re
     
     message_lower = message.lower().strip()
     

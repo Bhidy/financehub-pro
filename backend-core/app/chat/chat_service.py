@@ -2616,6 +2616,12 @@ class ChatService:
         
         latency_ms = int((time.time() - start_time) * 1000)
         
+        # DEFENSIVE: Initialize ALL variables at the top to prevent NameError crashes
+        is_follow_up = False
+        full_response_text = conversational_text or ''
+        structured_narrative = None
+        used_opening = None
+        
         # Convert cards to Card objects
         cards = []
         for c in result.get('cards', []):
@@ -2704,22 +2710,32 @@ class ChatService:
         # Determine if this is a follow-up query based on intent
         is_follow_up = (intent == Intent.FOLLOW_UP)
 
-        # Generate Premier Response Layer
-        full_response_text, structured_narrative, used_opening = ResponseComposer.compose_premium_response(
-            core_narrative=conversational_text,
-            language=language,
-            intent=intent,
-            user_name=context.user_name if context else "Analyst",
-            is_follow_up=is_follow_up, # Controlled by Intent.FOLLOW_UP check
-            follow_up_type=context.last_followup_type if context else "none",
-            active_symbol=symbol,
-            sentiment=context.last_response_sentiment if context else "neutral",
-            include_risk_warning=False,
-            last_opening_used=context.last_opening_used if context else None,
-            shown_card_types=shown_card_types,
-            include_opening=True, # Always try to include opening (filtered by is_follow_up inside composer)
-            detected_insight=key_insight # Use the key insight we generated
-        )
+        # Generate Premier Response Layer (DEFENSIVE: wrapped in try/except)
+        try:
+            full_response_text, structured_narrative, used_opening = ResponseComposer.compose_premium_response(
+                core_narrative=conversational_text,
+                language=language,
+                intent=intent,
+                user_name=context.user_name if context else "Analyst",
+                is_follow_up=is_follow_up,
+                follow_up_type=context.last_followup_type if context else "none",
+                active_symbol=symbol,
+                sentiment=context.last_response_sentiment if context else "neutral",
+                include_risk_warning=False,
+                last_opening_used=context.last_opening_used if context else None,
+                shown_card_types=shown_card_types,
+                include_opening=True,
+                detected_insight=key_insight
+            )
+        except Exception as comp_err:
+            print(f"⚠️ ResponseComposer failed (using raw narrative): {comp_err}")
+            full_response_text = conversational_text or (
+                "Here is the analysis based on the latest available data."
+                if language == 'en' else
+                "إليك التحليل بناءً على أحدث البيانات المتاحة."
+            )
+            structured_narrative = None
+            used_opening = None
 
         return ChatResponse(
             message_text=full_response_text, # Use the composed text

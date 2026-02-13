@@ -371,6 +371,57 @@ COMPARE_PATTERN = re.compile(
 # Fund ID pattern (4 consecutive digits like 2742, 6120) when accompanied by fund keywords
 FUND_ID_PATTERN = re.compile(r'\b(\d{4})\b')
 
+# Map common Arabic/English names to Tickers
+ARABIC_TICKER_MAP = {
+    # Food & Bev
+    'جهينه': 'JUFO', 'جهينة': 'JUFO', 'جوهينه': 'JUFO',
+    'دومتي': 'DOMT', 'دومتى': 'DOMT',
+    'عبور لاند': 'OLFI',
+    'ايديتا': 'EFID',
+    'القاهرة للدواجن': 'POUL', 
+    'الدواجن': 'POUL',
+
+    # Fintech / Payment
+    'فوري': 'FWRY', 'فورى': 'FWRY',
+    'اي فاينانس': 'EFIH', 'إي فاينانس': 'EFIH', 'اي-فاينانس': 'EFIH',
+
+    # Banks
+    'التجاري الدولي': 'COMI', 'التجاري الدولى': 'COMI', 'سي اي بي': 'COMI', 'CIB': 'COMI', 'التجاري': 'COMI',
+    'هيرميس': 'HRHO', 'اي اف جي': 'HRHO', 'مجموعة اي اف جي': 'HRHO',
+    'كريدي اجريكول': 'CIEB',
+    'قطر الوطني': 'QNBA', 'QNB': 'QNBA',
+    'تنمية الصادرات': 'EBEX', 'البنك المصري': 'Ebank', # Symbol check needed (EXPA/EBEX?) - sticking to common
+    'التعمير والاسكان': 'HDBK',
+
+    # Real Estate
+    'طلعت مصطفى': 'TMGH', 'طلعت مصطفي': 'TMGH', 'مجموعة طلعت': 'TMGH',
+    'بالم هيلز': 'PHDC', 'بالم': 'PHDC',
+    'اعمار': 'EMFD', 'اعمار مصر': 'EMFD',
+    'مدينة نصر': 'MNHD', 'مدينة مصر': 'MNHD', 'mnm': 'MNHD',
+    'سوديك': 'OCDI',
+    'اوراسكوم للتنمية': 'ORHD', 'اوراسكوم فنادق': 'ORHD',
+    'مصر الجديدة': 'HELI', 'مصر الجديده': 'HELI',
+
+    # Industrial / Materials
+    'حديد عز': 'ESRS', 'عز': 'ESRS', 'عز الدخيلة': 'ESRS',
+    'السويدي': 'SWDY', 'السويدى': 'SWDY', 'اليكتريك': 'SWDY',
+    'النساجون': 'ORWE', 'النساجون الشرقيون': 'ORWE',
+    'أبو قير': 'ABUK', 'ابوقير': 'ABUK', 'ابو قير': 'ABUK',
+    'موبكو': 'MFPC', 'مصر لانتاج الاسمدة': 'MFPC',
+    'سيدي كرير': 'SKPC', 'سيدى كرير': 'SKPC', 'سيدبك': 'SKPC',
+    'كيما': 'KIMA',
+    'اموك': 'AMOC', 'أموك': 'AMOC',
+    'الشرقية للدخان': 'EAST', 'ايسترن كومباني': 'EAST',
+
+    # Telecom
+    'المصرية للاتصالات': 'ETEL', 'مصرية للاتصالات': 'ETEL', 'وي': 'ETEL', 'we': 'ETEL',
+    
+    # Simple names
+    'بلتون': 'BTLL',
+    'القلعة': 'CCAP', 'القلعه': 'CCAP',
+    'المصرية للمنتجعات': 'EGTS', 'منتجعات': 'EGTS',
+}
+
 
 class IntentRouter:
     """Routes user messages to intents using keyword matching."""
@@ -679,6 +730,16 @@ class IntentRouter:
     
     def _extract_entities(self, text: str, language: str) -> Dict:
         """Extract entities from text using patterns."""
+        # ---------------------------------------------------------
+        # ARABIC NAME RESOLUTION (The "Juhayna Fix")
+        # ---------------------------------------------------------
+        # Pre-process Arabic names to their English tickers so regexes catch them
+        # Use regex to handle boundaries better if possible, but simple replace works for now
+        # Note: We iterate to perform replacement in the local 'text' variable
+        for name, ticker in ARABIC_TICKER_MAP.items():
+            if name in text:
+                text = text.replace(name, ticker)
+        
         entities = {}
         
         # Extract range

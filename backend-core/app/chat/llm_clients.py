@@ -1,13 +1,15 @@
 """
-Multi-Provider LLM Client
-==========================
+Multi-Provider LLM Client (Restored)
+=====================================
 Provides resilient LLM access with automatic failover between providers.
-Supports: Groq, Cerebras, Mistral, Together AI
+Priority: Groq → Cerebras → Mistral → Anthropic (Claude)
 
 Strategy:
-1. Try primary provider (Groq)
-2. If rate limited or failed, try next provider
-3. Cycle through all providers before giving up
+1. Try primary provider (Groq - fastest, free tier)
+2. If rate limited or failed, try Cerebras
+3. If Cerebras fails, try Mistral
+4. Final fallback to Anthropic Claude (paid)
+5. Only give up after ALL providers exhausted
 """
 
 import os
@@ -26,7 +28,7 @@ class LLMProvider:
     base_url: str
     api_key: str
     models: List[str]
-    timeout: float = 5.0
+    timeout: float = 8.0
     
     def is_available(self) -> bool:
         return bool(self.api_key)
@@ -35,20 +37,52 @@ class LLMProvider:
 def get_providers() -> List[LLMProvider]:
     """Get all configured providers in priority order.
     
-    SIMPLIFIED: Claude (Anthropic) is the ONLY provider.
-    User has paid unlimited Claude subscription - no need for free-tier fallbacks.
-    This ensures consistent, high-quality financial analysis.
+    Priority:
+    1. Groq (fastest inference, 100K tokens/day free)
+    2. Cerebras (fast, 14400 requests/day)
+    3. Mistral (reliable, 1B tokens/month)
+    4. Anthropic Claude (paid unlimited, highest quality but currently 400 errors)
     """
     providers = []
     
-    # ONLY PROVIDER: Claude (Anthropic) - Paid unlimited subscription
+    # PRIMARY: Groq (fastest inference)
+    if groq_key := settings.GROQ_API_KEY:
+        providers.append(LLMProvider(
+            name="groq",
+            base_url="https://api.groq.com/openai/v1",
+            api_key=groq_key,
+            models=["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
+            timeout=8.0
+        ))
+    
+    # FALLBACK 1: Cerebras (fast inference)
+    if cerebras_key := settings.CEREBRAS_API_KEY:
+        providers.append(LLMProvider(
+            name="cerebras",
+            base_url="https://api.cerebras.ai/v1",
+            api_key=cerebras_key,
+            models=["llama-3.3-70b"],
+            timeout=8.0
+        ))
+    
+    # FALLBACK 2: Mistral (reliable)
+    if mistral_key := settings.MISTRAL_API_KEY:
+        providers.append(LLMProvider(
+            name="mistral",
+            base_url="https://api.mistral.ai/v1",
+            api_key=mistral_key,
+            models=["mistral-small-latest"],
+            timeout=10.0
+        ))
+    
+    # FALLBACK 3: Anthropic Claude (paid, highest quality)
     if anthropic_key := settings.ANTHROPIC_API_KEY:
         providers.append(LLMProvider(
             name="anthropic",
             base_url="https://api.anthropic.com/v1",
             api_key=anthropic_key,
-            models=["claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022"],
-            timeout=10.0  # Generous timeout for quality responses
+            models=["claude-3-5-sonnet-20241022"],
+            timeout=12.0
         ))
     
     return providers
@@ -62,7 +96,8 @@ class MultiProviderLLM:
     def __init__(self):
         self.providers = get_providers()
         self._last_successful_provider: Optional[str] = None
-        logger.info(f"Multi-Provider LLM initialized with {len(self.providers)} providers: {[p.name for p in self.providers]}")
+        provider_names = [p.name for p in self.providers]
+        logger.info(f"Multi-Provider LLM initialized with {len(self.providers)} providers: {provider_names}")
     
     async def complete(
         self,
@@ -80,7 +115,7 @@ class MultiProviderLLM:
             max_tokens: Maximum tokens to generate
             temperature: Sampling temperature
             purpose: For logging ("narrative", "paraphrase", etc.)
-            model_override: Specific model to use (e.g. "llama-3.1-8b-instant")
+            model_override: Specific model to use
         
         Returns:
             Generated text or None if all providers fail
@@ -97,8 +132,7 @@ class MultiProviderLLM:
             # Determine models to try for this provider
             models_to_try = provider.models
             
-            # If override requested and this provider supports it (or just try it)
-            # For Groq, we trust the override exists if valid
+            # If override requested and this provider supports it
             if model_override and provider.name == "groq":
                 models_to_try = [model_override] + [m for m in provider.models if m != model_override]
 
@@ -109,15 +143,15 @@ class MultiProviderLLM:
                         provider, model, messages, max_tokens, temperature
                     )
                     if result:
-                        if provider.name != "groq" or model != provider.models[0]:
-                            logger.info(f"✅ [{purpose}] Fallback/Override using {provider.name}/{model}")
+                        if provider.name != self._last_successful_provider:
+                            logger.info(f"✅ [{purpose}] Using {provider.name}/{model}")
                         self._last_successful_provider = provider.name
                         return result
                         
                 except Exception as e:
                     error_str = str(e)
                     if "429" in error_str or "rate" in error_str.lower():
-                        logger.warning(f"⚠️ [{purpose}] Rate limit on {provider.name}/{model}")
+                        logger.warning(f"⚠️ [{purpose}] Rate limit on {provider.name}/{model}, trying next...")
                     else:
                         logger.warning(f"⚠️ [{purpose}] Error on {provider.name}/{model}: {e}")
                     continue
@@ -144,11 +178,6 @@ class MultiProviderLLM:
             "Content-Type": "application/json"
         }
         
-        # OpenRouter requires extra headers
-        if provider.name == "openrouter":
-            headers["HTTP-Referer"] = "https://finhub-pro.vercel.app"
-            headers["X-Title"] = "Starta AI"
-        
         payload = {
             "model": model,
             "messages": messages,
@@ -166,7 +195,10 @@ class MultiProviderLLM:
             if response.status_code == 429:
                 raise Exception(f"429 Rate Limit Exceeded")
             
-            response.raise_for_status()
+            if response.status_code != 200:
+                body = response.text[:200]
+                raise Exception(f"{response.status_code}: {body}")
+            
             data = response.json()
             
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
@@ -199,6 +231,10 @@ class MultiProviderLLM:
             else:
                 user_messages.append(msg)
         
+        # Ensure at least one user message exists
+        if not user_messages:
+            user_messages = [{"role": "user", "content": "Analyze this data."}]
+        
         payload = {
             "model": model,
             "max_tokens": max_tokens,
@@ -219,7 +255,12 @@ class MultiProviderLLM:
             if response.status_code == 429:
                 raise Exception(f"429 Rate Limit Exceeded")
             
-            response.raise_for_status()
+            if response.status_code != 200:
+                # Log the actual error body for debugging
+                error_body = response.text[:300]
+                logger.error(f"[Anthropic] {response.status_code} error body: {error_body}")
+                raise Exception(f"{response.status_code}: {error_body}")
+            
             data = response.json()
             
             # Claude returns content array with text blocks

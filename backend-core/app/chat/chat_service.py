@@ -2665,16 +2665,28 @@ class ChatService:
                     "إليك البيانات المطلوبة."
                 )
                 
-        # If we have a chart but no text
-        if not conversational_text and not final_message_text and chart:
-            final_message_text = (
-                f"Here is the chart for {chart.symbol}."
-                if language == 'en' else
-                f"إليك الرسم البياني لـ {chart.symbol}."
-            )
+        # Prepare shown_card_types for deduplication logic
+        shown_card_types = [c.type.value for c in cards]
+
+        # Generate Premier Response Layer
+        full_response_text, structured_narrative, used_opening = ResponseComposer.compose_premium_response(
+            core_narrative=conversational_text,
+            language=language,
+            intent=intent,
+            user_name=context.user_name if context else "Analyst",
+            is_follow_up=is_follow_up, # Controlled by Intent.FOLLOW_UP check
+            follow_up_type=context.last_followup_type if context else "none",
+            active_symbol=symbol,
+            sentiment=context.last_response_sentiment if context else "neutral",
+            include_risk_warning=False,
+            last_opening_used=context.last_opening_used if context else None,
+            shown_card_types=shown_card_types,
+            include_opening=True, # Always try to include opening (filtered by is_follow_up inside composer)
+            detected_insight=key_insight # Use the key insight we generated
+        )
 
         return ChatResponse(
-            message_text=final_message_text,
+            message_text=full_response_text, # Use the composed text
             conversational_text=conversational_text,
             framework_text=framework_text,
             fact_explanations=fact_explanations,
@@ -2710,7 +2722,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
-                backend_version="6.0.0-PREMIUM-WORLD-CLASS"  # PHASE 2 DEPLOYMENT
+                backend_version="6.1.0-STABLE-Fix"  # STABILIZED RELEASE
             )
         )
 

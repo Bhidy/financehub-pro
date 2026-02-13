@@ -895,7 +895,7 @@ class ChatService:
                 if language == "ar":
                     block_message = COMPLIANCE_RESPONSE_AR
                 result = handle_blocked(violation_type, block_message, language)
-                response = self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language)
+                response = self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language, context=None)
                 return self._enforce_response_language(response, language)
             
             # 4. Route intent - CLAUDE-FIRST ARCHITECTURE (World-Class 2.0)
@@ -2010,6 +2010,7 @@ class ChatService:
 
             response = self._build_response(
                 result_data, intent, confidence, entities, start_time, language,
+                context, # Pass context
                 conversational_text, fact_explanations, learning_section, handler_follow_up,
                 # NEW: Pass structured response components from handler
                 data_card=handler_data_card,
@@ -2560,6 +2561,7 @@ class ChatService:
         entities: Dict[str, Any],
         start_time: float,
         language: str,
+        context: Optional[Any] = None, # Added Context
         conversational_text: Optional[str] = None,
         fact_explanations: Optional[Dict[str, str]] = None,
         learning_section: Optional[Dict[str, Any]] = None,

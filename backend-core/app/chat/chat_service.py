@@ -2661,6 +2661,9 @@ class ChatService:
         # Get disclaimer if needed
         disclaimer = get_disclaimer(intent.value, language)
         
+        # Extract conversational_text from result
+        conversational_text = result.get('conversational_text', conversational_text or '')
+        
         # Fallback mechanism: If LLM fails (no conversational_text) and no system message,
         # generate a generic message based on content to prevent empty bubbles.
         # Prefer explicit handler message, then conversational text, then fallback.

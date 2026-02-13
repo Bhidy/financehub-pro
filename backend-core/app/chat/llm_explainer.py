@@ -102,6 +102,40 @@ class LLMExplainerService:
             "peg_ratio": ("PEG Ratio", "Price/Earnings-to-Growth ratio. Determines a stock's value while taking the company's earnings growth into account.")
         }
 
+    def _clean_response(self, response: str) -> str:
+        """
+        Remove internal template markers and placeholders that should not be shown to users.
+        This includes:
+        - [THOUGHT_PROCESS] blocks (used for Chain-of-Thought reasoning)
+        - {name} placeholders
+        - Default "Analyst" string
+        - Extra whitespace
+        """
+        if not response:
+            return response
+            
+        # Remove THOUGHT_PROCESS blocks (hidden reasoning)
+        response = re.sub(r'\[THOUGHT_PROCESS\].*?\[/THOUGHT_PROCESS\]', '', response, flags=re.DOTALL)
+        
+        # Remove name placeholders
+        response = re.sub(r'\{name\}', '', response)
+        
+        # Remove default "Analyst" string
+        response = response.replace('Analyst', '')
+        response = response.replace('analyst', '')
+        
+        # Clean up artifacts from removal
+        response = re.sub(r',\s*\.', '.', response)  # Fix orphaned commas
+        response = re.sub(r'\s+,', ',', response)  # Fix spaces before commas
+        response = re.sub(r'Hi\s*,', '', response)  # Remove "Hi ,"
+        response = re.sub(r'Hello\s*,', '', response)  # Remove "Hello ,"
+        
+        # Clean up extra whitespace
+        response = re.sub(r'\n{3,}', '\n\n', response)  # Max 2 newlines
+        response = re.sub(r'  +', ' ', response)  # Multiple spaces to single
+        
+        return response.strip()
+
     async def generate_narrative(
         self, 
         query: str, 
@@ -311,18 +345,30 @@ class LLMExplainerService:
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"VOICE & ANALYSIS RULES (CFA Level 3)\n"
                 f"═══════════════════════════════════════════════════════════════\n"
-                f"1. **NO DEFINITIONS**: Never explain 'What is PE'. Your user is an expert.\n"
+                f"1. **START WITH DATA, NOT GREETINGS**:\n"
+                f"   - NEVER use: 'Hi', 'Hello', 'Welcome', 'I'm glad you asked'\n"
+                f"   - NEVER use user names or placeholders\n"
+                f"   - First sentence MUST contain numbers or metrics\n"
+                f"   - GOOD: 'Trading at 8x PE versus 12x sector average — a 33% discount that suggests [thesis].'\n"
+                f"   - BAD: 'Hi Analyst, let me explain the stock...'\n\n"
+                f"2. **NO DEFINITIONS**: Never explain 'What is PE'. Your user is an expert.\n"
                 f"   - BAD: 'PE ratio measures price relative to earnings'.\n"
                 f"   - GOOD: 'At 8x PE, the stock trades at a 30% discount to peers.'\n"
-                f"2. **INSIGHTS FIRST**: Lead with the conclusion. Use data to support it.\n"
-                f"3. **QUANTIFIED COMPARISONS**: Always compare current metrics to historical averages AND sector averages.\n"
+                f"3. **INSIGHTS FIRST**: Lead with the conclusion. Use data to support it.\n"
+                f"4. **QUANTIFIED COMPARISONS**: Always compare current metrics to historical averages AND sector averages.\n"
                 f"   - Example: 'Trading at 11.47x P/E versus its 5-year average of 14.3x — that's about a 20% discount.'\n"
-                f"4. **PROFESSIONAL TONE**: Direct, objective, slightly contrarian if data supports it.\n"
-                f"5. **ADAPTATION ({user_level} Level)**:\n"
+                f"5. **NEVER MENTION MISSING DATA**: Frame from what IS available.\n"
+                f"   - NEVER say: 'lack of', 'not available', 'missing data'\n"
+                f"   - Instead: Focus on the data you HAVE. If limited, provide guidance on available tools.\n"
+                f"6. **PROFESSIONAL EXPERT TONE**:\n"
+                f"   - You are analyzing live data in real-time. Show your work.\n"
+                f"   - Be direct: 'The setup is attractive' or 'The risk/reward is poor at these levels.'\n"
+                f"   - NO caveats like 'it depends'. Give your analytical view based on the numbers.\n"
+                f"7. **ADAPTATION ({user_level} Level)**:\n"
                 f"   - NOVICE: Use analogies. Explain *why* a metric matters. Avoid jargon.\n"
                 f"   - EXPERT: Be concise. Assume deep knowledge. Focus on second-order effects.\n"
                 f"   - INTERMEDIATE: Balanced. Define complex terms but keep analysis professional.\n"
-                f"6. **MARKET CONTEXT**:\n"
+                f"8. **MARKET CONTEXT**:\n"
                 f"   {tone_instruction}\n\n"
 
                 f"═══════════════════════════════════════════════════════════════\n"
@@ -387,10 +433,10 @@ class LLMExplainerService:
                 f"BEGIN RESPONSE IN **{lang_name.upper()}**."
             )
         
-        # If no data exists (e.g., small talk or unknown), we still want a conversational response
+        # If no data exists, provide guidance on available capabilities
         user_content = f"Query: {query}\nIntent: {intent}\n\nDATA:\n{context_str}"
         if not data:
-            user_content = f"Query: {query}\nIntent: {intent}\n(No specific stock data found. Provide a helpful guide on what you can analyze.)"
+            user_content = f"Query: {query}\nIntent: {intent}\n\nProvide expert guidance on Egyptian Stock Market (EGX) analysis capabilities and how to navigate the platform effectively."
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -410,6 +456,9 @@ class LLMExplainerService:
         
         # PHASE 5: Store result in cache if valid
         if result:
+            # PHASE 2: Clean template markers and placeholders
+            result = self._clean_response(result)
+            
             # Run Post-Generation Verification (Non-blocking)
             mismatches = NumericVerifier.verify_response(result, data)
             if mismatches:

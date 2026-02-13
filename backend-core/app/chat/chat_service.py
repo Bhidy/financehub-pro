@@ -2697,6 +2697,9 @@ class ChatService:
                 
         # Prepare shown_card_types for deduplication logic
         shown_card_types = [c.type.value for c in cards]
+        
+        # Determine if this is a follow-up query based on intent
+        is_follow_up = (intent == Intent.FOLLOW_UP)
 
         # Generate Premier Response Layer
         full_response_text, structured_narrative, used_opening = ResponseComposer.compose_premium_response(

@@ -1321,7 +1321,7 @@ class ChatService:
                     # ROBUST "FUZZY" INSIGHTS PARSER (ENTERPRISE GRADE)
                     # ------------------------------------------------------------------
                     if conversational_text:
-                        import re
+                        # import re - REMOVED
                         clean_text = conversational_text
                         
                         # Definition of Robust Patterns (Handle bold, caps, spacing)
@@ -1679,7 +1679,7 @@ class ChatService:
             llm_text = conversational_text or getattr(result, 'conversational_text', None) or result_data.get('conversational_text')
 
             if llm_text:
-                import re
+                # import re - REMOVED
                 logger.info(f"[ChatService] Parsing Dynamic Layers (Text Len: {len(llm_text)}). Start: {llm_text[:100]}...")
                 
                 # Parse FRAMEWORK

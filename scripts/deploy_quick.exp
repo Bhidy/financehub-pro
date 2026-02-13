@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set host [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh -o StrictHostKeyChecking=no root@$host "cd /opt/starta && echo '--- PULLING ---' && git fetch origin && git reset --hard origin/main && echo '--- REBUILDING BACKEND ---' && docker compose -f docker-compose.prod.yml build backend && echo '--- RESTARTING BACKEND ---' && docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate backend && echo '--- PRUNING ---' && docker image prune -f && echo '--- HEALTH CHECK ---' && sleep 5 && docker ps && echo '--- DONE ---'"
+
+expect "password:"
+send "$password\r"
+
+expect {
+    -exact "--- DONE ---" {
+        send_user "\n✅ Quick Deployment Completed.\n"
+        exit 0
+    }
+    timeout {
+        send_user "\n❌ Timeout waiting for deployment.\n"
+        exit 1
+    }
+    eof
+}

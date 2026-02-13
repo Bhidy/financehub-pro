@@ -613,19 +613,17 @@ class ResponseComposer:
         parts = []
         opening_category = None
         
-        # Components for Structured Response
-        struct_greeting = None
+        # Initialize structured components
+        struct_greeting = None  # NO GREETINGS - removed per Phase 4 requirement
         struct_bridge = None
         struct_opening = None
         struct_insight = None
         struct_warning = None
         
-        # Layer ① - Personal Greeting (Only on forced opening or explicit new session)
-        if force_opening or (include_opening and not is_follow_up):
-             if language == 'ar':
-                 struct_greeting = f"أهلاً {user_name.split()[0]}"
-             else:
-                 struct_greeting = f"Hi {user_name.split()[0]}"
+        # IMPORTANT: We do NOT inject greetings anymore.
+        # The LLM narrative should start with DATA, not greetings.
+        # User requirement: NO \"Hi\", NO names, NO welcome messages.
+
 
         # Layer ② - Context Bridge (for follow-ups)
         if is_follow_up and active_symbol:

@@ -394,6 +394,7 @@ class ResponseMeta(BaseModel):
     error: Optional[str] = None
     authenticated: bool = False
     auth_debug: Optional[Dict[str, Any]] = None
+    backend_version: Optional[str] = None # Added for QA/Debugging
 
 
 class ChatResponse(BaseModel):

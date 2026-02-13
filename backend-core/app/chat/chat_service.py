@@ -1006,8 +1006,15 @@ class ChatService:
                 candidate = potential_symbols[0]  # Fallback to regex extraction
                 print(f"[ChatService] 🔍 Using regex-extracted symbol: '{candidate}' (from {potential_symbols})")
             else:
-                candidate = None
-                print(f"[ChatService] ⚠️ No symbol candidate found")
+                # FALLBACK: "Hail Mary" Regex for English Tickers (3-5 Uppercase Letters)
+                # This catches "COMI" in "What about COMI" if entity extraction missed it.
+                fallback_match = re.search(r'\b[A-Z]{3,5}\b', routing_text)
+                if fallback_match:
+                    candidate = fallback_match.group(0)
+                    print(f"[ChatService] 🛡️ Fallback Regex caught symbol: '{candidate}'")
+                else:
+                    candidate = None
+                    print(f"[ChatService] ⚠️ No symbol candidate found")
             
             # --- CRITICAL FIX FOR COMPARISON BUG ---
             # If intent is COMPARE_STOCKS, we must grab ALL potential symbols, not just the first one.
@@ -1563,7 +1570,10 @@ class ChatService:
                         language=language,
                         intent=intent,
                         user_name=real_user_name,
-                        is_follow_up=(is_returning_user and not is_new_session) or intent == Intent.FOLLOW_UP,
+                        # CRITICAL FIX: Only treat as follow-up if INTENT is explicitly follow-up.
+                        # Do NOT force "follow-up mode" just because user is returning.
+                        # This enables Rich Openings (Layer 3) for new topics (e.g. "Analyze COMI").
+                        is_follow_up=(intent == Intent.FOLLOW_UP),
                         follow_up_type='continuation', # Default
                         active_symbol=actual_symbol,
                         sentiment=sentiment,

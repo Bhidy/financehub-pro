@@ -1212,50 +1212,56 @@ function parseLine(line: string, idx: number): React.ReactNode {
 function parseConversationalText(text: string): React.ReactNode[] {
     if (!text) return [];
 
-    const elements: React.ReactNode[] = [];
-    const lines = text.split("\n");
-    let paragraphLines: string[] = [];
+    try {
+        const elements: React.ReactNode[] = [];
+        const lines = text.split("\n");
+        let paragraphLines: string[] = [];
 
-    const flushParagraph = () => {
-        if (paragraphLines.length > 0) {
-            const combinedText = paragraphLines.join(" ");
-            elements.push(
-                <p key={`para-${elements.length}`} className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed my-2">
-                    {parseBoldText(combinedText)}
-                </p>
-            );
-            paragraphLines = [];
-        }
-    };
+        const flushParagraph = () => {
+            if (paragraphLines.length > 0) {
+                const combinedText = paragraphLines.join(" ");
+                elements.push(
+                    <p key={`para-${elements.length}`} className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed my-2">
+                        {parseBoldText(combinedText)}
+                    </p>
+                );
+                paragraphLines = [];
+            }
+        };
 
-    lines.forEach((line, idx) => {
-        const trimmed = line.trim();
+        lines.forEach((line, idx) => {
+            const trimmed = line.trim();
 
-        // Empty line ends current paragraph
-        if (!trimmed) {
-            flushParagraph();
-            return;
-        }
+            // Empty line ends current paragraph
+            if (!trimmed) {
+                flushParagraph();
+                return;
+            }
 
-        // Headers, bullets, and numbered items are separate
-        if (
-            (trimmed.startsWith("**") && trimmed.endsWith("**") && !trimmed.slice(2, -2).includes("**")) ||
-            trimmed.startsWith("- ") ||
-            trimmed.startsWith("• ") ||
-            /^\d+\.\s+/.test(trimmed)
-        ) {
-            flushParagraph();
-            elements.push(parseLine(line, idx));
-            return;
-        }
+            // Headers, bullets, and numbered items are separate
+            if (
+                (trimmed.startsWith("**") && trimmed.endsWith("**") && !trimmed.slice(2, -2).includes("**")) ||
+                trimmed.startsWith("- ") ||
+                trimmed.startsWith("• ") ||
+                /^\d+\.\s+/.test(trimmed)
+            ) {
+                flushParagraph();
+                elements.push(parseLine(line, idx));
+                return;
+            }
 
-        // Add to current paragraph
-        paragraphLines.push(trimmed);
-    });
+            // Add to current paragraph
+            paragraphLines.push(trimmed);
+        });
 
-    flushParagraph();
+        flushParagraph();
 
-    return elements.filter(Boolean);
+        return elements.filter(Boolean);
+    } catch (e) {
+        console.error("Error parsing conversational text:", e);
+        // Fallback: simple text render
+        return [<p key="fallback" className="text-sm text-slate-700 dark:text-slate-300">{text}</p>];
+    }
 }
 
 // =============================================================================

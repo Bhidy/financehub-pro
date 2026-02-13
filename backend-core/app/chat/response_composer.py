@@ -86,6 +86,7 @@ HUMAN_OPENINGS = {
     }
 }
 
+
 # Category names for rotation
 OPENING_CATEGORIES = list(HUMAN_OPENINGS.keys())
 
@@ -670,7 +671,12 @@ class ResponseComposer:
         
         # CRITICAL FIX: Prevent duplication. If Insight is shown as a CARD, do not append to TEXT.
         # expanded to include my_framework (My Take) and cases, as they serve as the insight.
-        insight_in_cards = shown_card_types and any(ct in shown_card_types for ct in ['key_insight', 'insight', 'daily_insight', 'my_framework', 'bull_case', 'bear_case'])
+        insight_card_types = [
+            'key_insight', 'insight', 'daily_insight', 'my_framework', 
+            'bull_case', 'bear_case', 'valuation_score', 'macro_score', 
+            'technical_indicators', 'fair_value'
+        ]
+        insight_in_cards = shown_card_types and any(ct in shown_card_types for ct in insight_card_types)
         
         if detected_insight:
             # Use the "Thought Process" derived insight if available

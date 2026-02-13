@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh root@46.224.223.172 "docker logs starta-backend-1 --tail 200 | grep -A 5 'DIAG\\|💥\\|❌\\|✅'"
+expect "password:"
+send "StartaProd2026!\r"
+expect eof

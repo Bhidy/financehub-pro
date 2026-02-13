@@ -41,22 +41,6 @@ HUMAN_OPENINGS = {
             "دعنا نفحص هذا الأمر بعناية، فالتفاصيل غالباً ما تروي قصة مختلفة عن العناوين. إليك التحليل المبني على البيانات.",
         ]
     },
-    "acknowledgment_with_name": {
-        "en": [
-            "That's an excellent point to raise, {name}. I've reviewed the latest live data to provide you with a comprehensive breakdown.",
-            "I'm glad you asked about this, {name}. Let's look at the underlying fundamentals together to validate your improved perspective.",
-            "You are asking the right questions, {name}. To give you the best answer, I have synthesized the key technical and fundamental indicators below.",
-            "Got it, {name}. I have analyzed the most recent market sessions to give you a precise answer to this specific inquiry.",
-            "This is a smart angle to explore, {name}. Let me walk you through the data so we can determine the best course of action together.",
-        ],
-        "ar": [
-            "هذه نقطة ممتازة لطرحها يا {name}. لقد راجعت أحدث البيانات الحية لأقدم لك تحليلاً شاملاً وتفصيلياً.",
-            "سعيد أنك سألت عن هذا الأمر يا {name}. دعنا ننظر في الأساسيات الكامنة معاً للتحقق من هذه الزاوية المهمة.",
-            "أنت تسأل الأسئلة الصحيحة يا {name}. لكي أعطيك أفضل إجابة، قمت بدمج المؤشرات الفنية والأساسية الرئيسية أدناه.",
-            "فهمت قصدك يا {name}. لقد قمت بتحليل جلسات التداول الأخيرة لأعطيك إجابة دقيقة على هذا الاستفسار المحدد.",
-            "هذه زاوية ذكية للاستكشاف يا {name}. دعني أستعرض معك البيانات لنتمكن من تحديد أفضل مسار للعمل معاً.",
-        ]
-    },
     "affirmation": {
         "en": [
             "You are absolutely focusing on the right metrics here. Validating this specific angle reveals the true underlying trend of the asset.",
@@ -376,11 +360,11 @@ class ResponseComposer:
         if not force and random.random() > 0.5:
             return None, None
         
-        # Choose category type based on name usage
-        if use_name and user_name != "Trader" and random.random() > 0.3:
-            category_pool = ["acknowledgment_with_name"]
+        # Select category pool based on scenario
+        if is_follow_up:
+            category_pool = ["neutral"]  # Use neutral for follow-ups (no names)
         else:
-            category_pool = ["acknowledgment", "affirmation", "neutral"]
+            category_pool = ["acknowledgment", "affirmation", "neutral"]  # No name-based greetings
         
         # Avoid repetition
         available = [c for c in category_pool if c != last_opening_used]

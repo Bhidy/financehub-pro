@@ -161,10 +161,10 @@ def run_test_suite():
             issues = validate_response(test['msg'], data)
             
             if not issues:
-                print_pass(f"({dur:.1f}s)")
+                print_pass(f"({dur:.1f}s) [v{data.get('meta', {}).get('backend_version', '???')}]")
                 results["passed"] += 1
             else:
-                print_fail(", ".join(issues))
+                print_fail(", ".join(issues) + f" [v{data.get('meta', {}).get('backend_version', '???')}]")
                 results["failed"] += 1
                 
         except Exception as e:

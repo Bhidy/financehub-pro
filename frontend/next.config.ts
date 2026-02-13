@@ -24,20 +24,6 @@ if (process.env.VERCEL) {
 }
 
 /** @type {import('next').NextConfig} */
-const LEGACY_HOME_REDIRECTS = [
-  {
-    source: '/home',
-    destination: '/',
-    permanent: true,
-  },
-  {
-    source: '/Home',
-    destination: '/',
-    permanent: true,
-  },
-];
-
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   // Output standalone build for Docker/Railway deployment
   // Output standalone build for Docker/Railway deployment
@@ -74,11 +60,15 @@ const nextConfig = {
     optimizeCss: true,
   },
 
-  // Rewrites for custom domain
-  // REMOVED: All routing is now handled by the root app/ directory
-  // async rewrites() { ... }
-  async redirects() {
-    return LEGACY_HOME_REDIRECTS;
+  // Canonical Home page mapping.
+  // Keeps /home serving the dedicated static Home page content.
+  async rewrites() {
+    return [
+      {
+        source: '/home',
+        destination: '/home.html',
+      },
+    ];
   },
 
   // Headers for security

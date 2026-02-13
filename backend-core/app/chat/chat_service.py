@@ -1308,14 +1308,14 @@ class ChatService:
                         
                         # Definition of Robust Patterns (Handle bold, caps, spacing)
                         patterns = {
-                            'bull': r"(?:\[BULL_CASE\]|\*\*\[BULL_CASE\]\*\*|\[BULL CASE\]|BULL CASE[:\n])",
-                            'bear': r"(?:\[BEAR_CASE\]|\*\*\[BEAR_CASE\]\*\*|\[BEAR CASE\]|BEAR CASE[:\n])",
-                            'framework': r"(?:\[FRAMEWORK\]|\*\*\[FRAMEWORK\]\*\*|FRAMEWORK[:\n])",
-                            'my_framework': r"(?:\[MY_FRAMEWORK\]|\*\*\[MY_FRAMEWORK\]\*\*|MY FRAMEWORK[:\n])",
-                            'methodology': r"(?:\[METHODOLOGY\]|\*\*\[METHODOLOGY\]\*\*|METHODOLOGY[:\n])",
-                            'learning': r"(?:\[LEARNING\]|\*\*\[LEARNING\]\*\*|LEARNING[:\n])",
-                            'drivers': r"(?:\[QUANTIFIED_DRIVERS\]|QUANTIFIED DRIVERS[:\n])",
-                            'thought': r"(?:\[THOUGHT_PROCESS\]|\*\*\[THOUGHT_PROCESS\]\*\*|THOUGHT PROCESS[:\n])"
+                            'bull': r"(?:\[BULL[_ ]CASE\]|\*\*\[?BULL[_ ]CASE\]?\*\*|📈\s*Bull\s*Case|Bull\s*Case\s*\([^)]*\)|BULL[_ ]CASE\s*[:\n])",
+                            'bear': r"(?:\[BEAR[_ ]CASE\]|\*\*\[?BEAR[_ ]CASE\]?\*\*|📉\s*Bear\s*Case|Bear\s*Case\s*\([^)]*\)|BEAR[_ ]CASE\s*[:\n])",
+                            'framework': r"(?:\[FRAMEWORK\]|\*\*\[?FRAMEWORK\]?\*\*|FRAMEWORK\s*[:\n])",
+                            'my_framework': r"(?:\[MY[_ ]FRAMEWORK\]|\*\*\[?MY[_ ]FRAMEWORK\]?\*\*|My\s*Framework\s*[:\n]|MY[_ ]FRAMEWORK\s*[:\n])",
+                            'methodology': r"(?:\[METHODOLOGY\]|\*\*\[?METHODOLOGY\]?\*\*|Methodology\s*[:\n]|METHODOLOGY\s*[:\n])",
+                            'learning': r"(?:\[LEARNING\]|\*\*\[?LEARNING\]?\*\*|LEARNING\s*[:\n])",
+                            'drivers': r"(?:\[QUANTIFIED[_ ]DRIVERS\]|QUANTIFIED\s*DRIVERS\s*[:\n])",
+                            'thought': r"(?:\[THOUGHT[_ ]PROCESS\]|\*\*\[?THOUGHT[_ ]PROCESS\]?\*\*|THOUGHT\s*PROCESS\s*[:\n])"
                         }
 
                         # Function to extract and clean

@@ -20,7 +20,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect, Suspense, useCallback } from "react";
+import { useState, useRef, useEffect, Suspense, useCallback, useMemo } from "react";
 import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart, ArrowLeftRight, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
@@ -46,6 +46,7 @@ import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
 
 // NEW: World-Class Unified Message Renderer (Matches Mockup EXACTLY)
 import { WorldClassMessage, FollowUpPrompt } from "@/components/ai/WorldClassMessage";
+import { MessageErrorBoundary } from "@/components/ai/MessageErrorBoundary";
 
 // Domain and Device detection
 import { useDomainDetect } from "@/hooks/useDomainDetect";
@@ -155,6 +156,17 @@ function ResponsiveAIAnalystContent() {
     //     }
     // }, [isAuthLoading, isAuthenticated]);
 
+    // Memoize config to prevent infinite re-renders
+    const chatConfig = useMemo(() => ({
+        market: contextMarket,
+        onUsageLimitReached: () => {
+            if (!isAuthenticated) {
+                setShowUsageModal(true);
+            }
+        },
+        lang: lang
+    }), [contextMarket, isAuthenticated, lang]);
+
     const {
         messages,
         query,
@@ -165,15 +177,7 @@ function ResponsiveAIAnalystContent() {
         clearHistory,
         loadSession,
         sessionId,
-    } = useAIChat({
-        market: contextMarket,
-        onUsageLimitReached: () => {
-            if (!isAuthenticated) {
-                setShowUsageModal(true);
-            }
-        },
-        lang: lang
-    });
+    } = useAIChat(chatConfig);
 
     // Handle session selection wrapper to ensure state updates
     const handleSelectSession = useCallback(async (id: string) => {
@@ -331,11 +335,13 @@ function ResponsiveAIAnalystContent() {
                                     - Amber-bordered disclaimers
                                     - Follow-up prompts
                                    ============================================================ */}
-                                <WorldClassMessage
-                                    conversationalText={m.response?.conversational_text || m.content}
-                                    response={m.response}
-                                    lang={resolveMessageLanguage(m)}
-                                />
+                                <MessageErrorBoundary>
+                                    <WorldClassMessage
+                                        conversationalText={m.response?.conversational_text || m.content}
+                                        response={m.response}
+                                        lang={resolveMessageLanguage(m)}
+                                    />
+                                </MessageErrorBoundary>
 
                                 {/* Chart - Keep separate for specialized rendering */}
                                 {m.response?.chart && (

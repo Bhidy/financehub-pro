@@ -250,7 +250,9 @@ export function useAIChat(config?: {
     const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
     const hasArabicChars = (text?: string) => /[\u0600-\u06FF]/.test(text || "");
 
-    // Initialize device fingerprint and session on mount
+    // Initialize device fingerprint and session on mount (RUNS ONCE)
+    // CRITICAL FIX: Was [config] which created infinite re-render loop because
+    // config is a new object ref every render → triggers effect → state update → re-render → repeat
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setDeviceFingerprint(getDeviceFingerprint());
@@ -271,7 +273,7 @@ export function useAIChat(config?: {
 
             console.log(`[useAIChat] 🟢 Session Initialized: ${activeSession}`);
         }
-    }, [config]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Keep Ref in sync with State
     useEffect(() => {

@@ -333,7 +333,8 @@ class LLMExplainerService:
                 f"Identify the key signal, decide the thesis (Bull/Bear), and plan the narrative.\n"
                 f"Example: [THOUGHT_PROCESS] PE is 4x (Undervalued). Growth is 20%. Thesis: Strong Buy. [/THOUGHT_PROCESS]\n\n"
                 
-                f"You MUST use these tags. The App depends on them to render cards:\n\n"
+                f"You MUST use these EXACT tags. The App Parser depends on them to render cards.\n"
+                f"⚠️ CRITICAL: Use the EXACT bracket format shown below. Example: [BULL_CASE] not 'Bull Case:'\n\n"
                 f"1. **Narrative** (COMPREHENSIVE - 3 paragraphs minimum):\n"
                 f"   - Para 1: Executive Summary with QUANTIFIED thesis (e.g., 'trading at a 20% discount to 5-year average').\n"
                 f"   - Para 2: Valuation Setup — compare current metrics to historical averages AND peer averages. Cite specific numbers.\n"

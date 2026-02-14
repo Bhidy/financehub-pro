@@ -48,7 +48,8 @@ from .schemas import (
     # NEW: Premium World-Class Components (Phase 2)
     FrameworkCard, CharacterCard, QuantifiedDriver, QuantifiedDriversCard, IndexCompositionCard,
     # NEW: 7-Layer Structure
-    StructuredNarrative
+    StructuredNarrative,
+    ResolvedSymbol,
 )
 from .text_normalizer import normalize_text, extract_potential_symbols
 from .intent_router import IntentRouter, create_router
@@ -1240,6 +1241,79 @@ class ChatService:
         return bool(re.search(pattern, str(message).upper()))
 
     @staticmethod
+    def _is_buy_decision_query(message: Optional[str]) -> bool:
+        """Detect buy/invest decision questions (stock-specific or generic)."""
+        if not message:
+            return False
+        msg = str(message).strip()
+        lower = msg.lower()
+        if re.search(r"\bshould\s+i\s+(buy|invest)\b", lower):
+            return True
+        if re.search(r"\b(is\s+it\s+a\s+buy|worth\s+buying|buy\s+or\s+sell)\b", lower):
+            return True
+        arabic_buy_markers = [
+            "هل اشتري", "هل أشتري", "اشتري", "أشتري", "شراء", "هل استثمر", "استثمر",
+        ]
+        return any(marker in msg for marker in arabic_buy_markers)
+
+    @staticmethod
+    def _is_market_wide_buy_query(message: Optional[str]) -> bool:
+        """Detect broad market timing questions (not a specific stock decision)."""
+        if not message:
+            return False
+        msg = str(message).strip()
+        lower = msg.lower()
+        en_markers = [
+            "good time to buy", "market timing", "buy now", "market now",
+            "is now a good time", "market condition",
+        ]
+        if any(marker in lower for marker in en_markers):
+            return True
+        ar_markers = [
+            "توقيت السوق", "الوقت مناسب", "هل الآن مناسب", "هل الان مناسب",
+            "السوق", "المؤشر", "حالة السوق",
+        ]
+        return any(marker in msg for marker in ar_markers)
+
+    async def _resolve_symbol_from_user_message(
+        self,
+        message: Optional[str],
+        market_code: Optional[str]
+    ) -> Optional[ResolvedSymbol]:
+        """
+        Resolve symbol from the ORIGINAL user message (not paraphrased text).
+        This prevents paraphraser/LLM hallucinated tickers from overriding user intent.
+        """
+        if not message:
+            return None
+
+        raw = str(message).strip()
+        if not raw:
+            return None
+
+        candidates: List[str] = []
+        extracted = extract_potential_symbols(raw)
+        for item in extracted:
+            token = str(item).strip()
+            if token:
+                candidates.append(token)
+        candidates.append(raw)
+
+        seen: set[str] = set()
+        for cand in candidates[:8]:
+            key = cand.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            try:
+                resolved = await self.resolver.resolve(cand, market_code)
+            except Exception:
+                resolved = None
+            if resolved:
+                return resolved
+        return None
+
+    @staticmethod
     def _is_low_quality_text(text: Optional[str]) -> bool:
         """Detect unusable narrative fragments such as punctuation-only outputs."""
         if not text:
@@ -1592,13 +1666,26 @@ class ChatService:
             # Guardrail: prevent stale or hallucinated symbol carryover on non-symbol intents.
             candidate_symbol = entities.get('symbol')
             if candidate_symbol:
-                explicit_symbol_in_query = (
-                    self._message_mentions_symbol(message, candidate_symbol)
-                    or self._message_mentions_symbol(routing_text, candidate_symbol)
-                )
+                explicit_symbol_in_query = self._message_mentions_symbol(message, candidate_symbol)
                 if not self._intent_allows_symbol_entity(intent) and not explicit_symbol_in_query:
                     entities.pop('symbol', None)
                     entities.pop('market_code', None)
+                    candidate_symbol = None
+
+                # Extra guard: market-wide intents should not carry a hidden/hallucinated symbol.
+                market_wide_intents = {
+                    Intent.MARKET_TIMING,
+                    Intent.MARKET_SUMMARY,
+                    Intent.MARKET_STATUS,
+                    Intent.MACRO_VIEW,
+                }
+                if (
+                    candidate_symbol
+                    and intent in market_wide_intents
+                    and not explicit_symbol_in_query
+                ):
+                    entities.pop('symbol', None)
+                    candidate_symbol = None
 
             # Keep compare_symbols only for compare workflows.
             if intent != Intent.COMPARE_STOCKS and entities.get('compare_symbols'):
@@ -1633,7 +1720,29 @@ class ChatService:
             )
             symbol = entities.get('symbol') if intent_uses_symbol_routing else None
             potential_symbols = extract_potential_symbols(routing_text) if intent_uses_symbol_routing else []
+            potential_symbols_original = extract_potential_symbols(message) if intent_uses_symbol_routing else []
             candidate = None
+            resolved_from_user_text = None
+
+            # Resolve from the original user message first whenever symbol confidence is weak.
+            # This prevents paraphraser/LLM hallucinated tickers from hijacking intent.
+            if intent_uses_symbol_routing and (
+                self._contains_arabic_text(message)
+                or not symbol
+                or not self._message_mentions_symbol(message, symbol)
+            ):
+                resolved_from_user_text = await self._resolve_symbol_from_user_message(
+                    message=message,
+                    market_code=entities.get('market_code')
+                )
+                if resolved_from_user_text and (
+                    not symbol
+                    or not self._message_mentions_symbol(message, symbol)
+                ):
+                    entities['symbol'] = resolved_from_user_text.symbol
+                    entities['market_code'] = resolved_from_user_text.market_code
+                    symbol = resolved_from_user_text.symbol
+                    print(f"[ChatService] 🧭 Original-message resolution override: '{symbol}'")
             
             # CRITICAL FIX: Prefer Claude's entity symbol over regex extraction.
             # The paraphraser introduces false positives (e.g. "Hal el 3a3ra fel COMI?" ->
@@ -1643,6 +1752,9 @@ class ChatService:
                 if symbol and len(symbol) >= 3:
                     candidate = symbol  # Trust Claude's classification as primary
                     print(f"[ChatService] 🎯 Using Claude's entity symbol: '{candidate}' (from entities)")
+                elif potential_symbols_original:
+                    candidate = potential_symbols_original[0]  # Prefer original user text extraction
+                    print(f"[ChatService] 🔍 Using original-text candidate: '{candidate}' (from {potential_symbols_original})")
                 elif potential_symbols:
                     candidate = potential_symbols[0]  # Fallback to regex extraction
                     print(f"[ChatService] 🔍 Using regex-extracted symbol: '{candidate}' (from {potential_symbols})")
@@ -1691,6 +1803,9 @@ class ChatService:
             if candidate:
                 resolved_symbol = await self.resolver.resolve(candidate, entities.get('market_code'))
                 resolver_method = "extraction"
+            if not resolved_symbol and resolved_from_user_text:
+                resolved_symbol = resolved_from_user_text
+                resolver_method = "user_message"
                 
             # --- CONTEXT RELEVANCE FIX (The "JUFO" Killer) ---
             # Only certain intents should inherit the last symbol from context.
@@ -1723,6 +1838,17 @@ class ChatService:
                 actual_symbol = resolved_symbol.symbol
                 entities['symbol'] = actual_symbol
                 entities['market_code'] = resolved_symbol.market_code
+
+            # Intent correction: buy-decision queries with a resolved stock should be
+            # answered as stock analysis, not broad market timing.
+            if intent == Intent.MARKET_TIMING and self._is_buy_decision_query(message):
+                if actual_symbol:
+                    print(f"[ChatService] 🎯 Buy decision mapped to STOCK_SNAPSHOT for {actual_symbol}")
+                    intent = Intent.STOCK_SNAPSHOT
+                elif not self._is_market_wide_buy_query(message):
+                    print("[ChatService] 🎯 Buy decision lacks clear symbol -> CLARIFY_SYMBOL")
+                    intent = Intent.CLARIFY_SYMBOL
+                    entities.pop('symbol', None)
                 
             # 6. Execute Handler
             handler_name = intent.value

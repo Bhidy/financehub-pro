@@ -151,6 +151,30 @@ Return JSON format:
     def __init__(self, llm_client: Optional[MultiProviderLLM] = None):
         self.llm_client = llm_client or get_multi_llm()
         self.context_assembler = get_context_assembler()
+
+    @staticmethod
+    def _canonical_symbol(symbol: str) -> str:
+        """Normalize symbol for duplicate detection (COMI == COMI.CA)."""
+        if not symbol:
+            return ""
+        return str(symbol).strip().upper().split(".")[0]
+
+    def _dedupe_compare_symbols(self, symbols: List[str]) -> List[str]:
+        """Deduplicate comparison symbols while preserving order."""
+        deduped: List[str] = []
+        seen: set[str] = set()
+        for sym in symbols or []:
+            if not sym:
+                continue
+            raw = str(sym).strip().upper()
+            if not raw:
+                continue
+            canonical = self._canonical_symbol(raw)
+            if canonical in seen:
+                continue
+            seen.add(canonical)
+            deduped.append(raw)
+        return deduped
     
     async def classify(
         self,
@@ -186,9 +210,33 @@ Return JSON format:
         # Handle simple confirmations without LLM call
         if follow_up_type == FollowUpType.CONFIRMATION.value:
             # User said "yes"/"ok" - execute pending suggestion
-            pending = context.get("pending_suggestions", [])
-            if pending:
+            pending = [
+                str(p).strip().lower()
+                for p in (context.get("pending_suggestions", []) or [])
+                if str(p).strip()
+            ]
+            pending = list(dict.fromkeys(pending))
+            if len(pending) == 1:
                 return self._handle_confirmation(pending[0], inherited_entities, context)
+            if len(pending) > 1:
+                # "Yes" to multiple offered options is ambiguous.
+                return self._handle_ambiguous_confirmation(
+                    pending_actions=pending,
+                    inherited_entities=inherited_entities,
+                    context=context
+                )
+
+            # If no pending action exists, continue with inherited symbol context if possible.
+            if inherited_entities.get("symbol"):
+                return OrchestratorResult(
+                    intent=Intent.STOCK_SNAPSHOT,
+                    entities={"symbol": inherited_entities.get("symbol")},
+                    language=context.get("preferred_language", "en"),
+                    confidence=0.7,
+                    is_follow_up=True,
+                    follow_up_type="confirmation",
+                    inherited_entities=inherited_entities
+                )
         
         # Build intent list for prompt
         intent_list = "\n".join([
@@ -307,15 +355,19 @@ Return JSON format:
                 if isinstance(compare_symbols, str):
                     compare_symbols = [compare_symbols]
                 if isinstance(compare_symbols, list):
-                    entities["compare_symbols"] = [
+                    entities["compare_symbols"] = self._dedupe_compare_symbols([
                         str(sym).upper() for sym in compare_symbols if str(sym).strip()
-                    ]
+                    ])
                 else:
                     entities.pop("compare_symbols", None)
 
             # Normalize symbol to uppercase
             if entities.get("symbol"):
                 entities["symbol"] = entities["symbol"].upper()
+
+            # Guarantee compare set cannot contain the same base symbol twice.
+            if entities.get("compare_symbols"):
+                entities["compare_symbols"] = self._dedupe_compare_symbols(entities["compare_symbols"])
             
             return OrchestratorResult(
                 intent=intent,
@@ -356,6 +408,33 @@ Return JSON format:
         return OrchestratorResult(
             intent=intent,
             entities=inherited_entities,
+            language=context.get("preferred_language", "en"),
+            confidence=0.9,
+            is_follow_up=True,
+            follow_up_type="confirmation",
+            inherited_entities=inherited_entities
+        )
+
+    def _handle_ambiguous_confirmation(
+        self,
+        pending_actions: List[str],
+        inherited_entities: Dict[str, Any],
+        context: Dict[str, Any]
+    ) -> OrchestratorResult:
+        """
+        Handle ambiguous confirmations when assistant offered multiple next steps
+        and the user only replied with "yes".
+        """
+        entities: Dict[str, Any] = {
+            "clarify_follow_up": True,
+            "follow_up_options": pending_actions,
+        }
+        if inherited_entities.get("symbol"):
+            entities["symbol"] = inherited_entities.get("symbol")
+
+        return OrchestratorResult(
+            intent=Intent.FOLLOW_UP,
+            entities=entities,
             language=context.get("preferred_language", "en"),
             confidence=0.9,
             is_follow_up=True,

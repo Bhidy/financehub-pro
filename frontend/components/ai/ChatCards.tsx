@@ -743,18 +743,29 @@ interface FinancialsTableProps {
 export function FinancialsTableCard({ title, subtitle, years, rows, currency = "EGP", language = "en" }: FinancialsTableProps) {
     const t = translations[language].chat;
     const isRtl = language === "ar";
+    const safeYears = Array.isArray(years) ? years : [];
+    const safeRows = Array.isArray(rows) ? rows : [];
+
+    const getRowValues = (row: StatementRow | null | undefined): Record<string, number | null> => {
+        if (!row || typeof row !== "object") return {};
+        const values = (row as any).values;
+        return values && typeof values === "object" ? values : {};
+    };
     // Initial raw years
-    const rawYears = [...new Set(years.map(y => String(y)))].slice(0, 7);
+    const rawYears = [...new Set(safeYears.map(y => String(y)))].slice(0, 7);
 
     // Filter out rows where ALL values are null (Strict Policy)
-    const validRows = rows.filter(row => {
-        const values = Object.values(row.values);
+    const validRows = safeRows.filter(row => {
+        const values = Object.values(getRowValues(row));
         return values.some(v => v !== null && v !== undefined);
     });
 
     // Final years: Only those that have at least one non-null value in validRows
     const uniqueYears = rawYears.filter(year =>
-        validRows.some(row => row.values[year] !== null && row.values[year] !== undefined)
+        validRows.some(row => {
+            const values = getRowValues(row);
+            return values[year] !== null && values[year] !== undefined;
+        })
     );
 
 
@@ -780,9 +791,10 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
     // Export to CSV
     const handleExportCSV = () => {
         const headers = ['Line Item', ...uniqueYears];
-        const csvRows = rows.map(row => {
-            const values = uniqueYears.map(year => row.values[year] ?? '');
-            return [row.label, ...values].join(',');
+        const csvRows = validRows.map(row => {
+            const valuesMap = getRowValues(row);
+            const values = uniqueYears.map(year => valuesMap[year] ?? '');
+            return [row.label || "", ...values].join(',');
         });
         const csv = [headers.join(','), ...csvRows].join('\n');
 
@@ -798,12 +810,13 @@ export function FinancialsTableCard({ title, subtitle, years, rows, currency = "
     // Export to Excel (via CSV with proper encoding)
     const handleExportExcel = () => {
         const headers = ['Line Item', ...uniqueYears];
-        const excelRows = rows.map(row => {
+        const excelRows = validRows.map(row => {
+            const valuesMap = getRowValues(row);
             const values = uniqueYears.map(year => {
-                const val = row.values[year];
+                const val = valuesMap[year];
                 return val !== null && val !== undefined ? val : '';
             });
-            return [row.label, ...values].join('\t');
+            return [row.label || "", ...values].join('\t');
         });
         const tsv = [headers.join('\t'), ...excelRows].join('\n');
 
@@ -1243,13 +1256,21 @@ interface DeepValuationProps {
 
 export function DeepValuationCard({ data, language = "en" }: DeepValuationProps & { language?: "en" | "ar" }) {
     const isRtl = language === "ar";
+    const safeData = (data && typeof data === "object") ? data : ({} as any);
+    const multiplesRaw = safeData.multiples && typeof safeData.multiples === "object" ? safeData.multiples : {};
+    const multiples = Object.fromEntries(
+        Object.entries(multiplesRaw).filter(([key]) => typeof key === "string" && key.trim().length > 0)
+    ) as Record<string, number | null>;
+    const verdict = typeof safeData.verdict === "string" ? safeData.verdict : (language === "ar" ? "غير متاح" : "N/A");
     // Color based on verdict
-    const isUndervalued = data.verdict?.toLowerCase().includes('under');
-    const isOvervalued = data.verdict?.toLowerCase().includes('over');
+    const isUndervalued = verdict.toLowerCase().includes('under');
+    const isOvervalued = verdict.toLowerCase().includes('over');
     const verdictColor = isUndervalued ? 'text-emerald-600 bg-emerald-50' : isOvervalued ? 'text-red-600 bg-red-50' : 'text-cyan-600 bg-cyan-50';
 
     // Get max value for bar scaling
-    const values = Object.values(data.multiples).filter(v => v !== null) as number[];
+    const values = Object.values(multiples)
+        .map(v => (typeof v === "number" ? v : Number(v)))
+        .filter(v => Number.isFinite(v)) as number[];
     const maxVal = Math.max(...values, 1);
 
     return (
@@ -1263,17 +1284,18 @@ export function DeepValuationCard({ data, language = "en" }: DeepValuationProps 
                     💎 {language === "ar" ? "تحليل التقييم" : "Valuation Analysis"}
                 </div>
                 <span className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${verdictColor}`}>
-                    {data.verdict}
+                    {verdict}
                 </span>
             </div>
 
             {/* Horizontal Bar Chart */}
             <div className="space-y-3 mb-4">
-                {Object.entries(data.multiples).slice(0, 6).map(([key, val]) => {
-                    if (val === null || val === undefined) return null; // Hide if missing
+                {Object.entries(multiples).slice(0, 6).map(([key, val]) => {
+                    const numVal = typeof val === "number" ? val : Number(val);
+                    if (!Number.isFinite(numVal)) return null;
 
-                    const barWidth = Math.min((val / maxVal) * 100, 100);
-                    const isHigh = val > maxVal * 0.7;
+                    const barWidth = Math.min((numVal / maxVal) * 100, 100);
+                    const isHigh = numVal > maxVal * 0.7;
                     const barColor = isHigh ? 'bg-gradient-to-r from-cyan-400 to-cyan-600' : 'bg-gradient-to-r from-blue-400 to-blue-600';
 
                     return (
@@ -1281,7 +1303,7 @@ export function DeepValuationCard({ data, language = "en" }: DeepValuationProps 
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{key}</span>
                                 <span className="text-sm font-bold text-slate-800 dark:text-white">
-                                    {val.toFixed(2)}
+                                    {numVal.toFixed(2)}
                                 </span>
                             </div>
                             <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -2236,18 +2258,22 @@ interface ChatCardsProps {
 }
 
 export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClick, showExport = false }: ChatCardsProps) {
+    const safeCards = Array.isArray(cards)
+        ? cards.filter((card: any) => card && typeof card === "object")
+        : [];
+
     // Integrity Tracer - Professional Verification
     console.log("💎 FinanceHub Pro v3.7-ULTRA-PRD Loaded", {
         timestamp: new Date().toISOString(),
         engine: "Ultra-Premium-v7",
-        cards: cards.length
+        cards: safeCards.length
     });
 
-    if (!cards.length) return null;
+    if (!safeCards.length) return null;
 
     return (
         <div className="space-y-3 mt-3">
-            {cards.map((card, i) => (
+            {safeCards.map((card, i) => (
                 <ChatCard
                     key={i}
                     card={card}
@@ -2256,9 +2282,9 @@ export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClic
                     onExampleClick={onExampleClick}
                 />
             ))}
-            {showExport && cards.length > 0 && (
+            {showExport && safeCards.length > 0 && (
                 <ExportToolbar
-                    data={cards.map(c => c.data)}
+                    data={safeCards.map(c => c?.data || {})}
                     title="chat_data"
                 />
             )}
@@ -2340,6 +2366,13 @@ export function DividendsTableCard({ title, data, language = "en" }: DividendsTa
 }
 
 function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
+    if (!card || typeof card !== "object") {
+        return null;
+    }
+    if (!card.data || typeof card.data !== "object") {
+        card = { ...card, data: {} };
+    }
+
     const type = (card.type || "").toLowerCase().trim();
     const chatT = translations[language === "ar" ? "ar" : "en"].chat;
     const rawErrorText = card?.data?.error;
@@ -2512,8 +2545,10 @@ function formatNumber(value: number | null | undefined, decimals = 2): string {
 
 function formatPercent(value: number | null | undefined, forceSign = false): string {
     if (value === null || value === undefined) return "-";
-    const sign = (value >= 0 && forceSign) ? "+" : "";
-    return `${sign}${value.toFixed(2)}%`;
+    const num = typeof value === "number" ? value : Number(value);
+    if (!Number.isFinite(num)) return "-";
+    const sign = (num >= 0 && forceSign) ? "+" : "";
+    return `${sign}${num.toFixed(2)}%`;
 }
 
 function formatValue(val: any, format?: string, label?: string) {

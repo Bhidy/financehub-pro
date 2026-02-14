@@ -1265,13 +1265,13 @@ class ChatService:
         lower = msg.lower()
         en_markers = [
             "good time to buy", "market timing", "buy now", "market now",
-            "is now a good time", "market condition",
+            "is now a good time", "market condition", "should i buy now",
         ]
         if any(marker in lower for marker in en_markers):
             return True
         ar_markers = [
             "توقيت السوق", "الوقت مناسب", "هل الآن مناسب", "هل الان مناسب",
-            "السوق", "المؤشر", "حالة السوق",
+            "السوق", "المؤشر", "حالة السوق", "هل أشتري الآن", "هل اشتري الآن",
         ]
         return any(marker in msg for marker in ar_markers)
 
@@ -1293,14 +1293,25 @@ class ChatService:
 
         candidates: List[str] = []
         extracted = extract_potential_symbols(raw)
+        generic_noise = {
+            "الان", "الآن", "السوق", "شراء", "اشترى", "اشتري", "أشتري", "استثمر",
+            "buy", "now", "market", "timing",
+        }
         for item in extracted:
             token = str(item).strip()
-            if token:
-                candidates.append(token)
-        candidates.append(raw)
+            if not token:
+                continue
+            token_norm = normalize_text(token).normalized
+            if not token_norm:
+                continue
+            if token_norm in generic_noise:
+                continue
+            if self._is_buy_decision_query(token_norm) or self._is_market_wide_buy_query(token_norm):
+                continue
+            candidates.append(token)
 
         seen: set[str] = set()
-        for cand in candidates[:8]:
+        for cand in candidates[:6]:
             key = cand.lower()
             if key in seen:
                 continue

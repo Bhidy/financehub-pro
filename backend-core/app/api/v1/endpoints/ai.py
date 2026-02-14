@@ -240,18 +240,16 @@ async def ai_chat_endpoint(
             # Get user context if authenticated
             user_id = access.get("user_email") if access.get("authenticated") else None
             
-            # Ensure session exists and is linked to user
-            if user_id:
-                # Update or create session
-                # If title is null and it's a new session, we'll set it later
-                await conn.execute("""
-                    INSERT INTO chat_sessions (session_id, user_id, last_market, updated_at)
-                    VALUES ($1, $2, $3, NOW())
-                    ON CONFLICT (session_id) DO UPDATE SET 
-                        user_id = EXCLUDED.user_id,
-                        last_market = EXCLUDED.last_market,
-                        updated_at = NOW()
-                """, session_id, user_id, final_market)
+            # Ensure session exists for both authenticated and guest users.
+            # This keeps continuity metadata available even if requests hit another worker.
+            await conn.execute("""
+                INSERT INTO chat_sessions (session_id, user_id, last_market, updated_at)
+                VALUES ($1, $2, $3, NOW())
+                ON CONFLICT (session_id) DO UPDATE SET
+                    user_id = COALESCE(chat_sessions.user_id, EXCLUDED.user_id),
+                    last_market = EXCLUDED.last_market,
+                    updated_at = NOW()
+            """, session_id, user_id, final_market)
 
             # Process Message
             response = await process_message(
@@ -265,50 +263,45 @@ async def ai_chat_endpoint(
             )
             
             # === HISTORY PERSISTENCE ===
+            # Persist for all users (including guests) so follow-up context survives worker hops.
+            await conn.execute("""
+                INSERT INTO chat_messages (session_id, role, content, created_at)
+                VALUES ($1, 'user', $2, NOW())
+            """, session_id, req.message)
+
+            # Store rich assistant payload for robust context recovery.
+            meta_data = {
+                "cards": [c.dict() for c in response.cards] if response.cards else [],
+                "actions": [a.dict() for a in response.actions] if response.actions else [],
+                "chart": response.chart.dict() if response.chart else None,
+                "intent": response.meta.intent,
+                "confidence": response.meta.confidence,
+                "entities": response.meta.entities if response.meta and response.meta.entities else {},
+                "follow_up_prompt": response.follow_up_prompt,
+                "conversational_text": response.conversational_text,
+                "fact_explanations": response.fact_explanations,
+            }
+
+            await conn.execute("""
+                INSERT INTO chat_messages (session_id, role, content, meta, created_at)
+                VALUES ($1, 'assistant', $2, $3, NOW())
+            """, session_id, response.message_text, json.dumps(meta_data, default=str))
+
+            # Session title/history UX is still auth-only.
             if user_id:
-                # 1. Save USER message
-                await conn.execute("""
-                    INSERT INTO chat_messages (session_id, role, content, created_at)
-                    VALUES ($1, 'user', $2, NOW())
-                """, session_id, req.message)
-
-                # 2. Save ASSISTANT response
-                # Store rich content (cards, actions) in 'meta'
-                # Convert Pydantic objects to dicts manually or using .dict()
-                # Actions and Cards are lists of objects, need to serialize them properly
-                meta_data = {
-                    "cards": [c.dict() for c in response.cards] if response.cards else [],
-                    "actions": [a.dict() for a in response.actions] if response.actions else [],
-                    "chart": response.chart.dict() if response.chart else None,
-                    "intent": response.meta.intent,
-                    "confidence": response.meta.confidence
-                }
-                
-                # Careful with JSON serialization of datetime objects etc in meta
-                # Using strings for safey
-                await conn.execute("""
-                    INSERT INTO chat_messages (session_id, role, content, meta, created_at)
-                    VALUES ($1, 'assistant', $2, $3, NOW())
-                """, session_id, response.message_text, json.dumps(meta_data, default=str))
-
-                # 3. Update Session Title if needed (First message) and updated_at
-                # Check if title is null
                 existing_title = await conn.fetchval("SELECT title FROM chat_sessions WHERE session_id = $1", session_id)
                 if not existing_title:
-                    # Generate simple title from user message
-                    # Split max 5 words
                     words = req.message.split()
                     new_title = " ".join(words[:5])
                     if len(words) > 5:
                         new_title += "..."
                     if not new_title.strip():
                         new_title = "New Chat"
-                        
                     await conn.execute("""
                         UPDATE chat_sessions SET title = $1, updated_at = NOW() WHERE session_id = $2
                     """, new_title, session_id)
                 else:
-                     await conn.execute("""
+                    await conn.execute("""
                         UPDATE chat_sessions SET updated_at = NOW() WHERE session_id = $1
                     """, session_id)
 

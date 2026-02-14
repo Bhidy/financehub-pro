@@ -31,6 +31,7 @@ Routes messages through the deterministic pipeline:
 import time
 import re
 import logging
+import json
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import asyncpg
@@ -401,13 +402,20 @@ class ChatService:
                 r"\bcompare\b", r"\bvs\b", r"versus", r"comparison", r"peer", r"competitor",
                 r"قارن", r"مقارنة", r"منافس", r"نظير", r"أقار", r"اقار"
             ]),
+            ("deep_dive", [
+                r"specific stock", r"single stock", r"this stock", r"that stock",
+                r"calculate", r"compute", r"apply (this|that) metric",
+                r"for a stock", r"run it on", r"drill down on",
+                r"سهم معين", r"سهم محدد", r"لسهم معين", r"على سهم",
+                r"احسب", r"حساب", r"طبّق", r"طبق", r"تطبيق هذا المؤشر"
+            ]),
             ("financials", [
                 r"financial", r"financials", r"income statement", r"balance sheet", r"cash flow",
                 r"القوائم", r"مالية", r"الميزانية", r"التدفقات", r"الأرباح"
             ]),
             ("dividends", [
                 r"dividend", r"yield", r"payout",
-                r"توزيعات", r"توزيع", r"عائد"
+                r"توزيعات", r"توزيع", r"عائد التوزيع", r"عائد التوزيعات"
             ]),
             ("chart", [
                 r"\bchart\b", r"technical", r"technicals", r"rsi", r"macd",
@@ -424,6 +432,225 @@ class ChatService:
 
         return list(dict.fromkeys(actions))
 
+    @staticmethod
+    def _coerce_meta_dict(raw_meta: Any) -> Dict[str, Any]:
+        """Safely coerce DB meta payloads into a dictionary."""
+        if isinstance(raw_meta, dict):
+            return raw_meta
+        if isinstance(raw_meta, str):
+            try:
+                parsed = json.loads(raw_meta)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                return {}
+        return {}
+
+    @staticmethod
+    def _is_confirmation_reply(message: Optional[str]) -> bool:
+        """Fast check for short confirmation replies like yes/ok/نعم."""
+        if not message:
+            return False
+        normalized = re.sub(r"[^\w\s\u0600-\u06FF]", "", str(message).strip().lower())
+        confirmations = {
+            "yes", "yeah", "yep", "ok", "okay", "sure", "alright", "right",
+            "نعم", "ايوه", "أيوه", "اه", "آه", "تمام", "ماشي", "اوك", "اوكي", "موافق",
+        }
+        return normalized in confirmations
+
+    async def _hydrate_conversation_memory(
+        self,
+        session_id: str,
+        current_message: str,
+        history: Optional[List[Dict[str, Any]]],
+        context: Optional[Any],
+        language: str
+    ) -> None:
+        """
+        Rehydrate conversation memory when request hits a cold worker.
+        This keeps follow-up confirmations deterministic across processes.
+        """
+        memory = self.conversation_memory.get_or_create_session(session_id)
+        confirmation_reply = self._is_confirmation_reply(current_message)
+
+        needs_turns = len(memory.turns) == 0
+        needs_symbol = not memory.active_entities.symbol and (needs_turns or confirmation_reply)
+        needs_suggestions = not memory.pending_suggestions and confirmation_reply
+
+        if not (needs_turns or needs_symbol or needs_suggestions):
+            return
+
+        # 1) Recover from in-process context store if available.
+        context_pending: List[str] = []
+        if context:
+            if isinstance(getattr(context, "active_entities", None), dict):
+                ae = context.active_entities
+                memory.active_entities.update(
+                    symbol=ae.get("symbol"),
+                    sector=ae.get("sector"),
+                    market=ae.get("market"),
+                    metric=ae.get("metric"),
+                    last_intent=ae.get("last_intent"),
+                )
+            memory.active_entities.update(
+                symbol=getattr(context, "last_symbol", None),
+                market=getattr(context, "last_market", None),
+                last_intent=getattr(context, "last_intent", None),
+            )
+            raw_pending = getattr(context, "pending_suggestions", None) or []
+            context_pending = [
+                str(p).strip().lower()
+                for p in raw_pending
+                if str(p).strip()
+            ]
+            if context_pending and not memory.pending_suggestions:
+                memory.pending_suggestions = list(dict.fromkeys(context_pending))
+
+        # 2) Recover recent turns from request history if memory is cold.
+        if needs_turns and history:
+            for item in history[-8:]:
+                if not isinstance(item, dict):
+                    continue
+                role = str(item.get("role", "")).strip().lower()
+                if role == "ai":
+                    role = "assistant"
+                if role not in {"user", "assistant"}:
+                    continue
+                content = str(item.get("content") or "").strip()
+                if not content:
+                    continue
+                memory.add_turn(
+                    role=role,
+                    content=content[:500],
+                    language=language or "en"
+                )
+
+        # 3) DB fallback for multi-worker continuity (messages + follow-up prompt).
+        latest_assistant_content = ""
+        latest_assistant_meta: Dict[str, Any] = {}
+        try:
+            if needs_turns and not memory.turns:
+                rows = await self.conn.fetch(
+                    """
+                    SELECT role, content
+                    FROM chat_messages
+                    WHERE session_id = $1
+                    ORDER BY created_at DESC
+                    LIMIT 8
+                    """,
+                    session_id
+                )
+                for row in reversed(rows):
+                    role = str(row.get("role") or "").strip().lower()
+                    if role not in {"user", "assistant"}:
+                        continue
+                    content = str(row.get("content") or "").strip()
+                    if not content:
+                        continue
+                    memory.add_turn(
+                        role=role,
+                        content=content[:500],
+                        language=language or "en"
+                    )
+
+            if needs_symbol or needs_suggestions:
+                latest_row = await self.conn.fetchrow(
+                    """
+                    SELECT content, meta
+                    FROM chat_messages
+                    WHERE session_id = $1 AND role = 'assistant'
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                    """,
+                    session_id
+                )
+                if latest_row:
+                    latest_assistant_content = str(latest_row.get("content") or "")
+                    latest_assistant_meta = self._coerce_meta_dict(latest_row.get("meta"))
+        except Exception as err:
+            logger.warning(f"[ChatService] Context hydration DB fallback failed: {err}")
+
+        # Confirmation detection in ContextAssembler requires at least one prior turn.
+        # If memory is still empty, seed it with the latest assistant text/prompt.
+        if needs_turns and not memory.turns:
+            seed_prompt = (
+                str(latest_assistant_meta.get("follow_up_prompt") or "").strip()
+                if latest_assistant_meta else ""
+            )
+            seed_text = seed_prompt or latest_assistant_content
+            if seed_text:
+                memory.add_turn(
+                    role="assistant",
+                    content=seed_text[:500],
+                    language=language or "en"
+                )
+
+        if needs_symbol:
+            meta_entities = latest_assistant_meta.get("entities")
+            if isinstance(meta_entities, dict):
+                memory.active_entities.update(
+                    symbol=meta_entities.get("symbol"),
+                    sector=meta_entities.get("sector"),
+                    market=meta_entities.get("market") or meta_entities.get("market_code"),
+                    metric=meta_entities.get("metric"),
+                    last_intent=meta_entities.get("last_intent"),
+                )
+
+            if not memory.active_entities.symbol:
+                try:
+                    summary = await self.conn.fetchrow(
+                        """
+                        SELECT last_symbol, last_intent
+                        FROM chat_session_summary
+                        WHERE session_id = $1
+                        LIMIT 1
+                        """,
+                        session_id
+                    )
+                    if summary:
+                        memory.active_entities.update(
+                            symbol=summary.get("last_symbol"),
+                            last_intent=summary.get("last_intent"),
+                        )
+                except Exception as err:
+                    logger.warning(f"[ChatService] Session-summary fallback failed: {err}")
+
+        if needs_suggestions and not memory.pending_suggestions:
+            suggestion_texts: List[str] = []
+            follow_up_prompt = latest_assistant_meta.get("follow_up_prompt")
+            if follow_up_prompt:
+                suggestion_texts.append(str(follow_up_prompt))
+
+            actions = latest_assistant_meta.get("actions")
+            if isinstance(actions, list):
+                for action in actions:
+                    if isinstance(action, dict):
+                        payload = action.get("payload") or action.get("label") or ""
+                        if payload:
+                            suggestion_texts.append(str(payload))
+
+            if not suggestion_texts and latest_assistant_content:
+                suggestion_texts.append(latest_assistant_content)
+
+            parsed: List[str] = []
+            for text in suggestion_texts:
+                parsed.extend(self._extract_pending_suggestions_from_prompt(text))
+
+            if not parsed:
+                intent_hint = str(memory.active_entities.last_intent or "").upper()
+                fallback_by_intent = {
+                    "STOCK_PRICE": ["financials", "chart"],
+                    "STOCK_SNAPSHOT": ["financials", "chart"],
+                    "DEFINE_TERM": ["deep_dive", "compare"],
+                    "FINANCIALS": ["chart", "compare"],
+                }
+                parsed = fallback_by_intent.get(intent_hint, [])
+
+            if parsed:
+                memory.pending_suggestions = list(dict.fromkeys([
+                    str(p).strip().lower() for p in parsed if str(p).strip()
+                ]))
+
     def _build_follow_up_clarification_response(
         self,
         options: List[str],
@@ -433,12 +660,14 @@ class ChatService:
         """Ask user to clarify which follow-up action they confirmed."""
         option_map_en = {
             "compare": "Compare with peers",
+            "deep_dive": "Analyze this stock",
             "financials": "Deep financials",
             "dividends": "Dividend analysis",
             "chart": "Technical chart",
         }
         option_map_ar = {
             "compare": "مقارنة مع المنافسين",
+            "deep_dive": "تحليل هذا السهم",
             "financials": "تحليل القوائم المالية",
             "dividends": "تحليل التوزيعات",
             "chart": "الرسم والتحليل الفني",
@@ -468,6 +697,8 @@ class ChatService:
             label_ar = option_map_ar[action_key]
             if action_key == "compare":
                 payload = f"Compare {symbol} with peers" if symbol else "Compare this stock with peers"
+            elif action_key == "deep_dive":
+                payload = f"Analyze {symbol}" if symbol else "Analyze this stock"
             elif action_key == "financials":
                 payload = f"Show financials for {symbol}" if symbol else "Show financials"
             elif action_key == "dividends":
@@ -1071,6 +1302,16 @@ class ChatService:
                 print(f"[ChatService] 🌍 Language Resolution: Detected '{normalized.language}' | Header '{forced_language}' -> Using '{language}'")
             print(f"✅ [DIAG-STEP-3] Language resolved to: {language}")
             # -----------------------------
+
+            # Cold-worker continuity fix:
+            # Rehydrate follow-up memory before intent classification.
+            await self._hydrate_conversation_memory(
+                session_id=session_id,
+                current_message=message,
+                history=history,
+                context=context,
+                language=language
+            )
             
             # 3. Check compliance
             print(f"🔬 [DIAG-STEP-4] Checking Compliance...")

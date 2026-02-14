@@ -1665,7 +1665,18 @@ class ChatService:
             fact_explanations = None
             
             # Trigger Narrative for most intents except system ones
-            NO_NARRATIVE_INTENTS = [Intent.UNKNOWN, Intent.BLOCKED, Intent.HELP]
+            NO_NARRATIVE_INTENTS = [
+                Intent.UNKNOWN,
+                Intent.BLOCKED,
+                Intent.HELP,
+                Intent.GREETING,
+                Intent.IDENTITY,
+                Intent.CAPABILITIES,
+                Intent.MOOD,
+                Intent.GRATITUDE,
+                Intent.GOODBYE,
+                Intent.CLARIFY_SYMBOL,
+            ]
             skip_narrative_for_clarification = (
                 (intent == Intent.FOLLOW_UP and bool(entities.get("clarify_follow_up")))
                 or (intent == Intent.CLARIFY_SYMBOL)
@@ -2527,7 +2538,7 @@ class ChatService:
                     language=language,
                     intent=intent,
                     user_name=real_user_name,
-                    is_follow_up=(is_returning_user and not is_new_session) or intent == Intent.FOLLOW_UP,
+                    is_follow_up=(intent == Intent.FOLLOW_UP),
                     follow_up_type='continuation', # Default
                     active_symbol=actual_symbol,
                     sentiment=sentiment,
@@ -3301,7 +3312,23 @@ class ChatService:
             intent == Intent.CLARIFY_SYMBOL
             or bool(result.get("clarification_type") == "symbol")
         )
-        force_direct_message = force_direct_follow_up_message or force_direct_symbol_clarification
+        direct_intents = {
+            Intent.GREETING,
+            Intent.IDENTITY,
+            Intent.CAPABILITIES,
+            Intent.MOOD,
+            Intent.GRATITUDE,
+            Intent.GOODBYE,
+            Intent.HELP,
+            Intent.CLARIFY_SYMBOL,
+            Intent.UNKNOWN,
+            Intent.BLOCKED,
+        }
+        force_direct_message = (
+            force_direct_follow_up_message
+            or force_direct_symbol_clarification
+            or intent in direct_intents
+        )
 
         # Generate Premier Response Layer (DEFENSIVE: wrapped in try/except)
         if force_direct_message:

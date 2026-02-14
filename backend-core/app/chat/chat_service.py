@@ -1164,6 +1164,51 @@ class ChatService:
             return normalized_language
         return 'en'
 
+    def _intent_allows_symbol_entity(self, intent: Intent) -> bool:
+        """Return True when symbol context is valid for the given intent."""
+        return intent in {
+            Intent.STOCK_PRICE,
+            Intent.STOCK_SNAPSHOT,
+            Intent.STOCK_CHART,
+            Intent.STOCK_STAT,
+            Intent.FINANCIALS,
+            Intent.FINANCIALS_ANNUAL,
+            Intent.DIVIDENDS,
+            Intent.TECHNICAL_INDICATORS,
+            Intent.NEWS,
+            Intent.FAIR_VALUE,
+            Intent.FINANCIAL_HEALTH,
+            Intent.COMPANY_PROFILE,
+            Intent.OWNERSHIP,
+            Intent.REVENUE_TREND,
+            Intent.FIN_MARGINS,
+            Intent.FIN_DEBT,
+            Intent.FIN_CASH,
+            Intent.FIN_GROWTH,
+            Intent.FIN_EPS,
+            Intent.RATIO_VALUATION,
+            Intent.RATIO_EFFICIENCY,
+            Intent.RATIO_LIQUIDITY,
+            Intent.DEEP_VALUATION,
+            Intent.DEEP_SAFETY,
+            Intent.DEEP_GROWTH,
+            Intent.DEEP_EFFICIENCY,
+            Intent.COMPARE_STOCKS,
+            Intent.FOLLOW_UP,
+            Intent.MARKET_TIMING,
+            Intent.CALENDAR_EARNINGS,
+        }
+
+    def _message_mentions_symbol(self, message: Optional[str], symbol: Optional[str]) -> bool:
+        """Check if user message explicitly mentions the symbol token."""
+        if not message or not symbol:
+            return False
+        canonical = self._canonical_symbol(symbol)
+        if not canonical:
+            return False
+        pattern = rf"(?<![A-Z0-9]){re.escape(canonical)}(?:\\.[A-Z0-9]+)?(?![A-Z0-9])"
+        return bool(re.search(pattern, str(message).upper()))
+
     def _enforce_response_language(
         self,
         response: ChatResponse,
@@ -1501,6 +1546,21 @@ class ChatService:
                 print(f"[ChatService] 🎯 Intent override: {intent.value} -> {overridden_intent.value}")
                 intent = overridden_intent
             entities = overridden_entities
+
+            # Guardrail: prevent stale or hallucinated symbol carryover on non-symbol intents.
+            candidate_symbol = entities.get('symbol')
+            if candidate_symbol:
+                explicit_symbol_in_query = (
+                    self._message_mentions_symbol(message, candidate_symbol)
+                    or self._message_mentions_symbol(routing_text, candidate_symbol)
+                )
+                if not self._intent_allows_symbol_entity(intent) and not explicit_symbol_in_query:
+                    entities.pop('symbol', None)
+                    entities.pop('market_code', None)
+
+            # Keep compare_symbols only for compare workflows.
+            if intent != Intent.COMPARE_STOCKS and entities.get('compare_symbols'):
+                entities.pop('compare_symbols', None)
             
             # Force market code in entities if provided explicitly
             if market:
@@ -1676,6 +1736,7 @@ class ChatService:
                 Intent.GRATITUDE,
                 Intent.GOODBYE,
                 Intent.CLARIFY_SYMBOL,
+                Intent.DEFINE_TERM,
             ]
             skip_narrative_for_clarification = (
                 (intent == Intent.FOLLOW_UP and bool(entities.get("clarify_follow_up")))
@@ -3321,6 +3382,7 @@ class ChatService:
             Intent.GOODBYE,
             Intent.HELP,
             Intent.CLARIFY_SYMBOL,
+            Intent.DEFINE_TERM,
             Intent.UNKNOWN,
             Intent.BLOCKED,
         }

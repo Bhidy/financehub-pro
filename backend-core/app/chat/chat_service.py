@@ -1585,29 +1585,35 @@ class ChatService:
             }
             
             # 5. Resolve symbol
-            symbol = entities.get('symbol')
-            potential_symbols = extract_potential_symbols(routing_text)
+            intent_uses_symbol_routing = (
+                self._intent_allows_symbol_entity(intent)
+                or intent == Intent.COMPARE_STOCKS
+            )
+            symbol = entities.get('symbol') if intent_uses_symbol_routing else None
+            potential_symbols = extract_potential_symbols(routing_text) if intent_uses_symbol_routing else []
+            candidate = None
             
             # CRITICAL FIX: Prefer Claude's entity symbol over regex extraction.
             # The paraphraser introduces false positives (e.g. "Hal el 3a3ra fel COMI?" ->
             # regex extracts HAL, FEL, COMI — but HAL/FEL are paraphraser artifacts, not stocks).
             # Claude's classification is the authoritative symbol source.
-            if symbol and len(symbol) >= 3:
-                candidate = symbol  # Trust Claude's classification as primary
-                print(f"[ChatService] 🎯 Using Claude's entity symbol: '{candidate}' (from entities)")
-            elif potential_symbols:
-                candidate = potential_symbols[0]  # Fallback to regex extraction
-                print(f"[ChatService] 🔍 Using regex-extracted symbol: '{candidate}' (from {potential_symbols})")
-            else:
-                # FALLBACK: "Hail Mary" Regex for English Tickers (3-5 Uppercase Letters)
-                # This catches "COMI" in "What about COMI" if entity extraction missed it.
-                fallback_match = re.search(r'\b[A-Z]{3,5}\b', routing_text)
-                if fallback_match:
-                    candidate = fallback_match.group(0)
-                    print(f"[ChatService] 🛡️ Fallback Regex caught symbol: '{candidate}'")
+            if intent_uses_symbol_routing:
+                if symbol and len(symbol) >= 3:
+                    candidate = symbol  # Trust Claude's classification as primary
+                    print(f"[ChatService] 🎯 Using Claude's entity symbol: '{candidate}' (from entities)")
+                elif potential_symbols:
+                    candidate = potential_symbols[0]  # Fallback to regex extraction
+                    print(f"[ChatService] 🔍 Using regex-extracted symbol: '{candidate}' (from {potential_symbols})")
                 else:
-                    candidate = None
-                    print(f"[ChatService] ⚠️ No symbol candidate found")
+                    # FALLBACK: "Hail Mary" Regex for English Tickers (3-5 Uppercase Letters)
+                    # This catches "COMI" in "What about COMI" if entity extraction missed it.
+                    fallback_match = re.search(r'\b[A-Z]{3,5}\b', routing_text)
+                    if fallback_match:
+                        candidate = fallback_match.group(0)
+                        print(f"[ChatService] 🛡️ Fallback Regex caught symbol: '{candidate}'")
+                    else:
+                        candidate = None
+                        print(f"[ChatService] ⚠️ No symbol candidate found")
             
             # --- CRITICAL FIX FOR COMPARISON BUG ---
             # If intent is COMPARE_STOCKS, we must grab ALL potential symbols, not just the first one.
@@ -1661,7 +1667,7 @@ class ChatService:
             ]
 
             # Try last symbol from context ONLY if intent allows it
-            should_use_context = intent in CONTEXT_AWARE_INTENTS
+            should_use_context = intent_uses_symbol_routing and intent in CONTEXT_AWARE_INTENTS
             if not resolved_symbol and context_dict.get('last_symbol') and should_use_context:
                 resolved_symbol = await self.resolver.resolve(context_dict['last_symbol'], entities.get('market_code'))
                 resolver_method = "context"

@@ -1,5 +1,6 @@
 from typing import Dict, Any, Optional
 import random
+import re
 
 # Response Database
 RESPONSES = {
@@ -118,29 +119,82 @@ async def handle_chitchat(intent: str, language: str = "en") -> Dict[str, Any]:
         'actions': actions
     }
 
+
+def _normalize_definition_term(raw_term: Optional[str]) -> str:
+    """
+    Normalize term extraction for DEFINE_TERM flows.
+    Protects against polluted model outputs like:
+    "'Inflation' is not a ticker symbol..."
+    """
+    term = str(raw_term or "").strip()
+    if not term:
+        return ""
+
+    suspicious_phrases = (
+        "ticker symbol",
+        "assume you're asking",
+        "proceed accordingly",
+        "general term",
+        "in my database yet",
+        "detailed definition",
+    )
+    lowered = term.lower()
+
+    if any(p in lowered for p in suspicious_phrases):
+        quoted = re.findall(r"'([^']{2,50})'|\"([^\"]{2,50})\"", term)
+        for q1, q2 in quoted:
+            candidate = (q1 or q2).strip()
+            if candidate:
+                term = candidate
+                lowered = term.lower()
+                break
+
+    term = re.sub(r"^(what is|what's|define|explain|meaning of|definition of)\s+", "", term, flags=re.IGNORECASE)
+    term = re.sub(r"^(ما هو|ما معنى|ما المقصود بـ|اشرح)\s+", "", term, flags=re.IGNORECASE)
+
+    if len(term.split()) > 8 or any(p in lowered for p in suspicious_phrases):
+        term = re.split(r"[.!?،؛\n]", term, maxsplit=1)[0].strip()
+
+    term = term.strip(" '\"`:-")
+    term = re.sub(r"[?؟]+$", "", term).strip()
+    words = term.split()
+    if len(words) > 5:
+        term = " ".join(words[:5]).strip()
+
+    return term
+
+
 async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
     """
     Handle educational definition requests with structured EducationalCard responses.
     
     Enhanced to return rich, structured content for the EducationalCard component.
     """
+    clean_term = _normalize_definition_term(term)
+    if not clean_term:
+        clean_term = str(term or "").strip() or ("financial term" if language == "en" else "مصطلح مالي")
+
     # First try the new structured educational content
     try:
         from ..educational_content import get_educational_content, format_educational_response, format_unknown_term_response
         
-        content = get_educational_content(term)
+        content = get_educational_content(clean_term)
         
         if content:
             return format_educational_response(content, language)
         else:
-            # Fall back to legacy definitions
-            pass
+            unknown = format_unknown_term_response(clean_term, language)
+            if isinstance(unknown, dict):
+                # Direct-message fallback path in chat_service uses `message` first.
+                if not unknown.get("message") and unknown.get("conversational_text"):
+                    unknown["message"] = unknown.get("conversational_text")
+                return unknown
     except ImportError:
         pass
     
     # Legacy fallback for backward compatibility
     # Normalize term
-    term_key = term.lower().replace(" ", "_").replace("-", "")
+    term_key = clean_term.lower().replace(" ", "_").replace("-", "")
     
     # Map common terms
     mapping = {
@@ -162,7 +216,7 @@ async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
         if language == 'ar':
             return {
                 'success': True,
-                'message': f"لا يتوفر لدي تعريف تفصيلي للمصطلح '{term}' حالياً. جرب السؤال عن: ROE، P/E، P/B أو EBITDA.",
+                'message': f"لا يتوفر لدي تعريف تفصيلي للمصطلح '{clean_term}' حالياً. جرب السؤال عن: ROE، P/E، P/B أو EBITDA.",
                 'cards': [
                     {
                         'type': 'help',
@@ -182,7 +236,7 @@ async def handle_definition(term: str, language: str = "en") -> Dict[str, Any]:
             }
         return {
             'success': True,
-            'message': f"I don't have a detailed definition for '{term}' yet. Try asking about: ROE, P/E, P/B, EBITDA, or Dividend Yield." if language == 'en' else f"ليس لدي تعريف لـ '{term}' بعد. جرب السؤال عن: ROE, P/E, P/B.",
+            'message': f"I don't have a detailed definition for '{clean_term}' yet. Try asking about: ROE, P/E, P/B, EBITDA, or Dividend Yield." if language == 'en' else f"ليس لدي تعريف لـ '{clean_term}' بعد. جرب السؤال عن: ROE, P/E, P/B.",
             'cards': [
                 {
                     'type': 'help',

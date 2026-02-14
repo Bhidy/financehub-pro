@@ -159,6 +159,16 @@ Return JSON format:
             return ""
         return str(symbol).strip().upper().split(".")[0]
 
+    @staticmethod
+    def _is_simple_confirmation(message: str) -> bool:
+        """Detect short standalone confirmations like yes/ok/نعم."""
+        normalized = re.sub(r"[^\w\s\u0600-\u06FF]", "", str(message or "").strip().lower())
+        confirmations = {
+            "yes", "yeah", "yep", "ok", "okay", "sure", "alright", "right",
+            "نعم", "ايوه", "أيوه", "اه", "آه", "تمام", "ماشي", "اوك", "اوكي", "موافق",
+        }
+        return normalized in confirmations
+
     def _dedupe_compare_symbols(self, symbols: List[str]) -> List[str]:
         """Deduplicate comparison symbols while preserving order."""
         deduped: List[str] = []
@@ -237,6 +247,19 @@ Return JSON format:
                     follow_up_type="confirmation",
                     inherited_entities=inherited_entities
                 )
+
+        # Standalone confirmation without actionable context should ask for clarification,
+        # not route as greeting/chitchat.
+        if self._is_simple_confirmation(message) and not is_follow_up:
+            return OrchestratorResult(
+                intent=Intent.FOLLOW_UP,
+                entities={"clarify_follow_up": True, "follow_up_options": []},
+                language=context.get("preferred_language", "en"),
+                confidence=0.85,
+                is_follow_up=False,
+                follow_up_type="none",
+                inherited_entities={}
+            )
         
         # Build intent list for prompt
         intent_list = "\n".join([

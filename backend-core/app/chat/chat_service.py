@@ -714,6 +714,36 @@ class ChatService:
         ]
         normalized_options = list(dict.fromkeys(normalized_options))
 
+        if not normalized_options:
+            if language == "ar":
+                message = (
+                    f"ممتاز. إذا كنت تقصد {symbol}، اكتب الطلب مباشرة (مثال: حلّل {symbol})"
+                    if symbol else
+                    "ممتاز. للتكملة بشكل صحيح، اكتب الطلب الذي تريده أو اكتب رمز السهم أولاً (مثال: COMI)."
+                )
+                actions = [
+                    {"label": "تحليل سهم", "label_ar": "تحليل سهم", "action_type": "query", "payload": "حلّل COMI"},
+                    {"label": "مقارنة أسهم", "label_ar": "مقارنة أسهم", "action_type": "query", "payload": "قارن COMI مع SWDY"},
+                ]
+            else:
+                message = (
+                    f"Great. If you mean {symbol}, type the exact step (for example: Analyze {symbol})."
+                    if symbol else
+                    "Great. To continue accurately, type the exact step you want or provide a stock symbol first (for example: COMI)."
+                )
+                actions = [
+                    {"label": "Analyze Stock", "label_ar": "تحليل سهم", "action_type": "query", "payload": "Analyze COMI"},
+                    {"label": "Compare Stocks", "label_ar": "مقارنة أسهم", "action_type": "query", "payload": "Compare COMI vs SWDY"},
+                ]
+
+            return {
+                "success": True,
+                "clarification_type": "follow_up",
+                "message": message,
+                "cards": [],
+                "actions": actions,
+            }
+
         if language == "ar":
             if symbol:
                 message = f"تأكيدك ممتاز. تقصد أي خطوة بالضبط لسهم {symbol}؟ اختر واحدة:"
@@ -1208,6 +1238,18 @@ class ChatService:
             return False
         pattern = rf"(?<![A-Z0-9]){re.escape(canonical)}(?:\\.[A-Z0-9]+)?(?![A-Z0-9])"
         return bool(re.search(pattern, str(message).upper()))
+
+    @staticmethod
+    def _is_low_quality_text(text: Optional[str]) -> bool:
+        """Detect unusable narrative fragments such as punctuation-only outputs."""
+        if not text:
+            return True
+        raw = str(text).strip()
+        if not raw:
+            return True
+        # Keep latin/ar numbers/letters, drop punctuation/whitespace.
+        compact = re.sub(r"[^A-Za-z0-9\u0600-\u06FF]+", "", raw)
+        return len(compact) < 6
 
     def _enforce_response_language(
         self,
@@ -3429,6 +3471,21 @@ class ChatService:
                 )
                 structured_narrative = None
                 used_opening = None
+
+        # Final quality gate: avoid shipping punctuation-only or ultra-short fragments
+        # that can degrade UX and occasionally break downstream presentation assumptions.
+        if self._is_low_quality_text(full_response_text):
+            if not self._is_low_quality_text(final_message_text):
+                full_response_text = final_message_text
+            else:
+                full_response_text = (
+                    "Here is the analysis based on the latest available data."
+                    if language == 'en'
+                    else "إليك التحليل بناءً على أحدث البيانات المتاحة حالياً."
+                )
+
+        # Schema-level safety: always return a string.
+        full_response_text = str(full_response_text or "")
 
         return ChatResponse(
             message_text=full_response_text, # Use the composed text

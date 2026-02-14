@@ -201,6 +201,38 @@ export interface Message {
     data?: any; // Legacy compatibility
 }
 
+const ensureArray = <T = any>(value: any): T[] => Array.isArray(value) ? value : [];
+
+function sanitizeChatResponse(raw: any): ChatResponse {
+    const metaRaw = (raw && typeof raw.meta === "object") ? raw.meta : {};
+    const confidence = Number(metaRaw?.confidence);
+    const latencyMs = Number(metaRaw?.latency_ms);
+
+    return {
+        ...raw,
+        message_text: typeof raw?.message_text === "string"
+            ? raw.message_text
+            : String(raw?.conversational_text || raw?.message || ""),
+        language: (raw?.language === "ar" || raw?.language === "en" || raw?.language === "mixed")
+            ? raw.language
+            : "en",
+        cards: ensureArray<Card>(raw?.cards),
+        actions: ensureArray<Action>(raw?.actions),
+        insight_cards: ensureArray(raw?.insight_cards),
+        stock_list: ensureArray(raw?.stock_list),
+        educational_cards: ensureArray(raw?.educational_cards),
+        character_cards: ensureArray(raw?.character_cards),
+        meta: {
+            intent: typeof metaRaw?.intent === "string" ? metaRaw.intent : "UNKNOWN",
+            confidence: Number.isFinite(confidence) ? confidence : 0,
+            entities: (metaRaw?.entities && typeof metaRaw.entities === "object") ? metaRaw.entities : {},
+            latency_ms: Number.isFinite(latencyMs) ? latencyMs : 0,
+            cached: Boolean(metaRaw?.cached),
+            as_of: metaRaw?.as_of,
+        }
+    } as ChatResponse;
+}
+
 // ============================================================
 // Hook
 // ============================================================
@@ -333,10 +365,11 @@ export function useAIChat(config?: {
             throw lastError;
         },
         onSuccess: (data: ChatResponse) => {
+            const safeData = sanitizeChatResponse(data as any);
             // ... (rest of logic) ...
 
             // Store session ID for context (and persistence via effect)
-            const newSessionId = data.session_id || data.meta?.entities?.session_id;
+            const newSessionId = safeData.session_id || safeData.meta?.entities?.session_id;
             if (newSessionId && sessionId !== newSessionId) {
                 setSessionId(newSessionId);
                 // Ref is updated by effect, but update immediate for safety in this cycle
@@ -345,9 +378,9 @@ export function useAIChat(config?: {
             }
 
             // Client-side filter: Remove "Technical" actions as per user request
-            if (data.actions) {
-                data.actions = data.actions.filter(action =>
-                    !action.label.toLowerCase().includes('technical')
+            if (safeData.actions) {
+                safeData.actions = safeData.actions.filter(action =>
+                    !String(action?.label || "").toLowerCase().includes('technical')
                 );
             }
 
@@ -355,9 +388,9 @@ export function useAIChat(config?: {
                 ...prev,
                 {
                     role: "assistant",
-                    content: data.message_text,
-                    response: data,
-                    data: data // Legacy compatibility
+                    content: safeData.message_text,
+                    response: safeData,
+                    data: safeData // Legacy compatibility
                 }
             ]);
         },
@@ -419,7 +452,7 @@ export function useAIChat(config?: {
                         // Ensure meta is object
                         const meta = typeof msg.meta === 'string' ? JSON.parse(msg.meta) : msg.meta;
 
-                        response = {
+                        response = sanitizeChatResponse({
                             message_text: msg.content,
                             conversational_text: meta.conversational_text,
                             fact_explanations: meta.fact_explanations,
@@ -436,7 +469,7 @@ export function useAIChat(config?: {
                             },
                             // CRITICAL: Spread all other top-level fields (structured_narrative, comparison_table, etc.)
                             ...meta
-                        } as ChatResponse;
+                        });
                     }
                 } catch (e) {
                     console.warn("Failed to parse message meta", e);

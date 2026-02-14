@@ -43,6 +43,28 @@ ALIAS_TYPE_WEIGHTS = {
 }
 
 
+def _normalize_nickname_key(value: str) -> str:
+    """Normalize nickname keys to the same canonical form as user queries."""
+    try:
+        return normalize_text(str(value or "")).normalized.strip()
+    except Exception:
+        return str(value or "").strip().lower()
+
+
+# Precompute normalized nickname maps so Arabic normalization (e.g., ة -> ه)
+# matches user input consistently.
+NICKNAME_AR_NORMALIZED = {
+    _normalize_nickname_key(k): v
+    for k, v in NICKNAME_AR.items()
+    if _normalize_nickname_key(k)
+}
+NICKNAME_EN_NORMALIZED = {
+    _normalize_nickname_key(k).lower(): v
+    for k, v in NICKNAME_EN.items()
+    if _normalize_nickname_key(k)
+}
+
+
 class ResolutionCandidate(BaseModel):
     """A candidate match with scoring."""
     symbol: str
@@ -239,9 +261,11 @@ class SymbolResolver:
         """Match against curated nickname dictionary."""
         # Try original normalized query
         for query in [query_norm, clean_query]:
-            # Check Arabic nicknames
-            if query in NICKNAME_AR:
-                symbol = NICKNAME_AR[query]
+            norm_query = _normalize_nickname_key(query)
+
+            # Check Arabic nicknames (normalized)
+            if norm_query in NICKNAME_AR_NORMALIZED:
+                symbol = NICKNAME_AR_NORMALIZED[norm_query]
                 stock_info = await self._get_stock_info(symbol)
                 return ResolutionCandidate(
                     symbol=symbol,
@@ -254,21 +278,21 @@ class SymbolResolver:
                     base_score=100
                 )
             
-            # Check English nicknames
-            query_lower = query.lower()
-            for name, symbol in NICKNAME_EN.items():
-                if name.lower() == query_lower:
-                    stock_info = await self._get_stock_info(symbol)
-                    return ResolutionCandidate(
-                        symbol=symbol,
-                        name_en=stock_info.get('name_en') if stock_info else None,
-                        name_ar=stock_info.get('name_ar') if stock_info else None,
-                        market_code=stock_info.get('market_code', 'EGX') if stock_info else 'EGX',
-                        entity_type="stock",
-                        match_type="nickname",
-                        alias_type="nickname",
-                        base_score=100
-                    )
+            # Check English nicknames (normalized)
+            query_lower = norm_query.lower()
+            if query_lower in NICKNAME_EN_NORMALIZED:
+                symbol = NICKNAME_EN_NORMALIZED[query_lower]
+                stock_info = await self._get_stock_info(symbol)
+                return ResolutionCandidate(
+                    symbol=symbol,
+                    name_en=stock_info.get('name_en') if stock_info else None,
+                    name_ar=stock_info.get('name_ar') if stock_info else None,
+                    market_code=stock_info.get('market_code', 'EGX') if stock_info else 'EGX',
+                    entity_type="stock",
+                    match_type="nickname",
+                    alias_type="nickname",
+                    base_score=100
+                )
         
         return None
     

@@ -271,7 +271,31 @@ Return JSON format:
             
             # Merge inherited entities if follow-up
             if is_follow_up and not result.entities.get("symbol"):
-                if inherited_entities.get("symbol"):
+                symbol_inheritance_intents = {
+                    Intent.STOCK_PRICE,
+                    Intent.STOCK_SNAPSHOT,
+                    Intent.STOCK_CHART,
+                    Intent.STOCK_STAT,
+                    Intent.FINANCIALS,
+                    Intent.FINANCIALS_ANNUAL,
+                    Intent.DIVIDENDS,
+                    Intent.TECHNICAL_INDICATORS,
+                    Intent.NEWS,
+                    Intent.FAIR_VALUE,
+                    Intent.FINANCIAL_HEALTH,
+                    Intent.COMPANY_PROFILE,
+                    Intent.OWNERSHIP,
+                    Intent.REVENUE_TREND,
+                    Intent.FIN_MARGINS,
+                    Intent.DEEP_VALUATION,
+                    Intent.DEEP_SAFETY,
+                    Intent.DEEP_GROWTH,
+                    Intent.DEEP_EFFICIENCY,
+                    Intent.COMPARE_STOCKS,
+                    Intent.FOLLOW_UP,
+                    Intent.MARKET_TIMING,
+                }
+                if inherited_entities.get("symbol") and result.intent in symbol_inheritance_intents:
                     result.entities["symbol"] = inherited_entities["symbol"]
                     logger.info(f"[ClaudeOrchestrator] Inherited symbol: {result.entities['symbol']}")
             
@@ -495,7 +519,12 @@ Return JSON format:
         # Inherit from context if follow-up
         if context.get("follow_up", {}).get("is_follow_up"):
             inherited = context["follow_up"].get("metadata", {}).get("inherited_entities", {})
-            if inherited.get("symbol"):
+            symbol_inheritance_intents = {
+                Intent.STOCK_PRICE, Intent.STOCK_SNAPSHOT, Intent.STOCK_CHART,
+                Intent.FINANCIALS, Intent.DIVIDENDS, Intent.TECHNICAL_INDICATORS,
+                Intent.FINANCIAL_HEALTH, Intent.COMPARE_STOCKS, Intent.FOLLOW_UP
+            }
+            if inherited.get("symbol") and intent in symbol_inheritance_intents:
                 entities["symbol"] = inherited["symbol"]
         
         return OrchestratorResult(

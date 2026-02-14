@@ -458,6 +458,35 @@ class ChatService:
         }
         return normalized in confirmations
 
+    @staticmethod
+    def _is_context_dependent_followup(message: Optional[str]) -> bool:
+        """
+        Heuristic for short context-dependent turns that need prior memory.
+        Keeps explicit/new standalone questions from inheriting stale context.
+        """
+        if not message:
+            return False
+
+        text = str(message).strip()
+        if not text:
+            return False
+        lower = text.lower()
+        token_count = len(lower.split())
+
+        pronoun_terms = [
+            "it", "this", "that", "this one", "that one", "what about", "how about",
+            "and?", "and", "then", "same",
+            "هو", "هي", "ده", "دي", "هذا", "هذه", "إيه", "ايه", "طيب", "طب", "وبعدين", "وايه",
+        ]
+        expansion_terms = [
+            "more", "details", "explain", "clarify", "go on", "continue",
+            "اكتر", "أكثر", "وضح", "اشرح", "كمل", "كَمِّل", "فصّل", "فصل",
+        ]
+
+        has_context_term = any(term in lower for term in (pronoun_terms + expansion_terms))
+        # Conservative: only short turns qualify to avoid leaking prior context
+        return token_count <= 8 and has_context_term
+
     async def _hydrate_conversation_memory(
         self,
         session_id: str,
@@ -472,9 +501,14 @@ class ChatService:
         """
         memory = self.conversation_memory.get_or_create_session(session_id)
         confirmation_reply = self._is_confirmation_reply(current_message)
+        followup_like = self._is_context_dependent_followup(current_message)
 
-        needs_turns = len(memory.turns) == 0
-        needs_symbol = not memory.active_entities.symbol and (needs_turns or confirmation_reply)
+        # Critical guard: avoid importing stale session context for explicit standalone questions.
+        if not confirmation_reply and not followup_like:
+            return
+
+        needs_turns = len(memory.turns) == 0 and (confirmation_reply or followup_like)
+        needs_symbol = not memory.active_entities.symbol and (confirmation_reply or followup_like)
         needs_suggestions = not memory.pending_suggestions and confirmation_reply
 
         if not (needs_turns or needs_symbol or needs_suggestions):
@@ -1633,7 +1667,9 @@ class ChatService:
             # Trigger Narrative for most intents except system ones
             NO_NARRATIVE_INTENTS = [Intent.UNKNOWN, Intent.BLOCKED, Intent.HELP]
             skip_narrative_for_clarification = (
-                intent == Intent.FOLLOW_UP and bool(entities.get("clarify_follow_up"))
+                (intent == Intent.FOLLOW_UP and bool(entities.get("clarify_follow_up")))
+                or (intent == Intent.CLARIFY_SYMBOL)
+                or bool(result_data.get("clarification_type") == "symbol")
             )
             
             # Important: ensure result is a dict and has success
@@ -3261,9 +3297,14 @@ class ChatService:
         force_direct_follow_up_message = (
             intent == Intent.FOLLOW_UP and bool(entities.get("clarify_follow_up"))
         )
+        force_direct_symbol_clarification = (
+            intent == Intent.CLARIFY_SYMBOL
+            or bool(result.get("clarification_type") == "symbol")
+        )
+        force_direct_message = force_direct_follow_up_message or force_direct_symbol_clarification
 
         # Generate Premier Response Layer (DEFENSIVE: wrapped in try/except)
-        if force_direct_follow_up_message:
+        if force_direct_message:
             full_response_text = final_message_text
             structured_narrative = None
             used_opening = None

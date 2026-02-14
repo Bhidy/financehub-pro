@@ -104,6 +104,7 @@ def handle_clarify_symbol(
     
     result = {
         'success': True,
+        'clarification_type': 'symbol',
         'message': message,
         'cards': [],
         'actions': []

@@ -404,10 +404,26 @@ Return JSON format:
         }
         
         intent = action_to_intent.get(pending_action.lower(), Intent.STOCK_SNAPSHOT)
+        entities = dict(inherited_entities or {})
+
+        symbol_required_intents = {
+            Intent.STOCK_SNAPSHOT,
+            Intent.STOCK_CHART,
+            Intent.FINANCIALS,
+            Intent.DIVIDENDS,
+            Intent.TECHNICAL_INDICATORS,
+            Intent.DEEP_VALUATION,
+            Intent.FINANCIAL_HEALTH,
+        }
+        # If user confirmed an action that needs a stock but no symbol is in context,
+        # ask for the symbol instead of producing an irrelevant generic response.
+        if intent in symbol_required_intents and not entities.get("symbol"):
+            intent = Intent.CLARIFY_SYMBOL
+            entities = {}
         
         return OrchestratorResult(
             intent=intent,
-            entities=inherited_entities,
+            entities=entities,
             language=context.get("preferred_language", "en"),
             confidence=0.9,
             is_follow_up=True,

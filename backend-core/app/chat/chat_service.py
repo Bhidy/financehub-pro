@@ -366,6 +366,166 @@ class ChatService:
         return bool(text and ARABIC_CHAR_RE.search(text))
 
     @staticmethod
+    def _canonical_symbol(symbol: Optional[str]) -> str:
+        """Normalize symbol for duplicate detection (COMI == COMI.CA)."""
+        if not symbol:
+            return ""
+        return str(symbol).strip().upper().split(".")[0]
+
+    def _dedupe_symbols(self, symbols: Optional[List[str]]) -> List[str]:
+        """Deduplicate symbols by canonical form while preserving order."""
+        out: List[str] = []
+        seen: set[str] = set()
+        for raw in symbols or []:
+            sym = str(raw).strip().upper()
+            if not sym:
+                continue
+            canonical = self._canonical_symbol(sym)
+            if canonical in seen:
+                continue
+            seen.add(canonical)
+            out.append(sym)
+        return out
+
+    def _extract_pending_suggestions_from_prompt(self, prompt: Optional[str]) -> List[str]:
+        """
+        Extract actionable follow-up options from prompt text.
+        Returns normalized action keys used by Claude confirmation handling.
+        """
+        if not prompt:
+            return []
+
+        text = str(prompt).lower()
+        action_rules = [
+            ("compare", [
+                r"\bcompare\b", r"\bvs\b", r"versus", r"comparison", r"peer", r"competitor",
+                r"قارن", r"مقارنة", r"منافس", r"نظير", r"أقار", r"اقار"
+            ]),
+            ("financials", [
+                r"financial", r"financials", r"income statement", r"balance sheet", r"cash flow",
+                r"القوائم", r"مالية", r"الميزانية", r"التدفقات", r"الأرباح"
+            ]),
+            ("dividends", [
+                r"dividend", r"yield", r"payout",
+                r"توزيعات", r"توزيع", r"عائد"
+            ]),
+            ("chart", [
+                r"\bchart\b", r"technical", r"technicals", r"rsi", r"macd",
+                r"رسم", r"فني", r"المؤشرات الفنية"
+            ]),
+        ]
+
+        actions: List[str] = []
+        for action, patterns in action_rules:
+            for pattern in patterns:
+                if re.search(pattern, text, re.IGNORECASE):
+                    actions.append(action)
+                    break
+
+        return list(dict.fromkeys(actions))
+
+    def _build_follow_up_clarification_response(
+        self,
+        options: List[str],
+        language: str,
+        symbol: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Ask user to clarify which follow-up action they confirmed."""
+        option_map_en = {
+            "compare": "Compare with peers",
+            "financials": "Deep financials",
+            "dividends": "Dividend analysis",
+            "chart": "Technical chart",
+        }
+        option_map_ar = {
+            "compare": "مقارنة مع المنافسين",
+            "financials": "تحليل القوائم المالية",
+            "dividends": "تحليل التوزيعات",
+            "chart": "الرسم والتحليل الفني",
+        }
+        option_map = option_map_ar if language == "ar" else option_map_en
+
+        normalized_options = [
+            str(o).strip().lower() for o in (options or [])
+            if str(o).strip().lower() in option_map
+        ]
+        normalized_options = list(dict.fromkeys(normalized_options))
+
+        if language == "ar":
+            if symbol:
+                message = f"تأكيدك ممتاز. تقصد أي خطوة بالضبط لسهم {symbol}؟ اختر واحدة:"
+            else:
+                message = "تأكيدك ممتاز. تقصد أي خطوة بالضبط؟ اختر واحدة:"
+        else:
+            if symbol:
+                message = f"Got it. Which step should I run for {symbol}? Please choose one:"
+            else:
+                message = "Got it. Which step should I run next? Please choose one:"
+
+        actions: List[Dict[str, Any]] = []
+        for action_key in normalized_options[:4]:
+            label_en = option_map_en[action_key]
+            label_ar = option_map_ar[action_key]
+            if action_key == "compare":
+                payload = f"Compare {symbol} with peers" if symbol else "Compare this stock with peers"
+            elif action_key == "financials":
+                payload = f"Show financials for {symbol}" if symbol else "Show financials"
+            elif action_key == "dividends":
+                payload = f"Show dividends for {symbol}" if symbol else "Show dividend analysis"
+            else:
+                payload = f"Show chart for {symbol}" if symbol else "Show technical chart"
+            actions.append({
+                "label": label_en,
+                "label_ar": label_ar,
+                "action_type": "query",
+                "payload": payload
+            })
+
+        return {
+            "success": True,
+            "message": message,
+            "cards": [],
+            "actions": actions
+        }
+
+    def _build_compare_clarification_response(
+        self,
+        primary_symbol: Optional[str],
+        peer_candidates: List[str],
+        language: str
+    ) -> Dict[str, Any]:
+        """Ask user for a second distinct stock when comparison target is ambiguous."""
+        symbol = (primary_symbol or "").upper().strip() or "the selected stock"
+        unique_peers = self._dedupe_symbols(peer_candidates)[:4]
+
+        if language == "ar":
+            message = (
+                f"لا أستطيع مقارنة {symbol} بنفسه. اكتب سهمًا آخر مختلفًا، "
+                "أو اختر من المقترحات التالية."
+            )
+        else:
+            message = (
+                f"I can't compare {symbol} against itself. "
+                "Please provide a different second stock, or pick one suggestion below."
+            )
+
+        actions: List[Dict[str, Any]] = []
+        for peer in unique_peers:
+            actions.append({
+                "label": f"Compare {symbol} vs {peer}",
+                "label_ar": f"قارن {symbol} مع {peer}",
+                "action_type": "query",
+                "payload": f"Compare {symbol} vs {peer}"
+            })
+
+        return {
+            "success": True,
+            "message": message,
+            "cards": [],
+            "actions": actions
+        }
+
+    @staticmethod
     def _is_arabic_letter(ch: str) -> bool:
         if not ch:
             return False
@@ -637,8 +797,19 @@ class ChatService:
             print(f"[ChatService] ⚠️ Failed to infer peers for {primary_symbol}: {e}")
             return []
 
-        # Deduplicate and return limit
-        return list(dict.fromkeys(peers))[:limit]
+        # Deduplicate by canonical symbol and exclude self aliases (e.g., COMI vs COMI.CA).
+        primary_canonical = self._canonical_symbol(primary_symbol)
+        filtered: List[str] = []
+        seen: set[str] = set()
+        for sym in peers:
+            canonical = self._canonical_symbol(sym)
+            if not canonical or canonical == primary_canonical:
+                continue
+            if canonical in seen:
+                continue
+            seen.add(canonical)
+            filtered.append(str(sym).upper())
+        return filtered[:limit]
 
     def _resolve_language(
         self,
@@ -1049,15 +1220,12 @@ class ChatService:
                 elif existing_compare is None:
                     existing_compare = []
                 
-                # Merge potential symbols into compare_symbols (avoiding duplicates)
-                current_upper = [str(x).upper() for x in existing_compare]
-                for s in potential_symbols:
-                    s_upper = str(s).upper()
-                    if s_upper not in current_upper:
-                        existing_compare.append(s_upper)
-                        current_upper.append(s_upper)
-                
-                entities['compare_symbols'] = existing_compare
+                merged_compare = [
+                    str(x).upper() for x in existing_compare if str(x).strip()
+                ] + [
+                    str(s).upper() for s in potential_symbols if str(s).strip()
+                ]
+                entities['compare_symbols'] = self._dedupe_symbols(merged_compare)
                 print(f"[ChatService] 🔍 Enhanced Compare Symbols from Regex: {entities['compare_symbols']}")
             # ---------------------------------------
             
@@ -2085,18 +2253,11 @@ class ChatService:
                 from .context_assembler import get_context_assembler
                 context_assembler = get_context_assembler()
                 
-                # Extract pending suggestions from follow-up prompt for next turn
-                pending_suggestions = []
-                if follow_up_prompt:
-                    # Parse follow-up for suggested actions
-                    if "compare" in follow_up_prompt.lower() or "قارن" in follow_up_prompt:
-                        pending_suggestions.append("compare")
-                    if "financials" in follow_up_prompt.lower() or "مالية" in follow_up_prompt:
-                        pending_suggestions.append("financials")
-                    if "dividend" in follow_up_prompt.lower() or "توزيعات" in follow_up_prompt:
-                        pending_suggestions.append("dividends")
-                    if "chart" in follow_up_prompt.lower() or "رسم" in follow_up_prompt:
-                        pending_suggestions.append("chart")
+                # Extract pending suggestions from the actual prompt shown to user.
+                effective_follow_up_prompt = handler_follow_up or follow_up_prompt
+                pending_suggestions = self._extract_pending_suggestions_from_prompt(
+                    effective_follow_up_prompt
+                )
                 
                 # Update context assembler with this turn
                 context_assembler.update_after_response(
@@ -2324,9 +2485,31 @@ class ChatService:
             if not symbol:
                 return handle_clarify_symbol(language=language)
             return await handle_stock_statistics(self.conn, symbol, language)  # Uses stock_statistics table
-        
 
-            
+        elif intent == Intent.FOLLOW_UP:
+            # Ambiguous "yes" after multi-option follow-up prompt.
+            if entities.get("clarify_follow_up"):
+                options = entities.get("follow_up_options", [])
+                if isinstance(options, str):
+                    options = [options]
+                return self._build_follow_up_clarification_response(
+                    options=options,
+                    language=language,
+                    symbol=symbol
+                )
+
+            # Generic follow-up: if we have symbol context, continue with snapshot.
+            if symbol:
+                return await handle_stock_snapshot(self.conn, symbol, language)
+
+            # Otherwise offer a neutral follow-up prompt.
+            return {
+                "success": True,
+                "message": get_follow_up_response(language),
+                "cards": [],
+                "actions": []
+            }
+
         # ===== ULTRA PREMIUM DEEP HANDLERS (PHASE 7) =====
         elif intent == Intent.DEEP_SAFETY:
              if not symbol:
@@ -2413,41 +2596,70 @@ class ChatService:
             compare_symbols = entities.get('compare_symbols', [])
             if isinstance(compare_symbols, str):
                 compare_symbols = [compare_symbols]
-            compare_symbols = [str(s).upper() for s in compare_symbols if str(s).strip()]
+            compare_symbols = self._dedupe_symbols([
+                str(s).upper() for s in compare_symbols if str(s).strip()
+            ])
 
-            # If compare query references one stock + peers, infer peers automatically.
-            if symbol and symbol not in compare_symbols:
-                compare_symbols = [symbol] + compare_symbols
+            # Always anchor comparison on current symbol if available.
+            if symbol:
+                symbol_up = str(symbol).upper()
+                symbol_canon = self._canonical_symbol(symbol_up)
+                existing_canon = {self._canonical_symbol(s) for s in compare_symbols}
+                if symbol_canon and symbol_canon not in existing_canon:
+                    compare_symbols = [symbol_up] + compare_symbols
 
+            inferred_peers: List[str] = []
             if len(compare_symbols) < 2 and symbol:
                 inferred_peers = await self._infer_peer_symbols(
-                    primary_symbol=symbol,
+                    primary_symbol=str(symbol).upper(),
                     market_code=market_code,
-                    limit=2
+                    limit=6
                 )
-                for peer in inferred_peers:
-                    if peer not in compare_symbols and peer != symbol:
-                        compare_symbols.append(peer)
-                    if len(compare_symbols) >= 2:
-                        break
+                compare_symbols = self._dedupe_symbols(compare_symbols + inferred_peers)
 
-            # DELEGATE VALIDATION TO HANDLER (Chief Expert Architecture)
-            # We allow single symbol to pass through because handle_compare_stocks
-            # now has smart logic to auto-discover peers from the same sector.
-            # if len(compare_symbols) < 2:
-            #    return { ... } -> REMOVED
-            
-            # Resolve symbols through symbol resolver (handles aliases like CIB→COMI)
+            # Resolve aliases (e.g. CIB -> COMI) then deduplicate canonically again.
             resolver = SymbolResolver(self.conn)
-            resolved_symbols = []
-            for sym in compare_symbols[:2]:
+            resolved_symbols: List[str] = []
+            for sym in compare_symbols[:8]:
                 resolved = await resolver.resolve(sym, market_code)
-                if resolved:
-                    resolved_symbols.append(resolved.symbol)
-                else:
-                    resolved_symbols.append(sym.upper())  # Fallback to uppercase
-            
-            return await handle_compare_stocks(self.conn, resolved_symbols, language)
+                resolved_sym = resolved.symbol if resolved else str(sym).upper()
+                candidate_list = self._dedupe_symbols(resolved_symbols + [resolved_sym])
+                if len(candidate_list) > len(resolved_symbols):
+                    resolved_symbols = candidate_list
+                if len(resolved_symbols) >= 2:
+                    break
+
+            # One more inference pass after resolution in case aliases collapsed to one symbol.
+            if len(resolved_symbols) < 2:
+                base_symbol = str(symbol).upper() if symbol else (resolved_symbols[0] if resolved_symbols else None)
+                if base_symbol:
+                    extra_peers = await self._infer_peer_symbols(
+                        primary_symbol=base_symbol,
+                        market_code=market_code,
+                        limit=6
+                    )
+                    for peer in extra_peers:
+                        peer_resolved = await resolver.resolve(peer, market_code)
+                        peer_sym = peer_resolved.symbol if peer_resolved else peer
+                        candidate_list = self._dedupe_symbols(resolved_symbols + [peer_sym])
+                        if len(candidate_list) > len(resolved_symbols):
+                            resolved_symbols = candidate_list
+                        if len(resolved_symbols) >= 2:
+                            break
+
+            if len(resolved_symbols) < 2:
+                primary_for_prompt = (
+                    str(symbol).upper() if symbol else
+                    (resolved_symbols[0] if resolved_symbols else (compare_symbols[0] if compare_symbols else None))
+                )
+                peer_candidates = inferred_peers or compare_symbols[1:]
+                return self._build_compare_clarification_response(
+                    primary_symbol=primary_for_prompt,
+                    peer_candidates=peer_candidates,
+                    language=language
+                )
+
+            return await handle_compare_stocks(self.conn, resolved_symbols[:2], language)
         
         # Company profile - use snapshot for now
         elif intent == Intent.COMPANY_PROFILE:

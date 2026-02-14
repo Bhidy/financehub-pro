@@ -1567,6 +1567,9 @@ class ChatService:
             
             # Trigger Narrative for most intents except system ones
             NO_NARRATIVE_INTENTS = [Intent.UNKNOWN, Intent.BLOCKED, Intent.HELP]
+            skip_narrative_for_clarification = (
+                intent == Intent.FOLLOW_UP and bool(entities.get("clarify_follow_up"))
+            )
             
             # Important: ensure result is a dict and has success
             result_data = result if isinstance(result, dict) else {}
@@ -1644,7 +1647,11 @@ class ChatService:
             except Exception:
                 pass
 
-            if result_data.get('success', True) and intent not in NO_NARRATIVE_INTENTS:
+            if (
+                result_data.get('success', True)
+                and intent not in NO_NARRATIVE_INTENTS
+                and not skip_narrative_for_clarification
+            ):
                 try:
                     # Fetch real user name - MOVED UP
                     # real_user_name = await self._get_user_name(user_id)

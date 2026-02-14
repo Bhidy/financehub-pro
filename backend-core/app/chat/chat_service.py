@@ -756,6 +756,71 @@ class ChatService:
             "actions": actions
         }
 
+    def _derive_compare_pair(
+        self,
+        entities: Dict[str, Any],
+        comparison_table: Optional[Dict[str, Any]],
+        result_data: Dict[str, Any]
+    ) -> List[str]:
+        """
+        Derive the final distinct comparison pair from response artifacts.
+        Priority: structured comparison table headers -> cards payload -> entities.
+        """
+        candidates: List[str] = []
+
+        if isinstance(comparison_table, dict):
+            headers = comparison_table.get("headers")
+            if isinstance(headers, list):
+                for value in headers[1:]:
+                    token = str(value).strip().upper()
+                    if token:
+                        candidates.append(token)
+
+        if not candidates:
+            for card in (result_data.get("cards") or []):
+                if not isinstance(card, dict):
+                    continue
+                if str(card.get("type") or "").lower() not in {"compare_table", "comparison_table"}:
+                    continue
+                data = card.get("data") or {}
+                stocks = data.get("stocks") if isinstance(data, dict) else None
+                if isinstance(stocks, list):
+                    for stock in stocks:
+                        if isinstance(stock, dict):
+                            sym = str(stock.get("symbol") or "").strip().upper()
+                            if sym:
+                                candidates.append(sym)
+                break
+
+        if not candidates:
+            raw_compare = entities.get("compare_symbols") or []
+            if isinstance(raw_compare, str):
+                raw_compare = [raw_compare]
+            candidates.extend([
+                str(s).strip().upper()
+                for s in raw_compare
+                if str(s).strip()
+            ])
+
+        deduped = self._dedupe_symbols(candidates)
+        return deduped[:2]
+
+    @staticmethod
+    def _build_compare_key_insight(compare_pair: List[str], language: str) -> Optional[str]:
+        """Generate a deterministic key insight for peer comparisons."""
+        if not compare_pair or len(compare_pair) < 2:
+            return None
+        first, second = compare_pair[0], compare_pair[1]
+        if language == "ar":
+            return (
+                f"مقارنة {first} مع {second} تكون أدق عند الجمع بين التقييم والربحية "
+                "والنمو والمخاطر، وليس الاعتماد على مؤشر واحد."
+            )
+        return (
+            f"{first} vs {second}: evaluate valuation, profitability, growth, and risk together "
+            "instead of relying on a single metric."
+        )
+
     @staticmethod
     def _is_arabic_letter(ch: str) -> bool:
         if not ch:
@@ -2366,8 +2431,17 @@ class ChatService:
                             'rows': rows
                         }
             
+            compare_pair = self._derive_compare_pair(
+                entities=entities,
+                comparison_table=handler_comparison_table,
+                result_data=result_data
+            ) if intent == Intent.COMPARE_STOCKS else []
+            deterministic_compare_insight = self._build_compare_key_insight(compare_pair, language)
+
             # NEW: Key Insight (8-Layer Completeness)
             handler_key_insight = result_data.get('key_insight')
+            if deterministic_compare_insight:
+                handler_key_insight = deterministic_compare_insight
             if not handler_key_insight and intent in [
                 Intent.STOCK_SNAPSHOT, Intent.FINANCIALS, Intent.DIVIDENDS,
                 Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.FAIR_VALUE,
@@ -2407,6 +2481,9 @@ class ChatService:
                 # If final_allow_greeting was set (New Session), we force an opening
                 # If force_human_opening (Returning User), we force an opening
                 # Otherwise, we let ResponseComposer decide (random or pure context)
+                detected_insight_input = thought_points[0] if thought_points else None
+                if deterministic_compare_insight:
+                    detected_insight_input = deterministic_compare_insight
                 
                 # 4. Compose Full Response
                 full_text, structured, _ = ResponseComposer.compose_premium_response(
@@ -2421,7 +2498,7 @@ class ChatService:
                     include_risk_warning=include_risk,
                     risk_type=risk_type,
                     shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])],
-                    detected_insight=thought_points[0] if thought_points else None,
+                    detected_insight=detected_insight_input,
                     user_level=user_level # Phase 4
                 )
                 
@@ -2445,6 +2522,10 @@ class ChatService:
             if 'structured' in locals() and structured and structured.key_insight:
                 handler_key_insight = structured.key_insight
                 print(f"[ChatService] 🎯 Using 7-Layer Key Insight: {handler_key_insight[:50]}...")
+            if deterministic_compare_insight:
+                handler_key_insight = deterministic_compare_insight
+                if 'structured' in locals() and structured:
+                    structured.key_insight = deterministic_compare_insight
 
             response = self._build_response(
                 result_data, intent, confidence, entities, start_time, language,
@@ -2907,7 +2988,15 @@ class ChatService:
                     language=language
                 )
 
-            return await handle_compare_stocks(self.conn, resolved_symbols[:2], language)
+            resolved_pair = self._dedupe_symbols(resolved_symbols[:2])
+            # Propagate final distinct pair back into shared entities for clean metadata and narrative.
+            entities['compare_symbols'] = resolved_pair
+            if resolved_pair:
+                entities['symbol'] = resolved_pair[0]
+            if market_code:
+                entities['market_code'] = market_code
+
+            return await handle_compare_stocks(self.conn, resolved_pair, language)
         
         # Company profile - use snapshot for now
         elif intent == Intent.COMPANY_PROFILE:

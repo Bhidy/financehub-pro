@@ -14,6 +14,27 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def _canonical_symbol(symbol: str) -> str:
+    """Normalize symbol for duplicate detection (COMI == COMI.CA)."""
+    if not symbol:
+        return ""
+    return str(symbol).strip().upper().split(".")[0]
+
+def _dedupe_symbol_inputs(symbols: List[str]) -> List[str]:
+    """Deduplicate symbol inputs by canonical form while preserving order."""
+    out: List[str] = []
+    seen = set()
+    for raw in symbols or []:
+        sym = str(raw).strip().upper()
+        if not sym:
+            continue
+        canonical = _canonical_symbol(sym)
+        if canonical in seen:
+            continue
+        seen.add(canonical)
+        out.append(sym)
+    return out
+
 def safe_float(val: Any) -> Any:
     if val is None: return None
     try:
@@ -60,6 +81,8 @@ async def handle_compare_stocks(
     """
     Handle COMPARE_STOCKS intent.
     """
+    symbols = _dedupe_symbol_inputs(symbols)
+
     # AUTO-PEER LOGIC: If only 1 symbol, find a competitor in same sector
     if not symbols:
         return {
@@ -83,15 +106,23 @@ async def handle_compare_stocks(
                  break
         
         if sector_row and sector_row['sector_name']:
-            # Find largest competitor in same sector (excluding self)
-            peer_row = await conn.fetchrow("""
+            # Find largest competitor in same sector (excluding self and same base ticker aliases)
+            peer_rows = await conn.fetch("""
                 SELECT symbol FROM market_tickers 
                 WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
-                ORDER BY market_cap DESC LIMIT 1
+                ORDER BY market_cap DESC LIMIT 15
             """, sector_row['sector_name'], first_symbol, sector_row['market_code'])
-            
-            if peer_row:
-                symbols.append(peer_row['symbol'])
+
+            first_canonical = _canonical_symbol(first_symbol)
+            peer_symbol = None
+            for row in peer_rows:
+                candidate = row['symbol']
+                if _canonical_symbol(candidate) != first_canonical:
+                    peer_symbol = candidate
+                    break
+
+            if peer_symbol:
+                symbols.append(peer_symbol)
                 # Append to list so loop below processes both
             else:
                  return {
@@ -220,6 +251,17 @@ async def handle_compare_stocks(
 
             stocks_data.append(data_point)
 
+    # Hard guard: never allow same-stock comparison after symbol normalization.
+    deduped_stocks = []
+    seen_stock_canon = set()
+    for stock in stocks_data:
+        canonical = _canonical_symbol(stock.get('symbol', ''))
+        if not canonical or canonical in seen_stock_canon:
+            continue
+        seen_stock_canon.add(canonical)
+        deduped_stocks.append(stock)
+    stocks_data = deduped_stocks
+
     # === ROBUST FALLBACK (Chief Expert Fix) ===
     # If garbage collection left us with 1 valid stock (e.g. "Juhayna vs Garbage"),
     # we must find a peer to compare against instead of failing.
@@ -230,15 +272,22 @@ async def handle_compare_stocks(
         current_symbol = valid_stock['symbol']
         
         if sector_name:
-             # Find largest peer
-             peer_row = await conn.fetchrow("""
+             # Find largest peer (excluding same base ticker aliases)
+             peer_rows = await conn.fetch("""
                 SELECT symbol FROM market_tickers 
                 WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
-                ORDER BY market_cap DESC LIMIT 1
+                ORDER BY market_cap DESC LIMIT 15
             """, sector_name, current_symbol, market_code)
-             
-             if peer_row:
-                 peer_symbol = peer_row['symbol']
+
+             peer_symbol = None
+             current_canonical = _canonical_symbol(current_symbol)
+             for row in peer_rows:
+                 candidate = row['symbol']
+                 if _canonical_symbol(candidate) != current_canonical:
+                     peer_symbol = candidate
+                     break
+
+             if peer_symbol:
                  # FETCH PEER DATA (Duplicated logic for safety/speed without refactor)
                  # 1. Ticker
                  p_row = await conn.fetchrow("""
@@ -313,14 +362,24 @@ async def handle_compare_stocks(
                          if peer_data.get('roe') is None: peer_data['roe'] = safe_float(pr.get('roe'))
                          if peer_data.get('debt_equity') is None: peer_data['debt_equity'] = safe_float(pr.get('debt_equity_ratio'))
                          
-                     stocks_data.append(peer_data)
+                     # Final duplicate guard before append
+                     if _canonical_symbol(peer_data.get('symbol', '')) != current_canonical:
+                         stocks_data.append(peer_data)
 
     if len(stocks_data) < 2:
-        missing = [s for s in symbols if s not in [d['symbol'] for d in stocks_data]]
+        existing_canons = {_canonical_symbol(d['symbol']) for d in stocks_data}
+        missing = [
+            s for s in symbols
+            if _canonical_symbol(s) not in existing_canons
+        ]
         return {
             'success': False,
             'error': 'symbol_not_found',
-            'message': f"Could not find: {', '.join(missing)}"
+            'message': (
+                f"Could not build a valid peer comparison for: {', '.join(missing) or ', '.join(symbols)}"
+                if language == 'en'
+                else f"تعذر تكوين مقارنة صحيحة بين الأقران لـ: {', '.join(missing) or ', '.join(symbols)}"
+            )
         }
 
 

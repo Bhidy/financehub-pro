@@ -3639,6 +3639,19 @@ class ChatService:
 
         # Schema-level safety: always return a string.
         full_response_text = str(full_response_text or "")
+        
+        # Ensure structured_narrative is NEVER None to fulfill World-Class UI layer guarantees
+        if structured_narrative is None:
+            from .schemas import StructuredNarrative
+            structured_narrative = StructuredNarrative(
+                personal_greeting=None,
+                context_bridge=None,
+                human_opening=None,
+                core_narrative=full_response_text,
+                key_insight=key_insight,
+                risk_warning=None,
+                follow_up_prompt=follow_up_prompt
+            )
 
         return ChatResponse(
             message_text=full_response_text, # Use the composed text

@@ -209,16 +209,16 @@ METRIC_DEFINITIONS = {
 # Section title rotation
 SECTION_TITLES = {
     "en": [
-        "📘 What These Numbers Mean",
-        "💡 Explanation & Learning",
-        "📊 How to Read This Data",
-        "🎓 Quick Definitions",
+        "⚠️ Important Disclaimer",
+        "💡 Financial Notice",
+        "📊 Data Context (Not Advice)",
+        "🎓 Analytical Parameters",
     ],
     "ar": [
-        "📘 ماذا تعني هذه الأرقام",
-        "💡 شرح وتعلم",
-        "📊 كيف تقرأ هذه البيانات",
-        "🎓 تعريفات سريعة",
+        "⚠️ إخلاء مسؤولية تنبيهي",
+        "💡 اشعار مالي هام",
+        "📊 سياق البيانات (ليست نصيحة)",
+        "🎓 معايير التحليل",
     ]
 }
 

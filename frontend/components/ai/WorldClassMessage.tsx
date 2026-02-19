@@ -1534,4 +1534,39 @@ export function FollowUpPrompt({ content }: { content: string }) {
             </p>
         </div>
     );
+}
+
+/** Follow-Up Chips - Dynamic 3-chip UI */
+export function FollowUpChips({
+    followups,
+    onAction
+}: {
+    followups: Array<{ text: string; payload: string; type: string }>;
+    onAction?: (payload: string) => void;
+}) {
+    if (!followups || !followups.length) return null;
+    return (
+        <div className="mt-4 space-y-2">
+            <div className="flex flex-wrap gap-2">
+                {followups.map((chip, idx) => {
+                    const icon = chip.type === 'deeper_dive' ? '🔍' :
+                        chip.type === 'risk_probe' ? '⚠️' :
+                            chip.type === 'peer_compare' ? '⚖️' :
+                                chip.type === 'catalyst' ? '🚀' :
+                                    chip.type === 'historical_context' ? '🕰️' : '💡';
+
+                    return (
+                        <button
+                            key={`followup-${idx}`}
+                            onClick={() => onAction && onAction(chip.payload)}
+                            className="text-sm px-3 py-2 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 rounded-xl hover:border-[#13b8a6]/50 hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:text-teal-700 dark:hover:text-teal-300 transition-all text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 shadow-sm"
+                        >
+                            <span>{icon}</span>
+                            <span>{chip.text}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
 } 

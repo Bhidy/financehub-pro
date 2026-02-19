@@ -45,7 +45,7 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
 
 // NEW: World-Class Unified Message Renderer (Matches Mockup EXACTLY)
-import { WorldClassMessage, FollowUpPrompt } from "@/components/ai/WorldClassMessage";
+import { WorldClassMessage, FollowUpPrompt, FollowUpChips } from "@/components/ai/WorldClassMessage";
 import { MessageErrorBoundary } from "@/components/ai/MessageErrorBoundary";
 
 // Domain and Device detection
@@ -388,8 +388,19 @@ function ResponsiveAIAnalystContent() {
                                     </div>
                                 )}
 
-                                {/* Follow Up Prompt (Moved from WorldClassMessage for correct ordering) */}
-                                {m.response?.follow_up_prompt && (
+                                {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
+                                {m.response?.followups && m.response.followups.length > 0 ? (
+                                    <div
+                                        className={clsx("pt-2", resolveMessageLanguage(m) === "ar" && "font-arabic")}
+                                        dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
+                                        lang={resolveMessageLanguage(m)}
+                                    >
+                                        <FollowUpChips
+                                            followups={m.response.followups}
+                                            onAction={(payload) => sendDirectMessage(payload)}
+                                        />
+                                    </div>
+                                ) : m.response?.follow_up_prompt ? (
                                     <div
                                         className={clsx("pt-2", resolveMessageLanguage(m) === "ar" && "font-arabic")}
                                         dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
@@ -397,7 +408,7 @@ function ResponsiveAIAnalystContent() {
                                     >
                                         <FollowUpPrompt content={m.response.follow_up_prompt} />
                                     </div>
-                                )}
+                                ) : null}
 
                                 {/* Actions */}
                                 {m.response?.actions && m.response.actions.length > 0 && (

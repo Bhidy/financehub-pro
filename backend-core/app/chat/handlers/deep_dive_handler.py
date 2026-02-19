@@ -126,7 +126,7 @@ async def handle_deep_valuation(conn: asyncpg.Connection, symbol: str, market: s
     """, symbol, market)
     
     if not row:
-        return ChatResponse(message_text="Data not found.", meta={})
+        return ChatResponse(message_text="Data not found.", meta={'intent': 'UNKNOWN', 'confidence': 1.0})
 
     name = row['name_ar'] if lang == 'ar' and row['name_ar'] else row['name_en']
     
@@ -198,7 +198,7 @@ async def handle_deep_efficiency(conn: asyncpg.Connection, symbol: str, market: 
     """, symbol, market)
     
     if not row:
-        return ChatResponse(message_text="Data not found.", meta={})
+        return ChatResponse(message_text="Data not found.", meta={'intent': 'UNKNOWN', 'confidence': 1.0})
         
     name = row['name_ar'] if lang == 'ar' and row['name_ar'] else row['name_en']
     # Fetch Supplementary Ratios
@@ -266,7 +266,7 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
     """, symbol, market)
     
     if not row:
-        return ChatResponse(message_text="Data not found.", meta={})
+        return ChatResponse(message_text="Data not found.", meta={'intent': 'UNKNOWN', 'confidence': 1.0})
         
     name = row['name_ar'] if lang == 'ar' and row['name_ar'] else row['name_en']
     currency = row['currency']

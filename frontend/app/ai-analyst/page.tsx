@@ -348,6 +348,7 @@ function AIAnalystPageContent() {
                                                         <FollowUpChips
                                                             followups={msg.response.followups}
                                                             onAction={(payload) => sendDirectMessage(payload)}
+                                                            language={msg.response.language || "en"}
                                                         />
                                                     ) : msg.response.follow_up_prompt ? (
                                                         <div className="px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm italic text-slate-500 dark:text-slate-400">

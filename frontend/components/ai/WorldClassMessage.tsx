@@ -27,6 +27,9 @@
 
 import React from "react";
 import clsx from "clsx";
+import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
+import { GemListCard } from "./GemListCard";
+import { UndervaluedScreenCard } from "./UndervaluedScreenCard";
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -1314,6 +1317,10 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
         lang
     );
 
+    const normalizedScoreBreakdown = safeResponse?.score_breakdown || findCardData(["score_breakdown"]);
+    const normalizedGemList = safeResponse?.gem_list || findCardData(["gem_list"]);
+    const normalizedUndervaluedScreen = safeResponse?.undervalued_screen || findCardData(["undervalued_screen"]);
+
     const normalizedEducationalCards = (
         Array.isArray(safeResponse?.educational_cards) && safeResponse.educational_cards.length > 0
             ? safeResponse.educational_cards
@@ -1497,6 +1504,17 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
                 <IndexCompositionCard data={normalizedIndexComposition} lang={lang} />
             )}
 
+            {/* NEW PHASE 2 CARDS */}
+            {normalizedScoreBreakdown && (
+                <ScoreBreakdownCard data={normalizedScoreBreakdown} language={lang} />
+            )}
+            {normalizedGemList && (
+                <GemListCard data={normalizedGemList} language={lang} />
+            )}
+            {normalizedUndervaluedScreen && (
+                <UndervaluedScreenCard data={normalizedUndervaluedScreen} language={lang} />
+            )}
+
             {/* ============================================================
                 LAYER 3: LEARNING SECTION (Educational Footer)
                ============================================================ */}
@@ -1539,30 +1557,65 @@ export function FollowUpPrompt({ content }: { content: string }) {
 /** Follow-Up Chips - Dynamic 3-chip UI */
 export function FollowUpChips({
     followups,
-    onAction
+    onAction,
+    language = "en"
 }: {
     followups: Array<{ text: string; payload: string; type: string }>;
     onAction?: (payload: string) => void;
+    language?: "en" | "ar" | "mixed";
 }) {
     if (!followups || !followups.length) return null;
+
+    const isRtl = language === "ar";
+
+    const getTypeColor = (type: string) => {
+        switch (type) {
+            case 'deeper_dive': return "border-blue-500 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20";
+            case 'risk_probe': return "border-red-500 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20";
+            case 'comparison': return "border-teal-500 hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20";
+            case 'catalyst': return "border-amber-500 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20";
+            case 'macro_link': return "border-purple-500 hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20";
+            case 'historical': return "border-slate-400 hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900/20";
+            case 'sector_view': return "border-emerald-500 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20";
+            default: return "border-amber-500 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20";
+        }
+    };
+
     return (
-        <div className="mt-4 space-y-2">
-            <div className="flex flex-wrap gap-2">
+        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-white/5" dir={isRtl ? "rtl" : "ltr"}>
+            <div className="text-[11.5px] text-gray-400 dark:text-[#9ca3af] mb-3 font-semibold uppercase tracking-wider flex items-center gap-2">
+                <div className="w-[6px] h-[6px] rounded-full bg-teal-500 animate-pulse"></div>
+                {isRtl ? "إلى أين تريد الذهاب بعد ذلك؟" : "Where do you want to go?"}
+            </div>
+            <div className="flex flex-col gap-2">
                 {followups.map((chip, idx) => {
                     const icon = chip.type === 'deeper_dive' ? '🔍' :
                         chip.type === 'risk_probe' ? '⚠️' :
-                            chip.type === 'peer_compare' ? '⚖️' :
+                            chip.type === 'comparison' ? '⚖️' :
                                 chip.type === 'catalyst' ? '🚀' :
-                                    chip.type === 'historical_context' ? '🕰️' : '💡';
+                                    chip.type === 'macro_link' ? '🌍' :
+                                        chip.type === 'historical' ? '🕰️' :
+                                            chip.type === 'sector_view' ? '🏢' : '💡';
+
+                    const borderColors = getTypeColor(chip.type);
+
+                    // Determine correct border side based on RTL
+                    const borderSideClass = isRtl ? "border-r-[3px] border-l border-y" : "border-l-[3px] border-r border-y";
 
                     return (
                         <button
                             key={`followup-${idx}`}
                             onClick={() => onAction && onAction(chip.payload)}
-                            className="text-sm px-3 py-2 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 rounded-xl hover:border-[#13b8a6]/50 hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:text-teal-700 dark:hover:text-teal-300 transition-all text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2 shadow-sm"
+                            className={clsx(
+                                "text-start text-[13px] px-3.5 py-3 w-full bg-slate-50 dark:bg-[#1A1F2E] border-gray-200 dark:border-white/10 rounded-xl transition-all text-slate-700 dark:text-slate-300 flex items-start gap-3 shadow-sm",
+                                borderSideClass,
+                                borderColors
+                            )}
                         >
-                            <span>{icon}</span>
-                            <span>{chip.text}</span>
+                            <span className="text-[14px] mt-0.5 shrink-0 select-none">{icon}</span>
+                            <span className="leading-relaxed text-gray-800 dark:text-gray-200 font-medium">
+                                {chip.text}
+                            </span>
                         </button>
                     );
                 })}

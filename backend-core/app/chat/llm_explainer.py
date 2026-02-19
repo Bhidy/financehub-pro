@@ -222,10 +222,37 @@ class LLMExplainerService:
         # Source: complete_implementation_kit.md (Section 2.1)
         # ------------------------------------------------------------------
         
-        # ------------------------------------------------------------------
-        # MASTER SYSTEM PROMPT (STRICT GOVERNANCE - PHASE 1)
-        # Source: complete_implementation_kit.md (Section 2.1)
-        # ------------------------------------------------------------------
+        # Scenarios are ONLY generated for deep dives per Phase 1 instructions
+        ar_scenarios_instruction = ""
+        en_scenarios_instruction = ""
+        if is_deep_dive or intent in ['BULL_BEAR', 'BUY_RECOMMENDATION']:
+            ar_scenarios_instruction = (
+                f"2. **السيناريوهات (Scenarios)**:\n"
+                f"[BULL_CASE]\n"
+                f"📈 السيناريو الإيجابي (+XX% صعود محتمل)\n"
+                f"- نقطة إيجابية 1 مع بيانات محددة\n"
+                f"- نقطة إيجابية 2 مع تأثير كمي\n"
+                f"- على الأقل 4-5 نقاط\n"
+                f"[BEAR_CASE]\n"
+                f"📉 السيناريو السلبي (-XX% هبوط محتمل)\n"
+                f"- نقطة سلبية 1 مع مؤشر محدد\n"
+                f"- نقطة سلبية 2 مع تأثير كمي\n"
+                f"- على الأقل 4-5 نقاط\n\n"
+            )
+            en_scenarios_instruction = (
+                f"2. **Scenarios** (QUANTIFIED upside/downside):\n"
+                f"[BULL_CASE]\n"
+                f"📈 Bull Case (+XX% upside)\n"
+                f"- Driver 1 with specific data (e.g., 'Market leader with 40% dairy share — defensible moat')\n"
+                f"- Driver 2 with quantified impact\n"
+                f"- Driver 3\n"
+                f"- At least 4-5 bullets with data citations\n"
+                f"[BEAR_CASE]\n"
+                f"📉 Bear Case (-XX% downside)\n"
+                f"- Risk 1 with specific metric (e.g., 'D/E of 0.62x with negative FCF = refinancing risk')\n"
+                f"- Risk 2 with quantified impact\n"
+                f"- At least 4-5 bullets with data citations\n\n"
+            )
         
         if language == 'ar':
             # ============================================================
@@ -277,22 +304,12 @@ class LLMExplainerService:
         f"   - فقرة 1: ملخص تنفيذي مع أطروحة مدعومة بأرقام.\n"
         f"   - فقرة 2: إعداد التقييم - قارن المؤشرات الحالية بالمتوسطات التاريخية والقطاعية.\n"
         f"   - فقرة 3: النظرة المستقبلية - ما يجب أن يحدث لتحقق السيناريو الإيجابي/السلبي.\n\n"
-        f"2. **السيناريوهات (Scenarios)**:\n"
-        f"[BULL_CASE]\n"
-        f"📈 السيناريو الإيجابي (+XX% صعود محتمل)\n"
-        f"- نقطة إيجابية 1 مع بيانات محددة\n"
-        f"- نقطة إيجابية 2 مع تأثير كمي\n"
-        f"- على الأقل 4-5 نقاط\n"
-        f"[BEAR_CASE]\n"
-        f"📉 السيناريو السلبي (-XX% هبوط محتمل)\n"
-        f"- نقطة سلبية 1 مع مؤشر محدد\n"
-        f"- نقطة سلبية 2 مع تأثير كمي\n"
-        f"- على الأقل 4-5 نقاط\n\n"
-        f"3. **رأيي كمحلل (MANDATORY)**:\n"
+        f"{ar_scenarios_instruction}"
+        f"2. **رأيي كمحلل (MANDATORY)**:\n"
         f"[MY_FRAMEWORK]\n"
         f"فقرة تحليلية شخصية. مثال: 'نسبة المخاطرة/العائد عند المستويات الحالية جيدة إذا كان لديك قناعة بأمرين: (1) تعافي السوق المصري، (2) تنفيذ الإدارة لخطة التوسع.'\n"
         f"يجب أن يبدو كتحليل من محلل كبير يعطي رأيه الصريح.\n\n"
-        f"4. **الإطار (Framework)**:\n"
+        f"3. **الإطار (Framework)**:\n"
         f"[FRAMEWORK]\n"
         f"Title: عنوان الإطار\n"
         f"Subtitle: التقييم (مثلاً: قوي)\n"
@@ -384,30 +401,19 @@ class LLMExplainerService:
                 f"   - Para 1: Executive Summary with QUANTIFIED thesis (e.g., 'trading at a 20% discount to 5-year average').\n"
                 f"   - Para 2: Valuation Setup — compare current metrics to historical averages AND peer averages. Cite specific numbers.\n"
                 f"   - Para 3: Forward View — what needs to happen for bull/bear case to play out. Include timing considerations (e.g., seasonal patterns, upcoming catalysts).\n\n"
-                f"2. **Scenarios** (QUANTIFIED upside/downside):\n"
-                f"[BULL_CASE]\n"
-                f"📈 Bull Case (+XX% upside)\n"
-                f"- Driver 1 with specific data (e.g., 'Market leader with 40% dairy share — defensible moat')\n"
-                f"- Driver 2 with quantified impact\n"
-                f"- Driver 3\n"
-                f"- At least 4-5 bullets with data citations\n"
-                f"[BEAR_CASE]\n"
-                f"📉 Bear Case (-XX% downside)\n"
-                f"- Risk 1 with specific metric (e.g., 'D/E of 0.62x with negative FCF = refinancing risk')\n"
-                f"- Risk 2 with quantified impact\n"
-                f"- At least 4-5 bullets with data citations\n\n"
-                f"3. **My Framework** (MANDATORY - Personal Analyst Take):\n"
+                f"{en_scenarios_instruction}"
+                f"2. **My Framework** (MANDATORY - Personal Analyst Take):\n"
                 f"[MY_FRAMEWORK]\n"
                 f"A personal analyst interpretation paragraph. Write as a senior analyst giving an honest, nuanced assessment.\n"
                 f"Example: 'The risk/reward at current levels is decent IF you have conviction on two things: (1) Egypt's consumer market recovery over 12-18 months, and (2) management executing on the capacity expansion. Without those, the leverage and margin pressure are real concerns.'\n"
                 f"Include timing considerations and practical context (e.g., seasonal patterns, institutional positioning).\n\n"
-                f"4. **Framework**:\n"
+                f"3. **Framework**:\n"
                 f"[FRAMEWORK]\n"
                 f"Title: Analytical Framework (e.g., DuPont Analysis)\n"
                 f"Subtitle: Overall Score (e.g., Strong, Weak)\n"
                 f"- Metric 1: Interpretation\n"
                 f"- Metric 2: Interpretation\n\n"
-                f"5. **Learning** (CRITICAL - DO NOT SKIP):\n"
+                f"4. **Learning** (CRITICAL - DO NOT SKIP):\n"
                 f"[LEARNING]\n"
                 f"Title: Key Term\n"
                 f"- Term: Brief context on why it matters here.\n"
@@ -887,7 +893,7 @@ class LLMExplainerService:
         # SCREENER / HIDDEN GEMS intent → Methodology Card
         if intent_upper in ['SCREENER_PE', 'SCREENER_PB', 'SCREENER_YIELD', 'HIDDEN_GEMS', 
                            'UNDERVALUED', 'MOST_UNDERVALUED'] or 'screener_results' in card_types:
-            return (
+            base_prompt = (
                 "═══════════════════════════════════════════════════════════════\n"
                 "SPECIAL: METHODOLOGY CARD (MANDATORY)\n"
                 "═══════════════════════════════════════════════════════════════\n"
@@ -901,6 +907,18 @@ class LLMExplainerService:
                 "Then for EACH stock result, provide a 1-2 line justification explaining WHY it scored well.\n"
                 "Include a composite score if applicable (e.g., 'Valuation Score: 8.5/10').\n\n"
             )
+            
+            if intent_upper == 'HIDDEN_GEMS':
+                base_prompt += (
+                    "CRITICAL UI REQUIREMENT: You MUST map the results to the `gem_list` JSON property.\n"
+                    "Provide a list of `gems`, each with `ticker`, `company_name`, `sector`, `score`, `grade`, `mini_bars` (label and percentage), `why`, `strength`, and `watch`.\n\n"
+                )
+            elif 'UNDERVALUED' in intent_upper:
+                base_prompt += (
+                    "CRITICAL UI REQUIREMENT: You MUST map the results to the `undervalued_screen` JSON property.\n"
+                    "Provide `overall_top` (list of top undervalued items) and `sector_winners` (best per sector).\n\n"
+                )
+            return base_prompt
         
         # MARKET STATUS / MACRO intent → Macro Scorecard
         if intent_upper in ['MARKET_STATUS', 'MARKET_OVERVIEW', 'EGX30', 'MACRO', 'INDEX_INFO']:
@@ -941,6 +959,17 @@ class LLMExplainerService:
                 "Skip the [BULL_CASE]/[BEAR_CASE] tags for pure educational queries. Focus on depth of explanation.\n\n"
             )
         
+        # DEEP DIVE / ANALYSIS intent → Score Breakdown Card
+        if intent_upper in ['DEEP_DIVE', 'COMPANY_PROFILE', 'ANALYZE']:
+            return (
+                "═══════════════════════════════════════════════════════════════\n"
+                "SPECIAL: SCORE BREAKDOWN (MANDATORY)\n"
+                "═══════════════════════════════════════════════════════════════\n"
+                "CRITICAL UI REQUIREMENT: You MUST return a `score_breakdown` JSON property containing the 5-component financial score:\n"
+                "- Components: 1. Valuation, 2. Profitability, 3. Financial Health, 4. Earnings Quality, 5. Momentum.\n"
+                "For each, provide a `label`, `note` (justification), `score` (out of 20), `max_score` (20), and `icon`.\n\n"
+            )
+            
         # Default: no special augmentation
         return ""
 
@@ -972,7 +1001,7 @@ class LLMExplainerService:
         # SCREENER → بطاقة المنهجية
         if intent_upper in ['SCREENER_PE', 'SCREENER_PB', 'SCREENER_YIELD', 'HIDDEN_GEMS',
                            'UNDERVALUED', 'MOST_UNDERVALUED'] or 'screener_results' in card_types:
-            return (
+            base_prompt = (
                 "═══════════════════════════════════════════════════════════════\n"
                 "خاص: بطاقة المنهجية (إلزامي)\n"
                 "═══════════════════════════════════════════════════════════════\n"
@@ -984,6 +1013,18 @@ class LLMExplainerService:
                 "- معيار 3: فلتر الأمان (مثال: 'الدين/الملكية < 1.0')\n\n"
                 "لكل سهم في النتائج، قدم تبرير من 1-2 سطر.\n\n"
             )
+            
+            if intent_upper == 'HIDDEN_GEMS':
+                base_prompt += (
+                    "متطلب واجهة الاستخدام (CRITICAL): يجب تعيين النتائج في متغير `gem_list` في JSON.\n"
+                    "يجب أن يشمل اسم السهم، الرمز، التقييم، وأشرطة صغيرة `mini_bars` لـ (النمو، السيولة، الخ).\n\n"
+                )
+            elif 'UNDERVALUED' in intent_upper:
+                base_prompt += (
+                    "متطلب واجهة الاستخدام (CRITICAL): يجب تعيين النتائج في متغير `undervalued_screen` في JSON.\n"
+                    "يجب أن يشمل `overall_top` (أفضل الأسهم إجمالاً) و `sector_winners` (الفائزون بكل قطاع).\n\n"
+                )
+            return base_prompt
         
         # MACRO → بطاقة الماكرو
         if intent_upper in ['MARKET_STATUS', 'MARKET_OVERVIEW', 'EGX30', 'MACRO', 'INDEX_INFO']:
@@ -1020,6 +1061,17 @@ class LLMExplainerService:
                 "تخطى علامات [BULL_CASE]/[BEAR_CASE] للاستفسارات التعليمية البحتة.\n\n"
             )
         
+        # DEEP DIVE → تفاصيل التقييم الخماسي
+        if intent_upper in ['DEEP_DIVE', 'COMPANY_PROFILE', 'ANALYZE']:
+            return (
+                "═══════════════════════════════════════════════════════════════\n"
+                "خاص: تفصيل التقييم (إلزامي)\n"
+                "═══════════════════════════════════════════════════════════════\n"
+                "متطلب واجهة الاستخدام (CRITICAL): يجب إرجاع مفتاح `score_breakdown` في JSON يحتوي على التقييم الخماسي:\n"
+                "(التقييم، الربحية، الصحة المالية، جودة الأرباح، الزخم).\n"
+                "لكل عنصر قدم التسمية، ملاحظة (التبرير)، والتقييم (من 20).\n\n"
+            )
+            
         return ""
 
 

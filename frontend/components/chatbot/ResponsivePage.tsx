@@ -398,6 +398,7 @@ function ResponsiveAIAnalystContent() {
                                         <FollowUpChips
                                             followups={m.response.followups}
                                             onAction={(payload) => sendDirectMessage(payload)}
+                                            language={resolveMessageLanguage(m)}
                                         />
                                     </div>
                                 ) : m.response?.follow_up_prompt ? (

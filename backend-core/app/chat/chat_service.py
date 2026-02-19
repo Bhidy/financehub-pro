@@ -3612,6 +3612,7 @@ class ChatService:
                     last_opening_used=context.last_opening_used if context else None,
                     shown_card_types=shown_card_types,
                     include_opening=True,
+                    force_opening=True, # enforcing 4-Layer structure rule
                     detected_insight=key_insight
                 )
             except Exception as comp_err:

@@ -300,9 +300,69 @@ class MacroFactor(BaseModel):
     points: int  # Points achieved
     max_points: int  # Max possible
     status: Literal["positive", "neutral", "negative"]
+    status: Literal["positive", "neutral", "negative"]
 
 
-class MacroScoreCard(BaseModel):
+class ScoreComponent(BaseModel):
+    """Individual component for a score breakdown."""
+    label: str  # e.g., "Valuation"
+    note: str   # e.g., "P/B 0.9x vs 5yr avg 1.4x"
+    score: int
+    max_score: int
+    icon: str   # e.g., "💰"
+
+class ScoreBreakdownCard(BaseModel):
+    """Detailed score breakdown with 5 components."""
+    title: str  # e.g., "COMI — Score Breakdown: 76/100"
+    grade: str  # e.g., "Grade B"
+    score: int
+    max_score: int = 100
+    components: List[ScoreComponent]
+
+
+class GemMiniBar(BaseModel):
+    """Mini bar for GemListCard."""
+    label: str  # e.g., "Val", "Prof"
+    percentage: int  # 0-100 defining bar width
+
+class GemItem(BaseModel):
+    """Individual hidden gem item."""
+    ticker: str
+    company_name: str
+    sector: str
+    score: int
+    grade: str
+    mini_bars: List[GemMiniBar]
+    why: str  # Narrative explanation
+    strength: str  # Key strength
+    watch: str  # Key risk/watch item
+
+class GemListCard(BaseModel):
+    """List of hidden gems with mini bars and details."""
+    title: Optional[str] = "Hidden Gems"
+    gems: List[GemItem]
+
+
+class TopUndervaluedItem(BaseModel):
+    """Row in the overall top 5 undervalued list."""
+    ticker: str
+    company_name: str
+    sector: str
+    score: int
+    grade: str
+
+class SectorWinner(BaseModel):
+    """Winner for a specific sector."""
+    sector_name: str
+    ticker: str
+    score: int
+
+class UndervaluedScreenCard(BaseModel):
+    """Screening results showing top overall and best by sector."""
+    overall_top: List[TopUndervaluedItem]
+    sector_winners: List[SectorWinner]
+    insight: str  # The key takeaway from the screen
+
     """Macro environment score card (0-100)."""
     score: int  # 0-100
     max_score: int = 100
@@ -428,6 +488,10 @@ class ChatResponse(BaseModel):
     character_cards: List['CharacterCard'] = Field(default_factory=list)  # Stock personality profiles
     quantified_drivers: Optional['QuantifiedDriversCard'] = None  # Numbered driver breakdown
     index_composition: Optional['IndexCompositionCard'] = None  # Index breakdown
+    score_breakdown: Optional[ScoreBreakdownCard] = Field(None, description="Detailed score breakdown card showing 5 factors")
+    gem_list: Optional[GemListCard] = Field(None, description="Hidden gems list with detailed metrics and mini bars")
+    undervalued_screen: Optional[UndervaluedScreenCard] = Field(None, description="Screening results showing top 5 overall and best by sector")
+    
     
     # Existing structured components
     learning_section: Optional[Dict[str, Any]] = None  # {"title": "...", "items": ["..."]}

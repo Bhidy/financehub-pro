@@ -2895,6 +2895,32 @@ class ChatService:
             except Exception as ctx_err:
                 print(f"[ChatService] ⚠️ Context update error (non-fatal): {ctx_err}")
             
+            # ═══════════════════════════════════════════════════════════════
+            # 11. GENERATE DYNAMIC FOLLOW-UPS WITH AI
+            # ═══════════════════════════════════════════════════════════════
+            try:
+                from .followup_engine import FollowUpEngine
+                convo_logger = logging.getLogger("ChatService")
+                convo_logger.info("Generating dynamic follow-ups...")
+                followup_engine = FollowUpEngine()
+                
+                # Pass intent value as dict since FollowUpEngine expects dict
+                intent_info = {"intent": intent.value} if intent else {}
+                
+                dynamic_followups = await followup_engine.generate(
+                    ai_response=response.message_text,
+                    conversation_history=history or [],
+                    intent=intent_info,
+                    symbol=actual_symbol
+                )
+                
+                if dynamic_followups:
+                    response.followups = dynamic_followups
+                    convo_logger.info(f"✅ Generated {len(dynamic_followups)} dynamic follow-ups.")
+            except Exception as e:
+                convo_logger = logging.getLogger("ChatService")
+                convo_logger.error(f"Failed to generate dynamic follow-ups: {e}")
+            
             return response
         except Exception as global_ex:
             # -------------------------------------------------------------
@@ -3178,11 +3204,17 @@ class ChatService:
         elif intent == Intent.MARKET_MOST_ACTIVE:
             return await handle_most_active(self.conn, market_code or 'EGX', language)
         
-        elif intent == Intent.SCREENER_PE:
-            threshold = entities.get('threshold', 15.0) # Default PE 15
-            return await handle_screener_pe(self.conn, threshold, market_code, limit=20, language=language)
+        elif intent == Intent.SCREENER_PE or intent == Intent.SCREENER_VALUE:
+            from .handlers.extended_scenarios import handle_undervalued_stocks
+            sector = entities.get('sector')
+            try:
+                return await handle_undervalued_stocks(self.conn, language=language, sector=sector, limit=5)
+            except Exception:
+                # Fallback to simple PE Screener
+                threshold = entities.get('threshold', 15.0)
+                return await handle_screener_pe(self.conn, threshold, market_code, limit=20, language=language)
         
-        elif intent == Intent.SCREENER_DEEP or intent == Intent.SCREENER_VALUE or intent == Intent.SCREENER_SAFETY or intent == Intent.SCREENER_GROWTH:
+        elif intent == Intent.SCREENER_DEEP or intent == Intent.SCREENER_SAFETY or intent == Intent.SCREENER_GROWTH:
             # Universal Handler for all complex screenings
             # It handles filters, sort_by, and sector extracted by ClaudeOrchestrator
             return await handle_universal_screener(self.conn, intent, entities, language)
@@ -3359,23 +3391,6 @@ class ChatService:
         elif intent == Intent.SCREENER_SAFETY:
              # Route to Deep Screener with Z-Score
              return await handle_deep_screener(self.conn, metric='altman_z_score', direction='desc', limit=10, market_code=market_code, language=language)
-             
-        elif intent == Intent.SCREENER_VALUE:
-             from .handlers.extended_scenarios import handle_undervalued_stocks
-             sector = entities.get('sector')
-             try:
-                 return await handle_undervalued_stocks(
-                     self.conn,
-                     language=language,
-                     sector=sector,
-                     limit=5
-                 )
-             except Exception:
-                 # Fallback if extended screener fails
-                 try:
-                     return await handle_deep_screener(self.conn, metric='pe_ratio', direction='asc', limit=10, market_code=market_code, language=language)
-                 except Exception:
-                     return await handle_screener_pe(self.conn, threshold=15.0, market_code=market_code, limit=10, language=language)
              
         elif intent == Intent.SCREENER_INCOME:
              # Route to Dividend Leaders

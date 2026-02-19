@@ -10,64 +10,22 @@ async def handle_technical_indicators(conn: asyncpg.Connection, symbol: str, lan
     if not ticker:
         return {'success': False, 'message': f"Symbol {symbol} not found."}
 
-    # Fetch latest technicals
-    row = await conn.fetchrow("""
-        SELECT * FROM technical_levels 
-        WHERE symbol = $1 
-        ORDER BY calc_date DESC LIMIT 1
-    """, symbol)
-
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
     
-    if not row:
-        return {
-            'success': True,
-            'message': f"No technical data available for {name} ({symbol}) yet.",
-            'cards': []
-        }
-
-    # Construct Technicals Card
-    data = {
-        'symbol': symbol,
-        'date': str(row['calc_date']),
-        'rsi': float(row['rsi_14']) if row['rsi_14'] else None,
-        'macd': {
-            'line': float(row['macd_line']) if row['macd_line'] else 0,
-            'signal': float(row['macd_signal']) if row['macd_signal'] else 0,
-            'hist': float(row['macd_histogram']) if row['macd_histogram'] else 0
-        },
-        'support': [float(row[k]) for k in ['support_1', 'support_2', 'support_3'] if row[k]],
-        'resistance': [float(row[k]) for k in ['resistance_1', 'resistance_2', 'resistance_3'] if row[k]],
-        'ma': {
-            'sma_50': float(row['sma_50']) if row['sma_50'] else None,
-            'sma_200': float(row['sma_200']) if row['sma_200'] else None,
-        },
-        'pivot': float(row['pivot_point']) if row['pivot_point'] else None
-    }
-
-    msg_lines = [f"🔍 **{'التحليل الفني لـ' if language == 'ar' else 'Technical Analysis for'} {name}**"]
-    
-    rsi_str = f"{data['rsi']}" if data['rsi'] else None
-    pivot_str = f"{data['pivot']}" if data['pivot'] else None
-    
-    if rsi_str: msg_lines.append(f"RSI: {rsi_str}")
-    if pivot_str: msg_lines.append(f"{'الارتكاز' if language == 'ar' else 'Pivot'}: {pivot_str}")
-    
-    if len(msg_lines) == 1:
-        # No data case
-        msg = f"🔍 **{name}**\n\n{'لا توجد بيانات فنية متاحة الآن.' if language == 'ar' else 'No technical indicators available currently.'}"
+    if language == 'ar':
+        msg = f"🔍 **التحليل الفني لـ {name}**\n\nنعتذر، هذه المنصة مخصصة للتحليل المالي والأساسي فقط. التحليل الفني غير مدعوم في الوقت الحالي."
     else:
-        msg = "\n".join(msg_lines)
+        msg = f"🔍 **Technical Analysis for {name}**\n\nPlease note that this is a financial and fundamental analysis platform. Technical Analysis is not supported at this stage."
 
     return {
         'success': True,
         'message': msg,
         'cards': [
             {'type': 'stock_header', 'data': {'symbol': symbol, 'name': name, 'currency': ticker['currency'], 'market_code': 'EGX'}},
-            {'type': 'technicals', 'title': 'Technical Indicators', 'data': data}
         ],
         'actions': [
-             {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'}
+             {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+             {'label': '💎 Fair Value', 'label_ar': '💎 القيمة العادلة', 'action_type': 'query', 'payload': f'value {symbol}'}
         ]
     }
 

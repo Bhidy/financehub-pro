@@ -430,8 +430,9 @@ class ChatResponse(BaseModel):
     index_composition: Optional['IndexCompositionCard'] = None  # Index breakdown
     
     # Existing structured components
-    learning_section: Optional[Dict[str, Any]] = None  # {\"title\": \"...\", \"items\": [\"...\"]}
+    learning_section: Optional[Dict[str, Any]] = None  # {"title": "...", "items": ["..."]}
     follow_up_prompt: Optional[str] = None  # Soft follow-up suggestion
+    followups: List[Dict[str, Any]] = Field(default_factory=list)  # Dynamic follow-up chips
     key_insight: Optional[str] = None  # 🎯 Key takeaway insight for the stock
     
     # UI elements

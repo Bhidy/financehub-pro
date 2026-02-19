@@ -17,7 +17,8 @@ import { FactExplanations } from "@/components/ai/FactExplanations";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 // NEW: Structured response components for bull/bear cases
-import { InsightCard, DisclaimerCard, FollowUpPrompt } from "@/components/ai/StructuredResponseCards";
+import { InsightCard, DisclaimerCard } from "@/components/ai/StructuredResponseCards";
+import { FollowUpChips } from "@/components/ai/WorldClassMessage";
 
 function AIAnalystPageContent() {
     const router = useRouter();
@@ -343,11 +344,16 @@ function AIAnalystPageContent() {
                                                             </ul>
                                                         </div>
                                                     )}
-                                                    {msg.response.follow_up_prompt && (
+                                                    {msg.response.followups && msg.response.followups.length > 0 ? (
+                                                        <FollowUpChips
+                                                            followups={msg.response.followups}
+                                                            onAction={(payload) => sendDirectMessage(payload)}
+                                                        />
+                                                    ) : msg.response.follow_up_prompt ? (
                                                         <div className="px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm italic text-slate-500 dark:text-slate-400">
                                                             💡 {msg.response.follow_up_prompt}
                                                         </div>
-                                                    )}
+                                                    ) : null}
                                                     {msg.response.actions && <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />}
                                                 </>
                                             )}

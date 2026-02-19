@@ -181,6 +181,11 @@ export interface ChatResponse {
         items: string[];
     };
     follow_up_prompt?: string;  // Soft follow-up suggestion
+    followups?: Array<{
+        text: string;
+        payload: string;
+        type: string;
+    }>; // Dynamic follow-up chips
 
     // UI elements
     message_text_ar?: string;

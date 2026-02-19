@@ -147,7 +147,7 @@ export default function MobileSettingsPage() {
                                 <p className="text-sm text-slate-500 dark:text-slate-400">Manage your account preferences</p>
                             </div>
                             <Link
-                                href="/"
+                                href="/AiChat"
                                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#14B8A6]/10 text-[#14B8A6] hover:bg-[#14B8A6]/20 transition-colors font-medium text-sm"
                             >
                                 <ArrowLeft className="w-4 h-4" />

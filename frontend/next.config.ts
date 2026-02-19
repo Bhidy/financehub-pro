@@ -61,12 +61,23 @@ const nextConfig = {
   },
 
   // Canonical Home page mapping.
-  // Keeps /home serving the dedicated static Home page content.
+  // Serves the static landing page at the root URL.
   async rewrites() {
     return [
       {
-        source: '/home',
+        source: '/',
         destination: '/home.html',
+      },
+    ];
+  },
+
+  // Redirect legacy /home path to root
+  async redirects() {
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
       },
     ];
   },

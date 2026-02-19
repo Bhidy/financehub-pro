@@ -21,8 +21,12 @@ import {
     FileText,
     Building2,
     Zap,
-    Newspaper
+    Newspaper,
+    LayoutDashboard,
+    Wallet,
+    ArrowLeftRight
 } from "lucide-react";
+import { SafeChatCard } from "@/components/ui/SafeChatCard";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -1803,12 +1807,13 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
         currentDataset = data.ttm_data || data.annual_data || data;
     }
 
-    const activeRows = currentDataset[activeTab] || [];
+    const activeRows = (currentDataset[activeTab] || []).filter((r: any) => r && r.values);
     const rawYears = currentDataset.years || data.years || [];
 
     // Filter uniqueYears to only include those with actual data in activeRows
     const uniqueYears = rawYears.filter(year =>
         activeRows.some(row => {
+            if (!row.values) return false;
             const v = row.values[year];
             return v !== null && v !== undefined;
         })
@@ -1894,13 +1899,13 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 relative z-10">
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded bg-gradient-to-tr from-blue-600 to-cyan-500 shadow-sm flex items-center justify-center text-white font-bold text-xs border border-white/10">
-                            {data.symbol[0]}
+                            {data.symbol ? data.symbol[0] : '?'}
                         </div>
                         <div>
                             <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-sm text-white tracking-tight leading-none">{data.symbol} {t.financials}</h3>
+                                <h3 className="font-bold text-sm text-white tracking-tight leading-none">{data.symbol || 'UNKNOWN'} {t.financials}</h3>
                                 <span className="px-1 py-px rounded-full bg-white/10 text-[9px] font-bold text-white/70 border border-white/10 uppercase tracking-widest backdrop-blur-sm leading-none">
-                                    {data.currency}
+                                    {data.currency || 'SAR'}
                                 </span>
                             </div>
                             <div className="text-[10px] text-blue-200/80 font-medium mt-1">{t.numbersByMillions}</div>
@@ -2034,7 +2039,7 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
                                             </div>
                                         </td>
                                         {uniqueYears.map(year => {
-                                            const val = row.values[year];
+                                            const val = row.values?.[year];
                                             return (
                                                 <td
                                                     key={year}
@@ -2274,13 +2279,15 @@ export function ChatCards({ cards, language = "en", onSymbolClick, onExampleClic
     return (
         <div className="space-y-3 mt-3">
             {safeCards.map((card, i) => (
-                <ChatCard
-                    key={i}
-                    card={card}
-                    language={language}
-                    onSymbolClick={onSymbolClick}
-                    onExampleClick={onExampleClick}
-                />
+                <SafeChatCard key={i} title={card.title || card.type}>
+                    <ChatCard
+                        key={i}
+                        card={card}
+                        language={language}
+                        onSymbolClick={onSymbolClick}
+                        onExampleClick={onExampleClick}
+                    />
+                </SafeChatCard>
             ))}
             {showExport && safeCards.length > 0 && (
                 <ExportToolbar
@@ -2365,10 +2372,15 @@ export function DividendsTableCard({ title, data, language = "en" }: DividendsTa
     );
 }
 
+// ============================================================
+// Chat Card (Main Switch)
+// ============================================================
+
 function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
     if (!card || typeof card !== "object") {
         return null;
     }
+    if (!card.type) return null;
     if (!card.data || typeof card.data !== "object") {
         card = { ...card, data: {} };
     }

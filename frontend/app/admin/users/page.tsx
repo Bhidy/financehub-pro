@@ -138,7 +138,7 @@ export default function AdminUsersPage() {
                     <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
                     <p className="text-slate-500 mb-4">You don't have permission to view this page.</p>
                     <button
-                        onClick={() => router.push('/')}
+                        onClick={() => router.push('/AiChat')}
                         className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                     >
                         Go Home
@@ -259,8 +259,8 @@ export default function AdminUsersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === 'admin'
-                                                    ? 'bg-purple-100 text-purple-700'
-                                                    : 'bg-slate-100 text-slate-600'
+                                                ? 'bg-purple-100 text-purple-700'
+                                                : 'bg-slate-100 text-slate-600'
                                                 }`}>
                                                 {u.role.toUpperCase()}
                                             </span>
@@ -276,8 +276,8 @@ export default function AdminUsersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.is_active
-                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                    : 'bg-red-100 text-red-700'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-red-100 text-red-700'
                                                 }`}>
                                                 {u.is_active ? 'Active' : 'Inactive'}
                                             </span>

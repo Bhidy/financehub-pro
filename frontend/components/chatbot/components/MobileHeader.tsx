@@ -113,12 +113,13 @@ export function MobileHeader({
                         <MessageSquarePlus className="w-5 h-5" />
                     </button>
 
-                    <button
+                    {/* Language Toggle - HIDDEN */}
+                    {/* <button
                         onClick={onToggleLang}
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-95 transition-all text-xs font-bold"
                     >
                         {lang === 'en' ? 'AR' : 'EN'}
-                    </button>
+                    </button> */}
 
                     <button
                         onClick={toggleTheme}

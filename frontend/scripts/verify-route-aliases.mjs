@@ -11,15 +11,15 @@ const checks = [
   {
     name: "route helper still defines home route",
     file: "components/chatbot/hooks/useMobileRoutes.ts",
-    assert: (text) => /home:\s*["']\/(?:home)?["']/.test(text),
+    assert: (text) => /home:\s*["']\/AiChat["']/.test(text),
   },
   {
-    name: "next config rewrites /home to existing static home.html",
+    name: "next config rewrites / to existing static home.html",
     file: "next.config.ts",
     assert: (text) =>
-      /async rewrites\(\)\s*{[\s\S]*source:\s*['"]\/home['"][\s\S]*destination:\s*['"]\/home\.html['"]/m.test(
+      /async rewrites\(\)\s*{[\s\S]*source:\s*['"]\/['"][\s\S]*destination:\s*['"]\/home\.html['"]/m.test(
         text
-      ) && !/source:\s*['"]\/home['"][\s\S]*destination:\s*['"]\/['"]/m.test(text),
+      ),
   },
   {
     name: "static Home page asset exists with expected title",

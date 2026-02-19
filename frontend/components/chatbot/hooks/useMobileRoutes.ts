@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 // Route mappings - All unified to root
 export const APP_ROUTES = {
-    home: "/",
+    home: "/AiChat",
     login: "/login",
     register: "/register",
     forgotPassword: "/forgot-password",

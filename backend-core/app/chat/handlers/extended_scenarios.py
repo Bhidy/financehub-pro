@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 # NEW: Import scoring engine
-from .scoring_engine import calculate_score
+from ..scoring_engine import calculate_score
 
 logger = logging.getLogger(__name__)
 

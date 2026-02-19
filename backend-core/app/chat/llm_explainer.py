@@ -225,7 +225,7 @@ class LLMExplainerService:
         # Scenarios are ONLY generated for deep dives per Phase 1 instructions
         ar_scenarios_instruction = ""
         en_scenarios_instruction = ""
-        if is_deep_dive or intent in ['BULL_BEAR', 'BUY_RECOMMENDATION']:
+        if intent in ['BULL_BEAR', 'BUY_RECOMMENDATION']:
             ar_scenarios_instruction = (
                 f"2. **السيناريوهات (Scenarios)**:\n"
                 f"[BULL_CASE]\n"

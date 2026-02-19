@@ -363,6 +363,8 @@ class UndervaluedScreenCard(BaseModel):
     sector_winners: List[SectorWinner]
     insight: str  # The key takeaway from the screen
 
+
+class MacroScoreCard(BaseModel):
     """Macro environment score card (0-100)."""
     score: int  # 0-100
     max_score: int = 100

@@ -2005,48 +2005,53 @@ class ChatService:
             except Exception:
                 pass
 
+            # ------------------------------------------------------------------
+            # DETERMINISTIC STATE CONTROL (The "Starta" Fix) - MOVED TO HIGHEST SCOPE
+            # ------------------------------------------------------------------
+            # 1. Check DB for EXACT message count for this session
+            msg_count = 0
+            if session_id:
+                try:
+                    msg_count = await self.conn.fetchval("SELECT count(*) FROM chat_messages WHERE session_id = $1 AND role = 'user'", session_id)
+                except Exception as e:
+                    logger.error(f"Failed to fetch session message count: {e}")
+            
+            # 2. Strict Boolean Flag (Double Safety: DB + History Array)
+            real_history_count = 0
+            if history:
+                for h in history:
+                    # Skip system messages and initial welcome
+                    if h.get('role') == 'system':
+                        continue
+                    if h.get('role') == 'assistant' and 'initialized' in str(h.get('content', '')).lower():
+                        continue
+                    real_history_count += 1
+            
+            has_history = real_history_count > 0
+            is_returning_user = (msg_count is not None and msg_count > 0) or has_history
+            is_new_session = (msg_count == 0) and not has_history
+            
+            logger.info(f"[ChatService] 🔍 Session '{session_id}' | DB: {msg_count} | Hist: {real_history_count} | New? {is_new_session} | Returning? {is_returning_user}")
+            
+            # ENTERPRISE GREETING LOGIC (Chief Expert Standard)
+            final_allow_greeting = False
+            force_human_opening = False
+            
+            if is_new_session:
+                final_allow_greeting = True
+                force_human_opening = True
+                logger.info(f"[ChatService] 👋 Allowing greeting: New session")
+            else:
+                force_human_opening = False
+                logger.info(f"[ChatService] 💬 Suppressing greeting: Returning user")
+
             if (
                 result_data.get('success', True)
                 and intent not in NO_NARRATIVE_INTENTS
                 and not skip_narrative_for_clarification
             ):
                 try:
-                    # Fetch real user name - MOVED UP
-                    # real_user_name = await self._get_user_name(user_id)
-                    
-                    # DETERMINISTIC STATE CONTROL (The "Starta" Fix)
-                    # 1. Check DB for EXACT message count for this session
-                    msg_count = 0
-                    if session_id:
-                        msg_count = await self.conn.fetchval("SELECT count(*) FROM chat_messages WHERE session_id = $1 AND role = 'user'", session_id)
-                    
-                    # 2. Strict Boolean Flag (Double Safety: DB + History Array)
-                    # If history has items, it is NOT a new session, regardless of DB lag.
-                    # ENTERPRISE FIX: Filter out system welcome messages from history count
-                    # Only count real user/assistant exchanges
-                    real_history_count = 0
-                    if history:
-                        for h in history:
-                            # Skip system messages and initial welcome
-                            if h.get('role') == 'system':
-                                continue
-                            if h.get('role') == 'assistant' and 'initialized' in str(h.get('content', '')).lower():
-                                continue
-                            real_history_count += 1
-                    
-                    has_history = real_history_count > 0
-                    
-                    # is_returning_user: True if DB shows messages OR request has history array
-                    is_returning_user = (msg_count is not None and msg_count > 0) or has_history
-                    
-                    # is_new_session: True ONLY if strictly no prior messages in DB AND history
-                    is_new_session = (msg_count == 0) and not has_history
-                    
-                    # 3. Log the decision for debugging (DETAILED)
-                    print(f"[ChatService] 🔍 Session '{session_id}' | DB: {msg_count} | Hist: {real_history_count} | New? {is_new_session} | Returning? {is_returning_user}")
-
-                    # 4. Generate Narrative
-                    # Check for Deep Dive Mode (CFA Level 3) - mirrors logic in llm_explainer
+                    # DYNAMIC TOKEN LIMIT: Increase for deep dives
                     card_types_str = [str(c.get('type', 'data')).lower() for c in result_data.get('cards', [])]
                     is_deep_dive = (
                         'financial_explorer' in card_types_str or 
@@ -2060,22 +2065,7 @@ class ChatService:
                         ] or 
                         'financial' in str(intent.value).lower()
                     )
-
-                    # ENTERPRISE GREETING LOGIC (Chief Expert Standard)
-                    # 1. New Session: ALWAYS greet (Human Opening), regardless of intent.
-                    # 2. Ongoing: NEVER greet (Keep flow).
                     
-                    final_allow_greeting = False
-                    force_human_opening = False
-                    
-                    if is_new_session:
-                        final_allow_greeting = True
-                        logger.info(f"[ChatService] 👋 Allowing greeting: New session")
-                    else:
-                        force_human_opening = False
-                        logger.info(f"[ChatService] 💬 Suppressing greeting: Returning user")
-                    
-                    # DYNAMIC TOKEN LIMIT: Increase for deep dives
                     explainer.MAX_TOKENS = 1000 if is_deep_dive else 400
                     if is_extended_intent and handler_conversational_text:
                         conversational_text = handler_conversational_text
@@ -2788,6 +2778,7 @@ class ChatService:
                     sentiment=sentiment,
                     include_risk_warning=include_risk,
                     risk_type=risk_type,
+                    force_opening=force_human_opening,
                     shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])],
                     detected_insight=detected_insight_input,
                     user_level=user_level # Phase 4

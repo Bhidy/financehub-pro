@@ -3711,7 +3711,9 @@ class ChatService:
                 framework['subtitle'] = line.split(':', 1)[1].strip()
             elif line.startswith('-'):
                 framework['items'].append(line[1:].strip())
-        
+        if 'title' not in framework:
+            framework['title'] = "Analysis Framework"
+            
         return framework if framework['items'] else None
 
     def _parse_drivers(self, text: str) -> Optional[Dict[str, Any]]:

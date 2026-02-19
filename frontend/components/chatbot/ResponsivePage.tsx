@@ -101,13 +101,12 @@ function ResponsiveAIAnalystContent() {
                 document.documentElement.classList.remove("dark");
             }
 
-            // Load saved language
-            const savedLang = localStorage.getItem("lang") as Language;
-            if (savedLang) {
-                setLang(savedLang);
-                document.documentElement.lang = savedLang;
-                document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-            }
+            // FORCE ENGLISH (Override any saved preference)
+            // const savedLang = localStorage.getItem("lang") as Language;
+            setLang('en');
+            localStorage.setItem("lang", "en");
+            document.documentElement.lang = "en";
+            document.documentElement.dir = "ltr";
         }
     }, []);
 
@@ -507,13 +506,13 @@ function ResponsiveAIAnalystContent() {
                                 </button>
                             </div>
 
-                            {/* Language Switcher */}
-                            <button
+                            {/* Language Switcher - HIDDEN as per user request */}
+                            {/* <button
                                 onClick={toggleLang}
                                 className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors uppercase"
                             >
                                 {lang === 'en' ? 'AR' : 'EN'}
-                            </button>
+                            </button> */}
 
                             {/* Dark Mode Toggle */}
                             <button
@@ -781,8 +780,8 @@ function ResponsiveAIAnalystContent() {
                         onLogin={() => router.push(getRoute('login'))}
                         designMode={designMode}
                         onToggleDesignMode={() => setDesignMode(designMode === 'pro' ? 'analyst' : 'pro')}
-                        lang={lang}
-                        onToggleLang={toggleLang}
+                        lang={'en'} // Force English
+                        onToggleLang={() => { }} // Disable toggle
                     />
                 </div>
             </div>

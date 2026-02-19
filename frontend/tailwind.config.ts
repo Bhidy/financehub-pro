@@ -38,7 +38,7 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                sans: ["var(--font-inter)", "sans-serif"],
+                sans: ["var(--font-manrope)", "sans-serif"],
                 code: ["var(--font-code)", "monospace"],
                 grotesk: ["var(--font-grotesk)", "sans-serif"],
             },

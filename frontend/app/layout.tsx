@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import ShellWrapper from "@/components/ShellWrapper";
@@ -16,6 +16,14 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+// Manrope - Landing Page Match (Google Fonts)
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 // JetBrains Mono - Monospace for code/data
@@ -90,7 +98,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${cairo.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
+        className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${cairo.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
       >
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"

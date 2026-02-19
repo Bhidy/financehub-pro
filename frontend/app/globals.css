@@ -121,7 +121,7 @@
   /* ========================================================================
      TYPOGRAPHY
      ======================================================================== */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   --font-arabic-stack: var(--font-arabic), var(--font-sans);
 
@@ -487,7 +487,7 @@ body {
 /* Typography enforcement (Strict) */
 [lang="en"],
 [dir="ltr"] {
-  font-family: var(--font-inter) !important;
+  font-family: var(--font-manrope) !important;
 }
 
 [lang="en"] .font-mono,
@@ -514,7 +514,7 @@ body {
 }
 
 [dir="ltr"] *:not(.font-mono):not(code):not(pre) {
-  font-family: var(--font-inter) !important;
+  font-family: var(--font-manrope) !important;
 }
 
 /* ============================================================================

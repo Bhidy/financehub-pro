@@ -2747,7 +2747,6 @@ class ChatService:
                 Intent.STOCK_STAT, Intent.TECHNICAL_INDICATORS, Intent.MACRO_SCORE
             ]:
                 # Generate key insight based on sentiment
-                from .response_composer import ResponseComposer
                 handler_key_insight = ResponseComposer.get_key_insight(language=language, sentiment='neutral')
             
             # ------------------------------------------------------------------
@@ -2756,7 +2755,6 @@ class ChatService:
             # We now wrap the LLM-generated "Core Narrative" with the 8-layer
             # premium structure (Greeting, Context Bridge, Risk, etc.)
             try:
-                from .response_composer import ResponseComposer
                 
                 # 1. Detect Sentiment
                 sentiment = 'neutral'

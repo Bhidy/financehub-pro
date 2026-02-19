@@ -13,6 +13,9 @@ import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
+# NEW: Import scoring engine
+from .scoring_engine import calculate_score
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,59 +66,60 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             FROM market_tickers
             WHERE market_code = 'EGX' AND sector_name IS NOT NULL
             GROUP BY sector_name
-        ),
-        gem_candidates AS (
-            SELECT 
-                t.symbol,
-                t.name_en,
-                t.name_ar,
-                t.sector_name,
-                t.market_cap,
-                t.logo_url,
-                t.pe_ratio,
-                t.pb_ratio,
-                t.dividend_yield,
-                ss.roe,
-                ss.profit_margin as net_profit_margin,
-                ss.revenue_growth,
-                sa.avg_pb,
-                sa.avg_pe,
-                -- Calculate undervaluation score
-                CASE 
-                    WHEN t.pb_ratio IS NOT NULL AND sa.avg_pb IS NOT NULL AND t.pb_ratio > 0 AND t.pb_ratio < sa.avg_pb
-                    THEN ROUND(((sa.avg_pb - t.pb_ratio) / sa.avg_pb * 100)::numeric, 0)
-                    ELSE 0
-                END as pb_discount,
-                CASE 
-                    WHEN t.pe_ratio IS NOT NULL AND sa.avg_pe IS NOT NULL AND t.pe_ratio > 0 AND t.pe_ratio < sa.avg_pe
-                    THEN ROUND(((sa.avg_pe - t.pe_ratio) / sa.avg_pe * 100)::numeric, 0)
-                    ELSE 0
-                END as pe_discount
-            FROM market_tickers t
-            LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
-            LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
-            WHERE t.market_code = 'EGX'
-              AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
-              AND (t.pe_ratio > 0 OR t.pb_ratio > 0)
         )
         SELECT 
-            *,
-            -- Composite undervaluation score (weighted)
-            GREATEST(pb_discount, pe_discount) + 
-            CASE WHEN roe > 15 THEN 15 ELSE COALESCE(roe, 0) END +
-            CASE WHEN net_profit_margin > 10 THEN 10 ELSE COALESCE(net_profit_margin, 0) END
-            AS gem_score
-        FROM gem_candidates
-        WHERE GREATEST(pb_discount, pe_discount) >= 15
-          OR (roe > 15 AND (pb_discount > 0 OR pe_discount > 0))
-        ORDER BY gem_score DESC
-        LIMIT 5
+            t.symbol,
+            t.name_en,
+            t.name_ar,
+            t.sector_name,
+            t.market_cap,
+            t.logo_url,
+            t.pe_ratio,
+            t.pb_ratio,
+            t.dividend_yield,
+            ss.*,
+            sa.avg_pb,
+            sa.avg_pe,
+            CASE 
+                WHEN t.pb_ratio IS NOT NULL AND sa.avg_pb IS NOT NULL AND t.pb_ratio > 0 AND t.pb_ratio < sa.avg_pb
+                THEN ROUND(((sa.avg_pb - t.pb_ratio) / sa.avg_pb * 100)::numeric, 0)
+                ELSE 0
+            END as pb_discount,
+            CASE 
+                WHEN t.pe_ratio IS NOT NULL AND sa.avg_pe IS NOT NULL AND t.pe_ratio > 0 AND t.pe_ratio < sa.avg_pe
+                THEN ROUND(((sa.avg_pe - t.pe_ratio) / sa.avg_pe * 100)::numeric, 0)
+                ELSE 0
+            END as pe_discount
+        FROM market_tickers t
+        LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+        LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
+        WHERE t.market_code = 'EGX'
+          AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
+          AND (t.pe_ratio > 0 OR t.pb_ratio > 0)
+        
         """
         
         rows = await conn.fetch(query)
         
-        if not rows:
-            # Fallback to simpler, less restrictive query - just get low P/B small cap stocks
+        scored_rows = []
+        for row in rows:
+            metrics = dict(row)
+            # Ensure percentages are correct for scoring engine
+            for k in ['roe', 'profit_margin', 'gross_margin', 'operating_margin', 'revenue_growth', 'dividend_yield']:
+                v = metrics.get(k)
+                if v is not None and abs(v) <= 1.0:
+                    metrics[k] = v * 100
+            
+            score_res = calculate_score(metrics, {})
+            # Criteria for hidden gems: good total score + good quality + discount
+            if score_res.total >= 50 and (row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15 or getattr(score_res, 'profitability', 0) > 10):
+                scored_rows.append((score_res, dict(row)))
+
+        scored_rows.sort(key=lambda x: x[0].total, reverse=True)
+        top_candidates = scored_rows[:5]
+        
+        if not top_candidates:
+            # Fallback to zero-data fallback
             fallback_query = """
             SELECT 
                 symbol,
@@ -126,10 +130,9 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 pb_ratio,
                 logo_url,
                 NULL::numeric as roe,
-                NULL::numeric as net_profit_margin,
+                NULL::numeric as profit_margin,
                 0::numeric as pb_discount,
-                0::numeric as pe_discount,
-                50::numeric as gem_score
+                0::numeric as pe_discount
             FROM market_tickers
             WHERE market_code = 'EGX'
               AND market_cap > 100000000
@@ -137,24 +140,26 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             ORDER BY pb_ratio ASC NULLS LAST
             LIMIT 5
             """
-            rows = await conn.fetch(fallback_query)
+            fallback_rows = await conn.fetch(fallback_query)
+            for row in fallback_rows:
+                score_res = calculate_score(dict(row), {})
+                top_candidates.append((score_res, dict(row)))
         
         # Build gem list
         gems = []
-        for idx, row in enumerate(rows):
-            # Calculate score
-            score = min(100, max(50, int(
-                (row.get('gem_score') or 0) + 
-                (20 if (row.get('pb_ratio') or 999) < 1 else 0) +
-                (15 if (row.get('roe') or 0) > 15 else 0)
-            )))
+        for idx, (score_res, row) in enumerate(top_candidates):
             
             # Generate "why it's a gem" explanation
             reasons = []
             pb = row.get('pb_ratio')
             pe = row.get('pe_ratio')
             roe = row.get('roe')
-            margin = row.get('net_profit_margin')
+            if roe and abs(roe) <= 1:
+                roe = roe * 100
+            
+            margin = row.get('profit_margin')
+            if margin and abs(margin) <= 1:
+                margin = margin * 100
             
             if pb and pb < 1:
                 reasons.append(
@@ -207,7 +212,8 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             gems.append({
                 "ticker": row['symbol'],
                 "company_name": company_name,
-                "score": score,
+                "score": score_res.total,
+                "grade": score_res.grade,
                 "is_top_pick": idx == 0,
                 "highlighted": idx == 0,
                 "badge": "Top Pick" if language == "en" and idx == 0 else ("الأفضل" if language == "ar" and idx == 0 else None),
@@ -218,8 +224,15 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                     ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe else ("N/A" if language == "en" else "غير متاح"),
                     ("Cap" if language == "en" else "القيمة السوقية"): _format_number(market_cap, language=language)
                 },
-                "description": why_gem,
-                "why_its_a_gem": why_gem
+                "mini_scores": {
+                    "valuation": score_res.valuation,
+                    "profitability": score_res.profitability,
+                    "financial_health": score_res.financial_health,
+                    "earnings_quality": score_res.earnings_quality,
+                    "momentum": score_res.momentum
+                },
+                "why_its_a_gem": why_gem,
+                "description": why_gem
             })
         
         # Build conversational text
@@ -829,73 +842,74 @@ async def handle_undervalued_stocks(
             WHERE market_code = 'EGX'
               AND sector_name IS NOT NULL
             GROUP BY sector_name
-        ),
-        ranked AS (
-            SELECT
-                t.symbol,
-                t.name_en,
-                t.name_ar,
-                t.sector_name,
-                t.market_cap,
-                t.last_price,
-                t.logo_url,
-                t.pe_ratio,
-                t.pb_ratio,
-                t.dividend_yield,
-                ss.roe,
-                ss.profit_margin,
-                ss.revenue_growth,
-                CASE
-                    WHEN t.pe_ratio > 0 AND sa.avg_pe > 0
-                    THEN ((sa.avg_pe - t.pe_ratio) / sa.avg_pe) * 100
-                    ELSE 0
-                END AS pe_discount,
-                CASE
-                    WHEN t.pb_ratio > 0 AND sa.avg_pb > 0
-                    THEN ((sa.avg_pb - t.pb_ratio) / sa.avg_pb) * 100
-                    ELSE 0
-                END AS pb_discount
-            FROM market_tickers t
-            LEFT JOIN sector_averages sa
-                ON t.sector_name = sa.sector_name
-            LEFT JOIN stock_statistics ss
-                ON t.symbol = ss.symbol AND t.market_code = ss.market_code
-            WHERE t.market_code = 'EGX'
-              AND t.last_price IS NOT NULL
-              AND ($1::text IS NULL OR t.sector_name ILIKE $1)
-              AND (
-                    (t.pe_ratio > 0 AND sa.avg_pe IS NOT NULL)
-                 OR (t.pb_ratio > 0 AND sa.avg_pb IS NOT NULL)
-              )
         )
         SELECT
-            *,
-            GREATEST(COALESCE(pe_discount, 0), COALESCE(pb_discount, 0))
-            + CASE
-                WHEN COALESCE(roe, 0) >= 20 THEN 20
-                WHEN COALESCE(roe, 0) >= 12 THEN 10
+            t.symbol,
+            t.name_en,
+            t.name_ar,
+            t.sector_name,
+            t.market_cap,
+            t.last_price,
+            t.logo_url,
+            t.pe_ratio,
+            t.pb_ratio,
+            t.dividend_yield,
+            ss.roe,
+            ss.profit_margin,
+            ss.revenue_growth,
+            ss.gross_margin,
+            ss.operating_margin,
+            ss.debt_equity,
+            ss.current_ratio,
+            ss.altman_z_score,
+            ss.piotroski_f_score,
+            CASE
+                WHEN t.pe_ratio > 0 AND sa.avg_pe > 0
+                THEN ((sa.avg_pe - t.pe_ratio) / sa.avg_pe) * 100
                 ELSE 0
-              END
-            + CASE
-                WHEN COALESCE(profit_margin, 0) >= 0.12 THEN 10
-                WHEN COALESCE(profit_margin, 0) >= 0.07 THEN 5
+            END AS pe_discount,
+            CASE
+                WHEN t.pb_ratio > 0 AND sa.avg_pb > 0
+                THEN ((sa.avg_pb - t.pb_ratio) / sa.avg_pb) * 100
                 ELSE 0
-              END
-            + CASE
-                WHEN COALESCE(dividend_yield, 0) >= 4 THEN 7
-                WHEN COALESCE(dividend_yield, 0) >= 2 THEN 4
-                ELSE 0
-              END
-            AS value_score
-        FROM ranked
-        ORDER BY value_score DESC, market_cap DESC NULLS LAST
+            END AS pb_discount
+        FROM market_tickers t
+        LEFT JOIN sector_averages sa
+            ON t.sector_name = sa.sector_name
+        LEFT JOIN stock_statistics ss
+            ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+        WHERE t.market_code = 'EGX'
+          AND t.last_price IS NOT NULL
+          AND ($1::text IS NULL OR t.sector_name ILIKE $1)
+          AND (
+                (t.pe_ratio > 0 AND sa.avg_pe IS NOT NULL)
+             OR (t.pb_ratio > 0 AND sa.avg_pb IS NOT NULL)
+          )
         LIMIT $2
         """
 
         sector_param = f"%{sector_filter}%" if sector_filter else None
-        rows = await conn.fetch(query, sector_param, max(3, min(limit, 10)))
+        # We need to fetch all candidates and calculate their score using scoring_engine
+        rows = await conn.fetch(query, sector_param)
 
-        if not rows:
+        scored_rows = []
+        for row in rows:
+            metrics = dict(row)
+            # Ensure percentages are correct for scoring engine
+            for k in ['roe', 'profit_margin', 'gross_margin', 'operating_margin', 'revenue_growth', 'dividend_yield']:
+                v = metrics.get(k)
+                if v is not None and abs(v) <= 1.0:
+                    metrics[k] = v * 100
+            
+            score_res = calculate_score(metrics, {})
+            # Only keep those with Valuation Score > 20 as they are undervalued
+            if score_res.valuation >= 20:
+                scored_rows.append((score_res, dict(row)))
+
+        scored_rows.sort(key=lambda x: x[0].total, reverse=True)
+        top_candidates = scored_rows[:max(3, min(limit, 10))]
+
+        if not top_candidates:
             return {
                 "success": True,
                 "conversational_text": (
@@ -920,11 +934,10 @@ async def handle_undervalued_stocks(
         def _pct(raw: Optional[float]) -> Optional[float]:
             if raw is None:
                 return None
-            # Some feeds store ratios as decimals (0.18), others as percentages (18.0).
             return raw * 100 if abs(raw) <= 1 else raw
 
         stocks: List[Dict[str, Any]] = []
-        for idx, row in enumerate(rows):
+        for idx, (score_res, row) in enumerate(top_candidates):
             pe = row.get("pe_ratio")
             pb = row.get("pb_ratio")
             roe = _pct(row.get("roe"))
@@ -977,11 +990,11 @@ async def handle_undervalued_stocks(
                 if language == "ar" and row.get("name_ar")
                 else (row.get("name_en") or row["symbol"])
             )
-            score = int(max(40, min(98, round((row.get("value_score") or 0)))))
             stocks.append({
                 "ticker": row["symbol"],
                 "company_name": company_name,
-                "score": score,
+                "score": score_res.total,
+                "grade": score_res.grade,
                 "highlighted": idx == 0,
                 "badge": (
                     "Top Pick" if language == "en" and idx == 0
@@ -996,6 +1009,13 @@ async def handle_undervalued_stocks(
                         f"{(row.get('dividend_yield') or 0):.1f}%"
                         if row.get("dividend_yield") is not None else ("N/A" if language == "en" else "غير متاح")
                     ),
+                },
+                "mini_scores": {
+                    "valuation": score_res.valuation,
+                    "profitability": score_res.profitability,
+                    "financial_health": score_res.financial_health,
+                    "earnings_quality": score_res.earnings_quality,
+                    "momentum": score_res.momentum
                 },
                 "description": ". ".join(reasons[:4]) + "."
             })

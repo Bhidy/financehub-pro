@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starta AI — Screener Responses</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --ink:#0d1117;
+  --ink-2:#374151;
+  --ink-3:#6b7280;
+  --ink-4:#9ca3af;
+  --surface:#ffffff;
+  --surface-2:#f9fafb;
+  --surface-3:#f3f4f6;
+  --border:#e5e7eb;
+  --border-2:#d1d5db;
+  --accent:#0f766e;
+  --accent-light:#f0fdfa;
+  --accent-mid:#14b8a6;
+  --gold:#d97706;
+  --gold-light:#fffbeb;
+  --red:#dc2626;
+  --red-light:#fef2f2;
+  --green:#16a34a;
+  --green-light:#f0fdf4;
+  --blue:#1d4ed8;
+  --blue-light:#eff6ff;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --shadow:0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
+}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--surface-2);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── HEADER ── */
+.header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{
+  width:34px;height:34px;
+  background:var(--ink);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+  font-family:'DM Serif Display',serif;
+  font-size:18px;letter-spacing:-.5px;
+}
+.logo-text{
+  font-family:'DM Serif Display',serif;
+  font-size:20px;color:var(--ink);letter-spacing:-.3px;
+}
+.tab-bar{display:flex;gap:4px}
+.tab{
+  padding:8px 16px;border-radius:8px;
+  font-size:13px;font-weight:500;
+  cursor:pointer;border:none;
+  background:transparent;color:var(--ink-3);
+  transition:all .15s;
+}
+.tab.active{background:var(--ink);color:#fff}
+.tab:hover:not(.active){background:var(--surface-3);color:var(--ink)}
+
+/* ── LAYOUT ── */
+.chat-wrap{
+  flex:1;
+  max-width:780px;
+  margin:0 auto;
+  width:100%;
+  padding:32px 20px 120px;
+  display:flex;flex-direction:column;gap:0;
+}
+
+/* ── SCENARIO ── */
+.scenario{display:none}
+.scenario.active{display:flex;flex-direction:column;gap:0}
+
+/* ── MESSAGES ── */
+.msg{
+  display:flex;gap:12px;
+  margin-bottom:20px;
+  animation:fadeUp .3s ease both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.msg.user{flex-direction:row-reverse}
+.msg.user+.msg.user{margin-top:-12px}
+
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;flex-shrink:0;
+  margin-top:2px;
+}
+.avatar.ai{background:var(--ink);color:#fff;font-family:'DM Serif Display',serif}
+.avatar.user{background:var(--gold);color:#fff}
+
+.bubble{
+  max-width:88%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px 18px;
+  box-shadow:var(--shadow-sm);
+  font-size:14.5px;
+  line-height:1.65;
+  color:var(--ink);
+}
+.msg.user .bubble{
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+  font-size:14px;
+}
+
+/* ── SCORE BADGE ── */
+.score-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--ink);color:#fff;
+  padding:3px 10px;border-radius:20px;
+  font-size:12px;font-weight:600;
+  font-family:'DM Mono',monospace;
+  letter-spacing:.3px;
+}
+.score-badge.grade-a{background:#14532d}
+.score-badge.grade-b{background:#1e3a5f}
+.score-badge.grade-c{background:#78350f}
+.score-badge.grade-d{background:#7f1d1d}
+
+/* ── STOCK CARDS ── */
+.stock-grid{
+  display:flex;flex-direction:column;gap:8px;
+  margin:14px 0;
+}
+.stock-card{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px 14px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.stock-card:hover{
+  border-color:var(--accent-mid);
+  background:var(--accent-light);
+  transform:translateX(2px);
+}
+.stock-card.rank-1{border-left:3px solid var(--accent)}
+.stock-card.rank-2{border-left:3px solid var(--blue)}
+.stock-card.rank-3{border-left:3px solid var(--gold)}
+.stock-card.gem{border-left:3px solid #7c3aed}
+
+.sc-left{}
+.sc-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.sc-ticker{
+  font-family:'DM Mono',monospace;
+  font-size:14px;font-weight:500;
+  color:var(--ink);
+}
+.sc-name{font-size:12px;color:var(--ink-3);margin-bottom:4px}
+.sc-why{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.sc-sector{
+  font-size:11px;color:var(--ink-4);
+  background:var(--surface-3);
+  padding:2px 7px;border-radius:4px;
+}
+
+.sc-right{
+  display:flex;flex-direction:column;
+  align-items:flex-end;justify-content:center;
+  gap:4px;min-width:70px;
+}
+.sc-score{
+  font-family:'DM Mono',monospace;
+  font-size:22px;font-weight:500;
+  color:var(--ink);line-height:1;
+}
+.sc-score span{font-size:12px;color:var(--ink-4)}
+.sc-grade{
+  font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:4px;
+}
+.grade-a{background:var(--green-light);color:var(--green)}
+.grade-b{background:var(--blue-light);color:var(--blue)}
+.grade-c{background:var(--gold-light);color:var(--gold)}
+
+/* ── SCORE BREAKDOWN ── */
+.score-breakdown{
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:12px;
+  padding:14px;
+  margin:12px 0;
+  font-size:13px;
+}
+.sb-title{
+  font-size:12px;font-weight:600;
+  color:var(--ink-3);letter-spacing:.06em;
+  text-transform:uppercase;margin-bottom:10px;
+}
+.sb-row{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 0;
+  border-bottom:1px solid var(--surface-3);
+}
+.sb-row:last-child{border-bottom:none}
+.sb-icon{font-size:13px;width:18px}
+.sb-label{flex:1;color:var(--ink-2)}
+.sb-bar-wrap{width:80px;height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden}
+.sb-bar{height:100%;border-radius:3px;background:var(--accent-mid)}
+.sb-val{
+  font-family:'DM Mono',monospace;
+  font-size:12px;color:var(--ink);
+  width:40px;text-align:right;
+}
+.sb-note{font-size:11px;color:var(--ink-4);margin-top:2px}
+
+/* ── SECTOR VIEW ── */
+.sector-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;margin:14px 0;
+}
+.sector-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+}
+.sector-name{font-size:11px;color:var(--ink-4);margin-bottom:6px;font-weight:500}
+.sector-winner{display:flex;align-items:center;justify-content:space-between}
+.sector-ticker{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+.sector-score{
+  font-family:'DM Mono',monospace;
+  font-size:13px;color:var(--ink-3);
+}
+
+/* ── INSIGHT BOX ── */
+.insight{
+  background:var(--accent-light);
+  border-left:3px solid var(--accent);
+  border-radius:8px;
+  padding:12px 14px;
+  margin:12px 0;
+  font-size:13.5px;
+  line-height:1.6;
+  color:var(--ink-2);
+}
+.insight.warn{
+  background:var(--gold-light);
+  border-left-color:var(--gold);
+}
+.insight.gem{
+  background:#faf5ff;
+  border-left-color:#7c3aed;
+}
+
+/* ── CHOICE CHIPS ── */
+.choices{margin:16px 0 4px}
+.choices-label{
+  font-size:11.5px;color:var(--ink-4);
+  margin-bottom:8px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.chip-row{display:flex;flex-direction:column;gap:6px}
+.chip{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--surface-2);
+  border:1px solid var(--border-2);
+  border-radius:10px;
+  padding:10px 13px;
+  cursor:pointer;
+  transition:all .15s;
+  text-align:left;
+}
+.chip:hover{
+  background:var(--accent-light);
+  border-color:var(--accent-mid);
+  transform:translateX(3px);
+}
+.chip-num{
+  font-size:13px;min-width:20px;
+  color:var(--accent);font-weight:600;
+}
+.chip-text{font-size:13px;color:var(--ink-2);line-height:1.4}
+
+/* ── DISCLAIMER ── */
+.disc{
+  font-size:11.5px;color:var(--ink-4);
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid var(--surface-3);
+  font-style:italic;
+}
+
+/* ── DIVIDER LABEL ── */
+.view-label{
+  font-size:11px;font-weight:600;
+  color:var(--ink-4);letter-spacing:.08em;
+  text-transform:uppercase;
+  margin:14px 0 8px;
+}
+
+/* ── OVERALL RANK ── */
+.overall-list{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  margin:12px 0;
+}
+.overall-row{
+  display:grid;
+  grid-template-columns:28px 70px 1fr 60px 70px;
+  gap:8px;
+  align-items:center;
+  padding:10px 14px;
+  border-bottom:1px solid var(--surface-3);
+  font-size:13px;
+  transition:background .12s;
+}
+.overall-row:hover{background:var(--surface-2)}
+.overall-row:last-child{border-bottom:none}
+.overall-row.header{
+  background:var(--surface-3);
+  font-size:11px;font-weight:600;
+  color:var(--ink-4);text-transform:uppercase;letter-spacing:.05em;
+}
+.rank-num{
+  font-family:'DM Mono',monospace;
+  font-size:12px;color:var(--ink-4);
+  font-weight:500;
+}
+.r-ticker{font-family:'DM Mono',monospace;font-weight:500;color:var(--ink)}
+.r-name{color:var(--ink-3);font-size:12px}
+.r-sector{
+  font-size:11px;color:var(--ink-4);
+  background:var(--surface-3);padding:2px 6px;
+  border-radius:4px;text-align:center;
+}
+.r-score{
+  font-family:'DM Mono',monospace;
+  font-weight:600;color:var(--ink);
+  text-align:right;
+}
+
+/* ── GEM CARDS ── */
+.gem-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+  border-left:3px solid #7c3aed;
+}
+.gem-header{
+  display:flex;justify-content:space-between;
+  align-items:flex-start;margin-bottom:8px;
+}
+.gem-left{}
+.gem-ticker{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.gem-fullname{font-size:12px;color:var(--ink-3);margin-top:2px}
+.gem-sector-badge{
+  font-size:11px;padding:3px 8px;
+  background:#f3e8ff;color:#7c3aed;
+  border-radius:5px;font-weight:500;
+  margin-top:4px;display:inline-block;
+}
+.gem-right{text-align:right}
+.gem-score{
+  font-family:'DM Mono',monospace;
+  font-size:24px;font-weight:400;
+}
+.gem-grade-wrap{
+  font-size:11px;color:var(--ink-4);margin-top:2px;
+}
+.gem-why{
+  font-size:13px;color:var(--ink-2);
+  line-height:1.6;
+  padding-top:8px;
+  border-top:1px solid var(--surface-3);
+}
+.gem-strength{
+  font-size:12px;color:var(--green);
+  margin-top:6px;
+}
+.gem-watch{
+  font-size:12px;color:var(--gold);
+  margin-top:3px;
+}
+
+/* ── MINI SCORE BARS ── */
+.mini-bars{
+  display:flex;gap:3px;margin-top:8px;
+}
+.mini-bar-wrap{flex:1;text-align:center}
+.mini-bar-label{font-size:10px;color:var(--ink-4);margin-bottom:3px}
+.mini-bar-track{
+  height:4px;background:var(--surface-3);
+  border-radius:2px;overflow:hidden;
+}
+.mini-bar-fill{height:100%;border-radius:2px}
+.fill-val{color:var(--accent-mid)}
+.fill-prof{color:var(--green)}
+.fill-fin{color:var(--blue)}
+.fill-qual{color:var(--gold)}
+.fill-mom{color:var(--ink-3)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">S</div>
+    <div class="logo-text">Starta</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab active" onclick="show(1,this)">Most Undervalued</button>
+    <button class="tab" onclick="show(2,this)">Hidden Gems</button>
+  </div>
+</div>
+
+<div class="chat-wrap">
+
+  <!-- ════════════════════════════════════════
+       SCENARIO 1 — MOST UNDERVALUED
+  ════════════════════════════════════════ -->
+  <div class="scenario active" id="s1">
+
+    <!-- USER -->
+    <div class="msg user">
+      <div class="avatar user">O</div>
+      <div class="bubble">Get me the most undervalued stocks in the market</div>
+    </div>
+
+    <!-- AI RESPONSE -->
+    <div class="msg ai">
+      <div class="avatar ai">S</div>
+      <div class="bubble">
+
+        <p>Something interesting in today's screen — value is clustering in two sectors simultaneously, which isn't random. Let me show you both views.</p>
+
+        <!-- OVERALL TOP 5 -->
+        <div class="view-label">📊 Overall Top 5 — by Attractiveness Score</div>
+        <div class="overall-list">
+          <div class="overall-row header">
+            <div>#</div>
+            <div>Ticker</div>
+            <div>Company</div>
+            <div>Sector</div>
+            <div style="text-align:right">Score</div>
+          </div>
+          <div class="overall-row">
+            <div class="rank-num">1</div>
+            <div class="r-ticker">COMI</div>
+            <div class="r-name">Commercial Intl Bank</div>
+            <div class="r-sector">Banks</div>
+            <div class="r-score">76 <span style="font-size:10px;color:#6b7280">/ B</span></div>
+          </div>
+          <div class="overall-row">
+            <div class="rank-num">2</div>
+            <div class="r-ticker">OCDI</div>
+            <div class="r-name">Orascom Development</div>
+            <div class="r-sector">Real Est.</div>
+            <div class="r-score">71 <span style="font-size:10px;color:#6b7280">/ B</span></div>
+          </div>
+          <div class="overall-row">
+            <div class="rank-num">3</div>
+            <div class="r-ticker">JUFO</div>
+            <div class="r-name">Juhayna Food Ind.</div>
+            <div class="r-sector">Consumer</div>
+            <div class="r-score">64 <span style="font-size:10px;color:#6b7280">/ C</span></div>
+          </div>
+          <div class="overall-row">
+            <div class="rank-num">4</div>
+            <div class="r-ticker">ESRS</div>
+            <div class="r-name">Ezz Steel</div>
+            <div class="r-sector">Industrials</div>
+            <div class="r-score">61 <span style="font-size:10px;color:#6b7280">/ C</span></div>
+          </div>
+          <div class="overall-row">
+            <div class="rank-num">5</div>
+            <div class="r-ticker">PHDC</div>
+            <div class="r-name">Palm Hills Dev.</div>
+            <div class="r-sector">Real Est.</div>
+            <div class="r-score">59 <span style="font-size:10px;color:#6b7280">/ C</span></div>
+          </div>
+        </div>
+
+        <!-- SECTOR BEST -->
+        <div class="view-label">🏆 Best Pick by Sector</div>
+        <div class="sector-grid">
+          <div class="sector-card">
+            <div class="sector-name">Banks</div>
+            <div class="sector-winner">
+              <div class="sector-ticker">COMI</div>
+              <div class="sector-score">76/100</div>
+            </div>
+          </div>
+          <div class="sector-card">
+            <div class="sector-name">Real Estate</div>
+            <div class="sector-winner">
+              <div class="sector-ticker">OCDI</div>
+              <div class="sector-score">71/100</div>
+            </div>
+          </div>
+          <div class="sector-card">
+            <div class="sector-name">Consumer F&B</div>
+            <div class="sector-winner">
+              <div class="sector-ticker">JUFO</div>
+              <div class="sector-score">64/100</div>
+            </div>
+          </div>
+          <div class="sector-card">
+            <div class="sector-name">Industrials</div>
+            <div class="sector-winner">
+              <div class="sector-ticker">ESRS</div>
+              <div class="sector-score">61/100</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INSIGHT -->
+        <div class="insight">
+          <strong>What this tells me:</strong> Banks and Real Estate dominating the screen isn't coincidence — the market is pricing Egypt sovereign risk into both sectors at the same time. That's either a macro call against Egypt stabilizing, or a significant mispricing if you believe the CBE's trajectory holds.
+        </div>
+
+        <!-- CHOICES -->
+        <div class="choices">
+          <div class="choices-label">Where do you want to go?</div>
+          <div class="chip-row">
+            <div class="chip">
+              <div class="chip-num">1️⃣</div>
+              <div class="chip-text"><strong>COMI at 76/100</strong> — the strongest setup on the list. Break down exactly what's driving that score and whether the quality holds up</div>
+            </div>
+            <div class="chip">
+              <div class="chip-num">2️⃣</div>
+              <div class="chip-text"><strong>The macro read</strong> — why banks AND real estate are cheap simultaneously, and what that tells us about where Egypt is in the cycle</div>
+            </div>
+            <div class="chip">
+              <div class="chip-num">3️⃣</div>
+              <div class="chip-text"><strong>How the score works</strong> — what's inside the number for any of these stocks, and what would move it higher or lower</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disc">Market analysis for educational purposes — not personalized advice.</div>
+      </div>
+    </div>
+
+    <!-- USER FOLLOW-UP -->
+    <div class="msg user">
+      <div class="avatar user">O</div>
+      <div class="bubble">Show me what's inside the COMI score</div>
+    </div>
+
+    <!-- AI DEEP DIVE -->
+    <div class="msg ai">
+      <div class="avatar ai">S</div>
+      <div class="bubble">
+
+        <p>COMI's 76/100 is the cleanest setup on today's screen. Here's exactly how we get there — and the one number that could trip it up.</p>
+
+        <!-- SCORE BREAKDOWN -->
+        <div class="score-breakdown">
+          <div class="sb-title">COMI — Score Breakdown: 76/100 &nbsp; <span class="score-badge grade-b">Grade B</span></div>
+
+          <div class="sb-row">
+            <div class="sb-icon">💰</div>
+            <div>
+              <div class="sb-label">Valuation</div>
+              <div class="sb-note">P/B 0.9x vs 5yr avg 1.4x → 36% below history</div>
+            </div>
+            <div class="sb-bar-wrap"><div class="sb-bar" style="width:100%;background:#14b8a6"></div></div>
+            <div class="sb-val">20/20</div>
+          </div>
+
+          <div class="sb-row">
+            <div class="sb-icon">📈</div>
+            <div>
+              <div class="sb-label">Profitability</div>
+              <div class="sb-note">ROE 18.2% — above 'good' threshold for banks (15%)</div>
+            </div>
+            <div class="sb-bar-wrap"><div class="sb-bar" style="width:80%;background:#16a34a"></div></div>
+            <div class="sb-val">16/20</div>
+          </div>
+
+          <div class="sb-row">
+            <div class="sb-icon">🏦</div>
+            <div>
+              <div class="sb-label">Financial Health</div>
+              <div class="sb-note">D/E 0.42x — conservative for a bank</div>
+            </div>
+            <div class="sb-bar-wrap"><div class="sb-bar" style="width:80%;background:#1d4ed8"></div></div>
+            <div class="sb-val">16/20</div>
+          </div>
+
+          <div class="sb-row">
+            <div class="sb-icon">🔍</div>
+            <div>
+              <div class="sb-label">Earnings Quality</div>
+              <div class="sb-note">OCF/NI ratio 1.1x — cash confirming profits</div>
+            </div>
+            <div class="sb-bar-wrap"><div class="sb-bar" style="width:80%;background:#d97706"></div></div>
+            <div class="sb-val">16/20</div>
+          </div>
+
+          <div class="sb-row">
+            <div class="sb-icon">📉</div>
+            <div>
+              <div class="sb-label">Momentum</div>
+              <div class="sb-note">Price -8% last 3 months — unloved right now</div>
+            </div>
+            <div class="sb-bar-wrap"><div class="sb-bar" style="width:40%;background:#6b7280"></div></div>
+            <div class="sb-val">8/20</div>
+          </div>
+        </div>
+
+        <p>Three things stand out to me here.</p>
+
+        <p style="margin-top:10px">First — the valuation is genuinely extreme. P/B at 0.9x means the market is saying COMI is worth <em>less</em> than the book value of its assets. For a bank with 18% ROE and clean balance sheet, that's a strong statement. Either the market is right (hidden risk somewhere) or it's wrong (and this re-rates hard when sentiment shifts).</p>
+
+        <p style="margin-top:10px">Second — earnings quality score of 16/20 matters more than most people realize. Cash flow is confirming the profits. This isn't a bank with inflated book value — the cash is real.</p>
+
+        <p style="margin-top:10px">Third — that 8/20 momentum score is the honest part of this. The stock has been going nowhere for 3 months. That's either an accumulation phase before a move, or a signal the market sees something the score doesn't.</p>
+
+        <div class="insight warn" style="margin-top:14px">
+          <strong>The one thing to watch:</strong> NPL ratio. If non-performing loans start creeping up as Egyptian businesses feel macro pressure, that 18% ROE deteriorates fast and the valuation discount becomes a trap rather than an opportunity.
+        </div>
+
+        <div class="choices">
+          <div class="choices-label">What next?</div>
+          <div class="chip-row">
+            <div class="chip">
+              <div class="chip-num">1️⃣</div>
+              <div class="chip-text"><strong>The NPL risk</strong> — dig into COMI's asset quality and whether the discount is actually justified by hidden credit risk</div>
+            </div>
+            <div class="chip">
+              <div class="chip-num">2️⃣</div>
+              <div class="chip-text"><strong>Compare COMI to peers</strong> — how does it stack up against QNBA and AIOB on the same scoring framework</div>
+            </div>
+            <div class="chip">
+              <div class="chip-num">3️⃣</div>
+              <div class="chip-text"><strong>The catalyst question</strong> — what would need to happen for this 0.9x P/B to move back to 1.3-1.4x</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disc">For educational purposes — your circumstances are things only you know.</div>
+      </div>
+    </div>
+
+  </div><!-- /scenario 1 -->
+
+
+  <!-- ════════════════════════════════════════
+       SCENARIO 2 — HIDDEN GEMS
+  ════════════════════════════════════════ -->
+  <div class="scenario" id="s2">
+
+    <!-- USER -->
+    <div class="msg user">
+      <div class="avatar user">O</div>
+      <div class="bubble">What are the hidden gems in the market?</div>
+    </div>
+
+    <!-- AI RESPONSE -->
+    <div class="msg ai">
+      <div class="avatar ai">S</div>
+      <div class="bubble">
+
+        <p>Before I show you the list — "hidden gem" means something specific here. I'm screening for mid-to-small cap, high score, low analyst coverage, and tradeable liquidity. Not just cheap — cheap <em>and</em> healthy <em>and</em> flying under the radar.</p>
+
+        <p style="margin-top:10px">Three names came through today across three different sectors, which is actually the interesting part.</p>
+
+        <!-- GEM 1 -->
+        <div class="gem-card" style="margin-top:14px">
+          <div class="gem-header">
+            <div class="gem-left">
+              <div class="gem-ticker">MNHD</div>
+              <div class="gem-fullname">Misr National Steel</div>
+              <div class="gem-sector-badge">Industrials</div>
+            </div>
+            <div class="gem-right">
+              <div class="gem-score">74<span style="font-size:14px;color:#9ca3af">/100</span></div>
+              <div class="gem-grade-wrap"><span class="sc-grade grade-b">Grade B</span></div>
+            </div>
+          </div>
+          <div class="mini-bars">
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Val</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-val" style="width:80%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Prof</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-prof" style="width:90%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Fin</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-fin" style="width:75%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Qual</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-qual" style="width:70%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Mom</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-mom" style="width:50%"></div></div>
+            </div>
+          </div>
+          <div class="gem-why">
+            EGP 1.9B market cap — mid-cap, liquid. EV/EBITDA of 5.8x vs sector average of 8x (27% discount). ROE 24% with operating margins at 15% — well above sector's 11%.
+          </div>
+          <div class="gem-strength">✦ 1 analyst covering — almost nobody is watching this</div>
+          <div class="gem-watch">⚠ Management owns 35% — alignment is there, but liquidity can be thin on heavy days</div>
+        </div>
+
+        <!-- GEM 2 -->
+        <div class="gem-card">
+          <div class="gem-header">
+            <div class="gem-left">
+              <div class="gem-ticker">EKHO</div>
+              <div class="gem-fullname">El Kahera Housing</div>
+              <div class="gem-sector-badge">Real Estate</div>
+            </div>
+            <div class="gem-right">
+              <div class="gem-score">69<span style="font-size:14px;color:#9ca3af">/100</span></div>
+              <div class="gem-grade-wrap"><span class="sc-grade grade-b">Grade B</span></div>
+            </div>
+          </div>
+          <div class="mini-bars">
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Val</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-val" style="width:85%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Prof</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-prof" style="width:65%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Fin</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-fin" style="width:80%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Qual</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-qual" style="width:60%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Mom</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-mom" style="width:45%"></div></div>
+            </div>
+          </div>
+          <div class="gem-why">
+            EGP 2.8B cap. P/B 0.68x — trading 35% below sector average (1.05x). ROE 21%, revenue growing 16% CAGR three years. Positive free cash flow in each of last 3 years. D/E only 0.38x.
+          </div>
+          <div class="gem-strength">✦ Affordable housing focus — government-backed demand, structural not cyclical</div>
+          <div class="gem-watch">⚠ 2 analyst reports in past year — price discovery could take 12–18 months</div>
+        </div>
+
+        <!-- GEM 3 -->
+        <div class="gem-card">
+          <div class="gem-header">
+            <div class="gem-left">
+              <div class="gem-ticker">ALEX</div>
+              <div class="gem-fullname">Alexandria Containers</div>
+              <div class="gem-sector-badge">Logistics</div>
+            </div>
+            <div class="gem-right">
+              <div class="gem-score">66<span style="font-size:14px;color:#9ca3af">/100</span></div>
+              <div class="gem-grade-wrap"><span class="sc-grade grade-b">Grade B</span></div>
+            </div>
+          </div>
+          <div class="mini-bars">
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Val</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-val" style="width:70%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Prof</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-prof" style="width:75%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Fin</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-fin" style="width:80%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Qual</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-qual" style="width:80%"></div></div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label">Mom</div>
+              <div class="mini-bar-track"><div class="mini-bar-fill fill-mom" style="width:55%"></div></div>
+            </div>
+          </div>
+          <div class="gem-why">
+            EGP 3.5B cap. P/E 8.9x — 22% below logistics sector. ROE 19%, 12% revenue CAGR. The earnings quality score is the standout here: OCF/NI ratio 1.3x — cash is materially ahead of reported earnings. Consistent dividend payer (4.2% yield). Zero analyst coverage outside Egypt.
+          </div>
+          <div class="gem-strength">✦ Direct beneficiary of Egypt export growth + Suez Canal recovery upside</div>
+          <div class="gem-watch">⚠ Thin float — don't size aggressively, it moves on small volumes</div>
+        </div>
+
+        <!-- INSIGHT -->
+        <div class="insight gem">
+          <strong>What separates these three from just "cheap":</strong> All positive free cash flow, all growing revenue, all manageable leverage. These aren't broken businesses on sale — they're healthy businesses the market hasn't noticed yet. That's the difference between a gem and a trap.
+        </div>
+
+        <!-- CHOICES -->
+        <div class="choices">
+          <div class="choices-label">Where next?</div>
+          <div class="chip-row">
+            <div class="chip">
+              <div class="chip-num">1️⃣</div>
+              <div class="chip-text"><strong>MNHD in depth</strong> — highest score on the list, break down why the market is ignoring a 24% ROE industrial at 5.8x EV/EBITDA</div>
+            </div>
+            <div class="chip">
+              <div class="chip-num">2️⃣</div>
+              <div class="chip-text"><strong>The patience question</strong> — hidden gems can stay hidden for 12–24 months. What catalysts could surface these names faster?</div>
+            </div>
+            <div class="chip">
+              <div class="chip-num">3️⃣</div>
+              <div class="chip-text"><strong>ALEX's earnings quality</strong> — that 1.3x OCF/NI ratio is the highest on the list. Walk me through what that actually means and why it matters</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disc">Market analysis, not advice. The numbers tell a story — you decide what to do with it.</div>
+      </div>
+    </div>
+
+  </div><!-- /scenario 2 -->
+
+</div><!-- /chat-wrap -->
+
+<script>
+function show(n, btn) {
+  document.querySelectorAll('.scenario').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>

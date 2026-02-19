@@ -274,6 +274,25 @@ async def handle_stock_price(
 
         })
     
+    # NEW: Generate structured response components (data card)
+    stock_data_for_analysis = {
+        'symbol': symbol,
+        'name': name,
+        'price': price,
+        'change_percent': change_pct,
+        'pe_ratio': pe_ratio,
+        'pb_ratio': pb_ratio,
+        'roe': roe,
+        'debt_equity': debt_equity,
+        'profit_margin': profit_margin,
+        'dividend_yield': dividend_yield,
+        'market_cap': market_cap,
+        'high_52w': high_52w,
+        'low_52w': low_52w,
+        'sector': sector_raw, # Use raw English sector for logic lookup
+        'volume': volume
+    }
+
     # ------------------------------------------------------------------
     # NEW: Starta Logic Engine Integration
     # ------------------------------------------------------------------
@@ -333,25 +352,6 @@ async def handle_stock_price(
             {'label': '👥 Shareholders', 'label_ar': '👥 المساهمين', 'action_type': 'query', 'payload': f'{symbol} shareholders'},
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليلي الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
-
-    # NEW: Generate structured response components (data card)
-    stock_data_for_analysis = {
-        'symbol': symbol,
-        'name': name,
-        'price': price,
-        'change_percent': change_pct,
-        'pe_ratio': pe_ratio,
-        'pb_ratio': pb_ratio,
-        'roe': roe,
-        'debt_equity': debt_equity,
-        'profit_margin': profit_margin,
-        'dividend_yield': dividend_yield,
-        'market_cap': market_cap,
-        'high_52w': high_52w,
-        'low_52w': low_52w,
-        'sector': sector_raw, # Use raw English sector for logic lookup
-        'volume': volume
-    }
     
     # Generate data card for current position
     data_card = generate_data_card(

@@ -8,10 +8,10 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 
 
-# NEW: Import bull/bear case generators for structured responses
-from ..bull_bear_generator import generate_bull_bear_cases, generate_data_card
+# NEW: Import data card generator for structured responses
+from ..bull_bear_generator import generate_data_card
 # NEW: Starta Logic Engine
-from ..logic.financial_calculator import FinancialCalculator
+from ..scoring_engine import calculate_score
 from ..logic.macro_service import get_macro_service
 
 
@@ -278,27 +278,28 @@ async def handle_stock_price(
     # NEW: Starta Logic Engine Integration
     # ------------------------------------------------------------------
     try:
-        # 1. Calculate Valuation Score (Sector-Specific)
-        calc = FinancialCalculator()
-        metrics = {
-            'pe_ratio': pe_ratio,
-            'pb_ratio': pb_ratio,
-            'roe': roe,
-            'debt_equity': debt_equity,
-            'current_price': price,
-            # SMA/RSI would be ideal here but avoiding extra DB hit for now
-        }
-        score_res = calc.calculate_score(symbol, sector, metrics)
+        # 1. Calculate Valuation Score (Sector-Specific 5-Component)
+        # We need historical_avg dict. Since we just have single stock, 
+        # we can pass empty dict for now, which gives default historical score, 
+        # or we could fetch sector average if we modified the query.
+        metrics = stock_data_for_analysis.copy()
+        # Mocking empty historical averages since we only have single stock query here
+        # The scoring engine handles missing history gracefully
+        score_res = calculate_score(metrics, {})
         
         cards.append({
             'type': 'valuation_score', # Recognized by LLM Context
             'title': 'Starta Valuation Score' if language == 'en' else 'نتيجة تقييم ستارتا',
             'data': {
-                'total_score': score_res.total_score,
-                'valuation_score': score_res.valuation_score,
-                'quality_score': score_res.quality_score,
-                'momentum_score': score_res.momentum_score,
-                'assessment': score_res.assessment,
+                'total_score': score_res.total,
+                'valuation_score': score_res.valuation,
+                'quality_score': score_res.earnings_quality,
+                'momentum_score': score_res.momentum,
+                'profitability_score': score_res.profitability,
+                'health_score': score_res.financial_health,
+                'assessment': score_res.category,
+                'signal': score_res.signal,
+                'grade': score_res.grade,
                 'sector': sector
             }
         })
@@ -333,7 +334,7 @@ async def handle_stock_price(
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليلي الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
 
-    # NEW: Generate structured response components (bull/bear cases, data card)
+    # NEW: Generate structured response components (data card)
     stock_data_for_analysis = {
         'symbol': symbol,
         'name': name,
@@ -351,9 +352,6 @@ async def handle_stock_price(
         'sector': sector_raw, # Use raw English sector for logic lookup
         'volume': volume
     }
-    
-    # Generate bull/bear cases based on stock data
-    bull_case, bear_case = generate_bull_bear_cases(stock_data_for_analysis, language=language)
     
     # Generate data card for current position
     data_card = generate_data_card(
@@ -380,19 +378,11 @@ async def handle_stock_price(
     # IMPORTANT: Convert Pydantic models to dicts for Card.data validation
     if data_card:
         cards.append({'type': 'data_card', 'data': data_card.model_dump() if hasattr(data_card, 'model_dump') else data_card})
-    
-    if bull_case:
-        cards.append({'type': 'bull_case', 'title': 'Bull Case' if language == 'en' else 'الحالة الإيجابية', 'data': bull_case.model_dump() if hasattr(bull_case, 'model_dump') else bull_case})
-        
-    if bear_case:
-        cards.append({'type': 'bear_case', 'title': 'Bear Case Risks' if language == 'en' else 'مخاطر الحالة السلبية', 'data': bear_case.model_dump() if hasattr(bear_case, 'model_dump') else bear_case})
 
     if disclaimer_card:
         cards.append({'type': 'disclaimer_card', 'data': disclaimer_card})
 
     # Convert Pydantic models to dicts for top-level response
-    bull_case_dict = bull_case.model_dump() if hasattr(bull_case, 'model_dump') and bull_case else None
-    bear_case_dict = bear_case.model_dump() if hasattr(bear_case, 'model_dump') and bear_case else None
     data_card_dict = data_card.model_dump() if hasattr(data_card, 'model_dump') and data_card else None
 
     return {
@@ -404,8 +394,6 @@ async def handle_stock_price(
         'follow_up_prompt': follow_up_prompt,
         # CRITICAL: Top-level structured components for WorldClassMessage rendering
         # These are extracted by chat_service._build_response() 
-        'bull_case': bull_case_dict,
-        'bear_case': bear_case_dict,
         'data_card': data_card_dict,
         'disclaimer_card': disclaimer_card
     }

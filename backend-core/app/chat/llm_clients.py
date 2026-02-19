@@ -61,7 +61,7 @@ def get_providers() -> List[LLMProvider]:
             name="cerebras",
             base_url="https://api.cerebras.ai/v1",
             api_key=cerebras_key,
-            models=["llama-3.3-70b"],
+            models=["llama3.1-8b"],
             timeout=8.0
         ))
     

@@ -2799,7 +2799,8 @@ class ChatService:
                     structured.follow_up_prompt = handler_follow_up or follow_up_prompt
                 
                 convo_logger = logging.getLogger("ChatService")
-                convo_logger.info(f"✅ 8-Layer Assembly Complete. Length: {len(full_text)}")
+                full_text_len = len(full_text) if full_text else 0
+                convo_logger.info(f"✅ 8-Layer Assembly Complete. Length: {full_text_len}")
                 conversational_text = full_text
                 
             except Exception as composer_err:

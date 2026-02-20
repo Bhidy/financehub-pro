@@ -890,7 +890,7 @@ async def handle_undervalued_stocks(
 
         sector_param = f"%{sector_filter}%" if sector_filter else None
         # We need to fetch all candidates and calculate their score using scoring_engine
-        rows = await conn.fetch(query, sector_param)
+        rows = await conn.fetch(query, sector_param, limit)
 
         scored_rows = []
         for row in rows:

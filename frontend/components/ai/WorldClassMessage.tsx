@@ -499,15 +499,13 @@ function KeyInsightCard({ data, lang = 'en' }: { data: any, lang?: Language }) {
     if (!content) return null;
 
     return (
-        <div className="border-s-4 border-s-violet-500 ps-4 py-3 pe-4 rounded-e-lg my-4 bg-gradient-to-r from-violet-50 to-violet-50/30 dark:from-violet-900/20 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l">
-            <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
-                <span className="text-lg">🎯</span>
-                <span>{typeof data === 'object' && data.title ? data.title : translations[lang].chat.keyInsight}</span>
-            </div>
-            <div
-                className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium"
+        <div className="bg-teal-50 border-s-[3px] border-s-teal-600 dark:bg-teal-900/20 dark:border-s-teal-500 rounded-lg px-3.5 py-3 my-3 text-[13.5px] leading-relaxed text-slate-700 dark:text-slate-300">
+            <strong className="font-semibold text-slate-900 dark:text-white">
+                {lang === "ar" ? "رؤية رئيسية:" : "What this tells me:"}
+            </strong>{" "}
+            <span
                 dangerouslySetInnerHTML={{
-                    __html: content.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-violet-700 dark:text-violet-300">$1</strong>')
+                    __html: content.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-900 dark:text-white">$1</strong>')
                 }}
             />
         </div>
@@ -555,11 +553,11 @@ function CoreNarrative({ text }: { text: string }) {
 function RiskWarning({ text, lang = 'en' }: { text: string; lang?: Language }) {
     if (!text) return null;
     return (
-        <div className="mt-4 mb-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg flex items-start gap-2">
-            <span className="text-amber-500 mt-0.5 text-xs">⚠️</span>
-            <span className="text-xs font-medium text-amber-700 dark:text-amber-400 leading-normal">
-                {text}
-            </span>
+        <div className="bg-amber-50 border-s-[3px] border-s-amber-500 dark:bg-amber-900/20 dark:border-s-amber-400 rounded-lg px-3.5 py-3 my-3 text-[13.5px] leading-relaxed text-slate-700 dark:text-slate-300">
+            <strong className="font-semibold text-amber-700 dark:text-amber-400">
+                {lang === "ar" ? "تحذير:" : "The one thing to watch:"}
+            </strong>{" "}
+            {text}
         </div>
     );
 }
@@ -707,16 +705,11 @@ function QuantifiedDriversCard({ data, lang = 'en' }: { data: any; lang?: Langua
 
 
 
-/** Disclaimer Card - Amber start border */
 function DisclaimerCard({ content, text, title, lang = 'en' }: { content?: string; text?: string; title?: string, lang?: Language }) {
     const resolvedText = content || text || translations[lang].chat.disclaimer;
-    const displayTitle = title || translations[lang].chat.eduAnalysis;
     return (
-        <div className="border-s-4 border-s-amber-500 ps-4 py-3 pe-4 rounded-e-lg my-4 bg-gradient-to-r from-amber-50/80 to-amber-50/30 dark:from-amber-900/15 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l">
-            <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                <strong className="text-amber-700 dark:text-amber-400 font-semibold">⚠️ {displayTitle}:</strong>{" "}
-                {resolvedText}
-            </div>
+        <div className="text-[11.5px] text-slate-400 dark:text-slate-500 mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/50 italic">
+            {resolvedText}
         </div>
     );
 }
@@ -828,8 +821,6 @@ function ComparisonTableCard({ data }: { data: any }) {
 function EducationalCard({ data, lang = 'en' }: { data: any, lang?: Language }) {
     if (!data) return null;
 
-    // Schema shape from backend: { variant: 'definition'|'formula'|'example'|'when_misleading', title, content }
-    // Keep backwards compatibility with the richer legacy shape (definition/formula/example/sections).
     if (typeof data.content === "string" && data.variant) {
         const variant = String(data.variant);
         const title = data.title || (lang === "ar" ? "شرح تعليمي" : "Educational Note");
@@ -1078,17 +1069,19 @@ function IndexCompositionCard({ data, lang = 'en' }: { data: any, lang?: Languag
 /** Generic Insight Card - Flexible insight display */
 function InsightCard({ data }: { data: any }) {
     if (!data) return null;
-    const variant = data.variant || 'info'; // info, success, warning
-    const borderColor = variant === 'success' ? 'border-s-emerald-500' : variant === 'warning' ? 'border-s-red-500' : 'border-s-sky-500';
+    const variant = data.variant || 'info'; // info, success, warning, gem
+    const borderColor = variant === 'success' ? 'border-s-emerald-500' : variant === 'warning' ? 'border-s-amber-500' : variant === 'gem' ? 'border-s-violet-600' : 'border-s-teal-600';
     const bgGradient = variant === 'success'
-        ? 'from-emerald-50 to-emerald-50/30 dark:from-emerald-900/15'
+        ? 'bg-emerald-50 dark:bg-emerald-900/20'
         : variant === 'warning'
-            ? 'from-red-50 to-red-50/30 dark:from-red-900/15'
-            : 'from-sky-50 to-sky-50/30 dark:from-sky-900/15';
+            ? 'bg-amber-50 dark:bg-amber-900/20'
+            : variant === 'gem'
+                ? 'bg-violet-50 dark:bg-violet-900/20'
+                : 'bg-teal-50 dark:bg-teal-900/20';
 
     return (
-        <div className={`border-s-4 ${borderColor} ps-4 py-3 pe-4 rounded-e-lg my-4 bg-gradient-to-r ${bgGradient} dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l`}>
-            <div className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
+        <div className={`border-s-[3px] ${borderColor} px-3.5 py-3 rounded-lg my-3 text-[13.5px] leading-relaxed text-slate-700 dark:text-slate-300 ${bgGradient}`}>
+            <div className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
                 {data.icon && <span>{data.icon}</span>}
                 {data.title}
             </div>
@@ -1465,7 +1458,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en' }:
             )}
 
             {/* Key Insight (8-Layer Guarantee) */}
-            {safeResponse?.key_insight && (
+            {safeResponse?.key_insight && !safeResponse?.structured_narrative?.key_insight && (
                 <KeyInsightCard data={safeResponse.key_insight} lang={lang} />
             )}
 
@@ -1582,38 +1575,28 @@ export function FollowUpChips({
     };
 
     return (
-        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-white/5" dir={isRtl ? "rtl" : "ltr"}>
-            <div className="text-[11.5px] text-gray-400 dark:text-[#9ca3af] mb-3 font-semibold uppercase tracking-wider flex items-center gap-2">
-                <div className="w-[6px] h-[6px] rounded-full bg-teal-500 animate-pulse"></div>
+        <div className="mt-4 mb-1" dir={isRtl ? "rtl" : "ltr"}>
+            <div className="text-[11.5px] text-slate-400 dark:text-slate-500 mb-2 font-medium uppercase tracking-wider">
                 {isRtl ? "إلى أين تريد الذهاب بعد ذلك؟" : "Where do you want to go?"}
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
                 {followups.map((chip, idx) => {
-                    const icon = chip.type === 'deeper_dive' ? '🔍' :
-                        chip.type === 'risk_probe' ? '⚠️' :
-                            chip.type === 'comparison' ? '⚖️' :
+                    const icon = chip.type === 'deeper_dive' ? '1️⃣' :
+                        chip.type === 'risk_probe' ? '2️⃣' :
+                            chip.type === 'comparison' ? '3️⃣' :
                                 chip.type === 'catalyst' ? '🚀' :
                                     chip.type === 'macro_link' ? '🌍' :
                                         chip.type === 'historical' ? '🕰️' :
-                                            chip.type === 'sector_view' ? '🏢' : '💡';
-
-                    const borderColors = getTypeColor(chip.type);
-
-                    // Determine correct border side based on RTL
-                    const borderSideClass = isRtl ? "border-r-[3px] border-l border-y" : "border-l-[3px] border-r border-y";
+                                            chip.type === 'sector_view' ? '🏢' : '🎯';
 
                     return (
                         <button
                             key={`followup-${idx}`}
                             onClick={() => onAction && onAction(chip.payload)}
-                            className={clsx(
-                                "text-start text-[13px] px-3.5 py-3 w-full bg-slate-50 dark:bg-[#1A1F2E] border-gray-200 dark:border-white/10 rounded-xl transition-all text-slate-700 dark:text-slate-300 flex items-start gap-3 shadow-sm",
-                                borderSideClass,
-                                borderColors
-                            )}
+                            className="text-start flex items-start gap-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-[10px] px-3.5 py-2.5 transition-all hover:bg-teal-50 hover:border-teal-500 dark:hover:bg-teal-900/20 dark:hover:border-teal-500"
                         >
-                            <span className="text-[14px] mt-0.5 shrink-0 select-none">{icon}</span>
-                            <span className="leading-relaxed text-gray-800 dark:text-gray-200 font-medium">
+                            <span className="text-[13px] min-w-[20px] text-teal-600 dark:text-teal-400 font-semibold mt-0.5 shrink-0 select-none">{icon}</span>
+                            <span className="text-[13px] leading-[1.4] text-slate-600 dark:text-slate-300">
                                 {chip.text}
                             </span>
                         </button>

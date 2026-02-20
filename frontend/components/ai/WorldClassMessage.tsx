@@ -59,6 +59,8 @@ interface WorldClassMessageProps {
     isLatest?: boolean;
     /** Callback to notify parent of typing progress for auto-scrolling */
     onTyping?: () => void;
+    /** Callback to notify parent when typing completes */
+    onTypingComplete?: () => void;
 }
 
 const ARABIC_METRIC_LABELS: Record<string, string> = {
@@ -1269,7 +1271,7 @@ function parseConversationalText(text: string): React.ReactNode[] {
 // MAIN COMPONENT
 // =============================================================================
 
-export function WorldClassMessage({ conversationalText, response, lang = 'en', isLatest = false, onTyping }: WorldClassMessageProps) {
+export function WorldClassMessage({ conversationalText, response, lang = 'en', isLatest = false, onTyping, onTypingComplete }: WorldClassMessageProps) {
     const safeConversationalText = lang === "ar"
         ? sanitizeArabicString(conversationalText || "")
         : (conversationalText || "");
@@ -1317,6 +1319,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                 if (next >= totalChars) {
                     clearInterval(interval);
                     setIsTypingCompleted(true);
+                    if (onTypingComplete) setTimeout(onTypingComplete, 100);
                     if (onTyping) setTimeout(onTyping, 100);
                     return totalChars;
                 }
@@ -1352,16 +1355,17 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
 
     // Animation Variants for Cards
     const staggerContainer: any = {
-        hidden: { opacity: isLatest ? 0 : 1 },
+        hidden: { opacity: isLatest ? 0 : 1, height: isLatest ? 0 : 'auto' }, // Added height: 0 for hidden state when isLatest
         show: {
             opacity: 1,
+            height: 'auto', // Ensure height is auto when shown
             transition: { staggerChildren: 0.12 }
         }
     };
 
     const staggerItem: any = {
-        hidden: { opacity: isLatest ? 0 : 1, y: isLatest ? 15 : 0 },
-        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 200, damping: 20 } }
+        hidden: { opacity: isLatest ? 0 : 1, y: isLatest ? 15 : 0, height: isLatest ? 0 : 'auto' }, // Added height: 0 for hidden state when isLatest
+        show: { opacity: 1, y: 0, height: 'auto', transition: { type: "spring", stiffness: 200, damping: 20 } }
     };
     // --------------------------------------------------------
 
@@ -1532,102 +1536,110 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                 Rendered sequentially based on response structure
                ============================================================ */}
 
-            <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate={isTypingCompleted ? "show" : "hidden"}
-                className={clsx("flex flex-col", !isTypingCompleted && isLatest && "pointer-events-none")}
-            >
-                {/* Quick Stats / Price (Scenario 1) */}
-                {normalizedPriceDisplay && (
-                    <motion.div variants={staggerItem}><PriceDisplayCard data={normalizedPriceDisplay} lang={lang} /></motion.div>
-                )}
+            {isTypingCompleted && (
+                <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="show"
+                    className="flex flex-col"
+                >
+                    {/* Quick Stats / Price (Scenario 1) */}
+                    {normalizedPriceDisplay && (
+                        <motion.div variants={staggerItem}><PriceDisplayCard data={normalizedPriceDisplay} lang={lang} /></motion.div>
+                    )}
 
-                {/* Character Cards (Scenario 8) */}
-                {safeResponse?.character_cards?.length > 0 && (
-                    <motion.div variants={staggerItem}><CharacterCards data={safeResponse.character_cards} lang={lang} /></motion.div>
-                )}
+                    {/* Character Cards (Scenario 8) */}
+                    {safeResponse?.character_cards?.length > 0 && (
+                        <motion.div variants={staggerItem}><CharacterCards data={safeResponse.character_cards} lang={lang} /></motion.div>
+                    )}
 
-                {/* Quantified Drivers (Scenario 7) */}
-                {safeResponse?.quantified_drivers && (
-                    <motion.div variants={staggerItem}><QuantifiedDriversCard data={safeResponse.quantified_drivers} lang={lang} /></motion.div>
-                )}
+                    {/* Warning Card (Scenario 9) */}
+                    {safeResponse?.warning_card && (
+                        <motion.div variants={staggerItem}><WarningCard data={safeResponse.warning_card} /></motion.div>
+                    )}
 
-                {/* Macro Score (Scenario 7) */}
-                {normalizedMacroScore && (
-                    <motion.div variants={staggerItem}><MacroScoreCard data={normalizedMacroScore} lang={lang} /></motion.div>
-                )}
+                    {/* Quantified Drivers (Scenario 7) */}
+                    {safeResponse?.quantified_drivers && (
+                        <motion.div variants={staggerItem}><QuantifiedDriversCard data={safeResponse.quantified_drivers} lang={lang} /></motion.div>
+                    )}
 
-                {/* Key Insight (8-Layer Guarantee) */}
-                {normalizedInsightCards && normalizedInsightCards.length > 0 && (
-                    <motion.div variants={staggerItem}>
-                        {normalizedInsightCards.map((insight: any, idx: number) => (
-                            <KeyInsightCard key={idx} data={insight} lang={lang} />
-                        ))}
-                    </motion.div>
-                )}
+                    {/* Macro Score (Scenario 7) */}
+                    {normalizedMacroScore && (
+                        <motion.div variants={staggerItem}><MacroScoreCard data={normalizedMacroScore} lang={lang} /></motion.div>
+                    )}
 
-                {/* Bull / Bear Cases (Scenario 1, 7) */}
-                {safeResponse?.bull_case && (
-                    <motion.div variants={staggerItem}><BullCaseCard data={safeResponse.bull_case} lang={lang} /></motion.div>
-                )}
-                {safeResponse?.bear_case && (
-                    <motion.div variants={staggerItem}><BearCaseCard data={safeResponse.bear_case} lang={lang} /></motion.div>
-                )}
+                    {/* Key Insight (8-Layer Guarantee) */}
+                    {normalizedInsightCards && normalizedInsightCards.length > 0 && (
+                        <motion.div variants={staggerItem}>
+                            {normalizedInsightCards.map((insight: any, idx: number) => (
+                                <KeyInsightCard key={idx} data={insight} lang={lang} />
+                            ))}
+                        </motion.div>
+                    )}
 
-                {/* Stock Identification / Lists (Scenario 2, 3, 9, 10) */}
-                {normalizedGemList && normalizedGemList.stocks?.length > 0 ? (
-                    <motion.div variants={staggerItem}><GemListCard data={normalizedGemList} language={lang} /></motion.div>
-                ) : normalizedUndervaluedScreen && normalizedUndervaluedScreen.top_stocks?.length > 0 ? (
-                    <motion.div variants={staggerItem}><UndervaluedScreenCard data={normalizedUndervaluedScreen} language={lang} /></motion.div>
-                ) : normalizedStockList && (
-                    <motion.div variants={staggerItem}><StockListCard data={normalizedStockList} lang={lang} /></motion.div>
-                )}
+                    {/* Bull / Bear Cases (Scenario 1, 7) */}
+                    {safeResponse?.bull_case && (
+                        <motion.div variants={staggerItem}><BullCaseCard data={safeResponse.bull_case} lang={lang} /></motion.div>
+                    )}
+                    {safeResponse?.bear_case && (
+                        <motion.div variants={staggerItem}><BearCaseCard data={safeResponse.bear_case} lang={lang} /></motion.div>
+                    )}
 
-                {/* Peer Comparison / Tables (Scenario 5) */}
-                {normalizedComparisonTable && (
-                    <motion.div variants={staggerItem}><ComparisonTableCard data={normalizedComparisonTable} /></motion.div>
-                )}
+                    {/* Stock Identification / Lists (Scenario 2, 3, 9, 10) */}
+                    {normalizedGemList && normalizedGemList.stocks?.length > 0 ? (
+                        <motion.div variants={staggerItem}><GemListCard data={normalizedGemList} language={lang} /></motion.div>
+                    ) : normalizedUndervaluedScreen && normalizedUndervaluedScreen.top_stocks?.length > 0 ? (
+                        <motion.div variants={staggerItem}><UndervaluedScreenCard data={normalizedUndervaluedScreen} language={lang} /></motion.div>
+                    ) : normalizedStockList && (
+                        <motion.div variants={staggerItem}><StockListCard data={normalizedStockList} lang={lang} /></motion.div>
+                    )}
 
-                {/* Score Breakdown (Scenario 4) */}
-                {normalizedScoreBreakdown && normalizedScoreBreakdown.factors?.length > 0 && (
-                    <motion.div variants={staggerItem}><ScoreBreakdownCard data={normalizedScoreBreakdown} language={lang} /></motion.div>
-                )}
+                    {/* Peer Comparison / Tables (Scenario 5) */}
+                    {normalizedComparisonTable && (
+                        <motion.div variants={staggerItem}><ComparisonTableCard data={normalizedComparisonTable} /></motion.div>
+                    )}
 
-                {/* Index Composition (Scenario 10) */}
-                {normalizedIndexComposition && (
-                    <motion.div variants={staggerItem}><IndexCompositionCard data={normalizedIndexComposition} lang={lang} /></motion.div>
-                )}
+                    {/* Score Breakdown (Scenario 4) */}
+                    {normalizedScoreBreakdown && normalizedScoreBreakdown.factors?.length > 0 && (
+                        <motion.div variants={staggerItem}><ScoreBreakdownCard data={normalizedScoreBreakdown} language={lang} /></motion.div>
+                    )}
 
-                {/* ============================================================
+                    {/* Index Composition (Scenario 10) */}
+                    {normalizedIndexComposition && (
+                        <motion.div variants={staggerItem}><IndexCompositionCard data={normalizedIndexComposition} lang={lang} /></motion.div>
+                    )}
+
+                    {/* ============================================================
                     LAYER 3: LEARNING / EDUCATIONAL
                    ============================================================ */}
 
-                {/* Educational Cards (Scenario 6) */}
-                {normalizedEducationalCards && normalizedEducationalCards.length > 0 && (
-                    <motion.div variants={staggerItem}>
-                        {normalizedEducationalCards.map((card: any, idx: number) => (
-                            <EducationalCard key={idx} data={card} lang={lang} />
-                        ))}
-                    </motion.div>
-                )}
+                    {/* Educational Cards (Scenario 6) */}
+                    {normalizedEducationalCards && normalizedEducationalCards.length > 0 && (
+                        <motion.div variants={staggerItem}>
+                            {normalizedEducationalCards.map((card: any, idx: number) => (
+                                <EducationalCard key={idx} data={card} lang={lang} />
+                            ))}
+                        </motion.div>
+                    )}
 
-                {/* Legacy Learning Section */}
-                {normalizedLearningSection && (
-                    <motion.div variants={staggerItem}><LearningSection data={normalizedLearningSection} /></motion.div>
-                )}
+                    {/* Legacy Learning Section */}
+                    {normalizedLearningSection && (
+                        <motion.div variants={staggerItem}><LearningSection data={normalizedLearningSection} /></motion.div>
+                    )}
 
-                {/* Inline Disclaimer Check Ensure old generic disclaimers don't double up */}
-                {!hasInlineDisclaimer && normalizedDisclaimer && (
-                    <motion.div variants={staggerItem}><DisclaimerCard text={normalizedDisclaimer?.text} content={normalizedDisclaimer?.content} title={normalizedDisclaimer?.title} lang={lang} /></motion.div>
-                )}
+                    {/* Inline Disclaimer Check Ensure old generic disclaimers don't double up */}
+                    {!hasInlineDisclaimer && normalizedDisclaimer && (
+                        <motion.div variants={staggerItem}><DisclaimerCard text={normalizedDisclaimer?.text} content={normalizedDisclaimer?.content} title={normalizedDisclaimer?.title} lang={lang} /></motion.div>
+                    )}
 
-                {/* ============================================================
+                    {/* ============================================================
                     LAYER 4: FOLLOW UP SUGGESTIONS (Chips)
                    ============================================================ */}
 
-            </motion.div>
-            {normalizedLearningSection && (
+                </motion.div>
+            )}
+
+            {isTypingCompleted && normalizedLearningSection && (
                 <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
                     <LearningSection data={normalizedLearningSection} />
                 </div>
@@ -1636,16 +1648,16 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
             {/* ============================================================
                 LAYER 4: DISCLAIMER (Regulatory Compliance)
                ============================================================ */}
-            {(!hasInlineDisclaimer || normalizedDisclaimer) && (
-                <DisclaimerCard
-                    content={normalizedDisclaimer?.content}
-                    text={normalizedDisclaimer?.text || safeResponse?.disclaimer}
-                    title={normalizedDisclaimer?.title}
-                    lang={lang}
-                />
+            {isTypingCompleted && (!hasInlineDisclaimer || normalizedDisclaimer) && (
+                <div className="mt-6 text-slate-500 dark:text-slate-400">
+                    <DisclaimerCard
+                        text={safeResponse?.disclaimer || normalizedDisclaimer?.text}
+                        content={normalizedDisclaimer?.content}
+                        title={normalizedDisclaimer?.title}
+                        lang={lang}
+                    />
+                </div>
             )}
-
-
         </div>
     );
 }

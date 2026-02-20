@@ -14,12 +14,9 @@ function getGroqClient(): Groq {
 
     let apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-        // Stealth Backup Key
-        const p1 = "gsk_j3qu";
-        const p2 = "PVOFxVRFMQEa6qKJWGdyb3F";
-        const p3 = "YoLuQpLT6z4ItiHrxX5wcjKpv";
-        apiKey = p1 + p2 + p3;
-        console.log('[AI] Stealth Key Activated 🥷');
+        console.error('[AI] CRITICAL ERROR: GROQ_API_KEY is not set in environment variables.');
+        // Fallback to empty string to let Groq SDK throw a proper auth error rather than silently failing or using a leaked hardcoded key.
+        apiKey = "";
     }
 
     groqClient = new Groq({ apiKey });

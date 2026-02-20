@@ -148,6 +148,14 @@ Set in `.env` file on Hetzner (managed via `deploy_to_hetzner.sh`):
 | Secret | Description |
 |--------|-------------|
 | `DATABASE_URL` | Supabase PostgreSQL connection string |
+| `SECRET_KEY` | JWT Secret Key for Authentication |
+| `GROQ_API_KEY` | Primary Groq API Key |
+| `RESEND_API_KEY` | Resend Email API Key |
+| `FROM_EMAIL` | Sender Email Address |
+| `GOOGLE_CLIENT_ID` | Google OAuth ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Secret |
+
+**CRITICAL SECURITY PROTOCOL (v5.0.0-SECURE):** Do NOT hardcode any of these secrets in the codebase. All secrets must strictly reside in `.env` and be loaded via `os.getenv()` or Pydantic `BaseSettings`. No string concatenation fallbacks for secrets are permitted.
 
 ---
 

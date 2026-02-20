@@ -9,7 +9,8 @@ import asyncpg
 import os
 from datetime import datetime
 
-DATABASE_URL = "postgres://postgres.kgjpkphfjmmiyjsgsaup:3pmFAnJfL22nJwQO@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require"
+# Database Connection
+DB_URL = os.getenv("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:3pmFAnJfL22nJwQO@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
 
 # The 18 unmatched funds from Mubasher that need to be inserted
 UNMATCHED_FUNDS = [

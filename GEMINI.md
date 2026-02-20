@@ -45,6 +45,13 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
   7. **CLOUD-ONLY MANDATE:** All automated processes (schedulers, scrapers, data sync) MUST run on the Cloud Infrastructure (Hetzner + GitHub Actions). **Local execution of automated workflows is STRICTLY PROHIBITED** to prevent data corruption and IP bans. The local machine is for development only.
   8. **ROOT URL STRUCTURE (CRITICAL):** The root URL `https://startamarkets.com/` (i.e., `/`) **MUST ALWAYS serve the AI Chatbot** (`mobile-ai-analyst`). This is the core product experience. The Market Dashboard is available at `/dashboard`. **DO NOT** change this structure or create a different homepage. The file `frontend/app/page.tsx` re-exports the Mobile AI Analyst and must remain unchanged.
 
+  ## 🔒 SECURITY & SECRETS MANAGEMENT (ENTERPRISE STANDARDS)
+  > [!IMPORTANT]
+  > **SECRETS ARCHITECTURE:**
+  > - **NO HARDCODED SECRETS:** All credentials, database URLs, API keys (Groq, Resend, Google, Anthropic, Mistral, Cerebras), and JWT `SECRET_KEY` MUST be loaded from environment variables (`.env`).
+  > - **NO FALLBACK SECRETS IN CODE:** Do not implement string concatenations or logical ORs for enterprise secrets in the codebase. Strict reliance on `.env` or `os.getenv` is mandatory for the v5.0.0-SECURE architecture.
+  > - **CORS POLICY:** FastAPI CORS origins are strictly controlled to explicit production and local development origins in `main.py`.
+
   ## DATA INTEGRITY & PROTECTION RULES
   > [!CRITICAL]
   > **SECTOR CLASSIFICATION IS SACRED.**

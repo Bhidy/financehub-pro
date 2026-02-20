@@ -939,7 +939,7 @@ class IntentRouter:
         if symbol_match:
             candidate = symbol_match.group(1).upper()
             # Filter common stopwords that might be caught (e.g "Check FOR")
-            if candidate not in ["THE", "FOR", "THIS", "THAT", "STOCK", "PRICE", "TODAY", "NOW", "HERE", "CHART", "GRAPH", "SHOW"]:
+            if candidate not in ["THE", "FOR", "THIS", "THAT", "STOCK", "PRICE", "TODAY", "NOW", "HERE", "CHART", "GRAPH", "SHOW", "FIND", "GIVE", "TELL", "BEST", "MOST", "WITH", "FROM", "JUST", "INTO", "DONT", "YOUR", "HAVE", "SOME", "MORE", "LESS", "THEN", "THAN", "ALSO", "ONLY", "VERY", "EVEN", "OVER", "AWAY", "BACK", "SCORE"]:
                 entities['symbol'] = candidate
 
         # 2. Standalone Ticker Pattern (if not found above)
@@ -955,7 +955,7 @@ class IntentRouter:
              for word in split_text:
                  # Check against a known "safe" list or strict regex
                  # (Common EGX tickers are 4 chars usually)
-                  if re.match(r'^[A-Z]{3,5}$', word.upper()) and word.upper() not in ["THE", "FOR", "AND", "EST", "NOW", "BUY", "SELL", "HOW", "WHAT", "WHEN", "WHY", "WHO", "YES", "NOT", "PRICE", "CHART", "GRAPH"]:
+                  if re.match(r'^[A-Z]{3,5}$', word.upper()) and word.upper() not in ["THE", "FOR", "AND", "EST", "NOW", "BUY", "SELL", "HOW", "WHAT", "WHEN", "WHY", "WHO", "YES", "NOT", "PRICE", "CHART", "GRAPH", "SHOW", "FIND", "GIVE", "TELL", "BEST", "MOST", "THAT", "THIS", "WITH", "FROM", "JUST", "INTO", "DONT", "YOUR", "HAVE", "SOME", "MORE", "LESS", "THEN", "THAN", "ALSO", "ONLY", "VERY", "EVEN", "OVER", "AWAY", "BACK", "SCORE"]:
                       entities['symbol'] = word.upper()
                       break
 

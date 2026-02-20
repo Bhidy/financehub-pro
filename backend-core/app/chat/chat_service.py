@@ -2349,23 +2349,29 @@ class ChatService:
                     # We wrap if it's NOT a deep dive, OR if it failed (errors need love too)
                     should_wrap = (not safe_is_deep_dive) or is_failure
                     
-                    # Force opening logic
+                    # Determine if it's a context switch
+                    last_sym = context_dict.get('last_symbol')
+                    is_context_switch = bool(actual_symbol and last_sym and actual_symbol != last_sym)
+                    
+                    if is_context_switch:
+                        force_human_opening = True
+
                     # 4. Compose Full Response
                     full_text, structured, opening_category = ResponseComposer.compose_premium_response(
                         core_narrative=conversational_text,
                         language=language,
                         intent=intent,
                         user_name=real_user_name,
-                        # CRITICAL FIX: Only treat as follow-up if INTENT is explicitly follow-up.
-                        # Do NOT force "follow-up mode" just because user is returning.
-                        # This enables Rich Openings (Layer 3) for new topics (e.g. "Analyze COMI").
-                        is_follow_up=(intent == Intent.FOLLOW_UP),
+                        # CRITICAL FIX: Only treat as follow-up if INTENT is explicitly follow-up AND not a context switch.
+                        # This enables Rich Openings (Layer 3) for new topics (e.g. "What about COMI?").
+                        is_follow_up=(intent == Intent.FOLLOW_UP and not is_context_switch),
                         follow_up_type='continuation', # Default
                         active_symbol=actual_symbol,
                         sentiment=sentiment,
                         include_risk_warning=include_risk,
                         risk_type=risk_type,
                         shown_card_types=[str(c.get('type')) for c in result_data.get('cards', [])],
+                        force_opening=force_human_opening,
                         detected_insight=thought_points[0] if thought_points else None,
                         user_level=user_level # Phase 4
                     )

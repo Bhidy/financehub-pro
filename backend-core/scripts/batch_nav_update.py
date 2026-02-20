@@ -9,7 +9,8 @@ import asyncpg
 import os
 from datetime import datetime
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
+# Database Connection Configuration
+DB_URL = os.getenv("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
 
 async def main():
     print("=" * 60)

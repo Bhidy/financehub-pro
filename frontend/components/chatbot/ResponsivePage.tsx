@@ -693,7 +693,7 @@ function ResponsiveAIAnalystContent() {
                                                     value={query}
                                                     onChange={(e) => setQuery(e.target.value)}
                                                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                                                    placeholder={translations[lang].inputPlaceholderPro}
+                                                    placeholder={typewriterPlaceholder}
                                                     className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm font-medium"
                                                 />
                                                 <button
@@ -716,13 +716,15 @@ function ResponsiveAIAnalystContent() {
                                             {translations[lang].popularRequests}
                                         </p>
                                         {[
-                                            { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.marketSummary.title, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
-                                            { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.dividend.title, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
-                                            { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.peRatio.title, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.scenario_undervalued.title, query: translations[lang].cards.scenario_undervalued.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.scenario_hidden_gems.title, query: translations[lang].cards.scenario_hidden_gems.query, subtitle: translations[lang].askStarta, color: 'bg-rose-500' },
+                                            { icon: <BarChart3 className="w-5 h-5" />, title: translations[lang].cards.scenario_score.title, query: translations[lang].cards.scenario_score.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <TrendingUp className="w-5 h-5" />, title: translations[lang].cards.scenario_jufo.title, query: translations[lang].cards.scenario_jufo.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.scenario_market_timing.title, query: translations[lang].cards.scenario_market_timing.query, subtitle: translations[lang].askStarta, color: 'bg-rose-500' },
                                         ].map((item, idx) => (
                                             <button
                                                 key={idx}
-                                                onClick={() => sendDirectMessage(item.title)}
+                                                onClick={() => sendDirectMessage(item.query)}
                                                 className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-white/5 shadow-sm active:scale-[0.98] transition-all duration-300 text-left group"
                                             >
                                                 <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md shrink-0", item.color)}>

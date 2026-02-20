@@ -18,7 +18,8 @@ import re
 from datetime import datetime
 from difflib import SequenceMatcher
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
+# Database Connection - Primary Pooler
+DB_URL = os.getenv("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
 
 def normalize_name(name):
     """Normalize fund name for better matching"""

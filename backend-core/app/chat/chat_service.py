@@ -2901,7 +2901,8 @@ class ChatService:
                     ai_response=response.message_text,
                     conversation_history=history or [],
                     intent=intent_info,
-                    symbol=actual_symbol
+                    symbol=actual_symbol,
+                    language=language
                 )
                 
                 if dynamic_followups:

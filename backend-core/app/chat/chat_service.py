@@ -3466,7 +3466,6 @@ class ChatService:
         # DEFENSIVE: Initialize ALL variables at the top to prevent NameError crashes
         is_follow_up = False
         full_response_text = conversational_text or ''
-        structured_narrative = None
         used_opening = None
         
         # Convert cards to Card objects
@@ -3583,14 +3582,10 @@ class ChatService:
         )
 
         # Generate Premier Response Layer (DEFENSIVE: wrapped in try/except)
-        if force_direct_message:
-            full_response_text = final_message_text
-            structured_narrative = None
-            used_opening = None
-        else:
+        if not structured_narrative:
             try:
                 full_response_text, structured_narrative, used_opening = ResponseComposer.compose_premium_response(
-                    core_narrative=conversational_text,
+                    core_narrative=final_message_text if force_direct_message else conversational_text,
                     language=language,
                     intent=intent,
                     user_name=context.user_name if context else "Analyst",
@@ -3602,16 +3597,16 @@ class ChatService:
                     last_opening_used=context.last_opening_used if context else None,
                     shown_card_types=shown_card_types,
                     include_opening=True,
-                    force_opening=True, # enforcing 4-Layer structure rule
+                    force_opening=True, # enforcing 4-Layer structure rule for all intents
                     detected_insight=key_insight
                 )
             except Exception as comp_err:
                 print(f"⚠️ ResponseComposer failed (using raw narrative): {comp_err}")
-                full_response_text = conversational_text or (
+                full_response_text = final_message_text if force_direct_message else (conversational_text or (
                     "Here is the analysis based on the latest available data."
                     if language == 'en' else
                     "إليك التحليل بناءً على أحدث البيانات المتاحة."
-                )
+                ))
                 structured_narrative = None
                 used_opening = None
 

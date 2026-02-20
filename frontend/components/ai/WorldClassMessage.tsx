@@ -57,6 +57,8 @@ interface WorldClassMessageProps {
     lang?: Language;
     /** Whether this is the latest active message (animates) */
     isLatest?: boolean;
+    /** Callback to notify parent of typing progress for auto-scrolling */
+    onTyping?: () => void;
 }
 
 const ARABIC_METRIC_LABELS: Record<string, string> = {
@@ -1267,7 +1269,7 @@ function parseConversationalText(text: string): React.ReactNode[] {
 // MAIN COMPONENT
 // =============================================================================
 
-export function WorldClassMessage({ conversationalText, response, lang = 'en', isLatest = false }: WorldClassMessageProps) {
+export function WorldClassMessage({ conversationalText, response, lang = 'en', isLatest = false, onTyping }: WorldClassMessageProps) {
     const safeConversationalText = lang === "ar"
         ? sanitizeArabicString(conversationalText || "")
         : (conversationalText || "");
@@ -1297,25 +1299,39 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
             return;
         }
 
-        if (displayLength >= Math.max(totalTypingLength, 1)) {
+        const totalChars = Math.max(totalTypingLength, 1);
+        if (totalTypingLength === 0) {
             setIsTypingCompleted(true);
+            setDisplayLength(Infinity);
             return;
         }
 
+        // Initialize state for the animation
+        setDisplayLength(0);
+        setIsTypingCompleted(false);
+
+        // Ultra-premium, deliberate writing pace: 1 character per 12ms
         const interval = setInterval(() => {
             setDisplayLength(prev => {
-                const next = prev + 6; // Ultra-fast LLM streaming feel
-                if (next >= totalTypingLength) {
+                const next = prev + 1;
+                if (next >= totalChars) {
                     clearInterval(interval);
                     setIsTypingCompleted(true);
-                    return totalTypingLength;
+                    if (onTyping) setTimeout(onTyping, 100);
+                    return totalChars;
                 }
+
+                // Throttle the scroll callback to every 3 characters (36ms) to avoid layout thrashing
+                if (onTyping && next % 3 === 0) {
+                    onTyping();
+                }
+
                 return next;
             });
-        }, 15); // 15ms ticks for fluid authenticity
+        }, 12);
 
         return () => clearInterval(interval);
-    }, [isLatest, displayLength, totalTypingLength]);
+    }, [isLatest, totalTypingLength]);
 
     let currentOffset = 0;
     const getSlicedText = (text: string) => {
@@ -1345,7 +1361,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
 
     const staggerItem: any = {
         hidden: { opacity: isLatest ? 0 : 1, y: isLatest ? 15 : 0 },
-        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 200, damping: 20 } }
     };
     // --------------------------------------------------------
 

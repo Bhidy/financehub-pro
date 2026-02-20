@@ -557,11 +557,11 @@ class ResponseComposer:
         # NOVICE OVERRIDE: Simplify insights
         if user_level == "NOVICE":
              if sentiment == "bullish":
-                 return "🎯 **Simple Insight**: This looks good. The company is strong." if lang_key == "en" else "🎯 **ببساطة**: الوضع يبدو جيد. الشركة قوية."
+                 return "This looks good. The company is strong." if lang_key == "en" else "الوضع يبدو جيد. الشركة قوية."
              elif sentiment == "bearish":
-                 return "🎯 **Simple Insight**: Be careful. There are risks here." if lang_key == "en" else "🎯 **ببساطة**: خد بالك. في مخاطر هنا."
+                 return "Be careful. There are risks here." if lang_key == "en" else "خد بالك. في مخاطر هنا."
              else:
-                 return "🎯 **Simple Insight**: It's balanced. Not clearly good or bad." if lang_key == "en" else "🎯 **ببساطة**: الوضع متوازن. لا حلو ولا وحش."
+                 return "It's balanced. Not clearly good or bad." if lang_key == "en" else "الوضع متوازن. لا حلو ولا وحش."
 
         templates = KEY_INSIGHT_TEMPLATES.get(sentiment, KEY_INSIGHT_TEMPLATES['neutral'])
         return random.choice(templates.get(lang_key, templates['en']))

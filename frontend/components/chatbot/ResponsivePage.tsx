@@ -292,139 +292,168 @@ function ResponsiveAIAnalystContent() {
      *   Layer 4: Follow-up Prompt (gray box with 💡)
      * ========================================================================
      */
-    const renderMessageList = () => (
-        <div className="space-y-6 pt-2 pb-6 px-1">
-            {visibleMessages.map((m, idx) => {
-                const isUser = m.role === 'user';
-                const isRtl = !isUser && resolveMessageLanguage(m) === "ar";
 
-                return (
-                    <div
-                        key={idx}
-                        className={clsx(
-                            "flex gap-3 w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
-                            isUser ? "flex-row-reverse" : "flex-row",
-                            isRtl && "font-arabic"
-                        )}
-                        dir={isRtl ? "rtl" : "ltr"}
-                        lang={isRtl ? "ar" : "en"}
-                    >
-                        {/* Avatar */}
-                        <div className={clsx(
-                            "w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0 mt-[2px] shadow-sm",
-                            isUser
-                                ? "bg-amber-500 text-white"
-                                : "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-serif text-[14px]"
-                        )}>
-                            {isUser ? "U" : "S"}
-                        </div>
+    const MessageRenderer = ({ m, idx, isLatest }: { m: any, idx: number, isLatest: boolean }) => {
+        const [isTypingCompleted, setIsTypingCompleted] = useState(!isLatest);
+        const isUser = m.role === 'user';
+        const isRtl = !isUser && resolveMessageLanguage(m) === "ar";
 
-                        {/* Bubble */}
-                        <div className={clsx(
-                            "max-w-[85%] rounded-2xl p-4 shadow-sm",
-                            isUser
-                                ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[14.5px] leading-relaxed"
-                                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[14.5px] leading-relaxed text-slate-800 dark:text-slate-200"
-                        )}>
-                            {isUser ? (
-                                m.content
-                            ) : (
-                                <div className="w-full flex flex-col gap-3">
-                                    {/* ============================================================
-                                        WORLD-CLASS MESSAGE RENDERER
-                                        
-                                        Renders AI responses EXACTLY like the mockup:
-                                        - Flowing narrative paragraphs  
-                                        - Colored-border insight cards (green=bull, red=bear)
-                                        - Framework cards with criteria
-                                        - Character cards with stock personalities
-                                        - Macro score cards with factor breakdowns
-                                        - Amber-bordered disclaimers
-                                        - Follow-up prompts
-                                    ============================================================ */}
-                                    <MessageErrorBoundary>
-                                        <WorldClassMessage
-                                            conversationalText={m.response?.conversational_text || m.content}
-                                            response={m.response}
-                                            lang={resolveMessageLanguage(m)}
-                                            isLatest={idx === visibleMessages.length - 1}
-                                            onTyping={scrollToBottom}
-                                        />
-                                    </MessageErrorBoundary>
+        return (
+            <div
+                className={clsx(
+                    "flex gap-3 w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
+                    isUser ? "flex-row-reverse" : "flex-row",
+                    isRtl && "font-arabic"
+                )}
+                dir={isRtl ? "rtl" : "ltr"}
+                lang={isRtl ? "ar" : "en"}
+            >
+                {/* Avatar */}
+                <div className={clsx(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0 mt-[2px] shadow-sm",
+                    isUser
+                        ? "bg-amber-500 text-white"
+                        : "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-serif text-[14px]"
+                )}>
+                    {isUser ? "U" : "S"}
+                </div>
 
-                                    {/* Chart - Keep separate for specialized rendering */}
-                                    {m.response?.chart && (
-                                        <div className="my-3">
-                                            <ChartCard chart={m.response.chart} language={resolveMessageLanguage(m)} />
-                                        </div>
-                                    )}
+                {/* Bubble */}
+                <div className={clsx(
+                    "max-w-[85%] rounded-2xl p-4 shadow-sm",
+                    isUser
+                        ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[14.5px] leading-relaxed"
+                        : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[14.5px] leading-relaxed text-slate-800 dark:text-slate-200"
+                )}>
+                    {isUser ? (
+                        m.content
+                    ) : (
+                        <div className="w-full flex flex-col gap-3">
+                            <MessageErrorBoundary>
+                                <WorldClassMessage
+                                    conversationalText={m.response?.conversational_text || m.content}
+                                    response={m.response}
+                                    lang={resolveMessageLanguage(m)}
+                                    isLatest={isLatest}
+                                    onTyping={scrollToBottom}
+                                    onTypingComplete={() => setIsTypingCompleted(true)}
+                                />
+                            </MessageErrorBoundary>
 
-                                    {/* Data Cards - Keep for stock metrics display */}
-                                    {/* Filter out cards that WorldClassMessage already renders to prevent duplicates */}
-                                    {(() => {
-                                        // All card types handled by WorldClassMessage's ultra-premium components
-                                        const worldClassHandledTypes = [
-                                            // Original types
-                                            'bull_case', 'bear_case', 'learning_section',
-                                            'disclaimer', 'disclaimer_card', 'follow_up_prompt',
-                                            'follow_up', 'error',
-                                            // New ultra-premium types (matching all 10 mockup scenarios)
-                                            'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
-                                            'comparison_table', 'compare_table', 'peer_comparison',
-                                            'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
-                                            'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
-                                            'price_display', 'current_position', 'stock_position',
-                                            'index_composition', 'egx_constituents',
-                                            'insight', 'insights', 'warning_card', 'reality_check',
-                                            'character_cards', 'stock_personalities',
-                                            'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria'
-                                        ];
-                                        const filteredCards = (m.response?.cards || []).filter(
-                                            (card: any) => !worldClassHandledTypes.includes(card.type)
-                                        );
-                                        return filteredCards.length > 0 ? (
-                                            <ChatCards
-                                                cards={filteredCards}
-                                                language={resolveMessageLanguage(m)}
-                                                onSymbolClick={handleSymbolClick}
-                                                onExampleClick={handleExampleClick}
-                                            />
-                                        ) : null;
-                                    })()}
+                            {/* Chart - Keep separate for specialized rendering */}
+                            {isTypingCompleted && m.response?.chart && (
+                                <motion.div
+                                    className="my-3"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <ChartCard chart={m.response.chart} language={resolveMessageLanguage(m)} />
+                                </motion.div>
+                            )}
 
-                                    {m.response?.fact_explanations && (
-                                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                                            <FactExplanations explanations={m.response.fact_explanations} language={resolveMessageLanguage(m)} />
-                                        </div>
-                                    )}
-
-                                    {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
-                                    {m.response?.followups && m.response.followups.length > 0 ? (
-                                        <FollowUpChips
-                                            followups={m.response.followups}
-                                            onAction={(payload) => sendDirectMessage(payload)}
+                            {/* Data Cards - Keep for stock metrics display */}
+                            {isTypingCompleted && (() => {
+                                // All card types handled by WorldClassMessage's ultra-premium components
+                                const worldClassHandledTypes = [
+                                    'bull_case', 'bear_case', 'learning_section',
+                                    'disclaimer', 'disclaimer_card', 'follow_up_prompt',
+                                    'follow_up', 'error',
+                                    'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
+                                    'comparison_table', 'compare_table', 'peer_comparison',
+                                    'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
+                                    'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
+                                    'price_display', 'current_position', 'stock_position',
+                                    'index_composition', 'egx_constituents',
+                                    'insight', 'insights', 'warning_card', 'reality_check',
+                                    'character_cards', 'stock_personalities',
+                                    'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria'
+                                ];
+                                const filteredCards = (m.response?.cards || []).filter(
+                                    (card: any) => !worldClassHandledTypes.includes(card.type)
+                                );
+                                return filteredCards.length > 0 ? (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 15 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                    >
+                                        <ChatCards
+                                            cards={filteredCards}
                                             language={resolveMessageLanguage(m)}
+                                            onSymbolClick={handleSymbolClick}
+                                            onExampleClick={handleExampleClick}
                                         />
-                                    ) : m.response?.follow_up_prompt ? (
-                                        <FollowUpPrompt content={m.response.follow_up_prompt} />
-                                    ) : null}
+                                    </motion.div>
+                                ) : null;
+                            })()}
 
-                                    {/* Actions */}
-                                    {m.response?.actions && m.response.actions.length > 0 && (
-                                        <div className="pt-2">
-                                            <ActionsBar
-                                                actions={m.response.actions}
-                                                language={resolveMessageLanguage(m)}
-                                                onAction={handleAction}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+                            {isTypingCompleted && m.response?.fact_explanations && (
+                                <motion.div
+                                    className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <FactExplanations explanations={m.response.fact_explanations} language={resolveMessageLanguage(m)} />
+                                </motion.div>
+                            )}
+
+                            {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
+                            {isTypingCompleted && (m.response?.followups && m.response.followups.length > 0 ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <FollowUpChips
+                                        followups={m.response.followups}
+                                        onAction={(payload) => sendDirectMessage(payload)}
+                                        language={resolveMessageLanguage(m)}
+                                    />
+                                </motion.div>
+                            ) : m.response?.follow_up_prompt ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <FollowUpPrompt content={m.response.follow_up_prompt} />
+                                </motion.div>
+                            ) : null)}
+
+                            {/* Actions */}
+                            {isTypingCompleted && m.response?.actions && m.response.actions.length > 0 && (
+                                <motion.div
+                                    className="pt-2"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <ActionsBar
+                                        actions={m.response.actions}
+                                        language={resolveMessageLanguage(m)}
+                                        onAction={handleAction}
+                                    />
+                                </motion.div>
                             )}
                         </div>
-                    </div>
-                );
-            })}
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const renderMessageList = () => (
+        <div className="space-y-6 pt-2 pb-6 px-1">
+            {visibleMessages.map((m, idx) => (
+                <MessageRenderer
+                    key={idx}
+                    m={m}
+                    idx={idx}
+                    isLatest={idx === visibleMessages.length - 1}
+                />
+            ))}
 
             {isLoading && (
                 <div className="flex justify-start">

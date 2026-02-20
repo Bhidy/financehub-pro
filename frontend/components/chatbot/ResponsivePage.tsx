@@ -288,7 +288,7 @@ function ResponsiveAIAnalystContent() {
                     key={idx}
                     m={m}
                     idx={idx}
-                    isLatest={idx === visibleMessages.length - 1}
+                    isLatest={idx === visibleMessages.length - 1 && !m.isHistorical}
                     scrollToBottom={scrollToBottom}
                     handleSymbolClick={handleSymbolClick}
                     handleExampleClick={handleExampleClick}

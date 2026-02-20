@@ -35,17 +35,12 @@ export const translations = {
             screener: { title: "Market Screener", subtitle: "Find matching stocks", query: "Show me top gainers today" },
             price: { title: "Price Analysis", subtitle: "Technical price insights", query: "Analyze price of TMGH" },
             sector: { title: "Sector Performance", subtitle: "Industry analysis", query: "Show banking sector performance" },
-            // Predefined Scenarios (English)
-            scenario_jufo: { title: "Should I Buy JUFO?", subtitle: "Investment Thesis", query: "Should I buy JUFO?" },
-            scenario_undervalued: { title: "Most Undervalued", subtitle: "Value opportunities", query: "What are the most undervalued stocks?" },
-            scenario_hidden_gems: { title: "Hidden Gems", subtitle: "Mid-cap discoveries", query: "What are the hidden gems in the market?" },
-            scenario_market_timing: { title: "Good Time to Buy?", subtitle: "Macro market timing", query: "Is this a good time to buy stocks?" },
-            scenario_compare_peers: { title: "Compare JUFO", subtitle: "Peer comparison", query: "Compare JUFO to its competitors" },
-            scenario_roe: { title: "What is ROE?", subtitle: "Educational concept", query: "What does ROE mean?" },
-            scenario_margins: { title: "Margin Trends", subtitle: "Profitability analysis", query: "Why are margins declining?" },
-            scenario_real_estate: { title: "Undervalued RE", subtitle: "Sector specific", query: "Show me undervalued real estate stocks" },
-            scenario_egx30: { title: "EGX 30 Stocks", subtitle: "Index breakdown", query: "Show me EGX 30 constituents" },
-            scenario_macro: { title: "Macro View", subtitle: "Market environment", query: "Give me a macro market view" }
+            // Predefined Scenarios (English - 5 items max)
+            scenario_undervalued: { title: "Undervalued Stocks", subtitle: "Value opportunities", query: "Get me the most undervalued stocks" },
+            scenario_hidden_gems: { title: "Hidden Gems", subtitle: "Mid-cap discoveries", query: "What are the hidden gems?" },
+            scenario_score: { title: "COMI Score", subtitle: "Score breakdown", query: "Show me inside the COMI score" },
+            scenario_jufo: { title: "Should I Buy JUFO?", subtitle: "Investment Thesis", query: "Should I look at JUFO?" },
+            scenario_market_timing: { title: "Market Timing", subtitle: "Macro environment", query: "Is this a good time to be in equities?" }
         },
         chat: {
             bullCase: "Bull Case",
@@ -172,17 +167,12 @@ export const translations = {
             screener: { title: "ماسح السوق", subtitle: "ابحث عن الأسهم المناسبة", query: "أرني الأسهم الأكثر ربحاً اليوم" },
             price: { title: "تحليل السعر", subtitle: "رؤى فنية للسعر", query: "حلل سعر طلعت مصطفى" },
             sector: { title: "أداء القطاعات", subtitle: "تحليل قطاعي", query: "أرني أداء قطاع البنوك" },
-            // Predefined Scenarios (Arabic)
-            scenario_jufo: { title: "هل أشتري جهينة؟", subtitle: "تحليل استثماري", query: "هل يجب أن أشتري سهم جهينة (JUFO)؟" },
-            scenario_undervalued: { title: "الأكثر انخفاضاً", subtitle: "فرص القيمة", query: "ما هي الأسهم الأكثر تقييماً بأقل من قيمتها؟" },
-            scenario_hidden_gems: { title: "الجواهر الخفية", subtitle: "أسهم متوسطة واعدة", query: "ما هي الجواهر الخفية في السوق؟" },
-            scenario_market_timing: { title: "وقت الشراء؟", subtitle: "توقيت السوق", query: "هل هذا وقت جيد للشراء؟" },
-            scenario_compare_peers: { title: "مقارنة جهينة", subtitle: "مقارنة المنافسين", query: "قارن سهم جهينة بمنافسيه" },
-            scenario_roe: { title: "ما هو العائد على حقوق الملكية؟", subtitle: "مفهوم تعليمي", query: "ماذا يعني العائد على حقوق الملكية؟" },
-            scenario_margins: { title: "اتجاهات الهوامش", subtitle: "تحليل الربحية", query: "لماذا تنخفض هوامش الربح؟" },
-            scenario_real_estate: { title: "عقارات رخيصة", subtitle: "قطاع العقارات", query: "أرني أسهم عقارية مقيمة بأقل من قيمتها" },
-            scenario_egx30: { title: "مكونات المؤشر الثلاثيني", subtitle: "تفصيل المؤشر", query: "أرني مكونات المؤشر الثلاثيني" },
-            scenario_macro: { title: "نظرة شاملة للسوق", subtitle: "بيئة السوق", query: "أعطني نظرة شمولية للسوق" }
+            // Predefined Scenarios (Arabic - 5 items max)
+            scenario_undervalued: { title: "أسهم مقيمة بأقل من قيمتها", subtitle: "فرص القيمة", query: "ما هي الأسهم الأكثر تقييماً بأقل من قيمتها؟" },
+            scenario_hidden_gems: { title: "الجواهر الخفية", subtitle: "أسهم واعدة", query: "ما هي الجواهر الخفية؟" },
+            scenario_score: { title: "تفاصيل تقييم COMI", subtitle: "تحليل התقييم", query: "أرني تفاصيل تقييم التجاري الدولي (COMI)" },
+            scenario_jufo: { title: "هل أشتري جهينة؟", subtitle: "تحليل استثماري", query: "هل يجب أن أنظر في سهم جهينة (JUFO)؟" },
+            scenario_market_timing: { title: "توقيت السوق", subtitle: "بيئة الاقتصاد الكلي", query: "هل هذا وقت جيد للاستثمار في الأسهم؟" }
         },
         chat: {
             bullCase: "السيناريو الإيجابي",

@@ -60,7 +60,7 @@ Example: "What's the one number I should watch in COMI's next earnings"
 
 # ── LLM SYSTEM PROMPT ──
 
-FOLLOWUP_SYSTEM_PROMPT = f"""
+FOLLOWUP_SYSTEM_PROMPT = """
 You generate follow-up questions for Starta AI, an institutional-quality 
 Egyptian stock market analysis platform built by a former Mubasher Asset 
 Management CEO with 20 years of experience.
@@ -80,14 +80,13 @@ RULES:
 5. Don't suggest questions about topics already covered in the conversation.
 6. Match the sophistication of the platform — these are for serious investors,
    not beginners asking "what is a stock."
-7. CRITICAL LANGUAGE RULE: If the AI response you are analyzing is in Arabic, 
-   the 'chip' and 'query' text MUST be perfectly translated into native financial Arabic.
+7. CRITICAL LANGUAGE RULE: You MUST generate all 'chip' and 'query' text EXACTLY in {language_name}. Do NOT use any other language, even if the context contains it. If {language_name} is English, absolutely NO Arabic. If {language_name} is Arabic, absolutely NO English.
 
 RESPONSE FORMAT (strict JSON, no other text):
 [
   {{
-    "chip": "Short clickable text (under 12 words)",
-    "query": "Full question sent to API when clicked (1-2 sentences)",
+    "chip": "Short clickable text (under 12 words) in {language_name}",
+    "query": "Full question sent to API when clicked (1-2 sentences) in {language_name}",
     "type": "type_name_from_list"
   }},
   {{
@@ -179,7 +178,8 @@ class FollowUpEngine:
         ai_response: str,
         conversation_history: List[Dict],
         intent: Dict,
-        symbol: Optional[str] = None
+        symbol: Optional[str] = None,
+        language: str = "en"
     ) -> List[Dict]:
         """
         Main entry point. Returns 3 follow-up questions formatted for the frontend chips.
@@ -189,7 +189,8 @@ class FollowUpEngine:
                 ai_response,
                 conversation_history,
                 intent,
-                symbol
+                symbol,
+                language
             )
         except Exception as e:
             logger.error(f"Follow-up generation error: {e}")
@@ -200,7 +201,8 @@ class FollowUpEngine:
         ai_response: str,
         conversation_history: List[Dict],
         intent: Dict,
-        symbol: Optional[str] = None
+        symbol: Optional[str] = None,
+        language: str = "en"
     ) -> List[Dict]:
         """
         Uses standard MultiProviderLLM to generate contextual follow-ups.
@@ -225,8 +227,16 @@ Context signals:
 Generate 3 follow-up questions following the rules.
 Return ONLY the JSON array, no other text.'''
 
+        lang_name = "Arabic" if language == "ar" else "English"
+        
+        # Inject the dynamic language variable into the system prompt
+        system_prompt = FOLLOWUP_SYSTEM_PROMPT.format(
+            FOLLOWUP_TYPES=FOLLOWUP_TYPES,
+            language_name=lang_name
+        )
+
         messages = [
-            {"role": "system", "content": FOLLOWUP_SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message}
         ]
 

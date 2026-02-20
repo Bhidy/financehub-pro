@@ -5,8 +5,8 @@ import os
 import json
 from datetime import datetime
 
-# DB Connection
-DATABASE_URL = "postgres://postgres.kgjpkphfjmmiyjsgsaup:3pmFAnJfL22nJwQO@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require"
+# Database Connection
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:3pmFAnJfL22nJwQO@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
 
 TARGET_EMAIL = "geovane.zomer@gmail.com"
 

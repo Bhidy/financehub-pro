@@ -221,9 +221,17 @@ function ResponsiveAIAnalystContent() {
     };
 
     useEffect(() => {
-        if (!isLoading && messages.length > 0) {
+        if (messages.length > 0) {
             const lastMessage = messages[messages.length - 1];
-            if (lastMessage.role === 'assistant') {
+
+            // 1. Scroll down immediately when the user submits a question or the loader appears
+            if (isLoading || lastMessage.role === 'user') {
+                setTimeout(scrollToBottom, 50);
+                return;
+            }
+
+            // 2. Once the assistant responds, align the view to the top of the paired question
+            if (!isLoading && lastMessage.role === 'assistant') {
                 if (mainRef.current) {
                     const messageItems = mainRef.current.querySelectorAll('.message-item');
                     if (messageItems.length >= 2) {
@@ -234,8 +242,8 @@ function ResponsiveAIAnalystContent() {
                         return;
                     }
                 }
+                scrollToBottom();
             }
-            scrollToBottom();
         }
     }, [messages.length, isLoading]);
 
@@ -347,6 +355,7 @@ function ResponsiveAIAnalystContent() {
                                             conversationalText={m.response?.conversational_text || m.content}
                                             response={m.response}
                                             lang={resolveMessageLanguage(m)}
+                                            isLatest={idx === messages.length - 1}
                                         />
                                     </MessageErrorBoundary>
 

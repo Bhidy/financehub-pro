@@ -863,6 +863,8 @@ async def handle_undervalued_stocks(
             ss.current_ratio,
             ss.altman_z_score,
             ss.piotroski_f_score,
+            sa.avg_pe,
+            sa.avg_pb,
             CASE
                 WHEN t.pe_ratio > 0 AND sa.avg_pe > 0
                 THEN ((sa.avg_pe - t.pe_ratio) / sa.avg_pe) * 100
@@ -901,7 +903,12 @@ async def handle_undervalued_stocks(
                 if v is not None and abs(v) <= 1.0:
                     metrics[k] = v * 100
             
-            score_res = calculate_score(metrics, {})
+            # Pass historical average for PE and PB so calculation doesn't default to 8
+            hist_avg = {
+                "pe_5yr_avg": row.get("avg_pe"),
+                "pb_5yr_avg": row.get("avg_pb")
+            }
+            score_res = calculate_score(metrics, hist_avg)
             # Only keep those with Valuation Score > 20 as they are undervalued
             if score_res.valuation >= 20:
                 scored_rows.append((score_res, dict(row)))
@@ -928,7 +935,20 @@ async def handle_undervalued_stocks(
                         else "نتائج الفحص تعتمد على البيانات المتاحة حالياً وقد تتغير بسرعة."
                     ),
                     "variant": "warning"
-                }
+                },
+                # Enforce 4-Layer Guarantee even on empty results
+                "learning_section": {
+                    "title": "📊 Understanding Value Traps vs Undervalued" if language == "en" else "📊 فهم الفخاخ التقييمية مقابل الفرص",
+                    "items": [
+                        "When markets are high, true undervalued stocks become scarce." if language == "en" else "عندما يكون السوق مرتفعاً، تندر الأسهم المقيمة بأقل من قيمتها.",
+                        "Some stocks are cheap for a reason (Value Traps) due to deteriorating fundamentals." if language == "en" else "بعض الأسهم رخيصة لسبب وجيه بسبب تدهور الأساسيات.",
+                        "Wait for market pullbacks or sector rotations to find better entry points." if language == "en" else "انتظر تراجعات السوق أو الدورات القطاعية للعثور على نقاط دخول أفضل."
+                    ]
+                },
+                "follow_up_prompt": (
+                    "Would you like to explore Top Dividend yielders instead?" if language == "en"
+                    else "هل ترغب في استكشاف أفضل أسهم التوزيعات بدلاً من ذلك؟"
+                )
             }
 
         def _pct(raw: Optional[float]) -> Optional[float]:
@@ -1079,6 +1099,9 @@ async def handle_undervalued_stocks(
                 "border_color": "blue",
             },
             "stock_list": stocks,
+            "undervalued_screen": {
+                "overall_top": stocks,
+            },
             "insight_cards": [
                 {
                     "variant": "success",

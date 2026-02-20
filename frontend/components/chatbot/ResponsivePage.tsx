@@ -293,139 +293,136 @@ function ResponsiveAIAnalystContent() {
      * ========================================================================
      */
     const renderMessageList = () => (
-        <div className="space-y-6 pt-2">
-            {visibleMessages.map((m, idx) => (
-                <div
-                    key={idx}
-                    className={clsx(
-                        "flex flex-col w-full message-item",
-                        m.role === 'user'
-                            ? "items-end rtl:items-start" // User: Right (LTR: End, RTL: Start)
-                            : "items-start rtl:items-end" // Bot: Left (LTR: Start, RTL: End)
-                    )}
-                >
-                    {m.role === 'user' ? (
+        <div className="space-y-6 pt-2 pb-6 px-1">
+            {visibleMessages.map((m, idx) => {
+                const isUser = m.role === 'user';
+                const isRtl = !isUser && resolveMessageLanguage(m) === "ar";
+
+                return (
+                    <div
+                        key={idx}
+                        className={clsx(
+                            "flex gap-3 w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
+                            isUser ? "flex-row-reverse" : "flex-row",
+                            isRtl && "font-arabic"
+                        )}
+                        dir={isRtl ? "rtl" : "ltr"}
+                        lang={isRtl ? "ar" : "en"}
+                    >
+                        {/* Avatar */}
                         <div className={clsx(
-                            "bg-[#13b8a6] text-white rounded-[20px] rounded-tr-none px-4 py-2.5 shadow-md shadow-[#13b8a6]/10 text-[15px] font-medium leading-normal animate-in zoom-in-95 slide-in-from-right-2 duration-300",
-                            effectiveDesktop ? "max-w-[70%]" : "max-w-[85%]"
+                            "w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0 mt-[2px] shadow-sm",
+                            isUser
+                                ? "bg-amber-500 text-white"
+                                : "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-serif text-[14px]"
                         )}>
-                            {m.content}
+                            {isUser ? "U" : "S"}
                         </div>
-                    ) : (
-                        <div
-                            className={clsx(
-                                "flex flex-col gap-3 animate-in zoom-in-95 slide-in-from-left-2 duration-300",
-                                effectiveDesktop ? "w-full max-w-[90%]" : "w-full max-w-[95%]",
-                                resolveMessageLanguage(m) === "ar" && "font-arabic"
-                            )}
-                            dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
-                            lang={resolveMessageLanguage(m)}
-                        >
-                            <div className="w-full space-y-2 px-1">
-                                {/* ============================================================
-                                    WORLD-CLASS MESSAGE RENDERER
-                                    
-                                    Renders AI responses EXACTLY like the mockup:
-                                    - Flowing narrative paragraphs  
-                                    - Colored-border insight cards (green=bull, red=bear)
-                                    - Framework cards with criteria
-                                    - Character cards with stock personalities
-                                    - Macro score cards with factor breakdowns
-                                    - Amber-bordered disclaimers
-                                    - Follow-up prompts
-                                   ============================================================ */}
-                                <MessageErrorBoundary>
-                                    <WorldClassMessage
-                                        conversationalText={m.response?.conversational_text || m.content}
-                                        response={m.response}
-                                        lang={resolveMessageLanguage(m)}
-                                    />
-                                </MessageErrorBoundary>
 
-                                {/* Chart - Keep separate for specialized rendering */}
-                                {m.response?.chart && (
-                                    <div className="my-4">
-                                        <ChartCard chart={m.response.chart} language={resolveMessageLanguage(m)} />
-                                    </div>
-                                )}
-
-                                {/* Data Cards - Keep for stock metrics display */}
-                                {/* Filter out cards that WorldClassMessage already renders to prevent duplicates */}
-                                {(() => {
-                                    // All card types handled by WorldClassMessage's ultra-premium components
-                                    const worldClassHandledTypes = [
-                                        // Original types
-                                        'bull_case', 'bear_case', 'learning_section',
-                                        'disclaimer', 'disclaimer_card', 'follow_up_prompt',
-                                        'follow_up', 'error',
-                                        // New ultra-premium types (matching all 10 mockup scenarios)
-                                        'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
-                                        'comparison_table', 'compare_table', 'peer_comparison',
-                                        'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
-                                        'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
-                                        'price_display', 'current_position', 'stock_position',
-                                        'index_composition', 'egx_constituents',
-                                        'insight', 'insights', 'warning_card', 'reality_check',
-                                        'character_cards', 'stock_personalities',
-                                        'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria'
-                                    ];
-                                    const filteredCards = (m.response?.cards || []).filter(
-                                        (card: any) => !worldClassHandledTypes.includes(card.type)
-                                    );
-                                    return filteredCards.length > 0 ? (
-                                        <ChatCards
-                                            cards={filteredCards}
-                                            language={resolveMessageLanguage(m)}
-                                            onSymbolClick={handleSymbolClick}
-                                            onExampleClick={handleExampleClick}
+                        {/* Bubble */}
+                        <div className={clsx(
+                            "max-w-[85%] rounded-2xl p-4 shadow-sm",
+                            isUser
+                                ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[14.5px] leading-relaxed"
+                                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[14.5px] leading-relaxed text-slate-800 dark:text-slate-200"
+                        )}>
+                            {isUser ? (
+                                m.content
+                            ) : (
+                                <div className="w-full flex flex-col gap-3">
+                                    {/* ============================================================
+                                        WORLD-CLASS MESSAGE RENDERER
+                                        
+                                        Renders AI responses EXACTLY like the mockup:
+                                        - Flowing narrative paragraphs  
+                                        - Colored-border insight cards (green=bull, red=bear)
+                                        - Framework cards with criteria
+                                        - Character cards with stock personalities
+                                        - Macro score cards with factor breakdowns
+                                        - Amber-bordered disclaimers
+                                        - Follow-up prompts
+                                    ============================================================ */}
+                                    <MessageErrorBoundary>
+                                        <WorldClassMessage
+                                            conversationalText={m.response?.conversational_text || m.content}
+                                            response={m.response}
+                                            lang={resolveMessageLanguage(m)}
                                         />
-                                    ) : null;
-                                })()}
+                                    </MessageErrorBoundary>
 
-                                {m.response?.fact_explanations && (
-                                    <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                                        <FactExplanations explanations={m.response.fact_explanations} language={resolveMessageLanguage(m)} />
-                                    </div>
-                                )}
+                                    {/* Chart - Keep separate for specialized rendering */}
+                                    {m.response?.chart && (
+                                        <div className="my-3">
+                                            <ChartCard chart={m.response.chart} language={resolveMessageLanguage(m)} />
+                                        </div>
+                                    )}
 
-                                {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
-                                {m.response?.followups && m.response.followups.length > 0 ? (
-                                    <div
-                                        className={clsx("pt-2", resolveMessageLanguage(m) === "ar" && "font-arabic")}
-                                        dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
-                                        lang={resolveMessageLanguage(m)}
-                                    >
+                                    {/* Data Cards - Keep for stock metrics display */}
+                                    {/* Filter out cards that WorldClassMessage already renders to prevent duplicates */}
+                                    {(() => {
+                                        // All card types handled by WorldClassMessage's ultra-premium components
+                                        const worldClassHandledTypes = [
+                                            // Original types
+                                            'bull_case', 'bear_case', 'learning_section',
+                                            'disclaimer', 'disclaimer_card', 'follow_up_prompt',
+                                            'follow_up', 'error',
+                                            // New ultra-premium types (matching all 10 mockup scenarios)
+                                            'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
+                                            'comparison_table', 'compare_table', 'peer_comparison',
+                                            'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
+                                            'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
+                                            'price_display', 'current_position', 'stock_position',
+                                            'index_composition', 'egx_constituents',
+                                            'insight', 'insights', 'warning_card', 'reality_check',
+                                            'character_cards', 'stock_personalities',
+                                            'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria'
+                                        ];
+                                        const filteredCards = (m.response?.cards || []).filter(
+                                            (card: any) => !worldClassHandledTypes.includes(card.type)
+                                        );
+                                        return filteredCards.length > 0 ? (
+                                            <ChatCards
+                                                cards={filteredCards}
+                                                language={resolveMessageLanguage(m)}
+                                                onSymbolClick={handleSymbolClick}
+                                                onExampleClick={handleExampleClick}
+                                            />
+                                        ) : null;
+                                    })()}
+
+                                    {m.response?.fact_explanations && (
+                                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                                            <FactExplanations explanations={m.response.fact_explanations} language={resolveMessageLanguage(m)} />
+                                        </div>
+                                    )}
+
+                                    {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
+                                    {m.response?.followups && m.response.followups.length > 0 ? (
                                         <FollowUpChips
                                             followups={m.response.followups}
                                             onAction={(payload) => sendDirectMessage(payload)}
                                             language={resolveMessageLanguage(m)}
                                         />
-                                    </div>
-                                ) : m.response?.follow_up_prompt ? (
-                                    <div
-                                        className={clsx("pt-2", resolveMessageLanguage(m) === "ar" && "font-arabic")}
-                                        dir={resolveMessageLanguage(m) === "ar" ? "rtl" : "ltr"}
-                                        lang={resolveMessageLanguage(m)}
-                                    >
+                                    ) : m.response?.follow_up_prompt ? (
                                         <FollowUpPrompt content={m.response.follow_up_prompt} />
-                                    </div>
-                                ) : null}
+                                    ) : null}
 
-                                {/* Actions */}
-                                {m.response?.actions && m.response.actions.length > 0 && (
-                                    <div className="pt-2">
-                                        <ActionsBar
-                                            actions={m.response.actions}
-                                            language={resolveMessageLanguage(m)}
-                                            onAction={handleAction}
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                                    {/* Actions */}
+                                    {m.response?.actions && m.response.actions.length > 0 && (
+                                        <div className="pt-2">
+                                            <ActionsBar
+                                                actions={m.response.actions}
+                                                language={resolveMessageLanguage(m)}
+                                                onAction={handleAction}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-            ))}
+                    </div>
+                );
+            })}
 
             {isLoading && (
                 <div className="flex justify-start">

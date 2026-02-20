@@ -230,19 +230,11 @@ function ResponsiveAIAnalystContent() {
                 return;
             }
 
-            // 2. Once the assistant responds, align the view to the top of the paired question
+            // 2. Once the assistant responds, scroll near the top initially if it's too long,
+            // BUT actually we just want to let the typing scroll logic handle pushing it down!
             if (!isLoading && lastMessage.role === 'assistant') {
-                if (mainRef.current) {
-                    const messageItems = mainRef.current.querySelectorAll('.message-item');
-                    if (messageItems.length >= 2) {
-                        const questionElement = messageItems[messageItems.length - 2];
-                        const mainElement = mainRef.current;
-                        const topPos = (questionElement as HTMLElement).offsetTop - 20;
-                        mainElement.scrollTo({ top: topPos, behavior: 'smooth' });
-                        return;
-                    }
-                }
-                scrollToBottom();
+                // Initial snap into view.
+                setTimeout(scrollToBottom, 50);
             }
         }
     }, [messages.length, isLoading]);
@@ -355,7 +347,8 @@ function ResponsiveAIAnalystContent() {
                                             conversationalText={m.response?.conversational_text || m.content}
                                             response={m.response}
                                             lang={resolveMessageLanguage(m)}
-                                            isLatest={idx === messages.length - 1}
+                                            isLatest={idx === visibleMessages.length - 1}
+                                            onTyping={scrollToBottom}
                                         />
                                     </MessageErrorBoundary>
 

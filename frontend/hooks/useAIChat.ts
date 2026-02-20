@@ -204,6 +204,7 @@ export interface Message {
     content: string;
     response?: ChatResponse; // Full structured response
     data?: any; // Legacy compatibility
+    isHistorical?: boolean;
 }
 
 const ensureArray = <T = any>(value: any): T[] => Array.isArray(value) ? value : [];
@@ -483,7 +484,8 @@ export function useAIChat(config?: {
                 return {
                     role: msg.role,
                     content: msg.content,
-                    response: response
+                    response: response,
+                    isHistorical: true
                 };
             });
 

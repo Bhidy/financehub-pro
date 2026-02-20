@@ -271,6 +271,7 @@ async def ai_chat_endpoint(
 
             # Store rich assistant payload for robust context recovery.
             meta_data = {
+                # Legacy / Core
                 "cards": [c.dict() for c in response.cards] if response.cards else [],
                 "actions": [a.dict() for a in response.actions] if response.actions else [],
                 "chart": response.chart.dict() if response.chart else None,
@@ -280,6 +281,28 @@ async def ai_chat_endpoint(
                 "follow_up_prompt": response.follow_up_prompt,
                 "conversational_text": response.conversational_text,
                 "fact_explanations": response.fact_explanations,
+                
+                # Phase 2 Premium Components
+                "structured_narrative": response.structured_narrative.dict() if response.structured_narrative else None,
+                "data_card": response.data_card.dict() if response.data_card else None,
+                "bull_case": response.bull_case.dict() if response.bull_case else None,
+                "bear_case": response.bear_case.dict() if response.bear_case else None,
+                "insight_cards": [c.dict() for c in response.insight_cards] if response.insight_cards else [],
+                "stock_list": [c.dict() for c in response.stock_list] if response.stock_list else [],
+                "macro_score": response.macro_score.dict() if response.macro_score else None,
+                "comparison_table": response.comparison_table.dict() if response.comparison_table else None,
+                "educational_cards": [c.dict() for c in response.educational_cards] if response.educational_cards else [],
+                "disclaimer_card": response.disclaimer_card.dict() if response.disclaimer_card else None,
+                "framework_card": response.framework_card.dict() if response.framework_card else None,
+                "character_cards": [c.dict() for c in response.character_cards] if response.character_cards else [],
+                "quantified_drivers": response.quantified_drivers.dict() if response.quantified_drivers else None,
+                "index_composition": response.index_composition.dict() if response.index_composition else None,
+                "score_breakdown": response.score_breakdown.dict() if response.score_breakdown else None,
+                "gem_list": response.gem_list.dict() if response.gem_list else None,
+                "undervalued_screen": response.undervalued_screen.dict() if response.undervalued_screen else None,
+                "learning_section": response.learning_section,
+                "followups": response.followups,
+                "key_insight": response.key_insight,
             }
 
             await conn.execute("""

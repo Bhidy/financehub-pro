@@ -129,7 +129,7 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
 
                                 {/* Actions */}
                                 <button
-                                    onClick={() => router.push(isMobile ? "/mobile-ai-analyst/register" : "/register")}
+                                    onClick={() => router.push("/register")}
                                     className="w-full py-3.5 bg-gradient-to-r from-[#13b8a6] to-[#0d9488] hover:from-[#2dd4bf] hover:to-[#14b8a6] text-white rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-[#13b8a6]/25 transition-all active:scale-[0.98] group relative overflow-hidden mb-3"
                                 >
                                     <span className="relative z-10 flex items-center gap-2">
@@ -141,7 +141,7 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                 </button>
 
                                 <button
-                                    onClick={() => router.push(isMobile ? "/mobile-ai-analyst/login" : "/login")}
+                                    onClick={() => router.push("/login")}
                                     className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                                 >
                                     Already have an account? <span className="underline decoration-slate-300 dark:decoration-slate-600 underline-offset-4">Log in</span>

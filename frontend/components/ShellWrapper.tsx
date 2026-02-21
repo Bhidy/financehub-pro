@@ -35,8 +35,7 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
         setMounted(true);
     }, []);
 
-    // Check if current route should be isolated
-    // Either matches a prefix (like /mobile-ai-analyst/anything) or exact path (like /login)
+    // Either matches a prefix or exact path (like /login)
     const isIsolatedRoute =
         ISOLATED_ROUTE_PREFIXES.some(route => pathname.startsWith(route)) ||
         ISOLATED_EXACT_PATHS.includes(pathname);
@@ -44,8 +43,7 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
     // Hide sidebar if on mobile domain OR on isolated route
     const isIsolated = isMobileDomain || isIsolatedRoute;
 
-    // CRITICAL FIX: Prevent hydration flash for mobile domains
-    // The problem: On startamarkets.com/, pathname is "/" (not "/mobile-ai-analyst")
+    // The problem: On startamarkets.com/, pathname is "/"
     // So isIsolatedRoute is false during SSR, causing sidebar to render
     // Solution: Don't render sidebar until mounted, only render content wrapper
     if (!mounted) {

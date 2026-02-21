@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Unified Routing: Redirect always to root paths
-    const successRedirect = "/";
+    const successRedirect = "/AiChat";
     const loginRedirect = "/login";
 
     // Handle errors from Google

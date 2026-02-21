@@ -12,7 +12,7 @@ if (typeof window !== "undefined") {
 }
 
 // Routes where Lenis should be DISABLED (native scroll only)
-const NATIVE_SCROLL_ROUTES = ["/", "/mobile-ai-analyst"];
+const NATIVE_SCROLL_ROUTES = ["/", "/AiChat"];
 
 // Domains where Lenis should be DISABLED (mobile-first domains)
 const NATIVE_SCROLL_DOMAINS = ["startamarkets.com", "www.startamarkets.com"];
@@ -34,7 +34,7 @@ const SmoothScroll = () => {
 
         // Check 3: Is this a route that needs native scroll?
         const isNativeScrollRoute = NATIVE_SCROLL_ROUTES.some(route =>
-            pathname === route || pathname.startsWith("/mobile-ai-analyst")
+            pathname === route || pathname.startsWith("/AiChat")
         );
 
         // Lenis is ONLY active on desktop, non-mobile domains, and non-chatbot routes

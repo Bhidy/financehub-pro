@@ -25,7 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
         // Mobile version defaults to light, others dark
         let defaultTheme: Theme = "dark";
-        if (pathname?.startsWith("/mobile-ai-analyst")) {
+        if (pathname?.startsWith("/AiChat")) {
             defaultTheme = "light";
         }
 

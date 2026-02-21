@@ -60,12 +60,13 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         query = """
         WITH sector_averages AS (
             SELECT 
-                sector_name,
-                AVG(NULLIF(pb_ratio, 0)) as avg_pb,
-                AVG(NULLIF(pe_ratio, 0)) as avg_pe
-            FROM market_tickers
-            WHERE market_code = 'EGX' AND sector_name IS NOT NULL
-            GROUP BY sector_name
+                t.sector_name,
+                AVG(NULLIF(COALESCE(t.pb_ratio, ss.pb_ratio), 0)) as avg_pb,
+                AVG(NULLIF(t.pe_ratio, 0)) as avg_pe
+            FROM market_tickers t
+            LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+            WHERE t.market_code = 'EGX' AND t.sector_name IS NOT NULL
+            GROUP BY t.sector_name
         )
         SELECT 
             t.symbol,
@@ -75,8 +76,8 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             t.market_cap,
             t.logo_url,
             t.pe_ratio,
-            t.pb_ratio,
-            t.dividend_yield,
+            COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
+            COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
             ss.roe,
             ss.profit_margin,
             ss.gross_margin,
@@ -89,8 +90,10 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             sa.avg_pb,
             sa.avg_pe,
             CASE 
-                WHEN t.pb_ratio IS NOT NULL AND sa.avg_pb IS NOT NULL AND t.pb_ratio > 0 AND t.pb_ratio < sa.avg_pb
-                THEN ROUND(((sa.avg_pb - t.pb_ratio) / sa.avg_pb * 100)::numeric, 0)
+                WHEN COALESCE(t.pb_ratio, ss.pb_ratio) IS NOT NULL AND sa.avg_pb IS NOT NULL
+                  AND COALESCE(t.pb_ratio, ss.pb_ratio) > 0
+                  AND COALESCE(t.pb_ratio, ss.pb_ratio) < sa.avg_pb
+                THEN ROUND(((sa.avg_pb - COALESCE(t.pb_ratio, ss.pb_ratio)) / sa.avg_pb * 100)::numeric, 0)
                 ELSE 0
             END as pb_discount,
             CASE 
@@ -104,8 +107,8 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         WHERE t.market_code = 'EGX'
           AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
           AND (
-                (t.pe_ratio > 0 AND t.pe_ratio <= 30)  -- Cap excessive P/E (not a gem at 37x P/E)
-             OR (t.pb_ratio > 0 AND t.pb_ratio <= 3.0) -- Cap excessive P/B
+                (t.pe_ratio > 0 AND t.pe_ratio <= 30)  -- Cap excessive P/E
+             OR (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 AND COALESCE(t.pb_ratio, ss.pb_ratio) <= 3.0)
           )
           AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
           AND COALESCE(t.name_en, '') NOT ILIKE '%fund%'
@@ -129,8 +132,11 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 "pb_5yr_avg": row.get("avg_pb"),
             }
             score_res = calculate_score(metrics, hist_avg)
-            # Criteria for hidden gems: meaningful score + valuation discount
-            if score_res.total >= 45 and (row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15 or getattr(score_res, 'profitability', 0) > 10):
+            # Hidden gem criteria: meaningful score + valuation discount + quality (ROE >= 18% preferred)
+            roe_val = metrics.get('roe') or 0
+            has_quality = roe_val >= 18 or (roe_val >= 12 and getattr(score_res, 'profitability', 0) >= 12)
+            has_discount = row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15
+            if score_res.total >= 45 and (has_discount or has_quality):
                 scored_rows.append((score_res, dict(row)))
 
         scored_rows.sort(key=lambda x: x[0].total, reverse=True)
@@ -885,8 +891,8 @@ async def handle_undervalued_stocks(
             t.last_price,
             t.logo_url,
             t.pe_ratio,
-            t.pb_ratio,
-            t.dividend_yield,
+            COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
+            COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
             ss.roe,
             ss.profit_margin,
             ss.revenue_growth,
@@ -904,8 +910,8 @@ async def handle_undervalued_stocks(
                 ELSE 0
             END AS pe_discount,
             CASE
-                WHEN t.pb_ratio > 0 AND sa.avg_pb > 0
-                THEN ((sa.avg_pb - t.pb_ratio) / sa.avg_pb) * 100
+                WHEN COALESCE(t.pb_ratio, ss.pb_ratio) > 0 AND sa.avg_pb > 0
+                THEN ((sa.avg_pb - COALESCE(t.pb_ratio, ss.pb_ratio)) / sa.avg_pb) * 100
                 ELSE 0
             END AS pb_discount
         FROM market_tickers t
@@ -1058,13 +1064,12 @@ async def handle_undervalued_stocks(
                 ),
                 "logo_url": row.get("logo_url"),
                 "metrics": {
-                    ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe else ("N/A" if language == "en" else "غير متاح"),
-                    ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb else ("N/A" if language == "en" else "غير متاح"),
-                    ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe else ("N/A" if language == "en" else "غير متاح"),
-                    ("Yield" if language == "en" else "العائد"): (
-                        f"{(row.get('dividend_yield') or 0):.1f}%"
-                        if row.get("dividend_yield") is not None else ("N/A" if language == "en" else "غير متاح")
-                    ),
+                    ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe is not None and pe > 0 else ("N/A" if language == "en" else "غير متاح"),
+                    ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb is not None and pb > 0 else ("N/A" if language == "en" else "غير متاح"),
+                    ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe is not None and roe != 0 else ("N/A" if language == "en" else "غير متاح"),
+                    ("Yield" if language == "en" else "العائد"):
+                        f"{row.get('dividend_yield'):.1f}%" if row.get("dividend_yield") is not None and row.get("dividend_yield") > 0
+                        else ("--" if language == "en" else "--"),
                 },
                 "mini_scores": {
                     "valuation": score_res.valuation,

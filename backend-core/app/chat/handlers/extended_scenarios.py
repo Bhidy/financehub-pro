@@ -146,14 +146,19 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             # Fallback: broader search with relaxed criteria, still capped on valuation
             fallback_query = """
             WITH sector_averages AS (
-                SELECT sector_name, AVG(NULLIF(pe_ratio, 0)) as avg_pe, AVG(NULLIF(pb_ratio, 0)) as avg_pb
-                FROM market_tickers
-                WHERE market_code = 'EGX' AND sector_name IS NOT NULL
-                GROUP BY sector_name
+                SELECT t2.sector_name,
+                    AVG(NULLIF(t2.pe_ratio, 0)) FILTER (WHERE t2.pe_ratio > 0 AND t2.pe_ratio < 100) as avg_pe,
+                    AVG(NULLIF(COALESCE(t2.pb_ratio, s2.pb_ratio), 0)) FILTER (WHERE COALESCE(t2.pb_ratio, s2.pb_ratio) > 0) as avg_pb
+                FROM market_tickers t2
+                LEFT JOIN stock_statistics s2 ON t2.symbol = s2.symbol AND t2.market_code = s2.market_code
+                WHERE t2.market_code = 'EGX' AND t2.sector_name IS NOT NULL
+                GROUP BY t2.sector_name
             )
             SELECT 
                 t.symbol, t.name_en, t.name_ar, t.sector_name,
-                t.market_cap, t.logo_url, t.pe_ratio, t.pb_ratio, t.dividend_yield,
+                t.market_cap, t.logo_url, t.pe_ratio,
+                COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
+                COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
                 ss.roe, ss.profit_margin,
                 ss.debt_equity, ss.net_income_ttm, ss.ocf_ttm,
                 sa.avg_pe, sa.avg_pb,
@@ -163,10 +168,11 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
             WHERE t.market_code = 'EGX'
               AND t.market_cap > 100000000
-              AND (t.pb_ratio > 0 OR t.pe_ratio > 0)
+              AND (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 OR t.pe_ratio > 0)
               AND (t.pe_ratio IS NULL OR t.pe_ratio <= 30)
               AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
-            ORDER BY t.pb_ratio ASC NULLS LAST
+              AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
+            ORDER BY COALESCE(t.pb_ratio, ss.pb_ratio) ASC NULLS LAST
             LIMIT 5
             """
             fallback_rows = await conn.fetch(fallback_query)
@@ -261,6 +267,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                     ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb is not None and pb > 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe is not None and pe > 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe is not None and roe != 0 else ("N/A" if language == "en" else "غير متاح"),
+                    ("Yield" if language == "en" else "عائد التوزيعات"): (f"{(row_yield * 100 if row_yield <= 1 else row_yield):.1f}%" if (row_yield := row.get('dividend_yield')) and row_yield > 0 else None),
                     ("Cap" if language == "en" else "القيمة السوقية"): _format_number(market_cap, language=language)
                 },
                 "mini_scores": {

@@ -84,25 +84,25 @@ FOLLOW_UP_TEMPLATES = {
     },
     Intent.TOP_GAINERS: {
         "en": [
-            ("Any of these gainers catch your eye? I can break down the fundamentals behind the move.",
+            ("{sym} is leading today's gainers — want me to break down the fundamentals behind the move?",
              "Any of these gainers catch your eye? I can break down the fundamentals behind the move."),
-            ("Want me to check if any of these are fundamentally strong or just momentum plays?",
+            ("Want me to check if {sym} is fundamentally strong or just a momentum play?",
              "Want me to check if any of these are fundamentally strong or just momentum plays?"),
         ],
         "ar": [
-            ("أي من هذه الأسهم لفت نظرك؟ أقدر أحلل لك الأساسيات وراء الحركة.",
+            ("سهم {sym} في صدارة الارتفاعات اليوم — تريدني أحلل الأساسيات وراء الحركة؟",
              "أي من هذه الأسهم لفت نظرك؟ أقدر أحلل لك الأساسيات وراء الحركة."),
         ]
     },
     Intent.TOP_LOSERS: {
         "en": [
-            ("Any of these declines look like a buying opportunity? I can analyze the fundamentals.",
+            ("Is {sym}'s decline a buying opportunity or a warning sign? I can check the fundamentals.",
              "Any of these declines look like a buying opportunity? I can analyze the fundamentals."),
-            ("Want me to check which losers might be oversold versus genuinely weak?",
+            ("Want me to check if {sym} is oversold versus genuinely weak fundamentals?",
              "Want me to check which losers might be oversold versus genuinely weak?"),
         ],
         "ar": [
-            ("أي من هذه الانخفاضات تبدو فرصة شراء؟ أقدر أحلل الأساسيات.",
+            ("هل انخفاض {sym} فرصة شراء أم إشارة تحذيرية؟ أقدر أحلل الأساسيات.",
              "أي من هذه الانخفاضات تبدو فرصة شراء؟ أقدر أحلل الأساسيات."),
         ]
     },

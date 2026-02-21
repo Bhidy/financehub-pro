@@ -44,6 +44,7 @@ import { MethodologyCard } from "./MethodologyCard";
 import { HiddenGemCard } from "./HiddenGemCard";
 import { IndexCompositionCard } from "./IndexCompositionCard";
 import { DisclaimerCard } from "./DisclaimerCard";
+import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { translations } from "@/components/chatbot/translations";
 
 // ============================================================
@@ -2509,6 +2510,11 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
         case "disclaimer":
         case "disclaimer_card":
             return <DisclaimerCard data={card.data} language={language} />;
+
+        case "score_breakdown":
+        case "starta_score":
+            return <ScoreBreakdownCard data={card.data} language={language} />;
+
 
         case "news_list":
             return <NewsListCard title={card.title} data={card.data as any} language={language} />;

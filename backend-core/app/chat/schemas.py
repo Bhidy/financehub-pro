@@ -106,6 +106,7 @@ class Intent(str, Enum):
     MACRO_VIEW = "MACRO_VIEW"            # Full macro analysis
     INDEX_COMPOSITION = "INDEX_COMPOSITION" # EGX 30 constituents
     MARKET_TIMING = "MARKET_TIMING"      # Is now a good time to buy?
+    SCORE_BREAKDOWN = "SCORE_BREAKDOWN"  # Show inside the Starta score for a specific stock
     
     # System
     HELP = "HELP"

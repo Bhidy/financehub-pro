@@ -81,20 +81,19 @@ async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str,
     )
     
     # Donut Chart: Debt vs Equity (Approximate using D/E Ratio)
-    de_ratio = float(row['debt_equity']) if row['debt_equity'] else 0.5
-    debt_part = de_ratio
-    equity_part = 1.0
-    
-    chart = ChartPayload(
-        type=ChartType.DONUT,
-        symbol=symbol,
-        title="Capital Structure (Debt vs Equity)",
-        data=[
-            {"label": "Debt", "value": debt_part},
-            {"label": "Equity", "value": equity_part}
-        ],
-        range="1Y"
-    )
+    chart = None
+    if row['debt_equity'] is not None:
+        de_ratio = float(row['debt_equity'])
+        chart = ChartPayload(
+            type=ChartType.DONUT,
+            symbol=symbol,
+            title="Capital Structure (Debt vs Equity)" if lang == 'en' else "هيكل رأس المال (الديون مقابل حقوق الملكية)",
+            data=[
+                {"label": "Debt" if lang == 'en' else "الديون", "value": de_ratio},
+                {"label": "Equity" if lang == 'en' else "حقوق الملكية", "value": 1.0}
+            ],
+            range="1Y"
+        )
     
     return ChatResponse(
         message_text=msg,

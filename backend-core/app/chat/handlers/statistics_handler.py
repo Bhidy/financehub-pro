@@ -46,27 +46,43 @@ async def handle_stock_statistics(
     """
     # Get statistics from stock_statistics table
     # CRITICAL: Avoid SELECT * to be resilient to missing columns
-    # Get statistics - Join with financial_ratios_history for robust deep metrics
-    # CRITICAL: Prefer financial_ratios_history for accounting ratios, market_tickers for price ratios
+    # UNIFIED TTM DATA SOURCE: All KPIs come from stock_statistics (TTM) — no more annual mix
     sql = """
         SELECT 
-            ss.pe_ratio as live_pe, ss.pb_ratio as live_pb, ss.ps_ratio as live_ps, 
+            -- TTM Valuation (stock_statistics - always current/TTM-based)
+            ss.pe_ratio AS live_pe, ss.pb_ratio AS live_pb, ss.ps_ratio AS live_ps,
+            ss.forward_pe, ss.peg_ratio, ss.ev_ebitda, ss.ev_sales,
             ss.beta_5y, ss.rsi_14, ss.ma_50d, ss.ma_200d,
-            ss.roce as live_roce, -- Restore ROCE from live stats
-            ss.ebitda_margin as live_ebitda_margin, -- Fix missing column in history
+            -- TTM Profitability (stock_statistics - TTM)
+            ss.roe, ss.roa, ss.roic, ss.roce AS live_roce,
+            ss.gross_margin, ss.operating_margin, ss.profit_margin,
+            ss.ebitda_margin AS live_ebitda_margin, ss.fcf_margin,
+            -- TTM Financial Health (stock_statistics)
+            ss.current_ratio, ss.quick_ratio,
+            ss.debt_equity AS debt_equity_ratio,
+            ss.interest_coverage, ss.altman_z_score, ss.piotroski_f_score,
+            -- TTM Absolute Figures
+            ss.revenue_ttm, ss.net_income_ttm, ss.ebitda_ttm, ss.ocf_ttm, ss.fcf_ttm,
+            ss.eps_ttm, ss.book_value, ss.bvps,
+            ss.revenue_growth, ss.eps_growth,
+            ss.payout_ratio,
+            -- Market data (live from market_tickers)
             mt.name_en, mt.name_ar, mt.last_price, mt.market_code, mt.currency, mt.sector_name,
-            mt.pe_ratio as mt_pe, mt.pb_ratio as mt_pb, mt.dividend_yield,
-            mt.market_cap as live_cap,
-            fr.roe, fr.roa, fr.roic,
-            fr.gross_margin, fr.operating_margin, fr.net_margin as profit_margin,
-            fr.current_ratio, fr.quick_ratio, fr.debt_equity as debt_equity_ratio
+            mt.pe_ratio AS mt_pe, mt.pb_ratio AS mt_pb,
+            COALESCE(mt.dividend_yield, ss.dividend_yield) AS dividend_yield,
+            mt.market_cap AS live_cap, mt.logo_url,
+            -- Live sector averages for context (show stock vs sector)
+            sa.avg_sector_pe, sa.avg_sector_pb
         FROM stock_statistics ss
-        LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol
+        LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol AND mt.market_code = 'EGX'
         LEFT JOIN LATERAL (
-            SELECT * FROM financial_ratios_history 
-            WHERE symbol = ss.symbol AND period_type = 'annual' 
-            ORDER BY fiscal_year DESC LIMIT 1
-        ) fr ON true
+            SELECT
+                AVG(m2.pe_ratio) FILTER (WHERE m2.pe_ratio > 0 AND m2.pe_ratio < 100) AS avg_sector_pe,
+                AVG(COALESCE(m2.pb_ratio, s2.pb_ratio)) FILTER (WHERE COALESCE(m2.pb_ratio, s2.pb_ratio) > 0) AS avg_sector_pb
+            FROM market_tickers m2
+            LEFT JOIN stock_statistics s2 ON m2.symbol = s2.symbol AND m2.market_code = s2.market_code
+            WHERE m2.sector_name = mt.sector_name AND m2.market_code = 'EGX'
+        ) sa ON true
         WHERE ss.symbol = $1
     """
     stats_record = await conn.fetchrow(sql, symbol)
@@ -122,7 +138,7 @@ async def handle_stock_statistics(
     name = stats['name_ar'] if language == 'ar' else stats['name_en']
     currency = stats['currency'] or 'EGP'
     
-    # helper to coalesce sources (Extended > Live/Stats) for ratios, but Live for Price/Cap
+    # helper using new unified TTM column names
     def get_val(key, fallback_key=None):
         val = stats.get(key)
         if val is not None: return safe_float(val)
@@ -131,35 +147,49 @@ async def handle_stock_statistics(
             if f_val is not None: return safe_float(f_val)
         return None
 
-    # Data Extraction - Use mt_pe/mt_pb as primary for valuation
+    # Valuation: prefer mt_pe (live quote-based) then live_pe (stock_statistics)
     pe = get_val('mt_pe', 'live_pe')
     pb = get_val('mt_pb', 'live_pb')
     ps = get_val('live_ps')
-    
-    # Use History for accounting ratios
-    roe = get_val('roe')
-    roa = get_val('roa')
+    # Sector context for displaying "P/E 11.4x vs sector avg 18.2x"
+    sector_avg_pe = safe_float(stats.get('avg_sector_pe'))
+    sector_avg_pb = safe_float(stats.get('avg_sector_pb'))
+
+    # TTM accounting ratios — directly from stock_statistics (unified TTM source)
+    roe  = get_val('roe')
+    roa  = get_val('roa')
     roic = get_val('roic')
-    roce = get_val('live_roce') # Use live ROCE since history column was missing
-    gm = get_val('gross_margin')
-    om = get_val('operating_margin')
-    nm = get_val('profit_margin') # Column is profit_margin in history table
-    
+    roce = get_val('live_roce')
+    gm   = get_val('gross_margin')
+    om   = get_val('operating_margin')
+    nm   = get_val('profit_margin')
     curr_r = get_val('current_ratio')
-    de = get_val('debt_equity_ratio') # Column is debt_equity_ratio in history table
+    de   = get_val('debt_equity_ratio')
 
     # Build comprehensive message (Conditional Line Inclusion)
     lines = [f"📊 **{'إحصائيات شاملة لـ' if language == 'ar' else 'Comprehensive Statistics for'} {name}** ({symbol})\n"]
 
-    # 1. Valuation
+    # Valuation with live sector context
     val_lines = []
     pe_str = _format_number(pe)
     pb_str = _format_number(pb)
     ps_str = _format_number(ps)
-    
-    if pe_str: val_lines.append(f"• {'مضاعف الربحية' if language == 'ar' else 'P/E Ratio'}: {pe_str}")
-    if pb_str: val_lines.append(f"• {'مضاعف القيمة الدفترية' if language == 'ar' else 'P/B Ratio'}: {pb_str}")
-    if ps_str: val_lines.append(f"• P/S: {ps_str}")
+
+    if pe_str:
+        if sector_avg_pe and pe and sector_avg_pe > 0:
+            discount = round((1 - pe / sector_avg_pe) * 100)
+            relation = f"({abs(discount)}% discount vs sector)" if discount > 5 else (f"({abs(discount)}% premium vs sector)" if discount < -5 else "(inline with sector)")
+            val_lines.append(f"• {'مضاعف الربحية' if language == 'ar' else 'P/E Ratio'}: {pe_str}x — sector avg {sector_avg_pe:.1f}x {relation}")
+        else:
+            val_lines.append(f"• {'مضاعف الربحية' if language == 'ar' else 'P/E Ratio'}: {pe_str}x")
+    if pb_str:
+        if sector_avg_pb and pb and sector_avg_pb > 0:
+            pb_discount = round((1 - pb / sector_avg_pb) * 100)
+            pb_relation = f"({abs(pb_discount)}% discount)" if pb_discount > 5 else (f"({abs(pb_discount)}% premium)" if pb_discount < -5 else "(inline with sector)")
+            val_lines.append(f"• {'مضاعف القيمة الدفترية' if language == 'ar' else 'P/B Ratio'}: {pb_str}x — sector avg {sector_avg_pb:.2f}x {pb_relation}")
+        else:
+            val_lines.append(f"• {'مضاعف القيمة الدفترية' if language == 'ar' else 'P/B Ratio'}: {pb_str}x")
+    if ps_str: val_lines.append(f"• P/S: {ps_str}x")
     
     if val_lines:
         lines.append(f"💰 **{'نسب التقييم' if language == 'ar' else 'Valuation Ratios'}:**")

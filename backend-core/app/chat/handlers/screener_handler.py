@@ -6,6 +6,70 @@ import asyncpg
 from typing import Dict, Any, List, Optional
 
 
+def _make_stock_actions(top_stocks: list, language: str = 'en') -> list:
+    """
+    Generate specific, actionable follow-up buttons based on the top stock(s) in the result.
+    This is the EXPERT fix: every button must reference a real stock ticker so context is never lost.
+    
+    Args:
+        top_stocks: list of stock dicts with 'symbol' and 'name' keys (sorted best-first)
+        language: 'en' or 'ar'
+    
+    Returns:
+        List of action dicts ready for the response payload.
+    """
+    if not top_stocks:
+        return []
+    
+    sym1 = top_stocks[0].get('symbol', '')
+    name1 = top_stocks[0].get('name', sym1)
+    sym2 = top_stocks[1].get('symbol', sym1) if len(top_stocks) > 1 else sym1
+    sym3 = top_stocks[2].get('symbol', sym1) if len(top_stocks) > 2 else sym2
+
+    if language == 'ar':
+        return [
+            {
+                'label': f'📊 تحليل {sym1}',
+                'label_ar': f'📊 تحليل {sym1}',
+                'action_type': 'query',
+                'payload': f'حلل لي سهم {sym1} بالتفصيل'
+            },
+            {
+                'label': f'🛡️ سلامة {sym1}',
+                'label_ar': f'🛡️ سلامة {sym1}',
+                'action_type': 'query',
+                'payload': f'ما مدى أمان سهم {sym1}'
+            },
+            {
+                'label': f'⚖️ قارن {sym1} و{sym2}',
+                'label_ar': f'⚖️ قارن {sym1} و{sym2}',
+                'action_type': 'query',
+                'payload': f'قارن {sym1} و{sym2}'
+            },
+        ]
+    else:
+        return [
+            {
+                'label': f'📊 Analyze {sym1}',
+                'label_ar': f'📊 تحليل {sym1}',
+                'action_type': 'query',
+                'payload': f'Give me a full snapshot of {sym1}'
+            },
+            {
+                'label': f'🛡️ {sym1} Safety',
+                'label_ar': f'🛡️ مخاطر {sym1}',
+                'action_type': 'query',
+                'payload': f'How safe is {sym1}? Check debt and risk'
+            },
+            {
+                'label': f'⚖️ Compare {sym1} vs {sym2}',
+                'label_ar': f'⚖️ قارن {sym1} مع {sym2}',
+                'action_type': 'query',
+                'payload': f'Compare {sym1} vs {sym2}'
+            },
+        ]
+
+
 async def handle_top_gainers(
     conn: asyncpg.Connection,
     market_code: Optional[str] = None,
@@ -81,11 +145,7 @@ async def handle_top_gainers(
                 'data': {'movers': movers, 'direction': 'up'}
             }
         ],
-        'actions': [
-            {'label': 'View Losers', 'label_ar': 'الأكثر انخفاضاً', 'action_type': 'query', 'payload': 'Show top losers'},
-            {'label': '💰 Dividend Leaders', 'label_ar': '💰 أعلى التوزيعات', 'action_type': 'query', 'payload': 'Show highest dividend stocks'},
-            {'label': '🏦 Banking Sector', 'label_ar': '🏦 قطاع البنوك', 'action_type': 'query', 'payload': 'Show banking sector stocks'}
-        ]
+        'actions': _make_stock_actions(movers, language)
     }
 
 
@@ -163,11 +223,7 @@ async def handle_top_losers(
                 'data': {'movers': movers, 'direction': 'down'}
             }
         ],
-        'actions': [
-            {'label': 'View Gainers', 'label_ar': 'الأكثر ارتفاعاً', 'action_type': 'query', 'payload': 'Show top gainers'},
-            {'label': '💰 Dividend Leaders', 'label_ar': '💰 أعلى التوزيعات', 'action_type': 'query', 'payload': 'Show highest dividend stocks'},
-            {'label': '📊 Market Summary', 'label_ar': '📊 ملخص السوق', 'action_type': 'query', 'payload': 'Market summary'}
-        ]
+        'actions': _make_stock_actions(movers, language)
     }
 
 
@@ -288,11 +344,7 @@ async def handle_sector_stocks(
                 'data': {'stocks': stocks, 'sector': sector_display, 'metric': 'Price'}
             }
         ],
-        'actions': [
-            {'label': '🟢 Top Gainers', 'label_ar': '🟢 الأكثر ارتفاعاً', 'action_type': 'query', 'payload': 'Show top gainers'},
-            {'label': '🔴 Top Losers', 'label_ar': '🔴 الأكثر انخفاضاً', 'action_type': 'query', 'payload': 'Show top losers'},
-            {'label': '💰 Dividend Leaders', 'label_ar': '💰 أعلى التوزيعات', 'action_type': 'query', 'payload': 'Show highest dividend stocks'},
-        ]
+        'actions': _make_stock_actions(stocks, language)
     }
 
 
@@ -367,11 +419,7 @@ async def handle_dividend_leaders(
                 'data': {'stocks': leaders, 'metric': 'dividend_yield'}
             }
         ],
-        'actions': [
-            {'label': '🟢 Top Gainers', 'label_ar': '🟢 الأكثر ارتفاعاً', 'action_type': 'query', 'payload': 'Show top gainers'},
-            {'label': '🔴 Top Losers', 'label_ar': '🔴 الأكثر انخفاضاً', 'action_type': 'query', 'payload': 'Show top losers'},
-            {'label': '🏦 Banking Sector', 'label_ar': '🏦 قطاع البنوك', 'action_type': 'query', 'payload': 'Show banking sector stocks'},
-        ]
+        'actions': _make_stock_actions(leaders, language)
     }
 
 

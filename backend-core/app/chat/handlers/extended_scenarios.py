@@ -85,7 +85,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             ss.debt_equity,
             ss.current_ratio,
             ss.net_income_ttm,
-            ss.operating_cashflow,
+            ss.ocf_ttm,
             sa.avg_pb,
             sa.avg_pe,
             CASE 
@@ -149,7 +149,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 t.symbol, t.name_en, t.name_ar, t.sector_name,
                 t.market_cap, t.logo_url, t.pe_ratio, t.pb_ratio, t.dividend_yield,
                 ss.roe, ss.profit_margin,
-                ss.debt_equity, ss.net_income_ttm, ss.operating_cashflow,
+                ss.debt_equity, ss.net_income_ttm, ss.ocf_ttm,
                 sa.avg_pe, sa.avg_pb,
                 0::numeric as pb_discount, 0::numeric as pe_discount
             FROM market_tickers t

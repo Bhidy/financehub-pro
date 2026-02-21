@@ -106,12 +106,21 @@ async def handle_compare_stocks(
                  break
         
         if sector_row and sector_row['sector_name']:
-            # Find largest competitor in same sector (excluding self and same base ticker aliases)
+            # Find the most RELEVANT competitor: same sector, closest market cap, has financial data
+            first_cap_row = await conn.fetchrow(
+                "SELECT market_cap FROM market_tickers WHERE symbol = $1", first_symbol)
+            first_cap = first_cap_row['market_cap'] if first_cap_row else None
+
             peer_rows = await conn.fetch("""
-                SELECT symbol FROM market_tickers 
-                WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
-                ORDER BY market_cap DESC LIMIT 15
-            """, sector_row['sector_name'], first_symbol, sector_row['market_code'])
+                SELECT t.symbol, t.market_cap
+                FROM market_tickers t
+                INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+                WHERE t.sector_name = $1 AND t.symbol != $2 AND t.market_code = $3
+                  AND t.market_cap IS NOT NULL AND t.market_cap > 0
+                ORDER BY ABS(t.market_cap - $4) ASC NULLS LAST
+                LIMIT 20
+            """, sector_row['sector_name'], first_symbol, sector_row['market_code'],
+                first_cap or 0)
 
             first_canonical = _canonical_symbol(first_symbol)
             peer_symbol = None
@@ -121,9 +130,20 @@ async def handle_compare_stocks(
                     peer_symbol = candidate
                     break
 
+            if not peer_symbol:
+                # Fallback: just pick largest by cap
+                fallback_rows = await conn.fetch("""
+                    SELECT symbol FROM market_tickers 
+                    WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
+                    ORDER BY market_cap DESC NULLS LAST LIMIT 15
+                """, sector_row['sector_name'], first_symbol, sector_row['market_code'])
+                for fr in fallback_rows:
+                    if _canonical_symbol(fr['symbol']) != first_canonical:
+                        peer_symbol = fr['symbol']
+                        break
+
             if peer_symbol:
                 symbols.append(peer_symbol)
-                # Append to list so loop below processes both
             else:
                  return {
                     'success': False,
@@ -176,39 +196,24 @@ async def handle_compare_stocks(
         # Update symbol for subsequent queries to match the valid DB ticker
         symbol = found_symbol
 
-        # Get deep stats from stock_statistics
-        # ENTERPRISE FIX: Wrapped in try/except to prevent schema drift from crashing the app
+        # Get TTM stats from stock_statistics (unified TTM source \u2014 no annual fallback)
         stats_row = None
         try:
             stats_row = await conn.fetchrow("""
                 SELECT 
-                    revenue_growth, profit_growth as net_income_growth, eps_growth,
+                    revenue_growth, eps_growth,
                     gross_margin, operating_margin, profit_margin, ebitda_margin,
                     roe, roa, roic, roce, asset_turnover,
-                    debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score, piotroski_f_score,
+                    debt_equity, current_ratio, quick_ratio, interest_coverage,
+                    altman_z_score, piotroski_f_score,
                     ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
-                    payout_ratio
+                    payout_ratio, revenue_ttm, net_income_ttm, eps_ttm
                 FROM stock_statistics
                 WHERE symbol = $1
             """, symbol)
         except Exception as e_stats:
             print(f"[COMPARE] Statistics query failed for {symbol}: {e_stats}")
-            # Continue to fallback
-        
-        # Fallback Ratios
-        ratios_row = None
-        try:
-            ratios_row = await conn.fetchrow("""
-                SELECT 
-                    gross_margin, net_margin as profit_margin, 
-                    roe, debt_equity as debt_equity_ratio
-                FROM financial_ratios_history 
-                WHERE symbol = $1 AND period_type = 'annual'
-                ORDER BY fiscal_year DESC 
-                LIMIT 1
-            """, symbol)
-        except Exception as e_ratios:
-             print(f"[COMPARE] Ratios query failed for {symbol}: {e_ratios}")
+
 
         if row:
             ticker_stats = dict(row)
@@ -242,13 +247,6 @@ async def handle_compare_stocks(
             if data_point.get('profit_margin') is None and data_point.get('net_margin') is not None:
                 data_point['profit_margin'] = data_point.get('net_margin')
             
-            if ratios_row:
-                r_stats = dict(ratios_row)
-                if data_point.get('gross_margin') is None: data_point['gross_margin'] = safe_float(r_stats.get('gross_margin'))
-                if data_point.get('profit_margin') is None: data_point['profit_margin'] = safe_float(r_stats.get('profit_margin'))
-                if data_point.get('roe') is None: data_point['roe'] = safe_float(r_stats.get('roe'))
-                if data_point.get('debt_equity') is None: data_point['debt_equity'] = safe_float(r_stats.get('debt_equity_ratio'))
-
             stocks_data.append(data_point)
 
     # Hard guard: never allow same-stock comparison after symbol normalization.
@@ -272,12 +270,20 @@ async def handle_compare_stocks(
         current_symbol = valid_stock['symbol']
         
         if sector_name:
-             # Find largest peer (excluding same base ticker aliases)
+             # Smart peer: same sector, closest market cap, has financial data
+             current_cap_row = await conn.fetchrow(
+                 "SELECT market_cap FROM market_tickers WHERE symbol = $1", current_symbol)
+             current_cap = current_cap_row['market_cap'] if current_cap_row else None
+
              peer_rows = await conn.fetch("""
-                SELECT symbol FROM market_tickers 
-                WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
-                ORDER BY market_cap DESC LIMIT 15
-            """, sector_name, current_symbol, market_code)
+                SELECT t.symbol, t.market_cap
+                FROM market_tickers t
+                INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+                WHERE t.sector_name = $1 AND t.symbol != $2 AND t.market_code = $3
+                  AND t.market_cap IS NOT NULL AND t.market_cap > 0
+                ORDER BY ABS(t.market_cap - $4) ASC NULLS LAST
+                LIMIT 20
+            """, sector_name, current_symbol, market_code, current_cap or 0)
 
              peer_symbol = None
              current_canonical = _canonical_symbol(current_symbol)
@@ -286,6 +292,18 @@ async def handle_compare_stocks(
                  if _canonical_symbol(candidate) != current_canonical:
                      peer_symbol = candidate
                      break
+
+             if not peer_symbol:
+                 # Fallback to simple largest
+                 fallback_rows = await conn.fetch("""
+                    SELECT symbol FROM market_tickers 
+                    WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
+                    ORDER BY market_cap DESC NULLS LAST LIMIT 15
+                """, sector_name, current_symbol, market_code)
+                 for fr in fallback_rows:
+                     if _canonical_symbol(fr['symbol']) != current_canonical:
+                         peer_symbol = fr['symbol']
+                         break
 
              if peer_symbol:
                  # FETCH PEER DATA (Duplicated logic for safety/speed without refactor)
@@ -354,13 +372,6 @@ async def handle_compare_stocks(
                              
                      if peer_data.get('profit_margin') is None and peer_data.get('net_margin') is not None:
                          peer_data['profit_margin'] = peer_data.get('net_margin')
-                         
-                     if p_ratios:
-                         pr = dict(p_ratios)
-                         if peer_data.get('gross_margin') is None: peer_data['gross_margin'] = safe_float(pr.get('gross_margin'))
-                         if peer_data.get('profit_margin') is None: peer_data['profit_margin'] = safe_float(pr.get('profit_margin'))
-                         if peer_data.get('roe') is None: peer_data['roe'] = safe_float(pr.get('roe'))
-                         if peer_data.get('debt_equity') is None: peer_data['debt_equity'] = safe_float(pr.get('debt_equity_ratio'))
                          
                      # Final duplicate guard before append
                      if _canonical_symbol(peer_data.get('symbol', '')) != current_canonical:

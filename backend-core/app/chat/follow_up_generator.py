@@ -9,133 +9,137 @@ import random
 from typing import Optional
 from .schemas import Intent
 
-# Intent-based follow-up suggestions (enhanced to match template scenarios)
-FOLLOW_UP_PROMPTS = {
+# Intent-based follow-up suggestion TEMPLATES.
+# Use {sym} as a placeholder that will be replaced with the active stock symbol.
+# If no symbol is available, a version without {sym} will be used.
+FOLLOW_UP_TEMPLATES = {
     Intent.STOCK_PRICE: {
         "en": [
-            "Want me to dig deeper into the valuation, or compare this with its sector peers?",
-            "Shall I break down the financials, or check if the stock is fairly valued?",
-            "Want to see the full risk/reward picture with bull and bear cases?",
+            ("Want me to dig deeper into {sym}'s valuation, or compare it with its sector peers?", "Want me to dig deeper? I can analyze valuation or compare against sector peers."),
+            ("Shall I break down {sym}'s financials, or check if it's fairly valued?", "Want a deeper look at financials or fair value?"),
+            ("Want to see a full risk/reward picture for {sym} with bull and bear cases?", "Want to see the full risk/reward picture with bull and bear cases?"),
         ],
         "ar": [
-            "تريدني أتعمق في التقييم أو أقارنه بأسهم القطاع؟",
-            "أحلل لك القوائم المالية أو أشوف لو السهم بقيمته العادلة؟",
-            "تحب تشوف صورة المخاطرة/العائد الكاملة بالسيناريوهات؟",
+            ("تريدني أتعمق في تقييم {sym} أو أقارنه بأسهم القطاع؟", "تريدني أتعمق في التقييم أو أقارنه بأسهم القطاع؟"),
+            ("أحلل لك القوائم المالية لـ{sym} أو أشوف لو السهم بقيمته العادلة؟", "أحلل القوائم المالية أو أشوف القيمة العادلة؟"),
         ]
     },
     Intent.STOCK_SNAPSHOT: {
         "en": [
-            "Want me to deep-dive into the financials, or compare this against key competitors?",
-            "Shall I check fair value and growth trends, or run a full valuation analysis?",
-            "Interested in the dividend history or technical signals for timing?",
+            ("Want me to deep-dive into {sym}'s financials, or compare it against key competitors?", "Want me to deep-dive into the financials, or compare against key competitors?"),
+            ("Shall I check {sym}'s fair value and growth trends, or run a full valuation analysis?", "Shall I check fair value and growth trends, or run a full valuation analysis?"),
+            ("Interested in {sym}'s dividend history or technical signals for timing?", "Interested in dividend history or technical signals for timing?"),
         ],
         "ar": [
-            "تريدني أتعمق في القوائم المالية أو أقارنه بالمنافسين الرئيسيين؟",
-            "أراجع لك القيمة العادلة واتجاهات النمو؟",
-            "تريد تشوف تاريخ التوزيعات أو الإشارات الفنية للتوقيت؟",
+            ("تريدني أتعمق في القوائم المالية لـ{sym} أو أقارنه بالمنافسين؟", "تريدني أتعمق في القوائم المالية أو أقارنه بالمنافسين الرئيسيين؟"),
+            ("أراجع لك القيمة العادلة واتجاهات النمو لـ{sym}؟", "أراجع لك القيمة العادلة واتجاهات النمو؟"),
         ]
     },
     Intent.FINANCIALS: {
         "en": [
-            "Want me to analyze margin trends, or compare profitability with sector rivals?",
-            "Shall I check the cash flow picture, or see how growth compares historically?",
+            ("Want me to analyze {sym}'s margin trends, or compare profitability with sector rivals?", "Want me to analyze margin trends, or compare profitability with sector rivals?"),
+            ("Shall I check {sym}'s cash flow picture, or see how its growth compares historically?", "Shall I check the cash flow picture, or see how growth compares historically?"),
         ],
         "ar": [
-            "تريدني أحلل اتجاهات الهوامش أو أقارن الربحية مع منافسي القطاع؟",
-            "أراجع صورة التدفقات النقدية أو النمو التاريخي؟",
-        ]
-    },
-    Intent.TOP_GAINERS: {
-        "en": [
-            "Any of these gainers catch your eye? I can break down the fundamentals behind the move.",
-            "Want me to check if any of these are fundamentally strong or just momentum plays?",
-        ],
-        "ar": [
-            "أي من هذه الأسهم لفت نظرك؟ أقدر أحلل لك الأساسيات وراء الحركة.",
-            "تحب أشوف لو في منهم قوي من ناحية الأساسيات أم حركة مضاربة؟",
-        ]
-    },
-    Intent.TOP_LOSERS: {
-        "en": [
-            "Any of these declines look like a buying opportunity? I can analyze the fundamentals.",
-            "Want me to check which losers might be oversold versus genuinely weak?",
-        ],
-        "ar": [
-            "أي من هذه الانخفاضات تبدو فرصة شراء؟ أقدر أحلل الأساسيات.",
-            "تحب أشوف مين فيهم ده بيع مبالغ فيه ومين ضعيف فعلاً؟",
-        ]
-    },
-    Intent.DIVIDENDS: {
-        "en": [
-            "Want to compare this dividend yield with sector peers, or check sustainability?",
-            "Shall I analyze the payout ratio and free cash flow to see if dividends are safe?",
-        ],
-        "ar": [
-            "تريد مقارنة عائد التوزيعات مع أسهم القطاع أو التحقق من الاستدامة؟",
-            "أحلل لك نسبة التوزيع والتدفق النقدي الحر لمعرفة أمان التوزيعات؟",
-        ]
-    },
-    Intent.COMPARE_STOCKS: {
-        "en": [
-            "Which competitor interests you most? I can break down the risk/reward in detail.",
-            "Want me to add another stock to the comparison, or deep-dive into one of these?",
-            "Shall I run a full valuation analysis on the strongest candidate?",
-        ],
-        "ar": [
-            "أي منافس يهمك أكثر؟ أقدر أفصل لك المخاطرة/العائد بالتفصيل.",
-            "تحب أضيف سهم تاني للمقارنة أو أتعمق في واحد من دول؟",
-            "أعمل تحليل تقييم كامل لأقوى مرشح؟",
-        ]
-    },
-    Intent.TECHNICAL_INDICATORS: {
-        "en": [
-            "Want to overlay the fundamentals on top of these technicals for a complete picture?",
-            "Shall I check fair value to see if technicals align with valuation?",
-        ],
-        "ar": [
-            "تريد نضيف الأساسيات على الفنيات عشان الصورة تكتمل؟",
-            "أراجع القيمة العادلة لنشوف لو الفنيات متوافقة مع التقييم؟",
+            ("تريدني أحلل اتجاهات هوامش {sym} أو أقارن ربحيته مع منافسي القطاع؟", "تريدني أحلل اتجاهات الهوامش أو أقارن الربحية مع منافسي القطاع؟"),
+            ("أراجع صورة التدفقات النقدية لـ{sym} أو النمو التاريخي؟", "أراجع صورة التدفقات النقدية أو النمو التاريخي؟"),
         ]
     },
     Intent.DEEP_VALUATION: {
         "en": [
-            "Want to compare this valuation with sector peers, or check financial health risks?",
-            "Shall I analyze growth trends to see if the valuation discount is justified?",
+            ("Want to compare {sym}'s valuation with sector peers, or check financial health risks?", "Want to compare this valuation with sector peers, or check financial health risks?"),
+            ("Shall I analyze {sym}'s growth trends to see if the valuation discount is justified?", "Shall I analyze growth trends to see if the valuation discount is justified?"),
         ],
         "ar": [
-            "تريد مقارنة التقييم مع أسهم القطاع أو مراجعة مخاطر الصحة المالية؟",
-            "أحلل اتجاهات النمو لمعرفة هل خصم التقييم مبرر؟",
+            ("تريد مقارنة تقييم {sym} مع أسهم القطاع أو مراجعة مخاطر الصحة المالية؟", "تريد مقارنة التقييم مع أسهم القطاع أو مراجعة مخاطر الصحة المالية؟"),
         ]
     },
     Intent.DEEP_SAFETY: {
         "en": [
-            "Want me to compare safety metrics with competitors, or check growth quality?",
-            "Shall I analyze the debt maturity profile and interest coverage in detail?",
+            ("Want me to compare {sym}'s safety metrics with competitors, or check growth quality?", "Want me to compare safety metrics with competitors, or check growth quality?"),
+            ("Shall I analyze {sym}'s debt maturity profile and interest coverage in detail?", "Shall I analyze the debt maturity profile and interest coverage in detail?"),
         ],
         "ar": [
-            "تريد أقارن مقاييس الأمان مع المنافسين أو أراجع جودة النمو؟",
-            "أحلل ملف استحقاق الديون وتغطية الفوائد بالتفصيل؟",
+            ("تريد أقارن مقاييس أمان {sym} مع المنافسين أو أراجع جودة النمو؟", "تريد أقارن مقاييس الأمان مع المنافسين أو أراجع جودة النمو؟"),
+            ("أحلل ملف استحقاق ديون {sym} وتغطية الفوائد بالتفصيل؟", "أحلل ملف استحقاق الديون وتغطية الفوائد بالتفصيل؟"),
+        ]
+    },
+    Intent.DIVIDENDS: {
+        "en": [
+            ("Want to compare {sym}'s dividend yield with sector peers, or check sustainability?", "Want to compare this dividend yield with sector peers, or check sustainability?"),
+            ("Shall I analyze the payout ratio and free cash flow for {sym} to see if dividends are safe?", "Shall I analyze the payout ratio and free cash flow to see if dividends are safe?"),
+        ],
+        "ar": [
+            ("تريد مقارنة عائد توزيعات {sym} مع أسهم القطاع أو التحقق من الاستدامة؟", "تريد مقارنة عائد التوزيعات مع أسهم القطاع أو التحقق من الاستدامة؟"),
+        ]
+    },
+    Intent.TECHNICAL_INDICATORS: {
+        "en": [
+            ("Want to overlay the fundamentals on top of {sym}'s technicals for a complete picture?", "Want to overlay the fundamentals on top of these technicals for a complete picture?"),
+            ("Shall I check {sym}'s fair value to see if technicals align with valuation?", "Shall I check fair value to see if technicals align with valuation?"),
+        ],
+        "ar": [
+            ("تريد نضيف الأساسيات على الفنيات لـ{sym} عشان الصورة تكتمل؟", "تريد نضيف الأساسيات على الفنيات عشان الصورة تكتمل؟"),
+        ]
+    },
+    Intent.TOP_GAINERS: {
+        "en": [
+            ("Any of these gainers catch your eye? I can break down the fundamentals behind the move.",
+             "Any of these gainers catch your eye? I can break down the fundamentals behind the move."),
+            ("Want me to check if any of these are fundamentally strong or just momentum plays?",
+             "Want me to check if any of these are fundamentally strong or just momentum plays?"),
+        ],
+        "ar": [
+            ("أي من هذه الأسهم لفت نظرك؟ أقدر أحلل لك الأساسيات وراء الحركة.",
+             "أي من هذه الأسهم لفت نظرك؟ أقدر أحلل لك الأساسيات وراء الحركة."),
+        ]
+    },
+    Intent.TOP_LOSERS: {
+        "en": [
+            ("Any of these declines look like a buying opportunity? I can analyze the fundamentals.",
+             "Any of these declines look like a buying opportunity? I can analyze the fundamentals."),
+            ("Want me to check which losers might be oversold versus genuinely weak?",
+             "Want me to check which losers might be oversold versus genuinely weak?"),
+        ],
+        "ar": [
+            ("أي من هذه الانخفاضات تبدو فرصة شراء؟ أقدر أحلل الأساسيات.",
+             "أي من هذه الانخفاضات تبدو فرصة شراء؟ أقدر أحلل الأساسيات."),
+        ]
+    },
+    Intent.COMPARE_STOCKS: {
+        "en": [
+            ("Which competitor interests you most? I can break down the risk/reward in detail.",
+             "Which competitor interests you most? I can break down the risk/reward in detail."),
+            ("Want me to add another stock to the comparison, or deep-dive into one of these?",
+             "Want me to add another stock to the comparison, or deep-dive into one of these?"),
+        ],
+        "ar": [
+            ("أي منافس يهمك أكثر؟ أقدر أفصل لك المخاطرة/العائد بالتفصيل.",
+             "أي منافس يهمك أكثر؟ أقدر أفصل لك المخاطرة/العائد بالتفصيل."),
         ]
     },
     Intent.SECTOR_STOCKS: {
         "en": [
-            "Want me to screen for the best value plays in this sector?",
-            "Interested in comparing the top names, or finding hidden gems in the sector?",
+            ("Want me to screen for the best value plays in this sector?",
+             "Want me to screen for the best value plays in this sector?"),
+            ("Interested in comparing the top names, or finding hidden gems in the sector?",
+             "Interested in comparing the top names, or finding hidden gems in the sector?"),
         ],
         "ar": [
-            "تريدني أبحث عن أفضل فرص القيمة في هذا القطاع؟",
-            "تحب أقارن الأسماء الكبيرة أو ألاقي الجواهر المخفية في القطاع؟",
+            ("تريدني أبحث عن أفضل فرص القيمة في هذا القطاع؟",
+             "تريدني أبحث عن أفضل فرص القيمة في هذا القطاع؟"),
         ]
     },
-    # NEW intents matching template scenarios
     Intent.MARKET_STATUS: {
         "en": [
-            "Want me to drill down on any specific macro factor, or discuss sector implications?",
-            "Shall I analyze which sectors benefit most from the current macro environment?",
+            ("Want me to drill down on any specific macro factor, or discuss sector implications?",
+             "Want me to drill down on any specific macro factor, or discuss sector implications?"),
+            ("Shall I analyze which sectors benefit most from the current macro environment?",
+             "Shall I analyze which sectors benefit most from the current macro environment?"),
         ],
         "ar": [
-            "تريدني أتعمق في عامل ماكرو محدد أو أناقش تأثيره على القطاعات؟",
-            "أحلل أي القطاعات تستفيد أكتر من البيئة الحالية؟",
+            ("تريدني أتعمق في عامل ماكرو محدد أو أناقش تأثيره على القطاعات؟",
+             "تريدني أتعمق في عامل ماكرو محدد أو أناقش تأثيره على القطاعات؟"),
         ]
     },
 }
@@ -155,7 +159,6 @@ DEFAULT_PROMPTS = {
 }
 
 
-
 def generate_follow_up(
     intent: Intent,
     language: str = "en",
@@ -167,21 +170,29 @@ def generate_follow_up(
     Args:
         intent: The detected Intent enum
         language: 'en' or 'ar'
-        symbol: Optional stock symbol for context (unused currently)
+        symbol: Optional stock symbol for context - NOW USED to make suggestions specific
     
     Returns:
         A single follow-up prompt string.
     """
     lang_key = language if language in ["en", "ar"] else "en"
     
-    # Get prompts for this intent
-    prompts = FOLLOW_UP_PROMPTS.get(intent, {}).get(lang_key)
+    # Get templates for this intent
+    template_list = FOLLOW_UP_TEMPLATES.get(intent, {}).get(lang_key)
     
-    if not prompts:
+    if not template_list:
         # Fallback to default
         prompts = DEFAULT_PROMPTS.get(lang_key, DEFAULT_PROMPTS["en"])
+        return random.choice(prompts)
     
-    return random.choice(prompts)
+    # Pick a random template tuple (with_symbol, without_symbol)
+    chosen = random.choice(template_list)
+    template_with_sym, template_without_sym = chosen
+    
+    if symbol and "{sym}" in template_with_sym:
+        return template_with_sym.format(sym=symbol)
+    else:
+        return template_without_sym
 
 
 # Singleton pattern

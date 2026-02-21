@@ -317,30 +317,19 @@ async def handle_compare_stocks(
                     FROM market_tickers
                     WHERE symbol = $1
                  """, peer_symbol)
-                 
                  if p_row:
-                     # 2. Stats
+                     # 2. TTM Stats from stock_statistics (no annual fallback)
                      p_stats = await conn.fetchrow("""
                         SELECT 
-                            revenue_growth, profit_growth as net_income_growth, eps_growth,
+                            revenue_growth, eps_growth,
                             gross_margin, operating_margin, profit_margin, ebitda_margin,
                             roe, roa, roic, roce, asset_turnover,
-                            debt_equity, current_ratio, quick_ratio, interest_coverage, altman_z_score, piotroski_f_score,
+                            debt_equity, current_ratio, quick_ratio, interest_coverage,
+                            altman_z_score, piotroski_f_score,
                             ev_ebitda, ev_sales, peg_ratio, forward_pe, p_ocf,
-                            payout_ratio
+                            payout_ratio, revenue_ttm, net_income_ttm, eps_ttm
                         FROM stock_statistics
                         WHERE symbol = $1
-                     """, peer_symbol)
-                     
-                     # 3. Ratios
-                     p_ratios = await conn.fetchrow("""
-                        SELECT 
-                            gross_margin, net_margin as profit_margin, 
-                            roe, debt_equity as debt_equity_ratio
-                        FROM financial_ratios_history 
-                        WHERE symbol = $1 AND period_type = 'annual'
-                        ORDER BY fiscal_year DESC 
-                        LIMIT 1
                      """, peer_symbol)
                      
                      # Construct Peer Data Point
@@ -361,9 +350,11 @@ async def handle_compare_stocks(
                         'high_52w': safe_float(p_dict.get('high_52w')),
                         'low_52w': safe_float(p_dict.get('low_52w')),
                         'beta': safe_float(p_dict.get('beta')),
-                        'dividend_yield': safe_float(p_dict.get('dividend_yield')),
+                        # COALESCE: use p_stats dividend_yield if market_tickers is NULL
+                        'dividend_yield': safe_float(p_dict.get('dividend_yield')) or (safe_float(p_dict.get('ss_dividend_yield')) if p_stats else None),
                         'pe_ratio': safe_float(p_dict.get('pe_ratio')),
-                        'pb_ratio': safe_float(p_dict.get('pb_ratio')),
+                        # COALESCE: use p_stats pb_ratio if market_tickers is NULL
+                        'pb_ratio': safe_float(p_dict.get('pb_ratio')) or (safe_float(dict(p_stats).get('pb_ratio')) if p_stats else None),
                      }
                      
                      if p_stats:

@@ -53,7 +53,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
     
     Intent.STOCK_SNAPSHOT: (
-        ["snapshot", "quick look", "stock info", "brief", "dashboard", "full snapshot", "summary", "analyze", "analysis", "analyse", "check", "investigate", "summary for"],
+        ["snapshot", "quick look", "stock info", "brief", "dashboard", "full snapshot", "summary", "analyze", "analysis", "analyse", "check", "investigate", "summary for", "deep dive"],
         ["نبذه", "اخبرني عن", "معلومات", "تقرير سريع", "لوحة معلومات", "ملخص سهم", "نظرة سريعة", "اعرض بيانات", "حلل", "تحليل", "فحص", "ملخص لـ"],
         0.9
     ),
@@ -602,7 +602,7 @@ class IntentRouter:
 
         # 6. Analyze/Snapshot Pattern (The "Chief Expert Fix")
         # Explicitly routes "Analyze [Symbol]" to STOCK_SNAPSHOT
-        if "analyze" in merged_text or "analysis" in merged_text or "حلل" in merged_text:
+        if any(w in merged_text for w in ["analyze", "analysis", "حلل", "deep dive", "comprehensive review"]):
              # If we have a symbol, it's definitely a snapshot request
              if entities.get('symbol') or (context and context.get('last_symbol')):
                  return IntentResult(

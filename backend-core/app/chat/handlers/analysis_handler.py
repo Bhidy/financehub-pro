@@ -216,7 +216,7 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
 async def handle_company_profile(conn: asyncpg.Connection, symbol: str, language: str = 'en') -> Dict[str, Any]:
     """Handle company profile/info requests."""
     # 1. Fetch from market_tickers (Basic Info)
-    ticker = await conn.fetchrow("SELECT name_en, name_ar, sector_name, industry, currency, market_cap, last_price, isin FROM market_tickers WHERE symbol = $1", symbol)
+    ticker = await conn.fetchrow("SELECT name_en, name_ar, sector_name, industry, currency, market_cap, last_price FROM market_tickers WHERE symbol = $1", symbol)
     if not ticker: return {'success': False, 'message': "Not found"}
 
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
@@ -245,7 +245,7 @@ async def handle_company_profile(conn: asyncpg.Connection, symbol: str, language
         'market_cap': int(ticker['market_cap']) if ticker['market_cap'] else 0,
         'price': float(ticker['last_price']) if ticker['last_price'] else 0,
         'currency': ticker['currency'],
-        'isin': ticker['isin'],
+        'isin': None,
         'description': profile_data.get('description'),
         'website': profile_data.get('website'),
         'headquarters': profile_data.get('headquarters'),

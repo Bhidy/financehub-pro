@@ -1831,7 +1831,9 @@ class ChatService:
                 Intent.DEEP_VALUATION, Intent.DEEP_SAFETY, Intent.DEEP_GROWTH, 
                 Intent.DEEP_EFFICIENCY, Intent.FOLLOW_UP,
                 # Extended Scenarios needing symbol
-                Intent.MARKET_TIMING # "Is now a good time to buy [Context]?"
+                Intent.MARKET_TIMING, # "Is now a good time to buy [Context]?"
+                Intent.SCORE_BREAKDOWN, # "Show me inside the MICH score" → needs last stock
+                Intent.FIN_EPS, Intent.FIN_DEBT, Intent.FIN_CASH, Intent.FIN_GROWTH,
             ]
 
             # Try last symbol from context ONLY if intent allows it
@@ -3517,22 +3519,49 @@ class ChatService:
             ))
         
         # Convert actions to Action objects
-        # CRITICAL FIX: Inject active symbol into action payloads to prevent context loss
-        # When a user clicks a follow-up button like "Analyze ROE", it becomes "Analyze ROE MICH"
-        # so the chatbot knows which stock to analyze without relying on session context alone.
+        # ─────────────────────────────────────────────────────────────────────
+        # ROBUST SYMBOL INJECTION (replaces the broken regex heuristic)
+        #
+        # The old approach used r'\b[A-Z]{2,5}\b' to detect existing tickers,
+        # but that heuristic FALSELY matched financial abbreviations like ROE,
+        # EPS, FCF, TTM, PE, YOY — blocking symbol injection entirely.
+        #
+        # New approach:
+        #   1. Check if the exact active symbol is already in the payload          → skip
+        #   2. Check if the payload contains a REAL stock symbol (not fin. term)  → skip
+        #   3. Otherwise inject the symbol so the query is self-contained          → inject
+        # ─────────────────────────────────────────────────────────────────────
         _active_symbol_for_actions = entities.get('symbol')
+
+        # Financial abbreviations that look like tickers but aren't 
+        _FIN_ABBREVS = frozenset([
+            'ROE','ROA','ROI','ROIC','EPS','FCF','OCF','TTM','YOY','YTD','QOQ',
+            'PE','PB','PS','PEG','DCF','NAV','IPO','AUM','GDP','CPI','PMI',
+            'ADR','ETF','REITs','REIT','ICU','API','URL','HTML','CSS','USD',
+            'EGP','SAR','AED','KWD','GBP','EUR','DXY','FX','AI','ML','IT',
+            'CEO','CFO','COO','CTO','HR','PR','VIP','SME','IPO','SPC','OTC',
+            'EGX','DFM','ADX','QSE','MSM','NILE','CIB','HDB'
+        ])
+
+        import re as _re
+        # Pattern: standalone 2-6 letter ALL-CAPS word that is NOT a known financial abbreviation
+        _TICKER_RE = _re.compile(r'\b([A-Z]{2,6})\b')
+
+        def _payload_has_real_ticker(text: str, active_sym: str) -> bool:
+            """Return True if text already contains a stock ticker (not a fin abbreviation)."""
+            for m in _TICKER_RE.finditer(text):
+                word = m.group(1)
+                if word not in _FIN_ABBREVS:  # Real ticker candidate
+                    return True
+            return False
+
         actions = []
         for a in result.get('actions', []):
             raw_payload = a.get('payload', '')
             if _active_symbol_for_actions and raw_payload and a.get('action_type', 'query') == 'query':
-                # Only inject symbol if the payload doesn't already reference a stock ticker
-                # (avoid duplicating: "Compare MICH MICH" or "Show market MICH")
-                payload_upper = raw_payload.upper()
-                already_has_symbol = _active_symbol_for_actions.upper() in payload_upper
-                # Heuristic: if payload has ANY all-caps 2-5 letter word it likely has a ticker
-                import re as _re
-                has_any_ticker = bool(_re.search(r'\b[A-Z]{2,5}\b', raw_payload))
-                if not already_has_symbol and not has_any_ticker:
+                already_has_symbol = _active_symbol_for_actions.upper() in raw_payload.upper()
+                has_real_ticker = not already_has_symbol and _payload_has_real_ticker(raw_payload, _active_symbol_for_actions)
+                if not already_has_symbol and not has_real_ticker:
                     raw_payload = f"{raw_payload} {_active_symbol_for_actions}"
             actions.append(Action(
                 label=a.get('label', ''),

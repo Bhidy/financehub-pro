@@ -1627,10 +1627,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                         <motion.div variants={staggerItem}><LearningSection data={normalizedLearningSection} /></motion.div>
                     )}
 
-                    {/* Inline Disclaimer Check Ensure old generic disclaimers don't double up */}
-                    {!hasInlineDisclaimer && normalizedDisclaimer && (
-                        <motion.div variants={staggerItem}><DisclaimerCard text={normalizedDisclaimer?.text} content={normalizedDisclaimer?.content} title={normalizedDisclaimer?.title} lang={lang} /></motion.div>
-                    )}
+
 
                     {/* ============================================================
                     LAYER 4: FOLLOW UP SUGGESTIONS (Chips)

@@ -309,6 +309,16 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             ],
             "note": "Gems are overlooked stocks with solid fundamentals." if language == "en" else "الفرص الخفية هي أسهم مهملة سوقياً رغم قوة الأساسيات."
         }
+        # Generate dynamic key insight
+        if gems:
+            top_gem = gems[0]
+            gem_count = len(gems)
+            if language == "en":
+                insight_text = f"We found {gem_count} undervalued stocks. The top pick, **{top_gem['ticker']}**, trades at an attractive {top_gem['metrics'].get('P/E', 'N/A')} P/E while delivering a robust {top_gem['metrics'].get('ROE', 'N/A')} ROE, suggesting the market is currently mispricing its core earnings power."
+            else:
+                insight_text = f"لقد وجدنا {gem_count} من الأسهم المقيمة بأقل من قيمتها. السهم الأفضل **{top_gem['ticker']}** يتداول بمكرر ربحية جذاب {top_gem['metrics'].get('P/E', 'N/A')} مع تحقيق عائد قوي على حقوق الملكية {top_gem['metrics'].get('ROE', 'N/A')}، مما يشير إلى فرصة استثمارية جيدة."
+        else:
+            insight_text = "No stocks passed the strict quality and valuation filters today. The market appears fully priced across the small-mid cap segment." if language == "en" else "لم تتجاوز أي أسهم فلاتر الجودة والتقييم الصارمة اليوم. يبدو أن السوق مسعر بالكامل في قطاع الشركات الصغيرة والمتوسطة."
         
         return {
             "success": True,
@@ -317,6 +327,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 {"type": "methodology", "data": methodology},
                 {"type": "hidden_gems", "data": {"title": "Hidden Gems" if language == "en" else "الفرص الخفية", "stocks": gems}}
             ],
+            "key_insight": insight_text,
             # NEW: Premium FrameworkCard for world-class UI
             "framework_card": {
                 "icon": "🎯",

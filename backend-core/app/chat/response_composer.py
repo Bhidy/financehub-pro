@@ -557,11 +557,35 @@ class ResponseComposer:
         # NOVICE OVERRIDE: Simplify insights
         if user_level == "NOVICE":
              if sentiment == "bullish":
-                 return "This looks good. The company is strong." if lang_key == "en" else "الوضع يبدو جيد. الشركة قوية."
+                 return random.choice([
+                     "This setup looks quite positive. The company shows fundamental strength.",
+                     "There's noticeable momentum here. The numbers support an optimistic view.",
+                     "Strong indicators across the board. It's a healthy financial posture."
+                 ]) if lang_key == "en" else random.choice([
+                     "الوضع يبدو إيجابياً. الشركة تظهر قوة أساسية.",
+                     "هناك زخم ملحوظ هنا. الأرقام تدعم نظرة متفائلة.",
+                     "مؤشرات قوية بشكل عام. يعكس ذلك مركزاً مالياً صحياً."
+                 ])
              elif sentiment == "bearish":
-                 return "Be careful. There are risks here." if lang_key == "en" else "خد بالك. في مخاطر هنا."
+                 return random.choice([
+                     "Be cautious. The current data points to several underlying risks.",
+                     "There are warning signs here. The fundamentals appear stretched.",
+                     "Risk levels are elevated. It requires careful monitoring before proceeding."
+                 ]) if lang_key == "en" else random.choice([
+                     "يجب الحذر. البيانات الحالية تشير إلى عدة مخاطر كامنة.",
+                     "هناك علامات تحذيرية هنا. الأساسيات تبدو مبالغاً فيها.",
+                     "مستويات المخاطر مرتفعة. يتطلب الأمر مراقبة دقيقة قبل الاستمرار."
+                 ])
              else:
-                 return "It's balanced. Not clearly good or bad." if lang_key == "en" else "الوضع متوازن. لا حلو ولا وحش."
+                 return random.choice([
+                     "The data is balanced right now. Neither clearly bullish nor bearish.",
+                     "Mixed signals in the numbers. Wait for more clarity before deciding.",
+                     "It's a holding pattern. The financial metrics offset each other."
+                 ]) if lang_key == "en" else random.choice([
+                     "البيانات متوازنة حالياً. لا هي إيجابية بشكل واضح ولا سلبية.",
+                     "إشارات مختلطة في الأرقام. يُفضل انتظار مزيد من الوضوح.",
+                     "الوضع محايد. المقاييس المالية تعادل بعضها البعض."
+                 ])
 
         templates = KEY_INSIGHT_TEMPLATES.get(sentiment, KEY_INSIGHT_TEMPLATES['neutral'])
         return random.choice(templates.get(lang_key, templates['en']))

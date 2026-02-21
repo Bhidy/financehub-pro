@@ -58,10 +58,22 @@ async def handle_top_gainers(
         message = f"أعلى {len(movers)} أسهم ارتفاعاً اليوم{market_label}"
     else:
         message = f"Top {len(movers)} Gainers Today{market_label}"
+        
+    # Generate dynamic key insight
+    if movers:
+        top_gainer = movers[0]
+        if language == "en":
+            insight_text = f"Market momentum is concentrated today. **{top_gainer['name']}** leads the pack with a massive +{top_gainer['change_percent']}% surge, displaying significant buyer strength."
+        else:
+            insight_text = f"يبرز زخم شرائي قوي اليوم، ويتصدر المشهد سهم **{top_gainer['name']}** بقفزة استثنائية بلغت +{top_gainer['change_percent']}% مما يعكس نشاطاً كثيفاً."
+    else:
+        insight_text = "Market shows no significant gainers today." if language == "en" else "لم يسجل السوق استجابات إيجابية قوية اليوم."
+
     
     return {
         'success': True,
         'message': message,
+        'key_insight': insight_text,
         'cards': [
             {
                 'type': 'movers_table',
@@ -129,10 +141,21 @@ async def handle_top_losers(
         message = f"أعلى {len(movers)} أسهم انخفاضاً اليوم{market_label}"
     else:
         message = f"Top {len(movers)} Losers Today{market_label}"
+        
+    # Generate dynamic key insight
+    if movers:
+        top_loser = movers[0]
+        if language == "en":
+            insight_text = f"We're seeing concentrated selling pressure today. **{top_loser['name']}** is the hardest hit, dropping {top_loser['change_percent']}% and negatively impacting sector sentiment."
+        else:
+            insight_text = f"نلاحظ ضغوط بيعية مركزة اليوم. سهم **{top_loser['name']}** هو الأكثر تضرراً بتراجع بلغ {top_loser['change_percent']}%، مما يؤثر سلباً على معنويات القطاع."
+    else:
+        insight_text = "Market shows no significant losers today, reflecting a broad base of stability." if language == "en" else "لا توجد تراجعات ملحوظة اليوم، مما يعكس استقراراً عاماً في السوق."
     
     return {
         'success': True,
         'message': message,
+        'key_insight': insight_text,
         'cards': [
             {
                 'type': 'movers_table',
@@ -321,10 +344,22 @@ async def handle_dividend_leaders(
         message = f"أعلى {len(leaders)} أسهم في عائد التوزيعات"
     else:
         message = f"Top {len(leaders)} Dividend Yielding Stocks"
+        
+    # Generate dynamic key insight
+    if leaders:
+        top_leader = leaders[0]
+        if language == "en":
+            insight_text = f"Income opportunities are present. **{top_leader['name']}** currently offers the highest trailing dividend yield at {top_leader['dividend_yield']}%, making it a focal point for yield-seeking portfolios."
+        else:
+            insight_text = f"تتوفر فرص جيدة للمستثمرين الباحثين عن الدخل. يتصدر سهم **{top_leader['name']}** قائمة أعلى التوزيعات بعائد يبلغ {top_leader['dividend_yield']}٪، مما يجعله خياراً جذاباً لمحافظ العوائد."
+    else:
+        insight_text = "No meaningful dividend yields detected in the current data snapshot." if language == "en" else "لم يتم رصد عوائد توزيعات مهمة في البيانات الحالية."
+
     
     return {
         'success': True,
         'message': message,
+        'key_insight': insight_text,
         'cards': [
             {
                 'type': 'screener_results',

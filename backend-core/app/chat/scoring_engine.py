@@ -103,9 +103,49 @@ class ScoreBreakdown:
     key_watch:      str = ""
 
 
+def score_valuation_absolute(current_val: float, label: str, is_pb: bool = False) -> Tuple[int, str]:
+    """Score valuation using absolute thresholds when no historical average is available."""
+    if not current_val or current_val <= 0:
+        return 4, f"{label}: unavailable"
+
+    if is_pb:
+        # P/B absolute thresholds
+        if current_val < 0.7:
+            return 20, f"{label} {current_val:.2f}x — deep discount below book (exceptional)"
+        elif current_val < 1.0:
+            return 16, f"{label} {current_val:.2f}x — below book value (attractive)"
+        elif current_val < 1.5:
+            return 12, f"{label} {current_val:.2f}x — reasonable book multiple"
+        elif current_val < 2.5:
+            return 8,  f"{label} {current_val:.2f}x — moderate, watch growth"
+        elif current_val < 3.5:
+            return 4,  f"{label} {current_val:.2f}x — elevated, needs quality"
+        else:
+            return 0,  f"{label} {current_val:.2f}x — expensive on book basis"
+    else:
+        # P/E absolute thresholds
+        if current_val < 6:
+            return 20, f"{label} {current_val:.1f}x — deeply undervalued on earnings (absolute)"
+        elif current_val < 10:
+            return 16, f"{label} {current_val:.1f}x — attractively priced on earnings"
+        elif current_val < 15:
+            return 12, f"{label} {current_val:.1f}x — fair value territory"
+        elif current_val < 20:
+            return 8,  f"{label} {current_val:.1f}x — moderately priced"
+        elif current_val < 28:
+            return 4,  f"{label} {current_val:.1f}x — elevated, limited margin of safety"
+        else:
+            return 0,  f"{label} {current_val:.1f}x — expensive, high P/E risk"
+
+
 def score_valuation(current_val: float, historical_avg: float, label: str) -> Tuple[int, str]:
-    if not current_val or not historical_avg or historical_avg == 0:
-        return 8, f"{label}: insufficient history"
+    if not current_val or current_val <= 0:
+        return 4, f"{label}: unavailable"
+
+    # If no historical average — use absolute thresholds (meaningful scores not a flat 8)
+    if not historical_avg or historical_avg == 0:
+        is_pb = 'p/b' in label.lower() or 'pb' in label.lower() or 'book' in label.lower()
+        return score_valuation_absolute(current_val, label, is_pb=is_pb)
 
     discount = (historical_avg - current_val) / historical_avg
     if discount >= 0.30:
@@ -128,7 +168,7 @@ def score_profitability(roe: float, sector: str) -> Tuple[int, str]:
     strong, good, weak = cfg["roe_strong"], cfg["roe_good"], cfg["roe_weak"]
 
     if roe is None:
-        return 8, "ROE: data unavailable"
+        return 4, "ROE: data unavailable — assume weak"
 
     if roe >= strong * 1.5:
         score, desc = 20, f"ROE {roe:.1f}% — exceptional for sector (threshold: {strong:.0f}%)"
@@ -265,30 +305,45 @@ def get_key_watch(breakdown: ScoreBreakdown) -> str:
 
 
 def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
-    sector = stock.get("sector", "Food, Beverages & Tobacco")
+    sector = stock.get("sector_name") or stock.get("sector") or "Food, Beverages & Tobacco"
     cfg    = SECTOR_CONFIG.get(sector, DEFAULT_CONFIG)
 
     val_metric   = cfg["valuation_metric"]
     current_val  = stock.get(val_metric)
     avg_key      = val_metric.replace("_ratio", "") + "_5yr_avg" # handle pe -> pe_5yr_avg, ev_ebitda -> ev_ebitda_5yr_avg
-    hist_val     = historical_avg.get(avg_key)
+    hist_val     = historical_avg.get(avg_key) if historical_avg else None
+
+    # Fallback: if primary metric has no value, try pe_ratio and pb_ratio
+    if not current_val or current_val <= 0:
+        if stock.get("pe_ratio") and stock.get("pe_ratio") > 0:
+            current_val = stock.get("pe_ratio")
+            hist_val = historical_avg.get("pe_5yr_avg") if historical_avg else None
+            cfg = {**cfg, "valuation_label": "P/E vs sector"}
+        elif stock.get("pb_ratio") and stock.get("pb_ratio") > 0:
+            current_val = stock.get("pb_ratio")
+            hist_val = historical_avg.get("pb_5yr_avg") if historical_avg else None
+            cfg = {**cfg, "valuation_label": "P/B vs sector"}
 
     v_score, v_note = score_valuation(current_val, hist_val, cfg["valuation_label"])
-    p_score, p_note = score_profitability(stock.get("roe"), sector)
-    h_score, h_note = score_financial_health(stock.get("debt_to_equity"), sector)
+    # ROE: try multiple column names (roe from stock_statistics)
+    roe_val = stock.get("roe") or stock.get("return_on_equity")
+    p_score, p_note = score_profitability(roe_val, sector)
+    # Debt/Equity: try multiple column names
+    de_val = stock.get("debt_to_equity") or stock.get("debt_equity")
+    h_score, h_note = score_financial_health(de_val, sector)
     q_score, q_note = score_earnings_quality(
-        stock.get("operating_cash_flow"),
-        stock.get("net_income")
+        stock.get("operating_cash_flow") or stock.get("operating_cashflow"),
+        stock.get("net_income") or stock.get("net_income_ttm")
     )
-    m_score, m_note = score_momentum(stock.get("price_change_3m_pct"))
+    m_score, m_note = score_momentum(stock.get("price_change_3m_pct") or stock.get("change_3m"))
 
     total = v_score + p_score + h_score + q_score + m_score
     grade, signal = get_grade_and_signal(total)
     category = get_category(v_score, p_score, q_score, h_score)
 
     bd = ScoreBreakdown(
-        ticker=stock.get("ticker", ""),
-        company_name=stock.get("name_en", ""),
+        ticker=stock.get("ticker") or stock.get("symbol", ""),
+        company_name=stock.get("name_en") or stock.get("company_name", ""),
         sector=sector,
         valuation=v_score,        valuation_note=v_note,
         profitability=p_score,    profitability_note=p_note,
@@ -299,7 +354,7 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
         grade=grade,
         signal=signal,
         category=category,
-        current_price=stock.get("current_price", 0),
+        current_price=stock.get("current_price") or stock.get("last_price", 0),
         market_cap=stock.get("market_cap", 0),
     )
 

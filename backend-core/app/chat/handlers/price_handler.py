@@ -429,12 +429,75 @@ async def handle_stock_snapshot(
     """
     Handle STOCK_SNAPSHOT intent - comprehensive overview with analysis.
     """
+    from ..schemas import ChartType, ChartPayload
+    
     # Get premium price data (already includes stats)
     result = await handle_stock_price(conn, symbol, language)
     
     if not result.get('success'):
         return result
+        
+    # Get the sector from the data_card to fetch sector averages
+    data_card = result.get('data_card')
+    sector_name = None
+    if data_card and hasattr(data_card, 'get'):
+        sector_name = data_card.get('sector')
+    elif data_card and hasattr(data_card, 'sector'):
+        sector_name = data_card.sector
+        
+    # Attempt to fetch historical valuation data (P/E) for the stock
+    # If valuation_history is empty, fallback to simple price trend
+    historical_data = []
+    has_valuation_history = False
     
+    try:
+        # Fetch last 5 years of P/E valuation, grouped by quarter/year roughly
+        # We join with sector_averages if available
+        # Note: In a production DB, valuation_history should be populated.
+        val_rows = await conn.fetch("""
+            SELECT 
+                v.as_of_date,
+                v.pe_ratio,
+                s.avg_pe_ratio as sector_pe
+            FROM valuation_history v
+            LEFT JOIN sector_averages s ON s.sector = $2 AND s.as_of_date = v.as_of_date
+            WHERE v.symbol = $1
+              AND v.pe_ratio IS NOT NULL
+              AND v.as_of_date >= CURRENT_DATE - INTERVAL '5 years'
+            ORDER BY v.as_of_date ASC
+        """, symbol, sector_name)
+        
+        if val_rows and len(val_rows) > 0:
+            has_valuation_history = True
+            for r in val_rows:
+                pt = {"date": r['as_of_date'].isoformat(), "Stock P/E": float(r['pe_ratio'])}
+                if r['sector_pe'] is not None:
+                    pt["Sector Avg P/E"] = float(r['sector_pe'])
+                historical_data.append(pt)
+                
+    except Exception as e:
+        print(f"Error fetching valuation history: {e}")
+        
+    if has_valuation_history and len(historical_data) >= 2:
+        # Format for Recharts/ApexCharts Payload
+        chart_data = []
+        for row in historical_data:
+            chart_point = {"label": row["date"][:4]} # Year as label
+            chart_point["value"] = row["Stock P/E"]
+            if "Sector Avg P/E" in row:
+                chart_point["secondary_value"] = row["Sector Avg P/E"]
+            chart_data.append(chart_point)
+            
+        chart = ChartPayload(
+            type=ChartType.AREA, # Area matches the UI vibe better (fill opacity)
+            symbol=symbol,
+            title="Historical P/E vs Sector" if language == 'en' else "مكرر الربحية التاريخي مقارنة بالقطاع",
+            data=chart_data,
+            range="5Y"
+        )
+        # Convert to dict for uniform handling
+        result['chart'] = chart.dict() if hasattr(chart, 'dict') else chart.model_dump()
+        
     # Add additional analysis message
     heading = "🔬 Deep Analysis & Insights:" if language == 'en' else "🔬 تحليل وتوصيات:"
     if language == 'ar':
@@ -443,3 +506,4 @@ async def handle_stock_snapshot(
         result['message'] += f"\n\n{heading}\n• Click 'View Chart' for price history\n• Click 'Financials' for performance data"
     
     return result
+

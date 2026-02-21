@@ -2377,7 +2377,7 @@ class ChatService:
                     )
                     
                     # Update the conversational text with composed response
-                    conversational_text = full_response
+                    conversational_text = full_text
                     
                     # Track what we used for next time
                     if opening_category:
@@ -2776,7 +2776,7 @@ class ChatService:
                 
                 # 4. Compose Full Response
                 full_text, structured, _ = ResponseComposer.compose_premium_response(
-                    core_narrative=conversational_text,
+                    core_narrative=conversational_text or result_data.get('message', ''),
                     language=language,
                     intent=intent,
                     user_name=real_user_name,
@@ -3594,7 +3594,7 @@ class ChatService:
         if not structured_narrative:
             try:
                 full_response_text, structured_narrative, used_opening = ResponseComposer.compose_premium_response(
-                    core_narrative=final_message_text if force_direct_message else conversational_text,
+                    core_narrative=final_message_text if force_direct_message else (conversational_text or final_message_text),
                     language=language,
                     intent=intent,
                     user_name=context.user_name if context else "Analyst",
@@ -3611,7 +3611,7 @@ class ChatService:
                 )
             except Exception as comp_err:
                 print(f"⚠️ ResponseComposer failed (using raw narrative): {comp_err}")
-                full_response_text = final_message_text if force_direct_message else (conversational_text or (
+                full_response_text = final_message_text if force_direct_message else (conversational_text or final_message_text or (
                     "Here is the analysis based on the latest available data."
                     if language == 'en' else
                     "إليك التحليل بناءً على أحدث البيانات المتاحة."

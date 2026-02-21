@@ -142,13 +142,15 @@ class LLMExplainerService:
         data: List[Dict[str, Any]], 
         language: str = "en",
         user_name: str = "Analyst",
-        allow_greeting: bool = False, # CHANGED FROM is_first_message
+        allow_greeting: bool = False,
         is_returning_user: bool = False,
         # Phase 4: Personalization
         user_level: str = "INTERMEDIATE",
         context_memories: Optional[str] = None,
         # Phase 5: Tone Steering
-        market_stats: Optional[Dict[str, Any]] = None
+        market_stats: Optional[Dict[str, Any]] = None,
+        # CRITICAL FIX: Extra context dict injected by specific handlers (e.g. real revenue_growth)
+        extra_context: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         """
         Generates the 'Conversational Voice' (Narrative) layer.
@@ -173,6 +175,24 @@ class LLMExplainerService:
 
         # Build Data Context Summary
         context_str = self._format_data_for_context(data, language)
+
+        # CRITICAL FIX: If handler provided extra_context (e.g., real revenue growth computed
+        # from DB), inject it so the LLM uses the correct number instead of stale cache.
+        if extra_context:
+            extra_lines = ["\n[VERIFIED DATA - USE THESE NUMBERS EXACTLY, override any conflicting values from cards above:"]
+            if extra_context.get('latest_revenue_growth_pct') is not None:
+                pct = extra_context['latest_revenue_growth_pct']
+                trend = extra_context.get('trend', 'unknown')
+                extra_lines.append(f"  - Revenue Growth (YoY, most recent year): {pct:+.2f}% — trend: {trend}")
+            if extra_context.get('latest_revenue') is not None:
+                extra_lines.append(f"  - Latest Year Revenue: {extra_context['latest_revenue']:,.0f}")
+            if extra_context.get('prev_revenue') is not None:
+                extra_lines.append(f"  - Prior Year Revenue: {extra_context['prev_revenue']:,.0f}")
+            if extra_context.get('years_of_data'):
+                extra_lines.append(f"  - Years of historical revenue data: {extra_context['years_of_data']}")
+            extra_lines.append("]")
+            context_str = context_str + "\n".join(extra_lines)
+
         lang_instruction = "Arabic (Modern Standard)" if language == 'ar' else "English"
 
         # Phase 5: Determine Market Tone

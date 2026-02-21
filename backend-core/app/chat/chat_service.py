@@ -2091,7 +2091,10 @@ class ChatService:
                             # Strategy: We'll extract from 'cards' if present, or let Explainer default to NEUTRAL.
                             # IMPROVEMENT: We should ideally fetch EGX30 globally.
                             # For MVP: We will scan 'cards' for 'stock_header' of EGX30 or 'market_summary' type.
-                            market_stats=_extract_market_stats(cards)
+                            market_stats=_extract_market_stats(cards),
+                            # CRITICAL FIX: Pass real revenue growth context so LLM doesn't
+                            # rely on stale stock_statistics.revenue_growth that can be 0%.
+                            extra_context=result_data.get('revenue_growth_context')
                         )
 
                     # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)
@@ -3487,13 +3490,26 @@ class ChatService:
         used_opening = None
         
         # Convert cards to Card objects
+        # GLOBAL DEDUP GUARD: These card types must appear at most once per response.
+        # Some handlers call sub-handlers that each add a stock_header/snapshot card.
+        # This safety net prevents the user from seeing the same card twice.
+        _SINGLETON_CARD_TYPES = {'stock_header', 'snapshot', 'stats', 'valuation_score'}
+        _seen_card_types: set = set()
+
         cards = []
         for c in result.get('cards', []):
             try:
                 card_type = CardType(c.get('type', 'error'))
             except ValueError:
                 card_type = CardType.ERROR
-            
+
+            raw_type = c.get('type', '')
+            # Skip this card if it's a singleton type we've already added
+            if raw_type in _SINGLETON_CARD_TYPES:
+                if raw_type in _seen_card_types:
+                    continue  # deduplicated
+                _seen_card_types.add(raw_type)
+
             cards.append(Card(
                 type=card_type,
                 title=c.get('title'),

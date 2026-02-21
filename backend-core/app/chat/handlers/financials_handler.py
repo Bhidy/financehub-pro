@@ -758,7 +758,21 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
     
     # Fetch full financials package to include as a card
     explorer_result = await handle_financials_package(conn, symbol, 'annual', 10, language)
-    explorer_cards = explorer_result.get('cards', [])
+    # ── FIX: strip stock_header from explorer_cards to prevent duplicate ──
+    # handle_financials_package adds its own stock_header, but we already add one below.
+    explorer_cards = [
+        c for c in explorer_result.get('cards', [])
+        if c.get('type') != 'stock_header'
+    ]
+
+    # ── FIX: Compute REAL revenue growth from income_statements data ──
+    # stock_statistics.revenue_growth is often stale/zero; use actual chart_data.
+    latest_revenue_growth_pct = None
+    if len(chart_data) >= 2:
+        prev_rev = chart_data[-2]['revenue']
+        curr_rev = chart_data[-1]['revenue']
+        if prev_rev and prev_rev != 0:
+            latest_revenue_growth_pct = round(((curr_rev - prev_rev) / abs(prev_rev)) * 100, 2)
 
     if language == 'ar':
         message = f"📈 **اتجاه الإيرادات والأرباح لـ {name}** ({symbol})"
@@ -783,6 +797,19 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
     return {
         'success': True, 
         'message': message,
+        # ── revenue_growth_context: passed to LLM so it generates CORRECT insight ──
+        'revenue_growth_context': {
+            'symbol': symbol,
+            'latest_revenue_growth_pct': latest_revenue_growth_pct,
+            'latest_revenue': chart_data[-1]['revenue'] if chart_data else None,
+            'prev_revenue': chart_data[-2]['revenue'] if len(chart_data) >= 2 else None,
+            'years_of_data': len(chart_data),
+            'trend': (
+                'growing' if latest_revenue_growth_pct and latest_revenue_growth_pct > 5
+                else 'declining' if latest_revenue_growth_pct and latest_revenue_growth_pct < -5
+                else 'flat'
+            )
+        },
         'cards': [
             {
                 'type': 'stock_header',

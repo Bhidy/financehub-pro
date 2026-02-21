@@ -2771,6 +2771,8 @@ class ChatService:
                 detected_insight_input = thought_points[0] if thought_points else None
                 if deterministic_compare_insight:
                     detected_insight_input = deterministic_compare_insight
+                elif handler_key_insight: # CRITICAL FIX: Ensure handler's dynamic insight is passed to the composer
+                    detected_insight_input = handler_key_insight
                 
                 # 4. Compose Full Response
                 full_text, structured, _ = ResponseComposer.compose_premium_response(

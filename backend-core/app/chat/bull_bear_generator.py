@@ -11,7 +11,9 @@ from .schemas import InsightCard, InsightCardVariant, DataCard
 
 def generate_bull_bear_cases(
     stock_data: Dict[str, Any],
-    language: str = "en"
+    language: str = "en",
+    sector_avg_pe: float = None,
+    sector_avg_pb: float = None
 ) -> tuple[Optional[InsightCard], Optional[InsightCard]]:
     """
     Generate Bull Case and Bear Case insight cards from stock data.
@@ -19,6 +21,8 @@ def generate_bull_bear_cases(
     Args:
         stock_data: Stock fundamentals, ratios, and metrics
         language: "en" or "ar"
+        sector_avg_pe: Live sector P/E average from DB (preferred over hardcoded fallback)
+        sector_avg_pb: Live sector P/B average from DB
     
     Returns:
         Tuple of (bull_case, bear_case) InsightCards
@@ -28,20 +32,23 @@ def generate_bull_bear_cases(
     pe_ratio = stock_data.get('pe_ratio')
     pb_ratio = stock_data.get('pb_ratio')
     roe = stock_data.get('roe')
-    debt_to_equity = stock_data.get('debt_to_equity')
+    debt_to_equity = stock_data.get('debt_to_equity') or stock_data.get('debt_equity')
     dividend_yield = stock_data.get('dividend_yield')
     revenue_growth = stock_data.get('revenue_growth')
-    net_margin = stock_data.get('net_margin')
+    net_margin = stock_data.get('net_margin') or stock_data.get('profit_margin')
     market_cap = stock_data.get('market_cap')
-    sector = stock_data.get('sector', 'Unknown')
+    sector = stock_data.get('sector') or stock_data.get('sector_name') or 'Unknown'
     
-    # Sector averages (hardcoded - could be from DB)
-    SECTOR_PE = {
+    # Sector P/E: prefer live DB value, fallback to reasonable sector defaults
+    SECTOR_PE_FALLBACK = {
         'Banks': 7.0, 'Financial Services': 10.0, 'Food, Beverages & Tobacco': 14.0,
         'Real Estate': 12.0, 'Basic Resources': 8.0, 'Industrial Goods': 10.0,
+        'Health Care & Pharmaceuticals': 18.0, 'IT, Media & Communication Services': 20.0,
         'default': 12.0
     }
-    avg_pe = SECTOR_PE.get(sector, SECTOR_PE['default'])
+    # Always use live DB sector avg if available — never hardcode in production
+    avg_pe = sector_avg_pe if (sector_avg_pe and sector_avg_pe > 0) else SECTOR_PE_FALLBACK.get(sector, SECTOR_PE_FALLBACK['default'])
+    avg_pb = sector_avg_pb if (sector_avg_pb and sector_avg_pb > 0) else None
     
     # Build Bull Case items
     bull_items = []

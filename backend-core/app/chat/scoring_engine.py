@@ -332,7 +332,7 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
     de_val = stock.get("debt_to_equity") or stock.get("debt_equity")
     h_score, h_note = score_financial_health(de_val, sector)
     q_score, q_note = score_earnings_quality(
-        stock.get("operating_cash_flow") or stock.get("operating_cashflow"),
+        stock.get("operating_cash_flow") or stock.get("ocf_ttm") or stock.get("operating_cashflow"),
         stock.get("net_income") or stock.get("net_income_ttm")
     )
     m_score, m_note = score_momentum(stock.get("price_change_3m_pct") or stock.get("change_3m"))

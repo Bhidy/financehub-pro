@@ -1295,6 +1295,7 @@ export function DeepValuationCard({ data, language = "en" }: DeepValuationProps 
             {/* Horizontal Bar Chart */}
             <div className="space-y-3 mb-4">
                 {Object.entries(multiples).slice(0, 6).map(([key, val]) => {
+                    if (val === null || val === undefined || (val as any) === "N/A") return null;
                     const numVal = typeof val === "number" ? val : Number(val);
                     if (!Number.isFinite(numVal)) return null;
 

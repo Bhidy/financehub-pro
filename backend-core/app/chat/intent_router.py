@@ -361,10 +361,16 @@ THRESHOLD_PATTERN = re.compile(
     re.IGNORECASE
 )
 
-# Compare patterns (e.g., "COMI vs SWDY")
-# Robust pattern that handles "vs", "versus", "and" with word boundaries
-COMPARE_PATTERN = re.compile(
-    r'\b([A-Z0-9.\-\u0600-\u06FF]+)\s+(?:vs?|versus|and|و|مع|مقابل)\s+([A-Z0-9.\-\u0600-\u06FF]+)\b',
+# Compare patterns
+# Strict pattern uses explicit comparison words
+COMPARE_STRICT_PATTERN = re.compile(
+    r'\b([A-Z0-9.\-\u0600-\u06FF]+)\s+(?:vs?|versus|مقابل)\s+([A-Z0-9.\-\u0600-\u06FF]+)\b',
+    re.IGNORECASE
+)
+
+# Loose pattern uses "and" but will require context
+COMPARE_LOOSE_PATTERN = re.compile(
+    r'\b([A-Z0-9.\-\u0600-\u06FF]+)\s+(?:and|و|مع)\s+([A-Z0-9.\-\u0600-\u06FF]+)\b',
     re.IGNORECASE
 )
 
@@ -764,12 +770,19 @@ class IntentRouter:
             entities['condition'] = 'below'
         
         # Extract compare symbols
-        compare_match = COMPARE_PATTERN.search(text)
+        compare_match = COMPARE_STRICT_PATTERN.search(text)
         if compare_match:
             entities['compare_symbols'] = [
                 compare_match.group(1).upper(),
                 compare_match.group(2).upper()
             ]
+        elif any(w in text.lower() for w in ['compare', 'comparison', 'قارن', 'مقارنة', 'مقارنه']):
+            compare_match = COMPARE_LOOSE_PATTERN.search(text)
+            if compare_match:
+                entities['compare_symbols'] = [
+                    compare_match.group(1).upper(),
+                    compare_match.group(2).upper()
+                ]
         
         # Extract statement type
         if any(kw in text.lower() for kw in ['income', 'revenue', 'الدخل', 'الايرادات']):

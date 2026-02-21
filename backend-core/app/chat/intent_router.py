@@ -543,7 +543,7 @@ class IntentRouter:
                  missing_fields=[]
              )
         
-        if "financials" in merged_text or "income statement" in merged_text or "balance sheet" in merged_text:
+        if ("financials" in merged_text and "health" not in merged_text) or "income statement" in merged_text or "balance sheet" in merged_text:
              # Basic financials override if not caught by annual
              return IntentResult(
                  intent=Intent.FINANCIALS,

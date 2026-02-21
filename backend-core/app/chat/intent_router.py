@@ -588,7 +588,16 @@ class IntentRouter:
              # But sector map is robust.
              return IntentResult(intent=Intent.SECTOR_STOCKS, confidence=0.95, entities=entities, missing_fields=[])
 
-        # 4. Financial Health Overrides
+        # 4. Deep Safety / Risk Overrides (Takes precedence over generic health)
+        if any(w in merged_text for w in ["npl", "default", "risk", "safe", "bankruptcy", "solvency"]):
+             return IntentResult(
+                intent=Intent.DEEP_SAFETY,
+                confidence=1.0,
+                entities=entities,
+                missing_fields=[]
+            )
+
+        # 4.5 Financial Health Overrides
         if "financial health" in merged_text or "health" in merged_text:
              return IntentResult(
                 intent=Intent.FINANCIAL_HEALTH,

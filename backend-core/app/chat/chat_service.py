@@ -2356,6 +2356,9 @@ class ChatService:
                     if is_context_switch:
                         force_human_opening = True
 
+                    # Generate sentiment safely
+                    sentiment = result_data.get('meta', {}).get('sentiment', 'neutral') if isinstance(result_data, dict) else 'neutral'
+
                     # 4. Compose Full Response
                     full_text, structured, opening_category = ResponseComposer.compose_premium_response(
                         core_narrative=conversational_text,

@@ -42,6 +42,31 @@ def _sector_label(sector_name: Optional[str], language: str = "en") -> str:
     return sector_name
 
 
+
+def _build_gem_actions(gems: list, language: str = "en") -> list:
+    """
+    Build stock-specific follow-up action buttons using the top hidden gems found.
+    'ticker' key is used in gems (not 'symbol').
+    """
+    if not gems:
+        return []
+    sym1 = gems[0].get('ticker', '')
+    sym2 = gems[1].get('ticker', sym1) if len(gems) > 1 else sym1
+
+    if language == 'ar':
+        return [
+            {'label': f'📊 تحليل {sym1}', 'label_ar': f'📊 تحليل {sym1}', 'action_type': 'query', 'payload': f'حلل لي سهم {sym1} بالتفصيل'},
+            {'label': f'🛡️ مخاطر {sym1}', 'label_ar': f'🛡️ مخاطر {sym1}', 'action_type': 'query', 'payload': f'ما مدى أمان سهم {sym1}'},
+            {'label': f'⚖️ قارن {sym1} و{sym2}', 'label_ar': f'⚖️ قارن {sym1} و{sym2}', 'action_type': 'query', 'payload': f'قارن {sym1} و{sym2}'},
+        ]
+    else:
+        return [
+            {'label': f'📊 Analyze {sym1}', 'label_ar': f'📊 تحليل {sym1}', 'action_type': 'query', 'payload': f'Give me a full snapshot of {sym1}'},
+            {'label': f'🛡️ {sym1} Risk Check', 'label_ar': f'🛡️ مخاطر {sym1}', 'action_type': 'query', 'payload': f'How safe is {sym1}? Check debt, Altman Z-Score and risk'},
+            {'label': f'⚖️ Compare {sym1} vs {sym2}', 'label_ar': f'⚖️ قارن {sym1} مع {sym2}', 'action_type': 'query', 'payload': f'Compare {sym1} vs {sym2}'},
+        ]
+
+
 async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -> Dict[str, Any]:
     """
     Handle HIDDEN_GEMS intent - Discovery of undervalued stocks
@@ -356,7 +381,9 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 "title": "Discovery Analysis" if language == "en" else "تحليل فرص خفية",
                 "text": "Hidden gems carry higher risk due to lower liquidity and limited information. This is for educational purposes only." if language == "en" else "الأسهم الخفية غالباً أعلى مخاطرة بسبب انخفاض السيولة وقلة التغطية. هذا تحليل تعليمي فقط.",
                 "variant": "warning"
-            }
+            },
+            # Stock-specific follow-up actions based on the top gems found
+            "actions": _build_gem_actions(gems, language)
         }
         
     except Exception as e:

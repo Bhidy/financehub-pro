@@ -77,7 +77,15 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             t.pe_ratio,
             t.pb_ratio,
             t.dividend_yield,
-            ss.*,
+            ss.roe,
+            ss.profit_margin,
+            ss.gross_margin,
+            ss.operating_margin,
+            ss.revenue_growth,
+            ss.debt_equity,
+            ss.current_ratio,
+            ss.net_income_ttm,
+            ss.operating_cashflow,
             sa.avg_pb,
             sa.avg_pe,
             CASE 
@@ -95,8 +103,13 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
         WHERE t.market_code = 'EGX'
           AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
-          AND (t.pe_ratio > 0 OR t.pb_ratio > 0)
-        
+          AND (
+                (t.pe_ratio > 0 AND t.pe_ratio <= 30)  -- Cap excessive P/E (not a gem at 37x P/E)
+             OR (t.pb_ratio > 0 AND t.pb_ratio <= 3.0) -- Cap excessive P/B
+          )
+          AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
+          AND COALESCE(t.name_en, '') NOT ILIKE '%fund%'
+          AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
         """
         
         rows = await conn.fetch(query)
@@ -110,39 +123,58 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 if v is not None and abs(v) <= 1.0:
                     metrics[k] = v * 100
             
-            score_res = calculate_score(metrics, {})
-            # Criteria for hidden gems: good total score + good quality + discount
-            if score_res.total >= 50 and (row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15 or getattr(score_res, 'profitability', 0) > 10):
+            # CRITICAL FIX: Pass real sector averages so scores are not all identical (36)
+            hist_avg = {
+                "pe_5yr_avg": row.get("avg_pe"),
+                "pb_5yr_avg": row.get("avg_pb"),
+            }
+            score_res = calculate_score(metrics, hist_avg)
+            # Criteria for hidden gems: meaningful score + valuation discount
+            if score_res.total >= 45 and (row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15 or getattr(score_res, 'profitability', 0) > 10):
                 scored_rows.append((score_res, dict(row)))
 
         scored_rows.sort(key=lambda x: x[0].total, reverse=True)
         top_candidates = scored_rows[:5]
         
         if not top_candidates:
-            # Fallback to zero-data fallback
+            # Fallback: broader search with relaxed criteria, still capped on valuation
             fallback_query = """
+            WITH sector_averages AS (
+                SELECT sector_name, AVG(NULLIF(pe_ratio, 0)) as avg_pe, AVG(NULLIF(pb_ratio, 0)) as avg_pb
+                FROM market_tickers
+                WHERE market_code = 'EGX' AND sector_name IS NOT NULL
+                GROUP BY sector_name
+            )
             SELECT 
-                symbol,
-                name_en,
-                market_cap,
-                sector_name,
-                pe_ratio,
-                pb_ratio,
-                logo_url,
-                NULL::numeric as roe,
-                NULL::numeric as profit_margin,
-                0::numeric as pb_discount,
-                0::numeric as pe_discount
-            FROM market_tickers
-            WHERE market_code = 'EGX'
-              AND market_cap > 100000000
-              AND (pb_ratio > 0 OR pe_ratio > 0)
-            ORDER BY pb_ratio ASC NULLS LAST
+                t.symbol, t.name_en, t.name_ar, t.sector_name,
+                t.market_cap, t.logo_url, t.pe_ratio, t.pb_ratio, t.dividend_yield,
+                ss.roe, ss.profit_margin,
+                ss.debt_equity, ss.net_income_ttm, ss.operating_cashflow,
+                sa.avg_pe, sa.avg_pb,
+                0::numeric as pb_discount, 0::numeric as pe_discount
+            FROM market_tickers t
+            LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+            LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
+            WHERE t.market_code = 'EGX'
+              AND t.market_cap > 100000000
+              AND (t.pb_ratio > 0 OR t.pe_ratio > 0)
+              AND (t.pe_ratio IS NULL OR t.pe_ratio <= 30)
+              AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
+            ORDER BY t.pb_ratio ASC NULLS LAST
             LIMIT 5
             """
             fallback_rows = await conn.fetch(fallback_query)
             for row in fallback_rows:
-                score_res = calculate_score(dict(row), {})
+                metrics = dict(row)
+                for k in ['roe', 'profit_margin']:
+                    v = metrics.get(k)
+                    if v is not None and abs(v) <= 1.0:
+                        metrics[k] = v * 100
+                hist_avg = {
+                    "pe_5yr_avg": row.get("avg_pe"),
+                    "pb_5yr_avg": row.get("avg_pb"),
+                }
+                score_res = calculate_score(metrics, hist_avg)
                 top_candidates.append((score_res, dict(row)))
         
         # Build gem list
@@ -219,9 +251,10 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 "badge": "Top Pick" if language == "en" and idx == 0 else ("الأفضل" if language == "ar" and idx == 0 else None),
                 "logo_url": row.get('logo_url'),
                 "metrics": {
-                    ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb else ("N/A" if language == "en" else "غير متاح"),
-                    ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe else ("N/A" if language == "en" else "غير متاح"),
-                    ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe else ("N/A" if language == "en" else "غير متاح"),
+                    # Use 'is not None' check — avoids hiding real 0 values
+                    ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb is not None and pb > 0 else ("N/A" if language == "en" else "غير متاح"),
+                    ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe is not None and pe > 0 else ("N/A" if language == "en" else "غير متاح"),
+                    ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe is not None and roe != 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("Cap" if language == "en" else "القيمة السوقية"): _format_number(market_cap, language=language)
                 },
                 "mini_scores": {
@@ -884,15 +917,18 @@ async def handle_undervalued_stocks(
           AND t.last_price IS NOT NULL
           AND ($1::text IS NULL OR t.sector_name ILIKE $1)
           AND (
-                (t.pe_ratio > 0 AND sa.avg_pe IS NOT NULL)
-             OR (t.pb_ratio > 0 AND sa.avg_pb IS NOT NULL)
+                (t.pe_ratio > 0 AND t.pe_ratio <= 40 AND sa.avg_pe IS NOT NULL)
+             OR (t.pb_ratio > 0 AND t.pb_ratio <= 4.0 AND sa.avg_pb IS NOT NULL)
           )
-        LIMIT $2
+          AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
+          AND COALESCE(t.name_en, '') NOT ILIKE '%fund%'
+          AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
+        LIMIT 80
         """
 
         sector_param = f"%{sector_filter}%" if sector_filter else None
-        # We need to fetch all candidates and calculate their score using scoring_engine
-        rows = await conn.fetch(query, sector_param, limit)
+        # Fetch a larger candidate pool, then score-rank to get best results
+        rows = await conn.fetch(query, sector_param)
 
         scored_rows = []
         for row in rows:

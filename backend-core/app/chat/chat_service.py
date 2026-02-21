@@ -2096,7 +2096,10 @@ class ChatService:
                             market_stats=_extract_market_stats(cards),
                             # CRITICAL FIX: Pass real revenue growth context so LLM doesn't
                             # rely on stale stock_statistics.revenue_growth that can be 0%.
-                            extra_context=result_data.get('revenue_growth_context')
+                            extra_context=result_data.get('revenue_growth_context'),
+                            # ROBUST FIX: Tell LLM which stock is active so it embeds
+                            # the ticker naturally in every follow-up question it generates.
+                            active_symbol=actual_symbol
                         )
 
                     # DEBUG LOGGER (TEMPORARY - FOR DIAGNOSIS)

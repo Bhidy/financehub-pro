@@ -3434,6 +3434,12 @@ class ChatService:
              from .handlers.extended_scenarios import handle_macro_view
              return await handle_macro_view(self.conn, language)
 
+        elif intent == Intent.SCORE_BREAKDOWN:
+             from .handlers.score_handler import handle_score_breakdown
+             if not symbol:
+                 return handle_clarify_symbol(language=language)
+             return await handle_score_breakdown(self.conn, symbol, market_code or 'EGX', language)
+
         else:
             return handle_unknown(language)
     

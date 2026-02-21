@@ -275,6 +275,19 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "هل اشتري الان", "السوق غالي", "السوق رخيص", "فرصة شراء"],
         3.5
     ),
+
+    Intent.SCORE_BREAKDOWN: (
+        # Matches: "show me inside the COMI score", "COMI score breakdown", "score for MICH",
+        # "what is the Starta score", "inside the score", "break down the score", "scoring of X"
+        ["inside the score", "show me the score", "score breakdown", "break down the score",
+         "stock score", "starta score", "detailed score", "score components", "score analysis",
+         "scoring", "what is the score", "explain the score", "score details", "see the score",
+         "inside score", "score for", "score of", "grade breakdown", "investment score",
+         "quality score", "rank breakdown"],
+        ["الدرجة", "تفاصيل الدرجة", "درجة التقييم", "تفاصيل تقييم", "العلامة",
+         "شرح الدرجة", "داخل الدرجة", "درجة ستارتا", "تحليل الدرجة", "مؤشر الجودة"],
+        3.5
+    ),
     
     Intent.INDEX_COMPOSITION: (
         ["egx 30", "egx30", "index composition", "index constituents", "index stocks", 

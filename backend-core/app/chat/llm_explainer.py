@@ -150,7 +150,9 @@ class LLMExplainerService:
         # Phase 5: Tone Steering
         market_stats: Optional[Dict[str, Any]] = None,
         # CRITICAL FIX: Extra context dict injected by specific handlers (e.g. real revenue_growth)
-        extra_context: Optional[Dict[str, Any]] = None
+        extra_context: Optional[Dict[str, Any]] = None,
+        # ROBUST FIX: Active stock symbol so LLM embeds it in follow-up questions naturally
+        active_symbol: Optional[str] = None
     ) -> Optional[str]:
         """
         Generates the 'Conversational Voice' (Narrative) layer.
@@ -344,7 +346,12 @@ class LLMExplainerService:
         f"سياق الجلسة\n"
         f"═══════════════════════════════════════════════════════════════\n"
         f"المستخدم: {user_name}\n"
-        f"البيانات: {card_context}\n\n"
+        + (f"السهم النشط: {active_symbol}\n"
+           f"⚠️ قاعدة صياغة الأسئلة: كل سؤال متابعة مرقّم يجب أن يتضمن رمز السهم '{active_symbol}' بشكل طبيعي داخل نص السؤال.\n"
+           f"   صحيح: 'ما الذي يقود نمو إيرادات {active_symbol} بنسبة 96.17%؟'\n"
+           f"   خطأ: 'ما الذي يقود نمو الإيرادات؟ {active_symbol}' (لا تضف الرمز في النهاية فقط)\n"
+           if active_symbol else "")
+        + f"البيانات: {card_context}\n\n"
         f"═══════════════════════════════════════════════════════════════\n"
         f"🛑 ANTI-HALLUCINATION RULES (CRITICAL) 🛑\n"
         f"═══════════════════════════════════════════════════════════════\n"
@@ -472,7 +479,14 @@ class LLMExplainerService:
                 f"User: {user_name} ({user_level} Investor)\n"
                 f"Greeting: {'REQUIRED' if allow_greeting else 'SKIP (Start Analysis Immediately)'}\n"
                 f"Past Interactions (Memory): {context_memories if context_memories else 'None'}\n"
-                f"Data Context: {card_context}\n\n"
+                + (f"Active Stock: {active_symbol}\n"
+                   f"⚠️ FOLLOW-UP QUESTIONS RULE: Every numbered follow-up question you write MUST\n"
+                   f"   naturally embed the ticker symbol '{active_symbol}' inside the question sentence.\n"
+                   f"   CORRECT: \"What's driving {active_symbol}'s 96.17% YoY revenue growth?\"\n"
+                   f"   WRONG: \"What's driving the revenue growth?\" (no stock name)\n"
+                   f"   WRONG: \"What's driving the revenue growth? {active_symbol}\" (appended, not embedded)\n"
+                   if active_symbol else "Active Stock: Not specified\n")
+                + f"Data Context: {card_context}\n\n"
                 f"IMPORTANT: You MUST include the [LEARNING] section at the end. It is required for the UI.\n"
                 f"BEGIN RESPONSE IN **{lang_name.upper()}**."
             )

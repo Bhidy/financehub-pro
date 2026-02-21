@@ -2403,7 +2403,7 @@ class ChatService:
             history.append({'role': 'assistant', 'content': '...'})
             
             self.context_store.set(session_id, 
-                last_symbol=actual_symbol,
+                last_symbol=actual_symbol if actual_symbol else context_dict.get('last_symbol'),
                 last_intent=intent,
                 last_market=entities.get('market_code', last_market)
             )

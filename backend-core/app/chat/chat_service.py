@@ -3495,13 +3495,28 @@ class ChatService:
             ))
         
         # Convert actions to Action objects
+        # CRITICAL FIX: Inject active symbol into action payloads to prevent context loss
+        # When a user clicks a follow-up button like "Analyze ROE", it becomes "Analyze ROE MICH"
+        # so the chatbot knows which stock to analyze without relying on session context alone.
+        _active_symbol_for_actions = entities.get('symbol')
         actions = []
         for a in result.get('actions', []):
+            raw_payload = a.get('payload', '')
+            if _active_symbol_for_actions and raw_payload and a.get('action_type', 'query') == 'query':
+                # Only inject symbol if the payload doesn't already reference a stock ticker
+                # (avoid duplicating: "Compare MICH MICH" or "Show market MICH")
+                payload_upper = raw_payload.upper()
+                already_has_symbol = _active_symbol_for_actions.upper() in payload_upper
+                # Heuristic: if payload has ANY all-caps 2-5 letter word it likely has a ticker
+                import re as _re
+                has_any_ticker = bool(_re.search(r'\b[A-Z]{2,5}\b', raw_payload))
+                if not already_has_symbol and not has_any_ticker:
+                    raw_payload = f"{raw_payload} {_active_symbol_for_actions}"
             actions.append(Action(
                 label=a.get('label', ''),
                 label_ar=a.get('label_ar'),
                 action_type=a.get('action_type', 'query'),
-                payload=a.get('payload', '')
+                payload=raw_payload
             ))
         
         # Build chart payload if present

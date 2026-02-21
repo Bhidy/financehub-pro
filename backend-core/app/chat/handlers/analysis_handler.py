@@ -86,23 +86,25 @@ async def handle_financial_health(conn: asyncpg.Connection, symbol: str, languag
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol = $1", symbol)
     if not ticker: return {'success': False, 'message': "Not found"}
 
-    # Fetch latest Extended Ratios
-    row = await conn.fetchrow("""
-        SELECT * FROM financial_ratios_history
-        WHERE symbol = $1 AND period_type = 'annual'
-        ORDER BY fiscal_year DESC LIMIT 1
+    # PRIMARY: stock_statistics (TTM) -- always current, never stale annual
+    stats_row = await conn.fetchrow("""
+        SELECT debt_equity, current_ratio, interest_coverage, roe, roa, profit_margin,
+               altman_z_score, piotroski_f_score, quick_ratio
+        FROM stock_statistics WHERE symbol = $1
     """, symbol)
     
-    # Fallback to stock_statistics if history is empty
-    stats_row = None
-    if not row:
-        stats_row = await conn.fetchrow("""
-            SELECT * FROM stock_statistics WHERE symbol = $1
+    # FALLBACK: financial_ratios_history (only if stock_statistics is missing)
+    row = None
+    if not stats_row:
+        row = await conn.fetchrow("""
+            SELECT * FROM financial_ratios_history
+            WHERE symbol = $1 AND period_type = 'annual'
+            ORDER BY fiscal_year DESC LIMIT 1
         """, symbol)
 
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
 
-    if not row and not stats_row:
+    if not stats_row and not row:
          return {
             'success': True,
             'message': f"No detailed health metrics available for {name}." if language == 'en' else f"لا توجد مقاييس صحة مالية مفصلة لـ {name}.",
@@ -110,35 +112,36 @@ async def handle_financial_health(conn: asyncpg.Connection, symbol: str, languag
         }
 
     data = {}
-    if row:
-        r_stats = dict(row)
+    if stats_row:
+        s = dict(stats_row)
         data = {
-            'debt_equity': float(r_stats['debt_equity']) if r_stats.get('debt_equity') is not None else None,
-            'current_ratio': float(r_stats['current_ratio']) if r_stats.get('current_ratio') is not None else None,
-            'interest_cov': float(r_stats['interest_coverage']) if r_stats.get('interest_coverage') is not None else None,
-            'roe': float(r_stats['roe']) if r_stats.get('roe') is not None else None,
-            'roa': float(r_stats['roa']) if r_stats.get('roa') is not None else None,
-            'net_margin': float(r_stats['net_margin']) if r_stats.get('net_margin') is not None else None,
+            'debt_equity': float(s['debt_equity']) if s.get('debt_equity') is not None else None,
+            'current_ratio': float(s['current_ratio']) if s.get('current_ratio') is not None else None,
+            'interest_cov': float(s['interest_coverage']) if s.get('interest_coverage') is not None else None,
+            'roe': float(s['roe'] * 100) if s.get('roe') is not None else None,
+            'roa': float(s['roa'] * 100) if s.get('roa') is not None else None,
+            'net_margin': float(s['profit_margin'] * 100) if s.get('profit_margin') is not None else None,
+            'altman_z_score': float(s['altman_z_score']) if s.get('altman_z_score') is not None else None,
+            'piotroski_f_score': float(s['piotroski_f_score']) if s.get('piotroski_f_score') is not None else None,
         }
-    elif stats_row:
-        s_stats = dict(stats_row)
-        # Map stock_statistics columns to health data
+    elif row:
+        r = dict(row)
         data = {
-            'debt_equity': float(s_stats['debt_equity']) if s_stats.get('debt_equity') is not None else None,
-            'current_ratio': float(s_stats['current_ratio']) if s_stats.get('current_ratio') is not None else None,
-            'interest_cov': float(s_stats['interest_coverage']) if s_stats.get('interest_coverage') is not None else None,
-            'roe': float(s_stats['roe']) if s_stats.get('roe') is not None else None,
-            'roa': float(s_stats['roa']) if s_stats.get('roa') is not None else None,
-            'net_margin': float(s_stats['profit_margin']) if s_stats.get('profit_margin') is not None else None,
+            'debt_equity': float(r['debt_equity']) if r.get('debt_equity') is not None else None,
+            'current_ratio': float(r['current_ratio']) if r.get('current_ratio') is not None else None,
+            'interest_cov': float(r['interest_coverage']) if r.get('interest_coverage') is not None else None,
+            'roe': float(r['roe']) if r.get('roe') is not None else None,
+            'roa': float(r['roa']) if r.get('roa') is not None else None,
+            'net_margin': float(r['net_margin']) if r.get('net_margin') is not None else None,
         }
 
-    msg = f"🏥 **Financial Health Report: {name}**" if language == 'en' else f"🏥 **تقرير الصحة المالية: {name}**"
+    msg = f"🏥 **Financial Health Report: {name}** (TTM)" if language == 'en' else f"🏥 **تقرير الصحة المالية: {name}** (أحدث اثني عشر شهراً)"
 
     return {
         'success': True,
         'message': msg,
         'cards': [
-             {'type': 'ratios', 'title': 'Key Health Metrics', 'data': data}
+             {'type': 'ratios', 'title': 'Key Health Metrics (TTM)', 'data': data}
         ],
         'actions': [
             {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'},
@@ -177,11 +180,13 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
             'upside': float(r['upside_percent']) if r['upside_percent'] is not None else 0.0
         })
     
-    # Also fetch standard valuation ratios
+    # Also fetch standard valuation ratios from live sources (TTM)
     ratios = await conn.fetchrow("""
-        SELECT pe_ratio, pb_ratio, ev_ebitda 
-        FROM financial_ratios_history 
-        WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 1
+        SELECT mt.pe_ratio, COALESCE(mt.pb_ratio, ss.pb_ratio) as pb_ratio,
+               ss.ev_ebitda
+        FROM market_tickers mt
+        LEFT JOIN stock_statistics ss ON mt.symbol = ss.symbol AND mt.market_code = ss.market_code
+        WHERE mt.symbol = $1
     """, symbol)
 
     val_data = {

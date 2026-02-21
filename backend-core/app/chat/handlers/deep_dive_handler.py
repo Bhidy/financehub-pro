@@ -33,19 +33,15 @@ async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str,
     name = row['name_ar'] if lang == 'ar' and row['name_ar'] else row['name_en']
     currency = row['currency']
     
-    
-    # 2. Fetch Robust Ratios from History (if available) - Fallback/Primary Source
-    ratios = await conn.fetchrow("""
-        SELECT current_ratio, quick_ratio, debt_equity
-        FROM financial_ratios_history
-        WHERE symbol = $1 AND period_type = 'annual'
-        ORDER BY fiscal_year DESC LIMIT 1
-    """, symbol)
-    
-    # 3. Logic: Interpret Z-Score
+
+    # All ratios come from stock_statistics (TTM) — no annual history needed
     z_score = float(row['altman_z_score']) if row['altman_z_score'] is not None else None
     f_score = int(row['piotroski_f_score']) if row['piotroski_f_score'] is not None else None
-    
+    current_ratio = float(row['current_ratio']) if row['current_ratio'] else None
+    quick_ratio = float(row['quick_ratio']) if row['quick_ratio'] else None
+    int_cov = row['interest_coverage']
+    debt_ebitda = row['debt_ebitda']
+
     safety_status = "Unknown"
     if z_score is not None:
         if z_score > 2.99:
@@ -65,12 +61,6 @@ async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str,
         msg = f"🛡️ **تحليل المخاطر لـ {symbol}**\n\n"
         msg += f"**مؤشر ألتمان**: {z_score if z_score is not None else 'N/A'} ({safety_status})\n"
         msg += f"**مؤشر بيوتروسكي**: {f_score if f_score is not None else 'N/A'}/9\n"
-
-    # Merge Data sources
-    current_ratio = float(ratios['current_ratio']) if ratios and ratios['current_ratio'] else (row['current_ratio'] or None)
-    quick_ratio = float(ratios['quick_ratio']) if ratios and ratios['quick_ratio'] else (row['quick_ratio'] or None)
-    int_cov = row['interest_coverage'] # Only in stock_statistics
-    debt_ebitda = row['debt_ebitda'] # Only in stock_statistics
 
     # 4. Ultra Premium Card
     card = Card(
@@ -201,19 +191,12 @@ async def handle_deep_efficiency(conn: asyncpg.Connection, symbol: str, market: 
         return ChatResponse(message_text="Data not found.", meta={'intent': 'UNKNOWN', 'confidence': 1.0})
         
     name = row['name_ar'] if lang == 'ar' and row['name_ar'] else row['name_en']
-    # Fetch Supplementary Ratios
-    ratios = await conn.fetchrow("""
-        SELECT roe, roa, roic, asset_turnover, inventory_turnover
-        FROM financial_ratios_history
-        WHERE symbol = $1 AND period_type = 'annual'
-        ORDER BY fiscal_year DESC LIMIT 1
-    """, symbol)
-
+    # All efficiency ratios come from stock_statistics (TTM) directly
     roce = float(row['roce']) if row['roce'] is not None else None
-    roe = float(ratios['roe']) if ratios and ratios['roe'] else (row['roe'] or None)
-    roic = float(ratios['roic']) if ratios and ratios['roic'] else (row['roic'] or None)
-    asset_to = ratios['asset_turnover'] if ratios and ratios['asset_turnover'] else (row['asset_turnover'] or None)
-    inv_to = ratios['inventory_turnover'] if ratios and ratios['inventory_turnover'] else (row['inventory_turnover'] or None)
+    roe = float(row['roe']) if row['roe'] else None
+    roic = float(row['roic']) if row['roic'] else None
+    asset_to = row['asset_turnover'] if row['asset_turnover'] else None
+    inv_to = row['inventory_turnover'] if row['inventory_turnover'] else None
 
     msg = f"⚡ **Efficiency Engine: {symbol}**\n\n"
     if lang == 'en':
@@ -272,21 +255,9 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
     currency = row['currency']
     
     
-    # Fetch Supplementary Ratios
-    ratios = await conn.fetchrow("""
-        SELECT revenue_growth, net_income_growth
-        FROM financial_ratios_history
-        WHERE symbol = $1 AND period_type = 'annual'
-        ORDER BY fiscal_year DESC LIMIT 1
-    """, symbol)
-
+    # Revenue and profit growth: TTM stock_statistics only (no annual fallback)
     rev_growth = float(row['revenue_growth']) if row['revenue_growth'] is not None else None
-    if rev_growth is None and ratios:
-         rev_growth = float(ratios['revenue_growth']) if ratios['revenue_growth'] else None
-    
     prof_growth = float(row['profit_growth']) if row['profit_growth'] is not None else None
-    if prof_growth is None and ratios:
-         prof_growth = float(ratios['net_income_growth']) if ratios['net_income_growth'] else None
 
     reg_peg = float(row['peg_ratio']) if row['peg_ratio'] is not None else None
 

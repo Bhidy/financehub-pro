@@ -60,15 +60,27 @@ async def handle_stock_price(
             COALESCE(m.high, o.high) as high,
             COALESCE(m.low, o.low) as low,
             COALESCE(m.prev_close, LAG(o.close) OVER (ORDER BY o.date), o.close) as prev_close,
-            m.pe_ratio, m.pb_ratio, m.dividend_yield, m.market_cap,
-            m.high_52w, m.low_52w, m.sector_name,
+            m.pe_ratio,
+            COALESCE(m.pb_ratio, ss.pb_ratio) AS pb_ratio,
+            COALESCE(m.dividend_yield, ss.dividend_yield) AS dividend_yield,
+            m.market_cap, m.high_52w, m.low_52w, m.sector_name,
             m.last_updated, m.logo_url,
             o.date as ohlc_date,
-            ss.roe, ss.debt_equity, ss.profit_margin
+            ss.roe, ss.debt_equity, ss.profit_margin, ss.gross_margin, ss.revenue_growth,
+            -- Live sector avg PE/PB for scoring context
+            sa.avg_sector_pe, sa.avg_sector_pb
         FROM market_tickers m
         LEFT JOIN ohlc_data o ON m.symbol = o.symbol 
             AND o.date = (SELECT MAX(date) FROM ohlc_data WHERE symbol = m.symbol)
-        LEFT JOIN stock_statistics ss ON m.symbol = ss.symbol
+        LEFT JOIN stock_statistics ss ON m.symbol = ss.symbol AND m.market_code = ss.market_code
+        LEFT JOIN LATERAL (
+            SELECT
+                AVG(m2.pe_ratio) FILTER (WHERE m2.pe_ratio > 0 AND m2.pe_ratio < 100) AS avg_sector_pe,
+                AVG(COALESCE(m2.pb_ratio, s2.pb_ratio)) FILTER (WHERE COALESCE(m2.pb_ratio, s2.pb_ratio) > 0) AS avg_sector_pb
+            FROM market_tickers m2
+            LEFT JOIN stock_statistics s2 ON m2.symbol = s2.symbol AND m2.market_code = s2.market_code
+            WHERE m2.sector_name = m.sector_name AND m2.market_code = 'EGX'
+        ) sa ON true
         WHERE m.symbol = $1
     """, symbol)
     
@@ -97,18 +109,23 @@ async def handle_stock_price(
     low = float(data['low']) if data['low'] is not None else None
     prev_close = float(data['prev_close']) if data['prev_close'] is not None else None
     
-    # Ratios (already handled correctly, but ensuring consistency)
-    pe_ratio = float(data['pe_ratio']) if data['pe_ratio'] else None
-    pb_ratio = float(data['pb_ratio']) if data['pb_ratio'] else None
-    dividend_yield = float(data['dividend_yield']) if data['dividend_yield'] else None
+    # Ratios — explicit is not None and > 0 checks to prevent hiding real values
+    pe_ratio = float(data['pe_ratio']) if data['pe_ratio'] is not None and data['pe_ratio'] > 0 else None
+    pb_ratio = float(data['pb_ratio']) if data['pb_ratio'] is not None and data['pb_ratio'] > 0 else None
+    dividend_yield = float(data['dividend_yield']) if data['dividend_yield'] is not None and data['dividend_yield'] > 0 else None
     market_cap = int(data['market_cap']) if data['market_cap'] else None
     high_52w = float(data['high_52w']) if data['high_52w'] else None
     low_52w = float(data['low_52w']) if data['low_52w'] else None
     
-    # New Stats (Deep Analysis)
-    roe = float(data['roe'] * 100) if data['roe'] else None  # Convert decimal to %
-    debt_equity = float(data['debt_equity']) if data['debt_equity'] else None
-    profit_margin = float(data['profit_margin'] * 100) if data['profit_margin'] else None # Convert decimal to %
+    # TTM Stats from stock_statistics (unified TTM source)
+    roe = float(data['roe'] * 100) if data.get('roe') else None   # decimal to %
+    debt_equity = float(data['debt_equity']) if data.get('debt_equity') else None
+    profit_margin = float(data['profit_margin'] * 100) if data.get('profit_margin') else None  # decimal to %
+    gross_margin = float(data['gross_margin'] * 100) if data.get('gross_margin') else None
+    revenue_growth = float(data['revenue_growth'] * 100) if data.get('revenue_growth') else None
+    # Live sector avgs for scoring
+    sector_avg_pe = float(data['avg_sector_pe']) if data.get('avg_sector_pe') else None
+    sector_avg_pb = float(data['avg_sector_pb']) if data.get('avg_sector_pb') else None
 
     SECTOR_AR_MAP = {
         'Banks': 'بنوك',
@@ -302,9 +319,14 @@ async def handle_stock_price(
         # we can pass empty dict for now, which gives default historical score, 
         # or we could fetch sector average if we modified the query.
         metrics = stock_data_for_analysis.copy()
-        # Mocking empty historical averages since we only have single stock query here
-        # The scoring engine handles missing history gracefully
-        score_res = calculate_score(metrics, {})
+        metrics['sector_name'] = sector_raw  # ensure sector_name key for scoring_engine
+        metrics['revenue_growth'] = revenue_growth
+        metrics['gross_margin'] = gross_margin
+        # Pass live sector avg as hist_avg so scoring engine gives meaningful scores
+        hist_avg = {}
+        if sector_avg_pe: hist_avg['pe_5yr_avg'] = sector_avg_pe
+        if sector_avg_pb: hist_avg['pb_5yr_avg'] = sector_avg_pb
+        score_res = calculate_score(metrics, hist_avg)
         
         cards.append({
             'type': 'valuation_score', # Recognized by LLM Context

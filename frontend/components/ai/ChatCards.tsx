@@ -1249,30 +1249,145 @@ export function DeepHealthCard({ data, language = "en" }: DeepHealthProps & { la
 }
 
 // ============================================================
-// DEEP VALUATION CARD
+// DEEP VALUATION CARD (Starta Valuation Score — 5 Component Breakdown)
 // ============================================================
 interface DeepValuationProps {
     data: {
-        symbol: string;
-        verdict: string;
-        multiples: Record<string, number | null>;
+        // Backend schema from price_handler.py
+        total_score?: number;
+        valuation_score?: number;
+        quality_score?: number;
+        momentum_score?: number;
+        profitability_score?: number;
+        health_score?: number;
+        assessment?: string;
+        signal?: string;
+        grade?: string;
+        sector?: string;
+        // Legacy deep_valuation schema (fallback)
+        symbol?: string;
+        verdict?: string;
+        multiples?: Record<string, number | null>;
     };
 }
 
 export function DeepValuationCard({ data, language = "en" }: DeepValuationProps & { language?: "en" | "ar" }) {
     const isRtl = language === "ar";
     const safeData = (data && typeof data === "object") ? data : ({} as any);
+
+    // ── Detect which schema we received ──
+    const isScoreSchema = safeData.total_score !== undefined || safeData.grade !== undefined;
+
+    if (isScoreSchema) {
+        // ═══════════════════════════════════════════════════════
+        // STARTA VALUATION SCORE (5-Component Breakdown)
+        // ═══════════════════════════════════════════════════════
+        const totalScore = typeof safeData.total_score === "number" ? safeData.total_score : 0;
+        const grade = typeof safeData.grade === "string" ? safeData.grade : "–";
+        const assessment = typeof safeData.assessment === "string" ? safeData.assessment : (language === "ar" ? "غير متاح" : "N/A");
+        const signal = typeof safeData.signal === "string" ? safeData.signal : "";
+        const sector = typeof safeData.sector === "string" ? safeData.sector : "";
+
+        // 5 pillars — each out of 20
+        const pillars = [
+            { key: language === "ar" ? "التقييم" : "Valuation", value: safeData.valuation_score ?? 0, icon: "📊" },
+            { key: language === "ar" ? "الربحية" : "Profitability", value: safeData.profitability_score ?? 0, icon: "💰" },
+            { key: language === "ar" ? "الصحة المالية" : "Health", value: safeData.health_score ?? 0, icon: "🛡️" },
+            { key: language === "ar" ? "جودة الأرباح" : "Quality", value: safeData.quality_score ?? 0, icon: "✅" },
+            { key: language === "ar" ? "الزخم" : "Momentum", value: safeData.momentum_score ?? 0, icon: "🚀" },
+        ];
+        const maxPillar = 20;
+
+        // Grade badge color
+        const gradeColorMap: Record<string, string> = {
+            'A': 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-500/20',
+            'B': 'text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-500/20',
+            'C': 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-500/20',
+            'D': 'text-orange-700 bg-orange-100 dark:text-orange-300 dark:bg-orange-500/20',
+            'F': 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-500/20',
+        };
+        const gradeBadgeColor = gradeColorMap[grade.charAt(0).toUpperCase()] || gradeColorMap['C'];
+
+        // Bar color based on score percentage
+        const getBarColor = (score: number) => {
+            const pct = score / maxPillar;
+            if (pct >= 0.7) return 'bg-gradient-to-r from-emerald-400 to-emerald-600';
+            if (pct >= 0.4) return 'bg-gradient-to-r from-amber-400 to-amber-500';
+            return 'bg-gradient-to-r from-red-400 to-red-500';
+        };
+
+        return (
+            <div className="p-5 bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900/40 dark:to-cyan-900/20 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg" dir={isRtl ? "rtl" : "ltr"}>
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
+                        <div className="p-2 bg-cyan-100 dark:bg-cyan-500/20 rounded-lg">
+                            <Target className="text-cyan-600 dark:text-cyan-400 w-5 h-5" />
+                        </div>
+                        💎 {language === "ar" ? "تحليل التقييم" : "Valuation Analysis"}
+                    </div>
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-extrabold shadow-sm ${gradeBadgeColor}`}>
+                        {grade}
+                    </span>
+                </div>
+
+                {/* Score Summary Row */}
+                <div className="flex items-center justify-between mb-5 px-3 py-3 bg-slate-50 dark:bg-white/5 rounded-xl">
+                    <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{language === "ar" ? "النتيجة الإجمالية" : "Total Score"}</div>
+                        <div className="text-2xl font-black text-slate-800 dark:text-white">{totalScore}<span className="text-sm font-normal text-slate-400 dark:text-slate-500">/100</span></div>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{language === "ar" ? "التقييم" : "Assessment"}</div>
+                        <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{assessment}</div>
+                        {signal && <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{signal}</div>}
+                    </div>
+                </div>
+
+                {/* 5-Component Bars */}
+                <div className="space-y-3 mb-4">
+                    {pillars.map((p) => {
+                        const barWidth = Math.min((p.value / maxPillar) * 100, 100);
+                        return (
+                            <div key={p.key}>
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{p.icon} {p.key}</span>
+                                    <span className="text-sm font-bold text-slate-800 dark:text-white">{p.value}<span className="text-xs font-normal text-slate-400">/{maxPillar}</span></span>
+                                </div>
+                                <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full ${getBarColor(p.value)} rounded-full transition-all duration-700 ease-out`}
+                                        style={{ width: `${barWidth}%` }}
+                                    />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Sector context */}
+                {sector && (
+                    <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-white/10">
+                        <span className="text-xs text-slate-400 dark:text-slate-500">{language === "ar" ? "القطاع:" : "Sector:"}</span>
+                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{sector}</span>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // LEGACY: Deep Valuation (multiples-based) — fallback
+    // ═══════════════════════════════════════════════════════
     const multiplesRaw = safeData.multiples && typeof safeData.multiples === "object" ? safeData.multiples : {};
     const multiples = Object.fromEntries(
         Object.entries(multiplesRaw).filter(([key]) => typeof key === "string" && key.trim().length > 0)
     ) as Record<string, number | null>;
     const verdict = typeof safeData.verdict === "string" ? safeData.verdict : (language === "ar" ? "غير متاح" : "N/A");
-    // Color based on verdict
     const isUndervalued = verdict.toLowerCase().includes('under');
     const isOvervalued = verdict.toLowerCase().includes('over');
     const verdictColor = isUndervalued ? 'text-emerald-600 bg-emerald-50' : isOvervalued ? 'text-red-600 bg-red-50' : 'text-cyan-600 bg-cyan-50';
 
-    // Get max value for bar scaling
     const values = Object.values(multiples)
         .map(v => (typeof v === "number" ? v : Number(v)))
         .filter(v => Number.isFinite(v)) as number[];
@@ -1280,7 +1395,6 @@ export function DeepValuationCard({ data, language = "en" }: DeepValuationProps 
 
     return (
         <div className="p-5 bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900/40 dark:to-cyan-900/20 rounded-2xl border border-slate-200 dark:border-white/5 shadow-lg" dir={isRtl ? "rtl" : "ltr"}>
-            {/* Header */}
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
                     <div className="p-2 bg-cyan-100 dark:bg-cyan-500/20 rounded-lg">
@@ -1292,38 +1406,27 @@ export function DeepValuationCard({ data, language = "en" }: DeepValuationProps 
                     {verdict}
                 </span>
             </div>
-
-            {/* Horizontal Bar Chart */}
             <div className="space-y-3 mb-4">
                 {Object.entries(multiples).slice(0, 6).map(([key, val]) => {
                     if (val === null || val === undefined || (val as any) === "N/A") return null;
                     const numVal = typeof val === "number" ? val : Number(val);
                     if (!Number.isFinite(numVal)) return null;
-
                     const barWidth = Math.min((numVal / maxVal) * 100, 100);
                     const isHigh = numVal > maxVal * 0.7;
                     const barColor = isHigh ? 'bg-gradient-to-r from-cyan-400 to-cyan-600' : 'bg-gradient-to-r from-blue-400 to-blue-600';
-
                     return (
                         <div key={key} className="group">
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{key}</span>
-                                <span className="text-sm font-bold text-slate-800 dark:text-white">
-                                    {numVal.toFixed(2)}
-                                </span>
+                                <span className="text-sm font-bold text-slate-800 dark:text-white">{numVal.toFixed(2)}</span>
                             </div>
                             <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`}
-                                    style={{ width: `${barWidth}%` }}
-                                />
+                                <div className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`} style={{ width: `${barWidth}%` }} />
                             </div>
                         </div>
                     );
                 })}
             </div>
-
-            {/* Legend / Interpretation */}
             <div className="flex items-center gap-4 pt-3 border-t border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>

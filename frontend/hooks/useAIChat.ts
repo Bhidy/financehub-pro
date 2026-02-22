@@ -279,9 +279,10 @@ export function useAIChat(config?: {
     market?: string;
     onUsageLimitReached?: () => void;  // Callback when guest limit is exceeded
     lang?: 'en' | 'ar';
+    sharedSessionId?: string; // Add support for read-only shared sessions
 }) {
     const [query, setQuery] = useState("");
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [sessionId, setSessionId] = useState<string | null>(config?.sharedSessionId || null);
     const sessionIdRef = useRef<string | null>(null); // Ref to avoid stale closures
     const [isHistoryLoading, setIsHistoryLoading] = useState(false);
     const [usageLimitReached, setUsageLimitReached] = useState(false);
@@ -294,6 +295,12 @@ export function useAIChat(config?: {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setDeviceFingerprint(getDeviceFingerprint());
+
+            // Check if we are in shared read-only mode first
+            if (config?.sharedSessionId) {
+                // If there's a specific instruction to load a shared ID, don't fall back to local storage auth
+                return;
+            }
 
             // ROBUST SESSION MANAGEMENT (v2.2 FIX)
             // 1. Try to load specific session
@@ -440,10 +447,12 @@ export function useAIChat(config?: {
         setSessionId(null);
     }, []);
 
-    const loadSession = useCallback(async (id: string) => {
+    const loadSession = useCallback(async (id: string, isShared: boolean = false) => {
         setIsHistoryLoading(true);
         try {
-            const history = await fetchSessionMessages(id);
+            // Use the public endpoint if it is a shared session
+            const history = await (isShared ? (await import('@/lib/api')).fetchSharedSessionMessages(id) : fetchSessionMessages(id));
+
             if (!history || history.length === 0) {
                 setMessages([SYSTEM_WELCOME_MESSAGE]);
                 setSessionId(id);
@@ -504,6 +513,22 @@ export function useAIChat(config?: {
         setMessages(prev => [...prev, { role: "user", content: text }]);
         mutation.mutate(text);
     }, [mutation]);
+
+    // Effect to initialize device fingerprint (Client Side Only) AND load shared session if present
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setDeviceFingerprint(getDeviceFingerprint());
+        }
+
+        if (config?.sharedSessionId) {
+            loadSession(config.sharedSessionId, true);
+        }
+    }, [config?.sharedSessionId, loadSession]);
+
+    // Keep history persistence
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     return {
         query,

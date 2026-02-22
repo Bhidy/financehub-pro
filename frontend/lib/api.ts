@@ -431,6 +431,11 @@ export const fetchSessionMessages = async (sessionId: string): Promise<any[]> =>
     return data;
 };
 
+export const fetchSharedSessionMessages = async (sessionId: string): Promise<any[]> => {
+    const { data } = await api.get(`/ai/shared/${sessionId}`);
+    return data;
+};
+
 export const renameChatSession = async (sessionId: string, title: string) => {
     const { data } = await api.patch(`/ai/history/${sessionId}`, { title });
     return data;

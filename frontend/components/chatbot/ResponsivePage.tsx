@@ -48,6 +48,7 @@ import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
 // NEW: World-Class Unified Message Renderer (Matches Mockup EXACTLY)
 import { WorldClassMessage, FollowUpPrompt, FollowUpChips } from "@/components/ai/WorldClassMessage";
 import { MessageErrorBoundary } from "@/components/ai/MessageErrorBoundary";
+import { MessageFeedback } from "@/components/ai/MessageFeedback";
 
 // Domain and Device detection
 import { useDomainDetect } from "@/hooks/useDomainDetect";
@@ -70,7 +71,15 @@ export const resolveMessageLanguage = (msg: any): Language => {
 /**
  * Responsive AI Analyst with Domain-Based Layout
  */
-function ResponsiveAIAnalystContent() {
+export interface ResponsivePageProps {
+    initialSessionId?: string;
+    isSharedView?: boolean;
+}
+
+/**
+ * Responsive AI Analyst with Domain-Based Layout
+ */
+function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false }: ResponsivePageProps = {}) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
@@ -148,12 +157,13 @@ function ResponsiveAIAnalystContent() {
     const chatConfig = useMemo(() => ({
         market: contextMarket,
         onUsageLimitReached: () => {
-            if (!isAuthenticated) {
+            if (!isAuthenticated && !isSharedView) {
                 setShowUsageModal(true);
             }
         },
-        lang: lang
-    }), [contextMarket, isAuthenticated, lang]);
+        lang: lang,
+        sharedSessionId: isSharedView ? initialSessionId : undefined,
+    }), [contextMarket, isAuthenticated, lang, isSharedView, initialSessionId]);
 
     const {
         messages,
@@ -945,6 +955,21 @@ const MessageRenderer = memo(({
                                 />
                             </motion.div>
                         )}
+
+                        {/* Feedback & Share */}
+                        {isTypingCompleted && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.3, duration: 0.3 }}
+                            >
+                                <MessageFeedback
+                                    messageId={m.session_id || m.response?.meta?.entities?.session_id}
+                                    contentToShare={m.response?.conversational_text || m.content}
+                                    language={resolveMessageLanguage(m)}
+                                />
+                            </motion.div>
+                        )}
                     </div>
                 )}
             </div>
@@ -953,14 +978,16 @@ const MessageRenderer = memo(({
 });
 MessageRenderer.displayName = "MessageRenderer";
 
-export default function ResponsiveAIAnalystPage() {
+MessageRenderer.displayName = "MessageRenderer";
+
+export default function ResponsiveAIAnalystPage(props: ResponsivePageProps = {}) {
     return (
         <Suspense fallback={
             <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#13b8a6]" />
             </div>
         }>
-            <ResponsiveAIAnalystContent />
+            <ResponsiveAIAnalystContent {...props} />
         </Suspense>
     );
 }

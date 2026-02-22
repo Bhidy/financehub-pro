@@ -99,7 +99,20 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
 
     const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/shared/${messageId}` : '';
     const encodedUrl = encodeURIComponent(shareUrl);
-    const encodedText = encodeURIComponent(contentToShare ? contentToShare.substring(0, 100) + '...' : 'Check out this analysis from Starta Markets AI');
+
+    // Safely truncate string that may contain emojis (surrogate pairs)
+    // substring(0,100) can slice a surrogate in half, causing encodeURIComponent to throw URIError: URI malformed
+    const safeContent = contentToShare
+        ? Array.from(contentToShare).slice(0, 100).join('') + '...'
+        : 'Check out this analysis from Starta Markets AI';
+
+    let encodedText = '';
+    try {
+        encodedText = encodeURIComponent(safeContent);
+    } catch (e) {
+        console.error("Failed to encode text for sharing", e);
+        encodedText = encodeURIComponent('Check out this analysis from Starta Markets AI');
+    }
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {

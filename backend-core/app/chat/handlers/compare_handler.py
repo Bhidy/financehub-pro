@@ -71,6 +71,70 @@ def _format_compare_value(value: Any, fmt: Optional[str], language: str = "en") 
     return f"{num:.2f}"
 
 
+# ---------------------------------------------------------------------------
+# Issue 3 + 4 Fix: Materiality-aware winner declaration
+# ---------------------------------------------------------------------------
+# Percentage-based metrics require a 30% RELATIVE difference before we claim
+# one is "better" than the other. E.g. 20% margin vs 22% margin = only 10%
+# relative difference → too close to call → no winner declared.
+_PCT_METRICS = {
+    'profit_margin', 'gross_margin', 'operating_margin', 'ebitda_margin',
+    'roe', 'roa', 'roic', 'roce',
+    'revenue_growth', 'eps_growth',
+}
+# Absolute minimum difference thresholds for non-pct metrics
+_ABS_MIN_DIFF = {
+    'change_percent': 0.50,   # Daily change: must differ by 0.5 pp
+    'pe_ratio':       1.50,   # PE: must differ by at least 1.5x
+    'forward_pe':     1.50,
+    'pb_ratio':       0.20,
+    'peg_ratio':      0.20,
+    'ev_ebitda':      1.00,
+    'ev_sales':       0.30,
+    'debt_equity':    0.15,
+    'current_ratio':  0.20,
+    'interest_coverage': 1.00,
+    'altman_z_score': 0.30,
+    'piotroski_f_score': 1.00,
+    'asset_turnover': 0.10,
+    'beta':           0.10,
+}
+_RELATIVE_THRESHOLD = 0.30  # 30% relative difference required for pct metrics
+
+
+def _declare_winner(val1: Optional[float], val2: Optional[float],
+                    direction: str, key: str) -> int:
+    """Return winner index (0 or 1) or -1 if too close to call.
+
+    - Percentage-based metrics: require ≥30% relative difference.
+    - Other metrics: require a minimum absolute difference.
+    Returns -1 means 'about the same' — no winner highlighted.
+    """
+    if val1 is None or val2 is None:
+        return -1
+
+    # Percentage / rate metrics — apply relative threshold
+    if key in _PCT_METRICS:
+        max_val = max(abs(val1), abs(val2))
+        if max_val > 0:
+            relative_diff = abs(val1 - val2) / max_val
+            if relative_diff < _RELATIVE_THRESHOLD:
+                return -1  # Too close to call
+    else:
+        # Absolute threshold check
+        min_diff = _ABS_MIN_DIFF.get(key, 0.0)
+        if abs(val1 - val2) < min_diff:
+            return -1
+
+    if direction == 'max':
+        if val1 > val2: return 0
+        if val2 > val1: return 1
+    elif direction == 'min':
+        if val1 < val2: return 0
+        if val2 < val1: return 1
+    return -1
+
+
 
 
 async def handle_compare_stocks(
@@ -234,6 +298,9 @@ async def handle_compare_stocks(
                 'low_52w': safe_float(ticker_stats.get('low_52w')),
                 'beta': safe_float(ticker_stats.get('beta')),
                 'dividend_yield': safe_float(ticker_stats.get('dividend_yield')),
+                # Issue 2 Fix: PE source — market_tickers pe_ratio is live scraper
+                # (may be forward/trailing/stale). We intentionally let stock_statistics
+                # overwrite this below since TTM stats PE is more consistent.
                 'pe_ratio': safe_float(ticker_stats.get('pe_ratio')),
                 'pb_ratio': safe_float(ticker_stats.get('pb_ratio')),
             }
@@ -242,6 +309,10 @@ async def handle_compare_stocks(
                 s_stats = dict(stats_row)
                 for k, v in s_stats.items():
                     data_point[k] = safe_float(v)
+                # Issue 2 Fix: Ensure PE is unified — stock_statistics wins,
+                # but if stock_statistics.pe_ratio is NULL, fall back to market_tickers
+                if data_point.get('pe_ratio') is None:
+                    data_point['pe_ratio'] = safe_float(ticker_stats.get('pe_ratio'))
             
             # Map "net_margin" request to "profit_margin" to prevent crash
             if data_point.get('profit_margin') is None and data_point.get('net_margin') is not None:
@@ -426,8 +497,10 @@ async def handle_compare_stocks(
             {'key': 'interest_coverage', 'label': 'Interest Cov.', 'label_ar': 'تغطية الفوائد', 'direction': 'max'},
         ],
         'Dividends': [
-            {'key': 'dividend_yield', 'label': 'Div Yield', 'label_ar': 'عائد التوزيعات', 'format': 'pct', 'direction': 'max'},
-            {'key': 'payout_ratio', 'label': 'Payout Ratio', 'label_ar': 'نسبة التوزيع', 'format': 'pct', 'direction': 'min'}, 
+            # Issue 8 Fix: Dividend yield is NEUTRAL — not all strong stocks pay dividends.
+            # Remove 'direction' so no winner is highlighted. Show for info only.
+            {'key': 'dividend_yield', 'label': 'Div Yield', 'label_ar': 'عائد التوزيعات', 'format': 'pct'},
+            {'key': 'payout_ratio', 'label': 'Payout Ratio', 'label_ar': 'نسبة التوزيع', 'format': 'pct'},
         ]
     }
     
@@ -449,21 +522,15 @@ async def handle_compare_stocks(
             # Formatting
             m['label'] = m['label_ar'] if language == 'ar' else m['label']
             
-            # Winner Logic
+            # Issue 3+4 Fix: Materiality-aware winner logic
+            # Only declare a winner if the difference is meaningful.
+            # - Percentage metrics: require ≥30% relative difference
+            # - Other metrics: require minimum absolute difference
             direction = m.get('direction')
             if direction and len(stocks_data) == 2:
                 val1 = values[0]
                 val2 = values[1]
-                
-                # Check for zero/negative handling? Generally float comparison is fine.
-                winner_idx = -1
-                if direction == 'max':
-                    if val1 > val2: winner_idx = 0
-                    elif val2 > val1: winner_idx = 1
-                elif direction == 'min':
-                    if val1 < val2: winner_idx = 0
-                    elif val2 < val1: winner_idx = 1
-                    
+                winner_idx = _declare_winner(val1, val2, direction, key)
                 if winner_idx != -1:
                     m['winner_symbol'] = stocks_data[winner_idx]['symbol']
             
@@ -520,8 +587,11 @@ async def handle_compare_stocks(
                 bad_points.append("قوة سوقية أقل" if language == 'ar' else "Less market power")
         
         # Valuation positioning
+        # Issue 5 Fix: Only make qualitative PE statement if difference is meaningful
+        # (at least 3x P/E points, or 30%+ relative). Avoids "Cheaper at 14x" vs "Pricier at 15x".
         if stock.get('pe_ratio') and other.get('pe_ratio'):
-            if stock['pe_ratio'] < other['pe_ratio']:
+            pe_winner = _declare_winner(stock['pe_ratio'], other['pe_ratio'], 'min', 'pe_ratio')
+            if pe_winner == 0:  # This stock has clearly lower (better) P/E
                 if not nickname or nickname == stock['symbol']:
                     profile_emoji = "💰"
                     nickname = "فرصة قيمة" if language == 'ar' else "Value Opportunity"
@@ -531,22 +601,26 @@ async def handle_compare_stocks(
                     )
                 good_points.append(
                     f"أرخص عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
-                    else f"Cheaper at {stock['pe_ratio']:.1f}x P/E"
+                    else f"Cheaper valuation at {stock['pe_ratio']:.1f}x P/E"
                 )
-            else:
+            elif pe_winner == 1:  # Other stock has clearly lower P/E
                 bad_points.append(
                     f"أغلى عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
-                    else f"Pricier at {stock['pe_ratio']:.1f}x P/E"
+                    else f"Higher multiple at {stock['pe_ratio']:.1f}x P/E"
                 )
+            # pe_winner == -1: too close to call, no PE comment added
         
         # Profitability
+        # Issue 4 Fix: Only mention if margin difference is meaningful (30% relative)
         if stock.get('profit_margin') and other.get('profit_margin'):
-            if stock['profit_margin'] > other['profit_margin']:
+            margin_winner = _declare_winner(
+                stock['profit_margin'], other['profit_margin'], 'max', 'profit_margin')
+            if margin_winner == 0:
                 good_points.append(
                     f"هوامش ربح أعلى ({stock['profit_margin']:.1f}%)" if language == 'ar'
-                    else f"Higher margins ({stock['profit_margin']:.1f}%)"
+                    else f"Stronger margins ({stock['profit_margin']:.1f}%)"
                 )
-            else:
+            elif margin_winner == 1:
                 bad_points.append(
                     f"هوامش ربح أقل ({stock['profit_margin']:.1f}%)" if language == 'ar'
                     else f"Lower margins ({stock['profit_margin']:.1f}%)"
@@ -671,30 +745,63 @@ async def handle_compare_stocks(
         'learning_section': {
             'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',
             'items': [
+                # Issue 5 Fix: Use materiality-aware winner logic in learning section
                 (
                     "**Profitability:** " + (
-                        f"{stocks_data[0]['symbol']} leads with higher margins"
-                        if (stocks_data[0].get('profit_margin') or 0) > (stocks_data[1].get('profit_margin') or 0)
-                        else f"{stocks_data[1]['symbol']} leads efficiency"
+                        f"{stocks_data[0]['symbol']} leads with meaningfully stronger margins"
+                        if _declare_winner(
+                            stocks_data[0].get('profit_margin') or 0,
+                            stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 0
+                        else (
+                            f"{stocks_data[1]['symbol']} leads with meaningfully stronger margins"
+                            if _declare_winner(
+                                stocks_data[0].get('profit_margin') or 0,
+                                stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 1
+                            else "Both stocks show comparable profit margins — review operating efficiency."
+                        )
                     )
                 ) if language == 'en' else (
                     "**الربحية:** " + (
-                        f"{stocks_data[0]['symbol']} يتفوق بهوامش أعلى"
-                        if (stocks_data[0].get('profit_margin') or 0) > (stocks_data[1].get('profit_margin') or 0)
-                        else f"{stocks_data[1]['symbol']} يتفوق في الكفاءة التشغيلية"
+                        f"{stocks_data[0]['symbol']} يتفوق بهوامش ربح أعلى بشكل واضح"
+                        if _declare_winner(
+                            stocks_data[0].get('profit_margin') or 0,
+                            stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 0
+                        else (
+                            f"{stocks_data[1]['symbol']} يتفوق بهوامش ربح أعلى بشكل واضح"
+                            if _declare_winner(
+                                stocks_data[0].get('profit_margin') or 0,
+                                stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 1
+                            else "كلا السهمين لديهما هوامش متقاربة — راجع الكفاءة التشغيلية."
+                        )
                     )
                 ),
                 (
                     "**Valuation:** " + (
-                        f"{stocks_data[0]['symbol']} is trading at a discount (Lower P/E)"
-                        if (stocks_data[0].get('pe_ratio') or 999) < (stocks_data[1].get('pe_ratio') or 999)
-                        else f"{stocks_data[1]['symbol']} is trading at a discount"
+                        f"{stocks_data[0]['symbol']} is trading at a clear discount (Lower P/E)"
+                        if _declare_winner(
+                            stocks_data[0].get('pe_ratio') or 999,
+                            stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 0
+                        else (
+                            f"{stocks_data[1]['symbol']} is trading at a clear discount (Lower P/E)"
+                            if _declare_winner(
+                                stocks_data[0].get('pe_ratio') or 999,
+                                stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 1
+                            else "Both stocks are similarly priced on a P/E basis."
+                        )
                     )
                 ) if language == 'en' else (
                     "**التقييم:** " + (
-                        f"{stocks_data[0]['symbol']} يتداول بخصم سعري (مضاعف ربحية أقل)"
-                        if (stocks_data[0].get('pe_ratio') or 999) < (stocks_data[1].get('pe_ratio') or 999)
-                        else f"{stocks_data[1]['symbol']} يتداول بخصم سعري"
+                        f"{stocks_data[0]['symbol']} يتداول بخصم سعري واضح (مضاعف ربحية أقل)"
+                        if _declare_winner(
+                            stocks_data[0].get('pe_ratio') or 999,
+                            stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 0
+                        else (
+                            f"{stocks_data[1]['symbol']} يتداول بخصم سعري واضح (مضاعف ربحية أقل)"
+                            if _declare_winner(
+                                stocks_data[0].get('pe_ratio') or 999,
+                                stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 1
+                            else "كلا السهمين متقاربان في التقييم."
+                        )
                     )
                 ),
                 (

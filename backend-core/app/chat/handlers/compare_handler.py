@@ -612,19 +612,28 @@ async def handle_compare_stocks(
         
         # Profitability
         # Issue 4 Fix: Only mention if margin difference is meaningful (30% relative)
+        margin_winner = -1
+        margin_label = 'profit_margin'
         if stock.get('profit_margin') and other.get('profit_margin'):
             margin_winner = _declare_winner(
                 stock['profit_margin'], other['profit_margin'], 'max', 'profit_margin')
-            if margin_winner == 0:
-                good_points.append(
-                    f"هوامش ربح أعلى ({stock['profit_margin']:.1f}%)" if language == 'ar'
-                    else f"Stronger margins ({stock['profit_margin']:.1f}%)"
-                )
-            elif margin_winner == 1:
-                bad_points.append(
-                    f"هوامش ربح أقل ({stock['profit_margin']:.1f}%)" if language == 'ar'
-                    else f"Lower margins ({stock['profit_margin']:.1f}%)"
-                )
+        # Fallback: check gross_margin if profit_margin didn't produce a winner
+        if margin_winner == -1 and stock.get('gross_margin') and other.get('gross_margin'):
+            margin_winner = _declare_winner(
+                stock['gross_margin'], other['gross_margin'], 'max', 'gross_margin')
+            margin_label = 'gross_margin'
+        if margin_winner == 0:
+            margin_val = stock.get(margin_label, 0)
+            good_points.append(
+                f"هوامش ربح أعلى ({margin_val:.1f}%)" if language == 'ar'
+                else f"Stronger margins ({margin_val:.1f}%)"
+            )
+        elif margin_winner == 1:
+            margin_val = stock.get(margin_label, 0)
+            bad_points.append(
+                f"هوامش ربح أقل ({margin_val:.1f}%)" if language == 'ar'
+                else f"Lower margins ({margin_val:.1f}%)"
+            )
         
         # Growth
         if stock.get('revenue_growth'):

@@ -196,10 +196,12 @@ export interface ChatResponse {
     disclaimer?: string;
     meta: ResponseMeta;
     session_id?: string; // Top-level or from meta
+    message_id?: number; // DB message ID for sharing isolated chats
 }
 
 
 export interface Message {
+    id?: number;
     role: "user" | "assistant";
     content: string;
     response?: ChatResponse; // Full structured response
@@ -216,6 +218,7 @@ function sanitizeChatResponse(raw: any): ChatResponse {
 
     return {
         ...raw,
+        message_id: raw?.message_id,
         message_text: typeof raw?.message_text === "string"
             ? raw.message_text
             : String(raw?.conversational_text || raw?.message || ""),
@@ -280,6 +283,7 @@ export function useAIChat(config?: {
     onUsageLimitReached?: () => void;  // Callback when guest limit is exceeded
     lang?: 'en' | 'ar';
     sharedSessionId?: string; // Add support for read-only shared sessions
+    isSharedMessageView?: boolean; // Support for isolated message sharing
 }) {
     const [query, setQuery] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(config?.sharedSessionId || null);
@@ -400,6 +404,7 @@ export function useAIChat(config?: {
             setMessages(prev => [
                 ...prev,
                 {
+                    id: safeData.message_id,
                     role: "assistant",
                     content: safeData.message_text,
                     response: safeData,
@@ -450,8 +455,10 @@ export function useAIChat(config?: {
     const loadSession = useCallback(async (id: string, isShared: boolean = false) => {
         setIsHistoryLoading(true);
         try {
-            // Use the public endpoint if it is a shared session
-            const history = await (isShared ? (await import('@/lib/api')).fetchSharedSessionMessages(id) : fetchSessionMessages(id));
+            // Use the correct public endpoint if it is a shared session/message
+            const history = await (isShared ?
+                (config?.isSharedMessageView ? (await import('@/lib/api')).fetchSharedMessagePair(id) : (await import('@/lib/api')).fetchSharedSessionMessages(id))
+                : fetchSessionMessages(id));
 
             if (!history || history.length === 0) {
                 setMessages([SYSTEM_WELCOME_MESSAGE]);
@@ -491,6 +498,7 @@ export function useAIChat(config?: {
                 }
 
                 return {
+                    id: msg.id,
                     role: msg.role,
                     content: msg.content,
                     response: response,

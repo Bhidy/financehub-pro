@@ -2502,28 +2502,30 @@ class ChatService:
                 llm_text = re.sub(r"(?:\[QUANTIFIED_DRIVERS\]|\*\*\[?QUANTIFIED_DRIVERS\]?\*\*).*?(?:\[END_QUANTIFIED_DRIVERS\]|(?=\[|$))", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                 
                 # Parse LEARNING
-                if not handler_educational_cards:
-                    learning = self._parse_learning(llm_text)
-                    if learning:
-                        handler_educational_cards = [
-                            {"variant": "definition", "title": item['term'], "content": item['definition']}
-                            for item in learning['items']
-                        ]
-                        logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
-                    else:
-                        # FALLBACK: Generate programmatically if LLM failed (Guarantees UI Layer 3)
-                        try:
-                            cards = result_data.get('cards', [])
-                            if cards:
-                                fallback_defs = explainer.extract_fact_explanations(cards, language)
-                                if fallback_defs:
-                                    handler_educational_cards = [
-                                        {"variant": "definition", "title": term, "content": definition}
-                                        for term, definition in fallback_defs.items()
-                                    ]
-                                    logger.info(f"[ChatService] 📘 Injected Programmatic Fallback for LEARNING ({len(handler_educational_cards)} items)")
-                        except Exception as fb_ex:
-                            logger.error(f"[ChatService] Fallback Learning Generation Failed: {fb_ex}")
+                # DISABLED PER USER REQUEST (Phase 9) - We do not want definition cards rendering in the UI.
+                # However, we MUST keep the regex strip below to prevent the raw [LEARNING] text from leaking.
+                # if not handler_educational_cards:
+                #     learning = self._parse_learning(llm_text)
+                #     if learning:
+                #         handler_educational_cards = [
+                #             {"variant": "definition", "title": item['term'], "content": item['definition']}
+                #             for item in learning['items']
+                #         ]
+                #         logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
+                #     else:
+                #         # FALLBACK: Generate programmatically if LLM failed (Guarantees UI Layer 3)
+                #         try:
+                #             cards = result_data.get('cards', [])
+                #             if cards:
+                #                 fallback_defs = explainer.extract_fact_explanations(cards, language)
+                #                 if fallback_defs:
+                #                     handler_educational_cards = [
+                #                         {"variant": "definition", "title": term, "content": definition}
+                #                         for term, definition in fallback_defs.items()
+                #                     ]
+                #                     logger.info(f"[ChatService] 📘 Injected Programmatic Fallback for LEARNING ({len(handler_educational_cards)} items)")
+                #         except Exception as fb_ex:
+                #             logger.error(f"[ChatService] Fallback Learning Generation Failed: {fb_ex}")
                 
                 # ALWAYS Strip LEARNING from text (User explicitly requested removal of artifact)
                 llm_text = re.sub(r"(?:\[LEARNING\]|\*\*\[?LEARNING\]?\*\*|LEARNING\s*[:\n]).*?(?:\[END_LEARNING\]|(?=\[|$))", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()

@@ -464,6 +464,41 @@ async def get_session_messages(
         print(f"Fetch messages error: {e}")
         return []
 
+@router.get("/shared/{session_id}", response_model=List[dict])
+async def get_shared_session_messages(session_id: str):
+    """
+    Get full message history for a specific session publicly.
+    Relies on unguessable session IDs for sharing.
+    """
+    if not db._pool:
+         return []
+
+    try:
+        # Fetch all messages associated with this session without verifying ownership
+        msg_query = """
+            SELECT id, role, content, meta, created_at
+            FROM chat_messages
+            WHERE session_id = $1
+            ORDER BY created_at ASC
+        """
+        rows = await db.fetch_all(msg_query, session_id)
+        
+        # Process rows
+        result = []
+        for r in rows:
+            item = dict(r)
+            if item.get('meta') and isinstance(item['meta'], str):
+                 try:
+                     item['meta'] = json.loads(item['meta'])
+                 except:
+                     pass
+            result.append(item)
+            
+        return result
+    except Exception as e:
+        print(f"Fetch shared messages error: {e}")
+        return []
+
 
 @router.get("/briefing")
 async def get_ai_briefing():

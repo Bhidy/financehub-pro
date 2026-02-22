@@ -149,17 +149,17 @@ def score_valuation(current_val: float, historical_avg: float, label: str) -> Tu
 
     discount = (historical_avg - current_val) / historical_avg
     if discount >= 0.30:
-        score, desc = 20, f"30%+ below 5yr avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
+        score, desc = 20, f"30%+ below Sector avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
     elif discount >= 0.20:
-        score, desc = 16, f"20-30% below 5yr avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
+        score, desc = 16, f"20-30% below Sector avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
     elif discount >= 0.10:
-        score, desc = 12, f"10-20% below 5yr avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
+        score, desc = 12, f"10-20% below Sector avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
     elif discount >= 0.00:
-        score, desc = 8,  f"Near 5yr avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
+        score, desc = 8,  f"Near Sector avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
     elif discount >= -0.15:
-        score, desc = 4,  f"0-15% above 5yr avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
+        score, desc = 4,  f"0-15% above Sector avg ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
     else:
-        score, desc = 0,  f"15%+ above 5yr avg — expensive ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
+        score, desc = 0,  f"15%+ above Sector avg — expensive ({current_val:.1f}x vs {historical_avg:.1f}x avg)"
     return score, desc
 
 

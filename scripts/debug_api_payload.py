@@ -18,8 +18,8 @@ import json
 import argparse
 from typing import Dict, Any
 
-LOCAL_URL = "http://localhost:8000/api/v1/chat"
-PROD_URL = "https://starta.46-224-223-172.sslip.io/api/v1/chat"
+LOCAL_URL = "http://localhost:8000/api/v1/ai/chat"
+PROD_URL = "https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
 
 class Colors:
     GREEN = '\033[92m'

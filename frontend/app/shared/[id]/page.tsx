@@ -3,15 +3,16 @@ import { fetchSharedSessionMessages } from '@/lib/api';
 import ResponsivePage from '@/components/chatbot/ResponsivePage';
 
 interface Props {
-    params: { id: string };
-    searchParams: { [key: string]: string | string[] | undefined };
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata(
     { params }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
 
     // Default metadata
     let title = "Starta Markets Analysis";
@@ -69,9 +70,12 @@ export async function generateMetadata(
     };
 }
 
-export default function SharedSessionPage({ params }: { params: { id: string } }) {
+export default async function SharedSessionPage({ params }: Props) {
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
+
     // We pass the sharedSessionId down to ResponsivePage.
     // We will need to update ResponsivePage to handle `sharedSessionId` 
     // to view it in a "read-only" presentation mode without forcing login.
-    return <ResponsivePage initialSessionId={params.id} isSharedView={true} />;
+    return <ResponsivePage initialSessionId={id} isSharedView={true} />;
 }

@@ -29,11 +29,12 @@ export async function GET(req: NextRequest) {
                     <div
                         style={{
                             position: 'absolute',
-                            top: '-50%',
-                            left: '-50%',
-                            width: '200%',
-                            height: '200%',
-                            background: 'radial-gradient(circle at center, rgba(19,184,166,0.15) 0%, rgba(15,23,42,0) 50%)',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: '#0F172A',
+                            opacity: 0.9,
                             zIndex: 0,
                         }}
                     />
@@ -88,19 +89,17 @@ export async function GET(req: NextRequest) {
                         {/* Title / Question */}
                         <div
                             style={{
-                                fontSize: title.length > 50 ? '48px' : '64px',
+                                fontSize: title.length > 50 ? '42px' : '56px',
                                 fontWeight: 700,
                                 color: 'white',
-                                lineHeight: 1.2,
+                                lineHeight: 1.3,
                                 maxWidth: '900px',
                                 marginBottom: '40px',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                display: 'flex',
+                                textAlign: 'center',
                             }}
                         >
-                            "{title}"
+                            "{title.length > 100 ? title.substring(0, 100) + '...' : title}"
                         </div>
 
                         {/* Footer / CTA */}

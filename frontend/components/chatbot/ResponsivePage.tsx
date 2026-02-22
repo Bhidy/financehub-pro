@@ -281,6 +281,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false }: 
                     handleExampleClick={handleExampleClick}
                     sendDirectMessage={sendDirectMessage}
                     handleAction={handleAction}
+                    sessionId={sessionId}
                 />
             ))}
 
@@ -801,7 +802,8 @@ const MessageRenderer = memo(({
     handleSymbolClick,
     handleExampleClick,
     sendDirectMessage,
-    handleAction
+    handleAction,
+    sessionId
 }: {
     m: any;
     idx: number;
@@ -811,6 +813,7 @@ const MessageRenderer = memo(({
     handleExampleClick?: (example: string) => void;
     sendDirectMessage?: (msg: string) => void;
     handleAction?: (action: Action) => void;
+    sessionId?: string | null;
 }) => {
     const [isTypingCompleted, setIsTypingCompleted] = useState(!isLatest);
     const isUser = m.role === 'user';
@@ -964,7 +967,7 @@ const MessageRenderer = memo(({
                                 transition={{ delay: 0.3, duration: 0.3 }}
                             >
                                 <MessageFeedback
-                                    messageId={m.session_id || m.response?.meta?.entities?.session_id}
+                                    messageId={sessionId || m.session_id || m.response?.meta?.entities?.session_id}
                                     contentToShare={m.response?.conversational_text || m.content}
                                     language={resolveMessageLanguage(m)}
                                 />

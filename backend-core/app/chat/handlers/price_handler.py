@@ -12,7 +12,6 @@ from datetime import datetime
 from ..bull_bear_generator import generate_data_card
 # NEW: Starta Logic Engine
 from ..scoring_engine import calculate_score
-from ..logic.macro_service import get_macro_service
 
 
 
@@ -315,18 +314,17 @@ async def handle_stock_price(
     # ------------------------------------------------------------------
     try:
         # 1. Calculate Valuation Score (Sector-Specific 5-Component)
-        # We need historical_avg dict. Since we just have single stock, 
-        # we can pass empty dict for now, which gives default historical score, 
-        # or we could fetch sector average if we modified the query.
         metrics = stock_data_for_analysis.copy()
         metrics['sector_name'] = sector_raw  # ensure sector_name key for scoring_engine
         metrics['revenue_growth'] = revenue_growth
         metrics['gross_margin'] = gross_margin
-        # Pass live sector avg as hist_avg so scoring engine gives meaningful scores
-        hist_avg = {}
-        if sector_avg_pe: hist_avg['pe_5yr_avg'] = sector_avg_pe
-        if sector_avg_pb: hist_avg['pb_5yr_avg'] = sector_avg_pb
-        score_res = calculate_score(metrics, hist_avg)
+        # Pass live sector peer avg so scoring engine gives meaningful peer-relative scores.
+        # NOTE: These are LIVE sector averages, not 5-year historical — labels are updated
+        # in scoring_engine to reflect 'vs Sector Avg' rather than 'vs 5yr avg'.
+        peer_avg = {}
+        if sector_avg_pe: peer_avg['pe_5yr_avg'] = sector_avg_pe
+        if sector_avg_pb: peer_avg['pb_5yr_avg'] = sector_avg_pb
+        score_res = calculate_score(metrics, peer_avg)
         
         cards.append({
             'type': 'valuation_score', # Recognized by LLM Context
@@ -345,16 +343,10 @@ async def handle_stock_price(
             }
         })
         
-        # 2. Fetch Macro Context (Quantitative + Qualitative)
-        macro_svc = get_macro_service()
-        # Macro is usually usually market-wide, but we pass symbol for specific insights
-        macro_ctx = await macro_svc.get_macro_context(conn, ticker=symbol)
-        
-        cards.append({
-            'type': 'macro_context', # Recognized by LLM Context
-            'title': 'Macro Environment' if language == 'en' else 'البيئة الاقتصادية الكلية',
-            'data': macro_ctx
-        })
+        # Issue 7 Fix: Macro context card REMOVED from STOCK_PRICE responses.
+        # Macro environment is irrelevant for a simple price/snapshot query.
+        # It is now placed in SCREENER and MARKET_OVERVIEW responses where
+        # market-wide context is actually relevant.
 
     except Exception as logic_err:
         print(f"Logic Engine Error: {logic_err}")

@@ -10,6 +10,7 @@ Returns market performance data including:
 
 import asyncpg
 from typing import Dict, Any, List
+from ..logic.macro_service import get_macro_service
 
 
 async def handle_most_active(
@@ -232,6 +233,18 @@ async def handle_market_summary(
                 "payload": "banking sector stocks"
             }
         ]
+        
+        # Issue 7 Fix: Macro context card added to MARKET_SUMMARY (market-wide view — relevant here).
+        try:
+            macro_svc = get_macro_service()
+            macro_ctx = await macro_svc.get_macro_context(conn)
+            cards.append({
+                'type': 'macro_context',
+                'title': 'Macro Environment' if language == 'en' else 'البيئة الاقتصادية الكلية',
+                'data': macro_ctx
+            })
+        except Exception as macro_err:
+            print(f"[Market Handler] Macro context error: {macro_err}")
         
         return {
             "success": True,

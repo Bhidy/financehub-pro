@@ -9,55 +9,55 @@ from dataclasses import dataclass
 SECTOR_CONFIG = {
     "Banks": {
         "valuation_metric": "pb_ratio",          # P/B is primary for banks
-        "valuation_label": "P/B vs 5yr avg",
+        "valuation_label": "P/B vs Sector Avg",
         "roe_strong": 20.0, "roe_good": 15.0, "roe_weak": 10.0,
         "de_threshold": 1.5,                     # Banks naturally lever up
     },
     "Real Estate": {
         "valuation_metric": "pb_ratio",          # Asset-backed: P/B primary
-        "valuation_label": "P/B vs 5yr avg",
+        "valuation_label": "P/B vs Sector Avg",
         "roe_strong": 18.0, "roe_good": 12.0, "roe_weak": 8.0,
         "de_threshold": 0.7,
     },
     "Food, Beverages & Tobacco": {
         "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs 5yr avg",
+        "valuation_label": "P/E vs Sector Avg",
         "roe_strong": 25.0, "roe_good": 15.0, "roe_weak": 8.0,
         "de_threshold": 0.7,
     },
     "Trade & Distributors": {
         "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs 5yr avg",
+        "valuation_label": "P/E vs Sector Avg",
         "roe_strong": 20.0, "roe_good": 12.0, "roe_weak": 6.0,
         "de_threshold": 0.7,
     },
     "Industrial Goods, Services and Automobiles": {
         "valuation_metric": "ev_ebitda",         # EV/EBITDA for capital-intensive
-        "valuation_label": "EV/EBITDA vs 5yr avg",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 18.0, "roe_good": 12.0, "roe_weak": 7.0,
         "de_threshold": 0.8,
     },
     "Health Care & Pharmaceuticals": {
         "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs 5yr avg",
+        "valuation_label": "P/E vs Sector Avg",
         "roe_strong": 22.0, "roe_good": 15.0, "roe_weak": 8.0,
         "de_threshold": 0.5,
     },
     "IT, Media & Communication Services": {
         "valuation_metric": "ev_ebitda",
-        "valuation_label": "EV/EBITDA vs 5yr avg",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 18.0, "roe_good": 12.0, "roe_weak": 7.0,
         "de_threshold": 1.0,
     },
     "Utilities": {
         "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs 5yr avg",
+        "valuation_label": "P/E vs Sector Avg",
         "roe_strong": 15.0, "roe_good": 10.0, "roe_weak": 6.0,
         "de_threshold": 1.0,
     },
     "Energy & Support Services": {
         "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs 5yr avg",
+        "valuation_label": "P/E vs Sector Avg",
         "roe_strong": 15.0, "roe_good": 10.0, "roe_weak": 6.0,
         "de_threshold": 1.0,
     },
@@ -65,7 +65,7 @@ SECTOR_CONFIG = {
 
 DEFAULT_CONFIG = {
     "valuation_metric": "pe_ratio",
-    "valuation_label": "P/E vs 5yr avg",
+    "valuation_label": "P/E vs Sector Avg",
     "roe_strong": 18.0, "roe_good": 12.0, "roe_weak": 7.0,
     "de_threshold": 0.7,
 }

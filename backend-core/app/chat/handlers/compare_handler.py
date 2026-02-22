@@ -313,6 +313,20 @@ async def handle_compare_stocks(
                 # but if stock_statistics.pe_ratio is NULL, fall back to market_tickers
                 if data_point.get('pe_ratio') is None:
                     data_point['pe_ratio'] = safe_float(ticker_stats.get('pe_ratio'))
+
+                # ── Decimal → Percentage Normalization ──
+                # stock_statistics stores ratios as decimals (0.335 = 33.5%).
+                # Normalize to percentage format for display and threshold math.
+                _DECIMAL_RATIO_KEYS = {
+                    'gross_margin', 'operating_margin', 'profit_margin', 'ebitda_margin',
+                    'roe', 'roa', 'roic', 'roce',
+                    'revenue_growth', 'eps_growth', 'net_income_growth',
+                    'payout_ratio',
+                }
+                for rk in _DECIMAL_RATIO_KEYS:
+                    val = data_point.get(rk)
+                    if val is not None and abs(val) < 1.0:
+                        data_point[rk] = val * 100
             
             # Map "net_margin" request to "profit_margin" to prevent crash
             if data_point.get('profit_margin') is None and data_point.get('net_margin') is not None:
@@ -431,7 +445,18 @@ async def handle_compare_stocks(
                      if p_stats:
                          for k, v in dict(p_stats).items():
                              peer_data[k] = safe_float(v)
-                             
+                         # ── Decimal → Percentage Normalization (same as primary path) ──
+                         _DECIMAL_RATIO_KEYS_PEER = {
+                             'gross_margin', 'operating_margin', 'profit_margin', 'ebitda_margin',
+                             'roe', 'roa', 'roic', 'roce',
+                             'revenue_growth', 'eps_growth', 'net_income_growth',
+                             'payout_ratio',
+                         }
+                         for rk in _DECIMAL_RATIO_KEYS_PEER:
+                             val = peer_data.get(rk)
+                             if val is not None and abs(val) < 1.0:
+                                 peer_data[rk] = val * 100
+                              
                      if peer_data.get('profit_margin') is None and peer_data.get('net_margin') is not None:
                          peer_data['profit_margin'] = peer_data.get('net_margin')
                          
@@ -624,18 +649,15 @@ async def handle_compare_stocks(
             margin_label = 'gross_margin'
         if margin_winner == 0:
             margin_val = stock.get(margin_label, 0)
-            # Normalize: if stored as decimal ratio (0.208), convert to percentage (20.8%)
-            display_val = margin_val * 100 if abs(margin_val) < 1.0 else margin_val
             good_points.append(
-                f"هوامش ربح أعلى ({display_val:.1f}%)" if language == 'ar'
-                else f"Stronger margins ({display_val:.1f}%)"
+                f"هوامش ربح أعلى ({margin_val:.1f}%)" if language == 'ar'
+                else f"Stronger margins ({margin_val:.1f}%)"
             )
         elif margin_winner == 1:
             margin_val = stock.get(margin_label, 0)
-            display_val = margin_val * 100 if abs(margin_val) < 1.0 else margin_val
             bad_points.append(
-                f"هوامش ربح أقل ({display_val:.1f}%)" if language == 'ar'
-                else f"Lower margins ({display_val:.1f}%)"
+                f"هوامش ربح أقل ({margin_val:.1f}%)" if language == 'ar'
+                else f"Lower margins ({margin_val:.1f}%)"
             )
         
         # Growth

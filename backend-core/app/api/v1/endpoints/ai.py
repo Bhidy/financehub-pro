@@ -477,10 +477,15 @@ async def get_shared_session_messages(session_id: str):
 
     try:
         # Fetch all messages associated with this session without verifying ownership
+        # Fetch only the last 2 messages (usually user query + assistant response) for this session
         msg_query = """
-            SELECT id, role, content, meta, created_at
-            FROM chat_messages
-            WHERE session_id = $1
+            SELECT * FROM (
+                SELECT id, role, content, meta, created_at
+                FROM chat_messages
+                WHERE session_id = $1
+                ORDER BY created_at DESC
+                LIMIT 2
+            ) AS recent_msgs
             ORDER BY created_at ASC
         """
         rows = await db.fetch_all(msg_query, session_id)

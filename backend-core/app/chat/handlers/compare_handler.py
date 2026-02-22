@@ -624,15 +624,18 @@ async def handle_compare_stocks(
             margin_label = 'gross_margin'
         if margin_winner == 0:
             margin_val = stock.get(margin_label, 0)
+            # Normalize: if stored as decimal ratio (0.208), convert to percentage (20.8%)
+            display_val = margin_val * 100 if abs(margin_val) < 1.0 else margin_val
             good_points.append(
-                f"هوامش ربح أعلى ({margin_val:.1f}%)" if language == 'ar'
-                else f"Stronger margins ({margin_val:.1f}%)"
+                f"هوامش ربح أعلى ({display_val:.1f}%)" if language == 'ar'
+                else f"Stronger margins ({display_val:.1f}%)"
             )
         elif margin_winner == 1:
             margin_val = stock.get(margin_label, 0)
+            display_val = margin_val * 100 if abs(margin_val) < 1.0 else margin_val
             bad_points.append(
-                f"هوامش ربح أقل ({margin_val:.1f}%)" if language == 'ar'
-                else f"Lower margins ({margin_val:.1f}%)"
+                f"هوامش ربح أقل ({display_val:.1f}%)" if language == 'ar'
+                else f"Lower margins ({display_val:.1f}%)"
             )
         
         # Growth

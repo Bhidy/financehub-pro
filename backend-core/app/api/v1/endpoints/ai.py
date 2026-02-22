@@ -305,9 +305,10 @@ async def ai_chat_endpoint(
                 "key_insight": response.key_insight,
             }
 
-            await conn.execute("""
+            inserted_msg_id = await conn.fetchval("""
                 INSERT INTO chat_messages (session_id, role, content, meta, created_at)
                 VALUES ($1, 'assistant', $2, $3, NOW())
+                RETURNING id
             """, session_id, response.message_text, json.dumps(meta_data, default=str))
 
             # Session title/history UX is still auth-only.
@@ -348,6 +349,7 @@ async def ai_chat_endpoint(
             # Inject session_id into response meta for client tracking
             response_dict = response.dict()
             response_dict['session_id'] = session_id 
+            response_dict['message_id'] = inserted_msg_id
             
             return response_dict
 
@@ -497,6 +499,60 @@ async def get_shared_session_messages(session_id: str):
         return result
     except Exception as e:
         print(f"Fetch shared messages error: {e}")
+        return []
+
+@router.get("/shared/message/{message_id}", response_model=List[dict])
+async def get_shared_single_message(message_id: int):
+    """
+    Get a specific assistant message and its associated user query.
+    Used for sharing specific chat bubbles rather than full histories.
+    """
+    if not db._pool:
+         return []
+
+    try:
+        # 1. Fetch the target assistant message to get the session_id and its creation time
+        target_msg_query = """
+            SELECT id, session_id, role, content, meta, created_at
+            FROM chat_messages
+            WHERE id = $1 AND role = 'assistant'
+        """
+        target_msg = await db.fetch_one(target_msg_query, message_id)
+        
+        if not target_msg:
+             return []
+             
+        session_id = target_msg['session_id']
+        target_time = target_msg['created_at']
+        
+        # 2. Fetch the immediately preceding 'user' message in the same session
+        user_msg_query = """
+            SELECT id, role, content, meta, created_at
+            FROM chat_messages
+            WHERE session_id = $1 AND role = 'user' AND created_at <= $2
+            ORDER BY created_at DESC
+            LIMIT 1
+        """
+        user_msg = await db.fetch_one(user_msg_query, session_id, target_time)
+        
+        # 3. Format result (User query first, then Assistant response)
+        result = []
+        messages_to_process = []
+        if user_msg:
+            messages_to_process.append(dict(user_msg))
+        messages_to_process.append(dict(target_msg))
+        
+        for item in messages_to_process:
+            if item.get('meta') and isinstance(item['meta'], str):
+                 try:
+                     item['meta'] = json.loads(item['meta'])
+                 except:
+                     pass
+            result.append(item)
+            
+        return result
+    except Exception as e:
+        print(f"Fetch specific shared message error: {e}")
         return []
 
 

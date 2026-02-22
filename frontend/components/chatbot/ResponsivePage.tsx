@@ -74,12 +74,13 @@ export const resolveMessageLanguage = (msg: any): Language => {
 export interface ResponsivePageProps {
     initialSessionId?: string;
     isSharedView?: boolean;
+    isSharedMessageView?: boolean;
 }
 
 /**
  * Responsive AI Analyst with Domain-Based Layout
  */
-function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false }: ResponsivePageProps = {}) {
+function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, isSharedMessageView = false }: ResponsivePageProps = {}) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
@@ -163,7 +164,8 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false }: 
         },
         lang: lang,
         sharedSessionId: isSharedView ? initialSessionId : undefined,
-    }), [contextMarket, isAuthenticated, lang, isSharedView, initialSessionId]);
+        isSharedMessageView: isSharedMessageView,
+    }), [contextMarket, isAuthenticated, lang, isSharedView, initialSessionId, isSharedMessageView]);
 
     const {
         messages,
@@ -967,7 +969,7 @@ const MessageRenderer = memo(({
                                 transition={{ delay: 0.3, duration: 0.3 }}
                             >
                                 <MessageFeedback
-                                    messageId={sessionId || m.session_id || m.response?.meta?.entities?.session_id}
+                                    messageId={m.id?.toString() || ""}
                                     contentToShare={m.response?.conversational_text || m.content}
                                     language={resolveMessageLanguage(m)}
                                 />

@@ -35,10 +35,13 @@ export async function generateMetadata(
         console.error("Failed to generate metadata for shared session", e);
     }
 
-    // Determine absolute URL for og:image
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://startamarkets.com';
+    const sharedUrl = `${baseUrl}/shared/${id}`;
+
+    // Some scrapers strictly require .png in the path or as a param
     const ogImageUrl = new URL('/api/og/share', baseUrl);
     ogImageUrl.searchParams.set('title', title.replace(' | Starta', ''));
+    ogImageUrl.searchParams.set('ext', '.png');
 
     return {
         title: title,
@@ -46,6 +49,7 @@ export async function generateMetadata(
         openGraph: {
             title: title,
             description: description,
+            url: sharedUrl,
             type: 'website',
             images: [
                 {

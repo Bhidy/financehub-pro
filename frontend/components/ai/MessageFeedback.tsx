@@ -97,7 +97,7 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
         }
     };
 
-    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/shared/${messageId}` : '';
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/shared/msg/${messageId}` : '';
     const encodedUrl = encodeURIComponent(shareUrl);
 
     // Safely truncate string that may contain emojis (surrogate pairs)

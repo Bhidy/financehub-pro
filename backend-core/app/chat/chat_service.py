@@ -2489,17 +2489,17 @@ class ChatService:
                 if not handler_framework_card:
                     handler_framework_card = self._parse_framework(llm_text)
                     if handler_framework_card:
-                        # Strip from text (Case Insensitive)
-                        llm_text = re.sub(r"\[FRAMEWORK\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                         logger.info(f"[ChatService] 📊 Extracted FRAMEWORK from narrative")
+                # ALWAYS Strip FRAMEWORK from text (Case Insensitive, robust match)
+                llm_text = re.sub(r"(?:\[FRAMEWORK\]|\*\*\[?FRAMEWORK\]?\*\*|FRAMEWORK\s*[:\n])\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                 
                 # Parse QUANTIFIED DRIVERS
                 if not handler_quantified_drivers:
                     handler_quantified_drivers = self._parse_drivers(llm_text)
                     if handler_quantified_drivers:
-                         # Strip from text (Case Insensitive)
-                        llm_text = re.sub(r"\[QUANTIFIED_DRIVERS\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                         logger.info(f"[ChatService] 🚗 Extracted DRIVERS from narrative")
+                # ALWAYS Strip DRIVERS from text
+                llm_text = re.sub(r"(?:\[QUANTIFIED_DRIVERS\]|\*\*\[?QUANTIFIED_DRIVERS\]?\*\*)\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                 
                 # Parse LEARNING
                 # (Note: handler_educational_cards might be populated by handler, but we prioritize LLM if handler didn't provide specific ones? 

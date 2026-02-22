@@ -2490,8 +2490,8 @@ class ChatService:
                     handler_framework_card = self._parse_framework(llm_text)
                     if handler_framework_card:
                         logger.info(f"[ChatService] 📊 Extracted FRAMEWORK from narrative")
-                # ALWAYS Strip FRAMEWORK from text (Case Insensitive, robust match)
-                llm_text = re.sub(r"(?:\[FRAMEWORK\]|\*\*\[?FRAMEWORK\]?\*\*|FRAMEWORK\s*[:\n])\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                # ALWAYS Strip FRAMEWORK from text (including END_FRAMEWORK if present)
+                llm_text = re.sub(r"(?:\[FRAMEWORK\]|\*\*\[?FRAMEWORK\]?\*\*|FRAMEWORK\s*[:\n]).*?(?:\[END_FRAMEWORK\]|(?=\[|$))", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                 
                 # Parse QUANTIFIED DRIVERS
                 if not handler_quantified_drivers:
@@ -2499,36 +2499,34 @@ class ChatService:
                     if handler_quantified_drivers:
                         logger.info(f"[ChatService] 🚗 Extracted DRIVERS from narrative")
                 # ALWAYS Strip DRIVERS from text
-                llm_text = re.sub(r"(?:\[QUANTIFIED_DRIVERS\]|\*\*\[?QUANTIFIED_DRIVERS\]?\*\*)\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
+                llm_text = re.sub(r"(?:\[QUANTIFIED_DRIVERS\]|\*\*\[?QUANTIFIED_DRIVERS\]?\*\*).*?(?:\[END_QUANTIFIED_DRIVERS\]|(?=\[|$))", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
                 
                 # Parse LEARNING
-                # (Note: handler_educational_cards might be populated by handler, but we prioritize LLM if handler didn't provide specific ones? 
-                # Actually, handler usually provides data cards, not learning. So LLM is primary.)
-                # Parse LEARNING - DISABLED PER USER REQUEST (Phase 9)
-                # if not handler_educational_cards:
-                #     learning = self._parse_learning(llm_text)
-                #     if learning:
-                #         handler_educational_cards = [
-                #             {"variant": "definition", "title": item['term'], "content": item['definition']}
-                #             for item in learning['items']
-                #         ]
-                #          # Strip from text (Case Insensitive)
-                #         llm_text = re.sub(r"\[LEARNING\]\s*(.*?)(?=\[|$)", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
-                #         logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
-                #     else:
-                #         # FALLBACK: Generate programmatically if LLM failed (Guarantees UI Layer 3)
-                #         try:
-                #             cards = result_data.get('cards', [])
-                #             if cards:
-                #                 fallback_defs = explainer.extract_fact_explanations(cards, language)
-                #                 if fallback_defs:
-                #                     handler_educational_cards = [
-                #                         {"variant": "definition", "title": term, "content": definition}
-                #                         for term, definition in fallback_defs.items()
-                #                     ]
-                #                     logger.info(f"[ChatService] 📘 Injected Programmatic Fallback for LEARNING ({len(handler_educational_cards)} items)")
-                #         except Exception as fb_ex:
-                #             logger.error(f"[ChatService] Fallback Learning Generation Failed: {fb_ex}")
+                if not handler_educational_cards:
+                    learning = self._parse_learning(llm_text)
+                    if learning:
+                        handler_educational_cards = [
+                            {"variant": "definition", "title": item['term'], "content": item['definition']}
+                            for item in learning['items']
+                        ]
+                        logger.info(f"[ChatService] 🎓 Extracted LEARNING from narrative")
+                    else:
+                        # FALLBACK: Generate programmatically if LLM failed (Guarantees UI Layer 3)
+                        try:
+                            cards = result_data.get('cards', [])
+                            if cards:
+                                fallback_defs = explainer.extract_fact_explanations(cards, language)
+                                if fallback_defs:
+                                    handler_educational_cards = [
+                                        {"variant": "definition", "title": term, "content": definition}
+                                        for term, definition in fallback_defs.items()
+                                    ]
+                                    logger.info(f"[ChatService] 📘 Injected Programmatic Fallback for LEARNING ({len(handler_educational_cards)} items)")
+                        except Exception as fb_ex:
+                            logger.error(f"[ChatService] Fallback Learning Generation Failed: {fb_ex}")
+                
+                # ALWAYS Strip LEARNING from text (User explicitly requested removal of artifact)
+                llm_text = re.sub(r"(?:\[LEARNING\]|\*\*\[?LEARNING\]?\*\*|LEARNING\s*[:\n]).*?(?:\[END_LEARNING\]|(?=\[|$))", "", llm_text, flags=re.DOTALL | re.IGNORECASE).strip()
 
                 # Parse KEY INSIGHT (if tagged with [KEY_INSIGHT])
                 match_insight = re.search(r"\[KEY_INSIGHT\]\s*(.*?)(?=\[|$)", llm_text, re.DOTALL | re.IGNORECASE)

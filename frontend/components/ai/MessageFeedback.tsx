@@ -37,7 +37,16 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
                 "Other"
             ],
             submit: "Submit Report",
-            cancel: "Cancel"
+            cancel: "Cancel",
+            shareMenu: {
+                title: "Share conversation",
+                copyLink: "Copy Link",
+                twitter: "X (Twitter)",
+                linkedin: "LinkedIn",
+                facebook: "Facebook",
+                whatsapp: "WhatsApp",
+                copied: "Link copied!"
+            }
         },
         ar: {
             share: "مشاركة",
@@ -52,7 +61,16 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
                 "أخرى"
             ],
             submit: "إرسال التقرير",
-            cancel: "إلغاء"
+            cancel: "إلغاء",
+            shareMenu: {
+                title: "مشاركة المحادثة",
+                copyLink: "نسخ الرابط",
+                twitter: "X (تويتر)",
+                linkedin: "لينكد إن",
+                facebook: "فيسبوك",
+                whatsapp: "واتساب",
+                copied: "تم نسخ الرابط!"
+            }
         }
     } as any)[language] || {
         share: "Share",

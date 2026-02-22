@@ -43,7 +43,7 @@ class MacroService:
             'score': score_card.score,
             'assessment': score_card.assessment,
             'factors': [
-                {'name': f.name, 'points': f.points, 'max': f.max_points, 'status': f.status}
+                {'name': f.name, 'points': f.points, 'max_points': f.max_points, 'status': f.status}
                 for f in score_card.factors
             ],
             'insights': insights

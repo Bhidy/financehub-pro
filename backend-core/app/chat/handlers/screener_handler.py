@@ -4,6 +4,7 @@ Screener Handler - TOP_GAINERS, TOP_LOSERS, SECTOR_STOCKS, DIVIDEND_LEADERS, SCR
 
 import asyncpg
 from typing import Dict, Any, List, Optional
+from ..logic.macro_service import get_macro_service
 
 
 def _make_stock_actions(top_stocks: list, language: str = 'en') -> list:
@@ -583,7 +584,20 @@ async def handle_deep_screener(
         message = f"أفضل الأسهم حسب {lbl}"
     else:
         message = f"Top Stocks by {lbl}"
-        
+    
+    # Issue 7 Fix: Add macro context to screener results (market-wide context — relevant here).
+    macro_cards = []
+    try:
+        macro_svc = get_macro_service()
+        macro_ctx = await macro_svc.get_macro_context(conn)
+        macro_cards = [{
+            'type': 'macro_context',
+            'title': 'Macro Environment' if language == 'en' else 'البيئة الاقتصادية الكلية',
+            'data': macro_ctx
+        }]
+    except Exception as macro_err:
+        print(f"[Screener Handler] Macro context error: {macro_err}")
+    
     return {
         'success': True,
         'message': message,
@@ -591,5 +605,5 @@ async def handle_deep_screener(
             'type': 'screener_results',
             'title': lbl,
             'data': {'stocks': results, 'metric': metric}
-        }]
+        }] + macro_cards
     }

@@ -30,6 +30,7 @@ import { MobileInput } from "./components/MobileInput";
 import { MobileSuggestions } from "./components/MobileSuggestions";
 import { HistoryDrawer } from "./components/HistoryDrawer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/components/ThemeProvider";
 import { useGuestUsage } from "@/hooks/useGuestUsage";
 import UsageLimitModal from "@/components/ai/UsageLimitModal";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -76,7 +77,7 @@ function ResponsiveAIAnalystContent() {
     const { getRoute } = useMobileRoutes();
     const [showUsageModal, setShowUsageModal] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [theme, setTheme] = useState<"light" | "dark">("light");
+    const { theme, toggleTheme } = useTheme();
     const [lang, setLang] = useState<Language>("en");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [designMode, setDesignMode] = useState<'pro' | 'analyst'>('pro');
@@ -98,21 +99,9 @@ function ResponsiveAIAnalystContent() {
 
     const typewriterPlaceholder = useTypewriter(placeholderTexts);
 
-    // Theme Initialization with Persistence
+    // Language Initialization with Persistence
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const savedTheme = localStorage.getItem("theme") as "light" | "dark";
-            // Default to light if no saved preference
-            const effectiveTheme = savedTheme || "light";
-
-            setTheme(effectiveTheme);
-
-            if (effectiveTheme === "dark") {
-                document.documentElement.classList.add("dark");
-            } else {
-                document.documentElement.classList.remove("dark");
-            }
-
             // FORCE ENGLISH (Override any saved preference)
             // const savedLang = localStorage.getItem("lang") as Language;
             setLang('en');
@@ -128,18 +117,6 @@ function ResponsiveAIAnalystContent() {
         localStorage.setItem("lang", newLang);
         document.documentElement.lang = newLang;
         document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-    };
-
-    const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light";
-        setTheme(newTheme);
-        localStorage.setItem("theme", newTheme);
-
-        if (newTheme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
     };
 
     // Handle Google OAuth callback

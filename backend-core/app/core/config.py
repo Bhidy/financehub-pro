@@ -11,8 +11,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY") or "placeholder-secret-key-must-be-replaced-in-production"
 
     ALGORITHM: str = "HS256"
-    # CRITICAL: Extended to 7 days (10080 mins) for mobile UX - prevents daily logouts
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
+    # CRITICAL: Shortened access token for security (e.g. 15 mins), extended refresh token
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
     
     # Database
     DATABASE_URL: Optional[str] = None

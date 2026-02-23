@@ -370,16 +370,7 @@ async def handle_stock_price(
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليلي الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
     
-    # Generate data card for current position
-    data_card = generate_data_card(
-        symbol=symbol,
-        price=price,
-        change=change,
-        change_pct=change_pct,
-        currency=currency,
-        volume=volume,
-        language=language
-    )
+    # Data card (duplicate) generation removed in favor of comprehensive Snapshot Card
     
     # Disclaimer card (NEW structured format)
     disclaimer_card = {
@@ -393,14 +384,11 @@ async def handle_stock_price(
 
     # Append structured components to cards list for rendering
     # IMPORTANT: Convert Pydantic models to dicts for Card.data validation
-    if data_card:
-        cards.append({'type': 'data_card', 'data': data_card.model_dump() if hasattr(data_card, 'model_dump') else data_card})
 
     if disclaimer_card:
         cards.append({'type': 'disclaimer_card', 'data': disclaimer_card})
 
     # Convert Pydantic models to dicts for top-level response
-    data_card_dict = data_card.model_dump() if hasattr(data_card, 'model_dump') and data_card else None
 
     return {
         'success': True,
@@ -411,7 +399,6 @@ async def handle_stock_price(
         'follow_up_prompt': follow_up_prompt,
         # CRITICAL: Top-level structured components for WorldClassMessage rendering
         # These are extracted by chat_service._build_response() 
-        'data_card': data_card_dict,
         'disclaimer_card': disclaimer_card
     }
 

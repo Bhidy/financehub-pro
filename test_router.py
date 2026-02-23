@@ -1,26 +1,16 @@
 import asyncio
-import os
-import sys
-sys.path.append("/Users/home/Documents/Info Site/mubasher-deep-extract/backend-core")
+from backend_core.app.chat.chat_service import get_chat_service
+from backend_core.app.chat.schemas import ChatResponse
+from backend_core.app.db.database import get_db
 
-from app.chat.intent_router import IntentRouter
-from app.chat.schemas import ChatRequest
-
-async def main():
-    router = IntentRouter(None)  # Skip LLM context for now
-    
-    test_cases = [
-        ("deep dive on saudi cement", "en"),
-        ("deep dive on mb eng", "en"),
-        ("deep dive on ams", "en"),
-        ("deep dive on comi", "en"),
-    ]
-    
-    for msg, lang in test_cases:
-        req = ChatRequest(message=msg, language=lang, session_id="test")
-        intent, conf, ext, _, _ = await router.route(req)
-        print(f"Message: '{msg}' -> Intent: {intent.value} (Conf: {conf})")
-        print(f"Entities: {ext}\n")
+async def test_mich():
+    print("Testing 'mich valuation'")
+    async for conn in get_db():
+        service = get_chat_service(conn)
+        res = await service.process_message("mich valuation", session_id="test_session", language="en")
+        print(f"Final response: {res.text}")
+        print(f"Cards: {res.cards}")
+        break
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(test_mich())

@@ -1082,6 +1082,38 @@ class ChatService:
                 return Intent.STOCK_SNAPSHOT, updated
             return Intent.MARKET_TIMING, updated
 
+        # --- ANTI-SCREENER FALLBACK (The "MICH" Override) ---
+        # If Claude routes to a Market/Screener intent but the user explicitly provided a clear ticker,
+        # it is a specific stock query, NOT a general screener.
+        screener_to_stock_map = {
+            Intent.SCREENER_VALUE: Intent.DEEP_VALUATION,
+            Intent.SCREENER_DEEP: Intent.STOCK_SNAPSHOT,
+            Intent.SCREENER_GROWTH: Intent.DEEP_GROWTH,
+            Intent.SCREENER_SAFETY: Intent.DEEP_SAFETY,
+            Intent.SCREENER_INCOME: Intent.DIVIDENDS,
+            Intent.TOP_GAINERS: Intent.STOCK_SNAPSHOT,
+            Intent.TOP_LOSERS: Intent.STOCK_SNAPSHOT,
+            Intent.SECTOR_STOCKS: Intent.STOCK_SNAPSHOT,
+        }
+        
+        if intent in screener_to_stock_map and not updated.get("symbol"):
+            potentials = extract_potential_symbols(message)
+            if potentials:
+                # User clearly mentioned a symbol, override to specific stock intent
+                updated["symbol"] = potentials[0]
+                new_intent = screener_to_stock_map[intent]
+                
+                # Check for explicit keywords to refine the mapped intent further
+                if any(kw in msg_lower for kw in ["valuation", "fair value", "intrinsic"]) or "تقييم" in msg:
+                    new_intent = Intent.DEEP_VALUATION
+                elif any(kw in msg_lower for kw in ["dividend", "yield"]) or "توزيعات" in msg:
+                    new_intent = Intent.DIVIDENDS
+                elif "growth" in msg_lower or "نمو" in msg:
+                    new_intent = Intent.DEEP_GROWTH
+                
+                print(f"[ChatService] 🛡️ Anti-Screener Override activated: {intent.value} -> {new_intent.value} (Found symbol: {potentials[0]})")
+                return new_intent, updated
+
         return intent, updated
 
     async def _infer_peer_symbols(

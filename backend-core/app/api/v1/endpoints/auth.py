@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Response, Cookie
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, validator
 from datetime import timedelta, datetime
@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 import re
 
 from app.db.session import db
-from app.core.security import verify_password, create_access_token, get_password_hash
+from app.core.security import verify_password, create_access_token, get_password_hash, create_refresh_token
 from app.core.config import settings
 
 router = APIRouter()
@@ -133,7 +133,10 @@ async def require_admin(current_user: Annotated[dict, Depends(get_current_active
 # ============================================================
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login_for_access_token(
+    response: Response,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+):
     user = await get_user_by_email(form_data.username)
     if not user or not verify_password(form_data.password, user['hashed_password']):
         raise HTTPException(
@@ -145,10 +148,20 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     # Update last login
     await db.execute("UPDATE users SET last_login = $1 WHERE id = $2", datetime.utcnow(), user['id'])
     
-    access_token_expires = timedelta(hours=24)  # Extended to 24 hours
     access_token = create_access_token(
-        data={"sub": user['email'], "role": user['role']},
-        expires_delta=access_token_expires
+        data={"sub": user['email'], "role": user['role']}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": user['email'], "role": user['role']}
+    )
+    
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60
     )
     
     return {
@@ -164,12 +177,23 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     }
 
 @router.post("/login", response_model=Token)
-async def login_json(req: LoginRequest):
+async def login_json(req: LoginRequest, response: Response):
     user = await get_user_by_email(req.email)
     if not user or not verify_password(req.password, user['hashed_password']):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     
     access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
+    refresh_token = create_refresh_token(data={"sub": user['email'], "role": user['role']})
+    
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60
+    )
+    
     return {
         "access_token": access_token, 
         "token_type": "bearer",
@@ -182,11 +206,11 @@ async def login_json(req: LoginRequest):
     }
 
 @router.post("/register")
-async def register_alias(reg: RegisterRequest):
-    return await signup(reg)
+async def register_alias(reg: RegisterRequest, response: Response):
+    return await signup(reg, response)
 
 @router.post("/signup")
-async def signup(reg: RegisterRequest):
+async def signup(reg: RegisterRequest, response: Response):
     existing = await get_user_by_email(reg.email)
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -205,8 +229,19 @@ async def signup(reg: RegisterRequest):
         
         # Auto-generate token for immediate login
         access_token = create_access_token(
-            data={"sub": user['email'], "role": user['role']},
-            expires_delta=timedelta(hours=24)
+            data={"sub": user['email'], "role": user['role']}
+        )
+        refresh_token = create_refresh_token(
+            data={"sub": user['email'], "role": user['role']}
+        )
+        
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60
         )
         
         return {
@@ -218,6 +253,38 @@ async def signup(reg: RegisterRequest):
     except Exception as e:
         print(f"Signup Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Signup Database Error: {str(e)}")
+
+@router.post("/refresh", response_model=Token)
+async def refresh_access_token(refresh_token: str | None = Cookie(None)):
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token missing")
+    
+    try:
+        payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        token_type = payload.get("type")
+        
+        if not email or token_type != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            
+        user = await get_user_by_email(email)
+        if not user or not user.get('is_active', True):
+            raise HTTPException(status_code=401, detail="Invalid user or inactive")
+            
+        access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user['id'],
+                "email": user['email'],
+                "full_name": user.get('full_name'),
+                "role": user['role']
+            }
+        }
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
 @router.get("/me")
 async def get_current_user_info(current_user: Annotated[dict, Depends(get_current_active_user)]):

@@ -42,20 +42,75 @@ api.interceptors.request.use(
     }
 );
 
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
 // Response interceptor for global error handling
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response && error.response.status === 401) {
-            if (typeof window !== 'undefined') {
-                // Clear storage
-                localStorage.removeItem("fh_auth_token");
-                localStorage.removeItem("fh_user");
+    async (error) => {
+        const originalRequest = error.config;
 
-                // CRITICAL FIX: Direct routing to /login
-                const loginPath = '/login';
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            // If the 401 was during a refresh attempt or login, hard logout
+            if (originalRequest.url?.includes('/auth/refresh') || originalRequest.url?.includes('/auth/token') || originalRequest.url?.includes('/auth/login')) {
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem("fh_auth_token");
+                    localStorage.removeItem("fh_user");
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
+            }
 
-                window.location.href = loginPath;
+            if (isRefreshing) {
+                return new Promise(function (resolve, reject) {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                // Call refresh endpoint with axios directly to avoid interceptor loops
+                const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+
+                const newToken = data.access_token;
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem("fh_auth_token", newToken);
+                }
+
+                api.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+                originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
+
+                processQueue(null, newToken);
+                return api(originalRequest);
+            } catch (err) {
+                processQueue(err, null);
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem("fh_auth_token");
+                    localStorage.removeItem("fh_user");
+                    window.location.href = '/login';
+                }
+                return Promise.reject(err);
+            } finally {
+                isRefreshing = false;
             }
         }
         return Promise.reject(error);

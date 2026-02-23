@@ -123,6 +123,9 @@ JSON: {{"intent": "SCREENER_DEEP", "entities": {{"sector": "Banks", "filters": [
 User: "Compare COMI and HRHO"
 JSON: {{"intent": "COMPARE_STOCKS", "entities": {{"compare_symbols": ["COMI", "HRHO"]}}, "confidence": 0.95}}
 
+User: "Chart TMGH 6M"
+JSON: {{"intent": "STOCK_CHART", "entities": {{"symbol": "TMGH", "range": "6M"}}, "confidence": 0.95}}
+
 ### CONTEXT:
 {context}
 
@@ -136,6 +139,7 @@ Return JSON format:
         "symbol": "SYMBOL or null",
         "sector": "Sector Name or null",
         "market_code": "EGX",
+        "range": "Time range, e.g., 1M, 3M, 6M, 1Y, 5Y, MAX or null",
         "filters": [
            {{"metric": "metric_name", "operator": "gt/lt", "value": 123}}
         ],

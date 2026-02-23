@@ -863,6 +863,21 @@ const MessageRenderer = memo(({
                             />
                         </MessageErrorBoundary>
 
+                        {/* Stock Header - Rendered ABOVE the chart */}
+                        {isTypingCompleted && (() => {
+                            const headerCard = (m.response?.cards || []).find((c: any) => c.type === 'stock_header');
+                            return headerCard ? (
+                                <motion.div
+                                    className="mb-3 mt-1"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <ChatCards cards={[headerCard]} language={resolveMessageLanguage(m)} />
+                                </motion.div>
+                            ) : null;
+                        })()}
+
                         {/* Chart - Keep separate for specialized rendering */}
                         {isTypingCompleted && m.response?.chart && (
                             <motion.div
@@ -890,7 +905,8 @@ const MessageRenderer = memo(({
                                 'index_composition', 'egx_constituents',
                                 'insight', 'insights', 'warning_card', 'reality_check',
                                 'character_cards', 'stock_personalities',
-                                'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria'
+                                'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria',
+                                'stock_header'
                             ];
                             const filteredCards = (m.response?.cards || []).filter(
                                 (card: any) => !worldClassHandledTypes.includes(card.type)

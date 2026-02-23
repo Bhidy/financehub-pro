@@ -38,7 +38,7 @@ NARRATIVE_CACHE: Dict[str, tuple] = {}  # {cache_key: (narrative, timestamp)}
 CACHE_TTL_SECONDS = 300  # 5 minutes
 CACHE_STATS = {"hits": 0, "misses": 0}
 
-def _get_cache_key(intent: str, data: List[Dict], language: str, allow_greeting: bool, user_level: str, memory_hash: str) -> str:
+def _get_cache_key(query: str, intent: str, data: List[Dict], language: str, allow_greeting: bool, user_level: str, memory_hash: str) -> str:
     """Generate a cache key from the request parameters."""
     # Extract symbol from data for more specific caching
     symbol = ""
@@ -46,7 +46,10 @@ def _get_cache_key(intent: str, data: List[Dict], language: str, allow_greeting:
         if card.get("type") == "stock_header":
             symbol = card.get("data", {}).get("symbol", "")
             break
-    key_str = f"{intent}:{symbol}:{language}:{allow_greeting}:{user_level}:{memory_hash}"
+    
+    # Clean the query to make caching slightly resilient to whitespace/case differences
+    clean_query = query.strip().lower() if query else ""
+    key_str = f"{clean_query}:{intent}:{symbol}:{language}:{allow_greeting}:{user_level}:{memory_hash}"
     return hashlib.md5(key_str.encode()).hexdigest()
 
 def _get_cached_narrative(cache_key: str) -> Optional[str]:
@@ -168,7 +171,7 @@ class LLMExplainerService:
         cache_key = None
         if not allow_greeting and data:
             mem_hash = hashlib.md5((context_memories or "").encode()).hexdigest()
-            cache_key = _get_cache_key(intent, data, language, allow_greeting, user_level, mem_hash)
+            cache_key = _get_cache_key(query, intent, data, language, allow_greeting, user_level, mem_hash)
             cached = _get_cached_narrative(cache_key)
             if cached:
                 # Personalize cached response with current user's name
@@ -304,11 +307,11 @@ class LLMExplainerService:
         f"═══════════════════════════════════════════════════════════════\n"
         f"قواعد العرض (CONVERSATIONAL DISPLAY MODE - MANDATORY)\n"
         f"═══════════════════════════════════════════════════════════════\n"
-        f"1. **جماليات النص**:\n"
-        f"   - اكتب في جمل واضحة ومباشرة.\n"
-        f"   - فكرة واحدة فقط في كل سطر.\n"
-        f"   - افصل بين الكتل بسطر فارغ دائماً.\n"
-        f"   - تجنب النقاط (Bullet Points) إلا عند سرد بيانات رقمية.\n\n"
+        f"1. **جماليات النص (الرد الديناميكي الفائق الجودة)**:\n"
+        f"   - يجب أن تجيب مباشرة وبدقة على سؤال المستخدم الدقيق ({query}).\n"
+        f"   - استخدم مزيجاً من الفقرات التحليلية المهنية والنقاط (Bullet Points) المنظمة لإبراز البيانات بوضوح.\n"
+        f"   - الفكرة الأولى يجب أن تكون فقرة ملخصة، يتبعها 3-5 نقاط (Bullet Points) توضح الأرقام الهامة، ثم استنتاج.\n"
+        f"   - يجب أن يبدو التصميم فاخراً، غنياً بالمعلومات وسهل القراءة السريعة.\n\n"
         f"2. **نبرة الصوت**:\n"
         f"   - تحدث كخبير يخاطب زميله (طبيعي، سلس، غير آلي).\n"
         f"   - استخدم لغة المحللين ('السهم بيتحرك'، 'السيولة بتقول').\n"
@@ -321,11 +324,11 @@ class LLMExplainerService:
         f"الهيكل المطلوب (Strict Structure)\n"
         f"═══════════════════════════════════════════════════════════════\n"
         f"يجب تنسيق الرد بهذه العلامات بدقة:\n\n"
-        f"1. **التحليل الأساسي**:\n"
+        f"1. **التحليل الأساسي والمباشر لسؤال المستخدم**:\n"
         f"   - (CRITICAL: DO NOT use the word 'Narrative' or 'سردية' as a heading. Start directly with the analysis.)\n"
-        f"   - فقرة 1: ملخص تنفيذي مع أطروحة مدعومة بأرقام.\n"
-        f"   - فقرة 2: التقييم وسياق القطاع - قارن المؤشرات بمتوسطات القطاع المرفقة في البيانات. يجب تقدير الفرق نسبياً بوضوح.\n"
-        f"   - فقرة 3: المحركات الأساسية - ما هي عوامل الربحية أو النمو التي تبرر هذا التقييم؟\n\n"
+        f"   - فقرة 1: ملخص تنفيذي يركز حصرياً على الإجابة عن سؤال المستخدم.\n"
+        f"   - فقرة 2 (نقاط مجمعة - Bullet Points): 3 إلى 5 نقاط منظمة ومباشرة تستخلص المؤشرات ومقارنتها بمتوسطات القطاع. يجب تقدير الفرق نسبياً بوضوح.\n"
+        f"   - فقرة 3: استنتاج للمحركات الأساسية - ما هي عوامل الربحية أو النمو التي تبرر هذا التقييم في سياق السؤال؟\n\n"
         f"{ar_scenarios_instruction}"
         f"2. **رأيي كمحلل (MANDATORY)**:\n"
         f"[MY_FRAMEWORK]\n"
@@ -394,12 +397,11 @@ class LLMExplainerService:
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"VOICE & ANALYSIS RULES (CFA Level 3)\n"
                 f"═══════════════════════════════════════════════════════════════\n"
-                f"1. **START WITH DATA, NOT GREETINGS**:\n"
+                f"1. **DYNAMIC DIRECT ANSWER (ULTRA-PREMIUM FORMATTING)**:\n"
+                f"   - Your entire response MUST directly answer the exact question the user asked ({query}).\n"
                 f"   - NEVER use: 'Hi', 'Hello', 'Welcome', 'I'm glad you asked'\n"
-                f"   - NEVER use user names or placeholders\n"
-                f"   - First sentence MUST contain numbers or metrics\n"
-                f"   - GOOD: 'Trading at 8x PE versus 12x sector average — a 33% discount that suggests [thesis].'\n"
-                f"   - BAD: 'Hi Analyst, let me explain the stock...'\n\n"
+                f"   - Use a sophisticated mix of analytical paragraphs AND data-rich bullet points to make the insight pop visually.\n"
+                f"   - The layout must look premium: Paragraph 1 (Direct Answer/Executive Summary) -> Bullet Points (Key quantified drivers) -> Paragraph 2 (Strategic conclusion).\n\n"
                 f"2. **NO DEFINITIONS**: Never explain 'What is PE'. Your user is an expert.\n"
                 f"   - BAD: 'PE ratio measures price relative to earnings'.\n"
                 f"   - GOOD: 'At 8x PE, the stock trades at a 30% discount to peers.'\n"
@@ -431,11 +433,11 @@ class LLMExplainerService:
                 
                 f"You MUST use these EXACT tags. The App Parser depends on them to render cards.\n"
                 f"⚠️ CRITICAL: Use the EXACT bracket format shown below. Example: [BULL_CASE] not 'Bull Case:'\n\n"
-        f"1. **Core Analysis** (COMPREHENSIVE - 3 paragraphs minimum):\n"
-        f"   - (CRITICAL: DO NOT use the word 'Narrative' or 'Analysis' as a heading. Start directly with the paragraphs.)\n"
-                f"   - Para 1: Executive Summary with QUANTIFIED thesis (e.g., 'trading at a 20% discount to sector average').\n"
-        f"   - Para 2: Valuation Setup & Peer Context — compare current metrics to peer averages utilizing exact numbers from the context. You MUST quantify relative differences (e.g., 'trading at a X% discount to peers').\n"
-        f"   - Para 3: Fundamental Drivers — what specific margins, yields, or growth rates justify this valuation?\n"
+        f"1. **Core Analysis** (DYNAMIC & DIRECT - Mix of Paragraphs and Bullet Points):\n"
+        f"   - (CRITICAL: DO NOT use the word 'Narrative' or 'Analysis' as a heading. Start directly with the content.)\n"
+        f"   - Section 1 (Paragraph): Executive Summary directly answering the user's specific question with a QUANTIFIED thesis.\n"
+        f"   - Section 2 (Bullet Points 3-5 items): Valuation Setup, Peer Context, and Fundamental Drivers. Use exact numbers from the context. You MUST quantify relative differences (e.g., 'trading at a X% discount to peers').\n"
+        f"   - Section 3 (Paragraph): Strategic Conclusion based on the provided metrics and the user's question.\n"
                 f"{en_scenarios_instruction}"
                 f"2. **My Framework** (MANDATORY - Personal Analyst Take):\n"
                 f"[MY_FRAMEWORK]\n"

@@ -292,8 +292,16 @@ function AIAnalystPageContent() {
                                             {/* Dynamic Components Rendered BEFORE Text (Data First) */}
                                             {msg.response && (
                                                 <>
+                                                    {/* Stock Header rendered first */}
+                                                    {msg.response.cards && msg.response.cards.filter((c: any) => c.type === 'stock_header').length > 0 && (
+                                                        <ChatCards cards={msg.response.cards.filter((c: any) => c.type === 'stock_header')} language={msg.response.language} onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }} onExampleClick={handleSuggestionClick} showExport={true} />
+                                                    )}
+
                                                     {msg.response.chart && <ChartCard chart={msg.response.chart} />}
-                                                    {msg.response.cards && <ChatCards cards={msg.response.cards} language={msg.response.language} onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }} onExampleClick={handleSuggestionClick} showExport={true} />}
+
+                                                    {msg.response.cards && msg.response.cards.filter((c: any) => c.type !== 'stock_header').length > 0 && (
+                                                        <ChatCards cards={msg.response.cards.filter((c: any) => c.type !== 'stock_header')} language={msg.response.language} onSymbolClick={(s) => { setQuery(`Price of ${s}`); handleSend(); }} onExampleClick={handleSuggestionClick} showExport={true} />
+                                                    )}
                                                 </>
                                             )}
 

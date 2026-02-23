@@ -863,33 +863,6 @@ const MessageRenderer = memo(({
                             />
                         </MessageErrorBoundary>
 
-                        {/* Stock Header - Rendered ABOVE the chart */}
-                        {isTypingCompleted && (() => {
-                            const headerCard = (m.response?.cards || []).find((c: any) => c.type === 'stock_header');
-                            return headerCard ? (
-                                <motion.div
-                                    className="mb-3 mt-1"
-                                    initial={{ opacity: 0, y: 15 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                                >
-                                    <ChatCards cards={[headerCard]} language={resolveMessageLanguage(m)} />
-                                </motion.div>
-                            ) : null;
-                        })()}
-
-                        {/* Chart - Keep separate for specialized rendering */}
-                        {isTypingCompleted && m.response?.chart && (
-                            <motion.div
-                                className="my-3"
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            >
-                                <ChartCard chart={m.response.chart} language={resolveMessageLanguage(m)} />
-                            </motion.div>
-                        )}
-
                         {/* Data Cards - Keep for stock metrics display */}
                         {isTypingCompleted && (() => {
                             // All card types handled by WorldClassMessage's ultra-premium components

@@ -124,6 +124,30 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleShareClick = async () => {
+        if (!messageId) return;
+
+        // Ultra-premium: Use Native Web Share API on mobile devices if available
+        if (typeof navigator !== 'undefined' && navigator.share && /mobile|iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase())) {
+            try {
+                await navigator.share({
+                    title: 'Starta Markets Analysis',
+                    text: safeContent,
+                    url: shareUrl
+                });
+                return;
+            } catch (err) {
+                // Ignore if user naturally cancelled the share sheet
+                if (err instanceof Error && err.name === 'AbortError') return;
+                // Otherwise fall back to custom menu
+                console.warn('Native web share failed, falling back', err);
+            }
+        }
+
+        // Fallback to custom dropdown for desktop web (or browsers that don't support native share)
+        setShowShareModal(!showShareModal);
+    };
+
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(shareUrl);
@@ -224,7 +248,7 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
                 {/* Share Button & Popover Container */}
                 <div className="relative" ref={shareRef}>
                     <button
-                        onClick={() => setShowShareModal(!showShareModal)}
+                        onClick={handleShareClick}
                         disabled={!messageId} // Need a session ID to share effectively
                         className={clsx(
                             "px-2 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors",
@@ -247,8 +271,8 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
                                 exit={{ opacity: 0, scale: 0.95, y: 5 }}
                                 transition={{ duration: 0.15 }}
                                 className={clsx(
-                                    "absolute top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-white/10 overflow-hidden z-50",
-                                    isAr ? "right-0 origin-top-right" : "left-0 sm:left-auto sm:right-0 origin-top-left sm:origin-top-right"
+                                    "absolute bottom-full mb-2 w-48 bg-white dark:bg-[#151925] rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 overflow-hidden z-50",
+                                    isAr ? "left-0 origin-bottom-left" : "right-0 origin-bottom-right"
                                 )}
                             >
                                 <div className="p-2">

@@ -84,14 +84,34 @@ class FinancialCalculator:
         # 2. Quality Score (30 pts)
         qual_score = 0
         roe = metrics.get('roe')
+        # Handle edge cases where roe might be < 1 indicating percentage missing * 100
+        if roe is not None and abs(roe) < 5:
+            roe = roe * 100
+
         target_roe = criteria.get('quality_roe', 15.0)
-        if roe and roe > target_roe: qual_score += 15
+        if roe and roe > target_roe: 
+            qual_score += 15
+        elif roe and roe > 0:
+            qual_score += 5
         
         de = metrics.get('debt_equity')
         target_de = criteria.get('quality_debt_equity')
-        if target_de and de and de < target_de: qual_score += 15
+        if target_de and de is not None and de < target_de: 
+            qual_score += 15
         elif not target_de: # General check
-             if de and de < 1.0: qual_score += 10
+             if de is not None and de < 1.0: qual_score += 15
+        
+        # Add a check for operating_margin/gross_margin if present in criteria
+        target_margin = criteria.get('quality_operating_margin') or criteria.get('quality_gross_margin')
+        margin = metrics.get('operating_margin') or metrics.get('gross_margin')
+        # If margins are < 1, multiply by 100
+        if margin is not None and abs(margin) < 1.5:
+             margin = margin * 100
+
+        if target_margin and margin is not None and margin > target_margin:
+            # If no roe was matched, use margin points
+            if qual_score < 30:
+                 qual_score += 15
              
         qual_score = min(qual_score, 30)
         breakdown['quality'] = qual_score

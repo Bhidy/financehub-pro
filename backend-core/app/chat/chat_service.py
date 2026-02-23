@@ -1179,16 +1179,16 @@ class ChatService:
         normalized_language: Optional[str],
         claude_language: Optional[str] = None
     ) -> str:
-        # Explicit Arabic from UI always wins.
+        # Explicit user mode selection always wins.
+        # If English mode is selected, force English response even for Arabic questions.
         if forced_language == 'ar':
             return 'ar'
-        # User Arabic text must produce Arabic response even if UI toggle is English.
-        if self._contains_arabic_text(message):
-            return 'ar'
-        # If explicit English and message has no Arabic, keep English.
         if forced_language == 'en':
             return 'en'
-        # Otherwise defer to orchestration results, then normalizer.
+            
+        # Fallbacks if no forced_language is provided
+        if self._contains_arabic_text(message):
+            return 'ar'
         if claude_language in ('ar', 'en'):
             return claude_language
         if normalized_language in ('ar', 'en'):

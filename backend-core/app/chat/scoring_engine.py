@@ -190,6 +190,8 @@ def score_financial_health(debt_equity: float, sector: str) -> Tuple[int, str]:
     threshold = cfg["de_threshold"]
 
     if debt_equity is None:
+        if sector in ["Banks", "Financial Services", "Financials - Banks"]:
+            return 12, "D/E: N/A for Banks (Capital Adequacy used instead)"
         return 10, "D/E: data unavailable"
 
     if debt_equity <= threshold * 0.30:
@@ -207,7 +209,22 @@ def score_financial_health(debt_equity: float, sector: str) -> Tuple[int, str]:
     return score, desc
 
 
-def score_earnings_quality(operating_cash_flow: float, net_income: float) -> Tuple[int, str]:
+def score_earnings_quality(operating_cash_flow: float, net_income: float, sector: str = "", profit_margin: float = None) -> Tuple[int, str]:
+    is_bank_or_finance = sector in ["Banks", "Financial Services", "Financial Services (excluding Banks)"]
+    if is_bank_or_finance and profit_margin is not None:
+        if profit_margin >= 30:
+            return 20, f"Net Margin {profit_margin:.1f}% — exceptional profitability (high quality)"
+        elif profit_margin >= 20:
+            return 16, f"Net Margin {profit_margin:.1f}% — strong profitability"
+        elif profit_margin >= 10:
+            return 12, f"Net Margin {profit_margin:.1f}% — solid profitability"
+        elif profit_margin >= 5:
+            return 8,  f"Net Margin {profit_margin:.1f}% — moderate profitability"
+        elif profit_margin >= 0:
+            return 4,  f"Net Margin {profit_margin:.1f}% — low profitability, watch provisions"
+        else:
+            return 0,  f"Negative margin — loss-making, high risk"
+
     if operating_cash_flow is None or net_income is None:
         return 10, "Earnings quality: data unavailable"
 
@@ -348,7 +365,11 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
     if ni_val is None:
         ni_val = stock.get("net_income_ttm")
 
-    q_score, q_note = score_earnings_quality(ocf_val, ni_val)
+    profit_margin_val = stock.get("profit_margin")
+    if profit_margin_val is None:
+        profit_margin_val = stock.get("net_profit_margin")
+
+    q_score, q_note = score_earnings_quality(ocf_val, ni_val, sector=sector, profit_margin=profit_margin_val)
     m_score, m_note = score_momentum(stock.get("price_change_3m_pct") if stock.get("price_change_3m_pct") is not None else stock.get("change_3m"))
 
     total = v_score + p_score + h_score + q_score + m_score

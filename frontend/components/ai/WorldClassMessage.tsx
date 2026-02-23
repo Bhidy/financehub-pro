@@ -31,6 +31,8 @@ import clsx from "clsx";
 import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { GemListCard } from "./GemListCard";
 import { UndervaluedScreenCard } from "./UndervaluedScreenCard";
+import { ChartCard } from "./ChartCard";
+import { ChatCards } from "./ChatCards";
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -1543,6 +1545,20 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     animate="show"
                     className="flex flex-col"
                 >
+                    {/* Stock Header (if present) */}
+                    {safeResponse?.cards?.filter((c: any) => c.type === 'stock_header').length > 0 && (
+                        <motion.div variants={staggerItem} className="mb-3 mt-1">
+                            <ChatCards cards={safeResponse.cards.filter((c: any) => c.type === 'stock_header')} language={lang} />
+                        </motion.div>
+                    )}
+
+                    {/* Chart (if present) */}
+                    {safeResponse?.chart && (
+                        <motion.div variants={staggerItem} className="my-3">
+                            <ChartCard chart={safeResponse.chart} language={lang} />
+                        </motion.div>
+                    )}
+
                     {/* Quick Stats / Price (Scenario 1) */}
                     {normalizedPriceDisplay && (
                         <motion.div variants={staggerItem}><PriceDisplayCard data={normalizedPriceDisplay} lang={lang} /></motion.div>

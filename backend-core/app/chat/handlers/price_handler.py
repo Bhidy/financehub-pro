@@ -65,7 +65,7 @@ async def handle_stock_price(
             m.market_cap, m.high_52w, m.low_52w, m.sector_name,
             m.last_updated, m.logo_url,
             o.date as ohlc_date,
-            ss.roe, ss.debt_equity, ss.profit_margin, ss.gross_margin, ss.revenue_growth,
+            ss.roe, ss.debt_equity, ss.profit_margin, ss.gross_margin, ss.operating_margin, ss.revenue_growth,
             -- Live sector avg PE/PB for scoring context
             sa.avg_sector_pe, sa.avg_sector_pb
         FROM market_tickers m
@@ -121,6 +121,7 @@ async def handle_stock_price(
     debt_equity = float(data['debt_equity']) if data.get('debt_equity') else None
     profit_margin = float(data['profit_margin'] * 100) if data.get('profit_margin') else None  # decimal to %
     gross_margin = float(data['gross_margin'] * 100) if data.get('gross_margin') else None
+    operating_margin = float(data['operating_margin'] * 100) if data.get('operating_margin') else None
     revenue_growth = float(data['revenue_growth'] * 100) if data.get('revenue_growth') else None
     # Live sector avgs for scoring
     sector_avg_pe = float(data['avg_sector_pe']) if data.get('avg_sector_pe') else None
@@ -301,6 +302,8 @@ async def handle_stock_price(
         'roe': roe,
         'debt_equity': debt_equity,
         'profit_margin': profit_margin,
+        'gross_margin': gross_margin,
+        'operating_margin': operating_margin,
         'dividend_yield': dividend_yield,
         'market_cap': market_cap,
         'high_52w': high_52w,

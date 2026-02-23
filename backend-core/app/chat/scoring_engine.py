@@ -208,13 +208,13 @@ def score_financial_health(debt_equity: float, sector: str) -> Tuple[int, str]:
 
 
 def score_earnings_quality(operating_cash_flow: float, net_income: float) -> Tuple[int, str]:
-    if net_income is None or net_income == 0:
-        if operating_cash_flow and operating_cash_flow > 0:
-            return 8, "Net income zero/negative but positive cash flow"
-        return 0, "Both earnings and cash flow negative"
+    if operating_cash_flow is None or net_income is None:
+        return 10, "Earnings quality: data unavailable"
 
-    if net_income < 0:
-        return 0, f"Net income negative — loss-making business"
+    if net_income <= 0:
+        if operating_cash_flow > 0:
+            return 8, "Net income zero/negative but positive cash flow"
+        return 0, "Net income negative — loss-making business"
 
     ratio = operating_cash_flow / net_income
 
@@ -325,17 +325,31 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
             cfg = {**cfg, "valuation_label": "P/B vs sector"}
 
     v_score, v_note = score_valuation(current_val, hist_val, cfg["valuation_label"])
+    
     # ROE: try multiple column names (roe from stock_statistics)
-    roe_val = stock.get("roe") or stock.get("return_on_equity")
+    roe_val = stock.get("roe")
+    if roe_val is None:
+        roe_val = stock.get("return_on_equity")
     p_score, p_note = score_profitability(roe_val, sector)
+    
     # Debt/Equity: try multiple column names
-    de_val = stock.get("debt_to_equity") or stock.get("debt_equity")
+    de_val = stock.get("debt_to_equity")
+    if de_val is None:
+        de_val = stock.get("debt_equity")
     h_score, h_note = score_financial_health(de_val, sector)
-    q_score, q_note = score_earnings_quality(
-        stock.get("operating_cash_flow") or stock.get("ocf_ttm") or stock.get("operating_cashflow"),
-        stock.get("net_income") or stock.get("net_income_ttm")
-    )
-    m_score, m_note = score_momentum(stock.get("price_change_3m_pct") or stock.get("change_3m"))
+    
+    ocf_val = stock.get("operating_cash_flow")
+    if ocf_val is None:
+        ocf_val = stock.get("ocf_ttm")
+    if ocf_val is None:
+        ocf_val = stock.get("operating_cashflow")
+
+    ni_val = stock.get("net_income")
+    if ni_val is None:
+        ni_val = stock.get("net_income_ttm")
+
+    q_score, q_note = score_earnings_quality(ocf_val, ni_val)
+    m_score, m_note = score_momentum(stock.get("price_change_3m_pct") if stock.get("price_change_3m_pct") is not None else stock.get("change_3m"))
 
     total = v_score + p_score + h_score + q_score + m_score
     grade, signal = get_grade_and_signal(total)

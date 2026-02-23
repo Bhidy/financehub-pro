@@ -790,7 +790,6 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
     is_egx = ticker_row['market_code'] == 'EGX' or currency == 'EGP'
     if is_egx:
         actions.extend([
-            {'label': '👥 Shareholders', 'label_ar': '👥 المساهمين', 'action_type': 'query', 'payload': f'{symbol} shareholders'},
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليل الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'},
         ])
 
@@ -1297,7 +1296,6 @@ async def handle_financials_package(
     is_egx = ticker['market_code'] == 'EGX' or currency == 'EGP'
     if is_egx:
         actions.extend([
-            {'label': '👥 Shareholders', 'label_ar': '👥 المساهمين', 'action_type': 'query', 'payload': f'{symbol} shareholders'},
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليل الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'},
         ])
 

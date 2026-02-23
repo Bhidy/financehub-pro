@@ -366,7 +366,6 @@ async def handle_stock_price(
     is_egx = data.get('market_code') == 'EGX' or currency == 'EGP'
     if is_egx:
         base_actions.extend([
-            {'label': '👥 Shareholders', 'label_ar': '👥 المساهمين', 'action_type': 'query', 'payload': f'{symbol} shareholders'},
             {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليلي الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
     

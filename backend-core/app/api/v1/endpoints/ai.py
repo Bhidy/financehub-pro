@@ -41,14 +41,17 @@ def _resolve_response_language(
     message: Optional[str],
     header_language: Optional[str]
 ) -> str:
-    # Arabic user text must always get Arabic UI copy, even if header says English.
-    has_arabic = bool(message and ARABIC_CHAR_RE.search(message))
+    # Explicit user mode selection always wins.
+    # If English mode is selected, force English response even for Arabic questions.
     if header_language == "ar":
-        return "ar"
-    if has_arabic:
         return "ar"
     if header_language == "en":
         return "en"
+        
+    # Fallback if no header provided
+    has_arabic = bool(message and ARABIC_CHAR_RE.search(message))
+    if has_arabic:
+        return "ar"
     return "en"
 
 

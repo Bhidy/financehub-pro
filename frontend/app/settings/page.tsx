@@ -21,7 +21,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
     ArrowLeft, Loader2, User as UserIcon, Phone, Lock, Check, AlertCircle,
     Sun, Moon, Mail, LogOut, Camera, Globe, Shield, Palette, Sparkles,
-    TrendingUp, Settings, ChevronRight, Bell, CreditCard, HelpCircle
+    TrendingUp, Settings, ChevronRight, Bell, CreditCard, HelpCircle, Users, BarChart3
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
@@ -110,6 +110,24 @@ export default function MobileSettingsPage() {
 
                         {/* Divider */}
                         <div className="h-px bg-slate-100 dark:bg-white/5 my-4" />
+
+                        {/* Admin Area (if applicable) */}
+                        {user?.role === 'admin' && (
+                            <>
+                                <div className="px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Area</div>
+                                <div className="space-y-1 mb-4">
+                                    <Link href="/admin/analytics" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all">
+                                        <BarChart3 className="w-5 h-5" />
+                                        <span className="font-medium">Analytics Dashboard</span>
+                                    </Link>
+                                    <Link href="/admin/users" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all">
+                                        <Users className="w-5 h-5" />
+                                        <span className="font-medium">User Management</span>
+                                    </Link>
+                                </div>
+                                <div className="h-px bg-slate-100 dark:bg-white/5 my-4" />
+                            </>
+                        )}
 
                         {/* Additional Links */}
                         <div className="space-y-1">
@@ -229,6 +247,27 @@ export default function MobileSettingsPage() {
                             {activeTab === 'security' && <SecurityTab key="security" logout={logout} />}
                             {activeTab === 'app' && <AppTab key="app" />}
                         </AnimatePresence>
+
+                        {/* Admin Mobile Links */}
+                        {user?.role === 'admin' && (
+                            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/5 pb-2">
+                                <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 px-1">Admin Area</h3>
+                                <div className="space-y-2 flex flex-col">
+                                    <Link href="/admin/analytics" className="w-full flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 active:scale-[0.98] transition-all">
+                                        <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                                            <BarChart3 className="w-5 h-5" /> Analytics Dashboard
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-emerald-500" />
+                                    </Link>
+                                    <Link href="/admin/users" className="w-full flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 active:scale-[0.98] transition-all">
+                                        <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                                            <Users className="w-5 h-5" /> User Management
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-emerald-500" />
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>

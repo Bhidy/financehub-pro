@@ -72,13 +72,13 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
 
     // Standard app shell with sidebar (only for main site non-isolated routes)
     return (
-        <>
+        <div className="flex w-full h-screen overflow-hidden bg-[var(--background)]">
             <AppSidebar />
-            <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-                <div className="flex-1 overflow-auto">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden" data-lenis-prevent="true">
                     {children}
-                </div>
+                </main>
             </div>
-        </>
+        </div>
     );
 }

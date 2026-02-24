@@ -689,3 +689,43 @@ async def delete_session(
         raise HTTPException(status_code=500, detail=f"Database error during deletion: {str(e)}")
         
     return {"success": True, "session_id": session_id, "message": "Chat session deleted permanently"}
+
+
+class ChatFeedbackRequest(BaseModel):
+    session_id: str
+    message_id: str
+    feedback_type: str
+    report_text: Optional[str] = None
+
+
+@router.post("/feedback")
+async def submit_chat_feedback(
+    req: ChatFeedbackRequest,
+    authorization: Optional[str] = Header(None),
+    x_device_fingerprint: Optional[str] = Header(None, alias="X-Device-Fingerprint")
+):
+    """Submit feedback. Handles both authenticated users and guests."""
+    if not db._pool:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    
+    # Identify the user
+    user_identifier = "guest"
+    access = await verify_access(authorization, x_device_fingerprint)
+    if access.get("authenticated"):
+        user_identifier = access.get("user_email")
+    elif x_device_fingerprint:
+        user_identifier = f"guest_{x_device_fingerprint[:8]}"
+        
+    try:
+        await db.execute(
+            """
+            INSERT INTO chat_feedback (session_id, user_id, message_id, feedback_type, report_text)
+            VALUES ($1, $2, $3, $4, $5)
+            """,
+            req.session_id, user_identifier, req.message_id, req.feedback_type, req.report_text
+        )
+        return {"success": True, "message": "Feedback submitted successfully"}
+    except Exception as e:
+        print(f"Submit Feedback Error: {e}")
+        raise HTTPException(status_code=500, detail="Database error during submission")
+

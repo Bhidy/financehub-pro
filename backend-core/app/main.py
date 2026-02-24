@@ -201,8 +201,20 @@ async def lifespan(app: FastAPI):
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_unresolved_status ON unresolved_queries(admin_status)")
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_unresolved_reason ON unresolved_queries(failure_reason)")
                 
-                await conn.execute("CREATE INDEX IF NOT EXISTS idx_unresolved_reason ON unresolved_queries(failure_reason)")
-                
+                # Chat Feedback System - Added for Q1 analytics
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS chat_feedback (
+                        id SERIAL PRIMARY KEY,
+                        session_id VARCHAR(64) NOT NULL,
+                        user_id VARCHAR(64),
+                        message_id VARCHAR(64),
+                        feedback_type VARCHAR(20) NOT NULL,
+                        report_text TEXT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_feedback_session ON chat_feedback(session_id)")
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_feedback_created ON chat_feedback(created_at)")
                 # Verification Codes (OTP) - Added 2026-01-13
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS verification_codes (

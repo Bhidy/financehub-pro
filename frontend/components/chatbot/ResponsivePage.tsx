@@ -959,6 +959,7 @@ const MessageRenderer = memo(({
                             >
                                 <MessageFeedback
                                     messageId={m.id?.toString() || ""}
+                                    sessionId={sessionId || ""}
                                     contentToShare={m.response?.conversational_text || m.content}
                                     language={resolveMessageLanguage(m)}
                                 />

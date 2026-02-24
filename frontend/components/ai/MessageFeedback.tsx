@@ -4,14 +4,16 @@ import { useState, useRef, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, Flag, Share2, Check, X, AlertTriangle, Link as LinkIcon, Twitter, Linkedin, Facebook } from "lucide-react";
 import { clsx } from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@/lib/api";
 
 interface MessageFeedbackProps {
     messageId?: string;
+    sessionId?: string;
     contentToShare?: string; // Text to share
     language?: "en" | "ar";
 }
 
-export function MessageFeedback({ messageId, contentToShare = "", language = "en" }: MessageFeedbackProps) {
+export function MessageFeedback({ messageId, sessionId, contentToShare = "", language = "en" }: MessageFeedbackProps) {
     const [feedbackState, setFeedbackState] = useState<"like" | "dislike" | null>(null);
     const [copied, setCopied] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -165,22 +167,44 @@ export function MessageFeedback({ messageId, contentToShare = "", language = "en
         }
     };
 
-    const handleFeedback = (type: "like" | "dislike") => {
+    const handleFeedback = async (type: "like" | "dislike") => {
         const isSelected = feedbackState !== type;
         setFeedbackState(isSelected ? type : null);
-        
+
         if (type === "dislike") {
             setShowReportModal(isSelected);
         } else {
             setShowReportModal(false);
+            if (isSelected) {
+                // Send 'like' to API immediately
+                try {
+                    await api.post('/ai/feedback', {
+                        session_id: sessionId || "unknown",
+                        message_id: messageId || "unknown",
+                        feedback_type: "like"
+                    });
+                } catch (err) {
+                    console.error("Failed to submit feedback", err);
+                }
+            }
         }
-        // TODO: Send exact feedback to API/backend
     };
 
-    const handleReportSubmit = () => {
+    const handleReportSubmit = async () => {
         if (!reportReason || !reportReason.trim()) return;
         setReportSubmitted(true);
-        // TODO: Send report to API/backend
+
+        try {
+            await api.post('/ai/feedback', {
+                session_id: sessionId || "unknown",
+                message_id: messageId || "unknown",
+                feedback_type: "dislike",
+                report_text: reportReason.trim()
+            });
+        } catch (err) {
+            console.error("Failed to submit report", err);
+        }
+
         setTimeout(() => {
             setShowReportModal(false);
             setReportSubmitted(false);

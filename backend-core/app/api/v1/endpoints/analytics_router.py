@@ -912,3 +912,52 @@ async def add_symbol_alias(
                 return {"success": True, "symbol": symbol.upper(), "alias": alias}
         except Exception as inner_e:
             raise HTTPException(status_code=500, detail=str(inner_e))
+
+class ChatFeedbackReport(BaseModel):
+    id: int
+    session_id: str
+    user_id: str
+    message_id: str
+    feedback_type: str
+    report_text: Optional[str]
+    created_at: datetime
+    raw_query: Optional[str]
+
+@router.get("/feedback", response_model=List[ChatFeedbackReport])
+async def get_chat_feedback(
+    limit: int = Query(50, ge=1, le=200),
+    _admin: bool = Depends(require_admin)
+):
+    """
+    Get user feedback reports
+    """
+    try:
+        if not db._pool:
+            return []
+            
+        async with db._pool.acquire() as conn:
+            query = """
+                SELECT f.id, f.session_id, f.user_id, f.message_id, f.feedback_type, f.report_text, f.created_at,
+                       (SELECT raw_text FROM chat_interactions i WHERE i.session_id = f.session_id ORDER BY i.created_at DESC LIMIT 1) as raw_query
+                FROM chat_feedback f
+                ORDER BY f.created_at DESC
+                LIMIT $1
+            """
+            rows = await conn.fetch(query, limit)
+            
+            return [
+                ChatFeedbackReport(
+                    id=row['id'],
+                    session_id=row['session_id'],
+                    user_id=row['user_id'] or 'guest',
+                    message_id=row['message_id'],
+                    feedback_type=row['feedback_type'],
+                    report_text=row['report_text'],
+                    created_at=row['created_at'],
+                    raw_query=row['raw_query']
+                ) for row in rows
+            ]
+    except Exception as e:
+        print(f"Feedback Report Error: {e}")
+        return []
+

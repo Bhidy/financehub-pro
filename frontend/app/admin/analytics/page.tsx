@@ -7,7 +7,7 @@ import {
     Activity, BarChart3, MessageSquare, Users, TrendingUp, TrendingDown,
     AlertTriangle, Clock, Globe, Inbox, ChevronRight, Download, RefreshCw,
     CheckCircle, XCircle, HelpCircle, Zap, Filter, Info, ArrowUpRight, ArrowDownRight,
-    Search, LayoutDashboard, Flag, UserCheck, ShieldAlert, Sparkles
+    Search, LayoutDashboard, Flag, UserCheck, ShieldAlert, Sparkles, ThumbsUp, ThumbsDown
 } from "lucide-react";
 
 // ============================================================
@@ -101,6 +101,17 @@ interface ProductHealthSummary {
     decision_needed: boolean;
 }
 
+interface ChatFeedbackReport {
+    id: number;
+    session_id: string;
+    user_id: string;
+    message_id: string;
+    feedback_type: string;
+    report_text: string | null;
+    created_at: string;
+    raw_query: string | null;
+}
+
 // ============================================================
 // API BASE
 // ============================================================
@@ -160,6 +171,7 @@ export default function ChatbotAnalyticsPage() {
     const [languageStats, setLanguageStats] = useState<LanguageStats[]>([]);
     const [demandInsights, setDemandInsights] = useState<DemandInsight[]>([]);
     const [healthSummary, setHealthSummary] = useState<ProductHealthSummary | null>(null);
+    const [feedbackReports, setFeedbackReports] = useState<ChatFeedbackReport[]>([]);
 
     // Admin check
     useEffect(() => {
@@ -176,7 +188,7 @@ export default function ChatbotAnalyticsPage() {
             const ts = Date.now();
             const qs = `period=${period}&user_type=${userType}&language=${language}&t=${ts}`;
 
-            const [health, questions, unresolved, intents, resolver, funnel, perf, lang, demand, summary] = await Promise.all([
+            const [health, questions, unresolved, intents, resolver, funnel, perf, lang, demand, summary, feedback] = await Promise.all([
                 fetch(`${API_BASE}/health?${qs}`, { headers }).then(r => r.json()).catch(() => null),
                 fetch(`${API_BASE}/questions?${qs}&limit=20`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/unresolved?${qs}&status=pending&limit=50`, { headers }).then(r => r.json()).catch(() => []),
@@ -186,7 +198,8 @@ export default function ChatbotAnalyticsPage() {
                 fetch(`${API_BASE}/performance?${qs}`, { headers }).then(r => r.json()).catch(() => null),
                 fetch(`${API_BASE}/language?${qs}`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/demand/trending?${qs}&limit=10`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/health/summary?period=${period}`, { headers }).then(r => r.json()).catch(() => null)
+                fetch(`${API_BASE}/health/summary?period=${period}`, { headers }).then(r => r.json()).catch(() => null),
+                fetch(`${API_BASE}/feedback?limit=50`, { headers }).then(r => r.json()).catch(() => [])
             ]);
 
             setHealthKPIs(health);
@@ -199,6 +212,7 @@ export default function ChatbotAnalyticsPage() {
             setLanguageStats(lang);
             setDemandInsights(demand);
             setHealthSummary(summary);
+            setFeedbackReports(feedback);
             setLastRefresh(new Date());
         } catch (error) {
             console.error("Failed to fetch analytics:", error);
@@ -788,6 +802,99 @@ export default function ChatbotAnalyticsPage() {
                                             <div className="flex flex-col items-center">
                                                 <CheckCircle className="w-8 h-8 text-green-500 mb-2 opacity-50" />
                                                 <span>System healthy. No failures recorded.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                {/* 6. USER FEEDBACK REPORTS (Full Width) */}
+                <section className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl overflow-hidden relative group mt-8">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] relative z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-blue-500/20">
+                                <MessageSquare className="w-6 h-6 text-blue-500" />
+                            </div>
+                            <div>
+                                <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+                                    User Feedback Reports
+                                    <Tooltip content="Direct feedback from users (thumbs up/down and text reports)">
+                                        <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                    </Tooltip>
+                                </h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Continuous improvement signal</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto relative z-10">
+                        <table className="w-full">
+                            <thead className="bg-slate-50 dark:bg-[#1E293B] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                <tr>
+                                    <th className="px-6 py-4">Time</th>
+                                    <th className="px-6 py-4">User / Session</th>
+                                    <th className="px-6 py-4">Query Context</th>
+                                    <th className="px-6 py-4">Feedback</th>
+                                    <th className="px-6 py-4 w-1/3">Report Text</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                                {feedbackReports?.length > 0 ? feedbackReports.map((q, i) => (
+                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                                <Clock className="w-3 h-3" />
+                                                {new Date(q.created_at).toLocaleTimeString()}
+                                            </div>
+                                            <div className="text-[10px] text-slate-400 mt-1">{new Date(q.created_at).toLocaleDateString()}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Users className="w-3 h-3 text-slate-400" />
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                    {q.user_id.startsWith('guest_') ? `Guest (${q.user_id.split('_')[1]})` : q.user_id}
+                                                </span>
+                                            </div>
+                                            <div className="text-[10px] text-slate-400 font-mono">Session: {q.session_id.substring(0, 12)}...</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white line-clamp-2">"{q.raw_query || 'Unknown Query'}"</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-1.5">
+                                                {q.feedback_type === 'like' ? (
+                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+                                                        <ThumbsUp className="w-3.5 h-3.5" />
+                                                        <span className="text-xs font-bold uppercase">Like</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20">
+                                                        <ThumbsDown className="w-3.5 h-3.5" />
+                                                        <span className="text-xs font-bold uppercase">Dislike</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {q.report_text ? (
+                                                <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#0B1121] p-3 rounded-xl border border-slate-100 dark:border-white/5">
+                                                    {q.report_text}
+                                                </p>
+                                            ) : (
+                                                <span className="text-xs text-slate-400 italic">No text provided</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan={5} className="p-8 text-center text-slate-400">
+                                            <div className="flex flex-col items-center">
+                                                <CheckCircle className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-2" />
+                                                <span>No feedback reports recorded yet.</span>
                                             </div>
                                         </td>
                                     </tr>

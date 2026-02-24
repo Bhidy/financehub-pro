@@ -19,7 +19,8 @@ import {
     LogOut,
     PanelLeftClose,
     PanelLeftOpen,
-    Briefcase
+    Briefcase,
+    Shield
 } from "lucide-react";
 import { useState } from "react";
 import { useMarketSafe } from "@/contexts/MarketContext";
@@ -56,10 +57,18 @@ export default function Sidebar() {
     const pathname = usePathname();
     const [collapsed, setCollapsed] = useState(false);
     const { market } = useMarketSafe();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
 
     // Calculate width logic
     const widthClass = collapsed ? "w-[80px]" : "w-[260px]";
+
+    // Inject Admin Panel conditionally before Settings
+    const dynamicNavItems = [...NAV_ITEMS];
+    if (user?.role === 'admin') {
+        // Insert Admin Panel right before "Settings" which is the last item
+        const adminItem = { label: "Admin Panel", icon: Shield, href: "/admin/analytics", color: "emerald" };
+        dynamicNavItems.splice(dynamicNavItems.length - 1, 0, adminItem);
+    }
 
     return (
         <aside
@@ -104,8 +113,8 @@ export default function Sidebar() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10">
-                {NAV_ITEMS.map((item) => {
+            <nav className="flex-1 overflow-y-auto px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10" data-lenis-prevent="true">
+                {dynamicNavItems.map((item) => {
                     const resolvedHref = (item as any).dynamicHref
                         ? (market === 'EGX' ? '/egx/COMI' : '/symbol/2222')
                         : item.href;

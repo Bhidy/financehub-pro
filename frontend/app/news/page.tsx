@@ -38,6 +38,14 @@ function snippet(text?: string | null): string {
     return `${compact.slice(0, 230)}...`;
 }
 
+function resolveImageSrc(imageUrl?: string | null): string | null {
+    if (!imageUrl) return null;
+    if (imageUrl.includes("static.mubasher.info/File.Story_Image/")) {
+        return `/api/v1/news-image?url=${encodeURIComponent(imageUrl)}`;
+    }
+    return imageUrl;
+}
+
 export default function MarketNewsPage() {
     const [search, setSearch] = useState("");
     const [windowDays, setWindowDays] = useState(30);
@@ -207,10 +215,10 @@ export default function MarketNewsPage() {
                             >
                                 <a href={item.url} target="_blank" rel="noopener noreferrer" className="block">
                                     <div className="relative aspect-[16/9] overflow-hidden bg-slate-800">
-                                        {item.image_url ? (
+                                        {resolveImageSrc(item.image_url) ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
-                                                src={item.image_url}
+                                                src={resolveImageSrc(item.image_url) || undefined}
                                                 alt={item.headline}
                                                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                                             />

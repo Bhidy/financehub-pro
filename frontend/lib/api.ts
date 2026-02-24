@@ -192,6 +192,22 @@ export interface EconomicIndicator {
 
 }
 
+export interface MarketNewsItem {
+    id: number;
+    symbol: string | null;
+    headline: string;
+    source: string | null;
+    url: string;
+    published_at: string;
+    sentiment_score?: number | null;
+    article_body?: string | null;
+    image_url?: string | null;
+    published_date_raw?: string | null;
+    source_section?: string | null;
+    source_country?: string | null;
+    external_id?: string | null;
+}
+
 export const fetchTickers = async (): Promise<Ticker[]> => {
     const { data } = await api.get("/tickers");
     // Zod Validation: If backend returns invalid data, this throws an error explanation
@@ -213,8 +229,15 @@ export const fetchFinancials = async (symbol: string) => {
     return data;
 };
 
-export const fetchNews = async (symbol?: string) => {
-    const params = symbol ? { symbol } : {};
+export interface FetchNewsParams {
+    symbol?: string;
+    limit?: number;
+    source_country?: string;
+    source_section?: string;
+    days?: number;
+}
+
+export const fetchNews = async (params: FetchNewsParams = {}): Promise<MarketNewsItem[]> => {
     const { data } = await api.get(`/news`, { params });
     return data;
 };

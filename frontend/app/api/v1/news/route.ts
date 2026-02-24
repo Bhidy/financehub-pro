@@ -5,15 +5,25 @@ import { db } from '@/lib/db-server';
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
+        const idParam = searchParams.get("id");
         const symbol = searchParams.get('symbol');
         const sourceCountry = searchParams.get('source_country');
         const sourceSection = searchParams.get('source_section');
         const days = parseInt(searchParams.get('days') || '0');
         const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '100'), 1), 1000);
+        const newsId = idParam ? parseInt(idParam, 10) : null;
+
+        if (idParam && (!Number.isInteger(newsId) || (newsId ?? 0) <= 0)) {
+            return NextResponse.json({ error: "Invalid id filter" }, { status: 400 });
+        }
 
         const filters: string[] = [];
         const params: (string | number)[] = [];
 
+        if (newsId) {
+            params.push(newsId);
+            filters.push(`id = $${params.length}`);
+        }
         if (symbol) {
             params.push(symbol);
             filters.push(`symbol = $${params.length}`);

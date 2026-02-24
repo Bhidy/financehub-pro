@@ -61,22 +61,72 @@ async def get_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/news", response_model=List[dict])
-async def get_news(limit: int = 20, symbol: str = None):
+async def get_news(
+    limit: int = 100,
+    symbol: str = None,
+    source_country: str = None,
+    source_section: str = None,
+    days: int = None,
+):
+    limit = max(1, min(limit, 1000))
+
     query = """
-        SELECT id, symbol, headline, source, url, published_at, sentiment_score
+        SELECT
+            id, symbol, headline, source, url, published_at, sentiment_score,
+            article_body, image_url, published_date_raw, source_section, source_country, external_id
         FROM market_news
+        WHERE 1=1
     """
     params = []
+    idx = 1
+
     if symbol:
-        query += " WHERE symbol = $1"
+        query += f" AND symbol = ${idx}"
         params.append(symbol)
-        
-    query += f" ORDER BY published_at DESC LIMIT {limit}"
-    
-    if symbol:
-        return await db.fetch_all(query, symbol)
-    else:
-        return await db.fetch_all(query)
+        idx += 1
+
+    if source_country:
+        query += f" AND source_country = ${idx}"
+        params.append(source_country.upper())
+        idx += 1
+
+    if source_section:
+        query += f" AND source_section = ${idx}"
+        params.append(source_section)
+        idx += 1
+
+    if days and days > 0:
+        query += f" AND published_at >= NOW() - (${idx} * INTERVAL '1 day')"
+        params.append(days)
+        idx += 1
+
+    query += f" ORDER BY published_at DESC LIMIT ${idx}"
+    params.append(limit)
+
+    try:
+        return await db.fetch_all(query, *params)
+    except Exception:
+        # Backward-compatible fallback for older schemas lacking extended fields.
+        fallback_query = """
+            SELECT id, symbol, headline, source, url, published_at, sentiment_score
+            FROM market_news
+            WHERE 1=1
+        """
+        fallback_params = []
+        fallback_idx = 1
+
+        if symbol:
+            fallback_query += f" AND symbol = ${fallback_idx}"
+            fallback_params.append(symbol)
+            fallback_idx += 1
+        if days and days > 0:
+            fallback_query += f" AND published_at >= NOW() - (${fallback_idx} * INTERVAL '1 day')"
+            fallback_params.append(days)
+            fallback_idx += 1
+
+        fallback_query += f" ORDER BY published_at DESC LIMIT ${fallback_idx}"
+        fallback_params.append(limit)
+        return await db.fetch_all(fallback_query, *fallback_params)
 
 @router.get("/financials/{symbol}", response_model=List[dict])
 async def get_financials(symbol: str):
@@ -693,4 +743,3 @@ async def get_data_health():
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}
-

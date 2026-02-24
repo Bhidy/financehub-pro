@@ -36,6 +36,7 @@ APScheduler
 numpy
 beautifulsoup4
 lxml
+scrapling==0.4
 openpyxl
 yfinance>=0.2.50
 yahooquery>=2.3.0

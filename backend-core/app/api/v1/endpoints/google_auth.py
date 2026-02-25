@@ -10,7 +10,7 @@ from typing import Optional
 import httpx
 
 from app.db.session import db
-from app.core.security import create_access_token, get_password_hash
+from app.core.security import create_access_token, create_refresh_token, get_password_hash
 from app.core.config import settings
 
 router = APIRouter()
@@ -27,6 +27,7 @@ class GoogleAuthRequest(BaseModel):
 class GoogleAuthResponse(BaseModel):
     """Response after successful Google authentication"""
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str
     user: dict
     is_new_user: bool
@@ -280,9 +281,13 @@ async def google_callback(request: GoogleAuthRequest):
         data={"sub": user['email'], "role": user['role']},
         expires_delta=timedelta(hours=24)
     )
+    refresh_token = create_refresh_token(
+        data={"sub": user['email'], "role": user['role']}
+    )
     
     return {
         "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": {
             "id": user['id'],

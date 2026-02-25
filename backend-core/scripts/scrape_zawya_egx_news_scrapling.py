@@ -27,6 +27,11 @@ import asyncpg
 import requests
 from scrapling import Selector
 
+try:
+    from curl_cffi import requests as curl_requests
+except Exception:  # pragma: no cover
+    curl_requests = None
+
 from egx_news_shared import (
     ArticleRecord,
     adaptive_sleep_seconds,
@@ -58,6 +63,17 @@ SOURCE_PREFIX = "zawya"
 DEFAULT_DAYS = 30
 DEFAULT_MAX_PAGES = 16
 DEFAULT_TIMEOUT = 45
+
+BLOCKED_STATUS_CODES = {403, 429, 503}
+BLOCKED_TEXT_MARKERS = (
+    "access denied",
+    "forbidden",
+    "captcha",
+    "cloudflare",
+    "attention required",
+    "request unsuccessful",
+)
+CURL_IMPERSONATION_ORDER = ("chrome124", "chrome120", "safari17_2", "edge101")
 
 
 EGYPT_MARKERS = (
@@ -252,36 +268,123 @@ class ZawyaEgxNewsScraper:
     def __init__(self, timeout: int):
         self.timeout = timeout
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": (
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-                ),
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
-            }
+        self.default_headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
+        self.alt_headers = {
+            **self.default_headers,
+            "Accept-Language": "en-US,en;q=0.8,ar;q=0.6",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Upgrade-Insecure-Requests": "1",
+            "Referer": "https://www.google.com/",
+        }
+        self.session.headers.update(self.default_headers)
+
+    @staticmethod
+    def _looks_blocked(status: int, html: str | None) -> bool:
+        if status in BLOCKED_STATUS_CODES:
+            return True
+        if status != 200 or not html:
+            return False
+        sample = html[:2500].lower()
+        return any(marker in sample for marker in BLOCKED_TEXT_MARKERS)
+
+    def _build_selector(self, html: str, final_url: str, status: int) -> tuple[Selector | None, int, str]:
+        if not html or self._looks_blocked(status, html):
+            return None, status, final_url
+        return Selector(content=html, url=final_url), status, final_url
+
+    def _fetch_with_requests(self, url: str, *, use_alt_headers: bool) -> tuple[Selector | None, int, str]:
+        response = self.session.get(
+            url,
+            timeout=self.timeout,
+            allow_redirects=True,
+            headers=self.alt_headers if use_alt_headers else self.default_headers,
         )
+        status = int(response.status_code)
+        final_url = response.url or url
+        selector, status, final_url = self._build_selector(response.text or "", final_url, status)
+        if selector is None:
+            logger.warning("Fetch blocked/failed (%s): %s", status, url)
+        return selector, status, final_url
+
+    def _fetch_with_curl_cffi(self, url: str) -> tuple[Selector | None, int, str]:
+        if curl_requests is None:
+            return None, 0, url
+
+        last_status = 0
+        final_url = url
+        for browser in CURL_IMPERSONATION_ORDER:
+            kwargs = {
+                "timeout": self.timeout,
+                "headers": self.alt_headers,
+                "impersonate": browser,
+                "allow_redirects": True,
+            }
+            try:
+                response = curl_requests.get(url, **kwargs)
+            except TypeError:
+                kwargs.pop("allow_redirects", None)
+                kwargs["follow_redirects"] = True
+                try:
+                    response = curl_requests.get(url, **kwargs)
+                except Exception:
+                    continue
+            except Exception:
+                continue
+
+            status = int(getattr(response, "status_code", 0) or 0)
+            final_url = str(getattr(response, "url", url) or url)
+            selector, status, final_url = self._build_selector(
+                getattr(response, "text", "") or "",
+                final_url,
+                status,
+            )
+            if selector is not None:
+                logger.info("Recovered fetch via curl_cffi (%s): %s", browser, url)
+                return selector, status, final_url
+            last_status = status
+
+        return None, last_status, final_url
 
     def fetch(self, url: str) -> tuple[Selector | None, int, str]:
         last_error: Exception | None = None
+        last_status = 0
+        last_final_url = url
+
         for attempt in range(1, 4):
             try:
-                response = self.session.get(url, timeout=self.timeout, allow_redirects=True)
-                status = int(response.status_code)
-                final_url = response.url or url
-                if status != 200:
-                    logger.warning("Fetch failed (%s): %s", status, url)
-                    return None, status, final_url
-                selector = Selector(content=response.text, url=final_url)
-                return selector, status, final_url
+                selector, status, final_url = self._fetch_with_requests(
+                    url,
+                    use_alt_headers=attempt > 1,
+                )
+                last_status = status
+                last_final_url = final_url
+                if selector is not None:
+                    return selector, status, final_url
+                if status and status not in BLOCKED_STATUS_CODES:
+                    break
             except Exception as exc:
                 last_error = exc
-                if attempt < 3:
-                    time.sleep(1)
-                    continue
-        logger.warning("Fetch error after retries: %s (%s)", url, last_error)
-        return None, 0, url
+            if attempt < 3:
+                time.sleep(0.8 + (attempt * 0.4))
+
+        selector, status, final_url = self._fetch_with_curl_cffi(url)
+        if selector is not None:
+            return selector, status, final_url
+
+        if status:
+            last_status = status
+            last_final_url = final_url
+        if last_error is not None:
+            logger.warning("Fetch error after retries: %s (%s)", url, last_error)
+        return None, last_status, last_final_url
 
     def extract_listing_cards(self, list_url: str) -> list[ListingCard]:
         doc, status, _ = self.fetch(list_url)

@@ -62,6 +62,7 @@ async def get_stats():
 
 @router.get("/news", response_model=List[dict])
 async def get_news(
+    id: int = None,
     limit: int = 100,
     symbol: str = None,
     source_country: str = None,
@@ -79,6 +80,11 @@ async def get_news(
     """
     params = []
     idx = 1
+
+    if id and id > 0:
+        query += f" AND id = ${idx}"
+        params.append(id)
+        idx += 1
 
     if symbol:
         query += f" AND symbol = ${idx}"
@@ -114,6 +120,11 @@ async def get_news(
         """
         fallback_params = []
         fallback_idx = 1
+
+        if id and id > 0:
+            fallback_query += f" AND id = ${fallback_idx}"
+            fallback_params.append(id)
+            fallback_idx += 1
 
         if symbol:
             fallback_query += f" AND symbol = ${fallback_idx}"

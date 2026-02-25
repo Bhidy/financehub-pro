@@ -72,7 +72,7 @@ export default function MarketNewsPage() {
                 <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(to_right,rgba(148,163,184,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.14)_1px,transparent_1px)] [background-size:32px_32px]" />
                 <div className="relative mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-7">
                     <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-                        <h1 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
+                        <h1 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
                             Egypt Market News
                         </h1>
                         <div className="grid grid-cols-3 gap-2">

@@ -4,11 +4,59 @@ from app.db.session import db
 import yfinance as yf
 from cachetools import TTLCache
 import asyncio
+import html
+import re
 from datetime import datetime
 import pandas as pd
 
 # Cache for 1 minute (60 seconds)
 intraday_cache = TTLCache(maxsize=500, ttl=60)
+
+_LEADING_CITY_RE = re.compile(r"^\s*(?:cairo|egypt|dubai|riyadh|abu dhabi|kuwait)\s*[-–—:]\s*", re.IGNORECASE)
+_LEADING_SOURCE_RE = re.compile(
+    r"^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\s*[-–—:]\s*",
+    re.IGNORECASE,
+)
+_BLOCKED_SOURCE_RE = re.compile(
+    r"\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\b",
+    re.IGNORECASE,
+)
+_SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.;:!?])")
+_INLINE_SPACE_RE = re.compile(r"[ \t]{2,}")
+
+
+def _sanitize_news_text(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+
+    text = html.unescape(str(value))
+
+    for _ in range(3):
+        updated = _LEADING_CITY_RE.sub("", text)
+        updated = _LEADING_SOURCE_RE.sub("", updated)
+        updated = updated.strip(" :-\u2013\u2014\t")
+        if updated == text:
+            break
+        text = updated
+
+    text = _BLOCKED_SOURCE_RE.sub("", text)
+    text = _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)
+    text = text.replace("\r\n", "\n")
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = _INLINE_SPACE_RE.sub(" ", text)
+    text = re.sub(r"\n[ \t]+", "\n", text)
+    text = text.strip()
+    return text or None
+
+
+def _sanitize_news_row(row: dict) -> dict:
+    item = dict(row)
+    item["headline"] = _sanitize_news_text(item.get("headline")) or "Egypt Market Update"
+    if "article_body" in item:
+        item["article_body"] = _sanitize_news_text(item.get("article_body"))
+    item["source"] = None
+    return item
 
 
 router = APIRouter()
@@ -110,7 +158,8 @@ async def get_news(
     params.append(limit)
 
     try:
-        return await db.fetch_all(query, *params)
+        rows = await db.fetch_all(query, *params)
+        return [_sanitize_news_row(row) for row in rows]
     except Exception:
         # Backward-compatible fallback for older schemas lacking extended fields.
         fallback_query = """
@@ -137,7 +186,8 @@ async def get_news(
 
         fallback_query += f" ORDER BY published_at DESC LIMIT ${fallback_idx}"
         fallback_params.append(limit)
-        return await db.fetch_all(fallback_query, *fallback_params)
+        rows = await db.fetch_all(fallback_query, *fallback_params)
+        return [_sanitize_news_row(row) for row in rows]
 
 @router.get("/financials/{symbol}", response_model=List[dict])
 async def get_financials(symbol: str):

@@ -14,7 +14,7 @@ import {
 
 async function fetchNewsArticleById(id: number): Promise<MarketNewsItem | null> {
     const response = await fetch(
-        `/api/v1/news?id=${id}&source_country=EG&source_section=eg/pulse/stocks&limit=1`,
+        `/api/v1/news?id=${id}&source_country=EG&limit=1`,
         { cache: "no-store" }
     );
 

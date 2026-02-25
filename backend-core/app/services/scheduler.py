@@ -82,11 +82,11 @@ class SchedulerService:
                 replace_existing=True
             )
 
-            # --- TIER 4C: EGX Mubasher News (Every 2 Hours) ---
+            # --- TIER 4C: EGX Multi-Source News (Every 2 Hours) ---
             self.scheduler.add_job(
-                self.run_egx_mubasher_news_job,
+                self.run_egx_multisource_news_job,
                 CronTrigger(hour='*/2', minute=5, timezone='Africa/Cairo'),
-                id='tier4c_egx_mubasher_news_2h',
+                id='tier4c_egx_multisource_news_2h',
                 replace_existing=True,
                 max_instances=1,
                 coalesce=True
@@ -294,13 +294,13 @@ class SchedulerService:
         except Exception as e:
             logger.error(f"Mubasher job error: {e}")
 
-    async def run_egx_mubasher_news_job(self):
-        """Runs EGX Mubasher news scraper every 2 hours."""
+    async def run_egx_multisource_news_job(self):
+        """Runs EGX multi-source news scraper every 2 hours."""
         try:
             from app.services.notification_service import notification_service
 
             backend_core_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            script_path = os.path.join(backend_core_dir, 'scripts', 'scrape_mubasher_egx_news_scrapling.py')
+            script_path = os.path.join(backend_core_dir, 'scripts', 'scrape_egx_multisource_news.py')
 
             proc = await asyncio.create_subprocess_exec(
                 sys.executable,
@@ -315,23 +315,23 @@ class SchedulerService:
             err = (stderr or b'').decode(errors='ignore')
 
             if proc.returncode == 0:
-                summary = "EGX news sync completed."
-                marker = "Coverage last 30 days ->"
+                summary = "EGX multi-source news sync completed."
+                marker = "Combined coverage last 30 days ->"
                 if marker in out:
                     summary = out.split(marker, 1)[-1].splitlines()[0].strip()
                     summary = f"Coverage {summary}"
                 notification_service.send_discord(
-                    f"✅ **EGX News Sync Success**\n{summary}",
+                    f"✅ **EGX Multi-Source News Sync Success**\n{summary}",
                     is_error=False
                 )
             else:
                 error_tail = (err or out)[-800:] if (err or out) else f"Exit: {proc.returncode}"
                 notification_service.send_discord(
-                    f"❌ **EGX News Sync Failed**\n```{error_tail}```",
+                    f"❌ **EGX Multi-Source News Sync Failed**\n```{error_tail}```",
                     is_error=True
                 )
         except Exception as e:
-            logger.error(f"EGX news job error: {e}")
+            logger.error(f"EGX multi-source news job error: {e}")
 
     async def run_rubix_watchlist_job(self):
         try:

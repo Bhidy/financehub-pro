@@ -27,7 +27,6 @@ export default function MarketNewsPage() {
             fetchNews({
                 limit: 600,
                 source_country: "EG",
-                source_section: "eg/pulse/stocks",
                 days: windowDays,
             }),
         refetchInterval: 1000 * 60 * 10,

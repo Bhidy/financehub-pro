@@ -2101,7 +2101,7 @@ class ChatService:
                     )
                     
                     explainer.MAX_TOKENS = 1000 if is_deep_dive else 400
-                    if is_extended_intent and handler_conversational_text:
+                    if (is_extended_intent or intent == Intent.NEWS) and handler_conversational_text:
                         conversational_text = handler_conversational_text
                     else:
                         # Define cards and should_greet for the generate_narrative call
@@ -2398,6 +2398,8 @@ class ChatService:
 
                     # Generate sentiment safely
                     sentiment = result_data.get('meta', {}).get('sentiment', 'neutral') if isinstance(result_data, dict) else 'neutral'
+                    include_risk = False
+                    risk_type = 'none'
 
                     # 4. Compose Full Response
                     full_text, structured, opening_category = ResponseComposer.compose_premium_response(

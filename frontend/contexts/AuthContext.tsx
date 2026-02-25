@@ -42,6 +42,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = "fh_auth_token";
 const USER_KEY = "fh_user";
+const REFRESH_TOKEN_KEY = "fh_refresh_token";
 
 // ============================================================
 // PROVIDER
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const savedUser = localStorage.getItem(USER_KEY);
         const savedToken = localStorage.getItem(TOKEN_KEY);
+        const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
         const savedAvatar = localStorage.getItem('user_avatar_url');
 
         if (savedUser && savedToken) {
@@ -64,10 +66,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     parsedUser.avatar_url = savedAvatar;
                 }
                 setUser(parsedUser);
+
+                // Legacy-session bridge:
+                // If a logged-in user has no persisted refresh token yet, mint one silently.
+                if (!savedRefreshToken) {
+                    const API_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+                    void fetch(`${API_URL}/auth/bootstrap-refresh`, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${savedToken}`,
+                            "Content-Type": "application/json",
+                        },
+                        credentials: "include",
+                    })
+                        .then(async (res) => {
+                            if (!res.ok) return null;
+                            return res.json().catch(() => null);
+                        })
+                        .then((data) => {
+                            if (!data) return;
+                            if (data.access_token) {
+                                localStorage.setItem(TOKEN_KEY, data.access_token);
+                            }
+                            if (data.refresh_token) {
+                                localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+                            }
+                            if (data.user) {
+                                localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+                                setUser(data.user);
+                            }
+                        })
+                        .catch(() => {
+                            // No-op: keep the existing session state; hard failures are handled by normal auth flow.
+                        });
+                }
             } catch (e) {
                 console.error("Failed to parse saved user:", e);
                 localStorage.removeItem(USER_KEY);
                 localStorage.removeItem(TOKEN_KEY);
+                localStorage.removeItem(REFRESH_TOKEN_KEY);
             }
         }
         setIsLoading(false);
@@ -89,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData.toString(),
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -100,6 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             localStorage.setItem(TOKEN_KEY, data.access_token);
             localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            if (data.refresh_token) {
+                localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+            }
             setUser(data.user);
 
             return { success: true };
@@ -117,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -128,6 +170,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             localStorage.setItem(TOKEN_KEY, result.access_token);
             localStorage.setItem(USER_KEY, JSON.stringify(result.user));
+            if (result.refresh_token) {
+                localStorage.setItem(REFRESH_TOKEN_KEY, result.refresh_token);
+            }
             setUser(result.user);
 
             return { success: true };
@@ -140,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = useCallback(() => {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem('user_avatar_url');
         setUser(null);
     }, []);

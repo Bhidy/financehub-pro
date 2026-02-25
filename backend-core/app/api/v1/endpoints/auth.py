@@ -17,10 +17,6 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
 # ============================================================
 # SCHEMAS
 # ============================================================
@@ -29,6 +25,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     user: dict
+    refresh_token: Optional[str] = None
 
 class TokenData(BaseModel):
     email: str | None = None
@@ -71,6 +68,10 @@ class GuestUsageResponse(BaseModel):
     question_count: int
     can_ask: bool
     remaining: int
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: Optional[str] = None
 
 # ============================================================
 # HELPER FUNCTIONS
@@ -128,6 +129,22 @@ async def require_admin(current_user: Annotated[dict, Depends(get_current_active
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
 
+
+def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    """
+    Set refresh cookie for cross-origin frontend usage.
+    samesite=None is required because frontend and backend are on different domains.
+    """
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60,
+        path="/",
+    )
+
 # ============================================================
 # AUTH ENDPOINTS
 # ============================================================
@@ -155,18 +172,12 @@ async def login_for_access_token(
         data={"sub": user['email'], "role": user['role']}
     )
     
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60
-    )
+    _set_refresh_cookie(response, refresh_token)
     
     return {
         "access_token": access_token, 
         "token_type": "bearer",
+        "refresh_token": refresh_token,
         "user": {
             "id": user['id'],
             "email": user['email'],
@@ -185,18 +196,12 @@ async def login_json(req: LoginRequest, response: Response):
     access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
     refresh_token = create_refresh_token(data={"sub": user['email'], "role": user['role']})
     
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60
-    )
+    _set_refresh_cookie(response, refresh_token)
     
     return {
         "access_token": access_token, 
         "token_type": "bearer",
+        "refresh_token": refresh_token,
         "user": {
             "id": user['id'],
             "email": user['email'],
@@ -235,19 +240,13 @@ async def signup(reg: RegisterRequest, response: Response):
             data={"sub": user['email'], "role": user['role']}
         )
         
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            secure=True,
-            samesite="lax",
-            max_age=settings.REFRESH_TOKEN_EXPIRE_MINUTES * 60
-        )
+        _set_refresh_cookie(response, refresh_token)
         
         return {
             "message": "Registration successful",
             "access_token": access_token,
             "token_type": "bearer",
+            "refresh_token": refresh_token,
             "user": dict(user)
         }
     except Exception as e:
@@ -255,7 +254,12 @@ async def signup(reg: RegisterRequest, response: Response):
         raise HTTPException(status_code=500, detail=f"Signup Database Error: {str(e)}")
 
 @router.post("/refresh", response_model=Token)
-async def refresh_access_token(refresh_token: str | None = Cookie(None)):
+async def refresh_access_token(
+    response: Response,
+    payload: Optional[RefreshRequest] = None,
+    refresh_token_cookie: str | None = Cookie(None, alias="refresh_token"),
+):
+    refresh_token = payload.refresh_token if payload and payload.refresh_token else refresh_token_cookie
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token missing")
     
@@ -272,10 +276,13 @@ async def refresh_access_token(refresh_token: str | None = Cookie(None)):
             raise HTTPException(status_code=401, detail="Invalid user or inactive")
             
         access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
-        
+        new_refresh_token = create_refresh_token(data={"sub": user['email'], "role": user['role']})
+        _set_refresh_cookie(response, new_refresh_token)
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
+            "refresh_token": new_refresh_token,
             "user": {
                 "id": user['id'],
                 "email": user['email'],
@@ -285,6 +292,37 @@ async def refresh_access_token(refresh_token: str | None = Cookie(None)):
         }
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+
+@router.post("/bootstrap-refresh", response_model=Token)
+async def bootstrap_refresh_session(
+    response: Response,
+    current_user: Annotated[dict, Depends(get_current_active_user)],
+):
+    """
+    Issue a fresh access+refresh token pair for already-authenticated users.
+    This helps migrate older sessions that were created before refresh token
+    persistence was added to the frontend local storage.
+    """
+    access_token = create_access_token(
+        data={"sub": current_user['email'], "role": current_user['role']}
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": current_user['email'], "role": current_user['role']}
+    )
+    _set_refresh_cookie(response, refresh_token)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "refresh_token": refresh_token,
+        "user": {
+            "id": current_user['id'],
+            "email": current_user['email'],
+            "full_name": current_user.get('full_name'),
+            "role": current_user['role']
+        }
+    }
 
 @router.get("/me")
 async def get_current_user_info(current_user: Annotated[dict, Depends(get_current_active_user)]):

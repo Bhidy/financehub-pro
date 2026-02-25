@@ -91,6 +91,9 @@ export async function GET(request: NextRequest) {
         const redirectUrl = new URL(successRedirect, baseUrl);
 
         redirectUrl.searchParams.set("token", data.access_token);
+        if (data.refresh_token) {
+            redirectUrl.searchParams.set("refresh_token", data.refresh_token);
+        }
         redirectUrl.searchParams.set("user", encodeURIComponent(JSON.stringify(data.user)));
         redirectUrl.searchParams.set("google_auth", "success");
 

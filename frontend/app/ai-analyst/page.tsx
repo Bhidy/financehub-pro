@@ -44,6 +44,7 @@ function AIAnalystPageContent() {
     // Handle Google OAuth callback - CRITICAL: Store token from URL params
     useEffect(() => {
         const token = searchParams.get("token");
+        const refreshToken = searchParams.get("refresh_token");
         const userStr = searchParams.get("user");
         const googleAuth = searchParams.get("google_auth");
 
@@ -52,6 +53,9 @@ function AIAnalystPageContent() {
                 const userData = JSON.parse(decodeURIComponent(userStr));
                 // Store in localStorage - same keys as AuthContext
                 localStorage.setItem("fh_auth_token", token);
+                if (refreshToken) {
+                    localStorage.setItem("fh_refresh_token", refreshToken);
+                }
                 localStorage.setItem("fh_user", JSON.stringify(userData));
 
                 // Force navigation to clean URL (prevents infinite reload loop)

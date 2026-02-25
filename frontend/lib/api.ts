@@ -6,6 +6,9 @@ import { TickerResponseSchema, Ticker } from "./schemas";
 // =============================================================================
 // Pointing to Hetzner VPS (Primary Production) via HTTPS
 const API_BASE_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+const ACCESS_TOKEN_KEY = "fh_auth_token";
+const USER_KEY = "fh_user";
+const REFRESH_TOKEN_KEY = "fh_refresh_token";
 
 if (typeof window !== 'undefined') {
     console.log(`[FinanceHub Pro] Connected to Backend: ${API_BASE_URL}`);
@@ -23,14 +26,29 @@ export interface ChangePasswordData {
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: true,
 });
+
+const clearAuthStorage = () => {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
+
+const redirectToLogin = () => {
+    if (typeof window === "undefined") return;
+    if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+    }
+};
 
 // Request interceptor for API calls
 // Request interceptor for API calls
 api.interceptors.request.use(
     (config) => {
         if (typeof window !== 'undefined') {
-            const token = localStorage.getItem("fh_auth_token");
+            const token = localStorage.getItem(ACCESS_TOKEN_KEY);
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
@@ -61,15 +79,25 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const requestUrl = String(originalRequest?.url || "");
+        const isAuthEntryRequest =
+            requestUrl.includes('/auth/token') ||
+            requestUrl.includes('/auth/login') ||
+            requestUrl.includes('/auth/signup') ||
+            requestUrl.includes('/auth/register') ||
+            requestUrl.includes('/auth/bootstrap-refresh');
 
-        if (error.response && error.response.status === 401 && !originalRequest._retry) {
-            // If the 401 was during a refresh attempt or login, hard logout
-            if (originalRequest.url?.includes('/auth/refresh') || originalRequest.url?.includes('/auth/token') || originalRequest.url?.includes('/auth/login')) {
-                if (typeof window !== 'undefined') {
-                    localStorage.removeItem("fh_auth_token");
-                    localStorage.removeItem("fh_user");
-                    window.location.href = '/login';
-                }
+        if (
+            error.response &&
+            error.response.status === 401 &&
+            originalRequest &&
+            !originalRequest._retry
+        ) {
+            // Invalid credentials on login/register should not force global logout redirects.
+            if (isAuthEntryRequest) return Promise.reject(error);
+
+            // If no auth token exists, this is a true guest/unauthenticated request.
+            if (typeof window !== "undefined" && !localStorage.getItem(ACCESS_TOKEN_KEY)) {
                 return Promise.reject(error);
             }
 
@@ -77,6 +105,7 @@ api.interceptors.response.use(
                 return new Promise(function (resolve, reject) {
                     failedQueue.push({ resolve, reject });
                 }).then(token => {
+                    originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers['Authorization'] = 'Bearer ' + token;
                     return api(originalRequest);
                 }).catch(err => {
@@ -88,25 +117,45 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                // Call refresh endpoint with axios directly to avoid interceptor loops
-                const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+                // Refresh using both HttpOnly cookie and local fallback token for cross-domain reliability.
+                const refreshToken =
+                    typeof window !== "undefined" ? localStorage.getItem(REFRESH_TOKEN_KEY) : null;
+                const refreshPayload = refreshToken ? { refresh_token: refreshToken } : {};
+                const { data } = await axios.post(
+                    `${API_BASE_URL}/auth/refresh`,
+                    refreshPayload,
+                    { withCredentials: true }
+                );
 
                 const newToken = data.access_token;
+                if (!newToken) {
+                    throw new Error("Refresh endpoint returned no access token");
+                }
+
                 if (typeof window !== 'undefined') {
-                    localStorage.setItem("fh_auth_token", newToken);
+                    localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
+                    if (data?.refresh_token) {
+                        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+                    }
+                    if (data?.user) {
+                        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+                    }
                 }
 
                 api.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+                originalRequest.headers = originalRequest.headers || {};
                 originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
 
                 processQueue(null, newToken);
                 return api(originalRequest);
             } catch (err) {
                 processQueue(err, null);
-                if (typeof window !== 'undefined') {
-                    localStorage.removeItem("fh_auth_token");
-                    localStorage.removeItem("fh_user");
-                    window.location.href = '/login';
+
+                // Only hard-logout when refresh explicitly says token is invalid/expired.
+                // Network/transient errors must not force sign-out.
+                if ((err as any)?.response?.status === 401) {
+                    clearAuthStorage();
+                    redirectToLogin();
                 }
                 return Promise.reject(err);
             } finally {

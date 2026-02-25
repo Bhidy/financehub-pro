@@ -132,6 +132,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
     // Handle Google OAuth callback
     useEffect(() => {
         const token = searchParams.get("token");
+        const refreshToken = searchParams.get("refresh_token");
         const userStr = searchParams.get("user");
         const googleAuth = searchParams.get("google_auth");
 
@@ -139,6 +140,9 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
             try {
                 const userData = JSON.parse(decodeURIComponent(userStr));
                 localStorage.setItem("fh_auth_token", token);
+                if (refreshToken) {
+                    localStorage.setItem("fh_refresh_token", refreshToken);
+                }
                 localStorage.setItem("fh_user", JSON.stringify(userData));
                 window.location.href = getRoute('home');
             } catch (e) {

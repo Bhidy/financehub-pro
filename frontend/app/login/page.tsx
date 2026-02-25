@@ -43,6 +43,7 @@ function LoginPageContent() {
     // Handle Google OAuth callback
     useEffect(() => {
         const token = searchParams.get("token");
+        const refreshToken = searchParams.get("refresh_token");
         const userStr = searchParams.get("user");
         const googleAuth = searchParams.get("google_auth");
         const errorParam = searchParams.get("error");
@@ -56,6 +57,9 @@ function LoginPageContent() {
             try {
                 const user = JSON.parse(decodeURIComponent(userStr));
                 localStorage.setItem("fh_auth_token", token);
+                if (refreshToken) {
+                    localStorage.setItem("fh_refresh_token", refreshToken);
+                }
                 localStorage.setItem("fh_user", JSON.stringify(user));
                 router.push(getRoute('home'));
             } catch (e) {

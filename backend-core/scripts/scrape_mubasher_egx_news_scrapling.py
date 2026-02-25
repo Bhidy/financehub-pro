@@ -24,6 +24,7 @@ from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
 
 import asyncpg
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import requests
 import urllib3
@@ -253,6 +254,24 @@ def dedupe_keep_order(values: Iterable[str]) -> list[str]:
     return ordered
 
 
+def extract_node_text(node) -> str:
+    if node is None:
+        return ""
+
+    try:
+        text = clean_text(BeautifulSoup(str(node), "html.parser").get_text(" ", strip=True))
+    except Exception:
+        text = ""
+    if text:
+        return text
+
+    text = clean_text(node.get_all_text())
+    if text:
+        return text
+
+    return clean_text(getattr(node, "text", ""))
+
+
 def extract_article_body(article_doc) -> str:
     candidates = (
         article_doc.css(".article__content-text")
@@ -270,10 +289,10 @@ def extract_article_body(article_doc) -> str:
     blocks: list[str] = []
 
     for container in candidates:
-        paragraphs = container.css("p")
-        if paragraphs:
-            for p in paragraphs:
-                text = clean_text(p.get_all_text())
+        content_nodes = container.css("p, li, h2, h3, h4")
+        if content_nodes:
+            for node in content_nodes:
+                text = extract_node_text(node)
                 if not text:
                     continue
                 lowered = text.lower()
@@ -289,12 +308,7 @@ def extract_article_body(article_doc) -> str:
 
     blocks = dedupe_keep_order(blocks)
 
-    # Keep a strong body signal only.
-    blocks = [
-        text
-        for text in blocks
-        if len(text) >= 25 and not re.fullmatch(r"[A-Z0-9_]{2,12}", text)
-    ]
+    blocks = [text for text in blocks if text and len(text) >= 2]
 
     return "\n\n".join(blocks).strip()
 

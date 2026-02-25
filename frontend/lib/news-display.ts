@@ -1,22 +1,12 @@
 export function sanitizeNewsText(value?: string | null): string {
     if (!value) return "";
 
-    let text = value
-        .replace(/\b(?:cairo|egypt)\s*[–-]\s*mubasher\s*:\s*/gi, "")
-        .replace(/\bmubasher\s*:\s*/gi, "")
-        .replace(/\bMubasher\b/gi, "")
-        .replace(/\s*[–-]\s*:\s*/g, ": ")
-        .replace(/\s+([.,;:!?])/g, "$1")
+    return value
+        .replace(/\r\n/g, "\n")
         .replace(/[ \t]+\n/g, "\n")
-        .replace(/\n{3,}/g, "\n\n");
-
-    text = text
-        .split("\n")
-        .map((line) => line.replace(/^\s*[-–:,]+\s*/g, "").trim())
-        .join("\n");
-
-    text = text.replace(/[ \t]{2,}/g, " ").trim();
-    return text;
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/[ \t]{2,}/g, " ")
+        .trim();
 }
 
 export function formatNewsDate(value?: string | null): string {

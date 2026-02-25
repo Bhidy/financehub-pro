@@ -24,6 +24,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 import asyncpg
+from bs4 import BeautifulSoup
 import requests
 from scrapling import Selector
 
@@ -208,8 +209,36 @@ def parse_news_article_jsonld(doc: Selector) -> dict[str, Any] | None:
     return None
 
 
+def extract_node_text(node) -> str:
+    if node is None:
+        return ""
+
+    try:
+        text = clean_text(BeautifulSoup(str(node), "html.parser").get_text(" ", strip=True))
+    except Exception:
+        text = ""
+    if text:
+        return text
+
+    text = clean_text(node.get_all_text())
+    if text:
+        return text
+
+    return clean_text(getattr(node, "text", ""))
+
+
 def extract_zawya_body(doc: Selector) -> str:
-    containers = doc.css(".article-body") or doc.css("article")
+    containers: list[Selector] = []
+    for sel in (
+        ".article-intro",
+        ".article-summary",
+        ".article__summary",
+        ".article-body",
+        '[itemprop="articleBody"]',
+    ):
+        containers.extend(doc.css(sel))
+    if not containers:
+        containers = doc.css("article")
     if not containers:
         return ""
 
@@ -217,14 +246,16 @@ def extract_zawya_body(doc: Selector) -> str:
         "for all the latest headlines",
         "read more:",
         "subscribe to",
+        "related:",
+        "tags:",
     )
 
     blocks: list[str] = []
     for container in containers:
-        paragraphs = container.css("p")
-        if paragraphs:
-            for p in paragraphs:
-                text = clean_text(p.get_all_text())
+        content_nodes = container.css("p, li, h2, h3, h4")
+        if content_nodes:
+            for node in content_nodes:
+                text = extract_node_text(node)
                 if not text:
                     continue
                 lowered = text.lower()
@@ -237,7 +268,7 @@ def extract_zawya_body(doc: Selector) -> str:
                 blocks.append(text)
 
     blocks = dedupe_keep_order(blocks)
-    blocks = [text for text in blocks if len(text) >= 25]
+    blocks = [text for text in blocks if text and len(text) >= 3]
     return "\n\n".join(blocks).strip()
 
 

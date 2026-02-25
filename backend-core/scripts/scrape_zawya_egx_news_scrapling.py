@@ -407,9 +407,12 @@ class ZawyaEgxNewsScraper:
                     return selector, status, final_url
                 if status and status not in BLOCKED_STATUS_CODES:
                     break
+                if status in BLOCKED_STATUS_CODES:
+                    # Domain-level block detected; switch immediately to fallback paths.
+                    break
             except Exception as exc:
                 last_error = exc
-            if attempt < 3:
+            if attempt < 3 and (not last_status or last_status not in BLOCKED_STATUS_CODES):
                 time.sleep(0.8 + (attempt * 0.4))
 
         selector, status, final_url = self._fetch_with_curl_cffi(url)

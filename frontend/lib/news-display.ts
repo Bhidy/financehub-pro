@@ -2,6 +2,8 @@ export function sanitizeNewsText(value?: string | null): string {
     if (!value) return "";
 
     let text = value
+        .replace(/\b(?:cairo|egypt)\s*[–-]\s*mubasher\s*:\s*/gi, "")
+        .replace(/\bmubasher\s*:\s*/gi, "")
         .replace(/\bMubasher\b/gi, "")
         .replace(/\s*[–-]\s*:\s*/g, ": ")
         .replace(/\s+([.,;:!?])/g, "$1")

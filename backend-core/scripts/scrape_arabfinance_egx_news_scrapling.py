@@ -260,14 +260,14 @@ def article_is_egypt_stock_or_index_news(
     has_market_marker = any(token in combined for token in MARKET_MARKERS)
     has_exclude_marker = any(token in combined for token in EXCLUDE_MARKERS)
 
+    if has_exclude_marker:
+        return False
+
     if symbol:
         return True
 
     if has_market_marker:
         return True
-
-    if has_exclude_marker:
-        return False
 
     return False
 

@@ -46,6 +46,7 @@ import { IndexCompositionCard } from "./IndexCompositionCard";
 import { DisclaimerCard } from "./DisclaimerCard";
 import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { translations } from "@/components/chatbot/translations";
+import { resolveNewsImageSrc } from "@/lib/news-display";
 
 // ============================================================
 // Stock Header Card
@@ -2197,12 +2198,21 @@ interface NewsListProps {
     title?: string;
     data: {
         items: Array<{
+            id?: number;
             title: string;
-            source?: string;
             date?: string;
             summary?: string;
             url?: string;
+            internal_path?: string;
+            image_url?: string;
+            published_at?: string;
         }>;
+        window_days?: number;
+        coverage?: {
+            total?: number;
+            with_image?: number;
+            with_body?: number;
+        };
     };
     language?: "en" | "ar";
 }
@@ -2211,6 +2221,15 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
     if (!data.items || data.items.length === 0) return null;
     const t = translations[language].chat;
     const isRtl = language === "ar";
+    const readLabel = language === "ar" ? "قراءة المقال الكامل" : "Read Full Article";
+    const updatedLabel = language === "ar" ? "آخر تحديث" : "Latest Update";
+
+    const resolveInternalHref = (item: NewsListProps["data"]["items"][number]) => {
+        if (item.internal_path && item.internal_path.startsWith("/")) return item.internal_path;
+        if (item.url && item.url.startsWith("/")) return item.url;
+        if (item.id) return `/news/${item.id}`;
+        return "/news";
+    };
 
     return (
         <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
@@ -2221,37 +2240,59 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                     </div>
                     <span className="font-black text-slate-900 dark:text-white text-lg tracking-tight">{title || t.latestHeadlines}</span>
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">{t.realTime}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+                    {data.coverage?.total || data.items.length} {language === "ar" ? "عناصر" : "Items"}
+                </span>
             </div>
 
             <div className="divide-y divide-slate-50 dark:divide-white/5 max-h-[450px] overflow-y-auto scrollbar-hide">
                 {data.items.map((item, i) => (
                     <a
                         key={i}
-                        href={item.url || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={resolveInternalHref(item)}
                         className="group block p-6 hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-300"
                     >
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/10 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
-                                {item.source || t.marketNews}
-                            </span>
-                            {item.date && (
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <Clock size={12} className="stroke-[2.5]" />
-                                    {item.date}
-                                </span>
-                            )}
+                        <div className="flex items-start gap-4">
+                            <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100 dark:border-white/10 dark:bg-slate-900">
+                                {resolveNewsImageSrc(item.image_url) ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={resolveNewsImageSrc(item.image_url) || undefined}
+                                        alt={item.title}
+                                        className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                                    />
+                                ) : (
+                                    <div className="h-full w-full bg-[radial-gradient(circle_at_top,#0ea5e9_0%,#111827_45%,#020617_100%)]" />
+                                )}
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                                <div className="mb-2 flex items-center justify-between gap-3">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/70 bg-blue-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-blue-600 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
+                                        <Clock size={12} className="stroke-[2.5]" />
+                                        {updatedLabel}
+                                    </span>
+                                    {item.date && (
+                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                                            {item.date}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <h4 className={`mb-2 text-[15px] font-black leading-snug text-slate-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400 ${isRtl ? "text-right" : "text-left"}`}>
+                                    {item.title}
+                                </h4>
+                                {item.summary && (
+                                    <p className={`line-clamp-2 text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400 ${isRtl ? "text-right" : "text-left"}`}>
+                                        {item.summary}
+                                    </p>
+                                )}
+                                <div className={`mt-3 inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-cyan-600 transition group-hover:text-cyan-500 dark:text-cyan-300 ${isRtl ? "flex-row-reverse" : ""}`}>
+                                    {readLabel}
+                                    <ArrowUpRight size={13} className={`stroke-[3] transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
+                                </div>
+                            </div>
                         </div>
-                        <h4 className={`text-[15px] font-black text-slate-900 dark:text-white leading-snug mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${isRtl ? "text-right" : "text-left"}`}>
-                            {item.title}
-                        </h4>
-                        {item.summary && (
-                            <p className={`text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium ${isRtl ? "text-right" : "text-left"}`}>
-                                {item.summary}
-                            </p>
-                        )}
                     </a>
                 ))}
             </div>

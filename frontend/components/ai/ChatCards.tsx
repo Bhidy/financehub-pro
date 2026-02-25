@@ -46,7 +46,7 @@ import { IndexCompositionCard } from "./IndexCompositionCard";
 import { DisclaimerCard } from "./DisclaimerCard";
 import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { translations } from "@/components/chatbot/translations";
-import { resolveNewsImageSrc } from "@/lib/news-display";
+import { resolveNewsImageSrc, sanitizeNewsText, splitNewsParagraphs } from "@/lib/news-display";
 
 // ============================================================
 // Stock Header Card
@@ -2197,16 +2197,7 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
 interface NewsListProps {
     title?: string;
     data: {
-        items: Array<{
-            id?: number;
-            title: string;
-            date?: string;
-            summary?: string;
-            url?: string;
-            internal_path?: string;
-            image_url?: string;
-            published_at?: string;
-        }>;
+        items: NewsListItem[];
         window_days?: number;
         coverage?: {
             total?: number;
@@ -2217,19 +2208,88 @@ interface NewsListProps {
     language?: "en" | "ar";
 }
 
+interface NewsListItem {
+    id?: number;
+    title: string;
+    date?: string;
+    summary?: string;
+    url?: string;
+    internal_path?: string;
+    image_url?: string;
+    published_at?: string;
+}
+
+interface NewsApiRow {
+    id: number;
+    headline?: string | null;
+    article_body?: string | null;
+    image_url?: string | null;
+    published_at?: string | null;
+    published_date_raw?: string | null;
+}
+
 export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
     if (!data.items || data.items.length === 0) return null;
     const t = translations[language].chat;
     const isRtl = language === "ar";
-    const readLabel = language === "ar" ? "قراءة المقال الكامل" : "Read Full Article";
+    const readLabel = language === "ar" ? "فتح داخل المحادثة" : "Open In Chat";
     const updatedLabel = language === "ar" ? "آخر تحديث" : "Latest Update";
+    const detailLabel = language === "ar" ? "عرض المقال داخل المحادثة" : "Article Detail In Chat";
+    const loadingLabel = language === "ar" ? "جار تحميل المقال الكامل..." : "Loading full article...";
+    const noBodyLabel = language === "ar" ? "لا يوجد نص كامل للمقال حالياً." : "Full article text is not available yet.";
+    const fetchErrorLabel = language === "ar" ? "تعذر تحميل التفاصيل الكاملة." : "Failed to load full article details.";
+    const [selectedItem, setSelectedItem] = useState<NewsListItem | null>(null);
+    const [articleById, setArticleById] = useState<Record<number, NewsApiRow>>({});
+    const [loadingArticleId, setLoadingArticleId] = useState<number | null>(null);
+    const [articleError, setArticleError] = useState<string | null>(null);
 
-    const resolveInternalHref = (item: NewsListProps["data"]["items"][number]) => {
-        if (item.internal_path && item.internal_path.startsWith("/")) return item.internal_path;
-        if (item.url && item.url.startsWith("/")) return item.url;
-        if (item.id) return `/news/${item.id}`;
-        return "/news";
+    const fetchArticleById = async (id: number): Promise<void> => {
+        if (articleById[id]) return;
+
+        setLoadingArticleId(id);
+        setArticleError(null);
+        try {
+            const response = await fetch(`/api/v1/news?id=${id}&source_country=EG&limit=1`, { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const rows = (await response.json()) as NewsApiRow[];
+            const row = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+            if (!row) {
+                throw new Error("Article not found");
+            }
+
+            setArticleById((prev) => ({ ...prev, [id]: row }));
+        } catch (error) {
+            console.error("[NewsListCard] Failed to fetch article", error);
+            setArticleError(fetchErrorLabel);
+        } finally {
+            setLoadingArticleId(null);
+        }
     };
+
+    const handleOpenArticle = async (item: NewsListItem) => {
+        const isSameItem = selectedItem?.id === item.id && selectedItem?.title === item.title;
+        if (isSameItem) {
+            setSelectedItem(null);
+            setArticleError(null);
+            return;
+        }
+
+        setSelectedItem(item);
+        setArticleError(null);
+        if (item.id) {
+            await fetchArticleById(item.id);
+        }
+    };
+
+    const selectedApiArticle = selectedItem?.id ? articleById[selectedItem.id] : null;
+    const selectedImage = resolveNewsImageSrc(selectedApiArticle?.image_url || selectedItem?.image_url);
+    const selectedDate = selectedApiArticle?.published_at || selectedApiArticle?.published_date_raw || selectedItem?.date;
+    const selectedTitle = selectedApiArticle?.headline || selectedItem?.title || "";
+    const selectedBodyText = sanitizeNewsText(selectedApiArticle?.article_body || selectedItem?.summary || "");
+    const selectedParagraphs = splitNewsParagraphs(selectedBodyText);
 
     return (
         <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
@@ -2247,10 +2307,16 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
 
             <div className="divide-y divide-slate-50 dark:divide-white/5 max-h-[450px] overflow-y-auto scrollbar-hide">
                 {data.items.map((item, i) => (
-                    <a
+                    <button
                         key={i}
-                        href={resolveInternalHref(item)}
-                        className="group block p-6 hover:bg-slate-50/80 dark:hover:bg-white/5 transition-all duration-300"
+                        type="button"
+                        onClick={() => void handleOpenArticle(item)}
+                        className={cn(
+                            "group block w-full p-6 text-left transition-all duration-300 hover:bg-slate-50/80 dark:hover:bg-white/5",
+                            selectedItem?.id === item.id && selectedItem?.title === item.title
+                                ? "bg-cyan-50/50 dark:bg-cyan-500/10"
+                                : ""
+                        )}
                     >
                         <div className="flex items-start gap-4">
                             <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100 dark:border-white/10 dark:bg-slate-900">
@@ -2278,7 +2344,6 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                                         </span>
                                     )}
                                 </div>
-
                                 <h4 className={`mb-2 text-[15px] font-black leading-snug text-slate-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400 ${isRtl ? "text-right" : "text-left"}`}>
                                     {item.title}
                                 </h4>
@@ -2293,9 +2358,84 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                                 </div>
                             </div>
                         </div>
-                    </a>
+                    </button>
                 ))}
             </div>
+
+            {selectedItem && (
+                <div className="border-t border-white/10 bg-gradient-to-b from-slate-950/95 to-slate-900/95 p-4 md:p-5">
+                    <div className="rounded-2xl border border-cyan-300/20 bg-slate-900/70 p-4 shadow-[0_20px_45px_-32px_rgba(14,165,233,0.7)] md:p-5">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/35 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-200">
+                                <Newspaper size={12} className="stroke-[2.5]" />
+                                {detailLabel}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                {selectedDate && (
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
+                                        <Clock size={12} className="stroke-[2.5]" />
+                                        {selectedDate}
+                                    </span>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedItem(null)}
+                                    className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                                >
+                                    {language === "ar" ? "إغلاق" : "Close"}
+                                </button>
+                            </div>
+                        </div>
+
+                        <h4 className={`mb-3 text-base font-black leading-tight text-white md:text-lg ${isRtl ? "text-right" : "text-left"}`}>
+                            {sanitizeNewsText(selectedTitle)}
+                        </h4>
+
+                        {selectedImage && (
+                            <div className="mb-4 overflow-hidden rounded-xl border border-white/10 bg-slate-950">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={selectedImage}
+                                    alt={sanitizeNewsText(selectedTitle)}
+                                    className="h-auto max-h-[320px] w-full object-cover"
+                                />
+                            </div>
+                        )}
+
+                        {loadingArticleId === selectedItem.id && !selectedApiArticle ? (
+                            <div className="rounded-xl border border-white/10 bg-slate-950/60 px-3 py-4 text-sm text-slate-300">
+                                {loadingLabel}
+                            </div>
+                        ) : (
+                            <div className="max-h-[360px] space-y-4 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/70 p-4">
+                                {articleError && (
+                                    <p className="text-sm font-semibold text-amber-300">{articleError}</p>
+                                )}
+
+                                {selectedParagraphs.length > 0 ? (
+                                    selectedParagraphs.map((paragraph, idx) => (
+                                        <p
+                                            key={idx}
+                                            className={`text-[13px] leading-7 text-slate-200 ${isRtl ? "text-right" : "text-left"}`}
+                                        >
+                                            {paragraph}
+                                        </p>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-slate-400">{noBodyLabel}</p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="mt-3 flex items-center justify-end">
+                            <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                                {language === "ar" ? "داخل المحادثة" : "In Conversation View"}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="px-6 py-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 text-center">
                 <button className="text-[11px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all flex items-center justify-center gap-2 select-none uppercase tracking-widest mx-auto group">
                     {t.exploreInsights} <ArrowUpRight size={14} className={`stroke-[3] group-hover:-translate-y-0.5 transition-transform ${isRtl ? "group-hover:-translate-x-0.5 rotate-180" : "group-hover:translate-x-0.5"}`} />

@@ -63,6 +63,7 @@ SOURCE_PREFIX = "zawya"
 DEFAULT_DAYS = 30
 DEFAULT_MAX_PAGES = 16
 DEFAULT_TIMEOUT = 45
+DEFAULT_HTML_PROXY_URL = "https://startamarkets.com/api/v1/fetch-html"
 
 BLOCKED_STATUS_CODES = {403, 429, 503}
 BLOCKED_TEXT_MARKERS = (
@@ -265,8 +266,9 @@ def article_is_egypt_stock_or_index_news(
 
 
 class ZawyaEgxNewsScraper:
-    def __init__(self, timeout: int):
+    def __init__(self, timeout: int, html_proxy_url: str | None = None):
         self.timeout = timeout
+        self.html_proxy_url = clean_text(html_proxy_url or os.getenv("ZAWYA_HTML_PROXY_URL", "")) or DEFAULT_HTML_PROXY_URL
         self.session = requests.Session()
         self.default_headers = {
             "User-Agent": (
@@ -353,6 +355,41 @@ class ZawyaEgxNewsScraper:
 
         return None, last_status, final_url
 
+    def _fetch_with_html_proxy(self, url: str) -> tuple[Selector | None, int, str]:
+        if not self.html_proxy_url:
+            return None, 0, url
+
+        try:
+            response = self.session.get(
+                self.html_proxy_url,
+                params={"url": url},
+                timeout=self.timeout + 20,
+                headers=self.alt_headers,
+                allow_redirects=True,
+            )
+            if response.status_code != 200:
+                logger.warning(
+                    "HTML proxy request failed (%s): %s -> %s",
+                    response.status_code,
+                    self.html_proxy_url,
+                    url,
+                )
+                return None, int(response.status_code), url
+
+            payload = response.json()
+            upstream_status = int(payload.get("status") or 0)
+            final_url = clean_text(str(payload.get("final_url") or url)) or url
+            html = str(payload.get("html") or "")
+
+            selector, status, final_url = self._build_selector(html, final_url, upstream_status)
+            if selector is not None:
+                logger.info("Recovered fetch via HTML proxy: %s", url)
+                return selector, status, final_url
+            return None, upstream_status, final_url
+        except Exception as exc:
+            logger.warning("HTML proxy fetch failed: %s (%s)", url, exc)
+            return None, 0, url
+
     def fetch(self, url: str) -> tuple[Selector | None, int, str]:
         last_error: Exception | None = None
         last_status = 0
@@ -376,6 +413,10 @@ class ZawyaEgxNewsScraper:
                 time.sleep(0.8 + (attempt * 0.4))
 
         selector, status, final_url = self._fetch_with_curl_cffi(url)
+        if selector is not None:
+            return selector, status, final_url
+
+        selector, status, final_url = self._fetch_with_html_proxy(url)
         if selector is not None:
             return selector, status, final_url
 

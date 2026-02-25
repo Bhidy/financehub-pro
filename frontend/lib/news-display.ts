@@ -1,11 +1,36 @@
+const LEADING_CITY_RE = /^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i;
+const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\s*[-–—:]\s*/i;
+const BLOCKED_SOURCE_RE = /\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\b/gi;
+const BLOCKED_SOURCE_AR_RE = /(مباشر|عرب\s*فاينانس|زاوية)/g;
+
+function stripBlockedSources(value: string): string {
+    let text = value;
+
+    for (let i = 0; i < 3; i += 1) {
+        const updated = text
+            .replace(LEADING_CITY_RE, "")
+            .replace(LEADING_SOURCE_RE, "")
+            .trim()
+            .replace(/^[-–—:\s]+/, "");
+        if (updated === text) break;
+        text = updated;
+    }
+
+    return text
+        .replace(BLOCKED_SOURCE_RE, "")
+        .replace(BLOCKED_SOURCE_AR_RE, "")
+        .replace(/[ \t]+([,.;:!?])/g, "$1");
+}
+
 export function sanitizeNewsText(value?: string | null): string {
     if (!value) return "";
 
-    return value
+    return stripBlockedSources(value)
         .replace(/\r\n/g, "\n")
         .replace(/[ \t]+\n/g, "\n")
         .replace(/\n{3,}/g, "\n\n")
         .replace(/[ \t]{2,}/g, " ")
+        .replace(/\n[ \t]+/g, "\n")
         .trim();
 }
 

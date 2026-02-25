@@ -2237,7 +2237,6 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
     const readLabel = language === "ar" ? "فتح داخل المحادثة" : "Open In Chat";
     const updatedLabel = language === "ar" ? "آخر تحديث" : "Latest Update";
     const detailLabel = language === "ar" ? "قارئ المقال داخل المحادثة" : "Premium Article Reader";
-    const detailSubtitle = language === "ar" ? "تجربة قراءة كاملة بدون مغادرة المحادثة" : "Full article experience without leaving chat";
     const loadingLabel = language === "ar" ? "جار تحميل المقال الكامل..." : "Loading full article...";
     const noBodyLabel = language === "ar" ? "لا يوجد نص كامل للمقال حالياً." : "Full article text is not available yet.";
     const fetchErrorLabel = language === "ar" ? "تعذر تحميل التفاصيل الكاملة." : "Failed to load full article details.";
@@ -2350,7 +2349,6 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                                         <Newspaper size={12} className="stroke-[2.5]" />
                                         {detailLabel}
                                     </span>
-                                    <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-300/80">{detailSubtitle}</p>
                                 </div>
 
                                 <div className="flex items-center gap-2">

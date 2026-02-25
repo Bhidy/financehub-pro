@@ -24,6 +24,7 @@ from urllib.parse import urljoin, urlparse
 
 import asyncpg
 import requests
+from bs4 import BeautifulSoup
 from scrapling import Selector
 
 from egx_news_shared import (
@@ -187,7 +188,11 @@ def extract_node_text(node) -> str:
     if node is None:
         return ""
 
-    text = clean_text(getattr(node, "text", ""))
+    # Parse raw node HTML to preserve inline-tag text reliably.
+    try:
+        text = clean_text(BeautifulSoup(str(node), "html.parser").get_text(" ", strip=True))
+    except Exception:
+        text = ""
     if text:
         return text
 
@@ -206,7 +211,7 @@ def extract_arabfinance_body(doc: Selector) -> str:
         return ""
 
     root = container[0]
-    paragraphs = root.css("p")
+    blocks_nodes = root.css("p, li")
 
     noise_prefixes = (
         "for all the latest",
@@ -215,9 +220,9 @@ def extract_arabfinance_body(doc: Selector) -> str:
     )
 
     blocks: list[str] = []
-    if paragraphs:
-        for p in paragraphs:
-            text = extract_node_text(p)
+    if blocks_nodes:
+        for node in blocks_nodes:
+            text = extract_node_text(node)
             if not text:
                 continue
             lowered = text.lower()
@@ -230,7 +235,7 @@ def extract_arabfinance_body(doc: Selector) -> str:
             blocks.append(text)
 
     blocks = dedupe_keep_order(blocks)
-    blocks = [text for text in blocks if len(text) >= 25]
+    blocks = [text for text in blocks if text and len(text) >= 3]
     return "\n\n".join(blocks).strip()
 
 

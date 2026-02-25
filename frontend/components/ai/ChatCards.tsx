@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     TrendingUp,
     TrendingDown,
@@ -24,7 +24,8 @@ import {
     Newspaper,
     LayoutDashboard,
     Wallet,
-    ArrowLeftRight
+    ArrowLeftRight,
+    X
 } from "lucide-react";
 import { SafeChatCard } from "@/components/ui/SafeChatCard";
 import { clsx, type ClassValue } from "clsx";
@@ -47,6 +48,7 @@ import { DisclaimerCard } from "./DisclaimerCard";
 import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { translations } from "@/components/chatbot/translations";
 import { resolveNewsImageSrc, sanitizeNewsText, splitNewsParagraphs } from "@/lib/news-display";
+import { createPortal } from "react-dom";
 
 // ============================================================
 // Stock Header Card
@@ -2234,14 +2236,43 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
     const isRtl = language === "ar";
     const readLabel = language === "ar" ? "فتح داخل المحادثة" : "Open In Chat";
     const updatedLabel = language === "ar" ? "آخر تحديث" : "Latest Update";
-    const detailLabel = language === "ar" ? "عرض المقال داخل المحادثة" : "Article Detail In Chat";
+    const detailLabel = language === "ar" ? "قارئ المقال داخل المحادثة" : "Premium Article Reader";
+    const detailSubtitle = language === "ar" ? "تجربة قراءة كاملة بدون مغادرة المحادثة" : "Full article experience without leaving chat";
     const loadingLabel = language === "ar" ? "جار تحميل المقال الكامل..." : "Loading full article...";
     const noBodyLabel = language === "ar" ? "لا يوجد نص كامل للمقال حالياً." : "Full article text is not available yet.";
     const fetchErrorLabel = language === "ar" ? "تعذر تحميل التفاصيل الكاملة." : "Failed to load full article details.";
+    const closeLabel = language === "ar" ? "إغلاق" : "Close";
+    const quickBriefLabel = language === "ar" ? "ملخص سريع" : "Quick Brief";
     const [selectedItem, setSelectedItem] = useState<NewsListItem | null>(null);
     const [articleById, setArticleById] = useState<Record<number, NewsApiRow>>({});
     const [loadingArticleId, setLoadingArticleId] = useState<number | null>(null);
     const [articleError, setArticleError] = useState<string | null>(null);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    useEffect(() => {
+        if (!selectedItem || typeof document === "undefined") return;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setSelectedItem(null);
+                setArticleError(null);
+            }
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", onKeyDown);
+        };
+    }, [selectedItem]);
 
     const fetchArticleById = async (id: number): Promise<void> => {
         if (articleById[id]) return;
@@ -2284,12 +2315,122 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
         }
     };
 
+    const closeReader = () => {
+        setSelectedItem(null);
+        setArticleError(null);
+    };
+
     const selectedApiArticle = selectedItem?.id ? articleById[selectedItem.id] : null;
     const selectedImage = resolveNewsImageSrc(selectedApiArticle?.image_url || selectedItem?.image_url);
     const selectedDate = selectedApiArticle?.published_at || selectedApiArticle?.published_date_raw || selectedItem?.date;
     const selectedTitle = selectedApiArticle?.headline || selectedItem?.title || "";
     const selectedBodyText = sanitizeNewsText(selectedApiArticle?.article_body || selectedItem?.summary || "");
     const selectedParagraphs = splitNewsParagraphs(selectedBodyText);
+    const showLoading = loadingArticleId === selectedItem?.id && !selectedApiArticle;
+    const readerModal =
+        isClient && selectedItem
+            ? createPortal(
+                <div
+                    className="fixed inset-0 z-[180] flex items-center justify-center p-3 sm:p-4 md:p-6"
+                    dir={isRtl ? "rtl" : "ltr"}
+                >
+                    <button
+                        type="button"
+                        aria-label={closeLabel}
+                        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm dark:bg-black/65"
+                        onClick={closeReader}
+                    />
+
+                    <div className="relative z-[181] flex h-[min(94vh,980px)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-white/95 shadow-[0_45px_110px_-50px_rgba(15,23,42,0.55)] dark:border-white/10 dark:bg-[#071121]/95 dark:shadow-[0_55px_120px_-45px_rgba(2,132,199,0.45)]">
+                        <div className="relative border-b border-slate-200/70 bg-gradient-to-r from-cyan-50/90 via-white to-slate-50/90 p-4 dark:border-white/10 dark:from-cyan-900/20 dark:via-[#071121] dark:to-slate-900/30 md:p-5">
+                            <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,rgba(14,165,233,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(14,165,233,0.12)_1px,transparent_1px)] [background-size:24px_24px]" />
+                            <div className="relative flex flex-wrap items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/60 bg-cyan-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-700 dark:border-cyan-300/30 dark:text-cyan-200">
+                                        <Newspaper size={12} className="stroke-[2.5]" />
+                                        {detailLabel}
+                                    </span>
+                                    <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-300/80">{detailSubtitle}</p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {selectedDate && (
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/80 bg-white/85 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-200">
+                                            <Clock size={12} className="stroke-[2.5]" />
+                                            {selectedDate}
+                                        </span>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={closeReader}
+                                        className="inline-flex items-center gap-1 rounded-full border border-slate-300/80 bg-white/90 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-slate-700 transition hover:border-cyan-400/70 hover:text-cyan-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:border-cyan-300/45 dark:hover:text-cyan-200"
+                                    >
+                                        <X size={11} className="stroke-[3]" />
+                                        {closeLabel}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 pt-4 md:px-6 md:pb-6 md:pt-5">
+                            <h4 className={`mb-4 text-xl font-black leading-tight text-slate-900 dark:text-white md:text-3xl ${isRtl ? "text-right" : "text-left"}`}>
+                                {sanitizeNewsText(selectedTitle)}
+                            </h4>
+
+                            {selectedImage && (
+                                <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 dark:border-white/10 dark:bg-slate-900">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={selectedImage}
+                                        alt={sanitizeNewsText(selectedTitle)}
+                                        className="h-auto max-h-[420px] w-full object-cover"
+                                    />
+                                </div>
+                            )}
+
+                            {showLoading && (
+                                <div className="mb-4 rounded-xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-300">
+                                    {loadingLabel}
+                                </div>
+                            )}
+
+                            {selectedItem.summary && (
+                                <div className="mb-4 rounded-xl border border-cyan-200/70 bg-cyan-50/60 p-4 dark:border-cyan-400/20 dark:bg-cyan-500/10">
+                                    <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-cyan-700 dark:text-cyan-200">
+                                        {quickBriefLabel}
+                                    </div>
+                                    <p className={`text-sm leading-6 text-slate-700 dark:text-slate-200 ${isRtl ? "text-right" : "text-left"}`}>
+                                        {sanitizeNewsText(selectedItem.summary)}
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-[#0B162A]/70 md:p-5">
+                                {articleError && (
+                                    <p className="mb-3 text-sm font-semibold text-amber-500 dark:text-amber-300">{articleError}</p>
+                                )}
+
+                                {selectedParagraphs.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {selectedParagraphs.map((paragraph, idx) => (
+                                            <p
+                                                key={idx}
+                                                className={`text-[15px] leading-8 text-slate-700 dark:text-slate-100 ${isRtl ? "text-right" : "text-left"}`}
+                                            >
+                                                {paragraph}
+                                            </p>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-slate-500 dark:text-slate-300/80">{noBodyLabel}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )
+            : null;
 
     return (
         <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden transition-all duration-300" dir={isRtl ? "rtl" : "ltr"}>
@@ -2362,85 +2503,13 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                 ))}
             </div>
 
-            {selectedItem && (
-                <div className="border-t border-white/10 bg-gradient-to-b from-slate-950/95 to-slate-900/95 p-4 md:p-5">
-                    <div className="rounded-2xl border border-cyan-300/20 bg-slate-900/70 p-4 shadow-[0_20px_45px_-32px_rgba(14,165,233,0.7)] md:p-5">
-                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/35 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-200">
-                                <Newspaper size={12} className="stroke-[2.5]" />
-                                {detailLabel}
-                            </span>
-                            <div className="flex items-center gap-2">
-                                {selectedDate && (
-                                    <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
-                                        <Clock size={12} className="stroke-[2.5]" />
-                                        {selectedDate}
-                                    </span>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedItem(null)}
-                                    className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
-                                >
-                                    {language === "ar" ? "إغلاق" : "Close"}
-                                </button>
-                            </div>
-                        </div>
-
-                        <h4 className={`mb-3 text-base font-black leading-tight text-white md:text-lg ${isRtl ? "text-right" : "text-left"}`}>
-                            {sanitizeNewsText(selectedTitle)}
-                        </h4>
-
-                        {selectedImage && (
-                            <div className="mb-4 overflow-hidden rounded-xl border border-white/10 bg-slate-950">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={selectedImage}
-                                    alt={sanitizeNewsText(selectedTitle)}
-                                    className="h-auto max-h-[320px] w-full object-cover"
-                                />
-                            </div>
-                        )}
-
-                        {loadingArticleId === selectedItem.id && !selectedApiArticle ? (
-                            <div className="rounded-xl border border-white/10 bg-slate-950/60 px-3 py-4 text-sm text-slate-300">
-                                {loadingLabel}
-                            </div>
-                        ) : (
-                            <div className="max-h-[360px] space-y-4 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/70 p-4">
-                                {articleError && (
-                                    <p className="text-sm font-semibold text-amber-300">{articleError}</p>
-                                )}
-
-                                {selectedParagraphs.length > 0 ? (
-                                    selectedParagraphs.map((paragraph, idx) => (
-                                        <p
-                                            key={idx}
-                                            className={`text-[13px] leading-7 text-slate-200 ${isRtl ? "text-right" : "text-left"}`}
-                                        >
-                                            {paragraph}
-                                        </p>
-                                    ))
-                                ) : (
-                                    <p className="text-sm text-slate-400">{noBodyLabel}</p>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="mt-3 flex items-center justify-end">
-                            <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                                {language === "ar" ? "داخل المحادثة" : "In Conversation View"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             <div className="px-6 py-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 text-center">
                 <button className="text-[11px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all flex items-center justify-center gap-2 select-none uppercase tracking-widest mx-auto group">
                     {t.exploreInsights} <ArrowUpRight size={14} className={`stroke-[3] group-hover:-translate-y-0.5 transition-transform ${isRtl ? "group-hover:-translate-x-0.5 rotate-180" : "group-hover:translate-x-0.5"}`} />
                 </button>
             </div>
+
+            {readerModal}
         </div>
     );
 }

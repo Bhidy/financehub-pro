@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
+import { sanitizeNewsText } from '@/lib/news-display';
 
 export async function GET(request: Request) {
     try {
@@ -53,7 +54,14 @@ export async function GET(request: Request) {
             LIMIT $${params.length}
         `, params);
 
-        return NextResponse.json(result.rows);
+        const sanitizedRows = result.rows.map((row) => ({
+            ...row,
+            headline: sanitizeNewsText(row.headline) || "Egypt Market Update",
+            article_body: sanitizeNewsText(row.article_body) || null,
+            source: null,
+        }));
+
+        return NextResponse.json(sanitizedRows);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown server error';
         console.error('[API /news ERROR]', message);

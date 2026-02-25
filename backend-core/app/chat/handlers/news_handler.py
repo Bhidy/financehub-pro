@@ -19,11 +19,17 @@ NARRATIVE_HEADLINES = 3
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _SPACE_RE = re.compile(r"\s+")
+_SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.;:!?])")
 _LEADING_CITY_RE = re.compile(r"^\s*(?:cairo|egypt|dubai|riyadh|abu dhabi|kuwait)\s*[-–—:]\s*", re.IGNORECASE)
 _LEADING_SOURCE_RE = re.compile(
     r"^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|reuters|bloomberg)\s*[-–—:]\s*",
     re.IGNORECASE,
 )
+_BLOCKED_SOURCE_RE = re.compile(
+    r"\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\b",
+    re.IGNORECASE,
+)
+_BLOCKED_SOURCE_AR_RE = re.compile(r"(?:مباشر|عرب\s*فاينانس|زاوية)")
 
 
 def _clean_text(value: Optional[str]) -> str:
@@ -52,6 +58,26 @@ def _strip_source_prefix(value: Optional[str]) -> str:
     return text
 
 
+def _strip_blocked_source_mentions(value: Optional[str]) -> str:
+    text = _clean_text(value)
+    if not text:
+        return ""
+
+    for _ in range(3):
+        updated = _LEADING_CITY_RE.sub("", text)
+        updated = _LEADING_SOURCE_RE.sub("", updated)
+        updated = updated.strip(" :-\u2013\u2014\t")
+        if updated == text:
+            break
+        text = updated
+
+    text = _BLOCKED_SOURCE_RE.sub("", text)
+    text = _BLOCKED_SOURCE_AR_RE.sub("", text)
+    text = _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)
+    text = _SPACE_RE.sub(" ", text).strip(" :-\u2013\u2014\t")
+    return text
+
+
 def _clip_text(value: str, max_chars: int) -> str:
     clean = _clean_text(value)
     if len(clean) <= max_chars:
@@ -60,10 +86,10 @@ def _clip_text(value: str, max_chars: int) -> str:
 
 
 def _build_item_summary(article_body: Optional[str], headline: str) -> str:
-    body = _strip_source_prefix(article_body)
+    body = _strip_blocked_source_mentions(_strip_source_prefix(article_body))
     if body:
         return _clip_text(body, SUMMARY_MAX_CHARS)
-    return _clip_text(headline, 180)
+    return _clip_text(_strip_blocked_source_mentions(headline), 180)
 
 
 def _format_item_date(published_at: Any, published_date_raw: Optional[str]) -> Optional[str]:
@@ -237,7 +263,8 @@ async def handle_news(
 
     for row in rows:
         raw_headline = row.get("headline")
-        title = _strip_source_prefix(raw_headline) or _clean_text(raw_headline) or "Untitled Article"
+        cleaned_headline = _strip_source_prefix(raw_headline) or _clean_text(raw_headline)
+        title = _strip_blocked_source_mentions(cleaned_headline) or "Untitled Article"
         summary = _build_item_summary(row.get("article_body"), title)
         date_label = _format_item_date(row.get("published_at"), row.get("published_date_raw"))
         article_id = row.get("id")

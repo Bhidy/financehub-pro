@@ -228,6 +228,53 @@ class FollowUpEngine:
         return text
 
     @staticmethod
+    def _infer_followup_type(prompt: str) -> str:
+        lower = str(prompt or "").lower()
+        if any(k in lower for k in ["compare", "vs", "peer", "sector"]):
+            return "comparison"
+        if any(k in lower for k in ["risk", "safe", "safety", "watch", "caution"]):
+            return "risk_probe"
+        if any(k in lower for k in ["catalyst", "driver", "driving", "why"]):
+            return "catalyst"
+        if any(k in lower for k in ["macro", "inflation", "rate", "egx", "market"]):
+            return "macro_link"
+        return "next_step"
+
+    def _followups_from_actions(
+        self,
+        actions: Optional[List[Dict]],
+        symbol: Optional[str] = None
+    ) -> List[Dict]:
+        """Build robust followups from handler actions (always route-safe)."""
+        out: List[Dict] = []
+        seen_payloads: set[str] = set()
+
+        for action in actions or []:
+            if not isinstance(action, dict):
+                continue
+            if str(action.get("action_type") or "query").lower() != "query":
+                continue
+            payload_raw = action.get("payload") or action.get("label") or ""
+            payload = self._sanitize_prompt(str(payload_raw), symbol)
+            if not payload:
+                continue
+
+            key = payload.lower()
+            if key in seen_payloads:
+                continue
+            seen_payloads.add(key)
+
+            out.append({
+                "text": payload,
+                "type": self._infer_followup_type(payload),
+                "payload": payload
+            })
+            if len(out) >= 3:
+                break
+
+        return out
+
+    @staticmethod
     def _is_generic_chip(value: str) -> bool:
         generic_labels = {
             "sector comparison", "comparison", "peer comparison", "compare peers",
@@ -279,12 +326,23 @@ class FollowUpEngine:
         conversation_history: List[Dict],
         intent: Dict,
         symbol: Optional[str] = None,
-        language: str = "en"
+        language: str = "en",
+        actions: Optional[List[Dict]] = None
     ) -> List[Dict]:
         """
         Main entry point. Returns 3 follow-up questions formatted for the frontend chips.
         """
         try:
+            intent_name = str((intent or {}).get("intent") or "").upper()
+            market_wide_intents = {
+                "MARKET_SUMMARY", "MARKET_STATUS", "TOP_GAINERS", "TOP_LOSERS",
+                "MARKET_MOST_ACTIVE", "SECTOR_STOCKS"
+            }
+            if actions and (not symbol or intent_name in market_wide_intents):
+                action_followups = self._followups_from_actions(actions, symbol=symbol)
+                if action_followups:
+                    return action_followups
+
             return await self._generate_with_llm(
                 ai_response,
                 conversation_history,

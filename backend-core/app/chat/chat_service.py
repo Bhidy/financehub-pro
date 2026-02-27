@@ -3637,7 +3637,8 @@ class ChatService:
                     conversation_history=history or [],
                     intent=intent_info,
                     symbol=actual_symbol,
-                    language=language
+                    language=language,
+                    actions=result_data.get('actions', [])
                 )
                 
                 if dynamic_followups:

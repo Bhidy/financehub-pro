@@ -195,17 +195,26 @@ class FollowUpEngine:
         return text
 
     @staticmethod
-    def _normalize_ticker_tokens(text: str, symbol: Optional[str]) -> str:
+    def _normalize_ticker_tokens(
+        text: str,
+        symbol: Optional[str],
+        allowed_symbols: Optional[List[str]] = None
+    ) -> str:
         """Repair hallucinated ticker tokens in follow-up text."""
         if not text:
             return text
 
         active = (symbol or "").strip().upper()
+        allowed = {str(s).strip().upper() for s in (allowed_symbols or []) if str(s).strip()}
+        if active:
+            allowed.add(active)
 
         def _replace(match: re.Match) -> str:
             tok = str(match.group("tok") or "").upper()
             poss = str(match.group("poss") or "")
             if tok in FOLLOWUP_NON_TICKER_TOKENS:
+                return match.group(0)
+            if tok in allowed:
                 return match.group(0)
 
             if active:
@@ -222,9 +231,14 @@ class FollowUpEngine:
         )
 
     @classmethod
-    def _sanitize_prompt(cls, prompt: str, symbol: Optional[str]) -> str:
+    def _sanitize_prompt(
+        cls,
+        prompt: str,
+        symbol: Optional[str],
+        allowed_symbols: Optional[List[str]] = None
+    ) -> str:
         text = cls._normalize_text(prompt)
-        text = cls._normalize_ticker_tokens(text, symbol)
+        text = cls._normalize_ticker_tokens(text, symbol, allowed_symbols=allowed_symbols)
         text = re.sub(r"\s{2,}", " ", text).strip()
         return text
 
@@ -281,6 +295,7 @@ class FollowUpEngine:
         """Build robust followups from handler actions (always route-safe)."""
         out: List[Dict] = []
         seen_payloads: set[str] = set()
+        seen_texts: set[str] = set()
         resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
 
         for action in actions or []:
@@ -289,20 +304,23 @@ class FollowUpEngine:
             if str(action.get("action_type") or "query").lower() != "query":
                 continue
             payload_raw = action.get("payload") or action.get("label") or ""
-            payload = self._sanitize_prompt(str(payload_raw), symbol)
+            payload = self._sanitize_prompt(str(payload_raw), symbol, allowed_symbols=resolved_anchors)
             if not payload:
                 continue
             display_text = self._sanitize_prompt(
                 self._action_to_chip_text(payload, str(action.get("label") or ""), symbol),
-                symbol
+                symbol,
+                allowed_symbols=resolved_anchors
             )
             if not display_text:
                 display_text = payload
 
-            key = payload.lower()
-            if key in seen_payloads:
+            payload_key = payload.lower()
+            text_key = display_text.lower()
+            if payload_key in seen_payloads or text_key in seen_texts:
                 continue
-            seen_payloads.add(key)
+            seen_payloads.add(payload_key)
+            seen_texts.add(text_key)
 
             out.append({
                 "text": display_text,
@@ -319,10 +337,13 @@ class FollowUpEngine:
                 payload = str(fb.get("payload") or "").strip()
                 if not payload:
                     continue
-                key = payload.lower()
-                if key in seen_payloads:
+                payload_key = payload.lower()
+                text_key = str(fb.get("text") or "").strip().lower()
+                if payload_key in seen_payloads or text_key in seen_texts:
                     continue
-                seen_payloads.add(key)
+                seen_payloads.add(payload_key)
+                if text_key:
+                    seen_texts.add(text_key)
                 out.append({
                     **fb,
                     "anchor_symbol": (symbol or None),
@@ -380,7 +401,12 @@ class FollowUpEngine:
         )
 
     @classmethod
-    def _is_valid_followup_entry(cls, item: Dict, symbol: Optional[str]) -> bool:
+    def _is_valid_followup_entry(
+        cls,
+        item: Dict,
+        symbol: Optional[str],
+        anchor_symbols: Optional[List[str]] = None
+    ) -> bool:
         text = cls._normalize_text(item.get("text"))
         payload = cls._normalize_text(item.get("payload") or item.get("text"))
         if not text or not payload:
@@ -392,11 +418,14 @@ class FollowUpEngine:
 
         # If we have an active symbol, reject entries that still mention a different ticker.
         active = (symbol or "").strip().upper()
+        allowed = {str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()}
         if active:
+            allowed.add(active)
+        if allowed:
             for token in re.findall(r"\b[A-Z]{3,6}\b", payload.upper()):
                 if token in FOLLOWUP_NON_TICKER_TOKENS:
                     continue
-                if token != active:
+                if token not in allowed:
                     return False
         return True
 
@@ -431,7 +460,7 @@ class FollowUpEngine:
                 language,
                 anchor_symbols=anchor_symbols
             )
-            if llm_followups and all(self._is_valid_followup_entry(f, symbol) for f in llm_followups):
+            if llm_followups and all(self._is_valid_followup_entry(f, symbol, anchor_symbols=anchor_symbols) for f in llm_followups):
                 return llm_followups
             fallback = self._rule_based_fallback(ai_response, symbol)
             resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
@@ -518,6 +547,8 @@ Return ONLY the JSON array, no other text.'''
 
         followups = []
         resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
+        seen_payloads: set[str] = set()
+        seen_texts: set[str] = set()
         for i, item in enumerate(parsed[:3]):
             followup_type = item.get("type", "general")
             display_prompt = self._resolve_click_prompt(
@@ -526,12 +557,24 @@ Return ONLY the JSON array, no other text.'''
                 followup_type=followup_type,
                 symbol=symbol
             )
+            display_prompt = self._sanitize_prompt(
+                display_prompt,
+                symbol,
+                allowed_symbols=resolved_anchors
+            )
             payload_prompt = self._sanitize_prompt(
                 self._normalize_text(item.get("query")) or display_prompt,
-                symbol
+                symbol,
+                allowed_symbols=resolved_anchors
             )
             if not payload_prompt:
                 payload_prompt = display_prompt
+            payload_key = payload_prompt.lower()
+            text_key = display_prompt.lower()
+            if payload_key in seen_payloads or text_key in seen_texts:
+                continue
+            seen_payloads.add(payload_key)
+            seen_texts.add(text_key)
             followups.append({
                 "text": display_prompt,
                 "type": followup_type,

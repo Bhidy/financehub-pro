@@ -211,6 +211,20 @@ export interface Message {
 
 const ensureArray = <T = any>(value: any): T[] => Array.isArray(value) ? value : [];
 
+const GLOBAL_OPENING_STRIP_PATTERNS: RegExp[] = [
+    /You are absolutely focusing on the right metrics here\. Validating this specific angle reveals the true underlying trend of the asset\.\s*/i,
+    /Here is the complete picture based on the (?:latest available data|today(?:'|’)s session activity)\.\s*Let(?:'|’)s go through the numbers step-by-step\.?\s*/i,
+    /إليك الصورة الكاملة بناءً على (?:أحدث البيانات المتاحة|نشاط جلسة اليوم)\.\s*دعنا نستعرض الأرقام خطوة بخطوة\.?\s*/i,
+];
+
+function stripGlobalBoilerplate(value: any): string {
+    let text = String(value ?? "");
+    for (const pattern of GLOBAL_OPENING_STRIP_PATTERNS) {
+        text = text.replace(pattern, "");
+    }
+    return text.trim();
+}
+
 function canonicalizeCardType(value: any): string {
     const raw = String(value ?? "").trim();
     if (!raw) return raw;
@@ -246,9 +260,10 @@ function sanitizeChatResponse(raw: any): ChatResponse {
     return {
         ...raw,
         message_id: raw?.message_id,
-        message_text: typeof raw?.message_text === "string"
+        message_text: stripGlobalBoilerplate(typeof raw?.message_text === "string"
             ? raw.message_text
-            : String(raw?.conversational_text || raw?.message || ""),
+            : String(raw?.conversational_text || raw?.message || "")),
+        conversational_text: stripGlobalBoilerplate(raw?.conversational_text || ""),
         language: (raw?.language === "ar" || raw?.language === "en" || raw?.language === "mixed")
             ? raw.language
             : "en",

@@ -32,9 +32,12 @@ import time
 import re
 import logging
 import json
+import math
+from decimal import Decimal
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import asyncpg
+from pydantic import BaseModel
 
 # Configure Logger
 logger = logging.getLogger(__name__)
@@ -345,6 +348,99 @@ ARABIC_STRUCTURAL_KEYS = {
     "status", "variant", "direction", "format", "trend", "signal",
 }
 
+# Remove this specific generic disclaimer globally (user request), while preserving
+# all other disclaimer variants/messages.
+BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = (
+    "this is market analysis for educational purposes, not personalized investment advice",
+    "your decision should factor in your individual financial situation, risk tolerance, and investment timeline",
+    "هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+    "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+)
+
+UNWANTED_OPENING_SENTENCES = (
+    "You are absolutely focusing on the right metrics here. Validating this specific angle reveals the true underlying trend of the asset.",
+)
+
+TEXT_PHRASE_REPLACEMENTS = (
+    (
+        re.compile(r"based on today(?:'|’)s session activity", re.IGNORECASE),
+        "based on the latest available data",
+    ),
+    (
+        re.compile(r"today(?:'|’)s session activity", re.IGNORECASE),
+        "the latest available data",
+    ),
+    (
+        re.compile(r"بناءً على نشاط جلسة اليوم"),
+        "بناءً على أحدث البيانات المتاحة",
+    ),
+    (
+        re.compile(r"نشاط جلسة اليوم"),
+        "أحدث البيانات المتاحة",
+    ),
+)
+
+LONG_DECIMAL_NUMBER_RE = re.compile(
+    r"(?<![\w/])(?P<num>-?(?:\d{1,3}(?:,\d{3})*|\d+)\.\d{3,})(?![\dA-Za-z/])"
+)
+
+EN_SCORE_OF_RE = re.compile(
+    r"(?i)\b(?P<label>valuation|profitability|financial health|health|earnings quality|quality|momentum|total)\s+score\s+of\s+(?P<score>-?\d+(?:\.\d+)?)\b(?!\s*/)"
+)
+EN_SCORE_COLON_RE = re.compile(
+    r"(?i)\b(?P<label>valuation|profitability|financial health|health|earnings quality|quality|momentum|total)\s+score\s*[:=]\s*(?P<score>-?\d+(?:\.\d+)?)\b(?!\s*/)"
+)
+AR_COMPONENT_SCORE_RE = re.compile(
+    r"(?P<prefix>درجة\s+(?P<label>التقييم|الربحية|الصحة المالية|جودة الأرباح|الزخم)\s*(?:هي|:)?\s*)(?P<score>-?\d+(?:\.\d+)?)\b(?!\s*/)"
+)
+AR_TOTAL_SCORE_RE = re.compile(
+    r"(?P<prefix>النتيجة\s+الإجمالية\s*(?:هي|:)?\s*)(?P<score>-?\d+(?:\.\d+)?)\b(?!\s*/)"
+)
+
+SCORE_COMPONENT_MAX = {
+    "valuation": 20,
+    "profitability": 20,
+    "financial health": 20,
+    "health": 20,
+    "earnings quality": 20,
+    "quality": 20,
+    "momentum": 20,
+    "total": 100,
+}
+
+BANK_SECTOR_HINTS = (
+    "bank", "banks", "commercial banks", "financial services",
+    "financials - banks", "banking", "بنوك", "البنوك", "مصارف", "خدمات مالية",
+)
+
+# Terms that indicate a cross-sector causal mismatch when sector is banking.
+BANK_FORBIDDEN_DRIVER_PATTERNS = (
+    (re.compile(r"\braw materials?\b", re.IGNORECASE), "raw materials"),
+    (re.compile(r"\bsupply chain\b", re.IGNORECASE), "supply chain"),
+    (re.compile(r"\binventory(?:\s+turnover)?\b", re.IGNORECASE), "inventory"),
+    (re.compile(r"\bfactory\b", re.IGNORECASE), "factory"),
+    (re.compile(r"\bplant utilization\b", re.IGNORECASE), "plant utilization"),
+    (re.compile(r"\bcommodity input(?:s)?\b", re.IGNORECASE), "commodity inputs"),
+    (re.compile(r"المواد الخام"), "المواد الخام"),
+    (re.compile(r"سلسلة الإمداد"), "سلسلة الإمداد"),
+    (re.compile(r"المخزون"), "المخزون"),
+)
+
+# Core financial-sector language to avoid over-penalizing valid bank narratives.
+BANK_NATIVE_DRIVER_PATTERNS = (
+    re.compile(r"\bnim\b", re.IGNORECASE),
+    re.compile(r"\bnet interest margin\b", re.IGNORECASE),
+    re.compile(r"\bnpl\b", re.IGNORECASE),
+    re.compile(r"\bprovision(?:ing)?\b", re.IGNORECASE),
+    re.compile(r"\bcost[-\s]?to[-\s]?income\b", re.IGNORECASE),
+    re.compile(r"\bloan growth\b", re.IGNORECASE),
+    re.compile(r"\bdeposit(?:s)?\b", re.IGNORECASE),
+    re.compile(r"\bfee income\b", re.IGNORECASE),
+    re.compile(r"هامش الفائدة"),
+    re.compile(r"المخصصات"),
+    re.compile(r"جودة الائتمان"),
+)
+
 
 class ChatService:
     """Main chat orchestrator."""
@@ -446,6 +542,445 @@ class ChatService:
             except Exception:
                 return {}
         return {}
+
+    @staticmethod
+    def _normalize_text(value: Optional[str]) -> str:
+        if not value:
+            return ""
+        return re.sub(r"\s+", " ", str(value)).strip().lower()
+
+    @classmethod
+    def _is_blocked_generic_disclaimer(cls, value: Optional[str]) -> bool:
+        normalized = cls._normalize_text(value)
+        if not normalized:
+            return False
+        return any(snippet in normalized for snippet in BLOCKED_GENERIC_DISCLAIMER_SNIPPETS)
+
+    @staticmethod
+    def _extract_disclaimer_text(payload: Any) -> str:
+        if payload is None:
+            return ""
+        if isinstance(payload, dict):
+            return str(payload.get("text") or payload.get("content") or "")
+        text_attr = getattr(payload, "text", None)
+        if text_attr:
+            return str(text_attr)
+        content_attr = getattr(payload, "content", None)
+        if content_attr:
+            return str(content_attr)
+        return str(payload) if isinstance(payload, str) else ""
+
+    @staticmethod
+    def _normalize_sector_name(sector: Optional[str]) -> str:
+        if not sector:
+            return ""
+        return re.sub(r"\s+", " ", str(sector).strip())
+
+    @classmethod
+    def _is_bank_sector(cls, sector: Optional[str]) -> bool:
+        sector_text = cls._normalize_sector_name(sector).lower()
+        if not sector_text:
+            return False
+        return any(token in sector_text for token in BANK_SECTOR_HINTS)
+
+    @classmethod
+    def _extract_sector_context(cls, entities: Dict[str, Any], result: Dict[str, Any]) -> str:
+        sector_candidates: List[str] = []
+
+        if isinstance(entities, dict):
+            for key in ("sector", "sector_name"):
+                value = entities.get(key)
+                if value:
+                    sector_candidates.append(str(value))
+
+        cards_payload = result.get("cards") if isinstance(result, dict) else None
+        if isinstance(cards_payload, list):
+            for card in cards_payload:
+                if not isinstance(card, dict):
+                    continue
+                card_type = str(card.get("type") or "").lower()
+                if card_type != "stock_header":
+                    continue
+                data = card.get("data") or {}
+                if not isinstance(data, dict):
+                    continue
+                card_sector = data.get("sector") or data.get("sector_name")
+                if card_sector:
+                    sector_candidates.append(str(card_sector))
+
+        for raw in sector_candidates:
+            normalized = cls._normalize_sector_name(raw)
+            if normalized:
+                return normalized
+        return ""
+
+    @classmethod
+    def _detect_sector_driver_conflicts(cls, text: Optional[str], sector: Optional[str]) -> List[str]:
+        if not text:
+            return []
+        if not cls._is_bank_sector(sector):
+            return []
+
+        conflicts: List[str] = []
+        source = str(text)
+        for pattern, label in BANK_FORBIDDEN_DRIVER_PATTERNS:
+            if pattern.search(source):
+                conflicts.append(label)
+        # Preserve order, remove duplicates.
+        return list(dict.fromkeys(conflicts))
+
+    @classmethod
+    def _sanitize_sector_driver_language(cls, text: Optional[str], sector: Optional[str], language: str = "en") -> str:
+        if not text:
+            return ""
+        sanitized = str(text)
+        if not cls._is_bank_sector(sector):
+            return sanitized
+
+        replacements = [
+            (r"\braw materials?\b", "funding costs"),
+            (r"\bsupply chain\b", "balance-sheet and funding dynamics"),
+            (r"\binventory(?:\s+turnover)?\b", "loan-book quality and growth"),
+            (r"\bfactory\b", "distribution and branch network"),
+            (r"\bplant utilization\b", "balance-sheet utilization"),
+            (r"\bcommodity input(?:s)?\b", "macro and rate-sensitive inputs"),
+            (r"المواد الخام", "تكلفة التمويل"),
+            (r"سلسلة الإمداد", "ديناميكيات الميزانية والتمويل"),
+            (r"المخزون", "جودة محفظة القروض"),
+        ]
+        for pattern, replacement in replacements:
+            sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
+
+        # If banking-native terms are still absent after correction, add one concise anchor line.
+        has_bank_driver = any(p.search(sanitized) for p in BANK_NATIVE_DRIVER_PATTERNS)
+        if not has_bank_driver:
+            anchor = (
+                " For banks, focus causality on NIM, provisioning, cost-to-income, and loan/deposit growth."
+                if language != "ar"
+                else " في البنوك، تتركز الأسباب في هامش الفائدة الصافي والمخصصات ونسبة التكلفة إلى الدخل ونمو القروض والودائع."
+            )
+            if sanitized and sanitized[-1] not in ".!?؟":
+                sanitized += "."
+            sanitized += anchor
+
+        return sanitized
+
+    @staticmethod
+    def _quality_bucket(score: int, language: str = "en") -> str:
+        if score >= 85:
+            return "high" if language != "ar" else "مرتفع"
+        if score >= 70:
+            return "good" if language != "ar" else "جيد"
+        if score >= 55:
+            return "moderate" if language != "ar" else "متوسط"
+        return "low" if language != "ar" else "منخفض"
+
+    def _build_quality_monitor_payload(
+        self,
+        *,
+        language: str,
+        intent: Intent,
+        confidence: float,
+        entities: Dict[str, Any],
+        result: Dict[str, Any],
+        sector: str,
+        initial_conflicts: List[str],
+        remaining_conflicts: List[str],
+    ) -> Optional[Dict[str, Any]]:
+        skip_intents = {
+            Intent.GREETING, Intent.IDENTITY, Intent.CAPABILITIES, Intent.MOOD,
+            Intent.GRATITUDE, Intent.GOODBYE, Intent.HELP, Intent.UNKNOWN,
+            Intent.BLOCKED, Intent.DEFINE_TERM, Intent.CLARIFY_SYMBOL,
+        }
+        if intent in skip_intents:
+            return None
+
+        cards_payload = result.get("cards") if isinstance(result, dict) else []
+        card_types = {
+            str(card.get("type") or "").lower()
+            for card in cards_payload
+            if isinstance(card, dict)
+        }
+        has_symbol_context = bool(entities.get("symbol"))
+        if not card_types and not has_symbol_context:
+            return None
+
+        data_score = 55
+        if "stock_header" in card_types:
+            data_score += 20
+        if card_types.intersection({"snapshot", "stats", "financial_explorer", "financials", "valuation_score", "score_breakdown"}):
+            data_score += 15
+        if result.get("chart"):
+            data_score += 5
+        if "error" in card_types or result.get("success") is False:
+            data_score -= 30
+        data_score = max(20, min(98, int(round(data_score))))
+
+        conf = max(0.0, min(1.0, float(confidence or 0.0)))
+        interpretation_score = int(round(50 + (conf * 35)))
+        if sector:
+            interpretation_score += 5
+        if initial_conflicts:
+            interpretation_score -= 22
+        elif sector:
+            interpretation_score += 5
+        if remaining_conflicts:
+            interpretation_score -= 10
+        interpretation_score = max(20, min(95, interpretation_score))
+
+        corrected = bool(initial_conflicts and not remaining_conflicts)
+        data_bucket = self._quality_bucket(data_score, language)
+        interpretation_bucket = self._quality_bucket(interpretation_score, language)
+
+        if language == "ar":
+            conflict_preview = "، ".join(initial_conflicts[:3]) if initial_conflicts else ""
+            items = [
+                f"**موثوقية البيانات:** {data_score}/100 ({data_bucket}) — مبنية على بطاقات بيانات رقمية مباشرة.",
+                f"**ثقة التفسير:** {interpretation_score}/100 ({interpretation_bucket}) — تعتمد على اتساق السرد مع القطاع.",
+            ]
+            if sector:
+                items.append(f"**سياق القطاع:** {sector} — تم تقييد المحركات بالعوامل المناسبة لهذا القطاع.")
+            if corrected:
+                items.append(f"**تصحيح ذاتي تم:** تمت إعادة صياغة أسباب غير مناسبة قطاعياً ({conflict_preview}).")
+            elif remaining_conflicts:
+                items.append(f"**تنبيه:** توجد مصطلحات تحتاج مراجعة يدوية ({'، '.join(remaining_conflicts[:3])}).")
+            else:
+                items.append("**فحص الاتساق:** لا يوجد تعارض قطاعي ظاهر في هذا الرد.")
+            card = {
+                "variant": "warning" if (initial_conflicts or remaining_conflicts) else "info",
+                "title": "🧭 شفافية جودة التحليل",
+                "items": items,
+            }
+        else:
+            conflict_preview = ", ".join(initial_conflicts[:3]) if initial_conflicts else ""
+            items = [
+                f"**Data reliability:** {data_score}/100 ({data_bucket}) based on structured numeric cards.",
+                f"**Interpretation confidence:** {interpretation_score}/100 ({interpretation_bucket}) based on sector-fit consistency checks.",
+            ]
+            if sector:
+                items.append(f"**Sector context:** {sector} — causal language is constrained to sector-relevant drivers.")
+            if corrected:
+                items.append(f"**Self-correction applied:** Rewrote cross-sector terms ({conflict_preview}).")
+            elif remaining_conflicts:
+                items.append(f"**Review flag:** Possible residual cross-sector terms ({', '.join(remaining_conflicts[:3])}).")
+            else:
+                items.append("**Consistency check:** No cross-sector driver conflict detected.")
+            card = {
+                "variant": "warning" if (initial_conflicts or remaining_conflicts) else "info",
+                "title": "🧭 Analysis Transparency",
+                "items": items,
+            }
+
+        monitor_meta = {
+            "data_score": data_score,
+            "interpretation_score": interpretation_score,
+            "sector": sector,
+            "auto_corrected": corrected,
+            "conflicts_detected": initial_conflicts,
+            "conflicts_remaining": remaining_conflicts,
+        }
+        return {"card": card, "meta": monitor_meta}
+
+    @staticmethod
+    def _format_score_number(raw_score: str) -> str:
+        try:
+            score = float(raw_score)
+            if score.is_integer():
+                return str(int(score))
+            return f"{score:.2f}".rstrip("0").rstrip(".")
+        except Exception:
+            return str(raw_score)
+
+    @staticmethod
+    def _score_signal_label(score: float, max_score: int, language: str) -> str:
+        if max_score >= 100:
+            if score >= 80:
+                return "strong" if language != "ar" else "قوي"
+            if score >= 65:
+                return "constructive" if language != "ar" else "إيجابي"
+            if score >= 50:
+                return "mixed" if language != "ar" else "مختلط"
+            if score >= 35:
+                return "weak" if language != "ar" else "ضعيف"
+            return "very weak" if language != "ar" else "ضعيف جداً"
+
+        if score >= 16:
+            return "strong" if language != "ar" else "قوي"
+        if score >= 12:
+            return "constructive" if language != "ar" else "إيجابي"
+        if score >= 8:
+            return "mixed" if language != "ar" else "مختلط"
+        if score >= 4:
+            return "weak" if language != "ar" else "ضعيف"
+        return "very weak" if language != "ar" else "ضعيف جداً"
+
+    @classmethod
+    def _apply_score_clarity_to_text(cls, text: str, language: str) -> str:
+        if not text:
+            return text
+
+        def _replace_en_score_of(match: re.Match) -> str:
+            label = str(match.group("label") or "")
+            score_raw = str(match.group("score") or "")
+            max_score = SCORE_COMPONENT_MAX.get(label.lower().strip())
+            if not max_score:
+                return match.group(0)
+            try:
+                score_val = float(score_raw)
+            except Exception:
+                score_val = 0.0
+            score_fmt = cls._format_score_number(score_raw)
+            signal = cls._score_signal_label(score_val, max_score, language)
+            return f"{label} score of {score_fmt}/{max_score} ({signal})"
+
+        def _replace_en_score_colon(match: re.Match) -> str:
+            label = str(match.group("label") or "")
+            score_raw = str(match.group("score") or "")
+            max_score = SCORE_COMPONENT_MAX.get(label.lower().strip())
+            if not max_score:
+                return match.group(0)
+            try:
+                score_val = float(score_raw)
+            except Exception:
+                score_val = 0.0
+            score_fmt = cls._format_score_number(score_raw)
+            signal = cls._score_signal_label(score_val, max_score, language)
+            return f"{label} score: {score_fmt}/{max_score} ({signal})"
+
+        def _replace_ar_component_score(match: re.Match) -> str:
+            prefix = str(match.group("prefix") or "")
+            score_raw = str(match.group("score") or "")
+            score_fmt = cls._format_score_number(score_raw)
+            return f"{prefix}{score_fmt}/20"
+
+        def _replace_ar_total_score(match: re.Match) -> str:
+            prefix = str(match.group("prefix") or "")
+            score_raw = str(match.group("score") or "")
+            score_fmt = cls._format_score_number(score_raw)
+            return f"{prefix}{score_fmt}/100"
+
+        text = EN_SCORE_OF_RE.sub(_replace_en_score_of, text)
+        text = EN_SCORE_COLON_RE.sub(_replace_en_score_colon, text)
+        text = AR_COMPONENT_SCORE_RE.sub(_replace_ar_component_score, text)
+        text = AR_TOTAL_SCORE_RE.sub(_replace_ar_total_score, text)
+        return text
+
+    @classmethod
+    def _apply_decimal_rounding_to_text(cls, text: str) -> str:
+        if not text:
+            return text
+
+        def _replace_decimal(match: re.Match) -> str:
+            raw = str(match.group("num") or "")
+            try:
+                parsed = float(raw.replace(",", ""))
+            except Exception:
+                return raw
+            if math.isnan(parsed) or math.isinf(parsed):
+                return raw
+            if "," in raw:
+                return f"{parsed:,.2f}"
+            return f"{parsed:.2f}"
+
+        return LONG_DECIMAL_NUMBER_RE.sub(_replace_decimal, text)
+
+    @classmethod
+    def _normalize_display_text(cls, value: Optional[str], language: str = "en") -> str:
+        if value is None:
+            return ""
+
+        text = str(value)
+        if not text:
+            return ""
+
+        for sentence in UNWANTED_OPENING_SENTENCES:
+            text = re.sub(
+                rf"^\s*{re.escape(sentence)}\s*",
+                "",
+                text,
+                flags=re.IGNORECASE,
+            )
+            text = text.replace(sentence, "")
+
+        for pattern, replacement in TEXT_PHRASE_REPLACEMENTS:
+            text = pattern.sub(replacement, text)
+
+        text = cls._apply_score_clarity_to_text(text, language)
+        text = cls._apply_decimal_rounding_to_text(text)
+
+        text = re.sub(r"[ \t]{2,}", " ", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        return text.strip()
+
+    @classmethod
+    def _normalize_payload_value(cls, value: Any, language: str = "en") -> Any:
+        if isinstance(value, Decimal):
+            try:
+                value = float(value)
+            except Exception:
+                return value
+
+        if isinstance(value, float):
+            if math.isnan(value) or math.isinf(value):
+                return value
+            return round(value, 2)
+
+        if isinstance(value, dict):
+            return {k: cls._normalize_payload_value(v, language) for k, v in value.items()}
+
+        if isinstance(value, list):
+            return [cls._normalize_payload_value(v, language) for v in value]
+
+        if isinstance(value, str):
+            if value.startswith("http://") or value.startswith("https://"):
+                return value
+            return cls._normalize_display_text(value, language)
+
+        if isinstance(value, BaseModel):
+            field_names = []
+            if hasattr(value, "__fields__"):
+                field_names = list(getattr(value, "__fields__", {}).keys())
+            elif hasattr(value, "model_fields"):
+                field_names = list(getattr(value, "model_fields", {}).keys())
+
+            for field_name in field_names:
+                try:
+                    current = getattr(value, field_name)
+                    setattr(value, field_name, cls._normalize_payload_value(current, language))
+                except Exception:
+                    continue
+            return value
+
+        return value
+
+    def _normalize_response_presentation(
+        self,
+        response: ChatResponse,
+        language: str
+    ) -> ChatResponse:
+        response.message_text = self._normalize_display_text(response.message_text, language)
+        response.conversational_text = self._normalize_display_text(response.conversational_text, language) if response.conversational_text else response.conversational_text
+        response.framework_text = self._normalize_display_text(response.framework_text, language) if response.framework_text else response.framework_text
+        response.follow_up_prompt = self._normalize_display_text(response.follow_up_prompt, language) if response.follow_up_prompt else response.follow_up_prompt
+        response.key_insight = self._normalize_display_text(response.key_insight, language) if response.key_insight else response.key_insight
+        response.disclaimer = self._normalize_display_text(response.disclaimer, language) if response.disclaimer else response.disclaimer
+        response.message = self._normalize_display_text(response.message, language) if response.message else response.message
+        response.message_text_ar = self._normalize_display_text(response.message_text_ar, language) if response.message_text_ar else response.message_text_ar
+
+        for attr_name in [
+            "fact_explanations", "learning_section", "followups",
+            "structured_narrative", "data_card", "bull_case", "bear_case",
+            "insight_cards", "stock_list", "macro_score", "comparison_table",
+            "educational_cards", "disclaimer_card", "framework_card",
+            "character_cards", "quantified_drivers", "index_composition",
+            "score_breakdown", "gem_list", "undervalued_screen",
+            "cards", "chart", "actions",
+        ]:
+            attr_val = getattr(response, attr_name, None)
+            if attr_val is not None:
+                setattr(response, attr_name, self._normalize_payload_value(attr_val, language))
+
+        return response
 
     @staticmethod
     def _is_confirmation_reply(message: Optional[str]) -> bool:
@@ -1629,7 +2164,8 @@ class ChatService:
                     block_message = COMPLIANCE_RESPONSE_AR
                 result = handle_blocked(violation_type, block_message, language)
                 response = self._build_response(result, Intent.BLOCKED, 1.0, {}, start_time, language, context=None)
-                return self._enforce_response_language(response, language)
+                response = self._enforce_response_language(response, language)
+                return self._normalize_response_presentation(response, language)
             print(f"✅ [DIAG-STEP-4] Compliance check PASSED")
             
             # 4. Route intent - CLAUDE-FIRST ARCHITECTURE (World-Class 2.0)
@@ -2488,6 +3024,7 @@ class ChatService:
                     result.follow_up_prompt = follow_up_prompt
                 
                 result = self._enforce_response_language(result, language, actual_symbol)
+                result = self._normalize_response_presentation(result, language)
                 return result
                 
             # CRITICAL FIX: Extract structured response components from handler result
@@ -2888,6 +3425,7 @@ class ChatService:
                 structured_narrative=structured if 'structured' in locals() else None
             )
             response = self._enforce_response_language(response, language, actual_symbol)
+            response = self._normalize_response_presentation(response, language)
             
             # 9. Log analytics
             await self._log_analytics(
@@ -3527,6 +4065,10 @@ class ChatService:
         is_follow_up = False
         full_response_text = conversational_text or ''
         used_opening = None
+        detected_sector = ""
+        initial_sector_conflicts: List[str] = []
+        remaining_sector_conflicts: List[str] = []
+        quality_monitor_payload: Optional[Dict[str, Any]] = None
         
         # Convert cards to Card objects
         # GLOBAL DEDUP GUARD: These card types must appear at most once per response.
@@ -3535,8 +4077,19 @@ class ChatService:
         _SINGLETON_CARD_TYPES = {'stock_header', 'snapshot', 'stats', 'valuation_score'}
         _seen_card_types: set = set()
 
-        cards = []
+        raw_cards = []
         for c in result.get('cards', []):
+            if not isinstance(c, dict):
+                continue
+            raw_type = str(c.get('type', '')).lower()
+            if raw_type in {'disclaimer_card', 'disclaimer'}:
+                disclaimer_text = self._extract_disclaimer_text(c.get('data'))
+                if self._is_blocked_generic_disclaimer(disclaimer_text):
+                    continue
+            raw_cards.append(c)
+
+        cards = []
+        for c in raw_cards:
             try:
                 card_type = CardType(c.get('type', 'error'))
             except ValueError:
@@ -3627,6 +4180,13 @@ class ChatService:
         
         # Get disclaimer if needed
         disclaimer = get_disclaimer(intent.value, language)
+        if self._is_blocked_generic_disclaimer(disclaimer):
+            disclaimer = None
+
+        if disclaimer_card is not None:
+            disclaimer_card_text = self._extract_disclaimer_text(disclaimer_card)
+            if self._is_blocked_generic_disclaimer(disclaimer_card_text):
+                disclaimer_card = None
         
         # Extract conversational_text from result
         conversational_text = result.get('conversational_text', conversational_text or '')
@@ -3661,6 +4221,20 @@ class ChatService:
                     if language == 'en' else
                     "إليك البيانات المطلوبة."
                 )
+
+        # Sector-aware sanity: prevent cross-sector causal language (e.g., raw materials for banks).
+        detected_sector = self._extract_sector_context(entities, result)
+        analysis_text_probe = conversational_text or final_message_text
+        initial_sector_conflicts = self._detect_sector_driver_conflicts(analysis_text_probe, detected_sector)
+
+        if conversational_text:
+            conversational_text = self._sanitize_sector_driver_language(conversational_text, detected_sector, language)
+        final_message_text = self._sanitize_sector_driver_language(final_message_text, detected_sector, language)
+
+        remaining_sector_conflicts = self._detect_sector_driver_conflicts(
+            conversational_text or final_message_text,
+            detected_sector
+        )
                 
         # Prepare shown_card_types for deduplication logic
         shown_card_types = [c.type.value for c in cards]
@@ -3738,7 +4312,11 @@ class ChatService:
                 )
 
         # Schema-level safety: always return a string.
-        full_response_text = str(full_response_text or "")
+        full_response_text = self._sanitize_sector_driver_language(
+            str(full_response_text or ""),
+            detected_sector,
+            language
+        )
         
         # Ensure structured_narrative is NEVER None to fulfill World-Class UI layer guarantees
         if structured_narrative is None:
@@ -3753,6 +4331,25 @@ class ChatService:
                 follow_up_prompt=follow_up_prompt
             )
 
+        quality_monitor_payload = self._build_quality_monitor_payload(
+            language=language,
+            intent=intent,
+            confidence=confidence,
+            entities=entities,
+            result=result,
+            sector=detected_sector,
+            initial_conflicts=initial_sector_conflicts,
+            remaining_conflicts=remaining_sector_conflicts,
+        )
+
+        merged_insight_cards = list(insight_cards or [])
+        if quality_monitor_payload and quality_monitor_payload.get("card"):
+            merged_insight_cards.append(quality_monitor_payload["card"])
+
+        meta_entities = dict(entities or {})
+        if quality_monitor_payload and quality_monitor_payload.get("meta"):
+            meta_entities["analysis_quality"] = quality_monitor_payload["meta"]
+
         return ChatResponse(
             message_text=full_response_text, # Use the composed text
             conversational_text=conversational_text,
@@ -3762,7 +4359,7 @@ class ChatService:
             data_card=data_card,
             bull_case=bull_case,
             bear_case=bear_case,
-            insight_cards=insight_cards or [],
+            insight_cards=merged_insight_cards,
             stock_list=stock_list or [],
             macro_score=macro_score,
             comparison_table=comparison_table,
@@ -3786,7 +4383,7 @@ class ChatService:
             meta=ResponseMeta(
                 intent=intent.value,
                 confidence=confidence,
-                entities=entities,
+                entities=meta_entities,
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),

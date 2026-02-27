@@ -316,9 +316,16 @@ class LLMExplainerService:
         f"   - تحدث كخبير يخاطب زميله (طبيعي، سلس، غير آلي).\n"
         f"   - استخدم لغة المحللين ('السهم بيتحرك'، 'السيولة بتقول').\n"
         f"   - اختم بجملة إنسانية بسيطة.\n\n"
+        f"3. **تنسيق الأرقام والدرجات (إلزامي)**:\n"
+        f"   - قرّب كل القيم العشرية إلى منزلتين كحد أقصى (مثال: 15.62 بدل 15.6241).\n"
+        f"   - عند ذكر الدرجات، اكتبها دائماً مع المقام (مثل 14/20 أو 62/100) ووضح الدلالة بإيجاز.\n"
+        f"   - استخدم صياغة 'أحدث البيانات المتاحة' وتجنب صياغة 'نشاط جلسة اليوم'.\n\n"
         f"   - قارن المؤشرات الحالية بمتوسطات القطاع المتوفرة فقط (مثال: 'يتداول عند 11x مقابل متوسط القطاع 14x أي بخصم 20%').\n"
         f"   - يمنع منعاً باتاً اختراع أو استنتاج أي متوسطات تاريخية لم يتم تقديمها ضمن البيانات.\n"
         f"   - قدم أرقام محددة لنسب الصعود/الهبوط المحتملة استناداً إلى البيانات الحالية.\n\n"
+        f"4. **الالتزام القطاعي للأسباب (إلزامي)**:\n"
+        f"   - إذا كان القطاع بنوك/خدمات مالية، امنع تماماً أسباب الصناعات التحويلية مثل: المواد الخام، المخزون، سلاسل الإمداد، أو استغلال المصنع.\n"
+        f"   - في حالة البنوك، استخدم فقط محركات مناسبة: صافي هامش الفائدة (NIM)، تكلفة الأموال، جودة الائتمان، المخصصات، الدخل من العمولات، نسبة التكلفة إلى الدخل، ونمو القروض.\n\n"
 
         f"═══════════════════════════════════════════════════════════════\n"
         f"الهيكل المطلوب (Strict Structure)\n"
@@ -363,6 +370,7 @@ class LLMExplainerService:
         f"- DO NOT repeat phrases, lists, or get stuck in generative loops (like repeating 'X is a peer').\n"
         f"- Use varied sentence structure and conclude your thoughts concisely.\n"
         f"- 🚨 SHAREHOLDER DATA IS UNAVAILABLE: NEVER mention, discuss, or generate follow-up questions about shareholders (المساهمين), ownership structure, or major owners. We do not have this data.\n\n"
+        f"- التزم بالقطاع: لا تذكر 'مواد خام/مخزون/سلسلة إمداد' عند تحليل بنك.\n\n"
         f"هام جداً: لا تستخدم كلمة 'سردية' أو أقواس فارغة (). ابدأ التحليل مباشرة.\n"
         f"مطلوب: قبل كتابة الرد، قم بتحليل البيانات وتحديد التوجه في بلوك خاص:\n"
         f"[THOUGHT_PROCESS]\n"
@@ -413,19 +421,28 @@ class LLMExplainerService:
                 f"4. **QUANTIFIED COMPARISONS**: Always compare current metrics to the provided sector averages.\n"
                 f"   - Example: 'Trading at 11.47x P/E versus the sector average of 14.3x — that's about a 20% discount.'\n"
                 f"   - NEVER hallucinate historical multi-year averages if they are not explicitly provided in the data.\n"
-                f"5. **NEVER MENTION MISSING DATA**: Frame from what IS available.\n"
+                f"5. **NUMERIC PRESENTATION (MANDATORY)**:\n"
+                f"   - Cap displayed decimals to 2 digits max (e.g., 15.62, not 15.6241).\n"
+                f"   - Whenever you reference component scores, always include the denominator and quick interpretation.\n"
+                f"   - Example: 'valuation score 20/20 (strong), momentum score 10/20 (mixed)'.\n"
+                f"   - Use 'latest available data' wording; avoid phrasing tied to 'today's session activity'.\n"
+                f"6. **NEVER MENTION MISSING DATA**: Frame from what IS available.\n"
                 f"   - NEVER say: 'lack of', 'not available', 'missing data'\n"
                 f"   - Instead: Focus on the data you HAVE. If limited, provide guidance on available tools.\n"
-                f"6. **PROFESSIONAL EXPERT TONE**:\n"
+                f"7. **PROFESSIONAL EXPERT TONE**:\n"
                 f"   - You are analyzing live data in real-time. Show your work.\n"
                 f"   - Be direct: 'The setup is attractive' or 'The risk/reward is poor at these levels.'\n"
                 f"   - NO caveats like 'it depends'. Give your analytical view based on the numbers.\n"
-                f"7. **ADAPTATION ({user_level} Level)**:\n"
+                f"8. **ADAPTATION ({user_level} Level)**:\n"
                 f"   - NOVICE: Use analogies. Explain *why* a metric matters. Avoid jargon.\n"
                 f"   - EXPERT: Be concise. Assume deep knowledge. Focus on second-order effects.\n"
                 f"   - INTERMEDIATE: Balanced. Define complex terms but keep analysis professional.\n"
-                f"8. **MARKET CONTEXT**:\n"
+                f"9. **MARKET CONTEXT**:\n"
                 f"   {tone_instruction}\n\n"
+                f"10. **SECTOR-LOCKED CAUSALITY (MANDATORY)**:\n"
+                f"   - Infer sector from Data Context before stating root causes.\n"
+                f"   - If sector is Banks/Financial Services, NEVER use manufacturing drivers (raw materials, inventory, supply chain, factory utilization).\n"
+                f"   - For banks, causal drivers must stay in banking terms: NIM, funding cost, credit quality/NPL, provisioning, cost-to-income, fee income, loan growth.\n\n"
                 
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"MANDATORY STRUCTURE (Protected UI Elements)\n"
@@ -472,12 +489,13 @@ class LLMExplainerService:
                 f"Educational only. NO Buy/Sell recommendations.\n"
         f"Mandatory Disclaimer: \"{disclaimer_text}\"\n\n"
 
-        f"═══════════════════════════════════════════════════════════════\n"
-        f"🛑 ANTI-HALLUCINATION RULES (CRITICAL) 🛑\n"
-        f"═══════════════════════════════════════════════════════════════\n"
-        f"- DO NOT repeat phrases, lists, or get stuck in generative loops (like repeating 'X is a peer' infinitely).\n"
-        f"- Use varied sentence structure and conclude your thoughts concisely. Less is more.\n"
-        f"- 🚨 SHAREHOLDER DATA IS UNAVAILABLE: NEVER mention, discuss, or generate follow-up questions about shareholders, ownership structure, or major owners. We do not have this data.\n\n"
+                f"═══════════════════════════════════════════════════════════════\n"
+                f"🛑 ANTI-HALLUCINATION RULES (CRITICAL) 🛑\n"
+                f"═══════════════════════════════════════════════════════════════\n"
+                f"- DO NOT repeat phrases, lists, or get stuck in generative loops (like repeating 'X is a peer' infinitely).\n"
+                f"- Use varied sentence structure and conclude your thoughts concisely. Less is more.\n"
+                f"- 🚨 SHAREHOLDER DATA IS UNAVAILABLE: NEVER mention, discuss, or generate follow-up questions about shareholders, ownership structure, or major owners. We do not have this data.\n\n"
+                f"- Enforce sector causality: never mention raw-material/supply-chain drivers for a bank.\n\n"
 
                 f"═══════════════════════════════════════════════════════════════\n"
                 f"SESSION CONTEXT\n"
@@ -665,7 +683,9 @@ class LLMExplainerService:
                     symbol = c_data.get('symbol', '')
                     name = c_data.get('name', '')[:20]  # Truncate long names
                     curr = c_data.get('currency', 'EGP') # Default to EGP for EGX context which prevents '$' hallucination
-                    summary_parts.append(f"{symbol} ({name}) [{curr}]")
+                    sector = c_data.get('sector') or c_data.get('sector_name') or ''
+                    sector_suffix = f" | Sector={sector}" if sector else ""
+                    summary_parts.append(f"{symbol} ({name}) [{curr}]{sector_suffix}")
                 
                 elif c_type == "financial_explorer":
                     # DEEP DIVE IDENTITY FIX: Explicitly extract symbol from explorer package

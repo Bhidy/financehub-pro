@@ -21,7 +21,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
     ArrowLeft, Loader2, User as UserIcon, Phone, Lock, Check, AlertCircle,
     Sun, Moon, Mail, LogOut, Camera, Globe, Shield, Palette, Sparkles,
-    TrendingUp, Settings, ChevronRight, Bell, CreditCard, HelpCircle, Users, BarChart3
+    TrendingUp, Settings, ChevronRight, Bell, CreditCard, HelpCircle, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
@@ -65,7 +65,7 @@ export default function MobileSettingsPage() {
                 <div className="w-[320px] bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-white/5 flex flex-col overflow-y-auto">
                     {/* Logo */}
                     <div className="p-6 border-b border-slate-100 dark:border-white/5">
-                        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div className="flex items-center gap-3 select-none cursor-default">
                             <div className="relative">
                                 <div className="absolute inset-0 bg-[#14B8A6] rounded-xl blur-xl opacity-40" />
                                 <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-lg shadow-[#14B8A6]/20">
@@ -73,7 +73,7 @@ export default function MobileSettingsPage() {
                                 </div>
                             </div>
                             <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Starta</span>
-                        </Link>
+                        </div>
                     </div>
 
                     {/* Profile Card */}
@@ -116,10 +116,6 @@ export default function MobileSettingsPage() {
                             <>
                                 <div className="px-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Area</div>
                                 <div className="space-y-1 mb-4">
-                                    <Link href="/admin/analytics" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all">
-                                        <BarChart3 className="w-5 h-5" />
-                                        <span className="font-medium">Analytics Dashboard</span>
-                                    </Link>
                                     <Link href="/admin/users" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all">
                                         <Users className="w-5 h-5" />
                                         <span className="font-medium">User Management</span>
@@ -165,11 +161,11 @@ export default function MobileSettingsPage() {
                                 <p className="text-sm text-slate-500 dark:text-slate-400">Manage your account preferences</p>
                             </div>
                             <Link
-                                href="/AiChat"
+                                href="/dashboard"
                                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#14B8A6]/10 text-[#14B8A6] hover:bg-[#14B8A6]/20 transition-colors font-medium text-sm"
                             >
                                 <ArrowLeft className="w-4 h-4" />
-                                Back to Chat
+                                Back
                             </Link>
                         </div>
                     </div>
@@ -192,7 +188,7 @@ export default function MobileSettingsPage() {
                 {/* Header */}
                 <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-white/80 dark:bg-[#0A0F1C]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
                     <button
-                        onClick={() => router.push(getRoute('home'))}
+                        onClick={() => router.push('/dashboard')}
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 transition-all active:scale-95"
                     >
                         <ArrowLeft className="w-5 h-5" />
@@ -253,12 +249,6 @@ export default function MobileSettingsPage() {
                             <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/5 pb-2">
                                 <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 px-1">Admin Area</h3>
                                 <div className="space-y-2 flex flex-col">
-                                    <Link href="/admin/analytics" className="w-full flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 active:scale-[0.98] transition-all">
-                                        <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-                                            <BarChart3 className="w-5 h-5" /> Analytics Dashboard
-                                        </div>
-                                        <ChevronRight className="w-4 h-4 text-emerald-500" />
-                                    </Link>
                                     <Link href="/admin/users" className="w-full flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 active:scale-[0.98] transition-all">
                                         <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
                                             <Users className="w-5 h-5" /> User Management

@@ -19,6 +19,11 @@ import random
 from typing import Optional, List, Dict, Tuple
 from .schemas import Intent, CardType, StructuredNarrative
 
+# Global response style policy:
+# Human-opening preambles (e.g., "You are absolutely focusing on the right metrics...")
+# are disabled to ensure responses start directly with substantive analysis.
+ENABLE_HUMAN_OPENING = False
+
 
 # ============================================================================
 # LAYER ① - HUMAN OPENINGS (Acknowledge user naturally)
@@ -43,7 +48,7 @@ HUMAN_OPENINGS = {
     },
     "affirmation": {
         "en": [
-            "You are absolutely focusing on the right metrics here. Validating this specific angle reveals the true underlying trend of the asset.",
+            "This angle can materially change interpretation of the stock trend. Here is the direct data breakdown.",
             "That is a sensible way to approach this analysis. By looking at these specific indicators, we can cut through the market noise.",
             "This specific query helps clarify the bigger picture significantly. Let's see how the data supports this improved strategic view.",
             "Smart angle to explore—investors often overlook this detail. Here is the evidence that confirms why this matters right now.",
@@ -60,13 +65,13 @@ HUMAN_OPENINGS = {
             "I have pulled the latest real-time data for you. Let's examine the technicals and fundamentals together to see the full context.",
             "Here is exactly what the current market data is showing us. I've highlighted the most critical points for your review.",
             "Let me break this down into clear, actionable insights. The following analysis covers both the risks and the opportunities.",
-            "Here is the complete picture based on today's session activity. Let's go through the numbers step-by-step.",
+            "Here is the complete picture based on the latest available data. Let's go through the numbers step-by-step.",
         ],
         "ar": [
             "لقد سحبت لك أحدث البيانات الفورية. دعنا نفحص الجوانب الفنية والأساسية معاً لنرى السياق الكامل.",
             "إليك بالضبط ما تظهره بيانات السوق الحالية. لقد قمت بإبراز النقاط الأكثر أهمية لمراجعتها.",
             "دعني أفصل لك هذا إلى رؤى واضحة وقابلة للتنفيذ. التحليل التالي يغطي كلاً من المخاطر والفرص المتاحة.",
-            "إليك الصورة الكاملة بناءً على نشاط جلسة اليوم. دعنا نستعرض الأرقام خطوة بخطوة.",
+            "إليك الصورة الكاملة بناءً على أحدث البيانات المتاحة. دعنا نستعرض الأرقام خطوة بخطوة.",
         ]
     }
 }
@@ -358,6 +363,9 @@ class ResponseComposer:
         Returns:
             Tuple of (opening_text or None, category_used or None)
         """
+        if not ENABLE_HUMAN_OPENING:
+            return None, None
+
         # 50% chance to include opening (unless forced)
         if not force and random.random() > 0.5:
             return None, None

@@ -476,6 +476,120 @@ body {
 }
 
 /* ============================================================================
+   FINHUB DOMAIN STABLE SCALE + PREMIUM SHELL
+   Keep Starta untouched. Apply compact scale without using zoom to avoid
+   viewport math bugs (empty bottom gaps with h-screen / 100vh layouts).
+   ============================================================================ */
+html.finhub-pro-domain {
+  --finhub-shell-bg:
+    radial-gradient(1200px 700px at 12% -10%, rgba(20, 184, 166, 0.14), transparent 52%),
+    radial-gradient(1000px 600px at 88% -16%, rgba(14, 165, 233, 0.12), transparent 56%),
+    linear-gradient(180deg, #060c1a 0%, #050a17 56%, #040914 100%);
+  --finhub-main-bg:
+    radial-gradient(900px 520px at 100% 0%, rgba(20, 184, 166, 0.08), transparent 54%),
+    linear-gradient(180deg, rgba(7, 12, 24, 0.86) 0%, rgba(5, 10, 20, 0.96) 100%);
+  --finhub-panel-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.78) 0%, rgba(8, 15, 28, 0.88) 100%);
+  --finhub-panel-border: rgba(148, 163, 184, 0.2);
+  --finhub-body-text: #e2e8f0;
+  --finhub-sidebar-bg:
+    linear-gradient(180deg, rgba(6, 13, 30, 0.96) 0%, rgba(5, 10, 23, 0.98) 100%);
+  --finhub-sidebar-border: rgba(148, 163, 184, 0.18);
+  --finhub-sidebar-shadow:
+    0 24px 70px rgba(2, 6, 23, 0.65),
+    inset -1px 0 0 rgba(15, 23, 42, 0.55);
+}
+
+/* Light-mode override for Finhub shell + sidebar */
+html.finhub-pro-domain.light {
+  --finhub-shell-bg:
+    radial-gradient(1100px 650px at 10% -18%, rgba(20, 184, 166, 0.14), transparent 56%),
+    radial-gradient(900px 560px at 88% -22%, rgba(14, 165, 233, 0.12), transparent 60%),
+    linear-gradient(180deg, #f8fbff 0%, #f2f7ff 48%, #edf4ff 100%);
+  --finhub-main-bg:
+    radial-gradient(900px 520px at 100% 0%, rgba(20, 184, 166, 0.08), transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(244, 248, 255, 0.98) 100%);
+  --finhub-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 251, 255, 0.98) 100%);
+  --finhub-panel-border: rgba(148, 163, 184, 0.24);
+  --finhub-body-text: #0f172a;
+  --finhub-sidebar-bg:
+    linear-gradient(180deg, rgba(251, 253, 255, 0.97) 0%, rgba(241, 247, 255, 0.99) 100%);
+  --finhub-sidebar-border: rgba(148, 163, 184, 0.24);
+  --finhub-sidebar-shadow:
+    0 18px 52px rgba(15, 23, 42, 0.12),
+    inset -1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Compact density on desktop (rem-based sizing) without zoom side effects */
+@media (min-width: 1024px) {
+  html.finhub-pro-domain {
+    font-size: 80%;
+  }
+}
+
+/* Keep mobile comfortably readable */
+@media (max-width: 1023px) {
+  html.finhub-pro-domain {
+    font-size: 90%;
+  }
+}
+
+html.finhub-pro-domain body {
+  min-height: 100dvh;
+  background: var(--finhub-shell-bg);
+  color: var(--finhub-body-text);
+}
+
+html.finhub-pro-domain .finhub-shell {
+  background: var(--finhub-shell-bg);
+}
+
+html.finhub-pro-domain .finhub-main,
+html.finhub-pro-domain .finhub-content,
+html.finhub-pro-domain .finhub-page {
+  background: var(--finhub-main-bg);
+}
+
+html.finhub-pro-domain .finhub-sidebar {
+  background: var(--finhub-sidebar-bg);
+  border-right: 1px solid var(--finhub-sidebar-border);
+  box-shadow: var(--finhub-sidebar-shadow);
+}
+
+html.finhub-pro-domain .finhub-glass {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.finhub-pro-domain .finhub-panel {
+  background: var(--finhub-panel-bg);
+  border: 1px solid var(--finhub-panel-border);
+  box-shadow:
+    0 18px 45px rgba(2, 6, 23, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html.finhub-pro-domain .h-screen,
+html.finhub-pro-domain .min-h-screen {
+  min-height: 100dvh;
+}
+
+/* Finhub-wide typography lock */
+html.finhub-pro-domain,
+html.finhub-pro-domain body {
+  font-family: var(--font-manrope) !important;
+}
+
+html.finhub-pro-domain *:not(.font-mono):not(code):not(pre) {
+  font-family: var(--font-manrope) !important;
+}
+
+html.finhub-pro-domain .font-mono,
+html.finhub-pro-domain code,
+html.finhub-pro-domain pre {
+  font-family: var(--font-jetbrains) !important;
+}
+
+/* ============================================================================
    DESKTOP ZOOM OPTIMIZATION (20% Zoom Out)
    Applied ONLY to desktop screens (≥1024px). Mobile remains at 100%.
    zoom: 0.80 = 80% scale = 20% zoom out

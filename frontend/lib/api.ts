@@ -257,6 +257,412 @@ export interface MarketNewsItem {
     external_id?: string | null;
 }
 
+export interface EgxDashboardStock {
+    symbol: string;
+    nameEn: string;
+    sectorName: string;
+    lastPrice: number;
+    changePercent: number;
+    volume: number;
+    marketCap: number;
+    lastUpdated: string | null;
+}
+
+export interface EgxDashboardSector {
+    sectorName: string;
+    performance: number;
+    stockCount: number;
+    totalVolume: number;
+}
+
+export interface EgxIndexHistoryPoint {
+    time: number;
+    date: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+}
+
+export interface EgxIndexFeed {
+    available: boolean;
+    symbol: string;
+    label: string;
+    source: string;
+    currency: string;
+    updateMode: string | null;
+    delaySeconds: number | null;
+    value: number | null;
+    change: number | null;
+    changePercent: number | null;
+    volume: number | null;
+    lastUpdated: string | null;
+    history: EgxIndexHistoryPoint[];
+    note: string;
+}
+
+export interface EgxDashboardSnapshot {
+    marketStatus: "OPEN" | "CLOSED" | "UNKNOWN";
+    totalStocks: number;
+    gainers: number;
+    losers: number;
+    unchanged: number;
+    totalVolume: number;
+    topGainers: EgxDashboardStock[];
+    topLosers: EgxDashboardStock[];
+    mostActive: EgxDashboardStock[];
+    sectors: EgxDashboardSector[];
+    retrievedAt: string;
+    freshestUpdateAt: string | null;
+    dataQuality: {
+        staleThresholdMinutes: number;
+        staleSymbols: string[];
+        issues: string[];
+    };
+    indexFeed: EgxIndexFeed;
+}
+
+type LooseObject = Record<string, unknown>;
+
+const asObject = (value: unknown): LooseObject | null =>
+    typeof value === "object" && value !== null ? (value as LooseObject) : null;
+
+const asNumber = (value: unknown, fallback = 0): number => {
+    const n = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(n) ? n : fallback;
+};
+
+const asNullableNumber = (value: unknown): number | null => {
+    const n = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(n) ? n : null;
+};
+
+const asInt = (value: unknown, fallback = 0): number => Math.max(0, Math.trunc(asNumber(value, fallback)));
+
+const isEgxSymbol = (value: unknown): value is string =>
+    typeof value === "string" && /^[A-Z]{3,5}$/.test(value.toUpperCase());
+
+const normalizeEgxStock = (raw: unknown): EgxDashboardStock | null => {
+    const item = asObject(raw);
+    if (!item) return null;
+
+    const symbolRaw = item.symbol;
+    if (!isEgxSymbol(symbolRaw)) return null;
+    const symbol = symbolRaw.toUpperCase();
+
+    const nameEn = typeof item.name_en === "string" && item.name_en.trim()
+        ? item.name_en.trim()
+        : symbol;
+
+    const sectorName = typeof item.sector_name === "string"
+        ? item.sector_name
+        : typeof item.sector === "string"
+            ? item.sector
+            : "Unclassified";
+
+    const lastUpdated = typeof item.last_updated === "string" ? item.last_updated : null;
+
+    return {
+        symbol,
+        nameEn,
+        sectorName: sectorName || "Unclassified",
+        lastPrice: asNumber(item.last_price, 0),
+        changePercent: asNumber(item.change_percent ?? item.change_pct, 0),
+        volume: asNumber(item.volume, 0),
+        marketCap: asNumber(item.market_cap, 0),
+        lastUpdated,
+    };
+};
+
+const normalizeEgxStockList = (raw: unknown): EgxDashboardStock[] => {
+    if (!Array.isArray(raw)) return [];
+    return raw
+        .map(normalizeEgxStock)
+        .filter((item): item is EgxDashboardStock => item !== null);
+};
+
+const normalizeEgxSectors = (preferred: unknown, fallback: unknown): EgxDashboardSector[] => {
+    const fromPreferred = Array.isArray(preferred) ? preferred : [];
+    const normalizedPreferred = fromPreferred
+        .map((raw) => {
+            const item = asObject(raw);
+            if (!item) return null;
+            const sectorName = typeof item.name === "string" ? item.name : "";
+            if (!sectorName) return null;
+            return {
+                sectorName,
+                performance: asNumber(item.performance, 0),
+                stockCount: asInt(item.ticker_count ?? item.stock_count, 0),
+                totalVolume: asNumber(item.volume ?? item.total_volume, 0),
+            };
+        })
+        .filter((item): item is EgxDashboardSector => item !== null);
+
+    if (normalizedPreferred.length > 0) {
+        return normalizedPreferred.sort((a, b) => b.performance - a.performance);
+    }
+
+    const fromFallback = Array.isArray(fallback) ? fallback : [];
+    return fromFallback
+        .map((raw) => {
+            const item = asObject(raw);
+            if (!item) return null;
+            const sectorName = typeof item.sector_name === "string" ? item.sector_name : "";
+            if (!sectorName) return null;
+            return {
+                sectorName,
+                performance: asNumber(item.performance, 0),
+                stockCount: asInt(item.stock_count ?? item.ticker_count, 0),
+                totalVolume: asNumber(item.total_volume, 0),
+            };
+        })
+        .filter((item): item is EgxDashboardSector => item !== null)
+        .sort((a, b) => b.performance - a.performance);
+};
+
+const normalizeMarketStatus = (value: unknown): "OPEN" | "CLOSED" | "UNKNOWN" => {
+    const raw = typeof value === "string" ? value.trim().toUpperCase() : "";
+    if (raw === "OPEN") return "OPEN";
+    if (raw === "CLOSED") return "CLOSED";
+    return "UNKNOWN";
+};
+
+const EGX_TIME_ZONE = "Africa/Cairo";
+const EGX_OPEN_MINUTES = 10 * 60;
+const EGX_CLOSE_MINUTES = 14 * 60 + 30;
+const EGX_TRADING_WEEKDAYS = new Set(["Sun", "Mon", "Tue", "Wed", "Thu"]);
+
+const getCairoClock = (referenceDate: Date = new Date()): { weekday: string; minutes: number } => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: EGX_TIME_ZONE,
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    }).formatToParts(referenceDate);
+
+    const getPart = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+    const weekday = getPart("weekday");
+    const hour = Number(getPart("hour"));
+    const minute = Number(getPart("minute"));
+
+    const minutes = Number.isFinite(hour) && Number.isFinite(minute)
+        ? hour * 60 + minute
+        : -1;
+
+    return { weekday, minutes };
+};
+
+const isEgxSessionOpen = (referenceDate: Date = new Date()): boolean => {
+    const clock = getCairoClock(referenceDate);
+    if (!EGX_TRADING_WEEKDAYS.has(clock.weekday)) return false;
+    return clock.minutes >= EGX_OPEN_MINUTES && clock.minutes < EGX_CLOSE_MINUTES;
+};
+
+const resolveEgxMarketStatus = (params: {
+    summaryStatus: unknown;
+    indexTimestamp: string | null;
+    indexDelaySeconds: number | null;
+}): "OPEN" | "CLOSED" | "UNKNOWN" => {
+    const summaryStatus = normalizeMarketStatus(params.summaryStatus);
+
+    // Hard close outside Cairo EGX session window.
+    if (!isEgxSessionOpen()) return "CLOSED";
+
+    // During session: verify quote freshness to avoid false OPEN statuses.
+    if (!params.indexTimestamp) return summaryStatus === "OPEN" ? "OPEN" : "UNKNOWN";
+
+    const timestampMs = new Date(params.indexTimestamp).getTime();
+    if (!Number.isFinite(timestampMs)) return summaryStatus;
+
+    const ageMinutes = (Date.now() - timestampMs) / 60000;
+    const vendorDelayMinutes = Math.max(0, (params.indexDelaySeconds ?? 0) / 60);
+    const staleThresholdMinutes = Math.max(25, Math.ceil(vendorDelayMinutes + 15));
+
+    if (ageMinutes > staleThresholdMinutes) return "UNKNOWN";
+    return "OPEN";
+};
+
+export const fetchEgxDashboardSnapshot = async (): Promise<EgxDashboardSnapshot> => {
+    const indexFeedPromise = fetch("/api/v1/egx30/index", { cache: "no-store" })
+        .then(async (response) => {
+            if (!response.ok) return null;
+            return asObject(await response.json());
+        })
+        .catch(() => null);
+
+    const [summaryResult, marketResult, egxStatsResult, sectorsResult, indexResult] = await Promise.allSettled([
+        api.get("/market-summary"),
+        api.get("/yahoo/market"),
+        api.get("/egx/stats"),
+        api.get("/sectors"),
+        indexFeedPromise,
+    ]);
+
+    const summaryPayload = summaryResult.status === "fulfilled" ? asObject(summaryResult.value.data) : null;
+    const marketPayload = marketResult.status === "fulfilled" ? asObject(marketResult.value.data) : null;
+    const egxStatsPayload = egxStatsResult.status === "fulfilled" ? asObject(egxStatsResult.value.data) : null;
+    const sectorsPayload = sectorsResult.status === "fulfilled" ? sectorsResult.value.data : null;
+    const indexPayload = indexResult.status === "fulfilled" ? asObject(indexResult.value) : null;
+
+    const summary = asObject(summaryPayload?.summary) ?? {};
+    const marketPulse = asObject(marketPayload?.market_pulse) ?? {};
+
+    const totalStocks = asInt(
+        summary.total_stocks ?? summary.total ?? egxStatsPayload?.total_stocks ?? marketPulse.count,
+        0
+    );
+    const gainers = asInt(summary.gainers ?? egxStatsPayload?.gainers ?? marketPulse.up, 0);
+    const losers = asInt(summary.losers ?? egxStatsPayload?.losers ?? marketPulse.down, 0);
+    const unchangedFromSource = asInt(summary.unchanged ?? egxStatsPayload?.unchanged ?? marketPulse.unchanged, 0);
+    const totalVolume = asNumber(
+        summary.total_volume ?? egxStatsPayload?.total_volume ?? marketPulse.volume_total,
+        0
+    );
+
+    let unchanged = unchangedFromSource;
+    const issues: string[] = [];
+
+    if (totalStocks > 0) {
+        const expectedUnchanged = Math.max(0, totalStocks - gainers - losers);
+        if (gainers + losers + unchanged !== totalStocks) {
+            unchanged = expectedUnchanged;
+            issues.push("Breadth totals were normalized to match EGX stock count.");
+        }
+    }
+
+    const topGainers = normalizeEgxStockList(summaryPayload?.top_gainers ?? marketPayload?.top_gainers)
+        .sort((a, b) => b.changePercent - a.changePercent)
+        .slice(0, 5);
+
+    const topLosers = normalizeEgxStockList(summaryPayload?.top_losers ?? marketPayload?.top_losers)
+        .sort((a, b) => a.changePercent - b.changePercent)
+        .slice(0, 5);
+
+    const mostActive = normalizeEgxStockList(summaryPayload?.most_active ?? marketPayload?.most_active)
+        .sort((a, b) => b.volume - a.volume)
+        .slice(0, 5);
+
+    const sectors = normalizeEgxSectors(marketPayload?.sectors, sectorsPayload).slice(0, 20);
+
+    const combinedStocks = [...topGainers, ...topLosers, ...mostActive];
+    const staleThresholdMinutes = 240;
+    const staleCutoff = Date.now() - staleThresholdMinutes * 60 * 1000;
+
+    const updateTimestamps = combinedStocks
+        .map((stock) => stock.lastUpdated)
+        .filter((value): value is string => Boolean(value))
+        .map((value) => new Date(value).getTime())
+        .filter((value) => Number.isFinite(value));
+
+    const freshestUpdateAt = updateTimestamps.length > 0
+        ? new Date(Math.max(...updateTimestamps)).toISOString()
+        : null;
+
+    const staleSymbols = Array.from(
+        new Set(
+            combinedStocks
+                .filter((stock) => {
+                    if (!stock.lastUpdated) return false;
+                    const ts = new Date(stock.lastUpdated).getTime();
+                    return Number.isFinite(ts) && ts < staleCutoff;
+                })
+                .map((stock) => stock.symbol)
+        )
+    );
+
+    if (staleSymbols.length > 0) {
+        issues.push(`${staleSymbols.length} mover entries are older than ${staleThresholdMinutes / 60} hours.`);
+    }
+
+    if (marketPayload && !Array.isArray(marketPayload.top_gainers)) {
+        issues.push("Fallbacked from /yahoo/market movers to /market-summary movers.");
+    }
+
+    const indexQuote = asObject(indexPayload?.quote);
+    const indexHistory = Array.isArray(indexPayload?.history)
+        ? indexPayload.history
+            .map((rawPoint) => {
+                const point = asObject(rawPoint);
+                if (!point) return null;
+
+                const time = asNullableNumber(point.time);
+                const close = asNullableNumber(point.close);
+                const date = typeof point.date === "string" ? point.date : null;
+
+                if (time === null || close === null || !date) return null;
+
+                return {
+                    time,
+                    date,
+                    open: asNumber(point.open, close),
+                    high: asNumber(point.high, close),
+                    low: asNumber(point.low, close),
+                    close,
+                    volume: asNumber(point.volume, 0),
+                } satisfies EgxIndexHistoryPoint;
+            })
+            .filter((item): item is EgxIndexHistoryPoint => item !== null)
+            .sort((a, b) => a.time - b.time)
+        : [];
+
+    const indexFeed: EgxIndexFeed = {
+        available: indexPayload?.available === true && indexHistory.length > 1,
+        symbol: typeof indexPayload?.symbol === "string" ? indexPayload.symbol : "EGX:EGX30",
+        label: typeof indexPayload?.label === "string" ? indexPayload.label : "EGX 30 Index",
+        source: typeof indexPayload?.source === "string" ? indexPayload.source : "unavailable",
+        currency: typeof indexPayload?.currency === "string" ? indexPayload.currency : "EGP",
+        updateMode: typeof indexPayload?.updateMode === "string" ? indexPayload.updateMode : null,
+        delaySeconds: asNullableNumber(indexPayload?.delaySeconds),
+        value: asNullableNumber(indexQuote?.value),
+        change: asNullableNumber(indexQuote?.change),
+        changePercent: asNullableNumber(indexQuote?.changePercent),
+        volume: asNullableNumber(indexQuote?.volume),
+        lastUpdated: typeof indexQuote?.timestamp === "string" ? indexQuote.timestamp : null,
+        history: indexHistory,
+        note:
+            typeof indexPayload?.note === "string"
+                ? indexPayload.note
+                : "TradingView EGX30 feed is currently unavailable.",
+    };
+
+    if (!indexFeed.available) {
+        issues.push("EGX30 TradingView index feed unavailable; index chart is in fallback mode.");
+    }
+
+    const resolvedMarketStatus = resolveEgxMarketStatus({
+        summaryStatus: summaryPayload?.market_status,
+        indexTimestamp: indexFeed.lastUpdated,
+        indexDelaySeconds: indexFeed.delaySeconds,
+    });
+
+    if (resolvedMarketStatus === "UNKNOWN") {
+        issues.push("EGX session timing and quote freshness mismatch; market status marked UNKNOWN.");
+    }
+
+    return {
+        marketStatus: resolvedMarketStatus,
+        totalStocks,
+        gainers,
+        losers,
+        unchanged,
+        totalVolume,
+        topGainers,
+        topLosers,
+        mostActive,
+        sectors,
+        retrievedAt: new Date().toISOString(),
+        freshestUpdateAt,
+        dataQuality: {
+            staleThresholdMinutes,
+            staleSymbols,
+            issues,
+        },
+        indexFeed,
+    };
+};
+
 export const fetchTickers = async (): Promise<Ticker[]> => {
     const { data } = await api.get("/tickers");
     // Zod Validation: If backend returns invalid data, this throws an error explanation

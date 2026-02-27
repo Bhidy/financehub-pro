@@ -7,6 +7,7 @@ import asyncio
 import pandas as pd
 from yahooquery import Ticker
 from decimal import Decimal
+import re
 
 router = APIRouter()
 
@@ -25,6 +26,56 @@ def serialize_for_json(obj):
         return None
     else:
         return obj
+
+
+_INVALID_NAME_TOKENS = {"n/a", "na", "none", "null", "-", "--"}
+
+
+def _looks_like_vendor_identifier(value: str) -> bool:
+    """Detect vendor id bundles like ETEL.CA,0P0000AG5O,1477639."""
+    normalized = value.strip()
+    if not normalized:
+        return True
+    if normalized.lower() in _INVALID_NAME_TOKENS:
+        return True
+    if re.fullmatch(r"[A-Z0-9.\-]+\.CA,0P[A-Z0-9]+,\d+", normalized, flags=re.IGNORECASE):
+        return True
+    if re.fullmatch(r"[A-Z0-9.\-]+\.CA", normalized, flags=re.IGNORECASE):
+        return True
+    if re.fullmatch(r"[A-Z]{3,6}", normalized) and normalized == normalized.upper():
+        return True
+    return False
+
+
+def _clean_company_name(value: Optional[str]) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    candidate = value.strip()
+    if not candidate or _looks_like_vendor_identifier(candidate):
+        return None
+    return candidate
+
+
+def _normalize_profile_display_name(profile: dict) -> None:
+    """Guarantee a clean display name across profile payloads."""
+    name_en = _clean_company_name(profile.get("name_en"))
+    long_name = _clean_company_name(profile.get("longName"))
+    short_name = _clean_company_name(profile.get("shortName"))
+    company_name = _clean_company_name(profile.get("company_name"))
+
+    display_name = name_en or long_name or short_name or company_name
+    if not display_name:
+        symbol_raw = profile.get("symbol")
+        if isinstance(symbol_raw, str) and symbol_raw.strip():
+            display_name = symbol_raw.split(".", 1)[0].strip().upper()
+
+    if not display_name:
+        return
+
+    profile["display_name"] = display_name
+    profile["name_en"] = display_name if not name_en else name_en
+    profile["longName"] = display_name if not long_name else long_name
+    profile["shortName"] = display_name if not short_name else short_name
 
 @router.get("/market")
 async def get_market_overview():
@@ -383,6 +434,8 @@ async def get_stock_profile(symbol_or_isin: str):
                      
             except Exception as e:
                 response_data["debug"] = f"Live Fetch System Error: {str(e)}"
+
+        _normalize_profile_display_name(response_data["profile"])
 
         # D. Final Serialization (CRITICAL)
         # This prevents the 500 Error from Decimal/Date types

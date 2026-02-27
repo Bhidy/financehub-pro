@@ -6,12 +6,23 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchTickers, Ticker } from "@/lib/api";
 
 export default function MarketTicker() {
-    const { data: tickers = [] } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers });
+    const { data: tickers = [] } = useQuery({
+        queryKey: ["tickers", "egx-ticker-tape"],
+        queryFn: async () => {
+            const allTickers = await fetchTickers();
+            return allTickers
+                .filter((item) => /^[A-Z]{3,5}$/.test((item.symbol || "").toUpperCase()))
+                .sort((a, b) => Number(b.volume || 0) - Number(a.volume || 0))
+                .slice(0, 120);
+        },
+        refetchInterval: 60_000,
+        staleTime: 30_000,
+    });
 
     // Minimal data for display while loading or if data is missing
     const displayTickers: Ticker[] = tickers.length > 0 ? tickers : [
-        { symbol: "TASI", last_price: 12150.45, change: 0.85, change_percent: 0.1, name_en: "Tadawul All Share", name_ar: "", sector_name: "Index", volume: 0 },
-        { symbol: "LOADING...", last_price: 0, change: 0, change_percent: 0, name_en: "Loading", name_ar: "", sector_name: "", volume: 0 }
+        { symbol: "EGX", last_price: 0, change: 0, change_percent: 0, name_en: "Egyptian Exchange", name_ar: "", sector_name: "Market", volume: 0 },
+        { symbol: "LOADING", last_price: 0, change: 0, change_percent: 0, name_en: "Loading", name_ar: "", sector_name: "", volume: 0 }
     ];
 
     // Seamless loop: 2 copies is sufficient for -50% translation
@@ -40,11 +51,11 @@ export default function MarketTicker() {
                         <div key={`${item.symbol}-${index}`} className="flex items-center space-x-3 px-6 border-r border-slate-100 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
                             <span className="font-bold text-sm text-slate-800 dark:text-white font-sans group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.symbol}</span>
                             <div className="flex flex-col leading-none">
-                                <span className={clsx("font-bold text-xs font-mono", (item.change || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
+                                <span className={clsx("font-bold text-xs font-mono", Number(item.change_percent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
                                     {Number(item.last_price || 0).toFixed(2)}
                                 </span>
-                                <span className={clsx("text-[10px] font-bold font-mono", (item.change || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
-                                    {(item.change || 0) >= 0 ? "+" : ""}{Number(item.change_percent || 0).toFixed(2)}%
+                                <span className={clsx("text-[10px] font-bold font-mono", Number(item.change_percent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
+                                    {Number(item.change_percent || 0) >= 0 ? "+" : ""}{Number(item.change_percent || 0).toFixed(2)}%
                                 </span>
                             </div>
                         </div>

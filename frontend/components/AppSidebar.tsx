@@ -6,37 +6,48 @@ import clsx from "clsx";
 import {
     LayoutDashboard,
     ScanLine,
-    ChevronLeft,
-    ChevronRight,
-    BrainCircuit,
     Database,
     DollarSign,
     Building2,
     Newspaper,
     Zap,
-    BarChart3,
     Settings,
     LogOut,
     PanelLeftClose,
     PanelLeftOpen,
     Briefcase,
-    Shield
+    Shield,
+    SunMedium,
+    MoonStar,
+    type LucideIcon
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMarketSafe } from "@/contexts/MarketContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import GlobalSearch from "@/components/GlobalSearchWidget";
 
-const NAV_ITEMS = [
-    { label: "Market Overview", icon: LayoutDashboard, href: "/", color: "blue" },
+interface AppSidebarProps {
+    defaultCollapsed?: boolean;
+}
+
+const SIDEBAR_PREF_KEY = "fh_sidebar_collapsed";
+
+interface NavItem {
+    label: string;
+    icon: LucideIcon;
+    href: string;
+    color: string;
+    dynamicHref?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+    { label: "Market Overview", icon: LayoutDashboard, href: "/dashboard", color: "blue" },
     { label: "Market News", icon: Newspaper, href: "/news", color: "indigo" },
-    { label: "Deep Screener", icon: ScanLine, href: "/screener", color: "teal" },
-    { label: "AI Advisor", icon: BrainCircuit, href: "/ai-analyst", color: "violet" },
     { label: "Company Profile", icon: Building2, href: "/symbol/2222", dynamicHref: true, color: "amber" },
     { label: "My Portfolio", icon: Briefcase, href: "/portfolio", color: "indigo" },
     { label: "EGX Watchlist", icon: Zap, href: "/egx-watchlist", color: "rose" },
     { label: "Mutual Funds", icon: DollarSign, href: "/funds", color: "emerald" },
-    { label: "Fund Statistics", icon: BarChart3, href: "/funds/statistics", color: "cyan" },
     { label: "Command Center", icon: Database, href: "/command-center", color: "slate" },
     { label: "Settings", icon: Settings, href: "/settings", color: "slate" },
 ];
@@ -53,27 +64,96 @@ const colorStyles: Record<string, { iconBg: string; iconText: string; activeBg: 
     slate: { iconBg: "bg-slate-50", iconText: "text-slate-600", activeBg: "bg-[#0F172A]", activeText: "text-white" },
 };
 
-export default function Sidebar() {
+interface SidebarTooltipState {
+    label: string;
+    top: number;
+    left: number;
+    visible: boolean;
+}
+
+const INITIAL_TOOLTIP_STATE: SidebarTooltipState = {
+    label: "",
+    top: 0,
+    left: 0,
+    visible: false,
+};
+
+export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => {
+        if (typeof window === "undefined") return defaultCollapsed;
+        const saved = window.localStorage.getItem(SIDEBAR_PREF_KEY);
+        if (saved === null) {
+            window.localStorage.setItem(SIDEBAR_PREF_KEY, defaultCollapsed ? "1" : "0");
+            return defaultCollapsed;
+        }
+        return saved === "1";
+    });
+    const [tooltip, setTooltip] = useState<SidebarTooltipState>(INITIAL_TOOLTIP_STATE);
     const { market } = useMarketSafe();
     const { logout, user } = useAuth();
+    const { theme, toggleTheme } = useTheme();
+
+    const toggleCollapsed = () => {
+        setCollapsed((prev) => {
+            const next = !prev;
+            if (!next) {
+                setTooltip((current) => (current.visible ? { ...current, visible: false } : current));
+            }
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem(SIDEBAR_PREF_KEY, next ? "1" : "0");
+            }
+            return next;
+        });
+    };
 
     // Calculate width logic
     const widthClass = collapsed ? "w-[80px]" : "w-[260px]";
 
-    // Inject Admin Panel conditionally before Settings
+    const hideTooltip = () => {
+        setTooltip((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+    };
+
+    const showTooltip = (label: string, target: HTMLElement) => {
+        if (!collapsed) return;
+        const rect = target.getBoundingClientRect();
+
+        setTooltip({
+            label,
+            top: rect.top + rect.height / 2,
+            left: rect.right + 14,
+            visible: true,
+        });
+    };
+
+    // Inject Analytics item conditionally before Settings
     const dynamicNavItems = [...NAV_ITEMS];
     if (user?.role === 'admin') {
-        // Insert Admin Panel right before "Settings" which is the last item
-        const adminItem = { label: "Admin Panel", icon: Shield, href: "/admin/analytics", color: "emerald" };
+        // Insert Analytics right before "Settings" which is the last item
+        const adminItem = { label: "Analytics", icon: Shield, href: "/admin/analytics", color: "emerald" };
         dynamicNavItems.splice(dynamicNavItems.length - 1, 0, adminItem);
     }
+
+    useEffect(() => {
+        if (!collapsed || typeof window === "undefined") return;
+
+        const dismissTooltip = () => {
+            setTooltip((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+        };
+
+        window.addEventListener("resize", dismissTooltip);
+        window.addEventListener("scroll", dismissTooltip, true);
+
+        return () => {
+            window.removeEventListener("resize", dismissTooltip);
+            window.removeEventListener("scroll", dismissTooltip, true);
+        };
+    }, [collapsed]);
 
     return (
         <aside
             className={clsx(
-                "h-screen flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 dark:border-white/[0.08] bg-white dark:bg-[#0B1121] shadow-xl shadow-slate-200/20 dark:shadow-black/20 z-50",
+                "finhub-sidebar finhub-glass h-[100dvh] flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 dark:border-white/[0.08] bg-white dark:bg-[#0B1121] shadow-xl shadow-slate-200/20 dark:shadow-black/20 z-50",
                 widthClass
             )}
         >
@@ -113,9 +193,13 @@ export default function Sidebar() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10" data-lenis-prevent="true">
+            <nav
+                className="flex-1 overflow-y-auto px-4 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10"
+                data-lenis-prevent="true"
+                onScroll={hideTooltip}
+            >
                 {dynamicNavItems.map((item) => {
-                    const resolvedHref = (item as any).dynamicHref
+                    const resolvedHref = item.dynamicHref
                         ? (market === 'EGX' ? '/egx/COMI' : '/symbol/2222')
                         : item.href;
 
@@ -140,6 +224,14 @@ export default function Sidebar() {
                                     ? "bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white"
                                     : "text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white hover:shadow-lg hover:shadow-slate-100/50 dark:hover:shadow-none"
                             )}
+                            aria-label={collapsed ? item.label : undefined}
+                            aria-current={reallyActive ? "page" : undefined}
+                            title={collapsed ? item.label : undefined}
+                            onMouseEnter={(event) => showTooltip(item.label, event.currentTarget)}
+                            onMouseMove={(event) => showTooltip(item.label, event.currentTarget)}
+                            onMouseLeave={hideTooltip}
+                            onFocus={(event) => showTooltip(item.label, event.currentTarget)}
+                            onBlur={hideTooltip}
                         >
                             {/* Active Indicator Line */}
                             {reallyActive && (
@@ -168,17 +260,31 @@ export default function Sidebar() {
                                     {item.label}
                                 </span>
                             )}
-
-                            {/* Hover tooltip for collapsed state */}
-                            {collapsed && (
-                                <div className="absolute left-full ml-4 px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
-                                    {item.label}
-                                </div>
-                            )}
                         </Link>
                     );
                 })}
             </nav>
+
+            {/* Fixed tooltip layer avoids clipping inside scrollable nav */}
+            {collapsed && tooltip.label && (
+                <div
+                    className={clsx(
+                        "pointer-events-none fixed -translate-y-1/2 z-[120] transition-all duration-200 ease-out",
+                        tooltip.visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-1"
+                    )}
+                    style={{ top: tooltip.top, left: tooltip.left }}
+                    role="tooltip"
+                    aria-hidden={!tooltip.visible}
+                >
+                    <div className="relative">
+                        <div className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 px-3 py-2 text-[11px] font-semibold tracking-wide text-slate-700 shadow-[0_14px_34px_-18px_rgba(15,23,42,0.45)] ring-1 ring-white/70 backdrop-blur-xl dark:border-cyan-300/20 dark:bg-[#071427]/95 dark:text-slate-100 dark:shadow-[0_18px_42px_-20px_rgba(6,182,212,0.48)] dark:ring-cyan-300/10">
+                            <span className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-transparent to-blue-500/10 dark:from-cyan-300/10 dark:to-blue-300/10" />
+                            <span className="relative whitespace-nowrap">{tooltip.label}</span>
+                        </div>
+                        <span className="absolute -left-[5px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45 border-b border-l border-slate-200/80 bg-white/95 dark:border-cyan-300/20 dark:bg-[#071427]/95" />
+                    </div>
+                </div>
+            )}
 
             {/* Footer Control Panel */}
             <div className="p-4 border-t border-slate-100 dark:border-white/5">
@@ -200,11 +306,30 @@ export default function Sidebar() {
                     </button>
 
                     {/* Separator if expanded */}
-                    {!collapsed && <div className="w-px h-8 bg-slate-200" />}
+                    {!collapsed && <div className="w-px h-8 bg-slate-200 dark:bg-white/10" />}
+
+                    {/* Theme Button */}
+                    <button
+                        onClick={toggleTheme}
+                        className={clsx(
+                            "flex items-center justify-center rounded-xl transition-all duration-200",
+                            "text-slate-400 dark:text-slate-300 hover:text-[#0F172A] dark:hover:text-cyan-200",
+                            "hover:bg-slate-100 dark:hover:bg-cyan-500/10",
+                            "border border-transparent hover:border-slate-200 dark:hover:border-cyan-400/20",
+                            collapsed ? "w-10 h-10" : "w-10 h-10"
+                        )}
+                        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                        title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                    >
+                        {theme === "dark" ? <SunMedium className="w-5 h-5" /> : <MoonStar className="w-5 h-5" />}
+                    </button>
+
+                    {/* Separator if expanded */}
+                    {!collapsed && <div className="w-px h-8 bg-slate-200 dark:bg-white/10" />}
 
                     {/* Collapse Button */}
                     <button
-                        onClick={() => setCollapsed(!collapsed)}
+                        onClick={toggleCollapsed}
                         className={clsx(
                             "flex items-center justify-center rounded-xl transition-all duration-200 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white",
                             collapsed ? "w-10 h-10" : "w-10 h-10"
@@ -218,4 +343,3 @@ export default function Sidebar() {
         </aside>
     );
 }
-

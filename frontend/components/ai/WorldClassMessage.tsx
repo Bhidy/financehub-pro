@@ -156,6 +156,14 @@ const ARABIC_STRUCTURAL_KEYS = new Set([
     "logo_url",
 ]);
 
+function canonicalizeCardType(value: any): string {
+    const raw = String(value ?? "").trim();
+    if (!raw) return raw;
+    if (/^cardtype\./i.test(raw)) return raw.replace(/^cardtype\./i, "").toLowerCase();
+    if (/^CardType\./.test(raw)) return raw.replace(/^CardType\./, "").toLowerCase();
+    return raw.toLowerCase();
+}
+
 function localizeMetricLabel(label: string, lang: Language = "en"): string {
     if (!label) return label;
     if (lang !== "ar") return label;
@@ -1393,7 +1401,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
     const cards = Array.isArray(safeResponse?.cards) ? safeResponse.cards : [];
     const findCardData = (types: string[]) => {
         const wanted = new Set(types.map(t => t.toLowerCase()));
-        const card = cards.find((c: any) => wanted.has(String(c?.type || "").toLowerCase()));
+        const card = cards.find((c: any) => wanted.has(canonicalizeCardType(c?.type)));
         return card?.data;
     };
 
@@ -1435,7 +1443,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
             : safeResponse?.educational_card
                 ? [safeResponse.educational_card]
                 : cards
-                    .filter((c: any) => ["educational", "define_term", "definition"].includes(String(c?.type || "").toLowerCase()))
+                    .filter((c: any) => ["educational", "define_term", "definition"].includes(canonicalizeCardType(c?.type)))
                     .map((c: any) => {
                         const d = c?.data || {};
                         if (d?.title || d?.definition || d?.formula || d?.example || d?.sections) {
@@ -1475,7 +1483,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
         Array.isArray(safeResponse?.insight_cards) && safeResponse.insight_cards.length > 0
             ? safeResponse.insight_cards
             : cards
-                .filter((c: any) => ["insight", "insights"].includes(String(c?.type || "").toLowerCase()))
+                .filter((c: any) => ["insight", "insights"].includes(canonicalizeCardType(c?.type)))
                 .map((c: any) => c?.data)
                 .filter(Boolean)
     );
@@ -1566,9 +1574,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     className="flex flex-col"
                 >
                     {/* Stock Header (if present) */}
-                    {safeResponse?.cards?.filter((c: any) => String(c?.type || "").toLowerCase() === 'stock_header').length > 0 && (
+                    {safeResponse?.cards?.filter((c: any) => canonicalizeCardType(c?.type) === 'stock_header').length > 0 && (
                         <motion.div variants={staggerItem} className="mb-3 mt-1">
-                            <ChatCards cards={safeResponse.cards.filter((c: any) => String(c?.type || "").toLowerCase() === 'stock_header')} language={lang} />
+                            <ChatCards cards={safeResponse.cards.filter((c: any) => canonicalizeCardType(c?.type) === 'stock_header')} language={lang} />
                         </motion.div>
                     )}
 

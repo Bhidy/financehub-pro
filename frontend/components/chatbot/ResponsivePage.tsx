@@ -57,6 +57,13 @@ import { DesktopSidebar } from "./components/DesktopSidebar";
 import { translations, Language } from "./translations";
 
 const containsArabicChars = (text?: string) => /[\u0600-\u06FF]/.test(text || "");
+const canonicalizeCardType = (value: any): string => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return raw;
+    if (/^cardtype\./i.test(raw)) return raw.replace(/^cardtype\./i, "").toLowerCase();
+    if (/^CardType\./.test(raw)) return raw.replace(/^CardType\./, "").toLowerCase();
+    return raw.toLowerCase();
+};
 export const resolveMessageLanguage = (msg: any): Language => {
     const responseLanguage = msg?.response?.language;
     if (responseLanguage === "ar") return "ar";
@@ -886,7 +893,7 @@ const MessageRenderer = memo(({
                                 'stock_header'
                             ];
                             const filteredCards = (m.response?.cards || []).filter(
-                                (card: any) => !worldClassHandledTypes.includes(String(card?.type || "").toLowerCase())
+                                (card: any) => !worldClassHandledTypes.includes(canonicalizeCardType(card?.type))
                             );
                             return filteredCards.length > 0 ? (
                                 <motion.div

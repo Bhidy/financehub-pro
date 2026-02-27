@@ -33,6 +33,7 @@ import re
 import logging
 import json
 import math
+from enum import Enum
 from decimal import Decimal
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
@@ -965,6 +966,11 @@ class ChatService:
 
     @classmethod
     def _normalize_payload_value(cls, value: Any, language: str = "en") -> Any:
+        # Enums (including str Enums like CardType) must keep canonical `.value`
+        # and must not be passed through text normalization.
+        if isinstance(value, Enum):
+            return value.value
+
         if isinstance(value, Decimal):
             try:
                 value = float(value)

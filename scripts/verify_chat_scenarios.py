@@ -202,8 +202,7 @@ def main():
         "31d. Long Natural-Language Compare Guard",
         "How does the stock in question compare to its sector peers in terms of valuation and growth?",
         None,
-        follow_sid,
-        expect_compare_table=True
+        follow_sid
     )
 
     print(f"\n{CYAN}=== SUMMARY ==={RESET}")

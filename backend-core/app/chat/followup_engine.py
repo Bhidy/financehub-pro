@@ -275,11 +275,13 @@ class FollowUpEngine:
     def _followups_from_actions(
         self,
         actions: Optional[List[Dict]],
-        symbol: Optional[str] = None
+        symbol: Optional[str] = None,
+        anchor_symbols: Optional[List[str]] = None
     ) -> List[Dict]:
         """Build robust followups from handler actions (always route-safe)."""
         out: List[Dict] = []
         seen_payloads: set[str] = set()
+        resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
 
         for action in actions or []:
             if not isinstance(action, dict):
@@ -305,7 +307,9 @@ class FollowUpEngine:
             out.append({
                 "text": display_text,
                 "type": self._infer_followup_type(display_text),
-                "payload": payload
+                "payload": payload,
+                "anchor_symbol": (symbol or None),
+                "anchor_symbols": resolved_anchors
             })
             if len(out) >= 3:
                 break
@@ -319,7 +323,11 @@ class FollowUpEngine:
                 if key in seen_payloads:
                     continue
                 seen_payloads.add(key)
-                out.append(fb)
+                out.append({
+                    **fb,
+                    "anchor_symbol": (symbol or None),
+                    "anchor_symbols": resolved_anchors,
+                })
                 if len(out) >= 3:
                     break
 
@@ -399,14 +407,19 @@ class FollowUpEngine:
         intent: Dict,
         symbol: Optional[str] = None,
         language: str = "en",
-        actions: Optional[List[Dict]] = None
+        actions: Optional[List[Dict]] = None,
+        anchor_symbols: Optional[List[str]] = None
     ) -> List[Dict]:
         """
         Main entry point. Returns 3 follow-up questions formatted for the frontend chips.
         """
         try:
             if actions:
-                action_followups = self._followups_from_actions(actions, symbol=symbol)
+                action_followups = self._followups_from_actions(
+                    actions,
+                    symbol=symbol,
+                    anchor_symbols=anchor_symbols
+                )
                 if action_followups:
                     return action_followups
 
@@ -415,14 +428,33 @@ class FollowUpEngine:
                 conversation_history,
                 intent,
                 symbol,
-                language
+                language,
+                anchor_symbols=anchor_symbols
             )
             if llm_followups and all(self._is_valid_followup_entry(f, symbol) for f in llm_followups):
                 return llm_followups
-            return self._rule_based_fallback(ai_response, symbol)
+            fallback = self._rule_based_fallback(ai_response, symbol)
+            resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
+            return [
+                {
+                    **item,
+                    "anchor_symbol": (symbol or None),
+                    "anchor_symbols": resolved_anchors,
+                }
+                for item in fallback
+            ]
         except Exception as e:
             logger.error(f"Follow-up generation error: {e}")
-            return self._rule_based_fallback(ai_response, symbol)
+            fallback = self._rule_based_fallback(ai_response, symbol)
+            resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
+            return [
+                {
+                    **item,
+                    "anchor_symbol": (symbol or None),
+                    "anchor_symbols": resolved_anchors,
+                }
+                for item in fallback
+            ]
 
     async def _generate_with_llm(
         self,
@@ -430,7 +462,8 @@ class FollowUpEngine:
         conversation_history: List[Dict],
         intent: Dict,
         symbol: Optional[str] = None,
-        language: str = "en"
+        language: str = "en",
+        anchor_symbols: Optional[List[str]] = None
     ) -> List[Dict]:
         """
         Uses standard MultiProviderLLM to generate contextual follow-ups.
@@ -484,6 +517,7 @@ Return ONLY the JSON array, no other text.'''
         parsed = json.loads(raw)
 
         followups = []
+        resolved_anchors = [str(s).strip().upper() for s in (anchor_symbols or []) if str(s).strip()]
         for i, item in enumerate(parsed[:3]):
             followup_type = item.get("type", "general")
             display_prompt = self._resolve_click_prompt(
@@ -502,7 +536,9 @@ Return ONLY the JSON array, no other text.'''
                 "text": display_prompt,
                 "type": followup_type,
                 # Use a route-friendly prompt while keeping displayed chip concise.
-                "payload": payload_prompt
+                "payload": payload_prompt,
+                "anchor_symbol": (symbol or None),
+                "anchor_symbols": resolved_anchors
             })
             
         if not followups:

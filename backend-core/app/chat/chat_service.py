@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 
 from .schemas import (
     ChatRequest, ChatResponse, Intent, Card, Action, ResponseMeta, CardType,
+    AnswerGrounding,
     # NEW: Structured Response Components
     InsightCard, InsightCardVariant, DataCard, StockListItem,
     MacroScoreCard, MacroFactor, ComparisonTable, ComparisonRow,
@@ -55,7 +56,7 @@ from .schemas import (
     StructuredNarrative,
     ResolvedSymbol,
 )
-from .text_normalizer import normalize_text, extract_potential_symbols
+from .text_normalizer import normalize_text, extract_potential_symbols, SYMBOL_STOPWORDS
 from .intent_router import IntentRouter, create_router
 from .symbol_resolver import SymbolResolver
 from .compliance import check_compliance, get_disclaimer, COMPLIANCE_RESPONSE_AR # --- PHASE 4: PERSONALIZATION ENGINE ---
@@ -135,6 +136,20 @@ LATIN_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9/\-\.]*")
 ARABIC_KEEP_TOKENS = {
     "EGX", "EGP", "USD", "SAR", "ROE", "ROA", "EPS", "EBITDA", "RSI", "MACD",
     "PE", "PB", "P/E", "P/B", "EV", "TTM", "YTD", "Q1", "Q2", "Q3", "Q4",
+}
+FOLLOWUP_AMBIGUOUS_PAYLOAD_PATTERNS = [
+    re.compile(r"^\s*(what\s+unlocks\s+this\??)\s*$", re.IGNORECASE),
+    re.compile(r"^\s*(how\s+serious\s+are\s+the\s+risks\??)\s*$", re.IGNORECASE),
+    re.compile(r"^\s*(what'?s\s+the\s+macro\s+picture\??)\s*$", re.IGNORECASE),
+    re.compile(r"^\s*(what\s+about\s+(it|this|that)\??)\s*$", re.IGNORECASE),
+    re.compile(r"^\s*(tell\s+me\s+more)\s*$", re.IGNORECASE),
+]
+NOISE_COMPARE_TOKENS = {
+    tok.upper()
+    for tok in (
+        SYMBOL_STOPWORDS
+        | {"DOES", "PEERS", "TERMS", "VALUATION", "GROWTH", "COMPARE", "VERSUS", "BETTER"}
+    )
 }
 ARABIC_TEXT_REPLACEMENTS = {
     "N/A": "غير متاح",
@@ -551,6 +566,207 @@ class ChatService:
             out.append(sym)
         return out
 
+    def _extract_symbol_candidates_from_cards(self, cards_payload: Any) -> List[str]:
+        candidates: List[str] = []
+        if not isinstance(cards_payload, list):
+            return candidates
+        for card in cards_payload:
+            if not isinstance(card, dict):
+                continue
+            card_type = str(card.get("type") or "").lower()
+            data = card.get("data") or {}
+            if not isinstance(data, dict):
+                continue
+
+            # Single-symbol cards.
+            if card_type in {"stock_header", "snapshot", "stats", "valuation_score"}:
+                sym = str(data.get("symbol") or "").strip().upper()
+                if sym:
+                    candidates.append(sym)
+
+            # List/screener cards.
+            if card_type in {"stock_list", "hidden_gems", "discovery_list", "screener_results"}:
+                stocks = data.get("stocks")
+                if isinstance(stocks, list):
+                    highlighted = None
+                    for stock in stocks:
+                        if not isinstance(stock, dict):
+                            continue
+                        sym = str(stock.get("ticker") or stock.get("symbol") or "").strip().upper()
+                        if not sym:
+                            continue
+                        if stock.get("highlighted") and not highlighted:
+                            highlighted = sym
+                        candidates.append(sym)
+                    if highlighted:
+                        candidates.insert(0, highlighted)
+        return self._dedupe_symbols(candidates)
+
+    def _extract_followup_anchor(
+        self,
+        *,
+        entities: Dict[str, Any],
+        result_data: Dict[str, Any],
+        context_last_symbol: Optional[str],
+    ) -> Tuple[Optional[str], List[str]]:
+        """
+        Resolve follow-up anchor symbols with deterministic priority:
+        entities.symbol > highlighted/first stock_list > card-derived symbols > context last symbol.
+        """
+        candidates: List[str] = []
+
+        entity_symbol = str((entities or {}).get("symbol") or "").strip().upper()
+        if entity_symbol:
+            candidates.append(entity_symbol)
+
+        stock_list = result_data.get("stock_list")
+        if isinstance(stock_list, list):
+            highlighted = None
+            for item in stock_list:
+                if not isinstance(item, dict):
+                    continue
+                sym = str(item.get("ticker") or item.get("symbol") or "").strip().upper()
+                if not sym:
+                    continue
+                if item.get("highlighted") and not highlighted:
+                    highlighted = sym
+                candidates.append(sym)
+            if highlighted:
+                candidates.insert(0, highlighted)
+
+        candidates.extend(self._extract_symbol_candidates_from_cards(result_data.get("cards")))
+
+        ctx_symbol = str(context_last_symbol or "").strip().upper()
+        if ctx_symbol:
+            candidates.append(ctx_symbol)
+
+        anchor_symbols = self._dedupe_symbols(candidates)
+        anchor_symbol = anchor_symbols[0] if anchor_symbols else None
+        return anchor_symbol, anchor_symbols
+
+    def _payload_has_real_symbol(self, payload: str, anchor_symbol: Optional[str] = None) -> bool:
+        text = str(payload or "").upper()
+        if not text:
+            return False
+        for token in re.findall(r"\b[A-Z0-9]{2,6}\b", text):
+            if token in NOISE_COMPARE_TOKENS:
+                continue
+            if anchor_symbol and self._canonical_symbol(token) == self._canonical_symbol(anchor_symbol):
+                return True
+            # Keep strict EGX-like symbols and numeric GCC tickers.
+            if token.isdigit() and len(token) == 4:
+                return True
+            if token.isalpha() and 3 <= len(token) <= 6:
+                return True
+        return False
+
+    def _is_ambiguous_followup_payload(self, payload: Optional[str]) -> bool:
+        text = str(payload or "").strip()
+        if not text:
+            return True
+        lowered = text.lower()
+        if any(pat.match(text) for pat in FOLLOWUP_AMBIGUOUS_PAYLOAD_PATTERNS):
+            return True
+        if re.search(r"\b(it|this|that|its)\b", lowered) and not self._payload_has_real_symbol(text):
+            return True
+        return False
+
+    def _apply_followup_anchor(self, payload: str, anchor_symbol: Optional[str]) -> str:
+        clean = str(payload or "").strip()
+        if not clean:
+            return clean
+        if not anchor_symbol:
+            return clean
+        if self._payload_has_real_symbol(clean, anchor_symbol=anchor_symbol):
+            return clean
+        if self._is_ambiguous_followup_payload(clean):
+            # Keep wording, force deterministic symbol context.
+            return f"{clean} for {anchor_symbol}".strip()
+        return clean
+
+    def _build_symbol_clarify_followups(self, language: str) -> List[Dict[str, Any]]:
+        if language == "ar":
+            prompts = [
+                ("حدد السهم أولاً", "حلل COMI"),
+                ("جرب سهم البنك التجاري", "حلل COMI"),
+                ("جرب سهم السويدي", "حلل SWDY"),
+            ]
+        else:
+            prompts = [
+                ("Pick a stock symbol first", "Analyze COMI"),
+                ("Try CIB first", "Analyze COMI"),
+                ("Try SWDY first", "Analyze SWDY"),
+            ]
+        return [
+            {
+                "text": text,
+                "payload": payload,
+                "type": "next_step",
+                "anchor_symbol": None,
+                "anchor_symbols": [],
+            }
+            for text, payload in prompts
+        ]
+
+    def _build_answer_grounding(
+        self,
+        *,
+        intent: Intent,
+        confidence: float,
+        entities: Dict[str, Any],
+        result: Dict[str, Any],
+        response_success: bool,
+    ) -> AnswerGrounding:
+        result_dict = result if isinstance(result, dict) else {}
+        cards_payload = result_dict.get("cards") if isinstance(result_dict.get("cards"), list) else []
+        card_types = {
+            self._canonical_card_type_string(str(card.get("type") or "")).lower()
+            for card in cards_payload
+            if isinstance(card, dict)
+        }
+        has_structured_data = bool(cards_payload or result_dict.get("stock_list") or result_dict.get("comparison_table"))
+        has_error = "error" in card_types or response_success is False
+        grounded = bool(response_success and has_structured_data and not has_error)
+
+        source_tables = result_dict.get("source_tables")
+        if not isinstance(source_tables, list):
+            source_tables = []
+        if not source_tables:
+            source_by_intent = {
+                Intent.STOCK_PRICE: ["market_tickers"],
+                Intent.STOCK_SNAPSHOT: ["market_tickers", "stock_statistics"],
+                Intent.STOCK_STAT: ["stock_statistics"],
+                Intent.FINANCIALS: ["financial_statements"],
+                Intent.DIVIDENDS: ["corporate_actions", "stock_statistics"],
+                Intent.COMPARE_STOCKS: ["market_tickers", "stock_statistics"],
+                Intent.SCREENER_VALUE: ["market_tickers", "stock_statistics"],
+                Intent.HIDDEN_GEMS: ["market_tickers", "stock_statistics"],
+                Intent.MARKET_SUMMARY: ["market_tickers"],
+            }
+            source_tables = source_by_intent.get(intent, ["market_tickers"])
+
+        missing_requirements = result_dict.get("missing_requirements")
+        if not isinstance(missing_requirements, list):
+            missing_requirements = []
+        if not grounded and self._intent_allows_symbol_entity(intent) and not entities.get("symbol"):
+            missing_requirements = list(dict.fromkeys(missing_requirements + ["symbol"]))
+
+        period = (
+            str(result_dict.get("period") or entities.get("period") or entities.get("range") or "").strip() or None
+        )
+        as_of = result_dict.get("as_of")
+        if as_of is not None:
+            as_of = str(as_of)
+
+        return AnswerGrounding(
+            grounded=grounded,
+            as_of=as_of,
+            period=period,
+            source_tables=[str(x) for x in source_tables if str(x).strip()],
+            missing_requirements=[str(x) for x in missing_requirements if str(x).strip()],
+            analysis_confidence=round(float(confidence or 0.0), 4),
+        )
+
     def _extract_pending_suggestions_from_prompt(self, prompt: Optional[str]) -> List[str]:
         """
         Extract actionable follow-up options from prompt text.
@@ -783,6 +999,8 @@ class ChatService:
             return None
 
         cards_payload = result.get("cards") if isinstance(result, dict) else []
+        if not isinstance(cards_payload, list):
+            cards_payload = []
         card_types = {
             str(card.get("type") or "").lower()
             for card in cards_payload
@@ -1064,6 +1282,8 @@ class ChatService:
         response: ChatResponse,
         language: str
     ) -> ChatResponse:
+        if getattr(response, "response_status", None) not in {"pass", "fail"}:
+            response.response_status = "pass" if getattr(response, "success", True) else "fail"
         response.message_text = self._normalize_display_text(response.message_text, language)
         response.conversational_text = self._normalize_display_text(response.conversational_text, language) if response.conversational_text else response.conversational_text
         response.framework_text = self._normalize_display_text(response.framework_text, language) if response.framework_text else response.framework_text
@@ -1492,6 +1712,28 @@ class ChatService:
             "cards": [],
             "actions": actions
         }
+
+    def _build_compare_symbol_request_response(self, language: str) -> Dict[str, Any]:
+        """Ask the user to provide two explicit tickers for comparison."""
+        if language == "ar":
+            message = "للمقارنة الدقيقة، اكتب سهمين بوضوح (مثال: COMI مقابل SWDY)."
+        else:
+            message = "For an accurate comparison, provide two stock symbols explicitly (example: COMI vs SWDY)."
+        actions = [
+            {
+                "label": "Compare COMI vs SWDY",
+                "label_ar": "قارن COMI مع SWDY",
+                "action_type": "query",
+                "payload": "Compare COMI vs SWDY",
+            },
+            {
+                "label": "Compare COMI vs HRHO",
+                "label_ar": "قارن COMI مع HRHO",
+                "action_type": "query",
+                "payload": "Compare COMI vs HRHO",
+            },
+        ]
+        return {"success": True, "message": message, "cards": [], "actions": actions}
 
     def _derive_compare_pair(
         self,
@@ -2612,7 +2854,8 @@ class ChatService:
                 merged_compare = [
                     str(x).upper() for x in existing_compare if str(x).strip()
                 ] + [
-                    str(s).upper() for s in potential_symbols if str(s).strip()
+                    str(s).upper() for s in potential_symbols
+                    if str(s).strip() and str(s).upper() not in NOISE_COMPARE_TOKENS
                 ]
                 entities['compare_symbols'] = self._dedupe_symbols(merged_compare)
                 print(f"[ChatService] 🔍 Enhanced Compare Symbols from Regex: {entities['compare_symbols']}")
@@ -2700,7 +2943,15 @@ class ChatService:
                     'chart': to_dict(result.chart) if result.chart else None,
                     'actions': [to_dict(a) for a in (result.actions or [])],
                     'data': {},
-                    'success': True
+                    'success': bool(getattr(result, 'success', True)),
+                    'response_status': str(getattr(result, 'response_status', 'pass')),
+                    'message': getattr(result, 'message', None),
+                    'conversational_text': getattr(result, 'conversational_text', None),
+                    'follow_up_prompt': getattr(result, 'follow_up_prompt', None),
+                    'followups': [
+                        to_dict(f) if hasattr(f, "dict") or hasattr(f, "model_dump") else dict(f)
+                        for f in (getattr(result, "followups", None) or [])
+                    ],
                 }
             
             # CRITICAL CHECK: Force Data Card if missing for data intents
@@ -3244,9 +3495,18 @@ class ChatService:
             if history is None:
                  history = []
             history.append({'role': 'assistant', 'content': '...'})
+
+            followup_anchor_symbol, followup_anchor_symbols = self._extract_followup_anchor(
+                entities=entities,
+                result_data=result_data,
+                context_last_symbol=context_dict.get('last_symbol')
+            )
+            context_anchor_symbol = actual_symbol or followup_anchor_symbol or context_dict.get('last_symbol')
+            if context_anchor_symbol and not entities.get("symbol"):
+                entities["symbol"] = context_anchor_symbol
             
             self.context_store.set(session_id, 
-                last_symbol=actual_symbol if actual_symbol else context_dict.get('last_symbol'),
+                last_symbol=context_anchor_symbol,
                 last_intent=intent,
                 last_market=entities.get('market_code', last_market)
             )
@@ -3730,7 +3990,7 @@ class ChatService:
                     user_message=message,
                     assistant_response=conversational_text or "",
                     intent=intent.value,
-                    entities={"symbol": actual_symbol, "sector": entities.get("sector"), "market": last_market},
+                    entities={"symbol": context_anchor_symbol, "sector": entities.get("sector"), "market": last_market},
                     language=language,
                     suggestions=pending_suggestions
                 )
@@ -3754,13 +4014,37 @@ class ChatService:
                     ai_response=response.message_text,
                     conversation_history=history or [],
                     intent=intent_info,
-                    symbol=actual_symbol,
+                    symbol=context_anchor_symbol,
                     language=language,
-                    actions=result_data.get('actions', [])
+                    actions=result_data.get('actions', []),
+                    anchor_symbols=followup_anchor_symbols
                 )
                 
                 if dynamic_followups:
-                    response.followups = dynamic_followups
+                    normalized_followups: List[Dict[str, Any]] = []
+                    has_ambiguous_without_anchor = False
+                    for chip in dynamic_followups:
+                        if not isinstance(chip, dict):
+                            continue
+                        chip_text = str(chip.get("text") or "").strip()
+                        chip_type = str(chip.get("type") or "next_step").strip() or "next_step"
+                        raw_payload = str(chip.get("payload") or chip_text).strip()
+                        payload = self._apply_followup_anchor(raw_payload, context_anchor_symbol)
+                        ambiguous = self._is_ambiguous_followup_payload(payload)
+                        if ambiguous and not context_anchor_symbol:
+                            has_ambiguous_without_anchor = True
+                        normalized_followups.append({
+                            "text": chip_text or payload,
+                            "payload": payload,
+                            "type": chip_type,
+                            "anchor_symbol": context_anchor_symbol,
+                            "anchor_symbols": followup_anchor_symbols or ([] if not context_anchor_symbol else [context_anchor_symbol]),
+                        })
+
+                    if has_ambiguous_without_anchor:
+                        normalized_followups = self._build_symbol_clarify_followups(language)
+
+                    response.followups = normalized_followups
                     convo_logger.info(f"✅ Generated {len(dynamic_followups)} dynamic follow-ups.")
             except Exception as e:
                 convo_logger = logging.getLogger("ChatService")
@@ -3795,6 +4079,7 @@ class ChatService:
                 
                 return ChatResponse(
                     success=False, # Explicitly mark as failure
+                    response_status="fail",
                     message=err_msg, # Explicitly set message for frontend/QA
                     message_text=err_msg,
                     language=lang,
@@ -3820,6 +4105,8 @@ class ChatService:
                 print(f"SUPER FATAL: {super_fatal}")
                 fatal_lang = 'ar' if self._contains_arabic_text(message) else 'en'
                 return ChatResponse(
+                    success=False,
+                    response_status="fail",
                     message_text="System Error. Please try again." if fatal_lang == 'en' else "خطأ في النظام. يرجى المحاولة مرة أخرى.",
                     language=fatal_lang,
                     cards=[],
@@ -4095,9 +4382,19 @@ class ChatService:
             compare_symbols = entities.get('compare_symbols', [])
             if isinstance(compare_symbols, str):
                 compare_symbols = [compare_symbols]
-            compare_symbols = self._dedupe_symbols([
-                str(s).upper() for s in compare_symbols if str(s).strip()
-            ])
+            cleaned_compare_symbols: List[str] = []
+            for raw_symbol in compare_symbols:
+                token = str(raw_symbol).strip().upper()
+                if not token:
+                    continue
+                if token in NOISE_COMPARE_TOKENS:
+                    continue
+                if token.isalpha() and not (3 <= len(token) <= 6):
+                    continue
+                if token.isdigit() and len(token) != 4:
+                    continue
+                cleaned_compare_symbols.append(token)
+            compare_symbols = self._dedupe_symbols(cleaned_compare_symbols)
 
             # Always anchor comparison on current symbol if available.
             if symbol:
@@ -4106,6 +4403,14 @@ class ChatService:
                 existing_canon = {self._canonical_symbol(s) for s in compare_symbols}
                 if symbol_canon and symbol_canon not in existing_canon:
                     compare_symbols = [symbol_up] + compare_symbols
+
+            compare_request_like = bool(re.search(
+                r"\b(compare|comparison|vs|versus|peer|peers|against)\b",
+                str(message or ""),
+                re.IGNORECASE
+            ))
+            if compare_request_like and not compare_symbols and not symbol:
+                return self._build_compare_symbol_request_response(language)
 
             inferred_peers: List[str] = []
             if len(compare_symbols) < 2 and symbol:
@@ -4604,6 +4909,15 @@ class ChatService:
             initial_conflicts=initial_sector_conflicts,
             remaining_conflicts=remaining_sector_conflicts,
         )
+        response_success = bool(result.get("success", True)) if isinstance(result, dict) else True
+        response_status = "pass" if response_success else "fail"
+        answer_grounding = self._build_answer_grounding(
+            intent=intent,
+            confidence=confidence,
+            entities=entities or {},
+            result=result if isinstance(result, dict) else {},
+            response_success=response_success,
+        )
 
         merged_insight_cards = list(insight_cards or [])
         if quality_monitor_payload and quality_monitor_payload.get("card"):
@@ -4614,6 +4928,8 @@ class ChatService:
             meta_entities["analysis_quality"] = quality_monitor_payload["meta"]
 
         return ChatResponse(
+            success=response_success,
+            response_status=response_status,
             message_text=full_response_text, # Use the composed text
             conversational_text=conversational_text,
             framework_text=framework_text,
@@ -4650,6 +4966,7 @@ class ChatService:
                 latency_ms=latency_ms,
                 cached=False,
                 as_of=datetime.utcnow(),
+                answer_grounding=answer_grounding,
                 backend_version="6.1.0-STABLE-Fix"  # STABILIZED RELEASE
             )
         )

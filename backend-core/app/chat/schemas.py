@@ -3,7 +3,7 @@ Pydantic schemas for chat request/response.
 Defines the strict contract between backend and frontend.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -169,6 +169,7 @@ class CardType(str, Enum):
     # Additional Card Types (Frontend expects these)
     DISCOVERY_LIST = "discovery_list"
     GEM_LIST = "gem_list"
+    STOCK_LIST = "stock_list"
     SCREENING_CRITERIA = "screening_criteria"
     MARKET_TIMING = "market_timing"
     INDEX_VIEW = "index_view"
@@ -397,7 +398,7 @@ class DisclaimerCard(BaseModel):
     """Disclaimer warning card."""
     icon: str = "⚠️"
     title: str = "Educational Analysis"
-    text: str = "This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline."
+    text: str = ""
 
 
 # Extended ChatRequest to add market context
@@ -448,6 +449,25 @@ class StructuredNarrative(BaseModel):
     follow_up_prompt: Optional[str] = Field(None, description="Layer 7: Suggested next question")
 
 
+class AnswerGrounding(BaseModel):
+    """Grounding and provenance metadata for response transparency."""
+    grounded: bool = False
+    as_of: Optional[str] = None
+    period: Optional[str] = None
+    source_tables: List[str] = Field(default_factory=list)
+    missing_requirements: List[str] = Field(default_factory=list)
+    analysis_confidence: float = 0.0
+
+
+class FollowUpChip(BaseModel):
+    """Deterministic follow-up chip contract."""
+    text: str
+    payload: str
+    type: str
+    anchor_symbol: Optional[str] = None
+    anchor_symbols: List[str] = Field(default_factory=list)
+
+
 class ResponseMeta(BaseModel):
     """Metadata for the chat response."""
     intent: str
@@ -458,12 +478,14 @@ class ResponseMeta(BaseModel):
     authenticated: bool = False
     auth_debug: Optional[Dict[str, Any]] = None
     backend_version: Optional[str] = None # Added for QA/Debugging
+    answer_grounding: Optional[AnswerGrounding] = None
 
 
 class ChatResponse(BaseModel):
     """Full chat response with structured components for premium UI."""
     # Status fields (Added for Error Handling & QA)
     success: bool = True
+    response_status: Literal["pass", "fail"] = "pass"
     message: Optional[str] = None # Detailed error message if success=False
 
     # Core text layers
@@ -499,7 +521,7 @@ class ChatResponse(BaseModel):
     # Existing structured components
     learning_section: Optional[Dict[str, Any]] = None  # {"title": "...", "items": ["..."]}
     follow_up_prompt: Optional[str] = None  # Soft follow-up suggestion
-    followups: List[Dict[str, Any]] = Field(default_factory=list)  # Dynamic follow-up chips
+    followups: List[FollowUpChip] = Field(default_factory=list)  # Dynamic follow-up chips
     key_insight: Optional[str] = None  # 🎯 Key takeaway insight for the stock
     
     # UI elements
@@ -510,6 +532,15 @@ class ChatResponse(BaseModel):
     actions: List[Action] = Field(default_factory=list)
     disclaimer: Optional[str] = None  # Legacy text disclaimer
     meta: ResponseMeta
+
+    @root_validator(pre=True)
+    def _default_response_status(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        raw_status = values.get("response_status")
+        if raw_status in {"pass", "fail"}:
+            return values
+        success = values.get("success", True)
+        values["response_status"] = "pass" if bool(success) else "fail"
+        return values
 
 
 

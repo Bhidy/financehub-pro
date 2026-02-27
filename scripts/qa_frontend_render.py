@@ -5,7 +5,7 @@ Frontend Rendering Smoke Test
 Uses Playwright to verify the API data values confirmed by qa_30_english.py
 actually render correctly in the live browser UI (not as N/A or blank).
 
-Tests 5 targeted scenarios — runs in ~3 minutes using a single browser session.
+Tests targeted scenarios — runs in a few minutes using a single browser session.
 
 Run: python3 scripts/qa_frontend_render.py
 """
@@ -67,6 +67,15 @@ SMOKE_TESTS = [
         "must_not_contain": [],
         "expect_no_na_near": None,
     },
+    {
+        "id": "S6",
+        "label": "No unsupported card + follow-up click works",
+        "query": "Get me the most undervalued stocks",
+        "must_contain": [],
+        "must_not_contain": ["Unsupported card type"],
+        "expect_no_na_near": None,
+        "click_followup": True,
+    },
 ]
 
 # ───────────────────────────────────────────────────────────────────
@@ -118,6 +127,29 @@ async def wait_for_response(page, prev_text: str = "", timeout_s: int = 55) -> s
             return current
 
     return await page.inner_text("body")
+
+
+async def click_first_followup_chip(page) -> bool:
+    """
+    Click first follow-up chip if present.
+    Returns True if click was performed.
+    """
+    candidate_selectors = [
+        "button:has-text('How')",
+        "button:has-text('What')",
+        "button:has-text('Compare')",
+        "button:has-text('How does')",
+    ]
+
+    for selector in candidate_selectors:
+        try:
+            chip = page.locator(selector).first
+            if await chip.count() > 0 and await chip.is_visible(timeout=1200):
+                await chip.click()
+                return True
+        except Exception:
+            continue
+    return False
 
 
 def check_test(test: Dict, page_text: str) -> List[str]:
@@ -227,6 +259,18 @@ async def run_smoke_tests():
                 dur = time.time() - start
 
                 issues = check_test(test, page_text)
+
+                # Optional follow-up click verification in UI
+                if test.get("click_followup") and not issues:
+                    clicked = await click_first_followup_chip(page)
+                    if not clicked:
+                        issues.append("Could not find/click a follow-up chip in UI")
+                    else:
+                        followup_text = await wait_for_response(page, prev_text=page_text)
+                        if "Unsupported card type" in followup_text:
+                            issues.append("Unsupported card type appeared after follow-up click")
+                        if "I didn't understand your request" in followup_text:
+                            issues.append("Follow-up click produced fallback misunderstanding response")
 
                 # Save screenshot for reference
                 screenshot_path = f"/tmp/qa_smoke_{tid.lower()}.png"

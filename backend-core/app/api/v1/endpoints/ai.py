@@ -55,6 +55,18 @@ def _resolve_response_language(
     return "en"
 
 
+def _canonical_card_type_value(card_type: Any) -> str:
+    """
+    Serialize card types into stable lowercase values.
+    Handles enum members and legacy prefixed strings.
+    """
+    raw = getattr(card_type, "value", card_type)
+    text = str(raw or "").strip()
+    if text.lower().startswith("cardtype."):
+        text = text.split(".", 1)[1]
+    return text.lower()
+
+
 async def verify_access(
     authorization: Optional[str] = Header(None),
     x_device_fingerprint: Optional[str] = Header(None, alias="X-Device-Fingerprint")
@@ -164,6 +176,8 @@ async def ai_chat_endpoint(
     try:
         if not db._pool:
             return {
+                "success": False,
+                "response_status": "fail",
                 "message_text": (
                     "Database connection not available. Please try again later."
                     if response_language == "en" else
@@ -198,6 +212,8 @@ async def ai_chat_endpoint(
             register_label = "Register Now" if response_language == "en" else "سجل الآن"
             login_label = "Login" if response_language == "en" else "تسجيل الدخول"
             return {
+                "success": False,
+                "response_status": "fail",
                 "message_text": primary_msg,
                 "message_text_ar": "لقد استخدمت أسئلتك الخمسة المجانية. أنشئ حساباً للوصول غير المحدود.",
                 "language": response_language,
@@ -273,14 +289,27 @@ async def ai_chat_endpoint(
             """, session_id, req.message)
 
             # Store rich assistant payload for robust context recovery.
+            serialized_cards = []
+            for card in (response.cards or []):
+                raw_card = card.dict() if hasattr(card, "dict") else dict(card)
+                raw_card["type"] = _canonical_card_type_value(raw_card.get("type"))
+                serialized_cards.append(raw_card)
+
             meta_data = {
                 # Legacy / Core
-                "cards": [c.dict() for c in response.cards] if response.cards else [],
+                "cards": serialized_cards,
                 "actions": [a.dict() for a in response.actions] if response.actions else [],
                 "chart": response.chart.dict() if response.chart else None,
                 "intent": response.meta.intent,
                 "confidence": response.meta.confidence,
                 "entities": response.meta.entities if response.meta and response.meta.entities else {},
+                "answer_grounding": (
+                    response.meta.answer_grounding.dict()
+                    if response.meta and getattr(response.meta, "answer_grounding", None)
+                    else None
+                ),
+                "success": bool(getattr(response, "success", True)),
+                "response_status": str(getattr(response, "response_status", "pass")),
                 "follow_up_prompt": response.follow_up_prompt,
                 "conversational_text": response.conversational_text,
                 "fact_explanations": response.fact_explanations,
@@ -351,6 +380,10 @@ async def ai_chat_endpoint(
             
             # Inject session_id into response meta for client tracking
             response_dict = response.dict()
+            if "success" not in response_dict:
+                response_dict["success"] = True
+            if response_dict.get("response_status") not in {"pass", "fail"}:
+                response_dict["response_status"] = "pass" if response_dict.get("success", True) else "fail"
             response_dict['session_id'] = session_id 
             response_dict['message_id'] = inserted_msg_id
             
@@ -369,6 +402,8 @@ async def ai_chat_endpoint(
             else "حدث خلل غير متوقع أثناء المعالجة."
         )
         return {
+            "success": False,
+            "response_status": "fail",
             "message_text": (
                 "I encountered a system error. Please try again."
                 if response_language == "en" else
@@ -728,4 +763,3 @@ async def submit_chat_feedback(
     except Exception as e:
         print(f"Submit Feedback Error: {e}")
         raise HTTPException(status_code=500, detail="Database error during submission")
-

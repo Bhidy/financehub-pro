@@ -194,8 +194,22 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
     if not rows:
          return {
             'success': True,
-            'message': f"No fair value models available for {name}.",
-            'cards': []
+            'message': (
+                f"No fair value models available for {name} ({symbol})."
+                if language == 'en'
+                else f"لا توجد نماذج قيمة عادلة متاحة لـ {name} ({symbol})."
+            ),
+            'cards': [
+                {
+                    'type': 'stock_header',
+                    'data': {
+                        'symbol': symbol,
+                        'name': name,
+                        'currency': ticker.get('currency') or 'EGP',
+                        'market_code': 'EGX'
+                    }
+                }
+            ]
         }
     
     models = []
@@ -216,6 +230,8 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
     """, symbol)
 
     val_data = {
+        'symbol': symbol,
+        'name': name,
         'current_price': float(ticker['last_price']) if ticker['last_price'] else 0,
         'currency': ticker['currency'],
         'models': models,
@@ -223,12 +239,25 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
         'pb': float(ratios['pb_ratio']) if ratios and ratios['pb_ratio'] else None
     }
 
-    msg = f"💎 **Valuation Analysis: {name}**" if language == 'en' else f"💎 **تحليل التقييم: {name}**"
+    msg = (
+        f"💎 **Valuation Analysis: {name} ({symbol})**"
+        if language == 'en'
+        else f"💎 **تحليل التقييم: {name} ({symbol})**"
+    )
 
     return {
         'success': True,
         'message': msg,
         'cards': [
+            {
+                'type': 'stock_header',
+                'data': {
+                    'symbol': symbol,
+                    'name': name,
+                    'currency': ticker.get('currency') or 'EGP',
+                    'market_code': 'EGX'
+                }
+            },
             {'type': 'fair_value', 'title': 'Fair Value & Valuation', 'data': val_data}
         ],
         'actions': [

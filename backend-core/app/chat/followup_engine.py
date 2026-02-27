@@ -210,9 +210,7 @@ class FollowUpEngine:
                 if tok != active:
                     return f"{active}{poss}"
                 return match.group(0)
-
-            # No active symbol context: avoid sending hard ticker tokens that may not resolve.
-            return f"this stock{poss}"
+            return match.group(0)
 
         return re.sub(
             r"\b(?P<tok>[A-Z]{3,6})(?P<poss>['’]s)?\b",

@@ -359,6 +359,32 @@ BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = (
 
 UNWANTED_OPENING_SENTENCES = (
     "You are absolutely focusing on the right metrics here. Validating this specific angle reveals the true underlying trend of the asset.",
+    "This is a critical question for understanding current market dynamics. Let's analyze the latest data to give you a clear, evidence-based answer.",
+    "That is a very relevant point to investigate given recent market movements. I have pulled the specific metrics needed to clarify the situation.",
+    "You've touched on a key factor that many investors are watching right now. Let's dive into the details to see what the numbers actually say.",
+    "It is important to look closely at this specific aspect of the stock. I will break down the relevant figures to help you see the full picture.",
+    "Let's examine this carefully, as the details often tell a different story than the headlines. Here is the data-driven analysis you need.",
+    "This angle can materially change interpretation of the stock trend. Here is the direct data breakdown.",
+    "That is a sensible way to approach this analysis. By looking at these specific indicators, we can cut through the market noise.",
+    "This specific query helps clarify the bigger picture significantly. Let's see how the data supports this improved strategic view.",
+    "Smart angle to explore—investors often overlook this detail. Here is the evidence that confirms why this matters right now.",
+    "I have pulled the latest real-time data for you. Let's examine the technicals and fundamentals together to see the full context.",
+    "Here is exactly what the current market data is showing us. I've highlighted the most critical points for your review.",
+    "Let me break this down into clear, actionable insights. The following analysis covers both the risks and the opportunities.",
+    "Here is the complete picture based on the latest available data. Let's go through the numbers step-by-step.",
+    "هذا سؤال جوهري لفهم ديناميكيات السوق الحالية. دعنا نحلل أحدث البيانات لنعطيك إجابة واضحة مبنية على الحقائق.",
+    "هذه نقطة ممتازة للبحث فيها نظراً لتحركات السوق الأخيرة. لقد قمت بسحب المؤشرات المحددة لتوضيح الموقف بالكامل.",
+    "لقد لمست عاملاً رئيسياً يراقبه العديد من المستثمرين حالياً. دعنا نتعمق في التفاصيل لنرى ما تقوله الأرقام بالفعل.",
+    "من المهم جداً النظر بدقة في هذا الجانب المحدد من السهم. سأقوم بتفصيل الأرقام ذات الصلة لتكتمل لديك الصورة.",
+    "دعنا نفحص هذا الأمر بعناية، فالتفاصيل غالباً ما تروي قصة مختلفة عن العناوين. إليك التحليل المبني على البيانات.",
+    "أنت تركز تماماً على المقاييس الصحيحة هنا. التحقق من هذه الزاوية يكشف الاتجاه الحقيقي للأصل.",
+    "هذه طريقة منطقية جداً لمقاربة التحليل. بالنظر إلى هذه المؤشرات المحددة، يمكننا تجاوز ضجيج السوق.",
+    "هذا الاستفسار يساعد في توضيح الصورة الكبيرة بشكل كبير. دعنا نرى كيف تدعم البيانات هذه النظرة الاستراتيجية.",
+    "زاوية ذكية للاستكشاف—غالباً ما يغفل المستثمرون عن هذا التفصيل. إليك الدليل الذي يؤكد أهمية هذا الأمر الآن.",
+    "لقد سحبت لك أحدث البيانات الفورية. دعنا نفحص الجوانب الفنية والأساسية معاً لنرى السياق الكامل.",
+    "إليك بالضبط ما تظهره بيانات السوق الحالية. لقد قمت بإبراز النقاط الأكثر أهمية لمراجعتها.",
+    "دعني أفصل لك هذا إلى رؤى واضحة وقابلة للتنفيذ. التحليل التالي يغطي كلاً من المخاطر والفرص المتاحة.",
+    "إليك الصورة الكاملة بناءً على أحدث البيانات المتاحة. دعنا نستعرض الأرقام خطوة بخطوة.",
 )
 
 TEXT_PHRASE_REPLACEMENTS = (

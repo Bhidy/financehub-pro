@@ -248,10 +248,10 @@ class FollowUpEngine:
         lower = p.lower()
         sym = (symbol or "").strip().upper()
         if not sym:
-            for tok in re.findall(r"\b[A-Z]{3,6}\b", p.upper()):
+            for tok in re.findall(r"\b[A-Z]{3,6}\b", p):
                 if tok in FOLLOWUP_NON_TICKER_TOKENS:
                     continue
-                sym = tok
+                sym = tok.upper()
                 break
         target = sym or "this stock"
 
@@ -309,6 +309,19 @@ class FollowUpEngine:
             })
             if len(out) >= 3:
                 break
+
+        if len(out) < 3:
+            for fb in self._rule_based_fallback("", symbol):
+                payload = str(fb.get("payload") or "").strip()
+                if not payload:
+                    continue
+                key = payload.lower()
+                if key in seen_payloads:
+                    continue
+                seen_payloads.add(key)
+                out.append(fb)
+                if len(out) >= 3:
+                    break
 
         return out
 

@@ -2538,7 +2538,17 @@ class ChatService:
                 Intent.SCREENER_VALUE,
             }
             is_extended_intent = intent in EXTENDED_INTENTS
+            STRICT_HANDLER_NARRATIVE_INTENTS = {
+                Intent.FIN_EPS,
+            }
+            use_handler_narrative_only = (
+                intent in STRICT_HANDLER_NARRATIVE_INTENTS
+                and bool(result_data.get('message'))
+            )
+
             handler_conversational_text = result_data.get('conversational_text')
+            if use_handler_narrative_only and not handler_conversational_text:
+                handler_conversational_text = result_data.get('message')
             handler_learning_section = result_data.get('learning_section')
             
             # --- INITIALIZE PREMIUM LAYERS ---
@@ -2640,7 +2650,9 @@ class ChatService:
                 force_human_opening = False
                 logger.info(f"[ChatService] 💬 Suppressing greeting: Returning user")
 
-            if (
+            if use_handler_narrative_only:
+                conversational_text = handler_conversational_text
+            elif (
                 result_data.get('success', True)
                 and intent not in NO_NARRATIVE_INTENTS
                 and not skip_narrative_for_clarification

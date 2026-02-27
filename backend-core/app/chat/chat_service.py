@@ -1738,6 +1738,51 @@ class ChatService:
         if is_margins_decline:
             return Intent.FIN_MARGINS, updated
 
+        # Deterministic stats/ratios override:
+        # Ensure ratio-centric queries (ROE, D/E, P/E, P/B, "financial statistics")
+        # route to STOCK_STAT instead of drifting to FINANCIALS/UNKNOWN.
+        is_ratio_metric_query = (
+            bool(re.search(
+                r"\b(financial statistics|key financial ratios?|statistics|stats|valuation ratios?|ratio(?:s)?|metrics?)\b",
+                msg_lower
+            ))
+            or bool(re.search(
+                r"\b(return on equity|return on assets|debt to equity|debt/?equity|d/e|roe|roa|p/e|pe ratio|p/b|pb ratio|peg ratio|ev/ebitda|current ratio)\b",
+                msg_lower
+            ))
+            or any(tok in msg for tok in [
+                "الإحصائيات المالية", "احصائيات مالية", "إحصائيات", "الاحصائيات",
+                "النسب المالية", "نسب مالية", "مكرر الربحية", "مكرر القيمة الدفترية",
+                "العائد على حقوق الملكية", "العائد على الأصول", "الدين إلى حقوق الملكية", "نسبة التداول"
+            ])
+        )
+        is_statement_query = (
+            bool(re.search(
+                r"\b(financials|financial statements?|income statement|balance sheet|cash flow|annual report|quarterly|yearly|earnings report)\b",
+                msg_lower
+            ))
+            or any(tok in msg for tok in ["قوائم مالية", "القوائم المالية", "قائمة الدخل", "الميزانية", "التدفقات النقدية", "سنوي", "ربع سنوي"])
+        )
+        if is_ratio_metric_query and not is_statement_query:
+            if not updated.get("symbol"):
+                potentials = extract_potential_symbols(message)
+                if potentials:
+                    updated["symbol"] = potentials[0]
+            if updated.get("symbol"):
+                return Intent.STOCK_STAT, updated
+
+        # Deterministic ownership override to avoid intent drift on "major shareholders".
+        is_ownership_query = (
+            bool(re.search(r"\b(major shareholders?|shareholders?|ownership|who owns|owners?)\b", msg_lower))
+            or any(tok in msg for tok in ["كبار المساهمين", "المساهمين", "هيكل الملكية", "من يملك"])
+        )
+        if is_ownership_query:
+            if not updated.get("symbol"):
+                potentials = extract_potential_symbols(message)
+                if potentials:
+                    updated["symbol"] = potentials[0]
+            return Intent.OWNERSHIP, updated
+
         is_most_undervalued = (
             bool(re.search(r"\b(most\s+undervalued|undervalued\s+stocks|undervalued\s+real[\s-]?estate|cheap\s+stocks|value\s+stocks)\b", msg_lower))
             or any(tok in msg for tok in ["الأكثر تقييماً بأقل", "أقل من قيمتها", "الأسهم المقيمة بأقل", "أسهم رخيصة"])

@@ -258,6 +258,7 @@ async def export_financials(
     # Import display mappings
     from app.chat.handlers.financials_handler import (
         INCOME_DISPLAY_ORDERED,
+        _select_income_display_order,
         BALANCE_DISPLAY_ORDERED,
         CASHFLOW_DISPLAY_ORDERED,
         RATIOS_DISPLAY_ORDERED
@@ -328,7 +329,8 @@ async def export_financials(
         return processed, periods
     
     is_quarterly = period_type == 'quarterly'
-    income_data, years = process_for_export(income_rows, INCOME_DISPLAY_ORDERED, is_quarterly)
+    income_ordered_list = _select_income_display_order(income_rows)
+    income_data, years = process_for_export(income_rows, income_ordered_list or INCOME_DISPLAY_ORDERED, is_quarterly)
     balance_data, balance_years = process_for_export(balance_rows, BALANCE_DISPLAY_ORDERED, is_quarterly)
     cashflow_data, cf_years = process_for_export(cashflow_rows, CASHFLOW_DISPLAY_ORDERED, is_quarterly)
     ratios_data, _ = process_for_export(ratios_rows, RATIOS_DISPLAY_ORDERED, is_quarterly)

@@ -375,7 +375,7 @@ async def handle_stock_price(
     disclaimer_card = {
         'icon': '⚠️',
         'title': 'Educational Analysis' if language == 'en' else 'تحليل تعليمي',
-        'text': 'This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline.' if language == 'en' else 'هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية.'
+        'text': ''
     }
     
     # Follow-up prompt (NEW)
@@ -487,4 +487,3 @@ async def handle_stock_snapshot(
         result['message'] += f"\n\n{heading}\n• Click 'View Chart' for price history\n• Click 'Financials' for performance data"
     
     return result
-

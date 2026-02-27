@@ -1,196 +1,355 @@
-import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db-server";
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export async function GET() {
-    const client = await pool.connect();
+interface SectionDefinition {
+    key: string;
+    title: string;
+    icon: string;
+    color: string;
+    tables: string[];
+}
+
+const SECTION_DEFINITIONS: SectionDefinition[] = [
+    {
+        key: "stocks",
+        title: "Stock Tickers",
+        icon: "📈",
+        color: "emerald",
+        tables: ["market_tickers", "ticker_aliases", "stock_statistics"],
+    },
+    {
+        key: "company_profiles",
+        title: "Company Profiles",
+        icon: "🏢",
+        color: "sky",
+        tables: ["company_profiles"],
+    },
+    {
+        key: "ohlc_history",
+        title: "OHLC Price Data",
+        icon: "📉",
+        color: "orange",
+        tables: ["ohlc_data", "ohlc_history"],
+    },
+    {
+        key: "intraday",
+        title: "Intraday Price Data",
+        icon: "⏱️",
+        color: "amber",
+        tables: ["intraday_data", "intraday_1m", "intraday_2m", "intraday_5m", "intraday_15m", "intraday_30m", "intraday_1h", "intraday_ohlc"],
+    },
+    {
+        key: "financials",
+        title: "Financial Statements",
+        icon: "📑",
+        color: "blue",
+        tables: ["financial_statements", "balance_sheets", "income_statements", "cashflow_statements"],
+    },
+    {
+        key: "ratios",
+        title: "Financial Ratios",
+        icon: "📐",
+        color: "lime",
+        tables: ["financial_ratios", "financial_ratios_extended", "financial_ratios_history"],
+    },
+    {
+        key: "mutual_funds",
+        title: "Mutual Funds",
+        icon: "💼",
+        color: "teal",
+        tables: ["mutual_funds", "fund_aliases"],
+    },
+    {
+        key: "nav_history",
+        title: "Fund NAV History",
+        icon: "📊",
+        color: "cyan",
+        tables: ["nav_history", "fund_nav_history"],
+    },
+    {
+        key: "shareholders",
+        title: "Shareholder Intelligence",
+        icon: "👥",
+        color: "yellow",
+        tables: ["major_shareholders", "ownership_breakdown", "institutional_holders"],
+    },
+    {
+        key: "corporate_actions",
+        title: "Corporate Actions",
+        icon: "📋",
+        color: "violet",
+        tables: ["corporate_actions", "corporate_events", "dividend_history", "split_history"],
+    },
+    {
+        key: "earnings",
+        title: "Earnings Data",
+        icon: "📅",
+        color: "rose",
+        tables: ["earnings_calendar", "earnings_history", "earnings_estimates"],
+    },
+    {
+        key: "analyst_ratings",
+        title: "Analyst Ratings",
+        icon: "⭐",
+        color: "indigo",
+        tables: ["analyst_ratings"],
+    },
+    {
+        key: "insider_data",
+        title: "Insider Transactions",
+        icon: "🔍",
+        color: "orange",
+        tables: ["insider_transactions", "insider_trading"],
+    },
+    {
+        key: "macro_data",
+        title: "Economic Indicators",
+        icon: "🌍",
+        color: "teal",
+        tables: ["economic_indicators", "macro_data", "macro_insights"],
+    },
+    {
+        key: "market_intel",
+        title: "Market Intelligence",
+        icon: "📰",
+        color: "blue",
+        tables: ["market_news", "market_breadth", "order_book_snapshot"],
+    },
+    {
+        key: "etf_index",
+        title: "ETF & Index Data",
+        icon: "📦",
+        color: "emerald",
+        tables: ["etfs", "index_constituents", "index_history"],
+    },
+    {
+        key: "ai_analytics",
+        title: "AI Interaction Data",
+        icon: "🤖",
+        color: "slate",
+        tables: ["chat_messages", "chat_interactions", "chat_sessions", "chat_session_summary", "chat_analytics", "chat_feedback", "guest_sessions", "unresolved_queries"],
+    },
+];
+
+const TABLE_LABELS: Record<string, string> = {
+    market_tickers: "Market Tickers",
+    ticker_aliases: "Ticker Aliases",
+    stock_statistics: "Stock Statistics",
+    company_profiles: "Company Profiles",
+    ohlc_data: "OHLC Base",
+    ohlc_history: "OHLC History",
+    intraday_data: "Intraday Base",
+    intraday_1m: "Intraday 1m",
+    intraday_2m: "Intraday 2m",
+    intraday_5m: "Intraday 5m",
+    intraday_15m: "Intraday 15m",
+    intraday_30m: "Intraday 30m",
+    intraday_1h: "Intraday 1h",
+    intraday_ohlc: "Intraday OHLC",
+    financial_statements: "Financial Statements",
+    balance_sheets: "Balance Sheets",
+    income_statements: "Income Statements",
+    cashflow_statements: "Cashflow Statements",
+    financial_ratios: "Ratios",
+    financial_ratios_extended: "Extended Ratios",
+    financial_ratios_history: "Ratios History",
+    mutual_funds: "Mutual Funds",
+    fund_aliases: "Fund Aliases",
+    nav_history: "NAV History",
+    fund_nav_history: "Fund NAV History",
+    major_shareholders: "Major Shareholders",
+    ownership_breakdown: "Ownership Breakdown",
+    institutional_holders: "Institutional Holders",
+    corporate_actions: "Corporate Actions",
+    corporate_events: "Corporate Events",
+    dividend_history: "Dividend History",
+    split_history: "Split History",
+    earnings_calendar: "Earnings Calendar",
+    earnings_history: "Earnings History",
+    earnings_estimates: "Earnings Estimates",
+    analyst_ratings: "Analyst Ratings",
+    insider_transactions: "Insider Transactions",
+    insider_trading: "Insider Trading",
+    economic_indicators: "Economic Indicators",
+    macro_data: "Macro Data",
+    macro_insights: "Macro Insights",
+    market_news: "Market News",
+    market_breadth: "Market Breadth",
+    order_book_snapshot: "Order Book Snapshot",
+    etfs: "ETFs",
+    index_constituents: "Index Constituents",
+    index_history: "Index History",
+    chat_messages: "Chat Messages",
+    chat_interactions: "Chat Interactions",
+    chat_sessions: "Chat Sessions",
+    chat_session_summary: "Session Summary",
+    chat_analytics: "Chat Analytics",
+    chat_feedback: "Chat Feedback",
+    guest_sessions: "Guest Sessions",
+    unresolved_queries: "Unresolved Queries",
+};
+
+function quoteIdentifier(identifier: string): string {
+    return `"${identifier.replace(/"/g, '""')}"`;
+}
+
+function sqlStringLiteral(value: string): string {
+    return `'${value.replace(/'/g, "''")}'`;
+}
+
+async function countTables(tableNames: string[]): Promise<Record<string, number>> {
+    if (!tableNames.length) return {};
+
+    const query = tableNames
+        .map((tableName) => `SELECT ${sqlStringLiteral(tableName)} AS table_name, COUNT(*)::bigint AS row_count FROM ${quoteIdentifier(tableName)}`)
+        .join(" UNION ALL ");
+
+    const counts: Record<string, number> = {};
 
     try {
-        const inventory: any = {
-            generated_at: new Date().toISOString(),
-            sections: {}
-        };
-
-        // 1. STOCKS OVERVIEW
-        const stockCount = await client.query("SELECT COUNT(*) FROM market_tickers");
-        const stocksWithData = await client.query("SELECT COUNT(DISTINCT symbol) FROM ohlc_data");
-        inventory.sections.stocks = {
-            title: "Stock Tickers",
-            icon: "📈",
-            color: "emerald",
-            total: parseInt(stockCount.rows[0].count),
-            with_data: parseInt(stocksWithData.rows[0].count),
-            coverage: Math.round((parseInt(stocksWithData.rows[0].count) / parseInt(stockCount.rows[0].count) * 100) || 0)
-        };
-
-        // 2. OHLC HISTORY
-        const ohlcCount = await client.query("SELECT COUNT(*) FROM ohlc_data");
-        const ohlcRange = await client.query("SELECT MIN(date), MAX(date) FROM ohlc_data");
-        inventory.sections.ohlc_history = {
-            title: "Historical OHLC",
-            icon: "📊",
-            color: "blue",
-            total_rows: parseInt(ohlcCount.rows[0].count),
-            date_from: ohlcRange.rows[0].min,
-            date_to: ohlcRange.rows[0].max,
-            data_points: parseInt(ohlcCount.rows[0].count) * 5
-        };
-
-        // 3. INTRADAY DATA
-        const intraCount = await client.query("SELECT COUNT(*) FROM intraday_data");
-        const intraSymbols = await client.query("SELECT COUNT(DISTINCT symbol) FROM intraday_data");
-        inventory.sections.intraday = {
-            title: "Intraday Data",
-            icon: "⏱️",
-            color: "orange",
-            total_rows: parseInt(intraCount.rows[0].count),
-            unique_symbols: parseInt(intraSymbols.rows[0].count),
-            data_points: parseInt(intraCount.rows[0].count) * 5
-        };
-
-        // 4. FINANCIAL STATEMENTS
-        const stmtCount = await client.query("SELECT COUNT(*) FROM financial_statements");
-        const stmtBreakdown = await client.query(`
-      SELECT period_type, COUNT(*) as cnt 
-      FROM financial_statements 
-      GROUP BY period_type ORDER BY period_type
-    `);
-        inventory.sections.financials = {
-            title: "Financial Statements",
-            icon: "📑",
-            color: "teal",
-            total_rows: parseInt(stmtCount.rows[0].count),
-            breakdown: stmtBreakdown.rows.reduce((acc: any, r: any) => {
-                acc[r.period_type] = parseInt(r.cnt);
-                return acc;
-            }, {}),
-            data_points: parseInt(stmtCount.rows[0].count) * 10
-        };
-
-        // 5. MUTUAL FUNDS
-        const fundCount = await client.query("SELECT COUNT(*) FROM mutual_funds");
-        const fundsWithMetrics = await client.query("SELECT COUNT(*) FROM mutual_funds WHERE sharpe_ratio IS NOT NULL");
-        inventory.sections.mutual_funds = {
-            title: "Mutual Funds",
-            icon: "💼",
-            color: "indigo",
-            total: parseInt(fundCount.rows[0].count),
-            with_risk_metrics: parseInt(fundsWithMetrics.rows[0].count),
-            coverage: Math.round((parseInt(fundsWithMetrics.rows[0].count) / parseInt(fundCount.rows[0].count) * 100) || 0)
-        };
-
-        // 6. NAV HISTORY
-        const navCount = await client.query("SELECT COUNT(*) FROM nav_history");
-        const navRange = await client.query("SELECT MIN(date), MAX(date) FROM nav_history");
-        inventory.sections.nav_history = {
-            title: "Fund NAV History",
-            icon: "📈",
-            color: "cyan",
-            total_rows: parseInt(navCount.rows[0].count),
-            date_from: navRange.rows[0].min,
-            date_to: navRange.rows[0].max,
-            data_points: parseInt(navCount.rows[0].count) * 2
-        };
-
-        // 7. MAJOR SHAREHOLDERS
-        const shCount = await client.query("SELECT COUNT(*) FROM major_shareholders");
-        const shSymbols = await client.query("SELECT COUNT(DISTINCT symbol) FROM major_shareholders");
-        inventory.sections.shareholders = {
-            title: "Major Shareholders",
-            icon: "👥",
-            color: "amber",
-            total_rows: parseInt(shCount.rows[0].count),
-            unique_stocks: parseInt(shSymbols.rows[0].count)
-        };
-
-        // 8. EARNINGS CALENDAR
-        const earnCount = await client.query("SELECT COUNT(*) FROM earnings_calendar");
-        const earnSymbols = await client.query("SELECT COUNT(DISTINCT symbol) FROM earnings_calendar");
-        inventory.sections.earnings = {
-            title: "Earnings Calendar",
-            icon: "📅",
-            color: "rose",
-            total_rows: parseInt(earnCount.rows[0].count),
-            unique_stocks: parseInt(earnSymbols.rows[0].count)
-        };
-
-        // 9. CORPORATE ACTIONS
-        try {
-            const corpCount = await client.query("SELECT COUNT(*) FROM corporate_actions");
-            inventory.sections.corporate_actions = {
-                title: "Corporate Actions",
-                icon: "📋",
-                color: "violet",
-                total_rows: parseInt(corpCount.rows[0].count)
-            };
-        } catch {
-            inventory.sections.corporate_actions = { title: "Corporate Actions", icon: "📋", color: "violet", total_rows: 0 };
+        const result = await db.query(query);
+        for (const row of result.rows) {
+            counts[String(row.table_name)] = Number(row.row_count ?? 0);
         }
-
-        // 10. FINANCIAL RATIOS
-        try {
-            const ratioCount = await client.query("SELECT COUNT(*) FROM financial_ratios");
-            inventory.sections.ratios = {
-                title: "Financial Ratios",
-                icon: "📐",
-                color: "lime",
-                total_rows: parseInt(ratioCount.rows[0].count)
-            };
-        } catch {
-            inventory.sections.ratios = { title: "Financial Ratios", icon: "📐", color: "lime", total_rows: 0 };
-        }
-
-        // 11. SECTOR CLASSIFICATION
-        try {
-            const sectorCount = await client.query("SELECT COUNT(*) FROM sector_classification");
-            inventory.sections.sectors = {
-                title: "Sector Classification",
-                icon: "🏭",
-                color: "sky",
-                total_rows: parseInt(sectorCount.rows[0].count)
-            };
-        } catch {
-            inventory.sections.sectors = { title: "Sector Classification", icon: "🏭", color: "sky", total_rows: 0 };
-        }
-
-        // 12. FAIR VALUES
-        try {
-            const fvCount = await client.query("SELECT COUNT(*) FROM fair_values");
-            inventory.sections.fair_values = {
-                title: "Fair Values",
-                icon: "💰",
-                color: "yellow",
-                total_rows: parseInt(fvCount.rows[0].count)
-            };
-        } catch {
-            inventory.sections.fair_values = { title: "Fair Values", icon: "💰", color: "yellow", total_rows: 0 };
-        }
-
-        // AGGREGATE METRICS
-        const totalDataPoints =
-            (inventory.sections.ohlc_history?.data_points || 0) +
-            (inventory.sections.intraday?.data_points || 0) +
-            (inventory.sections.financials?.data_points || 0) +
-            (inventory.sections.nav_history?.data_points || 0) +
-            (inventory.sections.shareholders?.total_rows || 0) * 3 +
-            (inventory.sections.earnings?.total_rows || 0) * 5;
-
-        inventory.aggregate = {
-            total_data_points: totalDataPoints,
-            total_stocks: inventory.sections.stocks?.total || 0,
-            total_funds: inventory.sections.mutual_funds?.total || 0,
-            total_tables: 12,
-            database_health: totalDataPoints > 2000000 ? "EXCELLENT" : totalDataPoints > 1000000 ? "GOOD" : "BUILDING"
-        };
-
-        return NextResponse.json(inventory);
+        return counts;
     } catch (error: any) {
-        console.error('Inventory API Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    } finally {
-        client.release();
+        console.warn("[API /inventory WARN] Bulk table counting failed, falling back to per-table count:", error?.message || error);
+
+        for (const tableName of tableNames) {
+            try {
+                const result = await db.query(`SELECT COUNT(*)::bigint AS row_count FROM ${quoteIdentifier(tableName)}`);
+                counts[tableName] = Number(result.rows[0]?.row_count ?? 0);
+            } catch (tableError: any) {
+                console.warn(`[API /inventory WARN] Failed counting table '${tableName}':`, tableError?.message || tableError);
+                counts[tableName] = 0;
+            }
+        }
+    }
+
+    return counts;
+}
+
+export async function GET() {
+    try {
+        const publicTablesResult = await db.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      ORDER BY table_name
+    `);
+
+        const publicTables = publicTablesResult.rows.map((row) => String(row.table_name));
+        const publicTableSet = new Set(publicTables);
+
+        // Count every public table in one SQL pass for accurate, fast totals.
+        const tableCounts = await countTables(publicTables);
+
+        const sections: Record<string, any> = {};
+        const trackedTableSet = new Set<string>();
+
+        for (const definition of SECTION_DEFINITIONS) {
+            let totalRows = 0;
+            let activeTables = 0;
+            const breakdown: Record<string, number> = {};
+
+            for (const tableName of definition.tables) {
+                trackedTableSet.add(tableName);
+                if (!publicTableSet.has(tableName)) continue;
+
+                const rowCount = tableCounts[tableName] ?? 0;
+                if (rowCount <= 0) continue;
+
+                totalRows += rowCount;
+                activeTables += 1;
+                breakdown[TABLE_LABELS[tableName] || tableName] = rowCount;
+            }
+
+            // Remove sections with no DB data.
+            if (totalRows <= 0) continue;
+
+            sections[definition.key] = {
+                title: definition.title,
+                icon: definition.icon,
+                color: definition.color,
+                total_rows: totalRows,
+                active_tables: activeTables,
+                table_count: definition.tables.length,
+                breakdown,
+            };
+        }
+
+        // Include unmapped data so no real DB rows are hidden from totals.
+        const otherTables = publicTables.filter((tableName) => !trackedTableSet.has(tableName));
+        let otherRows = 0;
+        let otherActive = 0;
+        const otherBreakdown = otherTables
+            .map((tableName) => ({
+                tableName,
+                count: tableCounts[tableName] ?? 0,
+            }))
+            .filter((row) => row.count > 0)
+            .sort((a, b) => b.count - a.count);
+
+        for (const row of otherBreakdown) {
+            otherRows += row.count;
+            otherActive += 1;
+        }
+
+        if (otherRows > 0) {
+            sections.other_data = {
+                title: "Other Active Tables",
+                icon: "🧩",
+                color: "slate",
+                total_rows: otherRows,
+                active_tables: otherActive,
+                table_count: otherTables.length,
+                breakdown: Object.fromEntries(
+                    otherBreakdown.slice(0, 12).map((row) => [
+                        TABLE_LABELS[row.tableName] || row.tableName,
+                        row.count,
+                    ])
+                ),
+            };
+        }
+
+        const totalRowsAllTables = Object.values(tableCounts).reduce((sum, count) => sum + count, 0);
+        const activeTablesInDb = Object.values(tableCounts).filter((count) => count > 0).length;
+
+        const aggregate = {
+            total_data_points: totalRowsAllTables,
+            total_stocks: tableCounts.market_tickers ?? 0,
+            total_funds: tableCounts.mutual_funds ?? 0,
+            total_tables: activeTablesInDb,
+            total_tables_in_db: publicTables.length,
+            active_sections: Object.keys(sections).length,
+            database_health: totalRowsAllTables >= 1000000 ? "EXCELLENT" : totalRowsAllTables >= 250000 ? "GOOD" : "BUILDING",
+        };
+
+        return NextResponse.json(
+            {
+                generated_at: new Date().toISOString(),
+                sections,
+                aggregate,
+            },
+            {
+                headers: {
+                    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                    Pragma: "no-cache",
+                    Expires: "0",
+                },
+            }
+        );
+    } catch (error: any) {
+        console.error("[API /inventory ERROR]", error?.message || error);
+        return NextResponse.json(
+            {
+                error: "Failed to load inventory",
+                details: error?.message || "Unknown error",
+            },
+            { status: 500 }
+        );
     }
 }

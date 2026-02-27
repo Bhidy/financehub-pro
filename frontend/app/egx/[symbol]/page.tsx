@@ -51,6 +51,17 @@ const formatDate = (timestamp: number) => {
     });
 };
 
+const normalizeCompanyName = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+    const candidate = value.trim();
+    if (!candidate) return null;
+    if (/^(n\/a|na|none|null|-|--)$/i.test(candidate)) return null;
+    if (/^[A-Z0-9.\-]+\.CA,0P[A-Z0-9]+,\d+$/i.test(candidate)) return null;
+    if (/^[A-Z0-9.\-]+\.CA$/i.test(candidate)) return null;
+    if (/^[A-Z]{3,6}$/.test(candidate) && candidate === candidate.toUpperCase()) return null;
+    return candidate;
+};
+
 // Aurora Gradient SVG Definitions for Charts (Theme-Matched)
 const AuroraGradients = () => (
     <defs>
@@ -198,7 +209,7 @@ const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
 // Premium Card Component - Dual Theme Optimized
 const GlassCard = ({ children, className = '', noPadding = false, premium = false }: any) => (
     <div className={clsx(
-        "relative overflow-hidden rounded-2xl",
+        "relative overflow-hidden rounded-2xl finhub-panel",
         premium
             ? "bg-slate-50 dark:bg-[#151925] border border-slate-200 dark:border-slate-700/50"
             : "bg-white dark:bg-[#151925] border border-slate-200 dark:border-slate-700/30",
@@ -397,7 +408,7 @@ export default function EnterpriseStockProfile() {
     // Loading State
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <div className="w-16 h-16 mx-auto border-4 border-slate-200 dark:border-slate-700 border-t-teal-500 rounded-full animate-spin" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Loading market data...</p>
@@ -409,7 +420,7 @@ export default function EnterpriseStockProfile() {
     // Error State
     if (!data || !data.profile) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center p-4">
+            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center p-4">
                 <GlassCard className="max-w-md text-center">
                     <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Symbol Not Found</h2>
@@ -425,6 +436,12 @@ export default function EnterpriseStockProfile() {
     const p = data.profile;
     const f = data.fundamentals || {};
     const h = data?.history || [];
+    const displayCompanyName =
+        normalizeCompanyName(p.display_name) ||
+        normalizeCompanyName(p.name_en) ||
+        normalizeCompanyName(p.longName) ||
+        normalizeCompanyName(p.shortName) ||
+        symbol;
 
     const isPositive = (p.regularMarketChange || p.change || 0) >= 0;
     const currentPrice = p.regularMarketPrice || p.price || p.last_price;
@@ -440,22 +457,22 @@ export default function EnterpriseStockProfile() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-[#0a0a0f] dark:via-[#0f0f1a] dark:to-[#0a0a0f]">
+        <div className="min-h-[100dvh] finhub-page bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-[#0a0a0f] dark:via-[#0f0f1a] dark:to-[#0a0a0f]">
 
             {/* === PREMIUM HEADER === */}
-            <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
+            <header className="finhub-glass sticky top-0 z-50 bg-white/85 dark:bg-[#081326]/82 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
                         {/* Left: Company Identity */}
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 dark:from-slate-600 dark:to-slate-800 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#14B8A6] via-[#0EA5E9] to-[#0F172A] dark:from-cyan-400 dark:via-[#14B8A6] dark:to-[#0B1121] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-cyan-500/30 ring-1 ring-white/50 dark:ring-cyan-200/20">
                                 {symbol.substring(0, 2)}
                             </div>
                             <div>
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                                        {p.longName || p.shortName || p.name_en || symbol}
+                                        {displayCompanyName}
                                     </h1>
                                     <span className="px-2 py-0.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg">
                                         {symbol}
@@ -527,7 +544,7 @@ export default function EnterpriseStockProfile() {
             </header>
 
             {/* === MAIN CONTENT === */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-10">
 
                 {/* SUMMARY TAB */}
                 {activeTab === 'summary' && (
@@ -1167,7 +1184,7 @@ export default function EnterpriseStockProfile() {
                 {activeTab === 'profile' && (
                     <div className="space-y-6">
                         <GlassCard>
-                            <h3 className="font-bold text-slate-900 dark:text-white mb-4">About {p.longName || p.shortName || symbol}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-white mb-4">About {displayCompanyName}</h3>
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                                 {p.description || p.longBusinessSummary || "Company description not available for this security."}
                             </p>

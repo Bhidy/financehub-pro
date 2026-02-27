@@ -55,6 +55,19 @@ export interface DisclaimerCardProps {
     text?: string;
 }
 
+const BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = [
+    "this is market analysis for educational purposes, not personalized investment advice",
+    "your decision should factor in your individual financial situation, risk tolerance, and investment timeline",
+    "هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+    "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+];
+
+function isBlockedGenericDisclaimer(value?: string): boolean {
+    if (!value) return false;
+    const normalized = value.toLowerCase().replace(/\s+/g, " ").trim();
+    return BLOCKED_GENERIC_DISCLAIMER_SNIPPETS.some((snippet) => normalized.includes(snippet));
+}
+
 // ============================================================================
 // DataCard Component - Current Position Display
 // ============================================================================
@@ -288,8 +301,13 @@ export function MacroScoreCard({
 export function DisclaimerCard({
     icon = '⚠️',
     title = 'Educational Analysis',
-    text = 'This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline.',
+    text = '',
 }: DisclaimerCardProps) {
+    const disclaimerText = String(text || "").trim();
+    if (!disclaimerText || isBlockedGenericDisclaimer(disclaimerText)) {
+        return null;
+    }
+
     return (
         <div className="rounded-lg border-l-4 border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20 p-4">
             <div className="flex items-start gap-3">
@@ -299,7 +317,7 @@ export function DisclaimerCard({
                         {title}
                     </h4>
                     <p className="text-sm text-amber-700 dark:text-amber-300/80">
-                        {text}
+                        {disclaimerText}
                     </p>
                 </div>
             </div>

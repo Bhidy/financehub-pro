@@ -292,7 +292,6 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                     ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb is not None and pb > 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe is not None and pe > 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe is not None and roe != 0 else ("N/A" if language == "en" else "غير متاح"),
-                    ("Yield" if language == "en" else "عائد التوزيعات"): (f"{(row_yield * 100 if row_yield <= 1 else row_yield):.1f}%" if (row_yield := row.get('dividend_yield')) and row_yield > 0 else ""),
                     ("Cap" if language == "en" else "القيمة السوقية"): _format_number(market_cap, language=language)
                 },
                 "mini_scores": {

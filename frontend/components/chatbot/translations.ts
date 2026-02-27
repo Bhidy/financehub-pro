@@ -64,7 +64,7 @@ export const translations = {
             constituents: "Constituents",
             topByWeight: "Top 5 by Weight",
             eduAnalysis: "Educational Analysis",
-            disclaimer: "This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline.",
+            disclaimer: "",
             score: "Score",
             whyGem: "Why it's a gem:",
             // ChatCards Component Translations
@@ -196,7 +196,7 @@ export const translations = {
             constituents: "المكونات",
             topByWeight: "أكبر 5 من حيث الوزن",
             eduAnalysis: "تحليل تعليمي",
-            disclaimer: "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية. يجب أن يأخذ قرارك في الاعتبار وضعك المالي الفردي، وتحمل المخاطر، والجدول الزمني للاستثمار.",
+            disclaimer: "",
             score: "النتيجة",
             whyGem: "لماذا هو جوهرة:",
             // ChatCards Component Translations

@@ -288,6 +288,45 @@ function sanitizeChatResponse(raw: any): ChatResponse {
         || (inferredSuccess && normalizedCards.length > 0
             ? "Analysis is ready in the cards below."
             : "");
+    const followupNoiseTokens = new Set(["ROE", "ROA", "EPS", "PE", "PB", "EGX", "TTM", "NPL", "NIM"]);
+    const seenFollowupPayloads = new Set<string>();
+    const seenFollowupTexts = new Set<string>();
+    const normalizedFollowups = ensureArray(raw?.followups).map((f: any) => {
+        const text = String(f?.text || "").trim();
+        let payload = String(f?.payload || f?.text || "").trim();
+        const anchor_symbol = f?.anchor_symbol ? String(f.anchor_symbol).trim().toUpperCase() : undefined;
+        const anchor_symbols = ensureArray(f?.anchor_symbols).map((s: any) => String(s).trim().toUpperCase()).filter(Boolean);
+
+        // Frontend safety-net: repair accidental self-compare payloads if an alternate anchor exists.
+        if (/^compare\b/i.test(payload)) {
+            const rawTokens = (payload.toUpperCase().match(/\b[A-Z0-9]{2,6}\b/g) || []).filter((tok) => !followupNoiseTokens.has(tok));
+            const first = rawTokens[0];
+            const second = rawTokens[1];
+            const alternate = anchor_symbols.find((s: string) => s && s !== first);
+            if (first && second && first === second && alternate) {
+                payload = `Compare ${first} vs ${alternate}`;
+            }
+        }
+
+        return {
+            ...f,
+            text,
+            payload,
+            type: String(f?.type || "next_step").trim().toLowerCase(),
+            anchor_symbol,
+            anchor_symbols,
+        };
+    }).filter((f: any) => {
+        if (!f?.text || !f?.payload) return false;
+        const payloadKey = String(f.payload).toLowerCase();
+        const textKey = String(f.text).toLowerCase();
+        if (seenFollowupPayloads.has(payloadKey) || seenFollowupTexts.has(textKey)) {
+            return false;
+        }
+        seenFollowupPayloads.add(payloadKey);
+        seenFollowupTexts.add(textKey);
+        return true;
+    });
 
     return {
         ...raw,
@@ -305,14 +344,7 @@ function sanitizeChatResponse(raw: any): ChatResponse {
             ...raw.chart,
             type: canonicalizeChartType(raw?.chart?.type)
         } : raw?.chart,
-        followups: ensureArray(raw?.followups).map((f: any) => ({
-            ...f,
-            text: String(f?.text || "").trim(),
-            payload: String(f?.payload || f?.text || "").trim(),
-            type: String(f?.type || "next_step").trim().toLowerCase(),
-            anchor_symbol: f?.anchor_symbol ? String(f.anchor_symbol).trim().toUpperCase() : undefined,
-            anchor_symbols: ensureArray(f?.anchor_symbols).map((s: any) => String(s).trim().toUpperCase()).filter(Boolean),
-        })),
+        followups: normalizedFollowups,
         insight_cards: ensureArray(raw?.insight_cards),
         stock_list: ensureArray(raw?.stock_list),
         educational_cards: ensureArray(raw?.educational_cards),

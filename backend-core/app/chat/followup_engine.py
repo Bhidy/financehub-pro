@@ -12,6 +12,9 @@ FOLLOWUP_NON_TICKER_TOKENS = {
     "YOY", "QOQ", "GDP", "CBE", "USD", "EGP", "CAGR", "FCF", "EBITDA",
 }
 
+MAX_CHIP_CHARS = 90
+MAX_PAYLOAD_CHARS = 220
+
 # ── DATA STRUCTURES ──
 
 @dataclass
@@ -238,6 +241,37 @@ class FollowUpEngine:
             return "macro_link"
         return "next_step"
 
+    @staticmethod
+    def _action_to_chip_text(payload: str, label: str, symbol: Optional[str]) -> str:
+        p = str(payload or "").strip()
+        l = str(label or "").strip()
+        lower = p.lower()
+        sym = (symbol or "").strip().upper()
+        if not sym:
+            for tok in re.findall(r"\b[A-Z]{3,6}\b", p.upper()):
+                if tok in FOLLOWUP_NON_TICKER_TOKENS:
+                    continue
+                sym = tok
+                break
+        target = sym or "this stock"
+
+        if "chart" in lower:
+            return f"What does {target} chart signal now?"
+        if "financial" in lower:
+            return f"Show {target} financial breakdown"
+        if "dividend" in lower or "yield" in lower:
+            return f"How strong are {target} dividends?"
+        if "technical" in lower or "rsi" in lower or "macd" in lower:
+            return f"What do {target} technicals indicate?"
+        if "safe" in lower or "risk" in lower or "safety" in lower:
+            return f"How safe is {target} right now?"
+        if "compare" in lower or " vs " in lower:
+            return "How does it compare to peers?"
+
+        # Last fallback: use cleaned action label if helpful; otherwise payload.
+        fallback = str(l or p).strip()
+        return fallback if fallback else "What should we analyze next?"
+
     def _followups_from_actions(
         self,
         actions: Optional[List[Dict]],
@@ -256,6 +290,12 @@ class FollowUpEngine:
             payload = self._sanitize_prompt(str(payload_raw), symbol)
             if not payload:
                 continue
+            display_text = self._sanitize_prompt(
+                self._action_to_chip_text(payload, str(action.get("label") or ""), symbol),
+                symbol
+            )
+            if not display_text:
+                display_text = payload
 
             key = payload.lower()
             if key in seen_payloads:
@@ -263,8 +303,8 @@ class FollowUpEngine:
             seen_payloads.add(key)
 
             out.append({
-                "text": payload,
-                "type": self._infer_followup_type(payload),
+                "text": display_text,
+                "type": self._infer_followup_type(display_text),
                 "payload": payload
             })
             if len(out) >= 3:
@@ -318,6 +358,27 @@ class FollowUpEngine:
             symbol
         )
 
+    @classmethod
+    def _is_valid_followup_entry(cls, item: Dict, symbol: Optional[str]) -> bool:
+        text = cls._normalize_text(item.get("text"))
+        payload = cls._normalize_text(item.get("payload") or item.get("text"))
+        if not text or not payload:
+            return False
+        if len(text) > MAX_CHIP_CHARS or len(payload) > MAX_PAYLOAD_CHARS:
+            return False
+        if "\n" in text or "\n" in payload:
+            return False
+
+        # If we have an active symbol, reject entries that still mention a different ticker.
+        active = (symbol or "").strip().upper()
+        if active:
+            for token in re.findall(r"\b[A-Z]{3,6}\b", payload.upper()):
+                if token in FOLLOWUP_NON_TICKER_TOKENS:
+                    continue
+                if token != active:
+                    return False
+        return True
+
     async def generate(
         self,
         ai_response: str,
@@ -331,23 +392,21 @@ class FollowUpEngine:
         Main entry point. Returns 3 follow-up questions formatted for the frontend chips.
         """
         try:
-            intent_name = str((intent or {}).get("intent") or "").upper()
-            market_wide_intents = {
-                "MARKET_SUMMARY", "MARKET_STATUS", "TOP_GAINERS", "TOP_LOSERS",
-                "MARKET_MOST_ACTIVE", "SECTOR_STOCKS"
-            }
-            if actions and (not symbol or intent_name in market_wide_intents):
+            if actions:
                 action_followups = self._followups_from_actions(actions, symbol=symbol)
                 if action_followups:
                     return action_followups
 
-            return await self._generate_with_llm(
+            llm_followups = await self._generate_with_llm(
                 ai_response,
                 conversation_history,
                 intent,
                 symbol,
                 language
             )
+            if llm_followups and all(self._is_valid_followup_entry(f, symbol) for f in llm_followups):
+                return llm_followups
+            return self._rule_based_fallback(ai_response, symbol)
         except Exception as e:
             logger.error(f"Follow-up generation error: {e}")
             return self._rule_based_fallback(ai_response, symbol)
@@ -493,6 +552,24 @@ Return ONLY the JSON array, no other text.'''
                 "text": self._sanitize_prompt(prompt, ticker),
                 "type": "macro_link",
                 "payload": self._sanitize_prompt(prompt, ticker)
+            })
+
+        # Guarantee 3 clickable followups for UI consistency.
+        default_pool = [
+            "Which stock should we drill into next?",
+            "Do you want a peer comparison next?",
+            "Should we focus on risks or catalysts first?",
+        ]
+        for prompt in default_pool:
+            if len(questions) >= 3:
+                break
+            clean = self._sanitize_prompt(prompt, ticker)
+            if any((q.get("payload") or "").lower() == clean.lower() for q in questions):
+                continue
+            questions.append({
+                "text": clean,
+                "type": "next_step",
+                "payload": clean
             })
 
         return questions[:3]

@@ -409,11 +409,11 @@ TEXT_PHRASE_REPLACEMENTS = (
 
 UNWANTED_OPENING_PATTERNS = (
     re.compile(
-        r"^\s*Here is the complete picture based on the (?:latest available data|today(?:'|’)s session activity)\.\s*Let(?:'|’)s go through the numbers step-by-step\.?\s*",
+        r"Here is the complete picture based on the (?:latest available data|today(?:'|’)s session activity)\.\s*Let(?:'|’)s go through the numbers step-by-step\.?\s*",
         re.IGNORECASE,
     ),
     re.compile(
-        r"^\s*إليك الصورة الكاملة بناءً على (?:أحدث البيانات المتاحة|نشاط جلسة اليوم)\.\s*دعنا نستعرض الأرقام خطوة بخطوة\.?\s*"
+        r"إليك الصورة الكاملة بناءً على (?:أحدث البيانات المتاحة|نشاط جلسة اليوم)\.\s*دعنا نستعرض الأرقام خطوة بخطوة\.?\s*"
     ),
 )
 

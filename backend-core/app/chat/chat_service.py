@@ -1306,6 +1306,35 @@ class ChatService:
             if attr_val is not None:
                 setattr(response, attr_name, self._normalize_payload_value(attr_val, language))
 
+        # Global hardening: every response should include a usable narrative layer.
+        if not response.conversational_text and response.message_text:
+            response.conversational_text = response.message_text
+
+        if response.structured_narrative is None:
+            response.structured_narrative = StructuredNarrative(
+                core_narrative=response.conversational_text or response.message_text,
+                key_insight=response.key_insight,
+                follow_up_prompt=response.follow_up_prompt,
+            )
+        elif isinstance(response.structured_narrative, dict):
+            response.structured_narrative.setdefault(
+                "core_narrative",
+                response.conversational_text or response.message_text,
+            )
+            if not response.structured_narrative.get("key_insight") and response.key_insight:
+                response.structured_narrative["key_insight"] = response.key_insight
+            if not response.structured_narrative.get("follow_up_prompt") and response.follow_up_prompt:
+                response.structured_narrative["follow_up_prompt"] = response.follow_up_prompt
+        else:
+            if not getattr(response.structured_narrative, "core_narrative", None):
+                response.structured_narrative.core_narrative = (
+                    response.conversational_text or response.message_text
+                )
+            if not getattr(response.structured_narrative, "key_insight", None) and response.key_insight:
+                response.structured_narrative.key_insight = response.key_insight
+            if not getattr(response.structured_narrative, "follow_up_prompt", None) and response.follow_up_prompt:
+                response.structured_narrative.follow_up_prompt = response.follow_up_prompt
+
         return response
 
     @staticmethod

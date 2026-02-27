@@ -421,6 +421,8 @@ async def ai_chat_endpoint(
             
             return response_dict
 
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()

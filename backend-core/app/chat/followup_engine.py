@@ -7,6 +7,11 @@ from .llm_clients import MultiProviderLLM
 
 logger = logging.getLogger(__name__)
 
+FOLLOWUP_NON_TICKER_TOKENS = {
+    "ROE", "ROA", "EPS", "P", "PE", "PB", "EGX", "NIM", "NPL", "TTM",
+    "YOY", "QOQ", "GDP", "CBE", "USD", "EGP", "CAGR", "FCF", "EBITDA",
+}
+
 # ── DATA STRUCTURES ──
 
 @dataclass
@@ -180,8 +185,46 @@ class FollowUpEngine:
         if not value:
             return ""
         text = str(value)
+        # Remove leading emoji/icons and numbered bullet markers from chip strings.
+        text = re.sub(r"^[^\w\u0600-\u06FF]+", "", text)
         text = re.sub(r"^(?:\d+[.)]\s*|[-*]\s*)", "", text.strip())
         text = re.sub(r"\s+", " ", text).strip()
+        return text
+
+    @staticmethod
+    def _normalize_ticker_tokens(text: str, symbol: Optional[str]) -> str:
+        """Repair hallucinated ticker tokens in follow-up text."""
+        if not text:
+            return text
+
+        active = (symbol or "").strip().upper()
+
+        def _replace(match: re.Match) -> str:
+            tok = str(match.group("tok") or "").upper()
+            poss = str(match.group("poss") or "")
+            if tok in FOLLOWUP_NON_TICKER_TOKENS:
+                return match.group(0)
+
+            if active:
+                # If a ticker-like token is not the active symbol, rewrite to active symbol.
+                if tok != active:
+                    return f"{active}{poss}"
+                return match.group(0)
+
+            # No active symbol context: avoid sending hard ticker tokens that may not resolve.
+            return f"this stock{poss}"
+
+        return re.sub(
+            r"\b(?P<tok>[A-Z]{3,6})(?P<poss>['’]s)?\b",
+            _replace,
+            text
+        )
+
+    @classmethod
+    def _sanitize_prompt(cls, prompt: str, symbol: Optional[str]) -> str:
+        text = cls._normalize_text(prompt)
+        text = cls._normalize_ticker_tokens(text, symbol)
+        text = re.sub(r"\s{2,}", " ", text).strip()
         return text
 
     @staticmethod
@@ -212,7 +255,7 @@ class FollowUpEngine:
             chip = query
 
         if chip:
-            return chip
+            return cls._sanitize_prompt(chip, symbol)
 
         fallback_symbol = symbol or "this stock"
         fallback_by_type = {
@@ -225,7 +268,10 @@ class FollowUpEngine:
             "sector_view": f"Is this specific to {fallback_symbol} or the sector?",
             "next_step": f"What should I monitor next for {fallback_symbol}?",
         }
-        return fallback_by_type.get(followup_type, "What should we analyze next?")
+        return cls._sanitize_prompt(
+            fallback_by_type.get(followup_type, "What should we analyze next?"),
+            symbol
+        )
 
     async def generate(
         self,
@@ -312,17 +358,23 @@ Return ONLY the JSON array, no other text.'''
         followups = []
         for i, item in enumerate(parsed[:3]):
             followup_type = item.get("type", "general")
-            click_prompt = self._resolve_click_prompt(
+            display_prompt = self._resolve_click_prompt(
                 chip_text=item.get("chip"),
                 query_text=item.get("query"),
                 followup_type=followup_type,
                 symbol=symbol
             )
+            payload_prompt = self._sanitize_prompt(
+                self._normalize_text(item.get("query")) or display_prompt,
+                symbol
+            )
+            if not payload_prompt:
+                payload_prompt = display_prompt
             followups.append({
-                "text": click_prompt,
+                "text": display_prompt,
                 "type": followup_type,
-                # Keep payload aligned with visible chip text to guarantee click intent fidelity.
-                "payload": click_prompt
+                # Use a route-friendly prompt while keeping displayed chip concise.
+                "payload": payload_prompt
             })
             
         if not followups:
@@ -345,18 +397,18 @@ Return ONLY the JSON array, no other text.'''
         if re.search(r"\d{2,3}/100", ai_response) and ticker:
             prompt = f"What's inside the {ticker} score?"
             questions.append({
-                "text": prompt,
+                "text": self._sanitize_prompt(prompt, ticker),
                 "type": "deeper_dive",
-                "payload": prompt
+                "payload": self._sanitize_prompt(prompt, ticker)
             })
 
         # Rule: If risk mentioned → probe it
         if any(w in response_lower for w in ["risk", "concern", "watch", "caution"]):
             prompt = "How serious are the risks?"
             questions.append({
-                "text": prompt,
+                "text": self._sanitize_prompt(prompt, ticker),
                 "type": "risk_probe",
-                "payload": prompt
+                "payload": self._sanitize_prompt(prompt, ticker)
             })
 
         # Rule: If valuation mentioned → ask about catalyst
@@ -364,27 +416,27 @@ Return ONLY the JSON array, no other text.'''
             name = ticker or "this"
             prompt = f"What unlocks {name}?"
             questions.append({
-                "text": prompt,
+                "text": self._sanitize_prompt(prompt, ticker),
                 "type": "catalyst",
-                "payload": prompt
+                "payload": self._sanitize_prompt(prompt, ticker)
             })
 
         # Rule: Comparison always available
         if ticker and len(questions) < 3:
             prompt = f"Compare {ticker} to peers"
             questions.append({
-                "text": prompt,
+                "text": self._sanitize_prompt(prompt, ticker),
                 "type": "comparison",
-                "payload": prompt
+                "payload": self._sanitize_prompt(prompt, ticker)
             })
 
         # Rule: Macro always available
         if len(questions) < 3:
             prompt = "What's the macro picture?"
             questions.append({
-                "text": prompt,
+                "text": self._sanitize_prompt(prompt, ticker),
                 "type": "macro_link",
-                "payload": prompt
+                "payload": self._sanitize_prompt(prompt, ticker)
             })
 
         return questions[:3]

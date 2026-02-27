@@ -491,6 +491,28 @@ class ChatService:
         self.claude_orchestrator = get_claude_orchestrator() if self.USE_CLAUDE_ROUTING else None
 
     @staticmethod
+    def _canonical_card_type_string(value: str) -> str:
+        """Normalize legacy card-type spellings to canonical frontend tokens."""
+        if value is None:
+            return value
+        raw = str(value).strip()
+        if not raw:
+            return raw
+
+        # Legacy serialized Enum formats:
+        # - CardType.STATS
+        # - cardtype.stats
+        m_lower = re.fullmatch(r"(?i)cardtype\.([a-z_]+)", raw)
+        if m_lower:
+            return m_lower.group(1).lower()
+
+        m_upper = re.fullmatch(r"CardType\.([A-Z_]+)", raw)
+        if m_upper:
+            return m_upper.group(1).lower()
+
+        return raw
+
+    @staticmethod
     def _contains_arabic_text(text: Optional[str]) -> bool:
         return bool(text and ARABIC_CHAR_RE.search(text))
 
@@ -989,6 +1011,7 @@ class ChatService:
             return [cls._normalize_payload_value(v, language) for v in value]
 
         if isinstance(value, str):
+            value = cls._canonical_card_type_string(value)
             if value.startswith("http://") or value.startswith("https://"):
                 return value
             return cls._normalize_display_text(value, language)
@@ -1079,6 +1102,37 @@ class ChatService:
         has_context_term = any(term in lower for term in (pronoun_terms + expansion_terms))
         # Conservative: only short turns qualify to avoid leaking prior context
         return token_count <= 8 and has_context_term
+
+    @staticmethod
+    def _looks_like_analytic_followup(message: Optional[str]) -> bool:
+        """Detect longer follow-up style questions that still depend on prior context."""
+        if not message:
+            return False
+        lower = str(message).strip().lower()
+        if not lower:
+            return False
+
+        keyword_patterns = [
+            r"\bwhat(?:'|’)s driving\b",
+            r"\bcatalyst",
+            r"\bcompare\b",
+            r"\bpeer",
+            r"\brisk",
+            r"\bvaluation\b",
+            r"\bmargin",
+            r"\bmacro\b",
+            r"\bsector\b",
+            r"ايه.*السبب",
+            r"ما.*السبب",
+            r"مقارنة",
+            r"المخاطر",
+            r"التقييم",
+            r"الهامش",
+            r"القطاع",
+        ]
+        if any(re.search(p, lower, re.IGNORECASE) for p in keyword_patterns):
+            return True
+        return "?" in lower or "؟" in lower
 
     async def _hydrate_conversation_memory(
         self,
@@ -2298,6 +2352,27 @@ class ChatService:
                 print(f"[ChatService] 🎯 Intent override: {intent.value} -> {overridden_intent.value}")
                 intent = overridden_intent
             entities = overridden_entities
+
+            # UNKNOWN intent salvage:
+            # If a follow-up chip phrasing slips through routing, recover deterministically
+            # using symbol/context cues instead of returning generic UNKNOWN.
+            if intent == Intent.UNKNOWN:
+                extracted = extract_potential_symbols(message)
+                recovered_symbol = extracted[0] if extracted else None
+                followup_like = (
+                    self._is_context_dependent_followup(message)
+                    or self._looks_like_analytic_followup(message)
+                )
+                if recovered_symbol:
+                    intent = Intent.STOCK_SNAPSHOT
+                    entities["symbol"] = recovered_symbol
+                elif followup_like and context_dict.get("last_symbol"):
+                    intent = Intent.FOLLOW_UP
+                    entities["symbol"] = context_dict.get("last_symbol")
+                    if context_dict.get("last_market") and not entities.get("market_code"):
+                        entities["market_code"] = context_dict.get("last_market")
+                elif re.search(r"\b(top gainers?|top losers?|market|macro|sector|egx)\b", message, re.IGNORECASE):
+                    intent = Intent.MARKET_SUMMARY
 
             # Guardrail: prevent stale or hallucinated symbol carryover on non-symbol intents.
             candidate_symbol = entities.get('symbol')

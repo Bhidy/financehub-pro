@@ -1566,9 +1566,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     className="flex flex-col"
                 >
                     {/* Stock Header (if present) */}
-                    {safeResponse?.cards?.filter((c: any) => c.type === 'stock_header').length > 0 && (
+                    {safeResponse?.cards?.filter((c: any) => String(c?.type || "").toLowerCase() === 'stock_header').length > 0 && (
                         <motion.div variants={staggerItem} className="mb-3 mt-1">
-                            <ChatCards cards={safeResponse.cards.filter((c: any) => c.type === 'stock_header')} language={lang} />
+                            <ChatCards cards={safeResponse.cards.filter((c: any) => String(c?.type || "").toLowerCase() === 'stock_header')} language={lang} />
                         </motion.div>
                     )}
 
@@ -1754,9 +1754,8 @@ export function FollowUpChips({
                         <button
                             key={`followup-${idx}`}
                             onClick={() => {
-                                // Always submit exactly what the user clicked (chip text).
-                                // Fallback to payload only if text is unexpectedly empty.
-                                const selectedPrompt = String(chip.text || chip.payload || "").trim();
+                                // Prefer backend payload (route-friendly), fallback to visible chip text.
+                                const selectedPrompt = String(chip.payload || chip.text || "").trim();
                                 if (selectedPrompt && onAction) {
                                     onAction(selectedPrompt);
                                 }

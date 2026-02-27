@@ -211,6 +211,33 @@ export interface Message {
 
 const ensureArray = <T = any>(value: any): T[] => Array.isArray(value) ? value : [];
 
+function canonicalizeCardType(value: any): string {
+    const raw = String(value ?? "").trim();
+    if (!raw) return raw;
+    // Legacy backend enum serialization variants:
+    // - CardType.STATS
+    // - cardtype.stats
+    if (/^cardtype\./i.test(raw)) {
+        return raw.replace(/^cardtype\./i, "").toLowerCase();
+    }
+    if (/^CardType\./.test(raw)) {
+        return raw.replace(/^CardType\./, "").toLowerCase();
+    }
+    return raw.toLowerCase();
+}
+
+function canonicalizeChartType(value: any): string {
+    const raw = String(value ?? "").trim();
+    if (!raw) return raw;
+    if (/^charttype\./i.test(raw)) {
+        return raw.replace(/^charttype\./i, "").toLowerCase();
+    }
+    if (/^ChartType\./.test(raw)) {
+        return raw.replace(/^ChartType\./, "").toLowerCase();
+    }
+    return raw.toLowerCase();
+}
+
 function sanitizeChatResponse(raw: any): ChatResponse {
     const metaRaw = (raw && typeof raw.meta === "object") ? raw.meta : {};
     const confidence = Number(metaRaw?.confidence);
@@ -225,8 +252,22 @@ function sanitizeChatResponse(raw: any): ChatResponse {
         language: (raw?.language === "ar" || raw?.language === "en" || raw?.language === "mixed")
             ? raw.language
             : "en",
-        cards: ensureArray<Card>(raw?.cards),
+        cards: ensureArray<Card>(raw?.cards).map((c: any) => ({
+            ...c,
+            type: canonicalizeCardType(c?.type),
+            data: (c?.data && typeof c.data === "object") ? c.data : {}
+        })),
         actions: ensureArray<Action>(raw?.actions),
+        chart: raw?.chart ? {
+            ...raw.chart,
+            type: canonicalizeChartType(raw?.chart?.type)
+        } : raw?.chart,
+        followups: ensureArray(raw?.followups).map((f: any) => ({
+            ...f,
+            text: String(f?.text || "").trim(),
+            payload: String(f?.payload || f?.text || "").trim(),
+            type: String(f?.type || "next_step").trim().toLowerCase(),
+        })),
         insight_cards: ensureArray(raw?.insight_cards),
         stock_list: ensureArray(raw?.stock_list),
         educational_cards: ensureArray(raw?.educational_cards),

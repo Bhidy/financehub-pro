@@ -886,7 +886,7 @@ const MessageRenderer = memo(({
                                 'stock_header'
                             ];
                             const filteredCards = (m.response?.cards || []).filter(
-                                (card: any) => !worldClassHandledTypes.includes(card.type)
+                                (card: any) => !worldClassHandledTypes.includes(String(card?.type || "").toLowerCase())
                             );
                             return filteredCards.length > 0 ? (
                                 <motion.div

@@ -1738,6 +1738,34 @@ class ChatService:
         if is_margins_decline:
             return Intent.FIN_MARGINS, updated
 
+        # Deterministic value-screener override:
+        # Keep plural "undervalued / low P/E" discovery prompts in screener flows
+        # and prevent them from being misrouted into single-stock statistics.
+        is_value_screener_query = (
+            bool(re.search(
+                r"\b(undervalued|cheap|value)\b.*\b(stocks?|companies|names|ideas|screen|screener|list)\b",
+                msg_lower
+            ))
+            or bool(re.search(
+                r"\b(stocks?|companies|names|ideas|screen|screener|list)\b.*\b(undervalued|cheap|value)\b",
+                msg_lower
+            ))
+            or bool(re.search(
+                r"\b(low|lowest)\s*(p/?e|pe)\b.*\b(stocks?|companies|names|ideas)\b",
+                msg_lower
+            ))
+            or bool(re.search(
+                r"\b(stocks?|companies|names|ideas)\b.*\b(low|lowest)\s*(p/?e|pe)\b",
+                msg_lower
+            ))
+            or any(tok in msg for tok in [
+                "أسهم رخيصة", "الأسهم الرخيصة", "أسهم مقيمة بأقل", "أسهم أقل من قيمتها",
+                "فرص قيمة", "قائمة الأسهم", "فحص الأسهم", "أسهم منخفضة مكرر الربحية"
+            ])
+        )
+        if is_value_screener_query and not updated.get("symbol"):
+            return Intent.SCREENER_VALUE, updated
+
         # Deterministic stats/ratios override:
         # Ensure ratio-centric queries (ROE, D/E, P/E, P/B, "financial statistics")
         # route to STOCK_STAT instead of drifting to FINANCIALS/UNKNOWN.
@@ -1763,7 +1791,7 @@ class ChatService:
             ))
             or any(tok in msg for tok in ["قوائم مالية", "القوائم المالية", "قائمة الدخل", "الميزانية", "التدفقات النقدية", "سنوي", "ربع سنوي"])
         )
-        if is_ratio_metric_query and not is_statement_query:
+        if is_ratio_metric_query and not is_statement_query and not is_value_screener_query:
             if not updated.get("symbol"):
                 potentials = extract_potential_symbols(message)
                 if potentials:

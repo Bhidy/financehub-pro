@@ -413,6 +413,10 @@ BANK_SECTOR_HINTS = (
     "financials - banks", "banking", "بنوك", "البنوك", "مصارف", "خدمات مالية",
 )
 
+KNOWN_BANK_SYMBOL_OVERRIDES = {
+    "COMI", "CIB", "QNBA", "HDBK", "EXPA", "ABUK", "FAIT", "CIEB", "ADIB", "SAIB",
+}
+
 # Terms that indicate a cross-sector causal mismatch when sector is banking.
 BANK_FORBIDDEN_DRIVER_PATTERNS = (
     (re.compile(r"\braw materials?\b", re.IGNORECASE), "raw materials"),
@@ -586,12 +590,17 @@ class ChatService:
     @classmethod
     def _extract_sector_context(cls, entities: Dict[str, Any], result: Dict[str, Any]) -> str:
         sector_candidates: List[str] = []
+        symbol_candidates: List[str] = []
+        name_candidates: List[str] = []
 
         if isinstance(entities, dict):
             for key in ("sector", "sector_name"):
                 value = entities.get(key)
                 if value:
                     sector_candidates.append(str(value))
+            entity_symbol = entities.get("symbol")
+            if entity_symbol:
+                symbol_candidates.append(str(entity_symbol))
 
         cards_payload = result.get("cards") if isinstance(result, dict) else None
         if isinstance(cards_payload, list):
@@ -607,6 +616,22 @@ class ChatService:
                 card_sector = data.get("sector") or data.get("sector_name")
                 if card_sector:
                     sector_candidates.append(str(card_sector))
+                card_symbol = data.get("symbol")
+                if card_symbol:
+                    symbol_candidates.append(str(card_symbol))
+                card_name = data.get("name") or data.get("name_en") or data.get("name_ar")
+                if card_name:
+                    name_candidates.append(str(card_name))
+
+        # Hard guard for known EGX banking tickers and bank-named entities.
+        for raw_symbol in symbol_candidates:
+            canonical = cls._canonical_symbol(raw_symbol)
+            if canonical in KNOWN_BANK_SYMBOL_OVERRIDES:
+                return "Banks"
+        for raw_name in name_candidates:
+            lowered = str(raw_name).lower()
+            if "bank" in lowered or "بنك" in str(raw_name):
+                return "Banks"
 
         for raw in sector_candidates:
             normalized = cls._normalize_sector_name(raw)

@@ -1738,6 +1738,25 @@ class ChatService:
         if is_margins_decline:
             return Intent.FIN_MARGINS, updated
 
+        # Deterministic dividend screener override:
+        # Keep "high dividend/yield stocks" prompts in screener mode (not single-stock dividends history).
+        is_dividend_screener_query = (
+            bool(re.search(
+                r"\b(high|top|best)\s+dividend(?:\s+yield)?\s+(stocks?|companies|names)\b",
+                msg_lower
+            ))
+            or bool(re.search(
+                r"\b(dividend\s+leaders?|income\s+stocks?|high[-\s]?yield\s+stocks?)\b",
+                msg_lower
+            ))
+            or any(tok in msg for tok in [
+                "أعلى عائد توزيعات", "أسهم توزيعات", "أفضل أسهم توزيعات", "أسهم دخل",
+                "توزيعات مرتفعة", "أسهم بعائد مرتفع"
+            ])
+        )
+        if is_dividend_screener_query and not updated.get("symbol"):
+            return Intent.DIVIDEND_LEADERS, updated
+
         # Deterministic value-screener override:
         # Keep plural "undervalued / low P/E" discovery prompts in screener flows
         # and prevent them from being misrouted into single-stock statistics.

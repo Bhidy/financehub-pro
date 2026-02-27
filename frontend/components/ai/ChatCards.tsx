@@ -2878,6 +2878,7 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
         case "news_list":
             return <NewsListCard title={card.title} data={card.data as any} language={language} />;
         case "screener_results":
+        case "stock_list":
         case "sector_list": // Reuse screener card or fallback?
             // Sector list data usually different. Fallback to screener if compatible or TODO. 
             // ScreenerResultsCard expects { stocks: [], metric: str }

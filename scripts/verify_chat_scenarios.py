@@ -177,5 +177,16 @@ def main():
     run_test("29. Arabic Price", "سعر سهم التجاري", "STOCK_PRICE")
     run_test("30. Arabic Comparison", "قارن بين التجاري والسويدي", "COMPARE_STOCKS")
 
+    # 11. Follow-up reliability from screener/list context
+    follow_sid = run_test("31a. Screener Seed (Undervalued)", "Get me the most undervalued stocks", "SCREENER_VALUE")
+    run_test("31b. Screener Follow-up Risk", "How serious are the risks?", None, follow_sid)
+    run_test("31c. Screener Follow-up Catalyst", "What unlocks this?", None, follow_sid)
+    run_test(
+        "31d. Long Natural-Language Compare Guard",
+        "How does the stock in question compare to its sector peers in terms of valuation and growth?",
+        None,
+        follow_sid
+    )
+
 if __name__ == "__main__":
     main()

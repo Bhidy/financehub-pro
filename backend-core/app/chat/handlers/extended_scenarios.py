@@ -1149,6 +1149,23 @@ async def handle_undervalued_stocks(
             "الترتيب يوازن بين الخصم والجودة",
         ]
 
+        actions: List[Dict[str, Any]] = []
+        if stocks:
+            top = stocks[0]["ticker"]
+            second = stocks[1]["ticker"] if len(stocks) > 1 else top
+            if language == "ar":
+                actions = [
+                    {"label": f"تحليل {top}", "label_ar": f"تحليل {top}", "action_type": "query", "payload": f"حلل {top}"},
+                    {"label": f"مخاطر {top}", "label_ar": f"مخاطر {top}", "action_type": "query", "payload": f"ما هي مخاطر {top}؟"},
+                    {"label": f"قارن {top} و {second}", "label_ar": f"قارن {top} و {second}", "action_type": "query", "payload": f"قارن {top} مقابل {second}"},
+                ]
+            else:
+                actions = [
+                    {"label": f"Analyze {top}", "label_ar": f"تحليل {top}", "action_type": "query", "payload": f"Analyze {top}"},
+                    {"label": f"{top} risk check", "label_ar": f"مخاطر {top}", "action_type": "query", "payload": f"How serious are the risks for {top}?"},
+                    {"label": f"Compare {top} vs {second}", "label_ar": f"قارن {top} مع {second}", "action_type": "query", "payload": f"Compare {top} vs {second}"},
+                ]
+
         return {
             "success": True,
             "conversational_text": conversational_text,
@@ -1224,6 +1241,7 @@ async def handle_undervalued_stocks(
                 if language == "en"
                 else f"هل ترغب في تحليل أعمق لأساسيات سهم {top_ticker}؟"
             ),
+            "actions": actions,
         }
     except Exception as e:
         logger.error(f"Undervalued screener handler error: {e}")

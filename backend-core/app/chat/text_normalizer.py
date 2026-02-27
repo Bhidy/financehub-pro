@@ -189,6 +189,9 @@ SYMBOL_STOPWORDS = {
     # Paraphraser Franco-Arabic artifacts (prevent false symbol extraction from slang translations)
     'hal', 'fel', 'eih', 'ana', 'enta', 'elly', 'mesh', 'msh', 'kda', 'bas',
     'leh', 'enta', 'shuf', 'analysis', 'ouz', 'aoz',
+    # Extra lexical noise frequently mistaken as tickers in follow-up/compare queries
+    'does', 'peers', 'terms', 'valuation', 'growth', 'compare', 'against',
+    'specific', 'catalysts', 'catalyst', 'driving', 'unlocks',
 }
 
 # Arabic stopwords for N-gram filtering
@@ -278,8 +281,9 @@ def extract_potential_symbols(text: str) -> list[str]:
     Filters out common stopwords to prevent false matches.
     """
     symbols = []
-    text_upper = text.upper()
-    text_lower = text.lower()
+    original_text = str(text or "")
+    text_lower = original_text.lower()
+    text_upper = original_text.upper()
     
     # 1. Check for KNOWN ALIASES first (highest priority)
     for alias, symbol in KNOWN_ALIASES.items():
@@ -292,9 +296,12 @@ def extract_potential_symbols(text: str) -> list[str]:
     
     # 3. 3-5 uppercase letters (EGX: COMI, SWDY, TMGH)
     # But filter out stopwords
-    egx_pattern = re.findall(r'\b([A-Z]{3,5})\b', text_upper)
+    # IMPORTANT: run on original text (not uppercased full sentence) to avoid
+    # converting normal words into fake ticker candidates.
+    egx_pattern = re.findall(r'\b([A-Z]{3,6}(?:\.[A-Z]{1,3})?)\b', original_text)
     for sym in egx_pattern:
-        if sym.lower() not in SYMBOL_STOPWORDS:
+        canon = sym.split('.', 1)[0]
+        if canon.lower() not in SYMBOL_STOPWORDS:
             symbols.append(sym)
     
     # 4. Arabic multi-word phrases (NEW - for names like "المصرية للاتصالات")
@@ -302,5 +309,4 @@ def extract_potential_symbols(text: str) -> list[str]:
     symbols.extend(arabic_phrases)
     
     return list(dict.fromkeys(symbols))  # Deduplicate while preserving order
-
 

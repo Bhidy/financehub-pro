@@ -1,42 +1,70 @@
-
-import asyncio
-import sys
 import os
-import re
+import sys
 
 # Add backend-core to path
-sys.path.append(os.path.join(os.getcwd(), 'backend-core'))
+sys.path.append(os.path.join(os.getcwd(), "backend-core"))
 
 from app.chat.text_normalizer import extract_potential_symbols
-from app.chat.chat_service import ChatService
 
-# Mock Connection
-class MockConn:
-    def __init__(self):
-        self._pool = None
-    async def fetch(self, query, *args): return []
-    async def fetchval(self, query, *args): return None
-    async def fetchrow(self, query, *args): return None
 
-async def reproduction():
-    print("--- REPRODUCTION: 'Compare JUFO to its competitors' ---")
-    query = "Compare JUFO to its competitors"
-    
-    # 1. Test Regex Extraction
-    print(f"Query: '{query}'")
-    symbols = extract_potential_symbols(query)
-    print(f"Extracted Symbols (Regex): {symbols}")
-    
-    if "ITS" in symbols:
-        print("❌ CRITICAL FAIL: 'ITS' extracted as symbol.")
-    else:
-        print("✅ Regex PASS: 'ITS' ignored.")
+def run_case(text: str, must_include=None, must_exclude=None) -> bool:
+    must_include = must_include or []
+    must_exclude = must_exclude or []
+    extracted = [str(x).upper() for x in extract_potential_symbols(text)]
+    ok = True
 
-    # 2. Test specific ChatService logic (if possible without full DB)
-    # The logic in ChatService._is_symbol_like_token might be relevant
-    
-    # 3. Test Stopwords List (if accessible)
-    # Checking if 'its' is in common exclusion entries
-    
+    for symbol in must_include:
+        if symbol.upper() not in extracted:
+            print(f"❌ Missing expected symbol '{symbol}' | query='{text}' | extracted={extracted}")
+            ok = False
+    for noise in must_exclude:
+        if noise.upper() in extracted:
+            print(f"❌ Noise symbol leaked '{noise}' | query='{text}' | extracted={extracted}")
+            ok = False
+
+    if ok:
+        print(f"✅ PASS | query='{text}' | extracted={extracted}")
+    return ok
+
+
+def main() -> int:
+    print("🔬 Symbol Extraction Verification")
+    print("=" * 60)
+
+    tests = [
+        # Baseline ticker extraction
+        ("Compare JUFO to its competitors", ["JUFO"], ["ITS", "TO"]),
+        ("Compare COMI vs SWDY", ["COMI", "SWDY"], ["COMPARE"]),
+        # Lexical-noise cases from follow-up regressions
+        (
+            "How does the stock in question compare to its sector peers in terms of valuation and growth?",
+            [],
+            ["DOES", "PEERS", "TERMS", "VALUATION", "GROWTH"],
+        ),
+        (
+            "How does COMI compare to sector peers in terms of valuation and growth?",
+            ["COMI"],
+            ["DOES", "PEERS", "TERMS", "VALUATION", "GROWTH"],
+        ),
+        (
+            "What's driving the 9.3% decline in COMI's EPS?",
+            ["COMI"],
+            ["WHATS", "DRIVING", "DECLINE"],
+        ),
+        # Ensure aliases still work
+        ("Price of CIB", ["COMI"], []),
+    ]
+
+    passed = 0
+    for text, includes, excludes in tests:
+        if run_case(text, includes, excludes):
+            passed += 1
+
+    total = len(tests)
+    print("=" * 60)
+    print(f"Summary: {passed}/{total} passed")
+    return 0 if passed == total else 1
+
+
 if __name__ == "__main__":
-    asyncio.run(reproduction())
+    raise SystemExit(main())

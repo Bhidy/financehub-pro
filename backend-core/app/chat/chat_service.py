@@ -684,6 +684,95 @@ class ChatService:
             return f"{clean} for {anchor_symbol}".strip()
         return clean
 
+    def _repair_compare_payload(
+        self,
+        payload: str,
+        *,
+        anchor_symbol: Optional[str],
+        anchor_symbols: Optional[List[str]]
+    ) -> str:
+        """Ensure compare followups never compare the same symbol against itself."""
+        text = str(payload or "").strip()
+        if not text:
+            return text
+        lowered = text.lower()
+        if not any(k in lowered for k in ["compare", " vs ", "versus", "peer"]):
+            return text
+
+        tokens = []
+        for token in re.findall(r"\b[A-Z0-9]{2,6}\b", text.upper()):
+            if token in NOISE_COMPARE_TOKENS:
+                continue
+            if token.isalpha() and 3 <= len(token) <= 6:
+                tokens.append(token)
+            elif token.isdigit() and len(token) == 4:
+                tokens.append(token)
+
+        unique_tokens = self._dedupe_symbols(tokens)
+        if len(unique_tokens) >= 2:
+            # If payload already has two distinct symbols, keep it unchanged.
+            if self._canonical_symbol(unique_tokens[0]) != self._canonical_symbol(unique_tokens[1]):
+                return text
+
+        primary = (anchor_symbol or (unique_tokens[0] if unique_tokens else "")).strip().upper()
+        anchors = self._dedupe_symbols(anchor_symbols or [])
+        secondary = ""
+        for cand in anchors:
+            if self._canonical_symbol(cand) != self._canonical_symbol(primary):
+                secondary = cand
+                break
+
+        if primary and secondary:
+            return f"Compare {primary} vs {secondary}"
+        return text
+
+    def _build_anchor_fallback_followups(
+        self,
+        *,
+        anchor_symbol: Optional[str],
+        anchor_symbols: Optional[List[str]],
+        language: str
+    ) -> List[Dict[str, Any]]:
+        """Deterministic fallback chips when dynamic chips collapse after dedup."""
+        symbol = (anchor_symbol or "").strip().upper()
+        if not symbol:
+            return self._build_symbol_clarify_followups(language)
+
+        peers = self._dedupe_symbols(anchor_symbols or [])
+        peer = next((p for p in peers if self._canonical_symbol(p) != self._canonical_symbol(symbol)), None)
+
+        if language == "ar":
+            out = [
+                {"text": f"حلل {symbol}", "payload": f"Analyze {symbol}", "type": "deeper_dive"},
+                {"text": f"ما مستوى مخاطر {symbol} حالياً؟", "payload": f"How serious are the risks for {symbol}?", "type": "risk_probe"},
+            ]
+            if peer:
+                out.append({
+                    "text": f"كيف يقارن مع المنافسين؟",
+                    "payload": f"Compare {symbol} vs {peer}",
+                    "type": "comparison",
+                })
+        else:
+            out = [
+                {"text": f"Analyze {symbol}", "payload": f"Analyze {symbol}", "type": "deeper_dive"},
+                {"text": f"How safe is {symbol} right now?", "payload": f"How serious are the risks for {symbol}?", "type": "risk_probe"},
+            ]
+            if peer:
+                out.append({
+                    "text": "How does it compare to peers?",
+                    "payload": f"Compare {symbol} vs {peer}",
+                    "type": "comparison",
+                })
+
+        return [
+            {
+                **chip,
+                "anchor_symbol": symbol,
+                "anchor_symbols": peers if peers else [symbol],
+            }
+            for chip in out[:3]
+        ]
+
     def _build_symbol_clarify_followups(self, language: str) -> List[Dict[str, Any]]:
         if language == "ar":
             prompts = [
@@ -4052,6 +4141,8 @@ class ChatService:
                 if dynamic_followups:
                     normalized_followups: List[Dict[str, Any]] = []
                     has_ambiguous_without_anchor = False
+                    seen_payloads: set[str] = set()
+                    seen_texts: set[str] = set()
                     for chip in dynamic_followups:
                         if not isinstance(chip, dict):
                             continue
@@ -4059,11 +4150,23 @@ class ChatService:
                         chip_type = str(chip.get("type") or "next_step").strip() or "next_step"
                         raw_payload = str(chip.get("payload") or chip_text).strip()
                         payload = self._apply_followup_anchor(raw_payload, context_anchor_symbol)
+                        payload = self._repair_compare_payload(
+                            payload,
+                            anchor_symbol=context_anchor_symbol,
+                            anchor_symbols=followup_anchor_symbols
+                        )
                         ambiguous = self._is_ambiguous_followup_payload(payload)
                         if ambiguous and not context_anchor_symbol:
                             has_ambiguous_without_anchor = True
+                        display_text = (chip_text or payload).strip()
+                        payload_key = payload.lower()
+                        text_key = display_text.lower()
+                        if payload_key in seen_payloads or text_key in seen_texts:
+                            continue
+                        seen_payloads.add(payload_key)
+                        seen_texts.add(text_key)
                         normalized_followups.append({
-                            "text": chip_text or payload,
+                            "text": display_text,
                             "payload": payload,
                             "type": chip_type,
                             "anchor_symbol": context_anchor_symbol,
@@ -4072,6 +4175,26 @@ class ChatService:
 
                     if has_ambiguous_without_anchor:
                         normalized_followups = self._build_symbol_clarify_followups(language)
+                    elif len(normalized_followups) < 3:
+                        fallback_followups = self._build_anchor_fallback_followups(
+                            anchor_symbol=context_anchor_symbol,
+                            anchor_symbols=followup_anchor_symbols,
+                            language=language
+                        )
+                        for chip in fallback_followups:
+                            payload = str(chip.get("payload") or "").strip()
+                            text = str(chip.get("text") or payload).strip()
+                            if not payload or not text:
+                                continue
+                            payload_key = payload.lower()
+                            text_key = text.lower()
+                            if payload_key in seen_payloads or text_key in seen_texts:
+                                continue
+                            seen_payloads.add(payload_key)
+                            seen_texts.add(text_key)
+                            normalized_followups.append(chip)
+                            if len(normalized_followups) >= 3:
+                                break
 
                     response.followups = normalized_followups
                     convo_logger.info(f"✅ Generated {len(dynamic_followups)} dynamic follow-ups.")

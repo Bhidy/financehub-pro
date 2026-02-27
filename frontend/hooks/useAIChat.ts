@@ -67,6 +67,8 @@ export interface ResponseMeta {
 }
 
 export interface ChatResponse {
+    success?: boolean; // Backend execution status (true=pass, false=fail)
+    response_status?: "pass" | "fail"; // Frontend-normalized status for UI/QA hooks
     message_text: string;
     conversational_text?: string; // New Hybrid Layer
     framework_text?: string; // NEW: Analytical framework section
@@ -256,22 +258,35 @@ function sanitizeChatResponse(raw: any): ChatResponse {
     const metaRaw = (raw && typeof raw.meta === "object") ? raw.meta : {};
     const confidence = Number(metaRaw?.confidence);
     const latencyMs = Number(metaRaw?.latency_ms);
+    const normalizedCards = ensureArray<Card>(raw?.cards).map((c: any) => ({
+        ...c,
+        type: canonicalizeCardType(c?.type),
+        data: (c?.data && typeof c.data === "object") ? c.data : {}
+    }));
+    const normalizedMessageText = stripGlobalBoilerplate(typeof raw?.message_text === "string"
+        ? raw.message_text
+        : String(raw?.conversational_text || raw?.message || ""));
+    const normalizedConversationalText = stripGlobalBoilerplate(raw?.conversational_text || "");
+    const explicitSuccess = typeof raw?.success === "boolean" ? raw.success : undefined;
+    const inferredSuccess = explicitSuccess ?? true;
+    const responseStatus: "pass" | "fail" = inferredSuccess ? "pass" : "fail";
+    const safeMessageText = normalizedMessageText
+        || normalizedConversationalText
+        || (inferredSuccess && normalizedCards.length > 0
+            ? "Analysis is ready in the cards below."
+            : "");
 
     return {
         ...raw,
+        success: inferredSuccess,
+        response_status: responseStatus,
         message_id: raw?.message_id,
-        message_text: stripGlobalBoilerplate(typeof raw?.message_text === "string"
-            ? raw.message_text
-            : String(raw?.conversational_text || raw?.message || "")),
-        conversational_text: stripGlobalBoilerplate(raw?.conversational_text || ""),
+        message_text: safeMessageText,
+        conversational_text: normalizedConversationalText,
         language: (raw?.language === "ar" || raw?.language === "en" || raw?.language === "mixed")
             ? raw.language
             : "en",
-        cards: ensureArray<Card>(raw?.cards).map((c: any) => ({
-            ...c,
-            type: canonicalizeCardType(c?.type),
-            data: (c?.data && typeof c.data === "object") ? c.data : {}
-        })),
+        cards: normalizedCards,
         actions: ensureArray<Action>(raw?.actions),
         chart: raw?.chart ? {
             ...raw.chart,

@@ -714,8 +714,24 @@ function QuantifiedDriversCard({ data, lang = 'en' }: { data: any; lang?: Langua
 
 
 
+const BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = [
+    "this is market analysis for educational purposes, not personalized investment advice",
+    "your decision should factor in your individual financial situation, risk tolerance, and investment timeline",
+    "هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+    "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+];
+
+function isBlockedGenericDisclaimer(value?: string): boolean {
+    if (!value) return false;
+    const normalized = value.toLowerCase().replace(/\s+/g, " ").trim();
+    return BLOCKED_GENERIC_DISCLAIMER_SNIPPETS.some((snippet) => normalized.includes(snippet));
+}
+
 function DisclaimerCard({ content, text, title, lang = 'en' }: { content?: string; text?: string; title?: string, lang?: Language }) {
-    const resolvedText = content || text || translations[lang].chat.disclaimer;
+    const resolvedText = (content || text || "").trim();
+    if (!resolvedText || isBlockedGenericDisclaimer(resolvedText)) {
+        return null;
+    }
     return (
         <div className="text-[11.5px] text-slate-400 dark:text-slate-500 mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/50 italic">
             {resolvedText}
@@ -1470,6 +1486,10 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
 
     const normalizedDisclaimer = safeResponse?.disclaimer_card || findCardData(["disclaimer_card", "disclaimer"]);
     const normalizedLearningSection = safeResponse?.learning_section;
+    const disclaimerTextCandidate = String(
+        normalizedDisclaimer?.content || safeResponse?.disclaimer || normalizedDisclaimer?.text || ""
+    ).trim();
+    const shouldRenderDisclaimer = !!disclaimerTextCandidate && !isBlockedGenericDisclaimer(disclaimerTextCandidate);
 
     // Check for disclaimer in text to avoid duplication
     const hasInlineDisclaimer = safeConversationalText?.toLowerCase().includes("educational analysis") ||
@@ -1661,7 +1681,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
             {/* ============================================================
                 LAYER 4: DISCLAIMER (Regulatory Compliance)
                ============================================================ */}
-            {isTypingCompleted && (!hasInlineDisclaimer || normalizedDisclaimer) && (
+            {isTypingCompleted && (!hasInlineDisclaimer || normalizedDisclaimer) && shouldRenderDisclaimer && (
                 <div className="mt-6 text-slate-500 dark:text-slate-400">
                     <DisclaimerCard
                         text={safeResponse?.disclaimer || normalizedDisclaimer?.text}
@@ -1695,7 +1715,7 @@ export function FollowUpChips({
     language = "en"
 }: {
     followups: Array<{ text: string; payload: string; type: string }>;
-    onAction?: (payload: string) => void;
+    onAction?: (prompt: string) => void;
     language?: "en" | "ar" | "mixed";
 }) {
     if (!followups || !followups.length) return null;
@@ -1733,7 +1753,14 @@ export function FollowUpChips({
                     return (
                         <button
                             key={`followup-${idx}`}
-                            onClick={() => onAction && onAction(chip.payload)}
+                            onClick={() => {
+                                // Always submit exactly what the user clicked (chip text).
+                                // Fallback to payload only if text is unexpectedly empty.
+                                const selectedPrompt = String(chip.text || chip.payload || "").trim();
+                                if (selectedPrompt && onAction) {
+                                    onAction(selectedPrompt);
+                                }
+                            }}
                             className="text-start flex items-start gap-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-[10px] px-3.5 py-2.5 transition-all hover:bg-teal-50 hover:border-teal-500 dark:hover:bg-teal-900/20 dark:hover:border-teal-500"
                         >
                             <span className="text-[13px] min-w-[20px] text-teal-600 dark:text-teal-400 font-semibold mt-0.5 shrink-0 select-none">{icon}</span>

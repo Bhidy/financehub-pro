@@ -924,7 +924,7 @@ const MessageRenderer = memo(({
                             >
                                 <FollowUpChips
                                     followups={m.response.followups}
-                                    onAction={(payload) => sendDirectMessage && sendDirectMessage(payload)}
+                                    onAction={(prompt) => sendDirectMessage && sendDirectMessage(prompt)}
                                     language={resolveMessageLanguage(m)}
                                 />
                             </motion.div>

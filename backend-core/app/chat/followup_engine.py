@@ -81,6 +81,8 @@ RULES:
 6. Match the sophistication of the platform — these are for serious investors,
    not beginners asking "what is a stock."
 7. CRITICAL LANGUAGE RULE: You MUST generate all 'chip' and 'query' text EXACTLY in {language_name}. Do NOT use any other language, even if the context contains it. If {language_name} is English, absolutely NO Arabic. If {language_name} is Arabic, absolutely NO English.
+8. The 'chip' MUST be a standalone question (not a category label like "Sector Comparison" or "Financials").
+9. Do NOT invent ticker symbols or company names that are not in the provided context. If unsure, say "sector peers" instead of naming peers.
 
 RESPONSE FORMAT (strict JSON, no other text):
 [
@@ -173,6 +175,58 @@ class FollowUpEngine:
     def __init__(self):
         self.llm = MultiProviderLLM()
 
+    @staticmethod
+    def _normalize_text(value: Optional[str]) -> str:
+        if not value:
+            return ""
+        text = str(value)
+        text = re.sub(r"^(?:\d+[.)]\s*|[-*]\s*)", "", text.strip())
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+
+    @staticmethod
+    def _is_generic_chip(value: str) -> bool:
+        generic_labels = {
+            "sector comparison", "comparison", "peer comparison", "compare peers",
+            "risk analysis", "risk", "risks", "valuation", "financials",
+            "dividends", "chart", "macro", "macro view", "next step",
+            "deeper dive", "growth prospects",
+            "مقارنة القطاع", "مقارنة", "المقارنة", "تحليل المخاطر", "المخاطر",
+            "التقييم", "النتائج المالية", "المالية", "التوزيعات", "نظرة كلية"
+        }
+        return value.lower() in generic_labels
+
+    @classmethod
+    def _resolve_click_prompt(
+        cls,
+        chip_text: Optional[str],
+        query_text: Optional[str],
+        followup_type: str,
+        symbol: Optional[str]
+    ) -> str:
+        chip = cls._normalize_text(chip_text)
+        query = cls._normalize_text(query_text)
+
+        # If chip is missing or too generic, promote query to visible+clicked text.
+        if (not chip or cls._is_generic_chip(chip)) and query:
+            chip = query
+
+        if chip:
+            return chip
+
+        fallback_symbol = symbol or "this stock"
+        fallback_by_type = {
+            "deeper_dive": f"What is driving {fallback_symbol}'s setup right now?",
+            "risk_probe": f"What are the top risks for {fallback_symbol} now?",
+            "comparison": f"How does {fallback_symbol} compare with sector peers?",
+            "catalyst": f"What catalyst could rerate {fallback_symbol}?",
+            "macro_link": "How does the current macro backdrop affect this thesis?",
+            "historical": f"Has {fallback_symbol} seen this setup before?",
+            "sector_view": f"Is this specific to {fallback_symbol} or the sector?",
+            "next_step": f"What should I monitor next for {fallback_symbol}?",
+        }
+        return fallback_by_type.get(followup_type, "What should we analyze next?")
+
     async def generate(
         self,
         ai_response: str,
@@ -257,10 +311,18 @@ Return ONLY the JSON array, no other text.'''
 
         followups = []
         for i, item in enumerate(parsed[:3]):
+            followup_type = item.get("type", "general")
+            click_prompt = self._resolve_click_prompt(
+                chip_text=item.get("chip"),
+                query_text=item.get("query"),
+                followup_type=followup_type,
+                symbol=symbol
+            )
             followups.append({
-                "text": item.get("chip", "More Details"),
-                "type": item.get("type", "general"),
-                "payload": item.get("query", "Tell me more")
+                "text": click_prompt,
+                "type": followup_type,
+                # Keep payload aligned with visible chip text to guarantee click intent fidelity.
+                "payload": click_prompt
             })
             
         if not followups:
@@ -281,43 +343,48 @@ Return ONLY the JSON array, no other text.'''
 
         # Rule: If score mentioned → offer breakdown
         if re.search(r"\d{2,3}/100", ai_response) and ticker:
+            prompt = f"What's inside the {ticker} score?"
             questions.append({
-                "text": f"What's inside the {ticker} score?",
+                "text": prompt,
                 "type": "deeper_dive",
-                "payload": f"Break down exactly what drives the {ticker} score — component by component"
+                "payload": prompt
             })
 
         # Rule: If risk mentioned → probe it
         if any(w in response_lower for w in ["risk", "concern", "watch", "caution"]):
+            prompt = "How serious are the risks?"
             questions.append({
-                "text": "How serious are the risks?",
+                "text": prompt,
                 "type": "risk_probe",
-                "payload": "Walk me through the biggest risks in more detail — what's the worst case scenario?"
+                "payload": prompt
             })
 
         # Rule: If valuation mentioned → ask about catalyst
         if any(w in response_lower for w in ["cheap", "discount", "undervalued", "valuation"]):
             name = ticker or "this"
+            prompt = f"What unlocks {name}?"
             questions.append({
-                "text": f"What unlocks {name}?",
+                "text": prompt,
                 "type": "catalyst",
-                "payload": f"What catalyst or event would close the valuation gap for {name}?"
+                "payload": prompt
             })
 
         # Rule: Comparison always available
         if ticker and len(questions) < 3:
+            prompt = f"Compare {ticker} to peers"
             questions.append({
-                "text": f"Compare {ticker} to peers",
+                "text": prompt,
                 "type": "comparison",
-                "payload": f"How does {ticker} compare to its direct competitors on the same framework?"
+                "payload": prompt
             })
 
         # Rule: Macro always available
         if len(questions) < 3:
+            prompt = "What's the macro picture?"
             questions.append({
-                "text": "What's the macro picture?",
+                "text": prompt,
                 "type": "macro_link",
-                "payload": "How does the current Egyptian macro environment affect this analysis?"
+                "payload": prompt
             })
 
         return questions[:3]

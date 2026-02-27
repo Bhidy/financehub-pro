@@ -359,7 +359,7 @@ function AIAnalystPageContent() {
                                                     {msg.response.followups && msg.response.followups.length > 0 ? (
                                                         <FollowUpChips
                                                             followups={msg.response.followups}
-                                                            onAction={(payload) => sendDirectMessage(payload)}
+                                                            onAction={(prompt) => sendDirectMessage(prompt)}
                                                             language={msg.response.language || "en"}
                                                         />
                                                     ) : msg.response.follow_up_prompt ? (

@@ -47,8 +47,27 @@ async def handle_ownership(conn: asyncpg.Connection, symbol: str, language: str 
     if not rows:
         return {
             'success': True,
-            'message': f"No shareholder data found for {name}.",
-            'cards': []
+            'message': f"No shareholder data found for {name} ({symbol}).",
+            'cards': [
+                {
+                    'type': 'stock_header',
+                    'data': {
+                        'symbol': symbol,
+                        'name': name,
+                        'currency': ticker.get('currency') or 'EGP',
+                        'market_code': 'EGX'
+                    }
+                },
+                {
+                    'type': 'ownership',
+                    'title': 'Ownership Structure',
+                    'data': {
+                        'symbol': symbol,
+                        'company_name': name,
+                        'shareholders': []
+                    }
+                }
+            ]
         }
 
     shareholders = []
@@ -71,7 +90,15 @@ async def handle_ownership(conn: asyncpg.Connection, symbol: str, language: str 
         'success': True,
         'message': msg,
         'cards': [
-            {'type': 'ownership', 'title': 'Ownership Structure', 'data': {'shareholders': shareholders}}
+            {
+                'type': 'ownership',
+                'title': 'Ownership Structure',
+                'data': {
+                    'symbol': symbol,
+                    'company_name': name,
+                    'shareholders': shareholders
+                }
+            }
         ],
         'actions': [
             {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'},

@@ -67,6 +67,35 @@ def _canonical_card_type_value(card_type: Any) -> str:
     return text.lower()
 
 
+def _to_plain_dict(value: Any) -> Optional[Dict[str, Any]]:
+    """Serialize Pydantic objects/dicts into plain dict safely."""
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return value
+    if hasattr(value, "model_dump"):
+        return value.model_dump()
+    if hasattr(value, "dict"):
+        return value.dict()
+    try:
+        return dict(value)
+    except Exception:
+        return None
+
+
+def _to_plain_list(values: Any) -> List[Dict[str, Any]]:
+    """Serialize list of Pydantic objects/dicts into plain dict list."""
+    if not values:
+        return []
+
+    out: List[Dict[str, Any]] = []
+    for item in values:
+        plain = _to_plain_dict(item)
+        if plain is not None:
+            out.append(plain)
+    return out
+
+
 async def verify_access(
     authorization: Optional[str] = Header(None),
     x_device_fingerprint: Optional[str] = Header(None, alias="X-Device-Fingerprint")
@@ -291,22 +320,25 @@ async def ai_chat_endpoint(
             # Store rich assistant payload for robust context recovery.
             serialized_cards = []
             for card in (response.cards or []):
-                raw_card = card.dict() if hasattr(card, "dict") else dict(card)
+                raw_card = _to_plain_dict(card) or {}
                 raw_card["type"] = _canonical_card_type_value(raw_card.get("type"))
                 serialized_cards.append(raw_card)
+
+            meta_obj = getattr(response, "meta", None)
+            meta_dict = _to_plain_dict(meta_obj) or {}
 
             meta_data = {
                 # Legacy / Core
                 "cards": serialized_cards,
-                "actions": [a.dict() for a in response.actions] if response.actions else [],
-                "chart": response.chart.dict() if response.chart else None,
-                "intent": response.meta.intent,
-                "confidence": response.meta.confidence,
-                "entities": response.meta.entities if response.meta and response.meta.entities else {},
+                "actions": _to_plain_list(response.actions),
+                "chart": _to_plain_dict(response.chart),
+                "intent": meta_dict.get("intent"),
+                "confidence": meta_dict.get("confidence"),
+                "entities": meta_dict.get("entities") or {},
                 "answer_grounding": (
-                    response.meta.answer_grounding.dict()
-                    if response.meta and getattr(response.meta, "answer_grounding", None)
-                    else None
+                    _to_plain_dict(meta_dict.get("answer_grounding"))
+                    if meta_dict.get("answer_grounding")
+                    else _to_plain_dict(getattr(meta_obj, "answer_grounding", None))
                 ),
                 "success": bool(getattr(response, "success", True)),
                 "response_status": str(getattr(response, "response_status", "pass")),
@@ -315,25 +347,25 @@ async def ai_chat_endpoint(
                 "fact_explanations": response.fact_explanations,
                 
                 # Phase 2 Premium Components
-                "structured_narrative": response.structured_narrative.dict() if response.structured_narrative else None,
-                "data_card": response.data_card.dict() if response.data_card else None,
-                "bull_case": response.bull_case.dict() if response.bull_case else None,
-                "bear_case": response.bear_case.dict() if response.bear_case else None,
-                "insight_cards": [c.dict() for c in response.insight_cards] if response.insight_cards else [],
-                "stock_list": [c.dict() for c in response.stock_list] if response.stock_list else [],
-                "macro_score": response.macro_score.dict() if response.macro_score else None,
-                "comparison_table": response.comparison_table.dict() if response.comparison_table else None,
-                "educational_cards": [c.dict() for c in response.educational_cards] if response.educational_cards else [],
-                "disclaimer_card": response.disclaimer_card.dict() if response.disclaimer_card else None,
-                "framework_card": response.framework_card.dict() if response.framework_card else None,
-                "character_cards": [c.dict() for c in response.character_cards] if response.character_cards else [],
-                "quantified_drivers": response.quantified_drivers.dict() if response.quantified_drivers else None,
-                "index_composition": response.index_composition.dict() if response.index_composition else None,
-                "score_breakdown": response.score_breakdown.dict() if response.score_breakdown else None,
-                "gem_list": response.gem_list.dict() if response.gem_list else None,
-                "undervalued_screen": response.undervalued_screen.dict() if response.undervalued_screen else None,
+                "structured_narrative": _to_plain_dict(response.structured_narrative),
+                "data_card": _to_plain_dict(response.data_card),
+                "bull_case": _to_plain_dict(response.bull_case),
+                "bear_case": _to_plain_dict(response.bear_case),
+                "insight_cards": _to_plain_list(response.insight_cards),
+                "stock_list": _to_plain_list(response.stock_list),
+                "macro_score": _to_plain_dict(response.macro_score),
+                "comparison_table": _to_plain_dict(response.comparison_table),
+                "educational_cards": _to_plain_list(response.educational_cards),
+                "disclaimer_card": _to_plain_dict(response.disclaimer_card),
+                "framework_card": _to_plain_dict(response.framework_card),
+                "character_cards": _to_plain_list(response.character_cards),
+                "quantified_drivers": _to_plain_dict(response.quantified_drivers),
+                "index_composition": _to_plain_dict(response.index_composition),
+                "score_breakdown": _to_plain_dict(response.score_breakdown),
+                "gem_list": _to_plain_dict(response.gem_list),
+                "undervalued_screen": _to_plain_dict(response.undervalued_screen),
                 "learning_section": response.learning_section,
-                "followups": response.followups,
+                "followups": _to_plain_list(response.followups),
                 "key_insight": response.key_insight,
             }
 
@@ -368,11 +400,11 @@ async def ai_chat_endpoint(
                     INSERT INTO chat_analytics (session_id, message_text, detected_intent, confidence, entities, response_time_ms, language)
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
                 """, 
-                session_id, 
-                req.message, 
-                response.meta.intent, 
-                response.meta.confidence, 
-                json.dumps(response.meta.entities),
+                session_id,
+                req.message,
+                meta_dict.get("intent"),
+                meta_dict.get("confidence"),
+                json.dumps(meta_dict.get("entities") or {}),
                 int((time.time() - start_time) * 1000),
                 response.language)
             except Exception as le:

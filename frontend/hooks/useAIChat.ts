@@ -64,6 +64,14 @@ export interface ResponseMeta {
     latency_ms: number;
     cached: boolean;
     as_of?: string;
+    answer_grounding?: {
+        grounded: boolean;
+        as_of?: string | null;
+        period?: string | null;
+        source_tables: string[];
+        missing_requirements: string[];
+        analysis_confidence: number;
+    };
 }
 
 export interface ChatResponse {
@@ -187,6 +195,8 @@ export interface ChatResponse {
         text: string;
         payload: string;
         type: string;
+        anchor_symbol?: string | null;
+        anchor_symbols?: string[];
     }>; // Dynamic follow-up chips
 
     // UI elements
@@ -267,9 +277,12 @@ function sanitizeChatResponse(raw: any): ChatResponse {
         ? raw.message_text
         : String(raw?.conversational_text || raw?.message || ""));
     const normalizedConversationalText = stripGlobalBoilerplate(raw?.conversational_text || "");
+    const backendStatus = raw?.response_status === "pass" || raw?.response_status === "fail"
+        ? raw.response_status
+        : undefined;
     const explicitSuccess = typeof raw?.success === "boolean" ? raw.success : undefined;
-    const inferredSuccess = explicitSuccess ?? true;
-    const responseStatus: "pass" | "fail" = inferredSuccess ? "pass" : "fail";
+    const inferredSuccess = explicitSuccess ?? (backendStatus ? backendStatus === "pass" : true);
+    const responseStatus: "pass" | "fail" = backendStatus ?? (inferredSuccess ? "pass" : "fail");
     const safeMessageText = normalizedMessageText
         || normalizedConversationalText
         || (inferredSuccess && normalizedCards.length > 0
@@ -297,6 +310,8 @@ function sanitizeChatResponse(raw: any): ChatResponse {
             text: String(f?.text || "").trim(),
             payload: String(f?.payload || f?.text || "").trim(),
             type: String(f?.type || "next_step").trim().toLowerCase(),
+            anchor_symbol: f?.anchor_symbol ? String(f.anchor_symbol).trim().toUpperCase() : undefined,
+            anchor_symbols: ensureArray(f?.anchor_symbols).map((s: any) => String(s).trim().toUpperCase()).filter(Boolean),
         })),
         insight_cards: ensureArray(raw?.insight_cards),
         stock_list: ensureArray(raw?.stock_list),
@@ -309,6 +324,7 @@ function sanitizeChatResponse(raw: any): ChatResponse {
             latency_ms: Number.isFinite(latencyMs) ? latencyMs : 0,
             cached: Boolean(metaRaw?.cached),
             as_of: metaRaw?.as_of,
+            answer_grounding: metaRaw?.answer_grounding,
         }
     } as ChatResponse;
 }
@@ -558,7 +574,8 @@ export function useAIChat(config?: {
                                 confidence: meta.confidence || 1.0,
                                 entities: {},
                                 latency_ms: 0,
-                                cached: true
+                                cached: true,
+                                answer_grounding: meta.answer_grounding || meta?.meta?.answer_grounding,
                             },
                             // CRITICAL: Spread all other top-level fields (structured_narrative, comparison_table, etc.)
                             ...meta

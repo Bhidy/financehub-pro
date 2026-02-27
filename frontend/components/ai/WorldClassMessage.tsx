@@ -1722,7 +1722,7 @@ export function FollowUpChips({
     onAction,
     language = "en"
 }: {
-    followups: Array<{ text: string; payload: string; type: string }>;
+    followups: Array<{ text: string; payload: string; type: string; anchor_symbol?: string | null; anchor_symbols?: string[] }>;
     onAction?: (prompt: string) => void;
     language?: "en" | "ar" | "mixed";
 }) {
@@ -1766,6 +1766,8 @@ export function FollowUpChips({
                                 const selectedPrompt = String(chip.payload || chip.text || "").trim();
                                 if (selectedPrompt && onAction) {
                                     onAction(selectedPrompt);
+                                } else {
+                                    console.warn("[FollowUpChips] Empty follow-up payload blocked", chip);
                                 }
                             }}
                             className="text-start flex items-start gap-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-[10px] px-3.5 py-2.5 transition-all hover:bg-teal-50 hover:border-teal-500 dark:hover:bg-teal-900/20 dark:hover:border-teal-500"

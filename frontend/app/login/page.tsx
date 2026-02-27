@@ -39,6 +39,7 @@ function LoginPageContent() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [focusedField, setFocusedField] = useState<string | null>(null);
+    const homeRoute = getRoute('home');
 
     // Handle Google OAuth callback
     useEffect(() => {
@@ -61,12 +62,12 @@ function LoginPageContent() {
                     localStorage.setItem("fh_refresh_token", refreshToken);
                 }
                 localStorage.setItem("fh_user", JSON.stringify(user));
-                router.push(getRoute('home'));
+                router.push(homeRoute);
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
             }
         }
-    }, [searchParams, router]);
+    }, [searchParams, router, homeRoute]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -86,7 +87,7 @@ function LoginPageContent() {
         setIsLoading(false);
 
         if (result.success) {
-            router.push(getRoute('home'));
+            router.push(homeRoute);
         } else {
             setError(result.error || "Login failed");
         }

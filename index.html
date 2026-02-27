@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" dir="ltr">
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,20 @@
     <title>Starta | Master the EGX</title>
     <meta name="description"
         content="Starta is an institutional-grade AI platform for Egyptian Exchange investors with trusted analytics, valuation models, and bilingual market intelligence.">
+
+    <script>
+        (function () {
+            try {
+                var hostname = window.location.hostname.toLowerCase();
+                var isFinhub =
+                    hostname.includes("finhub-pro.vercel.app") ||
+                    (hostname.includes("finhub") && !hostname.includes("startamarkets"));
+                if (isFinhub) {
+                    document.documentElement.classList.add("finhub-pro-domain-static");
+                }
+            } catch (e) { }
+        })();
+    </script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,6 +111,11 @@
             --cursor-fill: #0F172A;
             --cursor-border: rgba(15, 23, 42, 0.2);
             --cursor-blend: normal;
+        }
+
+        html.finhub-pro-domain-static[dir="ltr"] body,
+        html.finhub-pro-domain-static[dir="ltr"] *:not(code):not(pre) {
+            font-family: 'Manrope', sans-serif !important;
         }
 
         /* RTL Adjustments */
@@ -792,7 +811,7 @@
     <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl transition-all duration-300">
         <div class="max-w-screen-2xl mx-auto px-8 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-3 group cursor-pointer">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
                 <div
                     class="w-8 h-8 bg-starta-teal rounded flex items-center justify-center font-bold text-white text-xl font-display group-hover:rotate-12 transition-transform">
                     S</div>
@@ -813,7 +832,7 @@
             </div>
 
             <div class="flex items-center gap-3 ml-3">
-                <button onclick="window.location.href='https://startamarkets.com'"
+                <button onclick="window.location.href='https://startamarkets.com/AiChat'"
                     class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                     data-key="nav_cta">
                     Try Now
@@ -857,7 +876,7 @@
                     practical risk context.
                 </p>
                 <div class="flex flex-wrap gap-4 pt-4">
-                    <button onclick="window.location.href='https://startamarkets.com'"
+                    <button onclick="window.location.href='https://startamarkets.com/AiChat'"
                         class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Try Now for
                         Free</button>
                 </div>
@@ -1406,7 +1425,7 @@
     <section id="roadmap" class="py-32 bg-surface border-t border-border relative section-premium">
         <div class="max-w-6xl mx-auto px-6">
             <div class="text-center mb-20 reveal-text">
-                <h2 class="section-title text-main" data-key="road_title">What we’re working on.</h2>
+                <h2 class="section-title text-main" data-key="road_title">What we're working on.</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1497,7 +1516,7 @@
                 <p class="text-xs text-muted mb-8 h-8 rtl-text-right" data-key="p1_sub">Essential market data for the
                     casual investor</p>
                 <h4 class="text-main font-bold mb-8 text-5xl tracking-tight" data-key="p1_price">Free</h4>
-                <button onclick="window.location.href='https://startamarkets.com'"
+                <button onclick="window.location.href='https://startamarkets.com/AiChat'"
                     class="w-full py-4 border border-border bg-surface text-main rounded-xl hover:bg-panel mb-8 text-xs font-bold tracking-widest uppercase transition-all shadow-sm"
                     data-key="p1_btn">Get Started</button>
                 <div class="border-t border-border mb-8"></div>
@@ -1564,7 +1583,7 @@
                     <h4 class="text-main font-bold text-6xl tracking-tight">69</h4>
                 </div>
                 <p class="text-xs text-muted mb-8" data-key="p2_bill">Monthly or 662 EGP Annually (20% off)</p>
-                <button onclick="window.location.href='https://startamarkets.com'"
+                <button onclick="window.location.href='https://startamarkets.com/AiChat'"
                     class="w-full py-4 bg-transparent border border-starta-teal text-main rounded-xl mb-8 text-xs font-bold tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:bg-starta-teal hover:text-black bg-starta-teal/10 btn-gradient-border"
                     data-key="p2_btn">Get Started</button>
                 <div class="border-t border-border mb-8"></div>
@@ -1701,7 +1720,7 @@
             <p class="text-muted copy-premium mb-12" data-key="close_text">
                 Ask better questions, get clearer answers, and make every financial decision with confidence.
             </p>
-            <button onclick="window.location.href='https://startamarkets.com'"
+            <button onclick="window.location.href='https://startamarkets.com/AiChat'"
                 class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Try Starta
                 Now</button>
             <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">
@@ -1753,8 +1772,8 @@
                 acad_c3_title: "Technical Analysis", acad_c3_text: "Identify trends, support levels, and entry points.",
                 mob_tag: "EVERYWHERE", mob_title: "Your AI Analyst<br>In Your Pocket.", mob_text: "Native iOS and Android apps with instant chat, smart alerts, and personalized financial answers anywhere.",
                 app_store: "App Store", google_play: "Google Play",
-                road_title: "What We're Building Next.", road_c1_title: "Smart Portfolio", road_c1_text: "Automated rebalancing tailored to your holdings.", road_c2_title: "Market Expansion", road_c2_text: "Deep dive coverage for Tadawul (TASI).", road_c3_title: "News 2.0", road_c3_text: "Sentiment analysis on local news sources.", road_c4_title: "Mobile App", road_c4_text: "Native iOS and Android experience.",
-                proof_tag: "TRUST LAYER", proof_title: "Built for Professional Investors.", proof_sub: "Each insight is tied to transparent models, auditable numbers, and institutional reporting standards.",
+                road_title: "What we're working on.", road_c1_title: "Smart Portfolio", road_c1_text: "Automated rebalancing and risk analysis tailored to your holdings.", road_c2_title: "Market Expansion", road_c2_text: "Deep dive coverage for Tadawul (TASI) and Gulf markets.", road_c3_title: "News 2.0", road_c3_text: "Sentiment analysis on local news sources and social signals.", road_c4_title: "Mobile App", road_c4_text: "Native iOS and Android experience with push notifications.",
+                proof_tag: "TRUST LAYER", proof_title: "Built for Serious Capital.", proof_sub: "Every insight is linked to deterministic models, auditable data tables, and transparent methodology.",
                 proof_c1_label: "METHODOLOGY", proof_c1_title: "Valuation Notes", proof_c1_text: "DCF assumptions, discount rates, and sensitivity ranges are visible inside every premium report.",
                 proof_c2_label: "COMPLIANCE", proof_c2_title: "Data Integrity", proof_c2_text: "Numbers are sourced from signed feeds and immutable snapshots with timestamped revision history.",
                 proof_c3_label: "DELIVERY", proof_c3_title: "Institutional Exports", proof_c3_text: "Board-ready PDF and Excel packs include assumptions, scenario tables, and executive summaries.",
@@ -1943,11 +1962,11 @@
         const darkIcon = document.querySelector('.dark-icon');
         const lightIcon = document.querySelector('.light-icon');
 
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-            darkIcon.style.opacity = '0';
-            lightIcon.style.opacity = '1';
-        }
+        const savedTheme = localStorage.getItem('theme');
+        const initialTheme = savedTheme === 'light' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', initialTheme);
+        darkIcon.style.opacity = initialTheme === 'light' ? '0' : '1';
+        lightIcon.style.opacity = initialTheme === 'light' ? '1' : '0';
 
         themeBtn.addEventListener('click', () => {
             const current = document.documentElement.getAttribute('data-theme');

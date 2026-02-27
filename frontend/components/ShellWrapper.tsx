@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 import AppSidebar from "@/components/AppSidebar";
 
 interface ShellWrapperProps {
@@ -24,13 +25,19 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
     const [isMobileDomain, setIsMobileDomain] = useState(false);
+    const [isFinhubDomain, setIsFinhubDomain] = useState(false);
 
     // Check if we're on a mobile-only domain - runs once on mount
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const hostname = window.location.hostname;
+            const hostname = window.location.hostname.toLowerCase();
             const isMobile = MOBILE_ONLY_DOMAINS.includes(hostname);
+            const isFinhub =
+                hostname.includes("finhub-pro.vercel.app") ||
+                (hostname.includes("finhub") && !hostname.includes("startamarkets"));
+
             setIsMobileDomain(isMobile);
+            setIsFinhubDomain(isFinhub);
         }
         setMounted(true);
     }, []);
@@ -56,7 +63,10 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
         // Just render children in a neutral wrapper to prevent flash
         // This prevents the sidebar from appearing during hydration
         return (
-            <div className="flex-1 flex flex-col min-h-screen relative">
+            <div className={clsx(
+                "flex-1 flex flex-col min-h-screen relative",
+                isFinhubDomain && "finhub-shell"
+            )}>
                 <main className="flex-1">
                     {children}
                 </main>
@@ -66,16 +76,31 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
 
     // After mount, we know the domain - decide based on that
     if (isIsolated) {
+        if (isFinhubDomain) {
+            return <div className="finhub-shell finhub-content min-h-[100dvh]">{children}</div>;
+        }
         // Render children directly without any shell
         return <>{children}</>;
     }
 
     // Standard app shell with sidebar (only for main site non-isolated routes)
     return (
-        <div className="flex w-full h-screen overflow-hidden bg-[var(--background)]">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-                <main className="flex-1 overflow-y-auto overflow-x-hidden" data-lenis-prevent="true">
+        <div className={clsx(
+            "flex w-full overflow-hidden",
+            isFinhubDomain ? "h-[100dvh] finhub-shell" : "h-screen bg-[var(--background)]"
+        )}>
+            <AppSidebar defaultCollapsed={isFinhubDomain} />
+            <div className={clsx(
+                "flex-1 flex flex-col min-w-0 overflow-hidden relative",
+                isFinhubDomain ? "h-[100dvh] finhub-main" : "h-screen"
+            )}>
+                <main
+                    className={clsx(
+                        "flex-1 overflow-y-auto overflow-x-hidden",
+                        isFinhubDomain && "finhub-content"
+                    )}
+                    data-lenis-prevent="true"
+                >
                     {children}
                 </main>
             </div>

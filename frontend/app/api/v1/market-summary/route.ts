@@ -1,104 +1,116 @@
-import { NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
-import { db } from '@/lib/db-server';
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db-server";
+
+export const dynamic = "force-dynamic";
+
+const EGX_TIME_ZONE = "Africa/Cairo";
+const EGX_OPEN_MINUTES = 10 * 60;
+const EGX_CLOSE_MINUTES = 14 * 60 + 30;
+const EGX_TRADING_WEEKDAYS = new Set(["Sun", "Mon", "Tue", "Wed", "Thu"]);
+
+const toNumber = (value: unknown, fallback = 0): number => {
+    const n = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(n) ? n : fallback;
+};
+
+const getEgxClock = (referenceDate: Date = new Date()): { weekday: string; minutes: number } => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: EGX_TIME_ZONE,
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    }).formatToParts(referenceDate);
+
+    const getPart = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+    const weekday = getPart("weekday");
+    const hour = Number(getPart("hour"));
+    const minute = Number(getPart("minute"));
+
+    const minutes = Number.isFinite(hour) && Number.isFinite(minute)
+        ? hour * 60 + minute
+        : -1;
+
+    return { weekday, minutes };
+};
+
+const resolveEgxMarketStatus = (): "OPEN" | "CLOSED" => {
+    const clock = getEgxClock();
+    if (!EGX_TRADING_WEEKDAYS.has(clock.weekday)) return "CLOSED";
+    if (clock.minutes < EGX_OPEN_MINUTES || clock.minutes >= EGX_CLOSE_MINUTES) return "CLOSED";
+    return "OPEN";
+};
 
 export async function GET() {
     try {
-        // Calculate market-wide aggregates from market_tickers
-        const result = await db.query(`
-            SELECT 
-                COUNT(*) as total_stocks,
-                SUM(CASE WHEN change > 0 THEN 1 ELSE 0 END) as advancing,
-                SUM(CASE WHEN change < 0 THEN 1 ELSE 0 END) as declining,
-                SUM(CASE WHEN change = 0 THEN 1 ELSE 0 END) as unchanged,
-                ROUND(SUM(volume)::numeric, 0) as total_volume,
-                ROUND(SUM(last_price * volume)::numeric, 0) as total_turnover,
-                ROUND(AVG(change_percent)::numeric, 2) as market_change_percent,
-                ROUND(AVG(last_price)::numeric, 2) as avg_price,
-                MAX(high) as market_high,
-                MIN(low) as market_low
-            FROM market_tickers 
-            WHERE last_price IS NOT NULL
-        `);
+        const [summaryResult, breadthResult, indexResult] = await Promise.all([
+            db.query(`
+                SELECT
+                    COUNT(*) as total_stocks,
+                    SUM(CASE WHEN change_percent > 0 THEN 1 ELSE 0 END) as advancing,
+                    SUM(CASE WHEN change_percent < 0 THEN 1 ELSE 0 END) as declining,
+                    SUM(CASE WHEN change_percent = 0 THEN 1 ELSE 0 END) as unchanged,
+                    ROUND(SUM(volume)::numeric, 0) as total_volume,
+                    ROUND(SUM(last_price * volume)::numeric, 0) as total_turnover
+                FROM market_tickers
+                WHERE last_price IS NOT NULL
+                  AND market_code = 'EGX'
+            `),
+            db.query(`
+                SELECT date, advancing, declining, unchanged, new_highs, new_lows,
+                       advance_volume, decline_volume
+                FROM market_breadth
+                ORDER BY date DESC
+                LIMIT 1
+            `),
+            db.query(`
+                SELECT
+                    ROUND(SUM(last_price * volume) / NULLIF(SUM(volume), 0), 2) as weighted_price,
+                    ROUND(SUM(change * volume) / NULLIF(SUM(volume), 0), 3) as weighted_change,
+                    ROUND(SUM(change_percent * volume) / NULLIF(SUM(volume), 0), 2) as weighted_change_percent
+                FROM market_tickers
+                WHERE last_price IS NOT NULL
+                  AND volume > 0
+                  AND market_code = 'EGX'
+            `),
+        ]);
 
-        // Get latest market breadth for additional context
-        const breadthResult = await db.query(`
-            SELECT date, advancing, declining, unchanged, new_highs, new_lows,
-                   advance_volume, decline_volume
-            FROM market_breadth 
-            ORDER BY date DESC 
-            LIMIT 1
-        `);
-
-        const stats = result.rows[0];
+        const stats = summaryResult.rows[0] || {};
         const breadth = breadthResult.rows[0] || {};
-
-        // Try to get REAL TASI index data
-        const tasiResult = await db.query(`
-            SELECT last_price, change, change_percent 
-            FROM market_tickers 
-            WHERE symbol = 'TASI'
-        `);
-        const tasi = tasiResult.rows[0];
-
-        // Fallback: Calculate a synthetic index value based on market cap weighted average
-        const indexResult = await db.query(`
-            SELECT 
-                ROUND(SUM(last_price * volume) / NULLIF(SUM(volume), 0), 2) as weighted_price,
-                ROUND(SUM(change * volume) / NULLIF(SUM(volume), 0), 3) as weighted_change,
-                ROUND(SUM(change_percent * volume) / NULLIF(SUM(volume), 0), 2) as weighted_change_percent
-            FROM market_tickers 
-            WHERE last_price IS NOT NULL AND volume > 0 AND symbol != 'TASI'
-        `);
-
-        const indexData = indexResult.rows[0];
-
-        // Use real TASI if available, otherwise synthetic
-        const indexValue = tasi ? parseFloat(tasi.last_price) : (parseFloat(indexData?.weighted_price) || 0);
-        const indexChange = tasi ? parseFloat(tasi.change) : (parseFloat(indexData?.weighted_change) || 0);
-        const indexChangePercent = tasi ? parseFloat(tasi.change_percent) : (parseFloat(indexData?.weighted_change_percent) || 0);
-
-        // Calculate market status based on Saudi trading hours
-        const now = new Date();
-        const saudiOffset = 3 * 60; // Saudi is UTC+3
-        const saudiTime = new Date(now.getTime() + (saudiOffset + now.getTimezoneOffset()) * 60000);
-        const hour = saudiTime.getHours();
-        const day = saudiTime.getDay(); // 0=Sunday, 6=Saturday
-        const isTradingDay = day >= 0 && day <= 4; // Sunday to Thursday
-        const isTradingHours = hour >= 10 && hour < 15; // 10 AM to 3 PM Saudi
-        const marketStatus = isTradingDay && isTradingHours ? "OPEN" : "CLOSED";
+        const index = indexResult.rows[0] || {};
 
         return NextResponse.json({
-            market_status: marketStatus,
-            market_code: "TASI",
-            market_name: "Tadawul All Share Index",
+            market_status: resolveEgxMarketStatus(),
+            market_code: "EGX",
+            market_name: "Egyptian Exchange",
 
-            // Real or Synthetic index
-            index_value: indexValue,
-            index_change: indexChange,
-            index_change_percent: indexChangePercent,
+            index_value: toNumber(index.weighted_price),
+            index_change: toNumber(index.weighted_change),
+            index_change_percent: toNumber(index.weighted_change_percent),
 
-            // Market breadth stats
-            total_stocks: parseInt(stats?.total_stocks) || 0,
-            advancing: parseInt(stats?.advancing) || 0,
-            declining: parseInt(stats?.declining) || 0,
-            unchanged: parseInt(stats?.unchanged) || 0,
+            total_stocks: toNumber(stats.total_stocks),
+            advancing: toNumber(stats.advancing),
+            declining: toNumber(stats.declining),
+            unchanged: toNumber(stats.unchanged),
 
-            // Volume
-            total_volume: parseInt(stats?.total_volume) || 0,
-            total_turnover: parseInt(stats?.total_turnover) || 0,
+            total_volume: toNumber(stats.total_volume),
+            total_turnover: toNumber(stats.total_turnover),
 
-            // Additional breadth data
-            new_highs: parseInt(breadth?.new_highs) || 0,
-            new_lows: parseInt(breadth?.new_lows) || 0,
-            advance_volume: parseInt(breadth?.advance_volume) || 0,
-            decline_volume: parseInt(breadth?.decline_volume) || 0,
+            new_highs: toNumber(breadth.new_highs),
+            new_lows: toNumber(breadth.new_lows),
+            advance_volume: toNumber(breadth.advance_volume),
+            decline_volume: toNumber(breadth.decline_volume),
 
-            // Timestamp
-            last_updated: new Date().toISOString()
+            last_updated: new Date().toISOString(),
+            timezone: EGX_TIME_ZONE,
+            session: {
+                opens_at: "10:00",
+                closes_at: "14:30",
+                days: ["Sun", "Mon", "Tue", "Wed", "Thu"],
+            },
         });
     } catch (error: any) {
-        console.error('[API /market-summary ERROR]', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("[API /market-summary ERROR]", error?.message || error);
+        return NextResponse.json({ error: error?.message || "market summary failed" }, { status: 500 });
     }
 }

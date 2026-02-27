@@ -24,6 +24,19 @@ import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { TrendingUp, TrendingDown, AlertCircle, Info, CheckCircle, XCircle } from "lucide-react";
 
+const BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = [
+    "this is market analysis for educational purposes, not personalized investment advice",
+    "your decision should factor in your individual financial situation, risk tolerance, and investment timeline",
+    "هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+    "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+];
+
+function isBlockedGenericDisclaimer(value?: string): boolean {
+    if (!value) return false;
+    const normalized = value.toLowerCase().replace(/\s+/g, " ").trim();
+    return BLOCKED_GENERIC_DISCLAIMER_SNIPPETS.some((snippet) => normalized.includes(snippet));
+}
+
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -531,12 +544,17 @@ export function MacroScorecardCard({
 export function EnhancedDisclaimerCard({
     icon = "⚠️",
     title = "Educational Analysis",
-    text = "This is market analysis for educational purposes, not personalized investment advice. Your decision should factor in your individual financial situation, risk tolerance, and investment timeline.",
+    text = "",
 }: {
     icon?: string;
     title?: string;
     text?: string;
 }) {
+    const disclaimerText = String(text || "").trim();
+    if (!disclaimerText || isBlockedGenericDisclaimer(disclaimerText)) {
+        return null;
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -551,7 +569,7 @@ export function EnhancedDisclaimerCard({
                         {title}
                     </h5>
                     <p className="text-xs text-amber-700 dark:text-amber-400/80 leading-relaxed">
-                        {text}
+                        {disclaimerText}
                     </p>
                 </div>
             </div>

@@ -100,6 +100,22 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${cairo.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
       >
+        <Script id="finhub-domain-scale" strategy="beforeInteractive">
+          {`
+            (function () {
+              try {
+                var hostname = window.location.hostname.toLowerCase();
+                var isFinhubDomain =
+                  hostname.includes("finhub-pro.vercel.app") ||
+                  (hostname.includes("finhub") && !hostname.includes("startamarkets"));
+
+                if (isFinhubDomain) {
+                  document.documentElement.classList.add("finhub-pro-domain");
+                }
+              } catch (e) {}
+            })();
+          `}
+        </Script>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"
           strategy="afterInteractive"

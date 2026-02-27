@@ -49,7 +49,25 @@ const variantConfig = {
     }
 };
 
+const BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = [
+    "this is market analysis for educational purposes, not personalized investment advice",
+    "your decision should factor in your individual financial situation, risk tolerance, and investment timeline",
+    "هذا تحليل سوقي لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+    "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
+];
+
+function isBlockedGenericDisclaimer(value?: string): boolean {
+    if (!value) return false;
+    const normalized = value.toLowerCase().replace(/\s+/g, " ").trim();
+    return BLOCKED_GENERIC_DISCLAIMER_SNIPPETS.some((snippet) => normalized.includes(snippet));
+}
+
 export function DisclaimerCard({ data, language = "en" }: DisclaimerCardProps) {
+    const disclaimerText = String(data?.text || "").trim();
+    if (!disclaimerText || isBlockedGenericDisclaimer(disclaimerText)) {
+        return null;
+    }
+
     const variant = data.variant || "warning";
     const config = variantConfig[variant];
     const IconComponent = config.Icon;
@@ -90,7 +108,7 @@ export function DisclaimerCard({ data, language = "en" }: DisclaimerCardProps) {
                         "text-sm leading-relaxed",
                         config.textColor
                     )}>
-                        {data.text}
+                        {disclaimerText}
                     </p>
                 </div>
             </div>

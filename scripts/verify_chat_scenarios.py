@@ -18,6 +18,8 @@ RESET = "\033[0m"
 
 # Session -> Fingerprint Map to support context follow-ups
 SESSION_FINGERPRINTS = {}
+CHECK_COUNT = 0
+FAIL_COUNT = 0
 
 def get_fingerprint(session_id: str):
     if session_id not in SESSION_FINGERPRINTS:
@@ -26,10 +28,15 @@ def get_fingerprint(session_id: str):
     return SESSION_FINGERPRINTS[session_id]
 
 def print_result(name: str, passed: bool, details: str = ""):
+    global CHECK_COUNT, FAIL_COUNT
+    CHECK_COUNT += 1
+    if not passed:
+        FAIL_COUNT += 1
     status = f"{GREEN}PASS{RESET}" if passed else f"{RED}FAIL{RESET}"
     print(f"[{status}] {name}")
     if details:
         print(f"       {details}")
+    return passed
 
 def validate_7_layer_structure(response_json: Dict[str, Any], intent: str) -> bool:
     """
@@ -61,7 +68,14 @@ def validate_7_layer_structure(response_json: Dict[str, Any], intent: str) -> bo
         
     return True
 
-def run_test(scenario_name: str, message: str, expected_intent: str = None, session_id: str = None):
+def run_test(
+    scenario_name: str,
+    message: str,
+    expected_intent: str = None,
+    session_id: str = None,
+    expect_compare_table: bool = False,
+    expect_stock_list: bool = False
+):
     print(f"\n{CYAN}=== TEST: {scenario_name} ==={RESET}")
     print(f"Query: \"{message}\"")
     
@@ -110,12 +124,15 @@ def run_test(scenario_name: str, message: str, expected_intent: str = None, sess
     print_result("Response Structure", struct_valid, f"Latency: {latency:.0f}ms | Intent: {intent_detected} | FP: {fingerprint[:6]}")
     
     # Special Checks
-    if "compare" in scenario_name.lower():
+    if expect_compare_table:
         has_table = any(c.get('type') == 'compare_table' for c in res.get('cards', []))
         print_result("Has Comparison Table", has_table)
         
-    if "screener" in scenario_name.lower() or "list" in scenario_name.lower():
-        has_list = any(c.get('type') in ['stock_list', 'hidden_gems'] for c in res.get('cards', []))
+    if expect_stock_list:
+        has_list = any(
+            c.get('type') in ['stock_list', 'hidden_gems', 'screener_results', 'undervalued_screen', 'gem_list']
+            for c in res.get('cards', [])
+        )
         print_result("Has Stock List", has_list)
 
     return actual_sid
@@ -148,18 +165,18 @@ def main():
     run_test("15. Fair Value", "What is the fair value of COMI?", "FAIR_VALUE")
     
     # 5. Comparison (The Regression Check)
-    run_test("16. Compare 2 Stocks", "Compare COMI vs SWDY", "COMPARE_STOCKS")
-    run_test("17. Compare 3 Stocks", "Compare COMI, SWDY and HRHO", "COMPARE_STOCKS")
+    run_test("16. Compare 2 Stocks", "Compare COMI vs SWDY", "COMPARE_STOCKS", expect_compare_table=True)
+    run_test("17. Compare 3 Stocks", "Compare COMI, SWDY and HRHO", "COMPARE_STOCKS", expect_compare_table=True)
     
     # 6. Technicals
     run_test("18. Technical Indicators", "Technical analysis for COMI", "TECHNICAL_INDICATORS")
     run_test("19. Chart Request", "Show me chart for COMI", "STOCK_CHART")
     
     # 7. Discovery & Screener
-    run_test("20. Value Screener", "Find cheap stocks with PE < 10", "SCREENER_VALUE") 
-    run_test("21. Dividend Screener", "Best dividend stocks", "DIVIDEND_LEADERS")
-    run_test("22. High Growth Screener", "High growth stocks", "SCREENER_GROWTH")
-    run_test("23. Hidden Gems", "Find hidden gems", "HIDDEN_GEMS")
+    run_test("20. Value Screener", "Find cheap stocks with PE < 10", "SCREENER_VALUE", expect_stock_list=True)
+    run_test("21. Dividend Screener", "Best dividend stocks", "DIVIDEND_LEADERS", expect_stock_list=True)
+    run_test("22. High Growth Screener", "High growth stocks", "SCREENER_GROWTH", expect_stock_list=True)
+    run_test("23. Hidden Gems", "Find hidden gems", "HIDDEN_GEMS", expect_stock_list=True)
     
     # 8. Extended/Macro
     run_test("24. Macro View", "How is the Egypt economy?", "MACRO_VIEW")
@@ -178,15 +195,24 @@ def main():
     run_test("30. Arabic Comparison", "قارن بين التجاري والسويدي", "COMPARE_STOCKS")
 
     # 11. Follow-up reliability from screener/list context
-    follow_sid = run_test("31a. Screener Seed (Undervalued)", "Get me the most undervalued stocks", "SCREENER_VALUE")
+    follow_sid = run_test("31a. Screener Seed (Undervalued)", "Get me the most undervalued stocks", "SCREENER_VALUE", expect_stock_list=True)
     run_test("31b. Screener Follow-up Risk", "How serious are the risks?", None, follow_sid)
     run_test("31c. Screener Follow-up Catalyst", "What unlocks this?", None, follow_sid)
     run_test(
         "31d. Long Natural-Language Compare Guard",
         "How does the stock in question compare to its sector peers in terms of valuation and growth?",
         None,
-        follow_sid
+        follow_sid,
+        expect_compare_table=True
     )
+
+    print(f"\n{CYAN}=== SUMMARY ==={RESET}")
+    print(f"Checks: {CHECK_COUNT} | Failures: {FAIL_COUNT}")
+    if FAIL_COUNT == 0:
+        print(f"{GREEN}All scenario checks passed.{RESET}")
+    else:
+        print(f"{RED}Scenario verification has failures.{RESET}")
+    sys.exit(0 if FAIL_COUNT == 0 else 1)
 
 if __name__ == "__main__":
     main()

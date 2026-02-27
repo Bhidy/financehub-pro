@@ -135,6 +135,8 @@ async def click_first_followup_chip(page) -> bool:
     Returns True if click was performed.
     """
     candidate_selectors = [
+        "[data-testid='followup-chip']",
+        "button[data-followup-index]",
         "button:has-text('How')",
         "button:has-text('What')",
         "button:has-text('Compare')",
@@ -149,6 +151,29 @@ async def click_first_followup_chip(page) -> bool:
                 return True
         except Exception:
             continue
+
+    # Heuristic fallback: pick first visible button that looks like a question chip.
+    try:
+        buttons = page.locator("button")
+        count = await buttons.count()
+        for i in range(min(count, 250)):
+            btn = buttons.nth(i)
+            if not await btn.is_visible():
+                continue
+            text = (await btn.inner_text()).strip()
+            if not text:
+                continue
+            lowered = text.lower()
+            if lowered in {"share", "like", "dislike", "send"}:
+                continue
+            if len(text) < 8 or len(text) > 180:
+                continue
+            if "?" in text or lowered.startswith(("how ", "what ", "why ", "compare ", "risk ", "macro ")):
+                await btn.click()
+                return True
+    except Exception:
+        pass
+
     return False
 
 

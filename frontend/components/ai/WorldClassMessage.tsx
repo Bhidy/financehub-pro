@@ -1761,6 +1761,9 @@ export function FollowUpChips({
                     return (
                         <button
                             key={`followup-${idx}`}
+                            data-testid="followup-chip"
+                            data-followup-index={idx}
+                            data-followup-payload={chip.payload || ""}
                             onClick={() => {
                                 // Prefer backend payload (route-friendly), fallback to visible chip text.
                                 const selectedPrompt = String(chip.payload || chip.text || "").trim();

@@ -226,10 +226,21 @@ async def handle_universal_screener(
         
     if not rows:
         msg = "No stocks found matching your criteria." if language == 'en' else "لم يتم العثور على أسهم تطابق معاييرك."
+        title = "Screener Results" if language == "en" else "نتائج البحث"
         return {
             "success": True,
             "message": msg,
-            "cards": []
+            "cards": [
+                {
+                    "type": CardType.SCREENER_RESULTS,
+                    "title": title,
+                    "data": {
+                        "stocks": [],
+                        "metric": sort_by or "market_cap",
+                        "empty_state": msg,
+                    },
+                }
+            ],
         }
 
     # Format Results

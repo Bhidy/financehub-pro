@@ -858,7 +858,12 @@ const MessageRenderer = memo(({
                 isUser
                     ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[14.5px] leading-relaxed"
                     : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[14.5px] leading-relaxed text-slate-800 dark:text-slate-200"
-            )}>
+            )}
+                data-response-status={!isUser
+                    ? (m.response?.success === false ? "fail" : (m.response ? "pass" : undefined))
+                    : undefined}
+                data-response-intent={!isUser ? (m.response?.meta?.intent || undefined) : undefined}
+            >
                 {isUser ? (
                     m.content
                 ) : (

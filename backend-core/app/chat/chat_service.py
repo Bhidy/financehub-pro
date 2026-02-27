@@ -407,6 +407,16 @@ TEXT_PHRASE_REPLACEMENTS = (
     ),
 )
 
+UNWANTED_OPENING_PATTERNS = (
+    re.compile(
+        r"^\s*Here is the complete picture based on the (?:latest available data|today(?:'|’)s session activity)\.\s*Let(?:'|’)s go through the numbers step-by-step\.?\s*",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"^\s*إليك الصورة الكاملة بناءً على (?:أحدث البيانات المتاحة|نشاط جلسة اليوم)\.\s*دعنا نستعرض الأرقام خطوة بخطوة\.?\s*"
+    ),
+)
+
 LONG_DECIMAL_NUMBER_RE = re.compile(
     r"(?<![\w/])(?P<num>-?(?:\d{1,3}(?:,\d{3})*|\d+)\.\d{3,})(?![\dA-Za-z/])"
 )
@@ -422,6 +432,9 @@ AR_COMPONENT_SCORE_RE = re.compile(
 )
 AR_TOTAL_SCORE_RE = re.compile(
     r"(?P<prefix>النتيجة\s+الإجمالية\s*(?:هي|:)?\s*)(?P<score>-?\d+(?:\.\d+)?)\b(?!\s*/)"
+)
+EN_DUPLICATE_OUT_OF_RE = re.compile(
+    r"(?i)(\b(?:valuation|profitability|financial health|health|earnings quality|quality|momentum|total)\s+score(?:\s+of|:)\s+-?\d+(?:\.\d+)?/\d+(?:\s*\([^)]+\))?)\s+out\s+of\s+\d+(?:\.\d+)?"
 )
 
 SCORE_COMPONENT_MAX = {
@@ -888,6 +901,19 @@ class ChatService:
             return "weak" if language != "ar" else "ضعيف"
         return "very weak" if language != "ar" else "ضعيف جداً"
 
+    @staticmethod
+    def _resolve_score_max(label: str, score_val: float) -> int:
+        key = str(label or "").lower().strip()
+        base_max = SCORE_COMPONENT_MAX.get(key)
+        if not base_max:
+            return 100 if score_val > 20 else 20
+        if base_max >= 100:
+            return base_max
+        # If model emits a component score above 20, treat it as percentage-style scale.
+        if score_val > base_max and score_val <= 100:
+            return 100
+        return base_max
+
     @classmethod
     def _apply_score_clarity_to_text(cls, text: str, language: str) -> str:
         if not text:
@@ -896,13 +922,11 @@ class ChatService:
         def _replace_en_score_of(match: re.Match) -> str:
             label = str(match.group("label") or "")
             score_raw = str(match.group("score") or "")
-            max_score = SCORE_COMPONENT_MAX.get(label.lower().strip())
-            if not max_score:
-                return match.group(0)
             try:
                 score_val = float(score_raw)
             except Exception:
                 score_val = 0.0
+            max_score = cls._resolve_score_max(label, score_val)
             score_fmt = cls._format_score_number(score_raw)
             signal = cls._score_signal_label(score_val, max_score, language)
             return f"{label} score of {score_fmt}/{max_score} ({signal})"
@@ -910,13 +934,11 @@ class ChatService:
         def _replace_en_score_colon(match: re.Match) -> str:
             label = str(match.group("label") or "")
             score_raw = str(match.group("score") or "")
-            max_score = SCORE_COMPONENT_MAX.get(label.lower().strip())
-            if not max_score:
-                return match.group(0)
             try:
                 score_val = float(score_raw)
             except Exception:
                 score_val = 0.0
+            max_score = cls._resolve_score_max(label, score_val)
             score_fmt = cls._format_score_number(score_raw)
             signal = cls._score_signal_label(score_val, max_score, language)
             return f"{label} score: {score_fmt}/{max_score} ({signal})"
@@ -937,6 +959,7 @@ class ChatService:
         text = EN_SCORE_COLON_RE.sub(_replace_en_score_colon, text)
         text = AR_COMPONENT_SCORE_RE.sub(_replace_ar_component_score, text)
         text = AR_TOTAL_SCORE_RE.sub(_replace_ar_total_score, text)
+        text = EN_DUPLICATE_OUT_OF_RE.sub(r"\1", text)
         return text
 
     @classmethod
@@ -966,6 +989,9 @@ class ChatService:
         text = str(value)
         if not text:
             return ""
+
+        for pattern in UNWANTED_OPENING_PATTERNS:
+            text = pattern.sub("", text)
 
         for sentence in UNWANTED_OPENING_SENTENCES:
             text = re.sub(

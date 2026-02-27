@@ -50,6 +50,14 @@ import { translations } from "@/components/chatbot/translations";
 import { resolveNewsImageSrc, sanitizeNewsText, splitNewsParagraphs } from "@/lib/news-display";
 import { createPortal } from "react-dom";
 
+function canonicalizeCardType(value: any): string {
+    const raw = String(value ?? "").trim();
+    if (!raw) return raw;
+    if (/^cardtype\./i.test(raw)) return raw.replace(/^cardtype\./i, "").toLowerCase();
+    if (/^CardType\./.test(raw)) return raw.replace(/^CardType\./, "").toLowerCase();
+    return raw.toLowerCase();
+}
+
 // ============================================================
 // Stock Header Card
 // ============================================================
@@ -2738,7 +2746,7 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
         card = { ...card, data: {} };
     }
 
-    const type = (card.type || "").toLowerCase().trim();
+    const type = canonicalizeCardType(card.type);
     const chatT = translations[language === "ar" ? "ar" : "en"].chat;
     const rawErrorText = card?.data?.error;
     const safeErrorText = (

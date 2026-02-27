@@ -95,9 +95,10 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             GROUP BY t.sector_name
         ),
         index_perf AS (
-            SELECT COALESCE(return_3m, change_3m, 0) as egx_change_3m
-            FROM market_tickers
-            WHERE symbol IN ('^EGX30', 'EGX30')
+            SELECT COALESCE(ss2.price_change_52w, 0) as egx_change
+            FROM market_tickers idx_t
+            LEFT JOIN stock_statistics ss2 ON idx_t.symbol = ss2.symbol
+            WHERE idx_t.symbol IN ('^EGX30', 'EGX30')
             LIMIT 1
         )
         SELECT 
@@ -122,7 +123,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             ss.ev_ebitda,
             ss.interest_coverage,
             ss.roic,
-            COALESCE(t.return_3m, t.change_3m, 0) - COALESCE(idx.egx_change_3m, 0) AS relative_alpha_3m,
+            COALESCE(ss.price_change_52w, 0) - COALESCE(idx.egx_change, 0) AS relative_alpha,
             sa.avg_pb,
             sa.avg_pe,
             sa.avg_ev_ebitda,
@@ -204,9 +205,10 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 GROUP BY t2.sector_name
             ),
             index_perf AS (
-                SELECT COALESCE(return_3m, change_3m, 0) as egx_change_3m
-                FROM market_tickers 
-                WHERE symbol IN ('^EGX30', 'EGX30') 
+                SELECT COALESCE(ss2.price_change_52w, 0) as egx_change
+                FROM market_tickers idx_t
+                LEFT JOIN stock_statistics ss2 ON idx_t.symbol = ss2.symbol
+                WHERE idx_t.symbol IN ('^EGX30', 'EGX30')
                 LIMIT 1
             )
             SELECT 
@@ -215,7 +217,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
                 COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
                 ss.roe, ss.profit_margin, ss.roic, ss.ev_ebitda, ss.interest_coverage,
-                COALESCE(t.return_3m, t.change_3m, 0) - COALESCE(idx.egx_change_3m, 0) AS relative_alpha_3m,
+                COALESCE(ss.price_change_52w, 0) - COALESCE(idx.egx_change, 0) AS relative_alpha,
                 ss.debt_equity, ss.net_income_ttm, ss.ocf_ttm,
                 sa.avg_pe, sa.avg_pb, sa.avg_ev_ebitda,
                 0::numeric as pb_discount, 0::numeric as pe_discount, 0::numeric as ev_ebitda_discount
@@ -258,7 +260,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             ev_ebitda = row.get('ev_ebitda')
             roe = row.get('roe')
             roic = row.get('roic')
-            alpha = row.get('relative_alpha_3m')
+            alpha = row.get('relative_alpha')
             
             if roe and abs(roe) <= 1:
                 roe = roe * 100

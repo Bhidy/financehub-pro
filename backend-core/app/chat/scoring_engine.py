@@ -407,7 +407,7 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
 
     q_score, q_note = score_earnings_quality(ocf_val, ni_val, sector=sector, profit_margin=profit_margin_val)
     
-    relative_alpha = stock.get("relative_alpha_3m")
+    relative_alpha = stock.get("relative_alpha")
     m_score, m_note = score_momentum(relative_alpha)
 
     total = v_score + p_score + h_score + q_score + m_score

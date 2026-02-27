@@ -10,17 +10,52 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 
-def _format_number(value: float, decimals: int = 2) -> Optional[str]:
-    """Format number with commas and proper scale."""
+def _format_number(
+    value: float,
+    decimals: int = 2,
+    assume_millions: bool = False,
+    currency: Optional[str] = None
+) -> Optional[str]:
+    """Format number with scale and optional currency suffix.
+
+    `income_statements` / `balance_sheets` values are stored in millions for many fields.
+    Use `assume_millions=True` for those amounts so display units remain economically correct.
+    """
     if value is None:
         return None
-    if abs(value) >= 1_000_000_000:
-        return f"{value/1_000_000_000:.2f}B"
-    if abs(value) >= 1_000_000:
-        return f"{value/1_000_000:.2f}M"
-    if abs(value) >= 1_000:
-        return f"{value/1_000:.2f}K"
-    return f"{value:,.{decimals}f}"
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return None
+
+    if assume_millions:
+        num *= 1_000_000
+
+    if abs(num) >= 1_000_000_000:
+        out = f"{num/1_000_000_000:.2f}B"
+    elif abs(num) >= 1_000_000:
+        out = f"{num/1_000_000:.2f}M"
+    elif abs(num) >= 1_000:
+        out = f"{num/1_000:.2f}K"
+    else:
+        out = f"{num:,.{decimals}f}"
+
+    if currency:
+        return f"{out} {currency}"
+    return out
+
+
+def _format_share_count_from_millions(shares_mn: Optional[float], decimals: int = 2) -> Optional[str]:
+    """Convert share count stored in millions to readable M/B shares text."""
+    if shares_mn is None:
+        return None
+    try:
+        s = float(shares_mn)
+    except (TypeError, ValueError):
+        return None
+    if s >= 1000:
+        return f"{s/1000:.{decimals}f}B shares"
+    return f"{s:.{decimals}f}M shares"
 
 
 def _format_percent(value: float) -> Optional[str]:
@@ -1613,6 +1648,7 @@ async def handle_financial_metric(
         }
         
     year = latest_income['fiscal_year']
+    period_ending = latest_income.get('period_ending')
     
     # 3. Compute Metrics based on Intent
     data_points = {}
@@ -1620,6 +1656,8 @@ async def handle_financial_metric(
     title_ar = ""
     insight_en = ""
     insight_ar = ""
+    eps_methodology_en = ""
+    eps_methodology_ar = ""
     
     def safe_div(n, d):
         return n / d if d and d != 0 else None
@@ -1643,8 +1681,8 @@ async def handle_financial_metric(
             "Gross Margin" if language == 'en' else "هامش إجمالي الربح": _format_percent(gross_margin),
             "Operating Margin" if language == 'en' else "الهامش التشغيلي": _format_percent(op_margin),
             "Net Profit Margin" if language == 'en' else "هامش صافي الربح": _format_percent(net_margin),
-            "Revenue" if language == 'en' else "الإيرادات": _format_number(revenue),
-            "Net Income" if language == 'en' else "صافي الدخل": _format_number(net_income)
+            "Revenue" if language == 'en' else "الإيرادات": _format_number(revenue, assume_millions=True, currency=curr),
+            "Net Income" if language == 'en' else "صافي الدخل": _format_number(net_income, assume_millions=True, currency=curr)
         }
         
         # Insight
@@ -1669,8 +1707,8 @@ async def handle_financial_metric(
         data_points = {
             "Revenue Growth (YoY)" if language == 'en' else "نمو الإيرادات (سنوي)": _format_percent(rev_growth),
             "Net Income Growth" if language == 'en' else "نمو صافي الدخل": _format_percent(ni_growth),
-            "Current Revenue" if language == 'en' else "الإيرادات الحالية": _format_number(revenue),
-            "Current Net Income" if language == 'en' else "صافي الدخل الحالي": _format_number(net_income)
+            "Current Revenue" if language == 'en' else "الإيرادات الحالية": _format_number(revenue, assume_millions=True, currency=curr),
+            "Current Net Income" if language == 'en' else "صافي الدخل الحالي": _format_number(net_income, assume_millions=True, currency=curr)
         }
         
         if rev_growth:
@@ -1693,14 +1731,14 @@ async def handle_financial_metric(
             debt_equity = safe_div(total_debt, total_equity)
             debt_assets = safe_div(total_debt, total_assets)
             
-            de_str = f"{debt_equity:.2f}x" if debt_equity else None
+            de_str = f"{debt_equity:.2f}x" if debt_equity is not None else None
             da_str = _format_percent(debt_assets)
             
             data_points = {
                 "Debt / Equity" if language == 'en' else "الدين / حقوق الملكية": de_str,
                 "Debt / Assets" if language == 'en' else "الدين / الأصول": da_str,
-                "Total Debt" if language == 'en' else "إجمالي الديون": _format_number(total_debt),
-                "Total Equity" if language == 'en' else "إجمالي حقوق الملكية": _format_number(total_equity)
+                "Total Debt" if language == 'en' else "إجمالي الديون": _format_number(total_debt, assume_millions=True, currency=curr),
+                "Total Equity" if language == 'en' else "إجمالي حقوق الملكية": _format_number(total_equity, assume_millions=True, currency=curr)
             }
         else:
              data_points = {"Status": "No Balance Sheet Data"}
@@ -1711,12 +1749,42 @@ async def handle_financial_metric(
         
         eps = float(latest_income.get('eps') or 0)
         eps_diluted = float(latest_income.get('eps_diluted') or 0)
+        net_income_common = float(latest_income.get('net_income_common') or 0)
+
+        # EPS is based on profit attributable to common shareholders when available.
+        eps_income_base = net_income_common if net_income_common > 0 else net_income
+        implied_basic_shares_mn = safe_div(eps_income_base, eps) if eps > 0 else None
+        implied_diluted_shares_mn = safe_div(eps_income_base, eps_diluted) if eps_diluted > 0 else None
+        period_label_en = f"FY {year} annual"
+        period_label_ar = f"السنة المالية {year} (سنوي)"
+        if period_ending:
+            period_label_en += f" (period ending {period_ending})"
+            period_label_ar += f" (منتهية في {period_ending})"
         
         data_points = {
             "Basic EPS" if language == 'en' else "ربحية السهم (الأساسية)": f"{eps:.2f} {curr}",
             "Diluted EPS" if language == 'en' else "ربحية السهم (المخففة)": f"{eps_diluted:.2f} {curr}",
-            "Net Income" if language == 'en' else "صافي الدخل": _format_number(net_income)
+            "Net Income" if language == 'en' else "صافي الدخل": _format_number(eps_income_base, assume_millions=True, currency=curr)
         }
+
+        net_income_reported_mn_en = f"{eps_income_base:,.2f} million {curr}"
+        net_income_reported_mn_ar = f"{eps_income_base:,.2f} مليون {curr}"
+        implied_basic_txt = _format_share_count_from_millions(implied_basic_shares_mn)
+        implied_diluted_txt = _format_share_count_from_millions(implied_diluted_shares_mn)
+        eps_methodology_en = (
+            f"\n**Calculation & Period:**\n"
+            f"- **Period**: {period_label_en}.\n"
+            f"- **Formula**: EPS = Net income attributable to common shareholders / weighted-average shares.\n"
+            f"- **Net income basis used for EPS**: {net_income_reported_mn_en} (statement-reported in millions).\n"
+            f"- **Implied weighted-average shares**: Basic ~ {implied_basic_txt or 'N/A'}, Diluted ~ {implied_diluted_txt or 'N/A'}.\n"
+        )
+        eps_methodology_ar = (
+            f"\n**منهجية الحساب والفترة:**\n"
+            f"- **الفترة**: {period_label_ar}.\n"
+            f"- **المعادلة**: ربحية السهم = صافي الدخل المنسوب للمساهمين العاديين ÷ متوسط عدد الأسهم المرجح.\n"
+            f"- **أساس صافي الدخل المستخدم**: {net_income_reported_mn_ar} (القوائم هنا معروضة بوحدة الملايين).\n"
+            f"- **متوسط الأسهم الضمني**: الأساسي ~ {implied_basic_txt or 'غير متاح'}، المخفف ~ {implied_diluted_txt or 'غير متاح'}.\n"
+        )
         
     # Default fallback
     if not data_points:
@@ -1738,6 +1806,9 @@ async def handle_financial_metric(
         # Ensure we don't show internal N/A if possible, or do show it but formatted
         if v:
             message_text += f"- **{k}**: {v}\n"
+
+    if intent == "FIN_EPS":
+        message_text += eps_methodology_ar if language == 'ar' else eps_methodology_en
 
     actions = [
         {'label': '📑 Income Statement', 'label_ar': '📑 قائمة الدخل', 'action_type': 'query', 'payload': f'Financials {symbol}'},

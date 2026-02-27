@@ -86,12 +86,19 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         WITH sector_averages AS (
             SELECT 
                 t.sector_name,
-                AVG(NULLIF(COALESCE(t.pb_ratio, ss.pb_ratio), 0)) as avg_pb,
-                AVG(NULLIF(t.pe_ratio, 0)) as avg_pe
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(COALESCE(t.pb_ratio, ss.pb_ratio), 0))::numeric as avg_pb,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(t.pe_ratio, 0))::numeric as avg_pe,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(ss.ev_ebitda, 0))::numeric as avg_ev_ebitda
             FROM market_tickers t
             LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
             WHERE t.market_code = 'EGX' AND t.sector_name IS NOT NULL
             GROUP BY t.sector_name
+        ),
+        index_perf AS (
+            SELECT COALESCE(return_3m, change_3m, 0) as egx_change_3m
+            FROM market_tickers
+            WHERE symbol IN ('^EGX30', 'EGX30')
+            LIMIT 1
         )
         SELECT 
             t.symbol,
@@ -112,8 +119,13 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             ss.current_ratio,
             ss.net_income_ttm,
             ss.ocf_ttm,
+            ss.ev_ebitda,
+            ss.interest_coverage,
+            ss.roic,
+            COALESCE(t.return_3m, t.change_3m, 0) - COALESCE(idx.egx_change_3m, 0) AS relative_alpha_3m,
             sa.avg_pb,
             sa.avg_pe,
+            sa.avg_ev_ebitda,
             CASE 
                 WHEN COALESCE(t.pb_ratio, ss.pb_ratio) IS NOT NULL AND sa.avg_pb IS NOT NULL
                   AND COALESCE(t.pb_ratio, ss.pb_ratio) > 0
@@ -125,10 +137,16 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 WHEN t.pe_ratio IS NOT NULL AND sa.avg_pe IS NOT NULL AND t.pe_ratio > 0 AND t.pe_ratio < sa.avg_pe
                 THEN ROUND(((sa.avg_pe - t.pe_ratio) / sa.avg_pe * 100)::numeric, 0)
                 ELSE 0
-            END as pe_discount
+            END as pe_discount,
+            CASE 
+                WHEN ss.ev_ebitda IS NOT NULL AND sa.avg_ev_ebitda IS NOT NULL AND ss.ev_ebitda > 0 AND ss.ev_ebitda < sa.avg_ev_ebitda
+                THEN ROUND(((sa.avg_ev_ebitda - ss.ev_ebitda) / sa.avg_ev_ebitda * 100)::numeric, 0)
+                ELSE 0
+            END as ev_ebitda_discount
         FROM market_tickers t
         LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
         LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
+        CROSS JOIN index_perf idx
         WHERE t.market_code = 'EGX'
           AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
           AND (
@@ -155,12 +173,17 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             hist_avg = {
                 "pe_5yr_avg": row.get("avg_pe"),
                 "pb_5yr_avg": row.get("avg_pb"),
+                "ev_ebitda_5yr_avg": row.get("avg_ev_ebitda"),
             }
             score_res = calculate_score(metrics, hist_avg)
-            # Hidden gem criteria: meaningful score + valuation discount + quality (ROE >= 18% preferred)
+            # Hidden gem criteria: meaningful score + valuation discount + quality
             roe_val = metrics.get('roe') or 0
-            has_quality = roe_val >= 18 or (roe_val >= 12 and getattr(score_res, 'profitability', 0) >= 12)
-            has_discount = row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15
+            roic_val = metrics.get('roic') or 0
+            
+            quality_metric = roic_val if roic_val else roe_val
+            has_quality = quality_metric >= 12 or (quality_metric >= 8 and getattr(score_res, 'profitability', 0) >= 12)
+            has_discount = row.get('pb_discount', 0) >= 15 or row.get('pe_discount', 0) >= 15 or row.get('ev_ebitda_discount', 0) >= 15
+            
             if score_res.total >= 45 and (has_discount or has_quality):
                 scored_rows.append((score_res, dict(row)))
 
@@ -172,28 +195,37 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             fallback_query = """
             WITH sector_averages AS (
                 SELECT t2.sector_name,
-                    AVG(NULLIF(t2.pe_ratio, 0)) FILTER (WHERE t2.pe_ratio > 0 AND t2.pe_ratio < 100) as avg_pe,
-                    AVG(NULLIF(COALESCE(t2.pb_ratio, s2.pb_ratio), 0)) FILTER (WHERE COALESCE(t2.pb_ratio, s2.pb_ratio) > 0) as avg_pb
+                    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(t2.pe_ratio, 0))::numeric as avg_pe,
+                    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(COALESCE(t2.pb_ratio, s2.pb_ratio), 0))::numeric as avg_pb,
+                    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(s2.ev_ebitda, 0))::numeric as avg_ev_ebitda
                 FROM market_tickers t2
                 LEFT JOIN stock_statistics s2 ON t2.symbol = s2.symbol AND t2.market_code = s2.market_code
                 WHERE t2.market_code = 'EGX' AND t2.sector_name IS NOT NULL
                 GROUP BY t2.sector_name
+            ),
+            index_perf AS (
+                SELECT COALESCE(return_3m, change_3m, 0) as egx_change_3m
+                FROM market_tickers 
+                WHERE symbol IN ('^EGX30', 'EGX30') 
+                LIMIT 1
             )
             SELECT 
                 t.symbol, t.name_en, t.name_ar, t.sector_name,
                 t.market_cap, t.logo_url, t.pe_ratio,
                 COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
                 COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
-                ss.roe, ss.profit_margin,
+                ss.roe, ss.profit_margin, ss.roic, ss.ev_ebitda, ss.interest_coverage,
+                COALESCE(t.return_3m, t.change_3m, 0) - COALESCE(idx.egx_change_3m, 0) AS relative_alpha_3m,
                 ss.debt_equity, ss.net_income_ttm, ss.ocf_ttm,
-                sa.avg_pe, sa.avg_pb,
-                0::numeric as pb_discount, 0::numeric as pe_discount
+                sa.avg_pe, sa.avg_pb, sa.avg_ev_ebitda,
+                0::numeric as pb_discount, 0::numeric as pe_discount, 0::numeric as ev_ebitda_discount
             FROM market_tickers t
             LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
             LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
+            CROSS JOIN index_perf idx
             WHERE t.market_code = 'EGX'
               AND t.market_cap > 100000000
-              AND (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 OR t.pe_ratio > 0)
+              AND (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 OR t.pe_ratio > 0 OR ss.ev_ebitda > 0)
               AND (t.pe_ratio IS NULL OR t.pe_ratio <= 30)
               AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
               AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
@@ -210,6 +242,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                 hist_avg = {
                     "pe_5yr_avg": row.get("avg_pe"),
                     "pb_5yr_avg": row.get("avg_pb"),
+                    "ev_ebitda_5yr_avg": row.get("avg_ev_ebitda"),
                 }
                 score_res = calculate_score(metrics, hist_avg)
                 top_candidates.append((score_res, dict(row)))
@@ -222,15 +255,29 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             reasons = []
             pb = row.get('pb_ratio')
             pe = row.get('pe_ratio')
+            ev_ebitda = row.get('ev_ebitda')
             roe = row.get('roe')
+            roic = row.get('roic')
+            alpha = row.get('relative_alpha_3m')
+            
             if roe and abs(roe) <= 1:
                 roe = roe * 100
+            if roic and abs(roic) <= 1:
+                roic = roic * 100
+            if alpha and abs(alpha) <= 1:
+                alpha = alpha * 100
             
             margin = row.get('profit_margin')
             if margin and abs(margin) <= 1:
                 margin = margin * 100
             
-            if pb and pb < 1:
+            if ev_ebitda and ev_ebitda > 0 and ev_ebitda < 8:
+                reasons.append(
+                    f"تقييم تشغيلي جذاب عند {ev_ebitda:.1f}x (EV/EBITDA)"
+                    if language == "ar" else
+                    f"Attractive operational valuation at {ev_ebitda:.1f}x EV/EBITDA"
+                )
+            elif pb and pb < 1:
                 reasons.append(
                     f"يتداول أقل من القيمة الدفترية عند {pb:.2f}x"
                     if language == "ar" else
@@ -242,19 +289,31 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
                     if language == "ar" else
                     f"Attractive valuation at {pb:.2f}x P/B"
                 )
-
-            if pe and pe < 10:
+            elif pe and pe < 10:
                 reasons.append(
                     f"مكرر ربحية منخفض عند {pe:.1f}x يدعم فكرة انخفاض التقييم"
                     if language == "ar" else
                     f"Low P/E of {pe:.1f}x suggests undervaluation"
                 )
 
-            if roe and roe > 15:
+            if roic and roic > 10:
+                reasons.append(
+                    f"كفاءة عالية في تخصيص رأس المال (ROIC {roic:.1f}%)"
+                    if language == "ar" else
+                    f"High capital allocation efficiency ({roic:.1f}% ROIC)"
+                )
+            elif roe and roe > 15:
                 reasons.append(
                     f"ربحية قوية مع عائد على حقوق الملكية {roe:.1f}%"
                     if language == "ar" else
                     f"Strong profitability with {roe:.1f}% ROE"
+                )
+
+            if alpha and alpha > 5:
+                reasons.append(
+                    f"يتفوق على السوق بنسبة {alpha:.1f}% كألفا تشغيلية"
+                    if language == "ar" else
+                    f"Generating {alpha:.1f}% Alpha over market average (3m)"
                 )
 
             if margin and margin > 10:
@@ -327,8 +386,8 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             "description": "Multi-factor discovery screen" if language == "en" else "فحص متعدد العوامل",
             "criteria": [
                 {"label": "Market Cap" if language == "en" else "القيمة السوقية", "value": "EGP 500M - 5B" if language == "en" else "500 مليون - 5 مليار جنيه"},
-                {"label": "Valuation Discount" if language == "en" else "خصم التقييم", "value": ">15% below sector" if language == "en" else "أكثر من 15% أقل من متوسط القطاع"},
-                {"label": "Quality Filter" if language == "en" else "فلتر الجودة", "value": "ROE > 15% or Positive Margins" if language == "en" else "عائد > 15% أو هوامش إيجابية"},
+                {"label": "Valuation Discount" if language == "en" else "خصم التقييم", "value": ">15% discount on EV/EBITDA or P/E" if language == "en" else "أكثر من 15% خصم في التقييم التشغيلي"},
+                {"label": "Capital Quality" if language == "en" else "جودة رأس المال", "value": "ROIC > 12% or High Margins" if language == "en" else "عائد رأسمال > 12% أو هوامش عالية"},
                 {"label": "Coverage" if language == "en" else "التغطية", "value": "Not in EGX 30 (underfollowed)" if language == "en" else "خارج المؤشر الرئيسي (تغطية أقل)"}
             ],
             "note": "Gems are overlooked stocks with solid fundamentals." if language == "en" else "الفرص الخفية هي أسهم مهملة سوقياً رغم قوة الأساسيات."

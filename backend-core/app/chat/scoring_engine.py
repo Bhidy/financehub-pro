@@ -20,14 +20,14 @@ SECTOR_CONFIG = {
         "de_threshold": 0.7,
     },
     "Food, Beverages & Tobacco": {
-        "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs Sector Avg",
+        "valuation_metric": "ev_ebitda",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 25.0, "roe_good": 15.0, "roe_weak": 8.0,
         "de_threshold": 0.7,
     },
     "Trade & Distributors": {
-        "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs Sector Avg",
+        "valuation_metric": "ev_ebitda",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 20.0, "roe_good": 12.0, "roe_weak": 6.0,
         "de_threshold": 0.7,
     },
@@ -38,8 +38,8 @@ SECTOR_CONFIG = {
         "de_threshold": 0.8,
     },
     "Health Care & Pharmaceuticals": {
-        "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs Sector Avg",
+        "valuation_metric": "ev_ebitda",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 22.0, "roe_good": 15.0, "roe_weak": 8.0,
         "de_threshold": 0.5,
     },
@@ -50,22 +50,22 @@ SECTOR_CONFIG = {
         "de_threshold": 1.0,
     },
     "Utilities": {
-        "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs Sector Avg",
+        "valuation_metric": "ev_ebitda",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 15.0, "roe_good": 10.0, "roe_weak": 6.0,
         "de_threshold": 1.0,
     },
     "Energy & Support Services": {
-        "valuation_metric": "pe_ratio",
-        "valuation_label": "P/E vs Sector Avg",
+        "valuation_metric": "ev_ebitda",
+        "valuation_label": "EV/EBITDA vs Sector Avg",
         "roe_strong": 15.0, "roe_good": 10.0, "roe_weak": 6.0,
         "de_threshold": 1.0,
     },
 }
 
 DEFAULT_CONFIG = {
-    "valuation_metric": "pe_ratio",
-    "valuation_label": "P/E vs Sector Avg",
+    "valuation_metric": "ev_ebitda",
+    "valuation_label": "EV/EBITDA vs Sector Avg",
     "roe_strong": 18.0, "roe_good": 12.0, "roe_weak": 7.0,
     "de_threshold": 0.7,
 }
@@ -163,12 +163,27 @@ def score_valuation(current_val: float, historical_avg: float, label: str) -> Tu
     return score, desc
 
 
-def score_profitability(roe: float, sector: str) -> Tuple[int, str]:
+def score_profitability(roic: float, roe: float, sector: str) -> Tuple[int, str]:
+    if roic is not None:
+        if roic >= 20.0:
+            return 20, f"ROIC {roic:.1f}% — exceptional capital efficiency"
+        elif roic >= 15.0:
+            return 16, f"ROIC {roic:.1f}% — strong value creation"
+        elif roic >= 10.0:
+            return 12, f"ROIC {roic:.1f}% — covers cost of capital"
+        elif roic >= 5.0:
+            return 8,  f"ROIC {roic:.1f}% — weak capital returns"
+        elif roic >= 0.0:
+            return 4,  f"ROIC {roic:.1f}% — destroying value (below WACC)"
+        else:
+            return 0,  f"ROIC {roic:.1f}% — negative returns"
+            
+    # Fallback to ROE if ROIC is unavailable
     cfg = SECTOR_CONFIG.get(sector, DEFAULT_CONFIG)
-    strong, good, weak = cfg["roe_strong"], cfg["roe_good"], cfg["roe_weak"]
+    strong, good, weak = cfg.get("roe_strong", 18.0), cfg.get("roe_good", 12.0), cfg.get("roe_weak", 7.0)
 
     if roe is None:
-        return 4, "ROE: data unavailable — assume weak"
+        return 4, "ROE/ROIC: data unavailable"
 
     if roe >= strong * 1.5:
         score, desc = 20, f"ROE {roe:.1f}% — exceptional for sector (threshold: {strong:.0f}%)"
@@ -185,14 +200,32 @@ def score_profitability(roe: float, sector: str) -> Tuple[int, str]:
     return score, desc
 
 
-def score_financial_health(debt_equity: float, sector: str) -> Tuple[int, str]:
+def score_financial_health(interest_coverage: float, debt_equity: float, sector: str) -> Tuple[int, str]:
+    is_bank = sector in ["Banks", "Financial Services", "Financials - Banks"]
+    
+    # Non-banks use Interest Coverage for true solvency assessment
+    if not is_bank and interest_coverage is not None:
+        if interest_coverage >= 10.0:
+            return 20, f"Interest Coverage {interest_coverage:.1f}x — bulletproof solvency"
+        elif interest_coverage >= 5.0:
+            return 16, f"Interest Coverage {interest_coverage:.1f}x — strong debt service capacity"
+        elif interest_coverage >= 3.0:
+            return 12, f"Interest Coverage {interest_coverage:.1f}x — adequate solvency"
+        elif interest_coverage >= 1.5:
+            return 8,  f"Interest Coverage {interest_coverage:.1f}x — elevated solvency risk"
+        elif interest_coverage >= 1.0:
+            return 4,  f"Interest Coverage {interest_coverage:.1f}x — barely covering interest"
+        else:
+            return 0,  f"Interest Coverage {interest_coverage:.1f}x — extreme distress risk"
+            
+    # Fallback to D/E or Banks logic
     cfg = SECTOR_CONFIG.get(sector, DEFAULT_CONFIG)
-    threshold = cfg["de_threshold"]
+    threshold = cfg.get("de_threshold", 0.7)
 
     if debt_equity is None:
-        if sector in ["Banks", "Financial Services", "Financials - Banks"]:
+        if is_bank:
             return 12, "D/E: N/A for Banks (Capital Adequacy used instead)"
-        return 10, "D/E: data unavailable"
+        return 10, "Solvency: data unavailable"
 
     if debt_equity <= threshold * 0.30:
         score, desc = 20, f"D/E {debt_equity:.2f}x — very low leverage (threshold: {threshold:.1f}x)"
@@ -250,22 +283,22 @@ def score_earnings_quality(operating_cash_flow: float, net_income: float, sector
     return score, desc
 
 
-def score_momentum(price_change_3m_pct: float) -> Tuple[int, str]:
-    if price_change_3m_pct is None:
-        return 10, "Price history: insufficient data"
+def score_momentum(relative_alpha: float) -> Tuple[int, str]:
+    if relative_alpha is None:
+        return 10, "Momentum: insufficient relative alpha data"
 
-    if price_change_3m_pct >= 20:
-        score, desc = 20, f"Price +{price_change_3m_pct:.1f}% last 3m — strong uptrend"
-    elif price_change_3m_pct >= 10:
-        score, desc = 16, f"Price +{price_change_3m_pct:.1f}% last 3m — positive momentum"
-    elif price_change_3m_pct >= 0:
-        score, desc = 12, f"Price +{price_change_3m_pct:.1f}% last 3m — flat to positive"
-    elif price_change_3m_pct >= -10:
-        score, desc = 8,  f"Price {price_change_3m_pct:.1f}% last 3m — minor pullback"
-    elif price_change_3m_pct >= -20:
-        score, desc = 4,  f"Price {price_change_3m_pct:.1f}% last 3m — significant decline"
+    if relative_alpha >= 15:
+        score, desc = 20, f"Alpha +{relative_alpha:.1f}% vs EGX30 (3m) — severe outperformance"
+    elif relative_alpha >= 5:
+        score, desc = 16, f"Alpha +{relative_alpha:.1f}% vs EGX30 (3m) — strong market outperformance"
+    elif relative_alpha >= 0:
+        score, desc = 12, f"Alpha +{relative_alpha:.1f}% vs EGX30 (3m) — matching or slightly beating market"
+    elif relative_alpha >= -10:
+        score, desc = 8,  f"Alpha {relative_alpha:.1f}% vs EGX30 (3m) — lagging the market"
+    elif relative_alpha >= -20:
+        score, desc = 4,  f"Alpha {relative_alpha:.1f}% vs EGX30 (3m) — significant underperformance"
     else:
-        score, desc = 0,  f"Price {price_change_3m_pct:.1f}% last 3m — major selloff"
+        score, desc = 0,  f"Alpha {relative_alpha:.1f}% vs EGX30 (3m) — severe market lag"
     return score, desc
 
 
@@ -347,13 +380,16 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
     roe_val = stock.get("roe")
     if roe_val is None:
         roe_val = stock.get("return_on_equity")
-    p_score, p_note = score_profitability(roe_val, sector)
+    roic_val = stock.get("roic")
+    p_score, p_note = score_profitability(roic_val, roe_val, sector)
     
-    # Debt/Equity: try multiple column names
+    # Debt/Equity & Interest Coverage
     de_val = stock.get("debt_to_equity")
     if de_val is None:
         de_val = stock.get("debt_equity")
-    h_score, h_note = score_financial_health(de_val, sector)
+    
+    ic_val = stock.get("interest_coverage")
+    h_score, h_note = score_financial_health(ic_val, de_val, sector)
     
     ocf_val = stock.get("operating_cash_flow")
     if ocf_val is None:
@@ -370,7 +406,9 @@ def calculate_score(stock: Dict, historical_avg: Dict) -> ScoreBreakdown:
         profit_margin_val = stock.get("net_profit_margin")
 
     q_score, q_note = score_earnings_quality(ocf_val, ni_val, sector=sector, profit_margin=profit_margin_val)
-    m_score, m_note = score_momentum(stock.get("price_change_3m_pct") if stock.get("price_change_3m_pct") is not None else stock.get("change_3m"))
+    
+    relative_alpha = stock.get("relative_alpha_3m")
+    m_score, m_note = score_momentum(relative_alpha)
 
     total = v_score + p_score + h_score + q_score + m_score
     grade, signal = get_grade_and_signal(total)

@@ -147,7 +147,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
         FROM market_tickers t
         LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
         LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
-        CROSS JOIN index_perf idx
+        LEFT JOIN index_perf idx ON 1=1
         WHERE t.market_code = 'EGX'
           AND t.market_cap BETWEEN 500000000 AND 5000000000  -- 500M to 5B EGP
           AND (
@@ -224,7 +224,7 @@ async def handle_hidden_gems(conn, language: str = "en", context: dict = None) -
             FROM market_tickers t
             LEFT JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
             LEFT JOIN sector_averages sa ON t.sector_name = sa.sector_name
-            CROSS JOIN index_perf idx
+            LEFT JOIN index_perf idx ON 1=1
             WHERE t.market_code = 'EGX'
               AND t.market_cap > 100000000
               AND (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 OR t.pe_ratio > 0 OR ss.ev_ebitda > 0)

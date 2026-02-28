@@ -142,32 +142,31 @@ export default function MutualFundsPage() {
         : 0;
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] pb-12">
+        <main className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300 pb-12">
             {/* Premium Header */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-teal-500 text-white shadow-lg pb-12">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+            <div className="relative overflow-hidden bg-white dark:bg-[#24303F] border-b border-slate-200 dark:border-[#2E3A47] text-slate-900 dark:text-white pb-12">
+                
 
                 <div className="relative max-w-7xl mx-auto px-6 py-8">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl shadow-lg border border-white/20">
+                            <div className="w-14 h-14 rounded-md bg-[#F1F5F9] dark:bg-[#1A222C] flex items-center justify-center text-3xl shadow-sm border border-slate-200 dark:border-[#2E3A47]">
                                 💼
                             </div>
                             <div>
                                 <h1 className="text-3xl font-black tracking-tight">Mutual Funds Center</h1>
-                                <p className="text-blue-100 font-medium">{funds.length} {isEgypt ? "Egypt" : "Saudi"} funds • Real-time analytics</p>
+                                <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">{funds.length} {isEgypt ? "Egypt" : "Saudi"} funds • Real-time analytics</p>
                             </div>
                         </div>
 
                         <div className="flex gap-3">
-                            <Link href='/funds/statistics' className="bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 text-white font-bold text-sm transition-all flex items-center gap-2 group">
+                            <Link href='/funds/statistics' className="bg-[#3C50E0] hover:bg-[#3C50E0]/90 px-4 py-2 rounded-md border border-transparent text-white font-medium text-sm transition-all flex items-center gap-2 group">
                                 <BarChart3 className="w-4 h-4" />
                                 <span className="hidden md:inline">Market Statistics</span>
-                                <ArrowUpRight className="w-3 h-3 text-blue-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                <ArrowUpRight className="w-3 h-3 text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                             </Link>
 
-                            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2">
+                            <div className="bg-[#F1F5F9] dark:bg-[#1A222C] text-slate-900 dark:text-white px-4 py-2 rounded-md border border-slate-200 dark:border-[#2E3A47] flex items-center gap-2">
                                 <span className="text-lg font-bold">{isEgypt ? "🇪🇬 Egypt" : "🇸🇦 KSA"}</span>
                             </div>
                         </div>
@@ -179,24 +178,21 @@ export default function MutualFundsPage() {
 
                 {/* Summary Statistics (Dynamic based on selected period) */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 -mt-16 relative z-20">
-                    <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
+                    <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] p-5 relative overflow-hidden group transition-all hover:shadow-md">
                         <BarChart3 className="w-5 h-5 text-blue-500 mb-2" />
                         <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Funds</div>
                         <div className="text-3xl font-black text-slate-900 dark:text-white font-mono">{funds.length}</div>
                         <div className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-1">Active Universe</div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
+                    <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] p-5 relative overflow-hidden group transition-all hover:shadow-md">
                         <TrendingUp className="w-5 h-5 text-emerald-500 mb-2" />
                         <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Avg NAV</div>
                         <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{config.currency} {avgNav.toFixed(2)}</div>
                         <div className="text-xs font-bold text-emerald-700 dark:text-emerald-500 mt-1">Weighted Average</div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
+                    <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] p-5 relative overflow-hidden group transition-all hover:shadow-md">
                         <Sparkles className="w-5 h-5 text-orange-500 mb-2" />
                         <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Avg {currentMetricInfo.label}</div>
                         <div className={clsx(
@@ -208,8 +204,7 @@ export default function MutualFundsPage() {
                         <div className="text-xs font-bold text-orange-600 dark:text-orange-400 mt-1">Market Average</div>
                     </div>
 
-                    <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-xl border border-slate-100 dark:border-white/5 p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-50 rounded-bl-full opacity-50 transition-opacity group-hover:opacity-100" />
+                    <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] p-5 relative overflow-hidden group transition-all hover:shadow-md">
                         <PieChart className="w-5 h-5 text-purple-500 mb-2" />
                         <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{currentMetricInfo.label.split(' ')[0]} Performance</div>
                         <div className="flex items-center gap-3">
@@ -222,7 +217,7 @@ export default function MutualFundsPage() {
                 </div>
 
                 {/* Filters & Search */}
-                <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg border border-slate-100 dark:border-white/5 p-4 mb-6 sticky top-4 z-40">
+                <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] p-4 mb-6 sticky top-4 z-40">
                     <div className="flex flex-col md:flex-row gap-4 items-center">
                         {/* Search */}
                         <div className="flex-1 relative w-full">
@@ -232,7 +227,7 @@ export default function MutualFundsPage() {
                                 placeholder="Search funds or managers..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-white/10 dark:bg-white/5 rounded-xl text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 text-slate-900 dark:text-white transition-all placeholder:text-slate-400"
+                                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-[#2E3A47] bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md text-sm font-medium focus:border-[#3C50E0] focus:outline-none focus:ring-1 focus:ring-[#3C50E0] text-slate-900 dark:text-white transition-all placeholder:text-slate-400"
                                 dir="auto"
                             />
                         </div>
@@ -241,12 +236,12 @@ export default function MutualFundsPage() {
                         <div className="flex gap-3 overflow-x-auto max-w-full pb-1 md:pb-0 items-center">
 
                             {/* View Toggle */}
-                            <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
+                            <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] p-1 rounded-md shrink-0 border border-slate-200 dark:border-[#2E3A47]">
                                 <button
                                     onClick={() => setViewMode("grid")}
                                     className={clsx(
-                                        "p-2 rounded-lg transition-all",
-                                        viewMode === "grid" ? "bg-white dark:bg-[#151925] text-blue-600 dark:text-blue-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                                        "p-2 rounded-sm transition-all",
+                                        viewMode === "grid" ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                                     )}
                                     title="Grid View"
                                 >
@@ -255,8 +250,8 @@ export default function MutualFundsPage() {
                                 <button
                                     onClick={() => setViewMode("table")}
                                     className={clsx(
-                                        "p-2 rounded-lg transition-all",
-                                        viewMode === "table" ? "bg-white dark:bg-[#151925] text-blue-600 dark:text-blue-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                                        "p-2 rounded-sm transition-all",
+                                        viewMode === "table" ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                                     )}
                                     title="Table View"
                                 >
@@ -269,7 +264,7 @@ export default function MutualFundsPage() {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                                    className="px-4 py-2.5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold focus:border-blue-500 focus:outline-none bg-white dark:bg-[#1A1F2E] text-slate-700 dark:text-white cursor-pointer hover:border-blue-400 transition-colors"
+                                    className="px-4 py-2.5 border border-slate-200 dark:border-[#2E3A47] rounded-md text-sm font-medium focus:border-[#3C50E0] focus:outline-none bg-[#F1F5F9] dark:bg-[#1A222C] text-slate-700 dark:text-white cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                                 >
                                     <option value="performance">Highest Return</option>
                                     <option value="nav">Highest NAV</option>
@@ -281,7 +276,7 @@ export default function MutualFundsPage() {
                             <button
                                 onClick={() => setIsShariahOnly(!isShariahOnly)}
                                 className={clsx(
-                                    "px-4 py-2.5 rounded-xl border text-sm font-bold flex items-center gap-2 transition-all shrink-0",
+                                    "px-4 py-2.5 rounded-md border text-sm font-medium flex items-center gap-2 transition-all shrink-0",
                                     isShariahOnly
                                         ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
                                         : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20"
@@ -292,15 +287,15 @@ export default function MutualFundsPage() {
                             </button>
 
                             {/* Period Selector (The user request) */}
-                            <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
+                            <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] p-1 rounded-md shrink-0 border border-slate-200 dark:border-[#2E3A47]">
                                 {Object.keys(metricConfig).map((key) => (
                                     <button
                                         key={key}
                                         onClick={() => setSelectedPeriod(key as PeriodOption)}
                                         className={clsx(
-                                            "px-3 py-1.5 rounded-lg text-xs font-bold transition-all uppercase",
+                                            "px-3 py-1.5 rounded-sm text-xs font-medium transition-all uppercase",
                                             selectedPeriod === key
-                                                ? "bg-white dark:bg-[#151925] text-blue-600 dark:text-blue-400 shadow-sm"
+                                                ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm"
                                                 : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10"
                                         )}
                                     >
@@ -322,10 +317,10 @@ export default function MutualFundsPage() {
                                 key={type}
                                 onClick={() => setFilterType(type)}
                                 className={clsx(
-                                    "px-4 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
+                                    "px-4 py-1.5 rounded-md text-xs font-medium transition-all border whitespace-nowrap",
                                     filterType === type
-                                        ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white"
-                                        : "bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
+                                        ? "bg-[#3C50E0] text-white border-transparent"
+                                        : "bg-[#F1F5F9] dark:bg-[#1A222C] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#2E3A47] hover:bg-slate-200 dark:hover:bg-[#24303F]"
                                 )}
                             >
                                 {type}
@@ -341,8 +336,8 @@ export default function MutualFundsPage() {
                         <p className="text-slate-500 font-bold text-lg">Loading Market Data...</p>
                     </div>
                 ) : filteredFunds.length === 0 ? (
-                    <div className="bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 p-16 text-center max-w-lg mx-auto mt-12">
-                        <div className="w-20 h-20 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] p-16 text-center max-w-lg mx-auto mt-12">
+                        <div className="w-16 h-16 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md flex items-center justify-center mx-auto mb-6">
                             <Search className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No matching funds found</h3>
@@ -369,7 +364,7 @@ export default function MutualFundsPage() {
                                 <div
                                     key={fund.fund_id}
                                     onClick={() => router.push(`/funds/${fund.fund_id}`)}
-                                    className="group relative bg-white dark:bg-[#1A1F2E] rounded-2xl transition-all duration-300 cursor-pointer border border-slate-200/60 dark:border-white/5 shadow-lg hover:shadow-2xl hover:border-blue-300/50 dark:hover:border-blue-500/30 hover:-translate-y-2 overflow-hidden"
+                                    className="group relative bg-white dark:bg-[#24303F] rounded-md transition-all duration-300 cursor-pointer border border-slate-200 dark:border-[#2E3A47] shadow-sm hover:shadow-md hover:border-[#3C50E0] dark:hover:border-[#3C50E0] hover:-translate-y-1 overflow-hidden"
                                 >
                                     {/* Premium Gradient Header Band */}
                                     <div className={clsx(
@@ -415,8 +410,7 @@ export default function MutualFundsPage() {
                                         {/* Premium Metrics Glass Cards */}
                                         <div className="grid grid-cols-2 gap-3 mb-4">
                                             {/* NAV Card */}
-                                            <div className="relative bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-white/5 dark:to-white/5 rounded-xl p-3.5 border border-slate-200/50 dark:border-white/5 overflow-hidden">
-                                                <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-200/20 dark:bg-blue-500/10 rounded-full blur-xl" />
+                                            <div className="relative bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md p-3.5 border border-slate-200 dark:border-[#2E3A47] overflow-hidden">
                                                 <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-1">Latest NAV</div>
                                                 <div className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
                                                     {Number(fund.latest_nav || 0).toFixed(2)}
@@ -426,15 +420,11 @@ export default function MutualFundsPage() {
 
                                             {/* Return Card */}
                                             <div className={clsx(
-                                                "relative rounded-xl p-3.5 border overflow-hidden",
+                                                "relative rounded-md p-3.5 border overflow-hidden",
                                                 isPositive
-                                                    ? "bg-gradient-to-br from-emerald-50 to-green-50/50 dark:from-emerald-500/10 dark:to-emerald-900/10 border-emerald-200/50 dark:border-emerald-500/20"
-                                                    : "bg-gradient-to-br from-red-50 to-rose-50/50 dark:from-red-500/10 dark:to-red-900/10 border-red-200/50 dark:border-red-500/20"
+                                                    ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20"
+                                                    : "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20"
                                             )}>
-                                                <div className={clsx(
-                                                    "absolute -top-4 -right-4 w-16 h-16 rounded-full blur-xl",
-                                                    isPositive ? "bg-emerald-200/30 dark:bg-emerald-500/20" : "bg-red-200/30 dark:bg-red-500/20"
-                                                )} />
                                                 <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-1">{currentMetricInfo.label.split(' ')[0]}</div>
                                                 <div className={clsx(
                                                     "text-2xl font-black font-mono tracking-tight flex items-center gap-1",
@@ -472,7 +462,7 @@ export default function MutualFundsPage() {
                                     </div>
 
                                     {/* Premium Action Footer */}
-                                    <div className="px-5 py-3.5 bg-gradient-to-r from-slate-50 via-slate-50 to-blue-50/30 dark:from-white/5 dark:via-white/5 dark:to-blue-900/10 border-t border-slate-100 dark:border-white/5 flex justify-between items-center group-hover:from-blue-50/50 dark:group-hover:from-blue-900/20 group-hover:to-cyan-50/30 dark:group-hover:to-cyan-900/20 transition-all">
+                                    <div className="px-5 py-3 bg-slate-50 dark:bg-[#1A222C] border-t border-slate-200 dark:border-[#2E3A47] flex justify-between items-center transition-all group-hover:bg-slate-100 dark:group-hover:bg-[#2E3A47]">
                                         <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">{fund.fund_id}</span>
                                         <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:gap-2 transition-all">
                                             View Details <ArrowUpRight className="w-3.5 h-3.5" />

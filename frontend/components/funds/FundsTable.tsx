@@ -81,7 +81,7 @@ export default function FundsTable({ funds }: FundsTableProps) {
     const HeaderCell = ({ label, keyName, align = "left" }: { label: string, keyName: SortKey, align?: "left" | "right" | "center" }) => (
         <th
             className={clsx(
-                "py-3 px-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 transition-colors select-none",
+                "py-3 px-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-slate-200 dark:hover:bg-[#2E3A47] transition-colors select-none",
                 align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center"
             )}
             onClick={() => handleSort(keyName)}
@@ -106,20 +106,20 @@ export default function FundsTable({ funds }: FundsTableProps) {
     };
 
     return (
-        <div className="overflow-x-auto bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/5">
+        <div className="overflow-x-auto bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47]">
             <table className="w-full border-collapse min-w-[900px]">
                 <thead>
-                    <tr className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-[#0f172a] dark:to-[#1e293b]">
+                    <tr className="bg-[#F1F5F9] dark:bg-[#1A222C] border-b border-slate-200 dark:border-[#2E3A47]">
                         <HeaderCell label="Fund Name" keyName="name" />
                         <HeaderCell label="Market" keyName="market" align="center" />
                         <HeaderCell label="Manager" keyName="manager" />
-                        <th className="py-3 px-4 text-xs font-bold text-white uppercase tracking-wider text-left">Owner</th>
+                        <th className="py-3 px-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-left">Owner</th>
                         <HeaderCell label="Current Price" keyName="nav" align="right" />
                         <HeaderCell label="Profit %" keyName="profit" align="right" />
                         <HeaderCell label="Last Update" keyName="updated" align="right" />
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                <tbody className="divide-y divide-slate-200 dark:divide-[#2E3A47]">
                     {sortedFunds.map((fund) => {
                         const profit = safeNumber(fund.returns_ytd ?? fund.ytd_return);
                         const managerName = fund.manager_name_en || fund.manager_name || fund.manager || "—";
@@ -129,7 +129,7 @@ export default function FundsTable({ funds }: FundsTableProps) {
                             <tr
                                 key={fund.fund_id}
                                 onClick={() => router.push(`/funds/${fund.fund_id}`)}
-                                className="group hover:bg-blue-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer text-sm"
+                                className="group hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors cursor-pointer text-sm border-b border-slate-200 dark:border-[#2E3A47] last:border-0"
                             >
                                 {/* Fund Name */}
                                 <td className="py-4 px-4">

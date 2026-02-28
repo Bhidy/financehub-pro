@@ -531,3 +531,204 @@ def build_monthly_deep_dive(
         unsubscribe_url,
         f"EGX {month_name}: {'+' if egx30_monthly_change >= 0 else ''}{egx30_monthly_change:.1f}% — Stock of the Month, Hidden Gems & more"
     )
+
+
+# ============================================================
+# STARTA ACADEMY TEMPLATE (Phase 2)
+# ============================================================
+
+def build_academy_lesson(
+    user_name: str,
+    lesson_number: int,
+    lesson_title: str,
+    lesson_icon: str,
+    lesson_intro: str,
+    lesson_sections: List[Dict],
+    try_it_prompt: str,
+    next_lesson_teaser: str,
+    unsubscribe_url: str,
+) -> str:
+    """Build a Starta Academy educational email."""
+
+    # Progress bar
+    total_lessons = 8
+    progress_pct = int((lesson_number / total_lessons) * 100)
+
+    hero = f"""
+<tr>
+<td style="padding:28px 32px 8px;">
+  <div style="display:inline-block;padding:4px 12px;border-radius:20px;background:{COLORS['teal_subtle']};font-size:11px;font-weight:700;color:{COLORS['teal']};text-transform:uppercase;letter-spacing:1px;">Starta Academy</div>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 32px 20px;">
+  <div style="font-size:22px;font-weight:800;color:{COLORS['text_primary']};margin-bottom:4px;">{lesson_icon} Lesson {lesson_number}: {lesson_title}</div>
+  <div style="font-size:13px;color:{COLORS['text_secondary']};">Lesson {lesson_number} of {total_lessons}</div>
+</td>
+</tr>"""
+
+    # Progress bar
+    progress = f"""
+<tr>
+<td style="padding:0 32px 20px;">
+  <div style="font-size:11px;color:{COLORS['text_muted']};margin-bottom:6px;">YOUR PROGRESS</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+  <tr><td>
+    <div style="height:8px;background:{COLORS['surface']};border-radius:4px;overflow:hidden;">
+      <div style="height:8px;width:{progress_pct}%;background:linear-gradient(90deg, {COLORS['teal']}, {COLORS['teal_dark']});border-radius:4px;"></div>
+    </div>
+  </td></tr>
+  </table>
+  <div style="font-size:11px;color:{COLORS['teal']};margin-top:4px;font-weight:600;">{progress_pct}% complete</div>
+</td>
+</tr>"""
+
+    # Greeting
+    greeting = f"""
+<tr>
+<td style="padding:0 32px 20px;">
+  <div style="font-size:15px;color:{COLORS['text_primary']};line-height:1.6;">
+    {'Hey' if lesson_number > 1 else 'Welcome'}{f', <strong>{user_name}</strong>' if user_name else ''}! {lesson_intro}
+  </div>
+</td>
+</tr>"""
+
+    # Lesson sections
+    sections_html = ""
+    for i, sec in enumerate(lesson_sections):
+        sections_html += _card(f"""
+        <div style="font-size:15px;font-weight:700;color:{COLORS['text_primary']};margin-bottom:8px;">{sec.get('title', '')}</div>
+        <div style="font-size:14px;color:{COLORS['text_primary']};line-height:1.7;">{sec.get('content', '')}</div>
+        {f'<div style="margin-top:12px;padding:12px 16px;background:{COLORS["surface"]};border-radius:8px;border-left:3px solid {COLORS["teal"]};font-family:JetBrains Mono,monospace;font-size:13px;color:{COLORS["text_primary"]};">{sec.get("example", "")}</div>' if sec.get('example') else ''}
+        """)
+
+    # Try it section
+    try_it = f"""
+<tr>
+<td style="padding:0 32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg, {COLORS['navy']} 0%, {COLORS['navy_light']} 100%);border-radius:12px;overflow:hidden;">
+  <tr><td style="padding:24px;">
+    <div style="font-size:14px;font-weight:700;color:{COLORS['white']};margin-bottom:8px;">🚀 Try It Now</div>
+    <div style="font-size:14px;color:{COLORS['text_muted']};line-height:1.6;margin-bottom:16px;">Open Starta AI and type:</div>
+    <div style="padding:12px 16px;background:rgba(255,255,255,0.1);border-radius:8px;border:1px solid rgba(255,255,255,0.15);font-family:'JetBrains Mono',monospace;font-size:14px;color:{COLORS['teal']};">"{try_it_prompt}"</div>
+  </td></tr>
+  </table>
+</td>
+</tr>"""
+
+    # Next lesson teaser
+    next_teaser = f"""
+<tr>
+<td style="padding:0 32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{COLORS['surface']};border:1px solid {COLORS['border']};border-radius:12px;overflow:hidden;">
+  <tr><td style="padding:16px 20px;">
+    <div style="font-size:12px;font-weight:600;color:{COLORS['text_muted']};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Coming Next</div>
+    <div style="font-size:14px;color:{COLORS['text_primary']};font-weight:600;">{next_lesson_teaser}</div>
+  </td></tr>
+  </table>
+</td>
+</tr>""" if next_lesson_teaser and lesson_number < total_lessons else ""
+
+    content = hero + progress + greeting + sections_html + try_it + next_teaser
+    content += _cta_button("Open Starta AI →", "https://startamarkets.com")
+
+    return _base_wrapper(
+        content,
+        unsubscribe_url,
+        f"🎓 Lesson {lesson_number}/{total_lessons}: {lesson_title} — Starta Academy"
+    )
+
+
+# ============================================================
+# FLASH ALERT TEMPLATE (Phase 3)
+# ============================================================
+
+def build_flash_alert(
+    user_name: str,
+    alert_type: str,
+    headline: str,
+    details: str,
+    affected_stocks: List[Dict],
+    market_context: str,
+    unsubscribe_url: str,
+) -> str:
+    """Build a Flash Alert email for significant market events."""
+
+    # Alert styling based on type
+    if alert_type == "crash":
+        alert_color = COLORS['red']
+        alert_icon = "🔴"
+        alert_label = "MARKET ALERT"
+        bg_gradient = f"linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)"
+    elif alert_type == "surge":
+        alert_color = COLORS['green']
+        alert_icon = "🟢"
+        alert_label = "BREAKOUT ALERT"
+        bg_gradient = f"linear-gradient(135deg, #14532D 0%, #166534 100%)"
+    else:
+        alert_color = COLORS['teal']
+        alert_icon = "⚡"
+        alert_label = "MARKET UPDATE"
+        bg_gradient = f"linear-gradient(135deg, {COLORS['navy']} 0%, {COLORS['navy_light']} 100%)"
+
+    # Alert banner
+    banner = f"""
+<tr>
+<td style="background:{bg_gradient};padding:24px 32px;text-align:center;">
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.7);margin-bottom:8px;">{alert_label}</div>
+  <div style="font-size:24px;font-weight:800;color:{COLORS['white']};line-height:1.3;">{alert_icon} {headline}</div>
+</td>
+</tr>"""
+
+    # Details
+    details_section = f"""
+<tr>
+<td style="padding:24px 32px;">
+  <div style="font-size:15px;color:{COLORS['text_primary']};line-height:1.7;">
+    {'Hi' if not user_name else f'Hi <strong>{user_name}</strong>'}, {details}
+  </div>
+</td>
+</tr>"""
+
+    # Affected stocks table
+    stocks_rows = ""
+    for i, s in enumerate(affected_stocks[:5]):
+        change = s.get('change_percent', 0)
+        color = COLORS['green'] if change >= 0 else COLORS['red']
+        sign = "+" if change >= 0 else ""
+        stocks_rows += f"""
+        <tr style="background:{'#F8FAFC' if i % 2 == 1 else '#FFFFFF'};">
+          <td style="padding:10px 0;font-size:14px;font-weight:600;">{s.get('symbol', '')}</td>
+          <td style="padding:10px 0;font-size:13px;color:{COLORS['text_secondary']};">{s.get('name', '')[:20]}</td>
+          <td style="padding:10px 0;text-align:right;font-size:14px;font-weight:700;color:{color};font-family:'JetBrains Mono',monospace;">{sign}{change:.2f}%</td>
+        </tr>"""
+
+    stocks_section = _card(f"""
+    <div style="font-size:14px;font-weight:700;color:{COLORS['text_primary']};margin-bottom:12px;">Stocks Affected</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    {stocks_rows}
+    </table>
+    """) if affected_stocks else ""
+
+    # Market context
+    context_section = f"""
+<tr>
+<td style="padding:0 32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{COLORS['teal_subtle']};border:1px solid {COLORS['teal']}30;border-radius:12px;overflow:hidden;">
+  <tr><td style="padding:20px 24px;">
+    <div style="font-size:14px;font-weight:700;color:{COLORS['teal_dark']};margin-bottom:8px;">📊 Market Context</div>
+    <div style="font-size:14px;color:{COLORS['text_primary']};line-height:1.6;">{market_context}</div>
+  </td></tr>
+  </table>
+</td>
+</tr>""" if market_context else ""
+
+    content = banner + details_section + stocks_section + context_section
+    content += _cta_button("Analyze on Starta AI →", "https://startamarkets.com")
+
+    return _base_wrapper(
+        content,
+        unsubscribe_url,
+        f"{alert_icon} {headline}"
+    )
+

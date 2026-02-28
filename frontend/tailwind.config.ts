@@ -38,9 +38,10 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                sans: ["var(--font-manrope)", "sans-serif"],
-                code: ["var(--font-code)", "monospace"],
-                grotesk: ["var(--font-grotesk)", "sans-serif"],
+                sans: ["var(--font-inter)", "sans-serif"],
+                heading: ["var(--font-manrope)", "sans-serif"],
+                mono: ["var(--font-jetbrains)", "monospace"],
+                arabic: ["var(--font-arabic)", "sans-serif"],
             },
             letterSpacing: {
                 tagline: ".15em",

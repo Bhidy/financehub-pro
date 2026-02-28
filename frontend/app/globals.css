@@ -387,8 +387,8 @@
    ROOT VARIABLES (LIGHT THEME DEFAULT)
    ============================================================================ */
 :root {
-  --background: #F8FAFC;
-  --foreground: #0F172A;
+  --background: #F1F5F9;
+  --foreground: #64748B;
   --card-bg: #FFFFFF;
   --card-border: #E2E8F0;
   color-scheme: light;
@@ -397,58 +397,45 @@
 /* System Preference Detection */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0B1121;
-    --foreground: #F8FAFC;
-    --card-bg: #111827;
-    --card-border: rgba(255, 255, 255, 0.08);
+    --background: #1A222C;
+    --foreground: #AEB7C0;
+    --card-bg: #24303F;
+    --card-border: #2E3A47;
     color-scheme: dark;
   }
 }
 
 /* Manual Dark Mode Toggle */
 .dark {
-  --background: #0B1121;
-  --foreground: #F8FAFC;
-  --card-bg: #111827;
-  --card-border: rgba(255, 255, 255, 0.08);
+  --background: #1A222C;
+  --foreground: #AEB7C0;
+  --card-bg: #24303F;
+  --card-border: #2E3A47;
   color-scheme: dark !important;
 }
 
 /* Manual Light Mode Toggle */
 .light {
-  --background: #F8FAFC;
-  --foreground: #0F172A;
+  --background: #F1F5F9;
+  --foreground: #64748B;
   --card-bg: #FFFFFF;
   --card-border: #E2E8F0;
   color-scheme: light !important;
 
   /* Inverted Color Scale for Light Theme */
-  --color-n-1: #0E0C15;
-  /* Was White, now Dark (Text) */
+  --color-n-1: #1C2434;
   --color-n-2: #3F3A52;
-  /* Was Light Gray, now Dark Gray */
   --color-n-3: #757185;
-  /* Mid Gray */
   --color-n-4: #ADA8C3;
-  /* Lighter Gray */
   --color-n-5: #CAC6DD;
-  /* Pale Gray */
   --color-n-6: #FFFFFF;
-  /* Was Dark Card, now White Card */
   --color-n-7: #F1F5F9;
-  /* Was Darker Card, now Light Surface (Slate 100) */
   --color-n-8: #F8FAFC;
-  /* Was Main BG, now Light BG (Slate 50) */
   --color-n-9: #E2E8F0;
-  /* Was Dark Purple, now Light Border */
   --color-n-10: #CBD5E1;
-  /* Was Purple, now Slate 300 */
   --color-n-11: #FFFFFF;
-  /* Was Dark Blue, now White */
   --color-n-12: #F1F5F9;
-  /* Was Dark, now Light */
   --color-n-13: #94A3B8;
-  /* Slate 400 */
 
   --color-header-bg: #FFFFFF;
 }
@@ -481,42 +468,26 @@ body {
    viewport math bugs (empty bottom gaps with h-screen / 100vh layouts).
    ============================================================================ */
 html.finhub-pro-domain {
-  --finhub-shell-bg:
-    radial-gradient(1200px 700px at 12% -10%, rgba(20, 184, 166, 0.14), transparent 52%),
-    radial-gradient(1000px 600px at 88% -16%, rgba(14, 165, 233, 0.12), transparent 56%),
-    linear-gradient(180deg, #060c1a 0%, #050a17 56%, #040914 100%);
-  --finhub-main-bg:
-    radial-gradient(900px 520px at 100% 0%, rgba(20, 184, 166, 0.08), transparent 54%),
-    linear-gradient(180deg, rgba(7, 12, 24, 0.86) 0%, rgba(5, 10, 20, 0.96) 100%);
-  --finhub-panel-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.78) 0%, rgba(8, 15, 28, 0.88) 100%);
-  --finhub-panel-border: rgba(148, 163, 184, 0.2);
-  --finhub-body-text: #e2e8f0;
-  --finhub-sidebar-bg:
-    linear-gradient(180deg, rgba(6, 13, 30, 0.96) 0%, rgba(5, 10, 23, 0.98) 100%);
-  --finhub-sidebar-border: rgba(148, 163, 184, 0.18);
-  --finhub-sidebar-shadow:
-    0 24px 70px rgba(2, 6, 23, 0.65),
-    inset -1px 0 0 rgba(15, 23, 42, 0.55);
+  --finhub-shell-bg: #1A222C;
+  --finhub-main-bg: #1A222C;
+  --finhub-panel-bg: #24303F;
+  --finhub-panel-border: #2E3A47;
+  --finhub-body-text: #AEB7C0;
+  --finhub-sidebar-bg: #24303F;
+  --finhub-sidebar-border: #2E3A47;
+  --finhub-sidebar-shadow: none;
 }
 
 /* Light-mode override for Finhub shell + sidebar */
 html.finhub-pro-domain.light {
-  --finhub-shell-bg:
-    radial-gradient(1100px 650px at 10% -18%, rgba(20, 184, 166, 0.14), transparent 56%),
-    radial-gradient(900px 560px at 88% -22%, rgba(14, 165, 233, 0.12), transparent 60%),
-    linear-gradient(180deg, #f8fbff 0%, #f2f7ff 48%, #edf4ff 100%);
-  --finhub-main-bg:
-    radial-gradient(900px 520px at 100% 0%, rgba(20, 184, 166, 0.08), transparent 56%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(244, 248, 255, 0.98) 100%);
-  --finhub-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 251, 255, 0.98) 100%);
-  --finhub-panel-border: rgba(148, 163, 184, 0.24);
-  --finhub-body-text: #0f172a;
-  --finhub-sidebar-bg:
-    linear-gradient(180deg, rgba(251, 253, 255, 0.97) 0%, rgba(241, 247, 255, 0.99) 100%);
-  --finhub-sidebar-border: rgba(148, 163, 184, 0.24);
-  --finhub-sidebar-shadow:
-    0 18px 52px rgba(15, 23, 42, 0.12),
-    inset -1px 0 0 rgba(255, 255, 255, 0.9);
+  --finhub-shell-bg: #F1F5F9;
+  --finhub-main-bg: #F1F5F9;
+  --finhub-panel-bg: #FFFFFF;
+  --finhub-panel-border: #E2E8F0;
+  --finhub-body-text: #64748B;
+  --finhub-sidebar-bg: #FFFFFF;
+  --finhub-sidebar-border: #E2E8F0;
+  --finhub-sidebar-shadow: 0 1px 3px rgba(0,0,0,0.05); /* very subtle */
 }
 
 /* Compact density on desktop (rem-based sizing) without zoom side effects */
@@ -555,10 +526,7 @@ html.finhub-pro-domain .finhub-sidebar {
   box-shadow: var(--finhub-sidebar-shadow);
 }
 
-html.finhub-pro-domain .finhub-glass {
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
+html.finhub-pro-domain 
 
 html.finhub-pro-domain .finhub-panel {
   background: var(--finhub-panel-bg);
@@ -1088,3 +1056,41 @@ a:focus-visible {
 }
 
 /* Zoom Compensation Removed */
+
+/* ========================================================================
+   ULTRA-PREMIUM FINTECH TOKENS (Glossy, Glowing, Animated)
+   ======================================================================== */
+
+@layer utilities {
+  .premium-glass {
+    @apply bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)];
+  }
+  
+  .premium-glass-heavy {
+    @apply bg-white/85 dark:bg-[#0B1121]/85 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)];
+  }
+
+  .premium-glow-hover {
+    @apply transition-all duration-500 hover:shadow-[0_0_20px_rgba(20,184,166,0.15)] hover:border-[#14B8A6]/40 hover:-translate-y-1;
+  }
+  
+  .premium-glow-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300;
+  }
+  
+  .premium-accent-glow {
+    @apply shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-shadow duration-300;
+  }
+}
+
+/* Base Animations */
+@keyframes ambientGlow {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.05; }
+  33% { transform: scale(1.1) translate(2%, -2%); opacity: 0.08; }
+  66% { transform: scale(0.9) translate(-2%, 2%); opacity: 0.06; }
+  100% { transform: scale(1) translate(0, 0); opacity: 0.05; }
+}
+
+.animate-ambient-glow {
+  animation: ambientGlow 15s ease-in-out infinite alternate;
+}

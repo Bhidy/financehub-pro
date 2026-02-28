@@ -122,8 +122,8 @@ export default function PortfolioPage() {
     // PRE-LOADING STATE (SKELETONS)
     if (authLoading || (!portfolio && isLoading)) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] p-6 space-y-8 overflow-hidden transition-colors duration-500">
-                <div className="h-[320px] bg-white dark:bg-[#151925] rounded-[40px] animate-pulse shadow-2xl relative overflow-hidden">
+            <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] p-6 space-y-8 overflow-hidden transition-colors duration-500">
+                <div className="h-[320px] bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] animate-pulse shadow-sm relative overflow-hidden">
                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-slate-900/5 dark:via-white/5 to-transparent z-10" />
                 </div>
                 <div className="max-w-[1900px] mx-auto px-6 -mt-32 space-y-8 relative z-20">
@@ -138,7 +138,7 @@ export default function PortfolioPage() {
     if (!portfolio) return null;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] pb-20 font-sans selection:bg-brand-accent/30 transition-colors duration-500 overflow-x-hidden">
+        <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] pb-20 font-sans selection:bg-teal-500/30 transition-colors duration-500 overflow-x-hidden">
             {/* Slide-Over Drawer */}
             <HoldingDrawer
                 isOpen={!!selectedHolding}
@@ -173,7 +173,7 @@ export default function PortfolioPage() {
             />
 
             {/* 2. ELITE DASHBOARD LAYOUT - HIGH DENSITY MODE */}
-            <div className="max-w-[1900px] mx-auto px-4 sm:px-6 lg:px-8 space-y-5 relative z-20 -mt-6">
+            <div className="max-w-[1900px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-20 py-6">
 
                 {/* A. Summary Strip */}
                 <PortfolioSummary
@@ -188,22 +188,22 @@ export default function PortfolioPage() {
 
                 <div className="flex justify-between items-center -mt-4 mb-2">
                     {/* View Toggle */}
-                    <div className="p-1 bg-white dark:bg-[#151925] rounded-xl border border-slate-200 dark:border-white/5 inline-flex">
+                    <div className="p-1 bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] inline-flex">
                         <button
                             onClick={() => setViewMode('dashboard')}
-                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${viewMode === 'dashboard' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
+                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${viewMode === 'dashboard' ? 'bg-slate-100 dark:bg-[#1A222C] text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
                         >
                             <LayoutDashboard className="w-4 h-4" /> Dashboard
                         </button>
                         <button
                             onClick={() => setViewMode('analysis')}
-                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${viewMode === 'analysis' ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
+                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${viewMode === 'analysis' ? 'bg-slate-100 dark:bg-[#1A222C] text-[#3C50E0] shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
                         >
                             <PieChart className="w-4 h-4" /> Analysis
                         </button>
                     </div>
 
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#151925] rounded-xl border border-slate-200 dark:border-white/5 shadow-sm text-xs font-black text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] shadow-sm text-xs font-black text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                         <Wallet className="w-4 h-4" />
                         <span>Main Portfolio</span>
                         <ChevronDown className="w-3 h-3 ml-1" />
@@ -215,7 +215,7 @@ export default function PortfolioPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 animate-fade-in-up">
 
                         {/* 1. PORTFOLIO SNOWFLAKE */}
-                        <div className="xl:col-span-1 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5 min-h-[400px]">
+                        <div className="xl:col-span-1 bg-white dark:bg-[#24303F] rounded-md p-6 shadow-sm border border-slate-200 dark:border-[#2E3A47] min-h-[400px]">
                             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                                 <PieChart className="w-5 h-5 text-emerald-500" /> Portfolio DNA
                             </h3>
@@ -229,13 +229,13 @@ export default function PortfolioPage() {
                         </div>
 
                         {/* 2. DIVERSIFICATION */}
-                        <div className="xl:col-span-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5">
+                        <div className="xl:col-span-2 bg-white dark:bg-[#24303F] rounded-md p-6 shadow-sm border border-slate-200 dark:border-[#2E3A47]">
                             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Sector Allocation</h3>
                             <DiversificationTreemap data={portfolioAnalysis.diversification.topSectors.map((s: { name: string; percent: number }) => ({ name: s.name, value: s.percent }))} />
                         </div>
 
                         {/* 3. RISK vs REWARD */}
-                        <div className="xl:col-span-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5">
+                        <div className="xl:col-span-2 bg-white dark:bg-[#24303F] rounded-md p-6 shadow-sm border border-slate-200 dark:border-[#2E3A47]">
                             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Risk Matrix</h3>
                             <p className="text-xs text-slate-400 mb-4">Identify risky assets (High Beta) with low return potential.</p>
                             <RiskRewardScatter
@@ -250,7 +250,7 @@ export default function PortfolioPage() {
                         </div>
 
                         {/* 4. FORECAST */}
-                        <div className="xl:col-span-1 bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-white/5">
+                        <div className="xl:col-span-1 bg-white dark:bg-[#24303F] rounded-md p-6 shadow-sm border border-slate-200 dark:border-[#2E3A47]">
                             <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Wealth Projection</h3>
                             <PortfolioForecastChart currentValue={portfolio.market_value} annualGrowthRate={(portfolioAnalysis.forecast.expectedReturn3Y / 100)} />
                         </div>
@@ -275,13 +275,13 @@ export default function PortfolioPage() {
                             </div>
 
                             {/* Decisions Quality (4 cols) */}
-                            <div className="xl:col-span-4 h-[420px]">
+                            <div className="xl:col-span-4 min-h-[420px]">
                                 <DecisionQuality history={history} />
                             </div>
                         </div>
 
                         {/* D. Diversity & Risk Matrix */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-auto md:h-[380px]">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 min-h-[380px]">
                             <DiversityCard data={portfolio.insights.sector_allocation.map(s => ({ name: s.sector, value: s.value, percent: s.percent }))} type="Sector" />
                             <DiversityCard data={[
                                 { name: 'Stocks', value: portfolio.market_value, percent: (portfolio.market_value / portfolio.total_equity) * 100 },
@@ -403,7 +403,7 @@ function CSVUploadModalInline({ isOpen, onClose, onImport, isLoading }: any) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-[#1A222C]/80 z-[100] flex items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -415,7 +415,7 @@ function CSVUploadModalInline({ isOpen, onClose, onImport, isLoading }: any) {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-white dark:bg-[#151925] p-8 rounded-[2.5rem] max-w-lg w-full border border-slate-200 dark:border-white/10 shadow-2xl relative z-10 overflow-hidden"
+                className="bg-white dark:bg-[#24303F] p-8 rounded-md max-w-lg w-full border border-slate-200 dark:border-[#2E3A47] shadow-lg relative z-10 overflow-hidden"
             >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[80px] rounded-full pointer-events-none -mr-20 -mt-20" />
 

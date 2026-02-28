@@ -50,7 +50,7 @@ export function GainsReporting({ holdings, totalUnrealizedGain, totalRealizedGai
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-2xl shadow-slate-900/5 dark:shadow-black/60 relative overflow-hidden"
+            className="w-full premium-glass rounded-2xl p-8 relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(20,184,166,0.1)]"
         >
             {/* Dynamic Glow */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 blur-[100px] rounded-full pointer-events-none" />
@@ -113,7 +113,7 @@ export function GainsReporting({ holdings, totalUnrealizedGain, totalRealizedGai
                         </div>
 
                         {/* Rows */}
-                        <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-1 min-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             {sortedHoldings.map((holding) => {
                                 // @ts-ignore
                                 const realized = holding.realized_gain || 0;
@@ -177,7 +177,7 @@ export function GainsReporting({ holdings, totalUnrealizedGain, totalRealizedGai
                     <motion.div
                         key="cards"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[440px] overflow-y-auto pr-2 custom-scrollbar"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
                     >
                         {sortedHoldings.map((holding) => {
                             // @ts-ignore

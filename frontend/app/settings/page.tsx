@@ -55,20 +55,20 @@ export default function MobileSettingsPage() {
 
     // Desktop Layout (lg and above)
     return (
-        <div className="min-h-screen w-full bg-slate-50 dark:bg-[#0A0F1C] text-slate-900 dark:text-white font-sans transition-colors duration-300">
+        <div className="min-h-screen w-full bg-[#F1F5F9] dark:bg-[#1A222C] text-slate-900 dark:text-white font-sans transition-colors duration-300">
 
             {/* ================================================================
                 DESKTOP LAYOUT - Two Column with Sidebar
                 ================================================================ */}
             <div className="hidden lg:flex h-screen overflow-hidden">
                 {/* Left Sidebar */}
-                <div className="w-[320px] bg-white dark:bg-[#0F172A] border-r border-slate-200 dark:border-white/5 flex flex-col overflow-y-auto">
+                <div className="w-[320px] bg-white dark:bg-[#24303F] border-r border-slate-200 dark:border-[#2E3A47] flex flex-col overflow-y-auto">
                     {/* Logo */}
-                    <div className="p-6 border-b border-slate-100 dark:border-white/5">
+                    <div className="p-6 border-b border-slate-200 dark:border-[#2E3A47]">
                         <div className="flex items-center gap-3 select-none cursor-default">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-[#14B8A6] rounded-xl blur-xl opacity-40" />
-                                <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-lg shadow-[#14B8A6]/20">
+
+                                <div className="relative w-10 h-10 rounded-xl bg-[#3C50E0] flex items-center justify-center shadow-lg shadow-[#3C50E0]/20">
                                     <TrendingUp className="w-5 h-5 text-white" />
                                 </div>
                             </div>
@@ -93,10 +93,10 @@ export default function MobileSettingsPage() {
                                     key={item.id}
                                     onClick={() => setActiveTab(item.id)}
                                     className={clsx(
-                                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                                        "w-full flex items-center gap-3 px-4 py-2.5 rounded-md transition-all duration-200",
                                         activeTab === item.id
-                                            ? "bg-[#14B8A6]/10 text-[#14B8A6]"
-                                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5"
+                                            ? "bg-[#F1F5F9] dark:bg-[#1A222C] text-[#3C50E0]"
+                                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A222C]"
                                     )}
                                 >
                                     <item.icon className="w-5 h-5" />
@@ -109,7 +109,7 @@ export default function MobileSettingsPage() {
                         </div>
 
                         {/* Divider */}
-                        <div className="h-px bg-slate-100 dark:bg-white/5 my-4" />
+                        <div className="h-px bg-slate-200 dark:bg-[#2E3A47] my-4" />
 
                         {/* Admin Area (if applicable) */}
                         {user?.role === 'admin' && (
@@ -121,18 +121,18 @@ export default function MobileSettingsPage() {
                                         <span className="font-medium">User Management</span>
                                     </Link>
                                 </div>
-                                <div className="h-px bg-slate-100 dark:bg-white/5 my-4" />
+                                <div className="h-px bg-slate-200 dark:bg-[#2E3A47] my-4" />
                             </>
                         )}
 
                         {/* Additional Links */}
                         <div className="space-y-1">
-                            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
+                            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                 <Bell className="w-5 h-5" />
                                 <span className="font-medium">Notifications</span>
                                 <span className="ml-auto text-xs font-bold bg-[#14B8A6] text-white px-2 py-0.5 rounded-full">Soon</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
+                            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                 <HelpCircle className="w-5 h-5" />
                                 <span className="font-medium">Help & Support</span>
                             </button>
@@ -140,7 +140,7 @@ export default function MobileSettingsPage() {
                     </nav>
 
                     {/* Sign Out */}
-                    <div className="p-4 border-t border-slate-100 dark:border-white/5">
+                    <div className="p-4 border-t border-slate-200 dark:border-[#2E3A47]">
                         <button
                             onClick={logout}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
@@ -154,7 +154,7 @@ export default function MobileSettingsPage() {
                 {/* Main Content Area */}
                 <div className="flex-1 overflow-y-auto">
                     {/* Header */}
-                    <div className="sticky top-0 z-10 bg-slate-50/80 dark:bg-[#0A0F1C]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 px-8 py-5">
+                    <div className="sticky top-0 z-10 bg-[#F1F5F9] dark:bg-[#1A222C] border-b border-slate-200 dark:border-[#2E3A47] px-8 py-5">
                         <div className="flex items-center justify-between max-w-3xl">
                             <div>
                                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
@@ -186,7 +186,7 @@ export default function MobileSettingsPage() {
                 ================================================================ */}
             <div className="lg:hidden h-[100dvh] flex flex-col overflow-hidden">
                 {/* Header */}
-                <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-white/80 dark:bg-[#0A0F1C]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
+                <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-[#F1F5F9] dark:bg-[#24303F] border-b border-slate-200 dark:border-[#2E3A47]">
                     <button
                         onClick={() => router.push('/dashboard')}
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 transition-all active:scale-95"
@@ -292,16 +292,16 @@ function DesktopProfileCard({ user }: { user: any }) {
     };
 
     return (
-        <div className="p-5 bg-gradient-to-br from-[#14B8A6]/5 to-[#3B82F6]/5 dark:from-[#14B8A6]/10 dark:to-[#3B82F6]/5 rounded-2xl border border-[#14B8A6]/10 dark:border-[#14B8A6]/20">
+        <div className="p-5 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47]">
             <div className="flex items-center gap-4">
                 {/* Avatar */}
                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] p-0.5 shadow-lg shadow-[#14B8A6]/20">
+                    <div className="w-16 h-16 rounded-xl bg-[#3C50E0] p-0.5 shadow-lg shadow-[#3C50E0]/20">
                         <div className="w-full h-full rounded-[10px] bg-white dark:bg-slate-900 overflow-hidden">
                             {avatarUrl ? (
                                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#14B8A6] to-[#0D9488] text-xl font-bold text-white">
+                                <div className="w-full h-full flex items-center justify-center bg-[#3C50E0] text-xl font-bold text-white">
                                     {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                                 </div>
                             )}
@@ -363,7 +363,7 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
         >
-            <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-white/5 p-6 shadow-sm">
+            <div className="premium-glass rounded-2xl p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Personal Details</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Manage your identity information.</p>
 
@@ -397,7 +397,7 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-6 py-3 bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white rounded-xl font-semibold text-sm shadow-lg shadow-[#14B8A6]/20 flex items-center gap-2 hover:shadow-xl hover:shadow-[#14B8A6]/30 active:scale-[0.98] transition-all disabled:opacity-50"
+                            className="px-6 py-3 bg-[#3C50E0] hover:bg-[#3C50E0]/90 text-white rounded-md font-semibold text-sm shadow-lg shadow-[#3C50E0]/20 flex items-center gap-2 hover:shadow-xl hover:shadow-[#14B8A6]/30 active:scale-[0.98] transition-all disabled:opacity-50"
                         >
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
                         </button>
@@ -437,7 +437,7 @@ function DesktopSecurityTab({ logout }: { logout: () => void }) {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
         >
-            <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-white/5 p-6 shadow-sm">
+            <div className="premium-glass rounded-2xl p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Change Password</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Keep your account secure with a strong password.</p>
 
@@ -465,7 +465,7 @@ function DesktopSecurityTab({ logout }: { logout: () => void }) {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50"
+                            className="px-6 py-3 bg-[#3C50E0] hover:bg-[#3C50E0]/90 text-white border-transparent rounded-md font-semibold text-sm shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50"
                         >
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update Password"}
                         </button>
@@ -498,9 +498,9 @@ function DesktopAppTab() {
             className="space-y-6"
         >
             {/* Appearance */}
-            <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-white/5 p-6 shadow-sm">
+            <div className="premium-glass rounded-2xl p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#3C50E0] flex items-center justify-center">
                         <Palette className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -515,8 +515,8 @@ function DesktopAppTab() {
                         className={clsx(
                             "relative group p-6 rounded-2xl border text-left transition-all overflow-hidden",
                             theme === 'light'
-                                ? "bg-white border-[#14B8A6] shadow-lg shadow-[#14B8A6]/10 ring-2 ring-[#14B8A6]/20"
-                                : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 hover:border-slate-300"
+                                ? "bg-[#F1F5F9] dark:bg-[#1A222C] border-[#3C50E0] ring-1 ring-[#3C50E0]"
+                                : "bg-[#F1F5F9] dark:bg-[#1A222C] border-slate-200 dark:border-[#2E3A47] hover:border-slate-300 dark:hover:border-slate-600"
                         )}
                     >
                         <div className={clsx(
@@ -539,8 +539,8 @@ function DesktopAppTab() {
                         className={clsx(
                             "relative group p-6 rounded-2xl border text-left transition-all overflow-hidden",
                             theme === 'dark'
-                                ? "bg-slate-900 border-[#14B8A6] shadow-lg shadow-[#14B8A6]/10 ring-2 ring-[#14B8A6]/20"
-                                : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 hover:border-slate-300"
+                                ? "bg-[#F1F5F9] dark:bg-[#1A222C] border-[#3C50E0] ring-1 ring-[#3C50E0]"
+                                : "bg-[#F1F5F9] dark:bg-[#1A222C] border-slate-200 dark:border-[#2E3A47] hover:border-slate-300 dark:hover:border-slate-600"
                         )}
                     >
                         <div className={clsx(
@@ -561,7 +561,7 @@ function DesktopAppTab() {
             </div>
 
             {/* Language */}
-            <div className="bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200 dark:border-white/5 p-6 shadow-sm">
+            <div className="premium-glass rounded-2xl p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#14B8A6] flex items-center justify-center">
                         <Globe className="w-5 h-5 text-white" />
@@ -622,7 +622,7 @@ function DesktopInput({ icon: Icon, label, value, onChange, placeholder, type = 
                     onBlur={() => setFocused(false)}
                     disabled={disabled}
                     readOnly={readOnly}
-                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm disabled:bg-slate-100 dark:disabled:bg-white/5 disabled:text-slate-500"
+                    className="w-full pl-12 pr-4 py-3 bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200 dark:border-[#2E3A47] rounded-md text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#3C50E0] focus:ring-1 focus:ring-[#3C50E0] transition-all text-sm disabled:opacity-50"
                     placeholder={placeholder}
                 />
             </div>
@@ -659,12 +659,12 @@ function MobileProfileHeader({ user }: { user: any }) {
     return (
         <div className="px-5 pt-4 flex flex-col items-center text-center">
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-br from-[#14B8A6] to-[#0D9488] shadow-lg shadow-[#14B8A6]/20">
+                <div className="w-24 h-24 rounded-full p-1 bg-[#3C50E0] shadow-lg shadow-[#3C50E0]/20">
                     <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 overflow-hidden">
                         {avatarUrl ? (
                             <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#14B8A6] to-[#0D9488] text-2xl font-bold text-white">
+                            <div className="w-full h-full flex items-center justify-center bg-[#3C50E0] text-2xl font-bold text-white">
                                 {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                             </div>
                         )}
@@ -728,7 +728,7 @@ function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) 
                 <MobileInput icon={Phone} label="Phone" value={formData.phone} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 234 567" type="tel" />
                 <MobileInput icon={Mail} label="Email" value={user?.email || ""} disabled readOnly />
                 <StatusMessages success={successMsg} error={errorMsg} />
-                <button type="submit" disabled={isLoading} className="w-full py-4 bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#14B8A6]/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50">
+                <button type="submit" disabled={isLoading} className="w-full py-4 bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#3C50E0]/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50">
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
                 </button>
             </form>

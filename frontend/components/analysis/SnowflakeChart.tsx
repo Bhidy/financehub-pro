@@ -46,7 +46,7 @@ export function SnowflakeChart({ score, comparisonScore, width = "100%", height 
                 style={{ background: `radial-gradient(circle, ${mainColor} 0%, transparent 70%)` }}
             />
 
-            <ResponsiveContainer width={width} height={height}>
+            <ResponsiveContainer width={width as any} height={height as any}>
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
                     <PolarGrid gridType="polygon" stroke="rgba(148, 163, 184, 0.2)" />
 

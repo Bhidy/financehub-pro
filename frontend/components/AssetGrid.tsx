@@ -46,19 +46,19 @@ export function AssetGrid({ holdings, onDelete, onSelect }: AssetGridProps) {
                             placeholder="Search by Symbol or Entity..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-bold focus:ring-4 focus:ring-brand-accent/5 outline-none transition-all shadow-xl shadow-slate-900/5 dark:shadow-black/40 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                            className="w-full bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200 dark:border-[#2E3A47] rounded-md pl-12 pr-4 py-3.5 text-sm font-medium focus:ring-2 focus:ring-[#3C50E0]/20 outline-none transition-all shadow-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         />
                     </div>
 
                     {/* Pro View Toggles */}
-                    <div className="flex bg-slate-100 dark:bg-white/5 rounded-2xl p-1.5 border border-slate-200 dark:border-white/5 shadow-inner">
+                    <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md p-1 border border-slate-200 dark:border-[#2E3A47]">
                         <button
                             onClick={() => setViewMode('cards')}
                             className={clsx(
-                                "p-3 rounded-xl transition-all duration-500",
+                                "p-2 rounded-md transition-all duration-300",
                                 viewMode === 'cards'
-                                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-lg scale-105"
-                                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    ? "bg-white dark:bg-[#24303F] text-slate-900 dark:text-white shadow-sm"
+                                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                             )}
                         >
                             <LayoutGrid className="w-5 h-5" />
@@ -66,10 +66,10 @@ export function AssetGrid({ holdings, onDelete, onSelect }: AssetGridProps) {
                         <button
                             onClick={() => setViewMode('table')}
                             className={clsx(
-                                "p-3 rounded-xl transition-all duration-500",
+                                "p-2 rounded-md transition-all duration-300",
                                 viewMode === 'table'
-                                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-lg scale-105"
-                                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    ? "bg-white dark:bg-[#24303F] text-slate-900 dark:text-white shadow-sm"
+                                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                             )}
                         >
                             <List className="w-5 h-5" />
@@ -85,17 +85,15 @@ export function AssetGrid({ holdings, onDelete, onSelect }: AssetGridProps) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="text-center py-32 bg-white dark:bg-[#151925]/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-white/5 shadow-inner relative overflow-hidden"
+                        className="text-center py-20 bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] shadow-sm relative overflow-hidden"
                     >
                         <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-20 h-20 rounded-[2.5rem] bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-6 shadow-xl border border-slate-100 dark:border-white/5">
-                                <Search className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+                            <div className="w-16 h-16 rounded-md bg-[#F1F5F9] dark:bg-[#1A222C] flex items-center justify-center mb-6 shadow-sm border border-slate-200 dark:border-[#2E3A47]">
+                                <Search className="w-8 h-8 text-slate-400 dark:text-slate-500" />
                             </div>
-                            <h4 className="text-xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Zero Matches Found</h4>
-                            <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Adjust your filters or verify the ticker</p>
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Zero Matches Found</h4>
+                            <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Adjust your filters or verify the ticker</p>
                         </div>
-                        {/* Background Decor */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-accent/5 blur-[120px] rounded-full" />
                     </motion.div>
                 ) : (
                     <motion.div layout className={clsx(

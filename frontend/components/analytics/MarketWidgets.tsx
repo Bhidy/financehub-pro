@@ -42,9 +42,9 @@ export function DividendForecast({ holdings }: DividendForecastProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="h-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/40 relative overflow-hidden group flex flex-col justify-between"
+            className="h-full bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between"
         >
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            
 
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div>
@@ -153,9 +153,9 @@ export function TopMoversList({ holdings }: TopMoversProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="h-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/40 relative overflow-hidden group flex flex-col"
+            className="h-full bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group flex flex-col"
         >
-            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            
 
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div>
@@ -295,9 +295,9 @@ export function PerformanceHeatmap({ history }: ConsistencyProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="h-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/40 relative overflow-hidden group flex flex-col justify-between"
+            className="h-full bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group flex flex-col justify-between"
         >
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            
 
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div>

@@ -206,7 +206,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setDeleteConfirmId(null)}
-                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/40 "
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -445,7 +445,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         </div>
 
                         {/* Footer */}
-                        <div className="flex-shrink-0 p-3 pt-2 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-[#0F1419]/50 backdrop-blur-md">
+                        <div className="flex-shrink-0 p-3 pt-2 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-[#0F1419]/50 ">
 
                             {isAuthenticated ? (
                                 <div className="flex gap-2 w-full">

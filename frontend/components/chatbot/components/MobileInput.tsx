@@ -44,7 +44,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading, lang = 'en' }:
             <div className="pb-2">
                 {/* Floating island container - Midnight Teal Design */}
                 <div className={clsx(
-                    "relative bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl rounded-2xl border shadow-xl transition-all duration-300",
+                    "relative bg-white/90 dark:bg-[#111827]/90  rounded-2xl border shadow-xl transition-all duration-300",
                     isFocused
                         ? "border-[#3B82F6] dark:border-[#3B82F6]/50 shadow-[#3B82F6]/10 dark:shadow-[#3B82F6]/20 ring-2 ring-[#3B82F6]/10 dark:ring-[#3B82F6]/20"
                         : "border-slate-200/60 dark:border-white/[0.08] shadow-slate-900/5 dark:shadow-black/20"

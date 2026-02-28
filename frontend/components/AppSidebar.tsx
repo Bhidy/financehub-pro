@@ -153,7 +153,7 @@ export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
     return (
         <aside
             className={clsx(
-                "finhub-sidebar finhub-glass h-[100dvh] flex flex-col transition-all duration-500 ease-in-out relative border-r border-slate-200/60 dark:border-white/[0.08] bg-white dark:bg-[#0B1121] shadow-xl shadow-slate-200/20 dark:shadow-black/20 z-50",
+                "finhub-sidebar h-[100dvh] flex flex-col transition-all duration-500 ease-in-out relative border-r border-white/40 dark:border-[#14B8A6]/20 bg-white/70 dark:bg-[#0B1121]/80 backdrop-blur-2xl shadow-[10px_0_30px_rgba(0,0,0,0.05)] dark:shadow-[10px_0_30px_rgba(20,184,166,0.02)] z-50",
                 widthClass
             )}
         >
@@ -161,10 +161,10 @@ export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
             <div className={clsx("relative flex items-center h-20 px-6", collapsed ? "justify-center px-0" : "justify-start")}>
                 <div className="flex items-center gap-3">
                     <div className="relative group">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0F172A] to-[#14B8A6] flex items-center justify-center shadow-lg shadow-[#14B8A6]/20 group-hover:shadow-[#14B8A6]/40 transition-shadow duration-300">
+                        <div className="w-10 h-10 rounded-xl bg-[#14B8A6] flex items-center justify-center shadow-sm">
                             <Zap className="w-5 h-5 text-white" fill="currentColor" />
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#14B8A6] rounded-full border-[3px] border-white" />
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#14B8A6] rounded-full border-[3px] border-white dark:border-[#24303F]" />
                     </div>
 
                     {!collapsed && (
@@ -218,11 +218,11 @@ export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
                             key={item.label}
                             href={resolvedHref}
                             className={clsx(
-                                "group relative flex items-center py-3 rounded-xl font-medium text-[13px] transition-all duration-300 ease-out",
+                                "group relative flex items-center py-3 rounded-md font-medium text-[13px] transition-all duration-300 ease-out",
                                 collapsed ? "justify-center px-0" : "px-4 gap-3.5",
                                 reallyActive
-                                    ? "bg-slate-50 dark:bg-white/10 text-slate-900 dark:text-white"
-                                    : "text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white hover:shadow-lg hover:shadow-slate-100/50 dark:hover:shadow-none"
+                                    ? "bg-[#F1F5F9] dark:bg-[#24303F] text-slate-900 dark:text-white"
+                                    : "text-slate-500 dark:text-slate-400 hover:bg-[#F1F5F9] dark:hover:bg-[#24303F] hover:text-slate-900 dark:hover:text-white"
                             )}
                             aria-label={collapsed ? item.label : undefined}
                             aria-current={reallyActive ? "page" : undefined}
@@ -243,8 +243,8 @@ export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
 
                             {/* Icon Box */}
                             <div className={clsx(
-                                "relative w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-300",
-                                reallyActive ? colors.activeBg : `bg-white dark:bg-[#151925] ${colors.iconText} dark:text-slate-400 group-hover:scale-110 shadow-sm shadow-slate-100 dark:shadow-none border border-slate-100 dark:border-white/5`
+                                "relative w-9 h-9 flex items-center justify-center rounded-md transition-all duration-300",
+                                reallyActive ? colors.activeBg : `bg-white dark:bg-[#1A222C] ${colors.iconText} dark:text-slate-400 group-hover:scale-110 shadow-sm dark:shadow-none border border-slate-200 dark:border-[#2E3A47]`
                             )}>
                                 <Icon className={clsx(
                                     "w-[18px] h-[18px] transition-colors",
@@ -287,7 +287,7 @@ export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
             )}
 
             {/* Footer Control Panel */}
-            <div className="p-4 border-t border-slate-100 dark:border-white/5">
+            <div className="p-4 border-t border-slate-200 dark:border-[#2E3A47]">
                 <div className={clsx(
                     "flex items-center gap-2",
                     collapsed ? "flex-col" : "justify-between"
@@ -331,7 +331,7 @@ export default function Sidebar({ defaultCollapsed = false }: AppSidebarProps) {
                     <button
                         onClick={toggleCollapsed}
                         className={clsx(
-                            "flex items-center justify-center rounded-xl transition-all duration-200 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white",
+                            "flex items-center justify-center rounded-md transition-all duration-200 hover:bg-slate-100 dark:hover:bg-[#24303F] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white",
                             collapsed ? "w-10 h-10" : "w-10 h-10"
                         )}
                         title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}

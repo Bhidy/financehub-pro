@@ -22,7 +22,7 @@ export function DecisionQuality({ history }: DecisionQualityProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="h-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-2xl shadow-slate-900/5 dark:shadow-black/60 relative overflow-hidden group flex flex-col"
+            className="h-full bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group flex flex-col"
         >
             {/* Gradient Accent */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none" />

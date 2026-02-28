@@ -300,7 +300,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
 
             {isLoading && (
                 <div className="flex justify-start">
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex items-center gap-3 shadow-sm backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex items-center gap-3 shadow-sm ">
                         <div className="flex gap-1">
                             <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                             <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -646,7 +646,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
             </AnimatePresence>
 
             {/* HEADER: Sticky Top */}
-            <div className="sticky top-0 z-40 bg-[#F8FAFC]/95 dark:bg-[#0F172A]/95 backdrop-blur-md border-b border-slate-200/60 dark:border-white/[0.08]">
+            <div className="sticky top-0 z-40 bg-[#F8FAFC]/95 dark:bg-[#0F172A]/95  border-b border-slate-200/60 dark:border-white/[0.08]">
                 <div className="w-full max-w-[500px] mx-auto">
                     <MobileHeader
                         forceMarket={contextMarket}
@@ -951,7 +951,7 @@ const MessageRenderer = memo(({
                         ) : null)}
 
                         {/* Actions */}
-                        {isTypingCompleted && m.response?.actions && m.response.actions.length > 0 && (
+                        {isTypingCompleted && m.response?.actions && m.response.actions.length > 0 && !(m.response?.followups && m.response.followups.length > 0) && (
                             <motion.div
                                 className="pt-2"
                                 initial={{ opacity: 0, y: 15 }}

@@ -16,10 +16,13 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.90.1",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-table": "^8.21.3",
     "@types/react-big-calendar": "^1.16.3",
+    "@types/three": "^0.183.1",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
     "apexcharts": "^5.3.6",
@@ -49,6 +52,7 @@
     "scroll-lock": "^2.1.5",
     "tailwind-merge": "^3.4.0",
     "technicalindicators": "^3.1.0",
+    "three": "^0.183.2",
     "ws": "^8.19.0",
     "xlsx": "^0.18.5",
     "zod": "^4.2.1"

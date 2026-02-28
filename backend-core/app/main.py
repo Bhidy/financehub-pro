@@ -259,6 +259,7 @@ async def lifespan(app: FastAPI):
                         monthly_dive BOOLEAN DEFAULT TRUE,
                         academy BOOLEAN DEFAULT TRUE,
                         flash_alerts BOOLEAN DEFAULT TRUE,
+                        academy_lesson INTEGER DEFAULT 0,
                         unsubscribed BOOLEAN DEFAULT FALSE,
                         last_sent_at TIMESTAMP WITH TIME ZONE,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -268,6 +269,12 @@ async def lifespan(app: FastAPI):
                 """)
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter_preferences(email)")
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_unsub ON newsletter_preferences(unsubscribed)")
+                
+                # Auto-upgrade existing schemas
+                try:
+                    await conn.execute("ALTER TABLE newsletter_preferences ADD COLUMN IF NOT EXISTS academy_lesson INTEGER DEFAULT 0")
+                except Exception as e:
+                    pass
 
                 # ============================================================
                 # PORTFOLIO ENHANCEMENTS (Added 2026-01-19)

@@ -34,21 +34,17 @@ export function AssetCard({ holding, onDelete, onClick }: AssetCardProps) {
             exit={{ opacity: 0, scale: 0.9 }}
             whileHover={{ y: -6, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
             onClick={onClick}
-            className="group relative bg-white dark:bg-[#151925] rounded-[2.5rem] border border-slate-200 dark:border-white/5 p-6 shadow-xl shadow-slate-900/5 dark:shadow-black/60 transition-all duration-500 cursor-pointer overflow-hidden backdrop-blur-xl"
+            className="group relative bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] p-6 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden hover:shadow-md"
         >
-            {/* Dynamic Hover Background */}
-            <div className={clsx(
-                "absolute inset-0 opacity-0 group-hover:opacity-[0.03] dark:group-hover:opacity-[0.07] transition-opacity duration-700 pointer-events-none",
-                isProfitable ? "bg-emerald-500" : "bg-rose-500"
-            )} />
+            
 
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="flex items-center gap-5">
                     <div className={clsx(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center text-xs font-black text-white shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
+                        "w-12 h-12 rounded-md flex items-center justify-center text-sm font-bold shadow-sm transition-transform duration-300 group-hover:scale-105",
                         isProfitable
-                            ? "bg-gradient-to-br from-emerald-400 to-teal-600 shadow-emerald-500/30"
-                            : "bg-gradient-to-br from-rose-400 to-red-600 shadow-rose-500/30"
+                            ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
                     )}>
                         {holding.symbol.slice(0, 3)}
                     </div>
@@ -115,11 +111,7 @@ export function AssetCard({ holding, onDelete, onClick }: AssetCardProps) {
                 </div>
             </div>
 
-            {/* Interactive Corner Accent */}
-            <div className={clsx(
-                "absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-br from-transparent to-slate-200/20 dark:to-white/5 rounded-tl-3xl translate-x-4 translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500",
-                isProfitable ? "to-emerald-500/10" : "to-rose-500/10"
-            )} />
+            
         </motion.div>
     );
 }

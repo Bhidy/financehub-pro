@@ -146,6 +146,26 @@ class SchedulerService:
                 max_instances=1,
                 coalesce=True
             )
+
+            # --- TIER 8c: Academy Newsletter (Wednesday 10:00 Cairo) ---
+            self.scheduler.add_job(
+                self.run_academy_newsletter_job,
+                CronTrigger(day_of_week='wed', hour=10, minute=0, timezone='Africa/Cairo'),
+                id='tier8c_academy_newsletter',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+            
+            # --- TIER 8d: Flash Alerts Check (Hourly) ---
+            self.scheduler.add_job(
+                self.run_flash_alerts_job,
+                IntervalTrigger(hours=1),
+                id='tier8d_flash_alerts',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
             
             self.scheduler.start()
             logger.info("✅ Scheduler Started Successfully. All tiers active.")
@@ -417,5 +437,24 @@ class SchedulerService:
             logger.info(f"Monthly newsletter result: {result}")
         except Exception as e:
             logger.error(f"Monthly newsletter job error: {e}")
+
+    async def run_academy_newsletter_job(self):
+        """Academy newsletter dispatch (runs Wednesday 10:00 Cairo)."""
+        try:
+            from app.services.newsletter_service import newsletter_service
+            result = await newsletter_service.send_academy_lessons()
+            logger.info(f"Academy newsletter result: {result}")
+        except Exception as e:
+            logger.error(f"Academy newsletter job error: {e}")
+
+    async def run_flash_alerts_job(self):
+        """Flash Alerts Check (runs hourly)."""
+        try:
+            from app.services.newsletter_service import newsletter_service
+            result = await newsletter_service.check_and_send_flash_alerts()
+            logger.info(f"Flash alerts check result: {result}")
+        except Exception as e:
+            logger.error(f"Flash alerts job error: {e}")
+
 
 scheduler_service = SchedulerService()

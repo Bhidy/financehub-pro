@@ -33,7 +33,7 @@ export function DiversityCard({ data, type }: DiversityProps) {
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-2xl shadow-slate-900/5 dark:shadow-black/60 relative overflow-hidden group h-full flex flex-col"
+            className="bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group h-full flex flex-col"
         >
             <div className="flex justify-between items-start mb-4 relative z-10">
                 <div>

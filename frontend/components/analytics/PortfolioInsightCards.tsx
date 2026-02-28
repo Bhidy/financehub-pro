@@ -21,10 +21,8 @@ export function PortfolioHealth({ score = 85, beta = 1.12, diversityScore = 92 }
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="h-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-2xl shadow-slate-900/5 dark:shadow-black/60 relative overflow-hidden group"
+            className="h-full bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group"
         >
-            {/* Dynamic Glow */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 blur-[80px] rounded-full pointer-events-none group-hover:bg-emerald-500/10 transition-colors duration-500" />
 
             <div className="flex justify-between items-start mb-4 relative z-10">
                 <div>
@@ -118,10 +116,8 @@ export function RiskRadar() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="h-full bg-white dark:bg-[#151925] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-6 shadow-2xl shadow-slate-900/5 dark:shadow-black/60 relative overflow-hidden group"
+            className="h-full bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md p-6 shadow-sm relative overflow-hidden group"
         >
-            {/* Gradient Accent */}
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors duration-500" />
 
             <div className="flex justify-between items-start mb-2 relative z-10">
                 <div>

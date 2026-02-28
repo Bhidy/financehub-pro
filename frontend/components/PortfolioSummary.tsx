@@ -83,36 +83,26 @@ export function PortfolioSummary({
                     transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                     className="group relative"
                 >
-                    {/* Hover Glow Effect */}
-                    <div className={clsx(
-                        "absolute -inset-0.5 rounded-[2rem] opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500",
-                        stat.glow === "blue" && "bg-blue-500",
-                        stat.glow === "emerald" && "bg-emerald-500",
-                        stat.glow === "rose" && "bg-rose-500",
-                        stat.glow === "brand-accent" && "bg-brand-accent",
-                        stat.glow === "violet" && "bg-violet-500"
-                    )} />
-
-                    <div className="relative bg-white/95 dark:bg-[#151925]/95 backdrop-blur-3xl rounded-[1.75rem] border border-slate-200 dark:border-white/5 shadow-2xl shadow-slate-900/10 dark:shadow-black/60 p-6 flex flex-col h-full transition-all duration-300 group-hover:-translate-y-1">
+                    <div className="premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-6 flex flex-col h-full transition-all duration-300 group-hover:shadow-xl hover:-translate-y-1">
 
                         <div className="flex items-start justify-between mb-6">
                             <div className={clsx(
-                                "w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform duration-500 group-hover:scale-110",
+                                "w-10 h-10 rounded-md flex items-center justify-center shadow-sm",
                                 stat.color === "blue" && "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400",
                                 stat.color === "emerald" && "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
                                 stat.color === "rose" && "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400",
                                 stat.color === "brand-accent" && "bg-brand-accent/10 text-brand-accent dark:text-brand-accent",
                                 stat.color === "violet" && "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400"
                             )}>
-                                <stat.icon className="w-7 h-7 stroke-[1.5]" />
+                                <stat.icon className="w-5 h-5" />
                             </div>
                         </div>
 
                         <div>
-                            <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500 mb-2 leading-none">
+                            <div className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 leading-none">
                                 {stat.label}
                             </div>
-                            <div className="text-3xl font-black text-slate-900 dark:text-white mb-2 font-mono tracking-tight leading-none">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-white mb-2 leading-none">
                                 {stat.value}
                             </div>
                             <div className={clsx(

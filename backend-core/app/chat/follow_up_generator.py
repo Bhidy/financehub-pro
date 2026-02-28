@@ -151,7 +151,7 @@ FOLLOW_UP_TEMPLATES = {
              "أرتب أسهم القطاع حسب الأمان المالي وعائد التوزيعات؟"),
         ]
     },
-    Intent.MARKET_STATUS: {
+    Intent.MARKET_SUMMARY: {
         "en": [
             ("Want me to identify which sectors are best positioned in this macro environment?",
              "Want me to identify which sectors are best positioned in this macro environment?"),
@@ -165,7 +165,7 @@ FOLLOW_UP_TEMPLATES = {
              "تريدني أحدد أي القطاعات أفضل موقعاً في ظل الوضع الحالي؟"),
         ]
     },
-    Intent.STOCK_STATISTICS: {
+    Intent.STOCK_STAT: {
         "en": [
             ("Want me to do a deep-dive on {sym}'s valuation — is this P/E cheap relative to earnings quality?", "Want me to do a deep-dive on valuation — is the P/E cheap relative to earnings quality?"),
             ("Shall I run a full safety check on {sym} to see if the balance sheet is rock-solid?", "Shall I run a full safety check to see if the balance sheet is rock-solid?"),

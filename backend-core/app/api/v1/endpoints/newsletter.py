@@ -10,7 +10,7 @@ Newsletter Admin Endpoints
 """
 
 from fastapi import APIRouter, BackgroundTasks, Query, HTTPException
-import jwt
+from jose import jwt, JWTError, ExpiredSignatureError
 import logging
 
 from app.db.session import db
@@ -146,9 +146,9 @@ async def unsubscribe(token: str = Query(...)):
         </body></html>
         """)
 
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         raise HTTPException(status_code=400, detail="Token expired")
-    except jwt.InvalidTokenError:
+    except JWTError:
         raise HTTPException(status_code=400, detail="Invalid token")
     except Exception as e:
         logger.error(f"Unsubscribe error: {e}")

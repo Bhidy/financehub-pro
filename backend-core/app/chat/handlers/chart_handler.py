@@ -210,7 +210,6 @@ async def handle_stock_chart(
     if is_egx:
         base_actions.extend([
             {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
-            {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليل الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
 
     return {

@@ -75,11 +75,11 @@ FOLLOW_UP_TEMPLATES = {
     },
     Intent.TECHNICAL_INDICATORS: {
         "en": [
-            ("Want to overlay the fundamentals on top of {sym}'s technicals for a complete picture?", "Want to overlay the fundamentals on top of these technicals for a complete picture?"),
-            ("Shall I check {sym}'s fair value to see if technicals align with valuation?", "Shall I check fair value to see if technicals align with valuation?"),
+            ("Want to overlay the fundamentals on top of {sym}'s chart for a complete picture?", "Want to overlay the fundamentals on top of this chart for a complete picture?"),
+            ("Shall I check {sym}'s fair value to see if the recent moves align with valuation?", "Shall I check fair value to see if the recent moves align with valuation?"),
         ],
         "ar": [
-            ("تريد نضيف الأساسيات على الفنيات لـ{sym} عشان الصورة تكتمل؟", "تريد نضيف الأساسيات على الفنيات عشان الصورة تكتمل؟"),
+            ("تريد نضيف الأساسيات على الرسم البياني لـ{sym} عشان الصورة تكتمل؟", "تريد نضيف الأساسيات على الرسم البياني عشان الصورة تكتمل؟"),
         ]
     },
     Intent.TOP_GAINERS: {

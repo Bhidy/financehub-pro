@@ -62,7 +62,7 @@ HUMAN_OPENINGS = {
     },
     "neutral": {
         "en": [
-            "I have pulled the latest real-time data for you. Let's examine the technicals and fundamentals together to see the full context.",
+            "I have pulled the latest real-time data for you. Let's examine the valuation and fundamentals together to see the full context.",
             "Here is exactly what the current market data is showing us. I've highlighted the most critical points for your review.",
             "Let me break this down into clear, actionable insights. The following analysis covers both the risks and the opportunities.",
             "Here is the complete picture based on the latest available data. Let's go through the numbers step-by-step.",
@@ -100,7 +100,7 @@ GUIDANCE_SUGGESTIONS = {
     "explore": {
         "en": [
             "Next, we can look at financial strength or dividends.",
-            "We can also check the technical indicators if you'd like.",
+            "We can also look at the fair value estimate if you'd like.",
             "Want me to dig deeper into the financials?",
         ],
         "ar": [

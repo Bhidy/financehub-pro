@@ -97,6 +97,25 @@ async def debug_scheduler_jobs():
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
+# ============================================================
+# DATABASE BACKUP MANAGEMENT
+# ============================================================
+
+@router.post("/backup/trigger")
+async def trigger_backup(background_tasks: BackgroundTasks):
+    """Manually trigger a database backup (runs in background)."""
+    from app.services.backup_service import backup_service
+    if backup_service.is_running:
+        return {"status": "skipped", "reason": "Backup already in progress"}
+    background_tasks.add_task(backup_service.run_backup)
+    return {"status": "triggered", "message": "Backup started in background. Check /backup/status for progress."}
+
+@router.get("/backup/status")
+async def backup_status():
+    """Get the current status of the weekly database backup."""
+    from app.services.backup_service import backup_service
+    return backup_service.get_status()
+
 @router.get("/debug/screener")
 async def debug_screener():
     """Debug the symbol discovery process"""

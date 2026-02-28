@@ -4,10 +4,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for asyncpg
+# Install system dependencies for asyncpg + pg_dump backup
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
@@ -31,6 +32,9 @@ COPY scripts ./scripts
 
 # Create empty engine directory (not needed for API-only mode)
 RUN mkdir -p engine
+
+# Create backup directory for weekly database backups
+RUN mkdir -p /app/backups
 
 # Set python path
 ENV PYTHONPATH=/app

@@ -117,6 +117,16 @@ class SchedulerService:
                 coalesce=True
             )
             
+            # --- TIER 7: Weekly Database Backup (Thursday 03:00) ---
+            self.scheduler.add_job(
+                self.run_weekly_backup_job,
+                CronTrigger(day_of_week='thu', hour=3, minute=0, timezone='Africa/Cairo'),
+                id='tier7_weekly_backup',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+            
             self.scheduler.start()
             logger.info("✅ Scheduler Started Successfully. All tiers active.")
             
@@ -360,5 +370,14 @@ class SchedulerService:
                      notification_service.send_discord(f"✅ **Watchlist Backup**\nStocks: {count}", is_error=False)
         except Exception as e:
             logger.error(f"Rubix job error: {e}")
+
+    async def run_weekly_backup_job(self):
+        """Weekly database backup job (runs every Thursday 03:00 Cairo)."""
+        try:
+            from app.services.backup_service import backup_service
+            result = await backup_service.run_backup()
+            logger.info(f"Weekly backup result: {result.get('status')}")
+        except Exception as e:
+            logger.error(f"Weekly backup job error: {e}")
 
 scheduler_service = SchedulerService()

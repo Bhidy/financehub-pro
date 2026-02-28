@@ -112,6 +112,14 @@ interface ChatFeedbackReport {
     raw_query: string | null;
 }
 
+interface GeoEntry {
+    country_code: string;
+    country_name: string;
+    users: number;
+    messages: number;
+    percentage: number;
+}
+
 // ============================================================
 // API BASE
 // ============================================================
@@ -156,6 +164,7 @@ export default function ChatbotAnalyticsPage() {
     const [period, setPeriod] = useState("30d");
     const [userType, setUserType] = useState("all");
     const [language, setLanguage] = useState("all");
+    const [demandTab, setDemandTab] = useState<'demand' | 'questions'>('demand');
 
     const [isLoading, setIsLoading] = useState(true);
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
@@ -172,6 +181,7 @@ export default function ChatbotAnalyticsPage() {
     const [demandInsights, setDemandInsights] = useState<DemandInsight[]>([]);
     const [healthSummary, setHealthSummary] = useState<ProductHealthSummary | null>(null);
     const [feedbackReports, setFeedbackReports] = useState<ChatFeedbackReport[]>([]);
+    const [geoDistribution, setGeoDistribution] = useState<GeoEntry[]>([]);
 
     // Admin check
     useEffect(() => {
@@ -188,7 +198,7 @@ export default function ChatbotAnalyticsPage() {
             const ts = Date.now();
             const qs = `period=${period}&user_type=${userType}&language=${language}&t=${ts}`;
 
-            const [health, questions, unresolved, intents, resolver, funnel, perf, lang, demand, summary, feedback] = await Promise.all([
+            const [health, questions, unresolved, intents, resolver, funnel, perf, lang, demand, summary, feedback, geo] = await Promise.all([
                 fetch(`${API_BASE}/health?${qs}`, { headers }).then(r => r.json()).catch(() => null),
                 fetch(`${API_BASE}/questions?${qs}&limit=20`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/unresolved?${qs}&status=pending&limit=50`, { headers }).then(r => r.json()).catch(() => []),
@@ -199,7 +209,8 @@ export default function ChatbotAnalyticsPage() {
                 fetch(`${API_BASE}/language?${qs}`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/demand/trending?${qs}&limit=10`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/health/summary?period=${period}`, { headers }).then(r => r.json()).catch(() => null),
-                fetch(`${API_BASE}/feedback?limit=50`, { headers }).then(r => r.json()).catch(() => [])
+                fetch(`${API_BASE}/feedback?limit=50`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/geo?period=${period}`, { headers }).then(r => r.json()).catch(() => [])
             ]);
 
             setHealthKPIs(health);
@@ -213,6 +224,7 @@ export default function ChatbotAnalyticsPage() {
             setDemandInsights(demand);
             setHealthSummary(summary);
             setFeedbackReports(feedback);
+            setGeoDistribution(geo);
             setLastRefresh(new Date());
         } catch (error) {
             console.error("Failed to fetch analytics:", error);
@@ -261,7 +273,7 @@ export default function ChatbotAnalyticsPage() {
 
     if (!isAuthenticated || user?.role !== 'admin') {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] flex items-center justify-center">
+            <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] flex items-center justify-center">
                 <div className="text-center">
                     <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Access Denied</h1>
@@ -272,20 +284,20 @@ export default function ChatbotAnalyticsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] transition-colors duration-300">
+        <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300">
             {/* Background Ambient Glow */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-[#14B8A6]/5 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-[#3B82F6]/5 rounded-full blur-[100px]" />
             </div>
             {/* 1. TOP HEADER & FILTERS */}
-            <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-[#0B1121]/80 border-b border-slate-200 dark:border-white/[0.08]">
+            <header className="sticky top-0 z-40 w-full bg-white dark:bg-[#24303F] border-b border-slate-200 dark:border-[#2E3A47]">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                         {/* Title */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#0F172A] to-[#1E293B] dark:from-[#1E293B] dark:to-[#0F172A] rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/10">
+                            <div className="w-10 h-10 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md flex items-center justify-center shadow-sm border border-slate-200 dark:border-[#2E3A47]">
                                 <LayoutDashboard className="w-5 h-5 text-[#14B8A6]" />
                             </div>
                             <div>
@@ -309,7 +321,7 @@ export default function ChatbotAnalyticsPage() {
                                     <select
                                         value={userType}
                                         onChange={(e) => setUserType(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#14B8A6]/20 focus:border-[#14B8A6]/50 outline-none appearance-none cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors shadow-sm"
+                                        className="pl-9 pr-4 py-2 bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200 dark:border-[#2E3A47] rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-[#3C50E0] outline-none appearance-none cursor-pointer shadow-sm"
                                     >
                                         <option value="all">All Users</option>
                                         <option value="user">Registered</option>
@@ -325,7 +337,7 @@ export default function ChatbotAnalyticsPage() {
                                     <select
                                         value={language}
                                         onChange={(e) => setLanguage(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#14B8A6]/20 focus:border-[#14B8A6]/50 outline-none appearance-none cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors shadow-sm"
+                                        className="pl-9 pr-4 py-2 bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200 dark:border-[#2E3A47] rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-[#3C50E0] outline-none appearance-none cursor-pointer shadow-sm"
                                     >
                                         <option value="all">All Languages</option>
                                         <option value="en">English (EN)</option>
@@ -338,13 +350,13 @@ export default function ChatbotAnalyticsPage() {
 
                             {/* Period Selection */}
                             <Tooltip content="Select time range for all metrics">
-                                <div className="flex bg-white dark:bg-[#111827] rounded-xl p-1 border border-slate-200 dark:border-white/[0.08] shadow-sm">
+                                <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md p-1 border border-slate-200 dark:border-[#2E3A47] shadow-sm">
                                     {['today', '7d', '30d'].map(p => (
                                         <button
                                             key={p}
                                             onClick={() => setPeriod(p)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${period === p
-                                                ? 'bg-slate-100 dark:bg-[#1E293B] text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                                            className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${period === p
+                                                ? 'bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm border border-slate-200 dark:border-[#2E3A47]'
                                                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                         >
@@ -357,7 +369,7 @@ export default function ChatbotAnalyticsPage() {
                             <Tooltip content="Refresh all data">
                                 <button
                                     onClick={fetchData}
-                                    className="p-2.5 bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-white/[0.02] rounded-xl transition-colors border border-slate-200 dark:border-white/[0.08] text-slate-500 dark:text-slate-400 shadow-sm"
+                                    className="p-2.5 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md transition-colors border border-slate-200 dark:border-[#2E3A47] text-slate-500 dark:text-slate-400 shadow-sm"
                                 >
                                     <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#14B8A6]' : ''}`} />
                                 </button>
@@ -442,123 +454,128 @@ export default function ChatbotAnalyticsPage() {
                     {/* LEFT COLUMN: 2/3 Width */}
                     <div className="lg:col-span-2 space-y-8">
 
-                        {/* DEMAND INTELLIGENCE (NEW) */}
-                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between">
+                        {/* DEMAND INTELLIGENCE & TOP QUESTIONS — TABBED */}
+                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300">
+                            <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
-                                        <TrendingUp className="w-6 h-6 text-[#14B8A6]" />
+                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
+                                        {demandTab === 'demand' ? <TrendingUp className="w-6 h-6 text-[#14B8A6]" /> : <HelpCircle className="w-6 h-6 text-[#3B82F6]" />}
                                     </div>
                                     <div>
                                         <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
-                                            Demand Intelligence
-                                            <Tooltip content="Trending topics based on volume growth">
+                                            {demandTab === 'demand' ? 'Demand Intelligence' : 'Top Questions'}
+                                            <Tooltip content={demandTab === 'demand' ? 'Trending topics based on volume growth' : 'Most frequently asked questions'}>
                                                 <Info className="w-4 h-4 text-slate-400 cursor-help" />
                                             </Tooltip>
                                         </h2>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Market query velocity & trends</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                            {demandTab === 'demand' ? 'Market query velocity & trends' : 'Highest volume user inquiries'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {demandTab === 'questions' && (
+                                        <button
+                                            onClick={() => exportToCSV(topQuestions, 'top_questions')}
+                                            className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1"
+                                        >
+                                            <Download className="w-3 h-3" /> CSV
+                                        </button>
+                                    )}
+                                    <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] rounded-lg p-1 border border-slate-200 dark:border-[#2E3A47]">
+                                        <button
+                                            onClick={() => setDemandTab('demand')}
+                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${demandTab === 'demand' ? 'bg-white dark:bg-[#24303F] text-[#14B8A6] shadow-sm border border-slate-200 dark:border-[#2E3A47]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                        >
+                                            <TrendingUp className="w-3.5 h-3.5 inline-block mr-1" />Demand
+                                        </button>
+                                        <button
+                                            onClick={() => setDemandTab('questions')}
+                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${demandTab === 'questions' ? 'bg-white dark:bg-[#24303F] text-[#3B82F6] shadow-sm border border-slate-200 dark:border-[#2E3A47]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                        >
+                                            <HelpCircle className="w-3.5 h-3.5 inline-block mr-1" />Questions
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-slate-50/50 dark:bg-[#0B1121]/50 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                        <tr>
-                                            <th className="px-6 py-3">Trending Query</th>
-                                            <th className="px-6 py-3">Volume</th>
-                                            <th className="px-6 py-3">Growth</th>
-                                            <th className="px-6 py-3">Intent</th>
-                                            <th className="px-6 py-3">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-[#2A303C]">
-                                        {demandInsights.length === 0 ? (
-                                            <tr><td colSpan={5} className="p-8 text-center text-slate-500">No trending data available</td></tr>
-                                        ) : (
-                                            demandInsights.map((d, i) => (
-                                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#2A303C]/50 transition-colors">
-                                                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{d.query_text}</td>
-                                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{d.volume}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`flex items-center gap-1 font-bold ${d.growth_rate > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                                            {d.growth_rate > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                                                            {Math.abs(d.growth_rate)}%
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 font-mono uppercase">{d.intent}</td>
-                                                    <td className="px-6 py-4">
-                                                        {d.is_new ? (
-                                                            <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold">NEW</span>
-                                                        ) : (
-                                                            <span className="text-xs text-slate-400">Recurring</span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
 
-                        {/* TOP QUESTIONS */}
-                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/5 via-transparent to-[#14B8A6]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between relative z-10">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
-                                        <HelpCircle className="w-6 h-6 text-[#3B82F6]" />
-                                    </div>
-                                    <div>
-                                        <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
-                                            Top Questions
-                                            <Tooltip content="Most frequently asked questions">
-                                                <Info className="w-4 h-4 text-slate-400 cursor-help" />
-                                            </Tooltip>
-                                        </h2>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Highest volume user inquiries</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => exportToCSV(topQuestions, 'top_questions')}
-                                    className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1"
-                                >
-                                    <Download className="w-3 h-3" /> CSV
-                                </button>
-                            </div>
-                            <div className="divide-y divide-slate-100 dark:divide-[#2A303C] max-h-96 overflow-y-auto">
-                                {topQuestions.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No data yet</div>
-                                ) : (
-                                    topQuestions.map((q, i) => (
-                                        <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-[#2A303C]/50 transition-colors group">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-[#2A303C] flex items-center justify-center text-xs font-bold text-slate-500">
-                                                        {i + 1}
-                                                    </span>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate pr-4">{q.normalized_text}</p>
-                                                        <div className="flex items-center gap-2 mt-0.5">
-                                                            <span className="text-[10px] uppercase font-bold text-slate-400">{q.top_intent}</span>
-                                                            <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                                                            <span className={`text-[10px] font-bold ${q.success_rate > 80 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
-                                                                }`}>
-                                                                {q.success_rate.toFixed(0)}% Success
+                            {/* TAB: Demand Intelligence */}
+                            {demandTab === 'demand' && (
+                                <div className="overflow-x-auto overflow-y-auto max-h-[300px] custom-scrollbar">
+                                    <table className="w-full relative">
+                                        <thead className="sticky top-0 z-20 bg-[#F1F5F9] dark:bg-[#1A222C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shadow-sm after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:right-0 after:border-b after:border-slate-200 dark:after:border-[#2E3A47]">
+                                            <tr>
+                                                <th className="px-6 py-3">Trending Query</th>
+                                                <th className="px-6 py-3">Volume</th>
+                                                <th className="px-6 py-3">Growth</th>
+                                                <th className="px-6 py-3">Intent</th>
+                                                <th className="px-6 py-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-200 dark:divide-[#2E3A47]">
+                                            {demandInsights.length === 0 ? (
+                                                <tr><td colSpan={5} className="p-8 text-center text-slate-500">No trending data available</td></tr>
+                                            ) : (
+                                                demandInsights.map((d, i) => (
+                                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors">
+                                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{d.query_text}</td>
+                                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{d.volume}</td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`flex items-center gap-1 font-bold ${d.growth_rate > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                                {d.growth_rate > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                                                {Math.abs(d.growth_rate)}%
                                                             </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 font-mono uppercase">{d.intent}</td>
+                                                        <td className="px-6 py-4">
+                                                            {d.is_new ? (
+                                                                <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold">NEW</span>
+                                                            ) : (
+                                                                <span className="text-xs text-slate-400">Recurring</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* TAB: Top Questions */}
+                            {demandTab === 'questions' && (
+                                <div className="divide-y divide-slate-200 dark:divide-[#2E3A47] max-h-[300px] overflow-y-auto custom-scrollbar">
+                                    {topQuestions.length === 0 ? (
+                                        <div className="p-8 text-center text-slate-400">No data yet</div>
+                                    ) : (
+                                        topQuestions.map((q, i) => (
+                                            <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors group">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-[#2A303C] flex items-center justify-center text-xs font-bold text-slate-500">
+                                                            {i + 1}
+                                                        </span>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate pr-4">{q.normalized_text}</p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="text-[10px] uppercase font-bold text-slate-400">{q.top_intent}</span>
+                                                                <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                                                                <span className={`text-[10px] font-bold ${q.success_rate > 80 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                                                                    {q.success_rate.toFixed(0)}% Success
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="text-right shrink-0">
-                                                    <p className="text-base font-bold text-slate-900 dark:text-white">{q.count}</p>
-                                                    <p className="text-xs text-slate-400">requests</p>
+                                                    <div className="text-right shrink-0">
+                                                        <p className="text-base font-bold text-slate-900 dark:text-white">{q.count}</p>
+                                                        <p className="text-xs text-slate-400">requests</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
                         </section>
 
 
@@ -568,11 +585,10 @@ export default function ChatbotAnalyticsPage() {
                     <div className="space-y-8">
 
                         {/* SYSTEM PERFORMANCE (Right Top) */}
-                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#14B8A6]/5 via-transparent to-[#0D9488]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between relative z-10">
+                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300">
+                            <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
+                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
                                         <Activity className="w-6 h-6 text-[#14B8A6]" />
                                     </div>
                                     <h2 className="font-bold text-xl text-slate-900 dark:text-white">System Health</h2>
@@ -583,25 +599,25 @@ export default function ChatbotAnalyticsPage() {
                                 </div>
                             </div>
                             <div className="p-6 grid grid-cols-2 gap-4 relative z-10">
-                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Avg Latency</p>
                                     <p className="text-2xl font-black text-slate-900 dark:text-white">
                                         {performanceMetrics?.avg_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-slate-400 ml-1">ms</span>
                                     </p>
                                 </div>
-                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">P95 Latency</p>
                                     <p className="text-2xl font-black text-slate-900 dark:text-white">
                                         {performanceMetrics?.p95_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-slate-400 ml-1">ms</span>
                                     </p>
                                 </div>
-                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Throughput</p>
                                     <p className="text-2xl font-black text-slate-900 dark:text-white">
                                         {((healthKPIs?.total_messages || 0) / (30 * 24)).toFixed(1)}<span className="text-xs font-bold text-slate-400 ml-1">MSG/HR</span>
                                     </p>
                                 </div>
-                                <div className="p-5 rounded-2xl bg-slate-50/50 dark:bg-[#0B1121]/50 border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
+                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Error Rate</p>
                                     <p className={`text-2xl font-black ${(performanceMetrics?.error_rate ?? 0) > 1 ? 'text-red-500' : 'text-emerald-500'}`}>
                                         {performanceMetrics?.error_rate || 0}<span className="text-sm font-medium text-slate-400 ml-1">%</span>
@@ -610,75 +626,57 @@ export default function ChatbotAnalyticsPage() {
                             </div>
                         </section>
 
-                        {/* SESSION FUNNEL */}
-                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
-                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-4 relative z-10">
-                                <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
-                                    <Filter className="w-6 h-6 text-[#14B8A6]" />
-                                </div>
-                                <div>
-                                    <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
-                                        Session Funnel
-                                        <Tooltip content="User journey drop-off analysis">
-                                            <Info className="w-4 h-4 text-slate-400 cursor-help" />
-                                        </Tooltip>
-                                    </h2>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Conversion flow analysis</p>
-                                </div>
-                            </div>
-                            <div className="p-6 space-y-5 relative z-10">
-                                {sessionFunnel.map((step, i) => (
-                                    <div key={i} className="relative">
-                                        <div className="flex justify-between text-xs mb-1.5 px-0.5">
-                                            <span className="font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">{step.step}</span>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="font-mono text-slate-400">{step.count}</span>
-                                                <span className="font-bold text-[#14B8A6]">({step.percentage.toFixed(0)}%)</span>
-                                            </div>
-                                        </div>
-                                        <div className="h-2.5 w-full bg-slate-100 dark:bg-[#0B1121] rounded-full overflow-hidden border border-slate-100 dark:border-white/[0.05]">
-                                            <div
-                                                className="h-full bg-gradient-to-r from-[#14B8A6] to-[#0D9488] rounded-full shadow-[0_0_8px_rgba(20,184,166,0.5)] transition-all duration-700"
-                                                style={{ width: `${step.percentage}%`, opacity: 1 - (i * 0.15) }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
+                        {/* Right column: only System Health remains */}
 
-                        {/* LANGUAGE & DEMOGRAPHICS */}
-                        <section className="relative group bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                            <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] flex items-center gap-4 relative z-10">
-                                <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-white/[0.05]">
-                                    <Globe className="w-6 h-6 text-orange-500" />
+                        {/* USER GEOGRAPHY */}
+                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300">
+                            <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
+                                        <Globe className="w-6 h-6 text-[#3B82F6]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-bold text-xl text-slate-900 dark:text-white">User Geography</h2>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">All users by country</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 className="font-bold text-xl text-slate-900 dark:text-white">Demographics</h2>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">User distribution</p>
-                                </div>
+                                <Tooltip content="Country detected via IP geolocation for all users">
+                                    <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                </Tooltip>
                             </div>
-                            <div className="p-6">
-                                <div className="space-y-4">
-                                    {languageStats.map((ls, i) => (
-                                        <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-[#0B1121] transition-colors">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#0B1121] flex items-center justify-center text-lg border border-slate-200 dark:border-white/[0.05]">
-                                                    {ls.language === 'en' ? '🇬🇧' : ls.language === 'ar' ? '🇪🇬' : '🌍'}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{ls.language.toUpperCase()}</p>
-                                                    <p className="text-xs text-slate-500">{ls.count} users</p>
+                            <div className="p-4 max-h-[300px] overflow-y-auto custom-scrollbar relative z-10">
+                                {geoDistribution.length === 0 ? (
+                                    <div className="p-6 text-center text-slate-400 text-sm">
+                                        <Globe className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                                        <p>No geo data yet. Data populates as users interact with the chatbot.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {geoDistribution.map((g, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#3B82F6]/30 dark:hover:border-[#3B82F6]/30 transition-all group/geo">
+                                                <span className="text-2xl flex-shrink-0" title={g.country_name}>
+                                                    {g.country_code.toUpperCase().replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)))}
+                                                </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{g.country_name}</span>
+                                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-2 shrink-0">{g.percentage}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-slate-200 dark:bg-[#0B1121] rounded-full h-1.5">
+                                                        <div
+                                                            className="h-1.5 rounded-full bg-gradient-to-r from-[#3B82F6] to-[#14B8A6] transition-all duration-500"
+                                                            style={{ width: `${Math.min(g.percentage, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                        <span className="text-[10px] font-bold text-slate-400">{g.users} sessions</span>
+                                                        <span className="text-[10px] font-bold text-slate-400">{g.messages} msgs</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{ls.percentage.toFixed(0)}%</p>
-                                                <p className="text-xs text-red-500">{ls.failure_rate.toFixed(0)}% fail</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </section>
 
@@ -686,11 +684,10 @@ export default function ChatbotAnalyticsPage() {
                 </div>
 
                 {/* 6. USER FEEDBACK REPORTS (Full Width) */}
-                <section className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl overflow-hidden relative group mt-8">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <section className="bg-white dark:bg-[#0B1121]/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 dark:border-white/[0.08] shadow-sm overflow-hidden relative group mt-8">
                     <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] relative z-10">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-[#0B1121] rounded-2xl flex items-center justify-center shadow-lg border border-blue-500/20">
+                            <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
                                 <MessageSquare className="w-6 h-6 text-blue-500" />
                             </div>
                             <div>
@@ -707,7 +704,7 @@ export default function ChatbotAnalyticsPage() {
 
                     <div className="overflow-x-auto relative z-10">
                         <table className="w-full">
-                            <thead className="bg-slate-50 dark:bg-[#1E293B] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <thead className="bg-[#F1F5F9] dark:bg-[#1A222C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4">Time</th>
                                     <th className="px-6 py-4">User / Session</th>
@@ -716,9 +713,9 @@ export default function ChatbotAnalyticsPage() {
                                     <th className="px-6 py-4 w-1/3">Report Text</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                            <tbody className="divide-y divide-slate-200 dark:divide-[#2E3A47]">
                                 {feedbackReports?.length > 0 ? feedbackReports.map((q, i) => (
-                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
                                                 <Clock className="w-3 h-3" />
@@ -825,11 +822,9 @@ function OverviewCard({ icon: Icon, label, value, trend, tooltip, color, inverse
     }
 
     return (
-        <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative group flex flex-col justify-between h-full overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
+        <div className="bg-white dark:bg-[#24303F] rounded-md p-5 border border-slate-200 dark:border-[#2E3A47] shadow-sm transition-all relative group flex flex-col justify-between h-full overflow-hidden">
             <div className="flex items-start justify-between mb-4 relative z-10">
-                <div className={`p-3 rounded-2xl ${colorClasses[color]} shadow-sm`}>
+                <div className={`p-3 rounded-md border ${colorClasses[color]}`}>
                     <Icon className="w-5 h-5 flex-shrink-0" />
                 </div>
                 {trend !== null && trend !== undefined && (

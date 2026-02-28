@@ -961,3 +961,81 @@ async def get_chat_feedback(
         print(f"Feedback Report Error: {e}")
         return []
 
+
+# ============================================================
+# GEO DISTRIBUTION ENDPOINT
+# ============================================================
+
+class GeoEntry(BaseModel):
+    """Country geo distribution entry"""
+    country_code: str
+    country_name: str
+    users: int
+    messages: int
+    percentage: float
+
+# Country code to name mapping (most common ones)
+COUNTRY_NAMES = {
+    "EG": "Egypt", "SA": "Saudi Arabia", "AE": "UAE", "KW": "Kuwait",
+    "QA": "Qatar", "BH": "Bahrain", "OM": "Oman", "JO": "Jordan",
+    "LB": "Lebanon", "IQ": "Iraq", "MA": "Morocco", "TN": "Tunisia",
+    "DZ": "Algeria", "LY": "Libya", "SD": "Sudan", "SY": "Syria",
+    "PS": "Palestine", "YE": "Yemen",
+    "US": "United States", "GB": "United Kingdom", "DE": "Germany",
+    "FR": "France", "CA": "Canada", "AU": "Australia", "IN": "India",
+    "PK": "Pakistan", "TR": "Turkey", "NL": "Netherlands", "SE": "Sweden",
+    "IT": "Italy", "ES": "Spain", "BR": "Brazil", "JP": "Japan",
+    "KR": "South Korea", "CN": "China", "SG": "Singapore", "MY": "Malaysia",
+    "ID": "Indonesia", "TH": "Thailand", "PH": "Philippines", "NG": "Nigeria",
+    "KE": "Kenya", "ZA": "South Africa", "GH": "Ghana", "RU": "Russia",
+    "UA": "Ukraine", "PL": "Poland", "CZ": "Czech Republic", "RO": "Romania",
+    "HU": "Hungary", "AT": "Austria", "CH": "Switzerland", "BE": "Belgium",
+    "PT": "Portugal", "IE": "Ireland", "NO": "Norway", "DK": "Denmark",
+    "FI": "Finland", "NZ": "New Zealand", "MX": "Mexico", "CO": "Colombia",
+    "AR": "Argentina", "CL": "Chile", "PE": "Peru", "VE": "Venezuela",
+}
+
+@router.get("/geo", response_model=List[GeoEntry])
+async def get_geo_distribution(
+    period: str = Query("30d", regex="^(today|7d|30d|90d)$"),
+    _admin: bool = Depends(require_admin)
+):
+    """
+    User Geography Distribution
+    Returns country-level breakdown of chatbot usage (ALL users: registered + guest).
+    Data comes from chat_analytics.country_code which is resolved from IP on every message.
+    """
+    start, end = get_date_range(period)
+    
+    try:
+        async with db._pool.acquire() as conn:
+            total = await conn.fetchval("""
+                SELECT COUNT(*) FROM chat_analytics 
+                WHERE created_at >= $1 AND created_at <= $2 AND country_code IS NOT NULL
+            """, start, end) or 1
+            
+            rows = await conn.fetch("""
+                SELECT 
+                    country_code,
+                    COUNT(DISTINCT session_id) as unique_users,
+                    COUNT(*) as message_count
+                FROM chat_analytics 
+                WHERE created_at >= $1 AND created_at <= $2 AND country_code IS NOT NULL
+                GROUP BY country_code
+                ORDER BY message_count DESC
+                LIMIT 20
+            """, start, end)
+            
+            return [
+                GeoEntry(
+                    country_code=row['country_code'],
+                    country_name=COUNTRY_NAMES.get(row['country_code'], row['country_code']),
+                    users=row['unique_users'],
+                    messages=row['message_count'],
+                    percentage=round(row['message_count'] / total * 100, 1)
+                )
+                for row in rows
+            ]
+    except Exception as e:
+        print(f"Geo Distribution Error: {e}")
+        return []

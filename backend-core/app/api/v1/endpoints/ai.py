@@ -21,6 +21,7 @@ from app.db.session import db
 from app.chat.chat_service import process_message
 from app.core.config import settings
 from app.api.v1.endpoints.auth import get_current_user
+from app.services.geo_resolver import resolve_country
 
 router = APIRouter()
 
@@ -394,11 +395,18 @@ async def ai_chat_endpoint(
                     """, session_id)
 
 
-            # Log to Analytics (Legacy)
+            # Log to Analytics (Legacy) - NOW WITH GEO DATA FOR ALL USERS
             try:
+                client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else None
+                country_code = None
+                try:
+                    country_code = await resolve_country(client_ip)
+                except Exception as ge:
+                    print(f"[GeoResolver] Non-fatal error: {ge}")
+                
                 await conn.execute("""
-                    INSERT INTO chat_analytics (session_id, message_text, detected_intent, confidence, entities, response_time_ms, language)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    INSERT INTO chat_analytics (session_id, message_text, detected_intent, confidence, entities, response_time_ms, language, ip_address, country_code)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 """, 
                 session_id,
                 req.message,
@@ -406,7 +414,9 @@ async def ai_chat_endpoint(
                 meta_dict.get("confidence"),
                 json.dumps(meta_dict.get("entities") or {}),
                 int((time.time() - start_time) * 1000),
-                response.language)
+                response.language,
+                client_ip,
+                country_code)
             except Exception as le:
                 print(f"Logging Error: {le}")
             

@@ -127,6 +127,26 @@ class SchedulerService:
                 coalesce=True
             )
             
+            # --- TIER 8a: Weekly Newsletter Pulse (Sunday 08:00 Cairo) ---
+            self.scheduler.add_job(
+                self.run_weekly_newsletter_job,
+                CronTrigger(day_of_week='sun', hour=8, minute=0, timezone='Africa/Cairo'),
+                id='tier8a_weekly_newsletter',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+            
+            # --- TIER 8b: Monthly Newsletter Deep Dive (1st of month 09:00 Cairo) ---
+            self.scheduler.add_job(
+                self.run_monthly_newsletter_job,
+                CronTrigger(day=1, hour=9, minute=0, timezone='Africa/Cairo'),
+                id='tier8b_monthly_newsletter',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+            
             self.scheduler.start()
             logger.info("✅ Scheduler Started Successfully. All tiers active.")
             
@@ -379,5 +399,23 @@ class SchedulerService:
             logger.info(f"Weekly backup result: {result.get('status')}")
         except Exception as e:
             logger.error(f"Weekly backup job error: {e}")
+
+    async def run_weekly_newsletter_job(self):
+        """Weekly newsletter dispatch (runs every Sunday 08:00 Cairo)."""
+        try:
+            from app.services.newsletter_service import newsletter_service
+            result = await newsletter_service.send_weekly_pulse()
+            logger.info(f"Weekly newsletter result: {result}")
+        except Exception as e:
+            logger.error(f"Weekly newsletter job error: {e}")
+
+    async def run_monthly_newsletter_job(self):
+        """Monthly newsletter dispatch (runs 1st of each month 09:00 Cairo)."""
+        try:
+            from app.services.newsletter_service import newsletter_service
+            result = await newsletter_service.send_monthly_deep_dive()
+            logger.info(f"Monthly newsletter result: {result}")
+        except Exception as e:
+            logger.error(f"Monthly newsletter job error: {e}")
 
 scheduler_service = SchedulerService()

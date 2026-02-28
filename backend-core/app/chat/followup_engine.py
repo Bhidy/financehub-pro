@@ -270,13 +270,13 @@ class FollowUpEngine:
         target = sym or "this stock"
 
         if "chart" in lower:
-            return f"What does {target} chart signal now?"
+            return f"Show {target} chart"
         if "financial" in lower:
             return f"Show {target} financial breakdown"
         if "dividend" in lower or "yield" in lower:
             return f"How strong are {target} dividends?"
         if "technical" in lower or "rsi" in lower or "macd" in lower:
-            return f"What do {target} technicals indicate?"
+            return f"What is {target} 's fair value?"
         if "safe" in lower or "risk" in lower or "safety" in lower:
             return f"How safe is {target} right now?"
         if "compare" in lower or " vs " in lower:

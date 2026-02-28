@@ -44,8 +44,8 @@ def handle_help(language: str = 'en') -> Dict[str, Any]:
                 'examples': ['Price of COMI', 'FWRY stock price', 'Quote for EAST']
             },
             {
-                'title': '📊 Charts & Technicals',
-                'examples': ['Show COMI chart', 'SWDY 1 year chart', 'ADIB technical analysis']
+                'title': '📊 Charts & Activity',
+                'examples': ['Show COMI chart', 'SWDY 1 year chart', 'Most active stocks']
             },
             {
                 'title': '🛡️ Safety Analysis (NEW)',

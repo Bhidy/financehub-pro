@@ -372,7 +372,6 @@ async def handle_stock_price(
     is_egx = data.get('market_code') == 'EGX' or currency == 'EGP'
     if is_egx:
         base_actions.extend([
-            {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليلي الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'}
         ])
     
     # Data card (duplicate) generation removed in favor of comprehensive Snapshot Card
@@ -385,7 +384,7 @@ async def handle_stock_price(
     }
     
     # Follow-up prompt (NEW)
-    follow_up_prompt = f"Would you like to see {symbol}'s historical financials or a technical chart breakdown?" if language == 'en' else f"هل تريد رؤية القوائم المالية التاريخية لـ {symbol} أو تحليل الرسم البياني الفني؟"
+    follow_up_prompt = f"Would you like to see {symbol}'s historical financials or fair value estimates?" if language == 'en' else f"هل تريد رؤية القوائم المالية التاريخية لـ {symbol} أو تقديرات القيمة العادلة؟"
 
     # Append structured components to cards list for rendering
     # IMPORTANT: Convert Pydantic models to dicts for Card.data validation

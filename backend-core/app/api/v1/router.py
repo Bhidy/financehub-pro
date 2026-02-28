@@ -48,3 +48,7 @@ api_router.include_router(portfolio.router, tags=["portfolio"])
 from app.api.v1.endpoints import financials_export
 api_router.include_router(financials_export.router, tags=["financials"])
 
+# Newsletter System
+from app.api.v1.endpoints import newsletter
+api_router.include_router(newsletter.router, tags=["newsletter"])
+

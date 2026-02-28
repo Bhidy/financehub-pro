@@ -206,54 +206,56 @@ const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
     );
 };
 
-// Premium Card Component - Dual Theme Optimized
+// Premium Card Component - Matches Global Design System
 const GlassCard = ({ children, className = '', noPadding = false, premium = false }: any) => (
     <div className={clsx(
-        "relative overflow-hidden rounded-2xl finhub-panel",
-        premium
-            ? "bg-slate-50 dark:bg-[#151925] border border-slate-200 dark:border-slate-700/50"
-            : "bg-white dark:bg-[#151925] border border-slate-200 dark:border-slate-700/30",
-        "shadow-sm dark:shadow-black/20",
+        "relative overflow-hidden rounded-2xl transition-all duration-300",
+        "bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-xl",
+        "border border-white/40 dark:border-white/[0.08]",
+        "shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]",
+        "hover:shadow-[0_0_20px_rgba(20,184,166,0.08)] hover:border-[#14B8A6]/20",
+        premium && "hover:shadow-[0_0_25px_rgba(20,184,166,0.15)] hover:border-[#14B8A6]/30",
         !noPadding && "p-6",
         className
     )}>
         {premium && (
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] via-transparent to-teal-500/[0.03] dark:from-cyan-500/5 dark:via-transparent dark:to-emerald-500/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#14B8A6]/[0.03] via-transparent to-[#3B82F6]/[0.03] dark:from-[#14B8A6]/5 dark:via-transparent dark:to-[#3B82F6]/5 pointer-events-none" />
         )}
         {children}
     </div>
 );
 
 const StatCard = ({ label, value, subValue, icon: Icon, trend, color = 'default' }: any) => {
-    const colors: any = {
-        default: 'from-slate-500/10 to-transparent',
-        green: 'from-emerald-500/10 to-transparent',
-        red: 'from-rose-500/10 to-transparent',
-        blue: 'from-blue-500/10 to-transparent',
-        teal: 'from-teal-500/10 to-transparent',
+    const iconColors: any = {
+        default: 'text-slate-500 dark:text-slate-400',
+        green: 'text-[#10B981]',
+        red: 'text-[#EF4444]',
+        blue: 'text-[#3B82F6]',
+        teal: 'text-[#14B8A6]',
     };
 
     return (
         <div className={clsx(
-            "relative p-5 rounded-2xl overflow-hidden",
-            "bg-gradient-to-br", colors[color],
-            "border border-slate-100 dark:border-slate-800",
-            "hover:scale-[1.02] transition-transform duration-300"
+            "relative p-5 rounded-2xl overflow-hidden transition-all duration-300 group/stat",
+            "bg-white/60 dark:bg-[#0B1121]/60 backdrop-blur-xl",
+            "border border-slate-200/60 dark:border-white/[0.08]",
+            "shadow-sm dark:shadow-[0_4px_12px_rgb(0,0,0,0.15)]",
+            "hover:shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:border-[#14B8A6]/20 hover:-translate-y-0.5"
         )}>
             <div className="flex items-start justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {label}
                 </span>
-                {Icon && <Icon className="w-4 h-4 text-slate-400" />}
+                {Icon && <Icon className={clsx("w-4 h-4", iconColors[color])} />}
             </div>
             <div className="flex items-end gap-2">
-                <span className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
+                <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
                     {value}
                 </span>
                 {trend !== undefined && (
                     <span className={clsx(
                         "text-xs font-bold flex items-center gap-0.5 mb-1",
-                        trend >= 0 ? "text-emerald-600" : "text-rose-600"
+                        trend >= 0 ? "text-emerald-500" : "text-rose-500"
                     )}>
                         {trend >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                         {Math.abs(trend).toFixed(2)}%
@@ -271,13 +273,13 @@ const TabButton = ({ active, onClick, label, icon: Icon }: any) => (
     <button
         onClick={onClick}
         className={clsx(
-            "flex items-center gap-2.5 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200",
+            "flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300",
             active
-                ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                ? "bg-[#0B1121] dark:bg-white text-white dark:text-[#0B1121] shadow-lg shadow-black/10 dark:shadow-white/10"
+                : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white"
         )}
     >
-        {Icon && <Icon className={clsx("w-4 h-4", active ? "text-teal-400 dark:text-teal-600" : "")} />}
+        {Icon && <Icon className={clsx("w-4 h-4", active ? "text-[#14B8A6]" : "")} />}
         {label}
     </button>
 );
@@ -286,18 +288,18 @@ const RangeIndicator = ({ current, low, high, label }: any) => {
     const percent = ((current - low) / (high - low)) * 100;
     return (
         <div className="space-y-2">
-            <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
                 <span>{formatNumber(low)}</span>
-                <span className="font-semibold text-slate-700 dark:text-slate-200">{label}</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200">{label}</span>
                 <span>{formatNumber(high)}</span>
             </div>
-            <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="relative h-2.5 bg-slate-100 dark:bg-[#1A222C] rounded-full overflow-hidden">
                 <div
-                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500 rounded-full"
+                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#EF4444] via-[#F59E0B] to-[#10B981] rounded-full"
                     style={{ width: '100%' }}
                 />
                 <div
-                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-slate-900 rounded-full border-2 border-teal-600 shadow-lg transition-all"
+                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-[#0B1121] rounded-full border-2 border-[#14B8A6] shadow-[0_0_8px_rgba(20,184,166,0.4)] transition-all"
                     style={{ left: `calc(${Math.min(100, Math.max(0, percent))}% - 8px)` }}
                 />
             </div>
@@ -307,11 +309,11 @@ const RangeIndicator = ({ current, low, high, label }: any) => {
 
 const DataRow = ({ label, value, highlight = false }: any) => (
     <div className={clsx(
-        "flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-800 last:border-0",
-        highlight && "bg-teal-50/50 dark:bg-teal-900/20 -mx-4 px-4 rounded-lg"
+        "flex justify-between items-center py-3 border-b border-slate-100 dark:border-white/[0.05] last:border-0",
+        highlight && "bg-[#14B8A6]/5 dark:bg-[#14B8A6]/10 -mx-4 px-4 rounded-lg"
     )}>
         <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
-        <span className="text-sm font-semibold text-slate-900 dark:text-white font-mono">{value}</span>
+        <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{value}</span>
     </div>
 );
 
@@ -408,9 +410,9 @@ export default function EnterpriseStockProfile() {
     // Loading State
     if (loading) {
         return (
-            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0B1121] flex items-center justify-center">
                 <div className="text-center space-y-4">
-                    <div className="w-16 h-16 mx-auto border-4 border-slate-200 dark:border-slate-700 border-t-teal-500 rounded-full animate-spin" />
+                    <div className="w-16 h-16 mx-auto border-4 border-slate-200 dark:border-[#2E3A47] border-t-[#14B8A6] rounded-full animate-spin" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Loading market data...</p>
                 </div>
             </div>
@@ -420,12 +422,12 @@ export default function EnterpriseStockProfile() {
     // Error State
     if (!data || !data.profile) {
         return (
-            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center p-4">
+            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0B1121] flex items-center justify-center p-4">
                 <GlassCard className="max-w-md text-center">
                     <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Symbol Not Found</h2>
                     <p className="text-slate-600 dark:text-slate-400 mb-6">Unable to retrieve data for {symbol}</p>
-                    <a href="/egx" className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+                    <a href="/egx" className="inline-block px-6 py-3 bg-[#14B8A6] text-white font-bold rounded-xl hover:bg-[#0D9488] transition-all shadow-lg shadow-[#14B8A6]/20">
                         Back to Market
                     </a>
                 </GlassCard>
@@ -457,16 +459,16 @@ export default function EnterpriseStockProfile() {
     ];
 
     return (
-        <div className="min-h-[100dvh] finhub-page bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-[#0a0a0f] dark:via-[#0f0f1a] dark:to-[#0a0a0f]">
+        <div className="min-h-[100dvh] finhub-page bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121]">
 
             {/* === PREMIUM HEADER === */}
-            <header className="finhub-glass sticky top-0 z-50 bg-white/85 dark:bg-[#081326]/82 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/10">
+            <header className="finhub-glass sticky top-0 z-50 bg-white/85 dark:bg-[#0B1121]/90 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/[0.08]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
                         {/* Left: Company Identity */}
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#14B8A6] via-[#0EA5E9] to-[#0F172A] dark:from-cyan-400 dark:via-[#14B8A6] dark:to-[#0B1121] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-cyan-500/30 ring-1 ring-white/50 dark:ring-cyan-200/20">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#14B8A6] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#14B8A6]/30 ring-1 ring-white/20">
                                 {symbol.substring(0, 2)}
                             </div>
                             <div>
@@ -474,7 +476,7 @@ export default function EnterpriseStockProfile() {
                                     <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                                         {displayCompanyName}
                                     </h1>
-                                    <span className="px-2 py-0.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg">
+                                    <span className="px-2 py-0.5 text-xs font-bold bg-slate-100 dark:bg-[#1A222C] text-slate-600 dark:text-slate-300 rounded-lg">
                                         {symbol}
                                     </span>
                                 </div>
@@ -520,7 +522,7 @@ export default function EnterpriseStockProfile() {
                                     "p-3 rounded-xl border transition-all",
                                     isWatched
                                         ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 text-amber-600"
-                                        : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-amber-500"
+                                        : "bg-slate-50 dark:bg-[#1A222C] border-slate-200 dark:border-[#2E3A47] text-slate-400 hover:text-amber-500"
                                 )}
                             >
                                 <Star className={clsx("w-5 h-5", isWatched && "fill-current")} />
@@ -562,7 +564,7 @@ export default function EnterpriseStockProfile() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Price Chart Mini */}
                             <GlassCard className="lg:col-span-2" noPadding>
-                                <div className="p-6 border-b border-slate-100 dark:border-slate-800">
+                                <div className="p-6 border-b border-slate-100 dark:border-white/[0.05]">
                                     <h3 className="font-bold text-slate-900 dark:text-white">Price Performance</h3>
                                 </div>
                                 <div className="h-[300px] p-4">
@@ -633,7 +635,7 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="200-Day Avg" value={formatNumber(p.twoHundredDayAverage)} highlight />
                                 </div>
 
-                                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/[0.05]">
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-slate-500 dark:text-slate-400">vs 50D Avg</span>
                                         <span className={clsx(
@@ -679,7 +681,7 @@ export default function EnterpriseStockProfile() {
                                         <Activity className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                                         Performance Momentum
                                     </h3>
-                                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1A222C] px-2 py-1 rounded-full">
                                         YTD
                                     </span>
                                 </div>
@@ -819,7 +821,7 @@ export default function EnterpriseStockProfile() {
                                     </div>
                                 </div>
                                 {/* Volume Comparison Bar */}
-                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.05]">
                                     <div className="flex justify-between text-xs font-medium mb-2">
                                         <span className="text-slate-500">Today vs Avg Volume</span>
                                         <span className={clsx(
@@ -829,7 +831,7 @@ export default function EnterpriseStockProfile() {
                                             {(((p.volume || 0) / (p.averageDailyVolume3Month || 1)) * 100).toFixed(0)}%
                                         </span>
                                     </div>
-                                    <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-2 bg-slate-100 dark:bg-[#1A222C] rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all duration-1000"
                                             style={{ width: `${Math.min(100, ((p.volume || 0) / (p.averageDailyVolume3Month || 1)) * 100)}%` }}
@@ -859,7 +861,7 @@ export default function EnterpriseStockProfile() {
                                                 "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
                                                 chartRange === range
                                                     ? "bg-blue-600 text-white"
-                                                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#1A222C]"
                                             )}
                                         >
                                             {range}
@@ -1165,7 +1167,7 @@ export default function EnterpriseStockProfile() {
                                     </ResponsiveContainer>
                                 </div>
                                 {/* Additional Return Metrics */}
-                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
+                                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.05] grid grid-cols-2 gap-4">
                                     <div className="text-center p-3 rounded-xl bg-gradient-to-br from-cyan-500/10 to-transparent">
                                         <p className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase">Total Cash</p>
                                         <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatLarge(f.total_cash)}</p>
@@ -1377,7 +1379,7 @@ export default function EnterpriseStockProfile() {
                                                 {currentPrice > (p.fiftyDayAverage || 0) ? 'ABOVE' : 'BELOW'}
                                             </span>
                                         </div>
-                                        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+                                        <div className="h-3 bg-slate-100 dark:bg-[#1A222C] rounded-full overflow-hidden relative">
                                             <div
                                                 className="absolute left-1/2 top-0 h-full w-1 bg-white dark:bg-slate-600 z-10"
                                             />
@@ -1414,7 +1416,7 @@ export default function EnterpriseStockProfile() {
                                                 {currentPrice > (p.twoHundredDayAverage || 0) ? 'ABOVE' : 'BELOW'}
                                             </span>
                                         </div>
-                                        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+                                        <div className="h-3 bg-slate-100 dark:bg-[#1A222C] rounded-full overflow-hidden relative">
                                             <div
                                                 className="absolute left-1/2 top-0 h-full w-1 bg-white dark:bg-slate-600 z-10"
                                             />

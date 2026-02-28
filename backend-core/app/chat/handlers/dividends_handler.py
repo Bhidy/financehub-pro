@@ -172,7 +172,6 @@ async def handle_dividends(
     is_egx = ticker_row['market_code'] == 'EGX' or currency == 'EGP'
     if is_egx:
         base_actions.extend([
-            {'label': '⚙️ Technicals', 'label_ar': '⚙️ التحليل الفني', 'action_type': 'query', 'payload': f'{symbol} technicals'},
         ])
     
     return {

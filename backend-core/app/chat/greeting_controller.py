@@ -60,13 +60,13 @@ GREETING_CATEGORIES = {
     "coaching": {
         "en": [
             "Ready to make smart investment decisions, {name}? I can help you evaluate risks and growth potential instantly.",
-            "Let's build your market knowledge today. Ask me about P/E ratios, dividends, or technical indicators.",
+            "Let's build your market knowledge today. Ask me about P/E ratios, dividends, or fair value estimates.",
             "Great timing — volatility can create opportunities. I'm ready to break down any stock's fundamentals for you.",
             "Let's turn raw data into actionable insights today. I can compare stocks or deep-dive into financial statements.",
         ],
         "ar": [
             "جاهز لاتخاذ قرارات استثمارية ذكية يا {name}؟ يمكنني مساعدتك في تقييم المخاطر وفرص النمو في لحظات.",
-            "دعنا نبني معرفتك بالسوق اليوم. اسألني عن مكررات الربحية، التوزيعات، أو المؤشرات الفنية.",
+            "دعنا نبني معرفتك بالسوق اليوم. اسألني عن مكررات الربحية، التوزيعات، أو القيمة العادلة.",
             "توقيت ممتاز — التقلبات قد تخلق فرصاً. أنا جاهز لتحليل أساسيات أي سهم بالتفصيل من أجلك.",
             "دعنا نحول البيانات الخام إلى رؤى قابلة للتنفيذ اليوم. يمكنني مقارنة الأسهم أو الغوص في القوائم المالية."
         ]
@@ -76,13 +76,13 @@ GREETING_CATEGORIES = {
             "How can I help you analyze the market today? I have access to prices, financials, and news.",
             "What would you like to know? I can screen for top stocks or checking specific company details.",
             "I'm ready when you are. Just type a symbol or a question about the Egyptian market.",
-            "What can I help you with? Whether it's technicals or fundamentals, I'm here to assist.",
+            "What can I help you with? Whether it's valuation or fundamentals, I'm here to assist.",
         ],
         "ar": [
             "كيف يمكنني مساعدتك في تحليل السوق اليوم؟ لدي وصول للأسعار، القوائم المالية، والأخبار.",
             "ما الذي تود معرفته؟ يمكنني البحث عن أفضل الأسهم أو فحص تفاصيل شركة محددة.",
             "أنا جاهز في أي وقت. فقط اكتب رمز السهم أو سؤالك عن السوق المصري.",
-            "بماذا يمكنني مساعدتك؟ سواء كان تحليلاً فنياً أو أساسياً، أنا هنا للمساعدة."
+            "بماذا يمكنني مساعدتك؟ سواء كان تقييماً أو تحليلاً أساسياً، أنا هنا للمساعدة."
         ]
     }
 }

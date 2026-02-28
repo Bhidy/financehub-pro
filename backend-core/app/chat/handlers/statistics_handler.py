@@ -240,7 +240,7 @@ async def handle_stock_statistics(
         lines.extend(health_lines)
         lines.append("")
         
-    # 5. Technical
+    # 5. Market Metrics
     tech_lines = []
     beta_str = _format_number(stats.get('beta_5y'))
     rsi_str = _format_number(stats.get('rsi_14'))
@@ -249,7 +249,7 @@ async def handle_stock_statistics(
     if rsi_str: tech_lines.append(f"• RSI (14): {rsi_str}")
     
     if tech_lines:
-        lines.append(f"📉 **{'المؤشرات الفنية' if language == 'ar' else 'Technical Indicators'}:**")
+        lines.append(f"📉 **{'مؤشرات التداول' if language == 'ar' else 'Market Indicators'}:**")
         lines.extend(tech_lines)
 
     message = "\n".join(lines)

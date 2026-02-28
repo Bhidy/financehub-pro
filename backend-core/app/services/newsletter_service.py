@@ -12,6 +12,7 @@ Schedule:
 import logging
 import os
 import httpx
+import asyncio
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
@@ -381,6 +382,7 @@ class NewsletterService:
                 except Exception as e:
                     logger.warning(f"Error sending to {sub.get('email', '?')}: {e}")
                     errors += 1
+                await asyncio.sleep(0.6)  # Resend rate limit
 
             self.last_weekly_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
@@ -457,6 +459,7 @@ class NewsletterService:
                 except Exception as e:
                     logger.warning(f"Error sending monthly to {sub.get('email', '?')}: {e}")
                     errors += 1
+                await asyncio.sleep(0.6)  # Resend rate limit
 
             self.last_monthly_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
@@ -548,6 +551,7 @@ class NewsletterService:
                 except Exception as e:
                     logger.warning(f"Academy error for {sub.get('email', '?')}: {e}")
                     errors += 1
+                await asyncio.sleep(0.6)  # Resend rate limit
 
             self.last_academy_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
@@ -667,6 +671,7 @@ class NewsletterService:
                 except Exception as e:
                     logger.warning(f"Flash alert error for {sub.get('email', '?')}: {e}")
                     errors += 1
+                await asyncio.sleep(0.6)  # Resend rate limit
 
             self.last_flash_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None

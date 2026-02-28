@@ -12,7 +12,7 @@ Schedule:
 import logging
 import os
 import httpx
-import jwt
+from jose import jwt
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 

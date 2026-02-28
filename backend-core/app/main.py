@@ -121,6 +121,20 @@ async def lifespan(app: FastAPI):
                         response_time_ms INT,
                         fallback_triggered BOOLEAN DEFAULT FALSE,
                         language VARCHAR(5),
+                        ip_address VARCHAR(45),
+                        country_code VARCHAR(5),
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """)
+                # Idempotent column additions for existing tables
+                await conn.execute("ALTER TABLE chat_analytics ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45)")
+                await conn.execute("ALTER TABLE chat_analytics ADD COLUMN IF NOT EXISTS country_code VARCHAR(5)")
+                
+                # IP Geo Cache table
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS ip_geo_cache (
+                        ip_address VARCHAR(45) PRIMARY KEY,
+                        country_code VARCHAR(5) NOT NULL,
                         created_at TIMESTAMP DEFAULT NOW()
                     )
                 """)

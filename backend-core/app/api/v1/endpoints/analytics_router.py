@@ -122,6 +122,32 @@ class ProductHealthSummary(BaseModel):
     decision_needed: bool
 
 
+class NewsletterFunnelStep(BaseModel):
+    lesson: int
+    count: int
+    percentage: float
+
+class NewsletterAnalytics(BaseModel):
+    """Newsletter subscription and engagement metrics"""
+    total_subscribers: int
+    active_subscribers: int
+    unsubscribed_count: int
+    retention_rate: float
+    # Distribution
+    weekly_pulse_count: int
+    monthly_dive_count: int
+    academy_count: int
+    flash_alerts_count: int
+    # Funnel
+    academy_funnel: List[NewsletterFunnelStep]
+    # Health
+    last_weekly_sent: Optional[datetime]
+    last_monthly_sent: Optional[datetime]
+    last_academy_sent: Optional[datetime]
+    last_flash_sent: Optional[datetime]
+    is_scheduler_running: bool
+
+
 # ============================================================
 # ADMIN AUTH DEPENDENCY
 # ============================================================
@@ -197,6 +223,68 @@ def build_filter_clause(
 # ============================================================
 # ENDPOINTS
 # ============================================================
+
+@router.get("/newsletter", response_model=NewsletterAnalytics)
+async def get_newsletter_analytics(
+    _admin: bool = Depends(require_admin)
+):
+    """
+    Get detailed newsletter subscription and engagement analytics
+    """
+    try:
+        async with db._pool.acquire() as conn:
+            # Basic counts
+            total = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences")
+            unsub = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences WHERE unsubscribed = TRUE")
+            active = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences WHERE unsubscribed = FALSE")
+            
+            # Distribution (among active)
+            weekly = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences WHERE unsubscribed = FALSE AND weekly_pulse = TRUE")
+            monthly = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences WHERE unsubscribed = FALSE AND monthly_dive = TRUE")
+            academy = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences WHERE unsubscribed = FALSE AND academy = TRUE")
+            flash = await conn.fetchval("SELECT COUNT(*) FROM newsletter_preferences WHERE unsubscribed = FALSE AND flash_alerts = TRUE")
+            
+            # Academy Funnel
+            funnel_rows = await conn.fetch("SELECT COALESCE(academy_lesson, 0) as lesson_num, COUNT(*) as cnt FROM newsletter_preferences WHERE academy = TRUE GROUP BY lesson_num ORDER BY lesson_num")
+            
+            academy_total = sum(r['cnt'] for r in funnel_rows)
+            funnel = []
+            for i in range(9): # lessons 0 to 8
+                count = next((r['cnt'] for r in funnel_rows if r['lesson_num'] == i), 0)
+                funnel.append(NewsletterFunnelStep(
+                    lesson=i,
+                    count=count,
+                    percentage=(count / academy_total) * 100 if academy_total > 0 else 0
+                ))
+            
+            from app.services.scheduler import get_scheduler_service
+            scheduler = get_scheduler_service()
+            ns = scheduler.newsletter_service
+
+            # Parse timestamps gracefully
+            def parse_ts(ts_str):
+                return datetime.fromisoformat(ts_str) if ts_str else None
+
+            return NewsletterAnalytics(
+                total_subscribers=total or 0,
+                active_subscribers=active or 0,
+                unsubscribed_count=unsub or 0,
+                retention_rate=((active / total) * 100) if total and total > 0 else 0.0,
+                weekly_pulse_count=weekly or 0,
+                monthly_dive_count=monthly or 0,
+                academy_count=academy or 0,
+                flash_alerts_count=flash or 0,
+                academy_funnel=funnel,
+                last_weekly_sent=parse_ts(ns.last_weekly_sent),
+                last_monthly_sent=parse_ts(ns.last_monthly_sent),
+                last_academy_sent=parse_ts(ns.last_academy_sent),
+                last_flash_sent=parse_ts(ns.last_flash_sent),
+                is_scheduler_running=ns.is_running
+            )
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
 
 @router.get("/health", response_model=HealthKPIs)
 async def get_health_kpis(

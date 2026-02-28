@@ -867,6 +867,56 @@ class LLMExplainerService:
                     # I will keep the logic focused on the first block (lines 406-512 in original) which handles it well.
                     pass
 
+                elif c_type == 'compare_table':
+                    # ──────────────────────────────────────────────────────────
+                    # CRITICAL: Serialize REAL comparison data to prevent LLM
+                    # hallucination.  Without this, the LLM fabricates P/E,
+                    # ROE, revenue growth, and sector average numbers.
+                    # ──────────────────────────────────────────────────────────
+                    stocks = c_data.get('stocks', [])
+                    metrics = c_data.get('metrics', [])
+                    
+                    # 1. Stock headers with key identifiers
+                    for s in stocks:
+                        sym = s.get('symbol', '?')
+                        name = s.get('name', '')[:25]
+                        sector = s.get('sector_name', 'N/A')
+                        curr = s.get('currency', 'EGP')
+                        summary_parts.append(f"COMPARE: {sym} ({name}) | Sector={sector} [{curr}]")
+                    
+                    # 2. All metric rows with actual values per stock
+                    metric_lines = []
+                    for m in metrics:
+                        key = m.get('key', '')
+                        label = m.get('label', key)
+                        fmt = m.get('format')
+                        values_strs = []
+                        for s in stocks:
+                            val = s.get(key)
+                            if val is not None:
+                                if fmt == 'pct':
+                                    values_strs.append(f"{s.get('symbol','?')}={val:.2f}%")
+                                elif fmt == 'compact' and isinstance(val, (int, float)):
+                                    if abs(val) >= 1_000_000_000:
+                                        values_strs.append(f"{s.get('symbol','?')}={val/1e9:.2f}B")
+                                    elif abs(val) >= 1_000_000:
+                                        values_strs.append(f"{s.get('symbol','?')}={val/1e6:.2f}M")
+                                    else:
+                                        values_strs.append(f"{s.get('symbol','?')}={val:,.0f}")
+                                elif isinstance(val, float):
+                                    values_strs.append(f"{s.get('symbol','?')}={val:.2f}")
+                                else:
+                                    values_strs.append(f"{s.get('symbol','?')}={val}")
+                            else:
+                                values_strs.append(f"{s.get('symbol','?')}=N/A")
+                        
+                        winner = m.get('winner_symbol', '')
+                        winner_tag = f" [WINNER={winner}]" if winner else ""
+                        metric_lines.append(f"{label}: {', '.join(values_strs)}{winner_tag}")
+                    
+                    if metric_lines:
+                        summary_parts.append("METRICS: " + " | ".join(metric_lines))
+
                 elif c_type == 'sector_list':
                     stocks = c_data.get('stocks', [])
                     sector = c_data.get('sector', '')[:15]
@@ -954,6 +1004,14 @@ class LLMExplainerService:
                 "═══════════════════════════════════════════════════════════════\n"
                 "SPECIAL: COMPARISON PERSONALITY PROFILES (MANDATORY)\n"
                 "═══════════════════════════════════════════════════════════════\n"
+                "🚨 ANTI-HALLUCINATION DATA MANDATE (ABSOLUTE):\n"
+                "You MUST ONLY use the exact numbers provided in the METRICS and COMPARE data above.\n"
+                "- Do NOT invent 'sector average' numbers. You do NOT have sector-wide data.\n"
+                "- Do NOT fabricate P/E, ROE, revenue growth, or any other numbers.\n"
+                "- If the METRICS data shows PRMH PE=X and PEER PE=Y, use EXACTLY those values.\n"
+                "- NEVER write 'sector average of 14.7x' unless that number appears in the data.\n"
+                "- Compare ONLY the stocks against EACH OTHER, not against fabricated benchmarks.\n"
+                "- If a metric is N/A, say 'data not available', do NOT guess.\n\n"
                 "CRITICAL MATERIALITY RULE (MUST FOLLOW):\n"
                 "For percentage-based metrics (margins, ROE, ROA, growth rates), you MUST \n"
                 "calculate the RELATIVE difference before claiming one stock is stronger.\n"

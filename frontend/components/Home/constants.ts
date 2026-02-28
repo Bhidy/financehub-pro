@@ -46,9 +46,15 @@ export const navigation = [
         url: "#features",
     },
     {
+        id: "about",
+        title: "About Us",
+        url: "#about",
+    },
+    {
         id: "1",
         title: "Membership",
         url: "#pricing",
+        hidden: true,
     },
     {
         id: "2",

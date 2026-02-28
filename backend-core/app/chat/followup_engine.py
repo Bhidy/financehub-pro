@@ -269,18 +269,61 @@ class FollowUpEngine:
                 break
         target = sym or "this stock"
 
-        if "chart" in lower:
+        # ── Chart / Price ──
+        if "chart" in lower and "margin" not in lower:
             return f"Show {target} chart"
+
+        # ── Deep Valuation ──
+        if "deep valuation" in lower or "valuation analysis" in lower:
+            return f"Is {target} cheap or expensive?"
+
+        # ── Safety / Health ──
+        if "financially safe" in lower or "safety score" in lower or "safety check" in lower:
+            return f"How safe is {target} financially?"
+
+        # ── Peer Comparison ──
+        if "compare" in lower and ("peer" in lower or "sector" in lower):
+            return f"How does {target} compare to peers?"
+
+        # ── Dividend Payout Sustainability ──
+        if "payout" in lower and "sustainable" in lower:
+            return f"Are {target} dividends sustainable?"
+
+        # ── Yield vs Peers ──
+        if "dividend yield" in lower and ("peer" in lower or "sector" in lower):
+            return f"How does {target} yield compare to peers?"
+
+        # ── Margin Trends ──
+        if "margin" in lower and ("trend" in lower or "gross" in lower or "operating" in lower):
+            return f"How are {target} margins trending?"
+
+        # ── Debt & Liquidity ──
+        if "debt" in lower and "liquidity" in lower:
+            return f"What is {target}'s debt position?"
+
+        # ── Revenue Growth / Profit Trend ──
+        if ("revenue" in lower or "profit" in lower) and ("growth" in lower or "trend" in lower):
+            return f"Is {target} revenue growing?"
+
+        # ── Growth Quality ──
+        if "growth quality" in lower:
+            return f"What is {target}'s growth quality?"
+
+        # ── Financials ──
         if "financial" in lower:
             return f"Show {target} financial breakdown"
+
+        # ── Dividends ──
         if "dividend" in lower or "yield" in lower:
             return f"How strong are {target} dividends?"
-        if "technical" in lower or "rsi" in lower or "macd" in lower:
-            return f"What is {target} 's fair value?"
-        if "safe" in lower or "risk" in lower or "safety" in lower:
-            return f"How safe is {target} right now?"
-        if "compare" in lower or " vs " in lower:
-            return "How does it compare to peers?"
+
+        # ── Valuation vs Peers ──
+        if "valuation" in lower and ("peer" in lower or "sector" in lower):
+            return f"Is {target} valued fairly vs peers?"
+
+        # ── Payout vs Earnings / FCF ──
+        if "payout" in lower or "free cash flow" in lower or "fcf" in lower:
+            return f"Is {target} FCF supporting dividends?"
 
         # Last fallback: use cleaned action label if helpful; otherwise payload.
         fallback = str(l or p).strip()

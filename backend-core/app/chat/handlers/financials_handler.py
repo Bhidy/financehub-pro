@@ -865,8 +865,9 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
 
     # Define Actions
     actions = [
-        {'label': '📊 Price Chart', 'label_ar': '📊 شارت السعر', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-        {'label': '💰 Dividends', 'label_ar': '💰 توزيعات الأرباح', 'action_type': 'query', 'payload': f'Dividends {symbol}'},
+        {'label': '📊 Margin Trends', 'label_ar': '📊 اتجاهات الهوامش', 'action_type': 'query', 'payload': f'Show {symbol} gross and operating margin trends over the years'},
+        {'label': '💎 Valuation vs Peers', 'label_ar': '💎 التقييم مقابل الأقران', 'action_type': 'query', 'payload': f'How does {symbol} valuation compare to sector peers?'},
+        {'label': '🛡️ Debt & Liquidity', 'label_ar': '🛡️ الديون والسيولة', 'action_type': 'query', 'payload': f'What is {symbol} debt level and liquidity position?'},
     ]
 
     # Add Egypt-specific suggestions

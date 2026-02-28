@@ -309,9 +309,9 @@ async def handle_stock_statistics(
             }
         ],
         'actions': [
-            {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-            {'label': '💰 Dividends', 'label_ar': '💰 التوزيعات', 'action_type': 'query', 'payload': f'{symbol} dividends'},
-            {'label': '📋 Financials', 'label_ar': '📋 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+            {'label': '💎 Deep Valuation', 'label_ar': '💎 تقييم معمق', 'action_type': 'query', 'payload': f'Deep valuation analysis of {symbol} — is it cheap or expensive?'},
+            {'label': '🛡️ Safety Score', 'label_ar': '🛡️ درجة الأمان', 'action_type': 'query', 'payload': f'Show {symbol} financial safety score and health metrics'},
+            {'label': '⚖️ Peer Comparison', 'label_ar': '⚖️ مقارنة بالأقران', 'action_type': 'query', 'payload': f'Compare {symbol} key ratios against sector peers'},
         ]
     }
 

@@ -165,8 +165,9 @@ async def handle_dividends(
             message = f"❌ No dividend data available for {name} ({symbol})"
     
     base_actions = [
-            {'label': '📊 Chart', 'label_ar': '📊 الشارت', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-            {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+            {'label': '📈 Payout Sustainability', 'label_ar': '📈 استدامة التوزيعات', 'action_type': 'query', 'payload': f'Is {symbol} dividend payout ratio sustainable? Show payout vs earnings'},
+            {'label': '🛡️ Financial Safety', 'label_ar': '🛡️ الأمان المالي', 'action_type': 'query', 'payload': f'Is {symbol} financially safe and able to sustain dividends?'},
+            {'label': '⚖️ Yield vs Peers', 'label_ar': '⚖️ العائد مقارنة بالأقران', 'action_type': 'query', 'payload': f'Compare {symbol} dividend yield to sector peers'},
     ]
 
     is_egx = ticker_row['market_code'] == 'EGX' or currency == 'EGP'

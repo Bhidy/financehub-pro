@@ -57,13 +57,13 @@ def _build_gem_actions(gems: list, language: str = "en") -> list:
         return [
             {'label': f'📊 تحليل {sym1}', 'label_ar': f'📊 تحليل {sym1}', 'action_type': 'query', 'payload': f'حلل لي سهم {sym1} بالتفصيل'},
             {'label': f'🛡️ مخاطر {sym1}', 'label_ar': f'🛡️ مخاطر {sym1}', 'action_type': 'query', 'payload': f'ما مدى أمان سهم {sym1}'},
-            {'label': f'⚖️ قارن {sym1} و{sym2}', 'label_ar': f'⚖️ قارن {sym1} و{sym2}', 'action_type': 'query', 'payload': f'قارن {sym1} و{sym2}'},
+            {'label': f'⚖️ قارن {sym1} مع أقرانه', 'label_ar': f'⚖️ قارن {sym1} مع أقرانه', 'action_type': 'query', 'payload': f'قارن {sym1} مع أقرانه'},
         ]
     else:
         return [
             {'label': f'📊 Analyze {sym1}', 'label_ar': f'📊 تحليل {sym1}', 'action_type': 'query', 'payload': f'Give me a full snapshot of {sym1}'},
             {'label': f'🛡️ {sym1} Risk Check', 'label_ar': f'🛡️ مخاطر {sym1}', 'action_type': 'query', 'payload': f'How safe is {sym1}? Check debt, Altman Z-Score and risk'},
-            {'label': f'⚖️ Compare {sym1} vs {sym2}', 'label_ar': f'⚖️ قارن {sym1} مع {sym2}', 'action_type': 'query', 'payload': f'Compare {sym1} vs {sym2}'},
+            {'label': f'⚖️ Compare {sym1} to peers', 'label_ar': f'⚖️ قارن {sym1} مع أقرانه', 'action_type': 'query', 'payload': f'Compare {sym1} to peers'},
         ]
 
 
@@ -1172,9 +1172,7 @@ async def handle_undervalued_stocks(
                     ("P/E" if language == "en" else "مضاعف الربحية"): f"{pe:.1f}x" if pe is not None and pe > 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("P/B" if language == "en" else "مضاعف القيمة الدفترية"): f"{pb:.2f}x" if pb is not None and pb > 0 else ("N/A" if language == "en" else "غير متاح"),
                     ("ROE" if language == "en" else "العائد على حقوق الملكية"): f"{roe:.1f}%" if roe is not None and roe != 0 else ("N/A" if language == "en" else "غير متاح"),
-                    ("Yield" if language == "en" else "العائد"):
-                        f"{row.get('dividend_yield'):.1f}%" if row.get("dividend_yield") is not None and row.get("dividend_yield") > 0
-                        else ("--" if language == "en" else "--"),
+                    ("Cap" if language == "en" else "القيمة السوقية"): _format_number(row.get('market_cap', 0), language=language),
                 },
                 "mini_scores": {
                     "valuation": score_res.valuation,
@@ -1217,13 +1215,13 @@ async def handle_undervalued_stocks(
                 actions = [
                     {"label": f"تحليل {top}", "label_ar": f"تحليل {top}", "action_type": "query", "payload": f"حلل {top}"},
                     {"label": f"مخاطر {top}", "label_ar": f"مخاطر {top}", "action_type": "query", "payload": f"ما هي مخاطر {top}؟"},
-                    {"label": f"قارن {top} و {second}", "label_ar": f"قارن {top} و {second}", "action_type": "query", "payload": f"قارن {top} مقابل {second}"},
+                    {"label": f"قارن {top} مع أقرانه", "label_ar": f"قارن {top} مع أقرانه", "action_type": "query", "payload": f"قارن {top} مع أقرانه"},
                 ]
             else:
                 actions = [
                     {"label": f"Analyze {top}", "label_ar": f"تحليل {top}", "action_type": "query", "payload": f"Analyze {top}"},
                     {"label": f"{top} risk check", "label_ar": f"مخاطر {top}", "action_type": "query", "payload": f"How serious are the risks for {top}?"},
-                    {"label": f"Compare {top} vs {second}", "label_ar": f"قارن {top} مع {second}", "action_type": "query", "payload": f"Compare {top} vs {second}"},
+                    {"label": f"Compare {top} to peers", "label_ar": f"قارن {top} مع أقرانه", "action_type": "query", "payload": f"Compare {top} to peers"},
                 ]
 
         return {

@@ -149,9 +149,15 @@ async def handle_stock_price(
         'Utilities': 'مرافق'
     }
 
-    sector_raw = data['sector_name'] or "N/A"
-    sector = sector_raw
-    if language == 'ar':
+    sector_raw = data['sector_name'] or ""
+    # Treat UNCLASSIFIED as missing sector for display
+    _invalid_sectors = {'UNCLASSIFIED', 'N/A', ''}
+    if not sector_raw or sector_raw.strip().upper() in _invalid_sectors:
+        sector_raw = ""
+        sector = "—"  # Clean dash for UI
+    else:
+        sector = sector_raw
+    if language == 'ar' and sector_raw:
         sector = SECTOR_AR_MAP.get(sector_raw, sector_raw)
     
     # Trend analysis

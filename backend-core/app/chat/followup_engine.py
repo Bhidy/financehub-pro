@@ -46,7 +46,7 @@ Example: "What specific catalyst would move this from 64 to 75+ on the score"
 
 TYPE: comparison
 When to use: When a stock or sector has been analyzed in isolation
-Example: "How does COMI's quality score compare to QNBA on the same framework"
+Example: "How does COMI's quality score compare to its sector peers"
 
 TYPE: macro_link
 When to use: When individual stock analysis doesn't mention macro context

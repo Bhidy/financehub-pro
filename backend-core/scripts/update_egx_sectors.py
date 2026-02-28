@@ -66,6 +66,7 @@ async def main():
     print(f"   -> Found {len(db_map)} tickers in DB.")
     
     updates = []
+    skipped_unclassified = 0
     
     print(f"🔄 Processing {len(df)} records from source...")
     
@@ -76,11 +77,21 @@ async def main():
         # Data Cleaning
         if not symbol or not sector or symbol.lower() == 'nan' or sector.lower() == 'nan':
             continue
+        
+        # SAFETY: Never overwrite a valid DB sector with UNCLASSIFIED
+        if sector.upper() == 'UNCLASSIFIED':
+            current_sector = db_map.get(symbol)
+            if current_sector and current_sector.upper() != 'UNCLASSIFIED':
+                skipped_unclassified += 1
+                continue  # Keep the existing valid sector
             
         # Check if update is needed
         current_sector = db_map.get(symbol)
         if current_sector != sector:
             updates.append((sector, symbol))
+    
+    if skipped_unclassified > 0:
+        print(f"⚠️ Skipped {skipped_unclassified} UNCLASSIFIED rows (existing DB sectors preserved).")
     
     if not updates:
         print("✅ Analysis Complete: No updates required. Database is in sync.")

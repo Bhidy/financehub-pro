@@ -42,10 +42,10 @@ def _make_stock_actions(top_stocks: list, language: str = 'en') -> list:
                 'payload': f'ما مدى أمان سهم {sym1}'
             },
             {
-                'label': f'⚖️ قارن {sym1} و{sym2}',
-                'label_ar': f'⚖️ قارن {sym1} و{sym2}',
+                'label': f'⚖️ قارن {sym1} مع أقرانه',
+                'label_ar': f'⚖️ قارن {sym1} مع أقرانه',
                 'action_type': 'query',
-                'payload': f'قارن {sym1} و{sym2}'
+                'payload': f'قارن {sym1} مع أقرانه'
             },
         ]
     else:
@@ -63,10 +63,10 @@ def _make_stock_actions(top_stocks: list, language: str = 'en') -> list:
                 'payload': f'How safe is {sym1}? Check debt and risk'
             },
             {
-                'label': f'⚖️ Compare {sym1} vs {sym2}',
-                'label_ar': f'⚖️ قارن {sym1} مع {sym2}',
+                'label': f'⚖️ Compare {sym1} to peers',
+                'label_ar': f'⚖️ قارن {sym1} مع أقرانه',
                 'action_type': 'query',
-                'payload': f'Compare {sym1} vs {sym2}'
+                'payload': f'Compare {sym1} to peers'
             },
         ]
 

@@ -363,9 +363,9 @@ async def handle_stock_price(
 
     
     base_actions = [
-            {'label': '📊 View Chart', 'label_ar': '📊 عرض الشارت', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-            {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
-            {'label': '💵 Dividends', 'label_ar': '💵 التوزيعات', 'action_type': 'query', 'payload': f'{symbol} dividends'},
+            {'label': '💎 Deep Valuation', 'label_ar': '💎 تقييم معمق', 'action_type': 'query', 'payload': f'Deep valuation analysis of {symbol}'},
+            {'label': '🛡️ Safety Score', 'label_ar': '🛡️ درجة الأمان', 'action_type': 'query', 'payload': f'Is {symbol} financially safe? Show safety score'},
+            {'label': '⚖️ Compare to Peers', 'label_ar': '⚖️ مقارنة بالأقران', 'action_type': 'query', 'payload': f'Compare {symbol} to sector peers'},
         ]
 
     # Add Egypt-specific suggestions if applicable

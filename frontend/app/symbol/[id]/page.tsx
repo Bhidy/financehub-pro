@@ -81,12 +81,12 @@ function formatCurrency(num: number | string | null | undefined): string {
 // Loading Skeleton with animations
 function LoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-slate-50/50 to-teal-50/30 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] p-6">
+        <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300 p-6">
             <div className="max-w-[1800px] mx-auto">
                 <div className="animate-pulse space-y-6">
-                    <div className="h-32 bg-gradient-to-r from-slate-100 via-teal-50 to-emerald-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 rounded-3xl" />
-                    <div className="grid grid-cols-6 gap-4">{[...Array(6)].map((_, i) => <div key={i} className="h-28 bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg" />)}</div>
-                    <div className="h-[500px] bg-white dark:bg-[#1A1F2E] rounded-3xl shadow-xl" />
+                    <div className="h-32 bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] rounded-md" />
+                    <div className="grid grid-cols-6 gap-4">{[...Array(6)].map((_, i) => <div key={i} className="h-28 bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47]" />)}</div>
+                    <div className="h-[500px] bg-white dark:bg-[#24303F] rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47]" />
                 </div>
             </div>
         </div>
@@ -109,24 +109,24 @@ function StatCard({ label, value, icon: Icon, trend, color = "blue", delay = 0 }
 
     return (
         <div
-            className={`relative overflow-hidden bg-white dark:bg-[#1A1F2E] rounded-2xl p-5 shadow-xl shadow-slate-200/50 dark:shadow-black/20 ${style.glow} border border-slate-100 dark:border-white/5 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-500 group animate-fade-in-up`}
+            className={`relative overflow-hidden premium-glass rounded-2xl p-6 premium-glow-hover group`}
             style={{ animationDelay: `${delay}ms` }}
         >
             {/* Animated gradient background */}
-            <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full bg-gradient-to-br ${style.bg} opacity-10 blur-3xl group-hover:opacity-30 group-hover:scale-150 transition-all duration-700`} />
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r ${style.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full bg-gradient-to-br ${style.bg} opacity-10 blur-3xl group-hover:opacity-20 transition-all duration-700`} />
+            <div className={`absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r ${style.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
             <div className="relative">
                 <div className="flex items-center justify-between mb-3">
                     <span className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">{label}</span>
                     {Icon && (
-                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${style.bg} shadow-lg ${style.glow} transform group-hover:rotate-12 group-hover:scale-110 transition-transform duration-500`}>
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-[#F1F5F9] dark:bg-white/5 text-[#3C50E0] dark:text-[#3C50E0] dark:text-white`}>
                             <Icon className="w-4 h-4 text-white" />
                         </div>
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className={`text-2xl font-black ${style.text} font-mono`}>{value}</span>
+                    <span className={`text-2xl font-bold text-slate-900 dark:text-white`}>{value}</span>
                     {trend === "up" && <ArrowUpRight className="w-5 h-5 text-emerald-500 animate-bounce" />}
                     {trend === "down" && <ArrowDownRight className="w-5 h-5 text-red-500 animate-bounce" />}
                 </div>
@@ -138,8 +138,8 @@ function StatCard({ label, value, icon: Icon, trend, color = "blue", delay = 0 }
 // Premium Card with glow effects
 function PremiumCard({ children, className = "", gradient = false }: { children: React.ReactNode; className?: string; gradient?: boolean }) {
     return (
-        <div className={`relative overflow-hidden bg-white dark:bg-[#1A1F2E] rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-black/20 border border-slate-100 dark:border-white/5 hover:shadow-2xl transition-all duration-500 ${className}`}>
-            {gradient && <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />}
+        <div className={`premium-glass rounded-2xl p-6 ${className}`}>
+            
             {children}
         </div>
     );
@@ -157,10 +157,10 @@ function SectionHeader({ title, icon: Icon, color = "blue" }: { title: string; i
     };
     return (
         <div className="flex items-center gap-3 mb-5">
-            <div className={`p-3 rounded-2xl bg-gradient-to-br ${colorMap[color] || colorMap.blue} shadow-lg animate-pulse-slow`}>
+            <div className={`p-2 rounded-md bg-[#F1F5F9] dark:bg-white/5`}>
                 <Icon className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{title}</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{title}</h2>
         </div>
     );
 }
@@ -169,7 +169,7 @@ function EmptyState({ message }: { message: string }) {
     return (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
             <div className="relative">
-                <div className="absolute inset-0 bg-slate-500/20 rounded-full blur-xl animate-pulse" />
+                
                 <AlertCircle className="w-16 h-16 mb-4 relative" />
             </div>
             <p className="text-sm font-medium">{message}</p>
@@ -328,8 +328,8 @@ export default function SymbolDetailPage() {
 
     if (tickersLoading) return <LoadingSkeleton />;
     if (!stockData) return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-slate-50 to-teal-50 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121]">
-            <div className="text-center bg-white dark:bg-[#1A1F2E] p-12 rounded-3xl shadow-2xl border border-slate-100 dark:border-white/5 animate-fade-in">
+        <div className="min-h-screen flex items-center justify-center bg-[#F1F5F9] dark:bg-[#1A222C]">
+            <div className="text-center bg-white dark:bg-[#24303F] p-12 rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] animate-fade-in">
                 <div className="relative inline-block"><div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse" /><AlertCircle className="w-20 h-20 text-red-400 relative" /></div>
                 <h2 className="text-3xl font-black text-slate-800 dark:text-white mt-6 mb-2">Stock Not Found</h2>
                 <p className="text-slate-500 dark:text-slate-400">Symbol: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{symbol}</span></p>
@@ -345,7 +345,7 @@ export default function SymbolDetailPage() {
     const loading = isIntraday ? intradayLoading : chartLoading;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-slate-50/30 to-teal-50/20 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121] pb-12">
+        <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300 pb-12">
             {/* Add custom animations */}
             <style jsx global>{`
                 @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -356,22 +356,18 @@ export default function SymbolDetailPage() {
             `}</style>
 
             {/* ULTRA PREMIUM HEADER */}
-            <div className="relative overflow-hidden bg-white/80 dark:bg-[#0B1121]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5 sticky top-0 z-40 shadow-lg shadow-slate-200/20 dark:shadow-black/20">
-                {/* Animated gradient line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse" />
-
-                <div className="max-w-[1800px] mx-auto px-6 py-6">
+            <div className="bg-white dark:bg-[#1A222C] border-b border-slate-200 dark:border-[#2E3A47] sticky top-0 z-40 shadow-sm">
+                <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="flex items-center gap-5">
                             {/* Animated stock badge */}
-                            <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center text-2xl font-black text-white shadow-2xl transform hover:scale-110 hover:rotate-3 transition-all duration-500 ${isPositive ? "bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 shadow-emerald-500/30" : "bg-gradient-to-br from-red-400 via-red-500 to-rose-600 shadow-red-500/30"}`}>
-                                <div className="absolute inset-0 bg-white/20 rounded-3xl animate-pulse-slow" />
+                            <div className={`relative w-16 h-16 rounded-md flex items-center justify-center text-2xl font-bold ${isPositive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400" : "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400"}`}>
                                 <span className="relative">{symbol.slice(0, 2)}</span>
                             </div>
                             <div>
                                 <div className="flex items-center gap-3 flex-wrap">
-                                    <h1 className="text-4xl font-black bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">{symbol}</h1>
-                                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm">{stockData.sector_name || "EQUITY"}</span>
+                                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{symbol}</h1>
+                                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-[#3C50E0]/10 text-[#3C50E0] dark:bg-[#3C50E0]/20 dark:text-[#3C50E0] shadow-sm">{stockData.sector_name || "EQUITY"}</span>
                                 </div>
                                 <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">{stockData.name_en || stockData.name_ar || symbol}</p>
                             </div>
@@ -380,17 +376,17 @@ export default function SymbolDetailPage() {
                         <div className="flex items-center gap-6">
                             <div className="text-right">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-5xl font-black text-slate-900 dark:text-white font-mono tracking-tighter">{lastPrice.toFixed(2)}</span>
-                                    <span className="text-slate-400 dark:text-slate-500 text-lg font-bold">SAR</span>
+                                    <span className="text-4xl font-bold text-slate-900 dark:text-white">{lastPrice.toFixed(2)}</span>
+                                    <span className="text-slate-500 text-sm font-medium">SAR</span>
                                 </div>
                                 <div className={`flex items-center justify-end gap-2 mt-2 ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
                                     {isPositive ? <ArrowUpRight className="w-6 h-6 animate-bounce" /> : <ArrowDownRight className="w-6 h-6 animate-bounce" />}
-                                    <span className={`px-4 py-2 rounded-xl font-bold text-sm ${isPositive ? "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 border border-emerald-200 dark:border-emerald-500/20" : "bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-500/10 dark:to-rose-500/10 border border-red-200 dark:border-red-500/20"}`}>
+                                    <span className={`px-2 py-1 rounded-md font-bold text-sm ${isPositive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20" : "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20"}`}>
                                         {isPositive ? "+" : ""}{change.toFixed(2)} ({changePercent.toFixed(2)}%)
                                     </span>
                                 </div>
                             </div>
-                            <div className="hidden md:flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-slate-50 to-teal-50 dark:from-slate-800 dark:to-teal-900/10 border border-slate-200 dark:border-slate-700 shadow-lg shadow-slate-200/50 dark:shadow-none">
+                            <div className="hidden md:flex flex-col items-end gap-1">
                                 <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                 <span className="text-sm font-bold text-slate-700 dark:text-slate-400">Delayed 5 min</span>
                             </div>
@@ -399,13 +395,13 @@ export default function SymbolDetailPage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3 mt-6">
-                        <button className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-300">
+                        <button className="group flex items-center gap-2 px-4 py-2 bg-[#3C50E0] text-white rounded-md font-medium hover:bg-[#3C50E0]/90 transition-all duration-300">
                             <Star className="w-5 h-5 group-hover:rotate-12 transition-transform" /> Watchlist
                         </button>
-                        <button className="group flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#1A1F2E] text-slate-700 dark:text-slate-300 rounded-2xl font-bold border-2 border-slate-200 dark:border-white/10 shadow-lg hover:shadow-xl hover:border-amber-300 dark:hover:border-amber-500/50 hover:-translate-y-0.5 transition-all duration-300">
+                        <button className="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#24303F] text-slate-700 dark:text-white rounded-md font-medium border border-slate-200 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all duration-300">
                             <Bell className="w-5 h-5 group-hover:animate-bounce" /> Alert
                         </button>
-                        <button className="group flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#1A1F2E] text-slate-700 dark:text-slate-300 rounded-2xl font-bold border-2 border-slate-200 dark:border-white/10 shadow-lg hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-500/50 hover:-translate-y-0.5 transition-all duration-300">
+                        <button className="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#24303F] text-slate-700 dark:text-white rounded-md font-medium border border-slate-200 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all duration-300">
                             <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" /> Share
                         </button>
                     </div>
@@ -425,9 +421,9 @@ export default function SymbolDetailPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex items-center gap-2 bg-white dark:bg-[#1A1F2E] rounded-3xl p-2.5 shadow-xl border border-slate-100 dark:border-white/5 mb-8 overflow-x-auto">
+                <div className="flex items-center gap-2 premium-glass rounded-2xl p-2 mb-8 overflow-x-auto shadow-sm">
                     {[
-                        { id: "overview", label: "Overview", icon: Activity, color: "from-slate-700 to-slate-800" },
+                        { id: "overview", label: "Overview", icon: Activity, color: "from-teal-600 to-emerald-600" },
                         { id: "deep-dive", label: "Deep Dive", icon: Sparkles, color: "from-indigo-600 to-violet-600" },
                         { id: "financials", label: "Financials", icon: FileText, color: "from-teal-600 to-emerald-600" },
                         { id: "ownership", label: "Ownership", icon: Users, color: "from-orange-500 to-amber-500" },
@@ -436,7 +432,7 @@ export default function SymbolDetailPage() {
                         { id: "insider", label: "Insider", icon: Briefcase, color: "from-slate-600 to-slate-700" },
                     ].map((tab) => (
                         <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap ${activeTab === tab.id ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:scale-105"}`}>
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 whitespace-nowrap ${activeTab === tab.id ? "bg-white dark:bg-[#24303F] text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-[#24303F]/50"}`}>
                             <tab.icon className="w-5 h-5" />{tab.label}
                         </button>
                     ))}
@@ -449,29 +445,27 @@ export default function SymbolDetailPage() {
                         {/* OVERVIEW TAB */}
                         {activeTab === "overview" && (
                             <>
-                                <div className="relative overflow-hidden bg-white dark:bg-[#1A1F2E] rounded-3xl p-8 shadow-2xl border border-slate-100 dark:border-white/5">
-                                    <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-teal-500/5 via-emerald-500/5 to-slate-500/5 rounded-full blur-3xl" />
-                                    <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-emerald-500/5 to-cyan-500/5 rounded-full blur-3xl" />
+                                <div className="premium-glass rounded-2xl p-6">
 
                                     <div className="relative">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                                            <SectionHeader title="Price Chart" icon={Sparkles} color="blue" />
+                                            <SectionHeader title="Price Chart" icon={Sparkles} color="emerald" />
                                             <div className="flex items-center gap-3 flex-wrap">
-                                                <div className="flex items-center gap-1 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl">
-                                                    <button onClick={() => setIsIntraday(true)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${isIntraday ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}>
+                                                <div className="flex items-center gap-1 p-1 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md">
+                                                    <button onClick={() => setIsIntraday(true)} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${isIntraday ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}>
                                                         <Clock className="w-4 h-4 inline mr-1" />1D
                                                     </button>
                                                     {["1w", "1m", "3m", "6m", "1y", "5y"].map(tf => (
                                                         <button key={tf} onClick={() => { setIsIntraday(false); setChartPeriod(tf); }}
-                                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${!isIntraday && chartPeriod === tf ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}>
+                                                            className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${!isIntraday && chartPeriod === tf ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}>
                                                             {tf.toUpperCase()}
                                                         </button>
                                                     ))}
                                                 </div>
-                                                <div className="flex items-center gap-1 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl">
-                                                    <button onClick={() => setChartStyle("area")} className={`p-2.5 rounded-xl transition-all ${chartStyle === "area" ? "bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg" : ""}`}><AreaChart className={`w-5 h-5 ${chartStyle === "area" ? "text-white" : "text-slate-400 dark:text-slate-500"}`} /></button>
-                                                    <button onClick={() => setChartStyle("candle")} className={`p-2.5 rounded-xl transition-all ${chartStyle === "candle" ? "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg" : ""}`}><CandlestickChart className={`w-5 h-5 ${chartStyle === "candle" ? "text-white" : "text-slate-400 dark:text-slate-500"}`} /></button>
-                                                    <button onClick={() => setChartStyle("line")} className={`p-2.5 rounded-xl transition-all ${chartStyle === "line" ? "bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg" : ""}`}><LineChart className={`w-5 h-5 ${chartStyle === "line" ? "text-white" : "text-slate-400 dark:text-slate-500"}`} /></button>
+                                                <div className="flex items-center gap-1 p-1 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md">
+                                                    <button onClick={() => setChartStyle("area")} className={`p-1.5 rounded-md transition-all ${chartStyle === "area" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#3C50E0]" : "text-slate-500"}`}><AreaChart className="w-4 h-4" /></button>
+                                                    <button onClick={() => setChartStyle("candle")} className={`p-1.5 rounded-md transition-all ${chartStyle === "candle" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#3C50E0]" : "text-slate-500"}`}><CandlestickChart className="w-4 h-4" /></button>
+                                                    <button onClick={() => setChartStyle("line")} className={`p-1.5 rounded-md transition-all ${chartStyle === "line" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#3C50E0]" : "text-slate-500"}`}><LineChart className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -483,11 +477,11 @@ export default function SymbolDetailPage() {
                                         </div>
 
                                         {stats && (
-                                            <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-white/5">
+                                            <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200 dark:border-[#2E3A47]">
                                                 {[{ l: "Open", v: stats.current.open, c: "slate", bg: "bg-slate-50 dark:bg-white/5" }, { l: "High", v: stats.current.high, c: "emerald", bg: "bg-emerald-50 dark:bg-emerald-500/10" }, { l: "Low", v: stats.current.low, c: "red", bg: "bg-red-50 dark:bg-red-500/10" }, { l: "Close", v: stats.current.close, c: "indigo", bg: "bg-indigo-50 dark:bg-indigo-500/10" }].map((i, idx) => (
-                                                    <div key={idx} className={`text-center p-4 ${i.bg} rounded-2xl transition-all hover:scale-105`}>
+                                                    <div key={idx} className={`text-center p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md`}>
                                                         <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-2">{i.l}</div>
-                                                        <div className={`text-2xl font-black font-mono ${i.c === "slate" ? "text-slate-600 dark:text-slate-300" : `text-${i.c}-600 dark:text-${i.c}-400`}`}>{i.v.toFixed(2)}</div>
+                                                        <div className={`text-xl font-bold text-slate-900 dark:text-white`}>{i.v.toFixed(2)}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -499,8 +493,8 @@ export default function SymbolDetailPage() {
                                     <SectionHeader title="Stock Information" icon={Building2} color="emerald" />
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {[{ l: "Name", v: stockData.name_en || symbol, icon: Award }, { l: "Sector", v: stockData.sector_name || "N/A", icon: PieChart }, { l: "Market", v: "Tadawul", icon: Globe }, { l: "Currency", v: "SAR", icon: Wallet }].map((i, idx) => (
-                                            <div key={idx} className="relative overflow-hidden p-5 bg-gradient-to-br from-slate-50 to-white dark:from-white/5 dark:to-white/5 rounded-2xl border border-slate-100 dark:border-white/5 hover:shadow-lg transition-all group">
-                                                <div className="absolute -top-4 -right-4 p-3 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-white/10 dark:to-white/5 rounded-full opacity-50 group-hover:opacity-100 transition-opacity">
+                                            <div key={idx} className="relative overflow-hidden p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47] hover:shadow-sm transition-all group">
+                                                <div className="hidden">
                                                     <i.icon className="w-6 h-6 text-slate-300 dark:text-slate-500" />
                                                 </div>
                                                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-medium">{i.l}</p>
@@ -531,7 +525,7 @@ export default function SymbolDetailPage() {
                                 {parsedFinancials.length > 0 ? (
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
-                                            <thead><tr className="border-b-2 border-slate-100 dark:border-white/5">
+                                            <thead><tr className="border-b border-slate-200 dark:border-[#2E3A47]">
                                                 <th className="text-left py-4 px-4 text-slate-500 dark:text-slate-400 font-bold text-sm">Period</th>
                                                 <th className="text-right py-4 px-4 text-slate-500 dark:text-slate-400 font-bold text-sm">Net Income</th>
                                                 <th className="text-right py-4 px-4 text-slate-500 dark:text-slate-400 font-bold text-sm">Total Assets</th>
@@ -539,7 +533,7 @@ export default function SymbolDetailPage() {
                                             </tr></thead>
                                             <tbody>
                                                 {parsedFinancials.slice(0, 10).map((f: any, i: number) => (
-                                                    <tr key={i} className="border-b border-slate-50 dark:border-white/5 hover:bg-gradient-to-r hover:from-violet-50/50 hover:to-purple-50/50 dark:hover:from-violet-900/10 dark:hover:to-purple-900/10 transition-all">
+                                                    <tr key={i} className="border-b border-slate-100 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                                         <td className="py-5 px-4 font-bold text-slate-800 dark:text-white">{f.period_type} {f.fiscal_year}</td>
                                                         <td className="py-5 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">{formatCurrency(f.net_income)}</td>
                                                         <td className="py-5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatCurrency(f.total_assets)}</td>
@@ -559,12 +553,12 @@ export default function SymbolDetailPage() {
                                 {shareholders.length > 0 ? (
                                     <div className="space-y-4">
                                         {shareholders.slice(0, 10).map((s: any, i: number) => (
-                                            <div key={i} className="flex items-center justify-between p-5 bg-gradient-to-r from-slate-50 to-white dark:from-white/5 dark:to-white/5 rounded-2xl border border-slate-100 dark:border-white/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                            <div key={i} className="flex items-center justify-between p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47]">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-orange-500/30">{i + 1}</div>
+                                                    <div className="w-10 h-10 rounded-md bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold text-lg">{i + 1}</div>
                                                     <div><p className="font-bold text-slate-800 dark:text-white text-lg">{s.shareholder_name_en || s.shareholder_name}</p><p className="text-sm text-slate-500 dark:text-slate-400">{s.shareholder_type}</p></div>
                                                 </div>
-                                                <span className="text-3xl font-black bg-gradient-to-r from-orange-600 to-amber-600 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent">{Number(s.ownership_percent || 0).toFixed(2)}%</span>
+                                                <span className="text-xl font-bold text-slate-900 dark:text-white">{Number(s.ownership_percent || 0).toFixed(2)}%</span>
                                             </div>
                                         ))}
                                     </div>
@@ -578,14 +572,14 @@ export default function SymbolDetailPage() {
                                 {analystRatings.length > 0 ? (
                                     <div className="space-y-4">
                                         {analystRatings.map((r: any, i: number) => (
-                                            <div key={i} className="p-6 bg-gradient-to-r from-slate-50 to-cyan-50/30 dark:from-white/5 dark:to-cyan-900/10 rounded-2xl border border-slate-100 dark:border-white/5 hover:shadow-lg transition-all">
+                                            <div key={i} className="p-5 premium-glass rounded-2xl">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <span className="font-bold text-slate-800 dark:text-white text-lg">{r.analyst_firm || "Analyst"}</span>
                                                     <span className={`px-4 py-2 rounded-full text-sm font-bold ${r.rating?.toUpperCase() === "BUY" ? "bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-500/20 dark:to-teal-500/20 text-emerald-700 dark:text-emerald-400" : r.rating?.toUpperCase() === "SELL" ? "bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-500/20 dark:to-rose-500/20 text-red-700 dark:text-red-400" : "bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-500/20 dark:to-orange-500/20 text-amber-700 dark:text-amber-400"}`}>{r.rating}</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-6">
-                                                    <div className="p-4 bg-white dark:bg-[#151925] rounded-xl"><p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Target</p><p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">SAR {Number(r.target_price || 0).toFixed(2)}</p></div>
-                                                    <div className="p-4 bg-white dark:bg-[#151925] rounded-xl"><p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Current</p><p className="text-2xl font-black text-slate-700 dark:text-white">{lastPrice.toFixed(2)}</p></div>
+                                                    <div className="p-4 premium-glass rounded-2xl"><p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Target</p><p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">SAR {Number(r.target_price || 0).toFixed(2)}</p></div>
+                                                    <div className="p-4 premium-glass rounded-2xl"><p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Current</p><p className="text-2xl font-black text-slate-700 dark:text-white">{lastPrice.toFixed(2)}</p></div>
                                                 </div>
                                             </div>
                                         ))}
@@ -605,14 +599,14 @@ export default function SymbolDetailPage() {
                                     {quarterlyData.length > 0 ? (
                                         <div className="overflow-x-auto">
                                             <table className="w-full">
-                                                <thead><tr className="border-b-2 border-slate-100">
+                                                <thead><tr className="border-b border-slate-200 dark:border-[#2E3A47]">
                                                     <th className="text-left py-4 px-4 text-slate-500 font-bold">Period</th>
                                                     <th className="text-right py-4 px-4 text-slate-500 font-bold">Net Income</th>
                                                     <th className="text-right py-4 px-4 text-slate-500 font-bold">Gross Profit</th>
                                                 </tr></thead>
                                                 <tbody>
                                                     {quarterlyData.slice(0, 8).map((f: any, i: number) => (
-                                                        <tr key={i} className="border-b border-slate-50 dark:border-white/5 hover:bg-pink-50/30 dark:hover:bg-pink-500/10 transition-all">
+                                                        <tr key={i} className="border-b border-slate-100 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                                             <td className="py-5 px-4 font-bold text-slate-800 dark:text-white">{f.period_type} {f.fiscal_year}</td>
                                                             <td className="py-5 px-4 text-right font-mono font-bold text-pink-600 dark:text-pink-400">{formatCurrency(f.net_income)}</td>
                                                             <td className="py-5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatCurrency(f.gross_profit)}</td>
@@ -632,9 +626,9 @@ export default function SymbolDetailPage() {
                                 {insiderTrades.length > 0 ? (
                                     <div className="space-y-4">
                                         {insiderTrades.slice(0, 10).map((t: any, i: number) => (
-                                            <div key={i} className="flex items-center justify-between p-5 bg-gradient-to-r from-slate-50 to-white dark:from-white/5 dark:to-white/5 rounded-2xl border border-slate-100 dark:border-white/5 hover:shadow-lg transition-all">
+                                            <div key={i} className="flex items-center justify-between p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47]">
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${t.transaction_type === "BUY" ? "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-500/20 dark:to-teal-500/20" : "bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-500/20 dark:to-rose-500/20"}`}>
+                                                    <div className={`w-10 h-10 rounded-md flex items-center justify-center ${t.transaction_type === "BUY" ? "bg-emerald-50 dark:bg-emerald-500/10" : "bg-red-50 dark:bg-red-500/10"}`}>
                                                         {t.transaction_type === "BUY" ? <ArrowUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" /> : <ArrowDown className="w-6 h-6 text-red-600 dark:text-red-400" />}
                                                     </div>
                                                     <div><p className="font-bold text-slate-800 dark:text-white">{t.insider_name}</p><p className="text-sm text-slate-500 dark:text-slate-400">{t.transaction_date}</p></div>
@@ -654,14 +648,13 @@ export default function SymbolDetailPage() {
                     {/* Right Sidebar */}
                     <div className="space-y-6">
                         {/* Trading Info - Colorful Gradient */}
-                        <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-3xl p-6 shadow-2xl shadow-slate-900/30">
-                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+                        <div className="premium-glass rounded-2xl p-6">
                             <div className="relative">
-                                <div className="flex items-center gap-3 mb-5"><div className="p-3 rounded-2xl bg-white/20"><Wallet className="w-6 h-6 text-white" /></div><h3 className="text-xl font-bold text-white">Trading Info</h3></div>
+                                <div className="flex items-center gap-3 mb-5"><div className="p-2.5 rounded-md bg-[#F1F5F9] dark:bg-white/5"><Wallet className="w-5 h-5 text-[#3C50E0] dark:text-white" /></div><h3 className="text-lg font-bold text-slate-900 dark:text-white">Trading Info</h3></div>
                                 <div className="space-y-4">
-                                    {[{ l: "Last Price", v: `SAR ${lastPrice.toFixed(2)}` }, { l: "Change", v: `${isPositive ? "+" : ""}${change.toFixed(2)} (${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-300" : "text-red-300" }, { l: "Volume", v: volume.toLocaleString() }, { l: "Market", v: "TADAWUL" }].map((i, idx) => (
-                                        <div key={idx} className="flex justify-between items-center py-3 border-b border-white/10 last:border-0">
-                                            <span className="text-white/70 font-medium">{i.l}</span><span className={`font-bold font-mono ${i.c || "text-white"}`}>{i.v}</span>
+                                    {[{ l: "Last Price", v: `SAR ${lastPrice.toFixed(2)}` }, { l: "Change", v: `${isPositive ? "+" : ""}${change.toFixed(2)} (${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-red-600 dark:text-red-500" }, { l: "Volume", v: volume.toLocaleString() }, { l: "Market", v: "TADAWUL" }].map((i, idx) => (
+                                        <div key={idx} className="flex justify-between items-center py-3 border-b border-slate-200 dark:border-[#2E3A47] last:border-0">
+                                            <span className="text-slate-500 dark:text-slate-400 font-medium text-sm">{i.l}</span><span className={`font-bold text-sm ${i.c || "text-slate-900 dark:text-white"}`}>{i.v}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -673,9 +666,9 @@ export default function SymbolDetailPage() {
                             <PremiumCard gradient>
                                 <SectionHeader title="Market Breadth" icon={PieChart} color="emerald" />
                                 <div className="space-y-3">
-                                    <div className="flex justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 rounded-2xl border border-emerald-200 dark:border-emerald-500/30"><span className="text-emerald-700 dark:text-emerald-400 font-medium">Advancing</span><span className="font-black text-emerald-700 dark:text-emerald-400 text-xl">{latestBreadth.advancing}</span></div>
-                                    <div className="flex justify-between p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-500/10 dark:to-rose-500/10 rounded-2xl border border-red-200 dark:border-red-500/30"><span className="text-red-700 dark:text-red-400 font-medium">Declining</span><span className="font-black text-red-700 dark:text-red-400 text-xl">{latestBreadth.declining}</span></div>
-                                    <div className="flex justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10"><span className="text-slate-700 dark:text-slate-300 font-medium">Unchanged</span><span className="font-black text-slate-700 dark:text-slate-300 text-xl">{latestBreadth.unchanged}</span></div>
+                                    <div className="flex justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-md border border-emerald-100 dark:border-emerald-500/20"><span className="text-emerald-700 dark:text-emerald-400 font-medium">Advancing</span><span className="font-black text-emerald-700 dark:text-emerald-400 text-xl">{latestBreadth.advancing}</span></div>
+                                    <div className="flex justify-between p-3 bg-red-50 dark:bg-red-500/10 rounded-md border border-red-100 dark:border-red-500/20"><span className="text-red-700 dark:text-red-400 font-medium">Declining</span><span className="font-black text-red-700 dark:text-red-400 text-xl">{latestBreadth.declining}</span></div>
+                                    <div className="flex justify-between p-3 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47]"><span className="text-slate-700 dark:text-slate-300 font-medium">Unchanged</span><span className="font-black text-slate-700 dark:text-slate-300 text-xl">{latestBreadth.unchanged}</span></div>
                                 </div>
                             </PremiumCard>
                         )}
@@ -686,9 +679,9 @@ export default function SymbolDetailPage() {
                                 <SectionHeader title="Corporate Actions" icon={Zap} color="orange" />
                                 <div className="space-y-3">
                                     {corporateActions.slice(0, 4).map((a: any, i: number) => (
-                                        <div key={i} className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 rounded-2xl border border-amber-200 dark:border-amber-500/30 hover:shadow-lg transition-all">
-                                            <div className="flex items-center justify-between mb-2"><span className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase">{a.action_type}</span><span className="text-xs text-amber-600 dark:text-amber-500 font-medium">{a.ex_date}</span></div>
-                                            <p className="text-sm text-amber-800 dark:text-amber-200">{a.description}</p>
+                                        <div key={i} className="p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47]">
+                                            <div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-[#3C50E0] dark:text-[#3C50E0] uppercase tracking-wider">{a.action_type}</span><span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{a.ex_date}</span></div>
+                                            <p className="text-sm text-slate-700 dark:text-slate-300">{a.description}</p>
                                         </div>
                                     ))}
                                 </div>

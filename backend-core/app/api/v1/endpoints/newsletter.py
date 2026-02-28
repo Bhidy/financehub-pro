@@ -9,15 +9,25 @@ Newsletter Admin Endpoints
 - GET  /newsletter/unsubscribe      — One-click unsubscribe via JWT token
 """
 
-from fastapi import APIRouter, BackgroundTasks, Query, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Query, HTTPException, Depends
+from pydantic import BaseModel
 from jose import jwt, JWTError, ExpiredSignatureError
 import logging
 
 from app.db.session import db
 from app.core.config import settings
+from app.api.v1.endpoints.auth import get_current_active_user
 
 router = APIRouter(prefix="/newsletter", tags=["newsletter"])
 logger = logging.getLogger(__name__)
+
+# --- Pydantic Models ---
+class NewsletterPreferencesUpdate(BaseModel):
+    weekly_pulse: bool = None
+    monthly_dive: bool = None
+    academy: bool = None
+    flash_alerts: bool = None
+
 
 
 @router.post("/trigger/weekly")
@@ -153,3 +163,112 @@ async def unsubscribe(token: str = Query(...)):
     except Exception as e:
         logger.error(f"Unsubscribe error: {e}")
         raise HTTPException(status_code=500, detail="Internal error")
+
+
+@router.post("/trigger/academy")
+async def trigger_academy_lessons(background_tasks: BackgroundTasks):
+    """Manually trigger the Academy Lessons email."""
+    from app.services.newsletter_service import newsletter_service
+    if newsletter_service.is_running:
+        return {"status": "skipped", "reason": "Newsletter already in progress"}
+    background_tasks.add_task(newsletter_service.send_academy_lessons)
+    return {"status": "triggered", "type": "academy", "message": "Academy Lessons queued. Check /newsletter/status for progress."}
+
+
+@router.post("/trigger/flash")
+async def trigger_flash_alerts(background_tasks: BackgroundTasks):
+    """Manually trigger the Flash Alerts check."""
+    from app.services.newsletter_service import newsletter_service
+    if newsletter_service.is_running:
+        return {"status": "skipped", "reason": "Newsletter already in progress"}
+    background_tasks.add_task(newsletter_service.check_and_send_flash_alerts)
+    return {"status": "triggered", "type": "flash_alerts", "message": "Flash Alerts check queued."}
+
+
+@router.get("/preview/academy")
+async def preview_academy_lesson(lesson: int = Query(1, ge=1, le=8)):
+    """Preview an Academy Lesson HTML (for testing design)."""
+    from app.services.email_templates import build_academy_lesson
+    from app.services.newsletter_service import ACADEMY_LESSONS
+
+    lesson_data = ACADEMY_LESSONS[lesson - 1]
+    next_teaser = ACADEMY_LESSONS[lesson]['title'] if lesson < 8 else ""
+
+    html = build_academy_lesson(
+        user_name="Preview User",
+        lesson_number=lesson,
+        lesson_title=lesson_data['title'],
+        lesson_icon=lesson_data['icon'],
+        lesson_intro=lesson_data['intro'],
+        lesson_sections=lesson_data['sections'],
+        try_it_prompt=lesson_data['try_it'],
+        next_lesson_teaser=next_teaser,
+        unsubscribe_url="#",
+    )
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html)
+
+
+@router.get("/preview/flash")
+async def preview_flash_alert(type: str = Query("crash")):
+    """Preview a Flash Alert HTML (for testing design)."""
+    from app.services.newsletter_service import newsletter_service
+    from app.services.email_templates import build_flash_alert
+
+    affected = await newsletter_service._get_top_movers("losers" if type == "crash" else "gainers", 5)
+
+    headline = "EGX30 Dropped 3.5% Today" if type == "crash" else "COMI Surged 12% Today"
+    details = "the EGX30 index experienced a significant decline today." if type == "crash" else "COMI surged 12% today, closing at EGP 85.00."
+
+    html = build_flash_alert(
+        user_name="Preview User",
+        alert_type=type,
+        headline=headline,
+        details=details,
+        affected_stocks=affected,
+        market_context="The market is experiencing high volatility due to macroeconomic factors.",
+        unsubscribe_url="#",
+    )
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html)
+
+
+@router.get("/preferences", response_model=dict)
+async def get_preferences(current_user: dict = Depends(get_current_active_user)):
+    """Get the current user's newsletter preferences."""
+    row = await db.fetch_one("""
+        SELECT weekly_pulse, monthly_dive, academy, flash_alerts, unsubscribed
+        FROM newsletter_preferences
+        WHERE user_id = $1
+    """, current_user['id'])
+    
+    if not row:
+        # Default if not yet recorded
+        return {
+            "weekly_pulse": True,
+            "monthly_dive": True,
+            "academy": True,
+            "flash_alerts": True,
+            "unsubscribed": False,
+        }
+    return dict(row)
+
+
+@router.put("/preferences", response_model=dict)
+async def update_preferences(prefs: NewsletterPreferencesUpdate, current_user: dict = Depends(get_current_active_user)):
+    """Update the current user's newsletter preferences."""
+    from app.services.newsletter_service import newsletter_service
+    
+    # Exclude None values
+    prefs_dict = {k: v for k, v in prefs.model_dump().items() if v is not None}
+    
+    if not prefs_dict:
+        return {"status": "no_changes"}
+        
+    res = await newsletter_service.update_preferences(current_user['id'], prefs_dict)
+    if res.get("status") == "updated":
+        # Unmark unsubscribed if they enable anything
+        if any(v is True for v in prefs_dict.values()):
+            await db.execute("UPDATE newsletter_preferences SET unsubscribed = FALSE WHERE user_id = $1", current_user['id'])
+            
+    return res

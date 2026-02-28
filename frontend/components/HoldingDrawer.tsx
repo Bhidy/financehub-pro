@@ -49,36 +49,32 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0.5 }}
                         transition={{ type: 'spring', damping: 35, stiffness: 400 }}
-                        className="fixed inset-y-0 right-0 z-[110] w-full max-w-lg bg-white dark:bg-[#0B1121] shadow-[0_0_100px_rgba(0,0,0,0.5)] border-l border-slate-200 dark:border-white/10 flex flex-col overflow-hidden"
+                        className="fixed inset-y-0 right-0 z-[110] w-full max-w-lg bg-white dark:bg-[#1A222C] shadow-lg border-l border-slate-200 dark:border-[#2E3A47] flex flex-col overflow-hidden"
                     >
                         {/* 1. INSTITUTIONAL HEADER */}
                         <div className="relative pt-12 pb-8 px-8 overflow-hidden group/header">
-                            {/* Decorative Background Accents */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/5 blur-[100px] rounded-full pointer-events-none -mr-32 -mt-32" />
-                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none -ml-16 -mb-16" />
-
                             <div className="flex items-center justify-between relative z-10 mb-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-2xl">
-                                        <Briefcase className="w-5 h-5 stroke-[2.5]" />
+                                    <div className="w-10 h-10 rounded-md bg-[#F1F5F9] dark:bg-[#24303F] text-[#3C50E0] flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
+                                        <Briefcase className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] leading-none mb-1">Asset Intelligence</h2>
-                                        <p className="text-xs font-bold text-slate-900 dark:text-white">Active Position</p>
+                                        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Asset Intelligence</h2>
+                                        <p className="text-sm font-medium text-slate-900 dark:text-white">Active Position</p>
                                     </div>
                                 </div>
                                 <button
                                     type="button"
-                                    className="p-3 rounded-2xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-all active:scale-95 border border-slate-200 dark:border-white/5"
+                                    className="p-2 rounded-md bg-white dark:bg-[#24303F] hover:bg-slate-50 dark:hover:bg-[#1A222C] text-slate-600 dark:text-slate-300 transition-all active:scale-95 border border-slate-200 dark:border-[#2E3A47]"
                                     onClick={onClose}
                                 >
-                                    <X className="h-5 w-5 stroke-[3]" />
+                                    <X className="h-5 w-5" />
                                 </button>
                             </div>
 
                             <div className="relative z-10">
                                 <div className="flex items-baseline gap-3 mb-2">
-                                    <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">{holding.symbol}</h1>
+                                    <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">{holding.symbol}</h1>
                                     <span className={clsx(
                                         "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border",
                                         isProfitable
@@ -98,11 +94,11 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
                         <div className="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar space-y-10">
 
                             {/* Visual Performance Index */}
-                            <div className="relative h-56 bg-white dark:bg-[#151925] rounded-[2.5rem] border border-slate-200 dark:border-white/5 shadow-2xl shadow-slate-900/10 dark:shadow-black/60 p-6 overflow-hidden group/viz transition-colors duration-500">
+                            <div className="relative h-56 bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] shadow-sm p-6 overflow-hidden transition-colors duration-300">
                                 <div className="flex justify-between items-start relative z-10 mb-2">
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Volatility Index</p>
-                                        <h4 className="text-lg font-black text-slate-900 dark:text-white">7D Market Delta</h4>
+                                        <h4 className="text-lg font-bold text-slate-900 dark:text-white">7D Market Delta</h4>
                                     </div>
                                     <Activity className={clsx("w-5 h-5", isProfitable ? "text-emerald-500" : "text-rose-500")} />
                                 </div>
@@ -131,14 +127,14 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
 
                             {/* Position Summary Cards */}
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-xl transition-all hover:-translate-y-1">
+                                <div className="p-6 rounded-md bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] shadow-sm transition-all hover:shadow-md">
                                     <div className="flex items-center gap-2 mb-4">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                        <div className="w-8 h-8 rounded-md bg-[#F1F5F9] dark:bg-[#1A222C] flex items-center justify-center text-[#3C50E0]">
                                             <DollarSign className="w-4 h-4 stroke-[3]" />
                                         </div>
                                         <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Market Value</span>
                                     </div>
-                                    <p className="text-3xl font-black text-slate-900 dark:text-white font-mono tracking-tight leading-none mb-2">
+                                    <p className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                                         <span className="text-xl mr-1 text-slate-400">{currency}</span>
                                         {Math.round(holding.current_value).toLocaleString()}
                                     </p>
@@ -148,7 +144,7 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
                                     </div>
                                 </div>
 
-                                <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-xl transition-all hover:-translate-y-1">
+                                <div className="p-6 rounded-md bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] shadow-sm transition-all hover:shadow-md">
                                     <div className="flex items-center gap-2 mb-4">
                                         <div className={clsx(
                                             "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
@@ -176,7 +172,7 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
                                     <div className="h-px bg-slate-200 dark:bg-white/5 flex-1 ml-4" />
                                 </div>
 
-                                <div className="bg-white dark:bg-[#151925] rounded-[2rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-2xl shadow-slate-900/5 dark:shadow-black/40">
+                                <div className="bg-white dark:bg-[#24303F] rounded-md border border-slate-200 dark:border-[#2E3A47] overflow-hidden shadow-sm">
                                     {[
                                         { label: "Execution Price", value: `${currency} ${holding.average_price.toFixed(2)}`, icon: MapPin },
                                         { label: "Current Terminal", value: `${currency} ${holding.current_price}`, icon: Activity },
@@ -184,12 +180,12 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
                                         { label: "Market Segment", value: holding.sector || 'Equities', icon: Info },
                                         { label: "Inception Date", value: holding.purchase_date || 'Unknown', icon: Calendar },
                                     ].map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
+                                        <div key={i} className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-[#2E3A47] last:border-0 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all group">
                                             <div className="flex items-center gap-3">
                                                 <item.icon className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-brand-accent transition-colors" />
                                                 <span className="text-sm font-bold text-slate-500 dark:text-slate-400 transition-colors">{item.label}</span>
                                             </div>
-                                            <span className="text-sm font-black text-slate-900 dark:text-white font-mono">{item.value}</span>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">{item.value}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -197,7 +193,7 @@ export function HoldingDrawer({ isOpen, onClose, holding }: HoldingDrawerProps) 
 
                             {/* Pro Actions Footer */}
                             <div className="pt-4">
-                                <button className="w-full py-5 rounded-[2rem] bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-slate-900/20 dark:shadow-white/10 hover:scale-[1.02] active:scale-95 transition-all">
+                                <button className="w-full py-3 rounded-md bg-[#3C50E0] hover:bg-[#3C50E0]/90 text-white font-medium text-sm transition-all shadow-sm">
                                     Detailed Analyst Report
                                 </button>
                             </div>

@@ -189,7 +189,7 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
             /* Premium Expanded Search Button */
             <button
                 onClick={() => setIsOpen(true)}
-                className="w-full group relative flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-slate-50/80 to-slate-100/50 dark:from-white/5 dark:to-white/5 hover:from-white hover:to-blue-50 dark:hover:from-white/10 dark:hover:to-blue-900/20 border border-slate-200/60 dark:border-white/10 hover:border-blue-200/60 dark:hover:border-blue-500/30 rounded-xl transition-all shadow-sm hover:shadow-md backdrop-blur-sm overflow-hidden"
+                className="w-full group relative flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-slate-50/80 to-slate-100/50 dark:from-white/5 dark:to-white/5 hover:from-white hover:to-blue-50 dark:hover:from-white/10 dark:hover:to-blue-900/20 border border-slate-200/60 dark:border-white/10 hover:border-blue-200/60 dark:hover:border-blue-500/30 rounded-xl transition-all shadow-sm hover:shadow-md  overflow-hidden"
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
 
@@ -210,7 +210,7 @@ export default function GlobalSearch({ collapsed = false }: GlobalSearchProps) {
         <>
             {/* Backdrop - covers everything */}
             <div
-                className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[9998] transition-opacity"
+                className="fixed inset-0 bg-slate-900/70  z-[9998] transition-opacity"
                 onClick={() => setIsOpen(false)}
             />
 

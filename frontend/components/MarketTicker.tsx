@@ -33,7 +33,7 @@ export default function MarketTicker() {
     const duration = Math.max(displayTickers.length * 8, 40);
 
     return (
-        <div className="w-full bg-white dark:bg-[#151925] border-b border-slate-200 dark:border-white/5 py-3 overflow-hidden flex items-center shadow-sm z-50 transition-colors duration-300">
+        <div className="w-full bg-white dark:bg-[#1A222C] border-b border-slate-200 dark:border-[#2E3A47] py-1.5 overflow-hidden flex items-center z-50 transition-colors duration-300">
             <div className="flex whitespace-nowrap">
                 <motion.div
                     key={displayTickers.length} // Force re-render when data loads to update duration
@@ -48,13 +48,13 @@ export default function MarketTicker() {
                 // Given 'Best Practice', we prioritize smooth constant speed here.
                 >
                     {duplicatedTickers.map((item, index) => (
-                        <div key={`${item.symbol}-${index}`} className="flex items-center space-x-3 px-6 border-r border-slate-100 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
-                            <span className="font-bold text-sm text-slate-800 dark:text-white font-sans group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.symbol}</span>
-                            <div className="flex flex-col leading-none">
-                                <span className={clsx("font-bold text-xs font-mono", Number(item.change_percent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
+                        <div key={`${item.symbol}-${index}`} className="flex items-center space-x-2.5 px-4 border-r border-slate-200/50 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
+                            <span className="font-bold text-[11px] uppercase tracking-wider text-slate-700 dark:text-slate-300 font-sans group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{item.symbol}</span>
+                            <div className="flex items-center gap-1.5 leading-none">
+                                <span className={clsx("font-bold text-[11px] font-mono", Number(item.change_percent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
                                     {Number(item.last_price || 0).toFixed(2)}
                                 </span>
-                                <span className={clsx("text-[10px] font-bold font-mono", Number(item.change_percent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400")}>
+                                <span className={clsx("text-[10px] font-bold font-mono px-1 py-0.5 rounded-sm", Number(item.change_percent || 0) >= 0 ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400")}>
                                     {Number(item.change_percent || 0) >= 0 ? "+" : ""}{Number(item.change_percent || 0).toFixed(2)}%
                                 </span>
                             </div>

@@ -367,7 +367,7 @@ function AIAnalystPageContent() {
                                                             💡 {msg.response.follow_up_prompt}
                                                         </div>
                                                     ) : null}
-                                                    {msg.response.actions && <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />}
+                                                    {msg.response.actions && !(msg.response.followups && msg.response.followups.length > 0) && <ActionsBar actions={msg.response.actions} language={msg.response.language} onAction={handleAction} />}
                                                 </>
                                             )}
                                         </div>

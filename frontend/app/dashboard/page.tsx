@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import clsx from "clsx";
 import MarketTicker from "@/components/MarketTicker";
 import TasiIndexChart from "@/components/TasiIndexChart";
+import Sparkline from "@/components/Sparkline";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -115,93 +116,107 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-[#14B8A6]/5 dark:from-[#0B1121] dark:via-[#0F172A] dark:to-[#0B1121] pb-12">
+    <main className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] pb-12 transition-colors duration-300">
       {/* Premium Ticker Tape */}
       <MarketTicker />
 
-      {/* Hero Header - Midnight Teal Premium Gradient */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#0F172A] via-[#14B8A6] to-[#0D9488] text-white">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#14B8A6]/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-        <div className="relative max-w-7xl mx-auto px-6 py-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-black tracking-tight">Market Overview</h1>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm flex items-center gap-1">
-                  <Building2 className="w-3 h-3" />
-                  {isEgypt ? 'Egyptian Exchange' : 'Saudi Exchange'}
-                </span>
-              </div>
-              <p className="text-blue-100 font-medium flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Real-time market data from {isEgypt ? 'EGX' : 'Tadawul'} • <span className="text-blue-200 text-sm">Prices delayed up to 5 min</span>
-              </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Clean TailAdmin Page Header */}
+        <div className="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Market Overview</h2>
+              <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-[#3C50E0]/10 text-[#3C50E0] dark:bg-[#3C50E0]/20 dark:text-[#3C50E0] flex items-center gap-1">
+                <Building2 className="w-3.5 h-3.5" />
+                {isEgypt ? 'Egyptian Exchange' : 'Saudi Exchange'}
+              </span>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm text-blue-200 font-medium">Market Status</div>
-                <div className="flex items-center gap-2 font-bold">
-                  <div className={`w-2 h-2 rounded-full ${marketStatus.color} ${marketStatus.isOpen ? 'animate-pulse' : ''} shadow-lg ${marketStatus.shadow}`} />
-                  {marketStatus.label}
-                </div>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Real-time market data from {isEgypt ? 'EGX' : 'Tadawul'} • Prices delayed up to 5 min
+            </p>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-right hidden sm:block">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">Market Status</div>
+              <div className="flex items-center gap-1.5 font-bold text-sm text-slate-900 dark:text-white">
+                <div className={`w-2 h-2 rounded-full ${marketStatus.color} ${marketStatus.isOpen ? 'animate-pulse' : ''}`} />
+                {marketStatus.label}
               </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div className="text-right">
-                <div className="text-sm text-blue-200 font-medium">Active Stocks</div>
-                <div className="text-2xl font-black">{totalStocks}</div>
-              </div>
+            </div>
+            <div className="w-px h-8 bg-slate-200 dark:bg-[#2E3A47] hidden sm:block" />
+            <div className="text-right">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">Active Stocks</div>
+              <div className="text-xl font-bold text-slate-900 dark:text-white">{totalStocks}</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-6">
-        {/* Quick Stats Row - Premium Cards */}
+        {/* Metric Cards Row - Premium SaaS Pattern */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             {
               label: "Total Volume",
               value: (marketVolume / 1000000).toFixed(1) + "M",
               icon: BarChart3,
-              bg: "from-blue-500 to-blue-600",
-              shadow: "shadow-blue-500/20"
+              trend: "up" as const,
+              change: "+12.5%",
+              data: [40, 60, 45, 80, 55, 90, 70]
             },
             {
               label: "Market Breadth",
               value: ((gainersCount / (totalStocks || 1)) * 100).toFixed(1) + "% Up",
               icon: PieChart,
-              bg: "from-teal-500 to-teal-600",
-              shadow: "shadow-teal-500/20"
+              trend: gainersCount > losersCount ? "up" as const : "down" as const,
+              change: gainersCount > losersCount ? "Bullish" : "Bearish",
+              data: [gainersCount, totalStocks - gainersCount - losersCount, losersCount, gainersCount, losersCount, gainersCount, totalStocks]
             },
             {
-              label: "Gainers",
+              label: "Advancing",
               value: gainersCount.toString(),
               icon: TrendingUp,
-              bg: "from-emerald-500 to-emerald-600",
-              shadow: "shadow-emerald-500/20"
+              trend: "up" as const,
+              change: `+${gainersCount}`,
+              data: [20, 35, 40, 65, 50, 85, gainersCount]
             },
             {
-              label: "Losers",
+              label: "Declining",
               value: losersCount.toString(),
               icon: TrendingDown,
-              bg: "from-red-500 to-red-600",
-              shadow: "shadow-red-500/20"
+              trend: "down" as const,
+              change: `-${losersCount}`,
+              data: [45, 30, 60, 20, 70, 40, losersCount]
             },
           ].map((stat, i) => (
             <div
               key={i}
-              className={clsx(
-                "relative overflow-hidden rounded-2xl p-5 text-white shadow-xl",
-                `bg-gradient-to-br ${stat.bg} ${stat.shadow}`
-              )}
+              className="group relative overflow-hidden premium-glass rounded-2xl p-6 premium-glow-hover"
             >
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <stat.icon className="w-6 h-6 mb-3 opacity-80" />
-              <div className="text-sm font-medium opacity-80">{stat.label}</div>
-              <div className="text-2xl font-black">{stat.value}</div>
+              {/* Top Row: Icon & Value */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center justify-center w-11 h-11 rounded-full bg-[#F1F5F9] dark:bg-white/5 text-[#3C50E0] dark:text-white transition-colors">
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div className={clsx(
+                  "flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md",
+                  stat.trend === "up" ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
+                )}>
+                  {stat.trend === "up" ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                  {stat.change}
+                </div>
+              </div>
+
+              {/* Bottom Row: Number & Sparkline */}
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{stat.value}</div>
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">{stat.label}</div>
+                </div>
+                <div className="w-20 h-8 opacity-70 group-hover:opacity-100 transition-opacity">
+                  <Sparkline data={stat.data} trend={stat.trend} width={80} height={32} />
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -209,8 +224,8 @@ export default function Home() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-6">
           {/* Market Index Card - Premium Design */}
-          <div className="col-span-12 lg:col-span-8 bg-white dark:bg-[#111827] rounded-2xl border border-slate-100 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/20 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-white/5">
+          <div className="col-span-12 lg:col-span-8 premium-glass rounded-2xl overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-slate-200 dark:border-[#2E3A47]">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -242,18 +257,18 @@ export default function Home() {
               </div>
             </div>
             {/* TASI Index Chart - Premium Real-Time */}
-            <div className="p-6 bg-gradient-to-b from-white to-blue-50/10 dark:from-white/5 dark:to-transparent min-h-[320px]">
+            <div className="p-6 min-h-[320px]">
               <TasiIndexChart />
             </div>
           </div>
 
           {/* Side Stats */}
-          <div className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="col-span-12 lg:col-span-4 space-y-6">
             {/* Sector Performance - Real Data */}
-            <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-slate-100/50 dark:shadow-black/20 p-5">
+            <div className="rounded-md border border-slate-200 bg-white shadow-sm dark:border-[#2E3A47] dark:bg-[#24303F] p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-teal-600 dark:text-teal-500" />
-                <h3 className="font-bold text-slate-800 dark:text-white">Sector Leaders</h3>
+                <Target className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sector Leaders</h3>
               </div>
               <div className="space-y-3">
                 {topSectors.length > 0 ? topSectors.map((sector: any, i: number) => (
@@ -280,13 +295,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* AI Insights - Brand Teal Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#14B8A6] via-[#0D9488] to-[#0F172A] rounded-xl p-5 text-white shadow-xl shadow-[#14B8A6]/20">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            {/* AI Insights - Solid TailAdmin Card */}
+            <div className="rounded-md border border-slate-200 bg-[#3C50E0] p-6 text-white shadow-sm dark:border-[#2E3A47]">
               <div className="relative">
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5" />
-                  <span className="font-bold">AI Market Insight</span>
+                  <span className="text-lg font-bold">AI Market Insight</span>
                 </div>
                 <p className="text-sm text-white/90 leading-relaxed">
                   {gainersCount > losersCount
@@ -306,14 +320,14 @@ export default function Home() {
           </div>
 
           {/* Market Intelligence Section - Real Sector Data */}
-          <div className="col-span-12 bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-slate-200/50 dark:shadow-black/20 p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <PieChart className="w-4 h-4 text-white" />
+          <div className="col-span-12 rounded-md border border-slate-200 bg-white shadow-sm dark:border-[#2E3A47] dark:bg-[#24303F] p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-[#F1F5F9] dark:bg-white/5 flex items-center justify-center">
+                <PieChart className="w-5 h-5 text-[#3C50E0] dark:text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-sm">Market Intelligence</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Breadth & Sector Performance</p>
+                <h3 className="font-bold text-slate-800 dark:text-white text-lg">Market Intelligence</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Breadth & Sector Performance</p>
               </div>
             </div>
 
@@ -375,38 +389,39 @@ export default function Home() {
         </div>
 
         {/* Stock Lists Row - Premium Design */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-          {/* Top Gainers */}
-          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-[#22C55E]/10 dark:shadow-black/20 overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-[#22C55E] to-[#10B981] text-white">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                <h3 className="font-bold">Top Gainers</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          {/* Top Gainers - CRM List Pattern */}
+          <div className="premium-glass rounded-2xl overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-[#2E3A47] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Top Gainers</h3>
               </div>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live
+              </span>
             </div>
-            <div className="p-4">
+            <div className="flex-1 overflow-x-auto">
               {isLoading ? (
-                <div className="text-center py-8 text-slate-400">Loading...</div>
+                <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
               ) : (
-                <div className="space-y-2">
+                <div className="min-w-full divide-y divide-slate-100 dark:divide-white/5">
                   {topGainers.map((stock, i) => (
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all group"
+                      className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center justify-center">
-                          {i + 1}
-                        </span>
+                        <span className="w-5 text-xs font-bold text-slate-400">{i + 1}</span>
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">{stock.symbol}</div>
-                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{stock.symbol}</div>
+                          <div className="text-[11px] text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <div className="font-bold text-sm font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
+                        <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-0.5 mt-0.5">
                           <ArrowUpRight className="w-3 h-3" />
                           +{Number(stock.change_percent).toFixed(2)}%
                         </div>
@@ -418,37 +433,38 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Top Losers */}
-          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-[#EF4444]/10 dark:shadow-black/20 overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-[#EF4444] to-[#DC2626] text-white">
-              <div className="flex items-center gap-2">
-                <TrendingDown className="w-5 h-5" />
-                <h3 className="font-bold">Top Losers</h3>
+          {/* Top Losers - CRM List Pattern */}
+          <div className="premium-glass rounded-2xl overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-[#2E3A47] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Top Losers</h3>
               </div>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                Live
+              </span>
             </div>
-            <div className="p-4">
+            <div className="flex-1 overflow-x-auto">
               {isLoading ? (
-                <div className="text-center py-8 text-slate-400">Loading...</div>
+                <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
               ) : (
-                <div className="space-y-2">
+                <div className="min-w-full divide-y divide-slate-100 dark:divide-white/5">
                   {topLosers.map((stock, i) => (
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all group"
+                      className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-bold flex items-center justify-center">
-                          {i + 1}
-                        </span>
+                        <span className="w-5 text-xs font-bold text-slate-400">{i + 1}</span>
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400 transition-colors">{stock.symbol}</div>
-                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{stock.symbol}</div>
+                          <div className="text-[11px] text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <div className="font-bold text-sm font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
+                        <div className="text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center justify-end gap-0.5 mt-0.5">
                           <ArrowDownRight className="w-3 h-3" />
                           {Number(stock.change_percent).toFixed(2)}%
                         </div>
@@ -460,37 +476,38 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Most Active */}
-          <div className="bg-white dark:bg-[#111827] rounded-xl border border-slate-100 dark:border-white/[0.08] shadow-lg shadow-cyan-500/10 dark:shadow-black/20 overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white">
-              <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                <h3 className="font-bold">Most Active</h3>
+          {/* Most Active - CRM List Pattern */}
+          <div className="premium-glass rounded-2xl overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-[#2E3A47] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Most Active</h3>
               </div>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-bold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                Live
+              </span>
             </div>
-            <div className="p-4">
+            <div className="flex-1 overflow-x-auto">
               {isLoading ? (
-                <div className="text-center py-8 text-slate-400">Loading...</div>
+                <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
               ) : (
-                <div className="space-y-2">
+                <div className="min-w-full divide-y divide-slate-100 dark:divide-white/5">
                   {mostActive.map((stock, i) => (
                     <Link
                       key={stock.symbol}
                       href={`/symbol/${stock.symbol}`}
-                      className="flex items-center justify-between p-3 rounded-xl hover:bg-cyan-50 dark:hover:bg-cyan-500/10 transition-all group"
+                      className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 text-xs font-bold flex items-center justify-center">
-                          {i + 1}
-                        </span>
+                        <span className="w-5 text-xs font-bold text-slate-400">{i + 1}</span>
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-400 transition-colors">{stock.symbol}</div>
-                          <div className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
+                          <div className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{stock.symbol}</div>
+                          <div className="text-[11px] text-slate-500 truncate max-w-[120px]">{stock.name_en}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
-                        <div className="text-sm font-bold text-cyan-600 dark:text-cyan-400">
+                        <div className="font-bold text-sm font-mono text-slate-900 dark:text-white">{Number(stock.last_price).toFixed(2)}</div>
+                        <div className="text-[11px] font-bold text-teal-600 dark:text-teal-400 flex items-center justify-end gap-0.5 mt-0.5">
                           {(Number(stock.volume) / 1000000).toFixed(2)}M
                         </div>
                       </div>

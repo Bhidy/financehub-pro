@@ -77,7 +77,7 @@ export default function EconomicsPage() {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <div className="p-2 rounded-lg bg-slate-50">
-                            <Icon className="w-5 h-5" style={{ color }} />
+                            {(Icon as any)({ className: "w-5 h-5", style: { color } })}
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 font-sans tracking-tight">{title}</h3>
                     </div>

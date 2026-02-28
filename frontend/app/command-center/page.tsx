@@ -43,13 +43,13 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
     const colors = colorMap[section.color] || colorMap.blue;
 
     return (
-        <div className={`bg-white dark:bg-[#1A1F2E] rounded-2xl border-2 ${colors.border} dark:border-white/5 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group`}>
+        <div className={`premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:shadow-md transition-all duration-300 overflow-hidden group`}>
             {/* Header */}
-            <div className={`${colors.light} px-5 py-4 border-b ${colors.border}`}>
+            <div className={`bg-slate-50 dark:bg-[#1A222C] px-5 py-4 border-b border-slate-200 dark:border-[#2E3A47]`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <span className="text-2xl">{section.icon}</span>
-                        <h3 className="font-bold text-gray-800 dark:text-white">{section.title}</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-white">{section.title}</h3>
                     </div>
                     <div className={`${colors.bg} text-white text-xs px-3 py-1 rounded-full font-semibold`}>
                         LIVE
@@ -72,37 +72,37 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
                 {/* Sub Metrics */}
                 <div className="grid grid-cols-2 gap-3">
                     {section.data_points && (
-                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                        <div className={`bg-slate-50 dark:bg-[#1A222C] rounded-md p-3 text-center border border-slate-100 dark:border-[#2E3A47]`}>
                             <div className={`font-bold ${colors.text} dark:text-white`}>{formatNumber(section.data_points)}</div>
                             <div className="text-xs text-gray-500 dark:text-slate-400">Data Points</div>
                         </div>
                     )}
                     {section.unique_symbols && (
-                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                        <div className={`bg-slate-50 dark:bg-[#1A222C] rounded-md p-3 text-center border border-slate-100 dark:border-[#2E3A47]`}>
                             <div className={`font-bold ${colors.text} dark:text-white`}>{section.unique_symbols}</div>
                             <div className="text-xs text-gray-500 dark:text-slate-400">Symbols</div>
                         </div>
                     )}
                     {section.unique_stocks && (
-                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                        <div className={`bg-slate-50 dark:bg-[#1A222C] rounded-md p-3 text-center border border-slate-100 dark:border-[#2E3A47]`}>
                             <div className={`font-bold ${colors.text} dark:text-white`}>{section.unique_stocks}</div>
                             <div className="text-xs text-gray-500 dark:text-slate-400">Stocks</div>
                         </div>
                     )}
                     {section.with_data && (
-                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                        <div className={`bg-slate-50 dark:bg-[#1A222C] rounded-md p-3 text-center border border-slate-100 dark:border-[#2E3A47]`}>
                             <div className={`font-bold ${colors.text} dark:text-white`}>{section.with_data}</div>
                             <div className="text-xs text-gray-500 dark:text-slate-400">With Data</div>
                         </div>
                     )}
                     {section.with_risk_metrics && (
-                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                        <div className={`bg-slate-50 dark:bg-[#1A222C] rounded-md p-3 text-center border border-slate-100 dark:border-[#2E3A47]`}>
                             <div className={`font-bold ${colors.text} dark:text-white`}>{section.with_risk_metrics}</div>
                             <div className="text-xs text-gray-500 dark:text-slate-400">With Metrics</div>
                         </div>
                     )}
                     {section.coverage !== undefined && (
-                        <div className={`${colors.light} dark:bg-white/5 rounded-xl p-3 text-center`}>
+                        <div className={`bg-slate-50 dark:bg-[#1A222C] rounded-md p-3 text-center border border-slate-100 dark:border-[#2E3A47]`}>
                             <div className={`font-bold ${colors.text} dark:text-white`}>{section.coverage}%</div>
                             <div className="text-xs text-gray-500 dark:text-slate-400">Coverage</div>
                         </div>
@@ -111,7 +111,7 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
 
                 {/* Date Range */}
                 {section.date_from && section.date_to && (
-                    <div className="bg-gray-50 rounded-xl p-3 text-center">
+                    <div className="bg-slate-50 dark:bg-[#1A222C] rounded-md border border-slate-100 dark:border-[#2E3A47] p-3 text-center">
                         <div className="text-xs text-gray-500 mb-1">Date Range</div>
                         <div className="text-sm font-medium text-gray-700">
                             {section.date_from} → {section.date_to}
@@ -121,11 +121,11 @@ function DataCard({ section, sectionKey }: { section: any; sectionKey: string })
 
                 {/* Breakdown */}
                 {section.breakdown && Object.keys(section.breakdown).length > 0 && (
-                    <div className="bg-gray-50 rounded-xl p-3">
+                    <div className="bg-slate-50 dark:bg-[#1A222C] rounded-md border border-slate-100 dark:border-[#2E3A47] p-3">
                         <div className="text-xs text-gray-500 mb-2">Period Breakdown</div>
                         <div className="flex flex-wrap gap-2">
                             {Object.entries(section.breakdown).map(([key, val]) => (
-                                <div key={key} className={`${colors.light} ${colors.text} text-xs px-2 py-1 rounded-lg font-medium`}>
+                                <div key={key} className={`bg-[#F1F5F9] dark:bg-[#24303F] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 text-xs px-2 py-1 rounded-md font-medium`}>
                                     {key}: {formatNumber(val as number)}
                                 </div>
                             ))}
@@ -203,27 +203,27 @@ export default function CommandCenterPage() {
 
     const getHealthColor = (health: string) => {
         switch (health) {
-            case 'EXCELLENT': return 'bg-gradient-to-r from-emerald-500 to-green-500';
-            case 'GOOD': return 'bg-gradient-to-r from-blue-500 to-cyan-500';
-            default: return 'bg-gradient-to-r from-orange-500 to-amber-500';
+            case 'EXCELLENT': return 'bg-emerald-500';
+            case 'GOOD': return 'bg-blue-500';
+            default: return 'bg-orange-500';
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 dark:from-[#0B1121] dark:via-[#0F1629] dark:to-[#0B1121]">
+        <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300">
             {/* Hero Header */}
-            <div className="bg-gradient-to-r from-blue-600 via-teal-500 to-cyan-500 text-white shadow-md relative z-10">
+            <div className="bg-white dark:bg-[#24303F] border-b border-slate-200 dark:border-[#2E3A47] text-slate-900 dark:text-white shadow-sm relative z-40">
                 <div className="max-w-7xl mx-auto px-6 py-5">
                     <div className="flex items-center justify-between">
                         <div>
                             <div className="flex items-center gap-2 mb-1">
                                 <Database className="w-6 h-6" />
-                                <span className="text-blue-100 text-xs font-bold tracking-wider">ENTERPRISE DATA PLATFORM</span>
+                                <span className="text-slate-500 dark:text-slate-400 text-xs font-bold tracking-wider">ENTERPRISE DATA PLATFORM</span>
                             </div>
                             <h1 className="text-2xl font-black tracking-tight">
                                 Database Command Center
                             </h1>
-                            <p className="text-blue-50 text-sm mt-1 opacity-90">
+                            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
                                 Real-time monitoring of your enterprise financial data inventory
                             </p>
                         </div>
@@ -232,10 +232,7 @@ export default function CommandCenterPage() {
                             {/* Auto Refresh Toggle */}
                             <button
                                 onClick={() => setAutoRefresh(!autoRefresh)}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all ${autoRefresh
-                                    ? 'bg-green-400 text-green-900 shadow-md'
-                                    : 'bg-white/10 hover:bg-white/20 border border-white/10'
-                                    }`}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium border transition-all ${autoRefresh ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 shadow-sm' : 'bg-white dark:bg-[#1A222C] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#24303F]'}`}
                             >
                                 <Activity className={`w-3.5 h-3.5 ${autoRefresh ? 'animate-pulse' : ''}`} />
                                 {autoRefresh ? 'Auto-Refresh ON' : 'Auto-Refresh'}
@@ -245,7 +242,7 @@ export default function CommandCenterPage() {
                             <button
                                 onClick={fetchData}
                                 disabled={loading}
-                                className="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg text-xs font-black shadow-lg hover:bg-blue-50 transition-all disabled:opacity-70 active:scale-95"
+                                className="flex items-center gap-2 bg-[#3C50E0] hover:bg-[#3C50E0]/90 text-white border border-transparent px-4 py-2 rounded-md text-xs font-medium shadow-sm transition-all disabled:opacity-70 active:scale-95"
                             >
                                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                                 Refresh Data
@@ -255,7 +252,7 @@ export default function CommandCenterPage() {
 
                     {/* Last Updated */}
                     {lastRefresh && (
-                        <div className="mt-2 text-blue-100/60 text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5">
+                        <div className="mt-2 text-slate-500 text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5">
                             <Clock className="w-3 h-3" />
                             Last updated: {lastRefresh.toLocaleTimeString()}
                         </div>
@@ -268,7 +265,7 @@ export default function CommandCenterPage() {
                 {data?.aggregate && (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                         {/* Total Data Points */}
-                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-blue-100 dark:border-white/5">
+                        <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm p-5 border border-slate-200 dark:border-[#2E3A47]">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="bg-blue-100 dark:bg-blue-500/20 p-2 rounded-xl">
                                     <Layers className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -281,7 +278,7 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Total Stocks */}
-                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-emerald-100 dark:border-white/5">
+                        <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm p-5 border border-slate-200 dark:border-[#2E3A47]">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="bg-emerald-100 dark:bg-emerald-500/20 p-2 rounded-xl">
                                     <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -294,7 +291,7 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Total Funds */}
-                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-teal-100 dark:border-white/5">
+                        <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm p-5 border border-slate-200 dark:border-[#2E3A47]">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="bg-teal-100 dark:bg-teal-500/20 p-2 rounded-xl">
                                     <PieChart className="w-6 h-6 text-teal-600 dark:text-teal-400" />
@@ -307,7 +304,7 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Total Tables */}
-                        <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl shadow-lg p-5 border-2 border-orange-100 dark:border-white/5">
+                        <div className="bg-white dark:bg-[#24303F] rounded-md shadow-sm p-5 border border-slate-200 dark:border-[#2E3A47]">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="bg-orange-100 dark:bg-orange-500/20 p-2 rounded-xl">
                                     <Server className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -320,7 +317,7 @@ export default function CommandCenterPage() {
                         </div>
 
                         {/* Database Health */}
-                        <div className={`${getHealthColor(data.aggregate.database_health)} rounded-2xl shadow-lg p-5 text-white`}>
+                        <div className={`\$\{getHealthColor\(data.aggregate.database_health\)\} rounded-md shadow-sm border border-transparent p-5 text-white`}>
                             <div className="flex items-center gap-3 mb-2">
                                 <CheckCircle2 className="w-6 h-6" />
                                 <span className="text-white/80 text-sm font-medium">Database Health</span>
@@ -334,10 +331,10 @@ export default function CommandCenterPage() {
 
                 {/* Section Title */}
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-gradient-to-r from-blue-600 to-teal-500 p-2 rounded-xl">
-                        <BarChart3 className="w-6 h-6 text-white" />
+                    <div className="bg-[#3C50E0] p-2 rounded-md">
+                        <BarChart3 className="w-5 h-5 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Data Inventory by Category</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Data Inventory by Category</h2>
                 </div>
 
                 {/* Data Cards Grid */}

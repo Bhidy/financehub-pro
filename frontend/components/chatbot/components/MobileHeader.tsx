@@ -50,7 +50,7 @@ export function MobileHeader({
 
     return (
         <header className="w-full z-50 relative flex-none px-4 pt-safe pb-2 bg-transparent" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-            <div className="flex items-center justify-between bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl rounded-xl px-4 py-3 shadow-sm dark:shadow-none border border-slate-200/60 dark:border-white/[0.08] transition-colors duration-300">
+            <div className="flex items-center justify-between bg-white/90 dark:bg-[#111827]/90  rounded-xl px-4 py-3 shadow-sm dark:shadow-none border border-slate-200/60 dark:border-white/[0.08] transition-colors duration-300">
 
                 {/* Left: Avatar + Title + Design Switcher */}
                 {/* Left: Avatar + Title + Design Switcher */}

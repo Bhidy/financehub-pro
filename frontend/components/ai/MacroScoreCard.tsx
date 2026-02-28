@@ -187,7 +187,7 @@ export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <div className={clsx("p-1.5 rounded-lg", colors.badge)}>
-                                            <Icon size={14} className="stroke-[2.5]" />
+                                            {(Icon as any)({ size: 14, className: "stroke-[2.5]" })}
                                         </div>
                                         <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
                                             {factor.name}

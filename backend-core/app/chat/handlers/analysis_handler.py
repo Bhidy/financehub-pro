@@ -101,9 +101,9 @@ async def handle_ownership(conn: asyncpg.Connection, symbol: str, language: str 
             }
         ],
         'actions': [
-            {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-            {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
-            {'label': '💵 Dividends', 'label_ar': '💵 التوزيعات', 'action_type': 'query', 'payload': f'{symbol} dividends'},
+            {'label': '📊 Revenue Growth', 'label_ar': '📊 نمو الإيرادات', 'action_type': 'query', 'payload': f'Show {symbol} revenue and profit growth trend'},
+            {'label': '🛡️ Safety Score', 'label_ar': '🛡️ درجة الأمان', 'action_type': 'query', 'payload': f'Is {symbol} financially safe? Show safety score'},
+            {'label': '💎 Valuation', 'label_ar': '💎 التقييم', 'action_type': 'query', 'payload': f'Deep valuation analysis of {symbol}'},
         ]
     }
 
@@ -170,9 +170,9 @@ async def handle_financial_health(conn: asyncpg.Connection, symbol: str, languag
              {'type': 'ratios', 'title': 'Key Health Metrics (TTM)', 'data': data}
         ],
         'actions': [
-            {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-            {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
-            {'label': '💵 Dividends', 'label_ar': '💵 التوزيعات', 'action_type': 'query', 'payload': f'{symbol} dividends'},
+            {'label': '💎 Valuation vs Peers', 'label_ar': '💎 التقييم مقابل الأقران', 'action_type': 'query', 'payload': f'How does {symbol} valuation compare to sector peers?'},
+            {'label': '📈 Growth Quality', 'label_ar': '📈 جودة النمو', 'action_type': 'query', 'payload': f'Show {symbol} revenue and profit growth quality'},
+            {'label': '📊 Financials', 'label_ar': '📊 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
         ]
     }
 

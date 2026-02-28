@@ -210,6 +210,8 @@ async def handle_stock_chart(
     if is_egx:
         base_actions.extend([
             {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+            {'label': '🛡️ Safety Score', 'label_ar': '🛡️ درجة الأمان', 'action_type': 'query', 'payload': f'Is {symbol} financially safe? Show safety score'},
+            {'label': '💵 Dividends', 'label_ar': '💵 التوزيعات', 'action_type': 'query', 'payload': f'{symbol} dividends'},
         ])
 
     return {

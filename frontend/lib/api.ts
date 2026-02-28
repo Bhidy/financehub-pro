@@ -355,18 +355,23 @@ const normalizeEgxStock = (raw: unknown): EgxDashboardStock | null => {
         ? item.name_en.trim()
         : symbol;
 
-    const sectorName = typeof item.sector_name === "string"
+    const rawSector = typeof item.sector_name === "string"
         ? item.sector_name
         : typeof item.sector === "string"
             ? item.sector
-            : "Unclassified";
+            : "";
+    // Treat UNCLASSIFIED as missing
+    const _invalidSectors = new Set(["UNCLASSIFIED", "N/A", ""]);
+    const sectorName = _invalidSectors.has((rawSector || "").trim().toUpperCase())
+        ? "—"
+        : rawSector;
 
     const lastUpdated = typeof item.last_updated === "string" ? item.last_updated : null;
 
     return {
         symbol,
         nameEn,
-        sectorName: sectorName || "Unclassified",
+        sectorName: sectorName || "—",
         lastPrice: asNumber(item.last_price, 0),
         changePercent: asNumber(item.change_percent ?? item.change_pct, 0),
         volume: asNumber(item.volume, 0),

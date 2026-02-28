@@ -709,21 +709,11 @@ class ChatService:
                 tokens.append(token)
 
         unique_tokens = self._dedupe_symbols(tokens)
-        if len(unique_tokens) >= 2:
-            # If payload already has two distinct symbols, keep it unchanged.
-            if self._canonical_symbol(unique_tokens[0]) != self._canonical_symbol(unique_tokens[1]):
-                return text
-
         primary = (anchor_symbol or (unique_tokens[0] if unique_tokens else "")).strip().upper()
-        anchors = self._dedupe_symbols(anchor_symbols or [])
-        secondary = ""
-        for cand in anchors:
-            if self._canonical_symbol(cand) != self._canonical_symbol(primary):
-                secondary = cand
-                break
 
-        if primary and secondary:
-            return f"Compare {primary} vs {secondary}"
+        if primary:
+            return f"Compare {primary} to peers"
+            
         return text
 
     def _build_anchor_fallback_followups(
@@ -749,7 +739,7 @@ class ChatService:
             if peer:
                 out.append({
                     "text": f"كيف يقارن مع المنافسين؟",
-                    "payload": f"Compare {symbol} vs {peer}",
+                    "payload": f"قارن {symbol} مع أقرانه",
                     "type": "comparison",
                 })
         else:
@@ -760,7 +750,7 @@ class ChatService:
             if peer:
                 out.append({
                     "text": "How does it compare to peers?",
-                    "payload": f"Compare {symbol} vs {peer}",
+                    "payload": f"Compare {symbol} to peers",
                     "type": "comparison",
                 })
 
@@ -2272,10 +2262,13 @@ class ChatService:
         primary_mcap = row['market_cap'] or 0
 
         peers: List[str] = []
+        # Treat UNCLASSIFIED/NULL as invalid sector
+        _invalid = {'UNCLASSIFIED', 'N/A', ''}
+        sector_valid = sector and str(sector).strip().upper() not in _invalid
         try:
             # STRATEGY 1: Same Sector, Market Cap Neighbors
             # We want peers that are similar in size OR larger leaders
-            if sector:
+            if sector_valid:
                 # Get top peers in sector by Market Cap
                 rows = await self.conn.fetch(
                     """
@@ -2284,6 +2277,7 @@ class ChatService:
                     WHERE symbol <> $1
                       AND market_code = 'EGX'
                       AND sector_name = $2::text
+                      AND UPPER(COALESCE(sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
                     ORDER BY market_cap DESC NULLS LAST
                     LIMIT $3
                     """,
@@ -2302,6 +2296,7 @@ class ChatService:
                     FROM market_tickers
                     WHERE symbol <> $1
                       AND market_code = 'EGX'
+                      AND UPPER(COALESCE(sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
                     ORDER BY market_cap DESC NULLS LAST
                     LIMIT $2
                     """,

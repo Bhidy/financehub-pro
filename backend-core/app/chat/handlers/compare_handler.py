@@ -14,6 +14,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Sectors that should be treated as "no sector" for peer matching
+_INVALID_SECTORS = {'UNCLASSIFIED', 'N/A', ''}
+
+def _is_valid_sector(sector_name) -> bool:
+    """Return True if sector_name is a real, usable sector for peer matching."""
+    if not sector_name:
+        return False
+    return str(sector_name).strip().upper() not in _INVALID_SECTORS
+
 def _canonical_symbol(symbol: str) -> str:
     """Normalize symbol for duplicate detection (COMI == COMI.CA)."""
     if not symbol:
@@ -169,7 +178,7 @@ async def handle_compare_stocks(
                  first_symbol = cand # Use correct symbol
                  break
         
-        if sector_row and sector_row['sector_name']:
+        if sector_row and _is_valid_sector(sector_row['sector_name']):
             # Find the most RELEVANT competitor: same sector, closest market cap, has financial data
             first_cap_row = await conn.fetchrow(
                 "SELECT market_cap FROM market_tickers WHERE symbol = $1", first_symbol)
@@ -181,6 +190,7 @@ async def handle_compare_stocks(
                 INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
                 WHERE t.sector_name = $1 AND t.symbol != $2 AND t.market_code = $3
                   AND t.market_cap IS NOT NULL AND t.market_cap > 0
+                  AND UPPER(COALESCE(t.sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
                 ORDER BY ABS(t.market_cap - $4) ASC NULLS LAST
                 LIMIT 20
             """, sector_row['sector_name'], first_symbol, sector_row['market_code'],
@@ -354,7 +364,7 @@ async def handle_compare_stocks(
         market_code = valid_stock.get('market_code', 'EGX')
         current_symbol = valid_stock['symbol']
         
-        if sector_name:
+        if _is_valid_sector(sector_name):
              # Smart peer: same sector, closest market cap, has financial data
              current_cap_row = await conn.fetchrow(
                  "SELECT market_cap FROM market_tickers WHERE symbol = $1", current_symbol)
@@ -366,6 +376,7 @@ async def handle_compare_stocks(
                 INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
                 WHERE t.sector_name = $1 AND t.symbol != $2 AND t.market_code = $3
                   AND t.market_cap IS NOT NULL AND t.market_cap > 0
+                  AND UPPER(COALESCE(t.sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
                 ORDER BY ABS(t.market_cap - $4) ASC NULLS LAST
                 LIMIT 20
             """, sector_name, current_symbol, market_code, current_cap or 0)

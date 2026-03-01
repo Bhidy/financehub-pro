@@ -277,6 +277,24 @@ async def lifespan(app: FastAPI):
                     pass
 
                 # ============================================================
+                # USER NOTIFICATION SETTINGS (Added 2026-03-02)
+                # ============================================================
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS user_notification_settings (
+                        id SERIAL PRIMARY KEY,
+                        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                        price_alerts BOOLEAN DEFAULT TRUE,
+                        volume_spikes BOOLEAN DEFAULT FALSE,
+                        push_notifs BOOLEAN DEFAULT FALSE,
+                        security_alert BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        UNIQUE(user_id)
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_user_notif_uid ON user_notification_settings(user_id)")
+
+                # ============================================================
                 # PORTFOLIO ENHANCEMENTS (Added 2026-01-19)
                 # ============================================================
 

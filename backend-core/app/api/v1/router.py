@@ -52,3 +52,8 @@ api_router.include_router(financials_export.router, tags=["financials"])
 from app.api.v1.endpoints import newsletter
 api_router.include_router(newsletter.router, tags=["newsletter"])
 
+# Stripe Subscriptions
+from app.api.v1.endpoints import subscriptions, stripe_webhooks
+api_router.include_router(subscriptions.router, prefix="/subscriptions", tags=["subscriptions"])
+api_router.include_router(stripe_webhooks.router, prefix="/stripe", tags=["stripe"])
+

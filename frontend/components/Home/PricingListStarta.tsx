@@ -2,8 +2,33 @@ import ClipReveal from "../ClipReveal";
 import { check } from "./assets";
 import { pricing } from "./constants";
 import Button from "./Button";
+import { useState } from "react";
+import { createCheckoutSession } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const PricingListStarta = () => {
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubscribe = async (planId: string) => {
+        // Here you would replace 'price_xxx' with your actual Stripe Price ID from your dashboard
+        // For example, if it's the 69 EGP monthly plan:
+        const stripePriceId = "price_placeholder_for_monthly_analyst";
+
+        try {
+            setIsLoading(true);
+            const data = await createCheckoutSession(stripePriceId);
+            if (data?.url) {
+                window.location.href = data.url;
+            }
+        } catch (error) {
+            console.error("Error creating checkout session:", error);
+            alert("Failed to initiate checkout. Please ensure you are logged in.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="flex gap-[1rem] max-lg:flex-wrap justify-center w-full">
             {pricing.map((item, index) => (
@@ -61,13 +86,24 @@ const PricingListStarta = () => {
                         )}
                     </div>
 
-                    <Button
-                        className="w-full mb-6"
-                        href={item.price ? "/pricing" : "mailto:sales@startamarkets.com"}
-                        white={index !== 1}
-                    >
-                        {item.price ? "Get started" : "Contact Sales"}
-                    </Button>
+                    {index === 1 ? (
+                        <Button
+                            className="w-full mb-6"
+                            onClick={() => handleSubscribe("analyst")}
+                            disabled={isLoading}
+                            white={index !== 1}
+                        >
+                            {isLoading ? "Loading..." : "Get started"}
+                        </Button>
+                    ) : (
+                        <Button
+                            className="w-full mb-6"
+                            href={item.price ? "/pricing" : "mailto:sales@startamarkets.com"}
+                            white={index !== 1}
+                        >
+                            {item.price ? "Get started" : "Contact Sales"}
+                        </Button>
+                    )}
 
                     <ul>
                         {item.features.map((feature, index) => (

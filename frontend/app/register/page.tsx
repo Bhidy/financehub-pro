@@ -27,6 +27,7 @@ import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
+import { createCheckoutSession } from "@/lib/api";
 
 function MobileRegisterPageContent() {
     const router = useRouter();
@@ -67,6 +68,18 @@ function MobileRegisterPageContent() {
                     localStorage.setItem("fh_refresh_token", refreshToken);
                 }
                 localStorage.setItem("fh_user", JSON.stringify(user));
+
+                if (searchParams.get("checkout") === "true" && searchParams.get("plan") === "analyst") {
+                    createCheckoutSession("price_1T66bq2UXuH5fA2IQIuSelxJ").then(data => {
+                        if (data?.url) window.location.href = data.url;
+                        else router.push(searchParams.get("redirect") || getRoute('home'));
+                    }).catch(err => {
+                        console.error("Checkout redirect failed", err);
+                        router.push(searchParams.get("redirect") || getRoute('home'));
+                    });
+                    return;
+                }
+
                 const returnUrl = searchParams.get("redirect") || getRoute('home');
                 router.push(returnUrl);
             } catch (e) {
@@ -104,12 +117,23 @@ function MobileRegisterPageContent() {
             full_name: formData.full_name,
         });
 
-        setIsLoading(false);
-
         if (result.success) {
+            if (searchParams.get("checkout") === "true" && searchParams.get("plan") === "analyst") {
+                try {
+                    const data = await createCheckoutSession("price_1T66bq2UXuH5fA2IQIuSelxJ");
+                    if (data?.url) {
+                        window.location.href = data.url;
+                        return; // Keep loading spinner active during redirect
+                    }
+                } catch (err) {
+                    console.error("Checkout failed:", err);
+                }
+            }
+            setIsLoading(false);
             const returnUrl = searchParams.get("redirect") || getRoute('home');
             router.push(returnUrl);
         } else {
+            setIsLoading(false);
             setError(result.error || "Registration failed");
         }
     };

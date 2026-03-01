@@ -21,17 +21,17 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
     ArrowLeft, Loader2, User as UserIcon, Phone, Lock, Check, AlertCircle,
     Sun, Moon, Mail, LogOut, Camera, Globe, Shield, Palette, Sparkles,
-    TrendingUp, Settings, ChevronRight, Bell, CreditCard, HelpCircle, Users
+    TrendingUp, Settings, ChevronRight, Bell, CreditCard, HelpCircle, Users, Zap, ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
-import { updateProfile, changePassword } from "@/lib/api";
-import { createCustomerPortalSession, createCheckoutSession } from "@/lib/api";
+import { updateProfile, changePassword, createCustomerPortalSession, createCheckoutSession, fetchNotificationPreferences, updateNotificationPreferences } from "@/lib/api";
+import type { NotificationPreferences } from "@/lib/api";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import Link from "next/link";
 import Image from "next/image";
 
-type Tab = 'personal' | 'security' | 'app';
+type Tab = 'personal' | 'billing' | 'security' | 'app' | 'notifications';
 
 export default function MobileSettingsPage() {
     const router = useRouter();
@@ -87,6 +87,7 @@ export default function MobileSettingsPage() {
                         <div className="space-y-1">
                             {[
                                 { id: 'personal' as Tab, label: 'Personal Details', icon: UserIcon },
+                                { id: 'billing' as Tab, label: 'Subscription & Billing', icon: CreditCard },
                                 { id: 'security' as Tab, label: 'Security', icon: Shield },
                                 { id: 'app' as Tab, label: 'App Settings', icon: Settings },
                             ].map((item) => (
@@ -128,10 +129,20 @@ export default function MobileSettingsPage() {
 
                         {/* Additional Links */}
                         <div className="space-y-1">
-                            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
+                            <button
+                                onClick={() => setActiveTab('notifications')}
+                                className={clsx(
+                                    "w-full flex items-center gap-3 px-4 py-2.5 rounded-md transition-all duration-200",
+                                    activeTab === 'notifications'
+                                        ? "bg-[#F1F5F9] dark:bg-[#1A222C] text-[#3C50E0]"
+                                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A222C]"
+                                )}
+                            >
                                 <Bell className="w-5 h-5" />
                                 <span className="font-medium">Notifications</span>
-                                <span className="ml-auto text-xs font-bold bg-[#14B8A6] text-white px-2 py-0.5 rounded-full">Soon</span>
+                                {activeTab === 'notifications' && (
+                                    <ChevronRight className="w-4 h-4 ml-auto" />
+                                )}
                             </button>
                             <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                 <HelpCircle className="w-5 h-5" />
@@ -175,8 +186,10 @@ export default function MobileSettingsPage() {
                     <div className="px-8 py-8 max-w-3xl">
                         <AnimatePresence mode="wait">
                             {activeTab === 'personal' && <DesktopPersonalTab key="personal" user={user} updateUser={updateUser} />}
+                            {activeTab === 'billing' && <DesktopBillingTab key="billing" user={user} />}
                             {activeTab === 'security' && <DesktopSecurityTab key="security" logout={logout} />}
                             {activeTab === 'app' && <DesktopAppTab key="app" />}
+                            {activeTab === 'notifications' && <DesktopNotificationsTab key="notifications" />}
                         </AnimatePresence>
                     </div>
                 </div>
@@ -215,23 +228,23 @@ export default function MobileSettingsPage() {
                                 layoutId="mobileTab"
                                 initial={false}
                                 animate={{
-                                    left: activeTab === 'personal' ? '6px' : activeTab === 'security' ? '33.33%' : '66.66%',
-                                    width: 'calc(33.33% - 8px)',
+                                    left: activeTab === 'personal' ? '4px' : activeTab === 'billing' ? '20%' : activeTab === 'security' ? '40%' : activeTab === 'app' ? '60%' : '80%',
+                                    width: 'calc(20% - 8px)',
                                 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                             />
-                            {(['personal', 'security', 'app'] as Tab[]).map((tab) => (
+                            {(['personal', 'billing', 'security', 'app', 'notifications'] as Tab[]).map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={clsx(
-                                        "flex-1 relative z-10 py-2.5 text-sm font-semibold text-center transition-colors rounded-lg capitalize",
+                                        "flex-1 relative z-10 py-2.5 text-[10px] sm:text-xs font-semibold text-center transition-colors rounded-lg capitalize whitespace-nowrap px-0 sm:px-1",
                                         activeTab === tab
                                             ? "text-[#14B8A6] dark:text-white"
                                             : "text-slate-500"
                                     )}
                                 >
-                                    {tab === 'personal' ? 'Personal' : tab === 'security' ? 'Security' : 'App'}
+                                    {tab === 'personal' ? 'Personal' : tab === 'billing' ? 'Billing' : tab === 'security' ? 'Security' : tab === 'app' ? 'App' : 'Alerts'}
                                 </button>
                             ))}
                         </div>
@@ -241,8 +254,10 @@ export default function MobileSettingsPage() {
                     <div className="px-5">
                         <AnimatePresence mode="wait">
                             {activeTab === 'personal' && <PersonalTab key="personal" user={user} updateUser={updateUser} />}
+                            {activeTab === 'billing' && <BillingTab key="billing" user={user} />}
                             {activeTab === 'security' && <SecurityTab key="security" logout={logout} />}
                             {activeTab === 'app' && <AppTab key="app" />}
+                            {activeTab === 'notifications' && <NotificationsTab key="notifications" />}
                         </AnimatePresence>
 
                         {/* Admin Mobile Links */}
@@ -340,28 +355,6 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
         full_name: user?.full_name || "",
         phone: user?.phone || "",
     });
-    const [isBillingLoading, setIsBillingLoading] = useState(false);
-
-    const isAnalyst = user?.subscription_plan === 'analyst' || user?.subscription_status === 'active';
-
-    const handleManageBilling = async () => {
-        setIsBillingLoading(true);
-        try {
-            if (isAnalyst) {
-                const { url } = await createCustomerPortalSession();
-                if (url) window.location.href = url;
-            } else {
-                const { url } = await createCheckoutSession('price_1T66bq2UXuH5fA2IQIuSelxJ'); // Analyst Package Monthly
-                if (url) window.location.href = url;
-            }
-        } catch (error) {
-            console.error("Billing error:", error);
-            setErrorMsg("Failed to connect to billing portal. Please try again later.");
-        } finally {
-            setIsBillingLoading(false);
-        }
-    };
-
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -427,52 +420,6 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
                 </form>
             </div>
 
-            {/* Subscription & Billing */}
-            <div className="premium-glass rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#047857] flex items-center justify-center shadow-lg shadow-[#10B981]/20">
-                        <CreditCard className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Subscription & Billing</h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Manage your active plans and invoices</p>
-                    </div>
-                </div>
-
-                <div className="bg-[#F8FAFC] dark:bg-[#0A0F1C]/50 rounded-xl border border-slate-200 dark:border-[#2E3A47] p-5 flex items-center justify-between">
-                    <div>
-                        <div className="flex items-center gap-3 mb-1">
-                            <span className="font-bold text-slate-900 dark:text-white text-lg">
-                                {isAnalyst ? "The Analyst" : "Free Plan"}
-                            </span>
-                            {isAnalyst && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full uppercase tracking-wider">
-                                    <Check className="w-3 h-3" /> Active
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {isAnalyst
-                                ? "You have full access to pro insights and advanced AI chats."
-                                : "Upgrade to unlock advanced AI charts and deep market context."}
-                        </p>
-                    </div>
-
-                    <button
-                        onClick={handleManageBilling}
-                        disabled={isBillingLoading}
-                        className={clsx(
-                            "px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50",
-                            isAnalyst
-                                ? "bg-white dark:bg-[#1A222C] text-slate-900 dark:text-white border border-slate-200 dark:border-[#2E3A47] shadow-sm hover:bg-slate-50 dark:hover:bg-[#24303F]"
-                                : "bg-[#14B8A6] hover:bg-[#0D9488] text-white shadow-lg shadow-[#14B8A6]/20"
-                        )}
-                    >
-                        {isBillingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        {isAnalyst ? "Manage Billing" : "Upgrade Plan"}
-                    </button>
-                </div>
-            </div>
         </motion.div>
     );
 }
@@ -770,28 +717,6 @@ function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) 
         full_name: user?.full_name || "",
         phone: user?.phone || "",
     });
-    const [isBillingLoading, setIsBillingLoading] = useState(false);
-
-    const isAnalyst = user?.subscription_plan === 'analyst' || user?.subscription_status === 'active';
-
-    const handleManageBilling = async () => {
-        setIsBillingLoading(true);
-        try {
-            if (isAnalyst) {
-                const { url } = await createCustomerPortalSession();
-                if (url) window.location.href = url;
-            } else {
-                const { url } = await createCheckoutSession('price_1T66bq2UXuH5fA2IQIuSelxJ'); // Analyst Package Monthly
-                if (url) window.location.href = url;
-            }
-        } catch (error) {
-            console.error("Billing error:", error);
-            setErrorMsg("Failed to connect to billing. Please try again.");
-        } finally {
-            setIsBillingLoading(false);
-        }
-    };
-
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -822,51 +747,6 @@ function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) 
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
                 </button>
             </form>
-
-            {/* Mobile Subscription & Billing */}
-            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/5">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#047857] flex items-center justify-center shadow-lg shadow-[#10B981]/20">
-                        <CreditCard className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Subscription & Billing</h3>
-                        <p className="text-xs text-slate-500">Manage your plan</p>
-                    </div>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="font-bold text-slate-900 dark:text-white text-base">
-                            {isAnalyst ? "The Analyst" : "Free Plan"}
-                        </span>
-                        {isAnalyst && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full uppercase tracking-wider">
-                                <Check className="w-3 h-3" /> Active
-                            </span>
-                        )}
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
-                        {isAnalyst
-                            ? "You have full access to premium insights."
-                            : "Upgrade to unlock advanced features."}
-                    </p>
-
-                    <button
-                        onClick={handleManageBilling}
-                        disabled={isBillingLoading}
-                        className={clsx(
-                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50",
-                            isAnalyst
-                                ? "bg-white dark:bg-[#1A222C] text-slate-900 dark:text-white border border-slate-200 dark:border-[#2E3A47] shadow-sm"
-                                : "bg-[#14B8A6] text-white shadow-md shadow-[#14B8A6]/20"
-                        )}
-                    >
-                        {isBillingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        {isAnalyst ? "Manage Billing" : "Upgrade Plan"}
-                    </button>
-                </div>
-            </div>
         </motion.div>
     );
 }
@@ -998,5 +878,495 @@ function StatusMessages({ success, error }: { success: string, error: string }) 
                 </div>
             )}
         </motion.div>
+    );
+}
+
+// ============================================================================
+// BILLING COMPONENTS
+// ============================================================================
+
+function DesktopBillingTab({ user }: { user: any }) {
+    const [isBillingLoading, setIsBillingLoading] = useState(false);
+    const [billingError, setBillingError] = useState("");
+
+    const isAnalyst = user?.subscription_plan === 'analyst' || user?.subscription_status === 'active';
+
+    const handleManageBilling = async () => {
+        setIsBillingLoading(true);
+        setBillingError("");
+        try {
+            if (isAnalyst) {
+                const { url } = await createCustomerPortalSession();
+                if (url) window.location.href = url;
+            } else {
+                const { url } = await createCheckoutSession('price_1T66bq2UXuH5fA2IQIuSelxJ'); // Analyst Package Monthly
+                if (url) window.location.href = url;
+            }
+        } catch (error) {
+            console.error("Billing error:", error);
+            setBillingError("Failed to connect to billing portal. Please try again later.");
+        } finally {
+            setIsBillingLoading(false);
+        }
+    };
+
+    const features = [
+        { title: "Advanced AI Chat", desc: "Unlimited queries", icon: Sparkles },
+        { title: "Real-Time Market Data", desc: "Live prices for EGX & MENA", icon: TrendingUp },
+        { title: "Premium Insights", desc: "Undervalued stock scanner", icon: Zap },
+    ];
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
+            <div className="flex flex-col gap-6">
+                <div className="bg-white dark:bg-[#1A222C] rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-[#2E3A47] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-[#14B8A6]/10 to-transparent pointer-events-none" />
+
+                    <div className="flex justify-between items-start mb-6 relative">
+                        <div>
+                            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Current Plan</p>
+                            <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white flex items-center gap-3">
+                                {isAnalyst ? "The Analyst" : "Free Tier"}
+                                {isAnalyst && (
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full uppercase tracking-wider">
+                                        <Check className="w-3.5 h-3.5" /> Active
+                                    </span>
+                                )}
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div className="mb-8 relative">
+                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
+                            {isAnalyst
+                                ? "You have full access to all premium features, real-time Egyptian and MENA market data, and advanced AI stock analysis."
+                                : "You are currently on the free tier. Upgrade to unlock all premium features and live data."}
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={handleManageBilling}
+                        disabled={isBillingLoading}
+                        className={clsx(
+                            "w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 relative",
+                            isAnalyst
+                                ? "bg-slate-100 dark:bg-[#0F172A] text-slate-900 dark:text-white border border-slate-200 dark:border-[#2E3A47] hover:bg-slate-200 dark:hover:bg-black"
+                                : "bg-gradient-to-r from-[#14B8A6] to-[#0D9488] hover:from-[#0D9488] hover:to-[#0F766E] text-white shadow-lg shadow-[#14B8A6]/20"
+                        )}
+                    >
+                        {isBillingLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                        {isAnalyst ? "Manage Billing & Invoices" : "Upgrade to The Analyst"}
+                        {!isAnalyst && !isBillingLoading && <ArrowRight className="w-5 h-5" />}
+                    </button>
+
+                    {billingError && (
+                        <div className="mt-4 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium flex items-center gap-2 relative">
+                            <AlertCircle className="w-5 h-5 flex-shrink-0" /> {billingError}
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-slate-50 dark:bg-[#1A222C] rounded-2xl p-6 border border-slate-200 dark:border-[#2E3A47] flex items-center justify-between shadow-sm">
+                    <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">Payment Security</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">All transactions are securely processed by Stripe.</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-white dark:bg-[#24303F] flex items-center justify-center shadow-sm border border-slate-100 dark:border-transparent">
+                        <Shield className="w-6 h-6 text-[#14B8A6]" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#1A222C] rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-[#2E3A47] flex flex-col justify-center">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-8">
+                    {isAnalyst ? "Your Premium Benefits" : "Unlock The Analyst"}
+                </h3>
+
+                <div className="space-y-6">
+                    {features.map((item, idx) => (
+                        <div key={idx} className="flex gap-4">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-slate-50 dark:bg-[#0F172A] flex items-center justify-center border border-slate-100 dark:border-[#2E3A47] shadow-inner">
+                                <item.icon className="w-6 h-6 text-[#14B8A6]" />
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-1.5">{item.title}</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function BillingTab({ user }: { user: any }) {
+    const [isBillingLoading, setIsBillingLoading] = useState(false);
+    const [billingError, setBillingError] = useState("");
+
+    const isAnalyst = user?.subscription_plan === 'analyst' || user?.subscription_status === 'active';
+
+    const handleManageBilling = async () => {
+        setIsBillingLoading(true);
+        setBillingError("");
+        try {
+            if (isAnalyst) {
+                const { url } = await createCustomerPortalSession();
+                if (url) window.location.href = url;
+            } else {
+                const { url } = await createCheckoutSession('price_1T66bq2UXuH5fA2IQIuSelxJ'); // Analyst Package Monthly
+                if (url) window.location.href = url;
+            }
+        } catch (error) {
+            console.error("Billing error:", error);
+            setBillingError("Failed to connect to billing. Please try again.");
+        } finally {
+            setIsBillingLoading(false);
+        }
+    };
+
+    const features = [
+        { title: "Advanced AI Chat", desc: "Unlimited queries", icon: Sparkles },
+        { title: "Real-Time Market Data", desc: "Live prices for EGX & MENA", icon: TrendingUp },
+        { title: "Premium Insights", desc: "Undervalued stock scanner", icon: Zap },
+    ];
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+            <div className="bg-[#1A222C] rounded-3xl p-6 border border-[#2E3A47] relative overflow-hidden mt-2 shadow-sm">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#14B8A6] rounded-full blur-[60px] opacity-10" />
+
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Your Plan</p>
+                <h2 className="text-3xl font-extrabold text-white flex items-center gap-2 mb-4 relative z-10">
+                    {isAnalyst ? "The Analyst" : "Free"}
+                    {isAnalyst && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold bg-[#14B8A6]/20 text-[#2DD4BF] rounded-full uppercase tracking-wider border border-[#14B8A6]/30">
+                            <Check className="w-3 h-3" /> Active
+                        </span>
+                    )}
+                </h2>
+
+                <div className="mb-6 relative z-10">
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                        {isAnalyst ? "Full access to premium features, real-time data, and advanced AI analysis." : "You are currently on the free tier. Upgrade to unlock all premium features."}
+                    </p>
+                </div>
+
+                <button
+                    onClick={handleManageBilling}
+                    disabled={isBillingLoading}
+                    className={clsx(
+                        "w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 relative z-10",
+                        isAnalyst
+                            ? "bg-white/10 text-white hover:bg-white/20 border border-white/10 backdrop-blur-sm"
+                            : "bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white shadow-lg shadow-[#14B8A6]/30"
+                    )}
+                >
+                    {isBillingLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                    {isAnalyst ? "Manage Billing" : "Upgrade to Pro"}
+                    {!isAnalyst && !isBillingLoading && <ArrowRight className="w-4 h-4" />}
+                </button>
+            </div>
+
+            {billingError && (
+                <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" /> {billingError}
+                </div>
+            )}
+
+            <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4 pl-1">
+                    {isAnalyst ? "Pro Benefits" : "Unlock with Pro"}
+                </h3>
+                <div className="space-y-3">
+                    {features.map((item, idx) => (
+                        <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-white dark:bg-[#24303F] border border-slate-200 dark:border-[#2E3A47] shadow-sm">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#F1F5F9] dark:bg-[#1A222C] flex items-center justify-center">
+                                <item.icon className="w-5 h-5 text-[#14B8A6]" />
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-0.5">{item.title}</h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+// ============================================================================
+// NOTIFICATIONS COMPONENTS
+// ============================================================================
+
+function DesktopNotificationsTab() {
+    const [toggles, setToggles] = useState<NotificationPreferences>({
+        price_alerts: true,
+        volume_spikes: false,
+        weekly_report: true,
+        academy_news: true,
+        push_notifs: false,
+        security_alert: true,
+    });
+
+    useEffect(() => {
+        let mounted = true;
+        fetchNotificationPreferences().then(data => {
+            if (mounted) {
+                setToggles(data);
+            }
+        }).catch(err => {
+            console.error("Failed to load generic notification preferences:", err);
+        });
+        return () => { mounted = false; };
+    }, []);
+
+    const toggle = async (key: keyof typeof toggles) => {
+        const newValue = !toggles[key];
+        setToggles(prev => ({ ...prev, [key]: newValue }));
+        try {
+            await updateNotificationPreferences({ [key]: newValue });
+        } catch (error) {
+            console.error("Failed to sync notification toggle:", error);
+            // Revert state on failure
+            setToggles(prev => ({ ...prev, [key]: !newValue }));
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
+            <div className="flex flex-col gap-6">
+                <div className="bg-white dark:bg-[#1A222C] rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-[#2E3A47] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-[#14B8A6]/5 to-transparent pointer-events-none" />
+
+                    <div className="flex items-center gap-3 mb-6 relative">
+                        <div className="w-10 h-10 rounded-xl bg-[#14B8A6]/10 flex items-center justify-center border border-[#14B8A6]/20">
+                            <Zap className="w-5 h-5 text-[#14B8A6]" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Market Alerts</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Real-time stock movement notifications.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 relative">
+                        <DesktopToggleItem
+                            title="Price Target Alerts"
+                            description="Email me when my watchlist hits set targets."
+                            isOn={toggles.price_alerts}
+                            onToggle={() => toggle('price_alerts')}
+                        />
+                        <DesktopToggleItem
+                            title="Volume Spikes"
+                            description="Notify me of unusual trading volume."
+                            isOn={toggles.volume_spikes}
+                            onToggle={() => toggle('volume_spikes')}
+                        />
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#1A222C] rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-[#2E3A47] relative overflow-hidden">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#0F172A] flex items-center justify-center border border-slate-200 dark:border-transparent">
+                            <Shield className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">System & Security</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Account activity and mobile pushes.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <DesktopToggleItem
+                            title="Security Alerts"
+                            description="Critical alerts for new sign-ins."
+                            isOn={toggles.security_alert}
+                            onToggle={() => toggle('security_alert')}
+                        />
+                        <DesktopToggleItem
+                            title="Push Notifications"
+                            description="Receive mobile device notifications."
+                            isOn={toggles.push_notifs}
+                            onToggle={() => toggle('push_notifs')}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-6">
+                <div className="bg-white dark:bg-[#1A222C] rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-[#2E3A47] relative overflow-hidden h-full">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-[#3C50E0]/10 flex items-center justify-center border border-[#3C50E0]/20">
+                            <Mail className="w-5 h-5 text-[#3C50E0]" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Email Reports</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Stay informed with curated digests.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <DesktopToggleItem
+                            title="Weekly Market Report"
+                            description="Every Sunday, deeply analyzing MENA markets."
+                            isOn={toggles.weekly_report}
+                            onToggle={() => toggle('weekly_report')}
+                        />
+                        <DesktopToggleItem
+                            title="Starta Academy"
+                            description="Educational content and trading strategies."
+                            isOn={toggles.academy_news}
+                            onToggle={() => toggle('academy_news')}
+                        />
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function DesktopToggleItem({ title, description, isOn, onToggle }: { title: string, description: string, isOn: boolean, onToggle: () => void }) {
+    return (
+        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#0F172A] rounded-2xl border border-slate-100 dark:border-[#2E3A47] shadow-sm">
+            <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>
+            </div>
+            <button
+                onClick={onToggle}
+                className={clsx(
+                    "relative w-11 h-6 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#14B8A6] flex-shrink-0",
+                    isOn ? 'bg-[#14B8A6]' : 'bg-slate-300 dark:bg-[#2E3A47]'
+                )}
+            >
+                <div
+                    className={clsx(
+                        "inline-block w-4 h-4 transform bg-white rounded-full shadow-sm transition-transform duration-200 mt-1 absolute top-0",
+                        isOn ? 'translate-x-6 left-0' : 'translate-x-1 left-0'
+                    )}
+                />
+            </button>
+        </div>
+    );
+}
+
+
+function NotificationsTab() {
+    const [toggles, setToggles] = useState<NotificationPreferences>({
+        price_alerts: true,
+        volume_spikes: false,
+        weekly_report: true,
+        academy_news: true,
+        push_notifs: false,
+        security_alert: true,
+    });
+
+    useEffect(() => {
+        let mounted = true;
+        fetchNotificationPreferences().then(data => {
+            if (mounted) {
+                setToggles(data);
+            }
+        }).catch(err => {
+            console.error("Failed to load generic notification preferences:", err);
+        });
+        return () => { mounted = false; };
+    }, []);
+
+    const toggle = async (key: keyof typeof toggles) => {
+        const newValue = !toggles[key];
+        setToggles(prev => ({ ...prev, [key]: newValue }));
+        try {
+            await updateNotificationPreferences({ [key]: newValue });
+        } catch (error) {
+            console.error("Failed to sync notification toggle:", error);
+            setToggles(prev => ({ ...prev, [key]: !newValue }));
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+
+            {/* Market Alerts Section */}
+            <div>
+                <div className="flex items-center gap-2 mb-4 pl-1">
+                    <Zap className="w-4 h-4 text-[#14B8A6]" />
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Market Alerts</h3>
+                </div>
+                <div className="space-y-3">
+                    <MobileToggleItem
+                        title="Price Targets"
+                        desc="Email me when targets are hit."
+                        isOn={toggles.price_alerts}
+                        onToggle={() => toggle('price_alerts')}
+                    />
+                    <MobileToggleItem
+                        title="Volume Spikes"
+                        desc="Unusual trading volume alerts."
+                        isOn={toggles.volume_spikes}
+                        onToggle={() => toggle('volume_spikes')}
+                    />
+                </div>
+            </div>
+
+            {/* Reports Section */}
+            <div>
+                <div className="flex items-center gap-2 mb-4 pl-1">
+                    <Mail className="w-4 h-4 text-[#3C50E0]" />
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Reports & Security</h3>
+                </div>
+                <div className="space-y-3">
+                    <MobileToggleItem
+                        title="Weekly Report"
+                        desc="Sunday MENA market digest."
+                        isOn={toggles.weekly_report}
+                        onToggle={() => toggle('weekly_report')}
+                    />
+                    <MobileToggleItem
+                        title="Security Alerts"
+                        desc="Critical account activity."
+                        isOn={toggles.security_alert}
+                        onToggle={() => toggle('security_alert')}
+                    />
+                </div>
+            </div>
+
+        </motion.div>
+    );
+}
+
+function MobileToggleItem({ title, desc, isOn, onToggle }: { title: string, desc: string, isOn: boolean, onToggle: () => void }) {
+    return (
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1A222C] rounded-2xl border border-slate-200 dark:border-[#2E3A47] shadow-sm">
+            <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-0.5">{title}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+            </div>
+            <button
+                onClick={onToggle}
+                className={clsx(
+                    "relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0",
+                    isOn ? 'bg-[#14B8A6]' : 'bg-slate-200 dark:bg-white/10'
+                )}
+            >
+                <div
+                    className={clsx(
+                        "inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 mt-1 absolute top-0",
+                        isOn ? 'translate-x-6 left-0' : 'translate-x-1 left-0'
+                    )}
+                />
+            </button>
+        </div>
     );
 }

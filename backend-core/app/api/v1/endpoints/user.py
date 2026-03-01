@@ -23,6 +23,15 @@ class PriceAlertCreate(BaseModel):
     target_price: float
     condition: str  # ABOVE or BELOW
 
+class UserNotificationSettingsUpdate(BaseModel):
+    price_alerts: Optional[bool] = None
+    volume_spikes: Optional[bool] = None
+    weekly_report: Optional[bool] = None
+    academy_news: Optional[bool] = None
+    push_notifs: Optional[bool] = None
+    security_alert: Optional[bool] = None
+
+
 # --- Endpoints ---
 
 @router.get("/watchlists", response_model=List[dict])
@@ -130,3 +139,92 @@ async def delete_alert(alert_id: str, current_user: dict = Depends(get_current_a
     if res == "DELETE 0":
         raise HTTPException(status_code=404, detail="Alert not found")
     return {"status": "deleted"}
+
+# --- Notification Preferences ---
+
+@router.get("/notifications/preferences", response_model=dict)
+async def get_notification_preferences(current_user: dict = Depends(get_current_active_user)):
+    """Get the current user's combined notification and newsletter preferences."""
+    
+    # 1. Fetch general user notifications
+    n_row = await db.fetch_one("""
+        SELECT price_alerts, volume_spikes, push_notifs, security_alert
+        FROM user_notification_settings
+        WHERE user_id = $1
+    """, current_user['id'])
+    
+    # 2. Fetch newsletter preferences (since they share the UI conceptually)
+    news_row = await db.fetch_one("""
+        SELECT weekly_pulse, academy
+        FROM newsletter_preferences
+        WHERE user_id = $1
+    """, current_user['id'])
+    
+    # Default behavior if rows don't exist yet
+    return {
+        "price_alerts": n_row['price_alerts'] if n_row else True,
+        "volume_spikes": n_row['volume_spikes'] if n_row else False,
+        "push_notifs": n_row['push_notifs'] if n_row else False,
+        "security_alert": n_row['security_alert'] if n_row else True,
+        "weekly_report": news_row['weekly_pulse'] if news_row else True,
+        "academy_news": news_row['academy'] if news_row else True,
+    }
+
+@router.put("/notifications/preferences", response_model=dict)
+async def update_notification_preferences(prefs: UserNotificationSettingsUpdate, current_user: dict = Depends(get_current_active_user)):
+    """Update combined notification preferences."""
+    user_id = current_user['id']
+    
+    # 1. UPSERT user_notification_settings
+    # We use explicit parameter parsing for the dynamic fields submitted
+    fields_to_update = []
+    values_to_update = []
+    
+    gen_keys = {"price_alerts", "volume_spikes", "push_notifs", "security_alert"}
+    n_dict = {k: v for k, v in prefs.model_dump(exclude_unset=True).items() if k in gen_keys and v is not None}
+    
+    if n_dict:
+        # Check if row exists
+        check_n = await db.fetch_one("SELECT id FROM user_notification_settings WHERE user_id = $1", user_id)
+        if check_n:
+            set_clauses = []
+            values = []
+            idx = 1
+            for k, v in n_dict.items():
+                set_clauses.append(f"{k} = ${idx}")
+                values.append(bool(v))
+                idx += 1
+            
+            values.append(user_id)
+            query = f"""
+                UPDATE user_notification_settings 
+                SET {', '.join(set_clauses)}, updated_at = NOW()
+                WHERE user_id = ${idx}
+            """
+            await db.execute(query, *values)
+        else:
+            cols = ["user_id"] + list(n_dict.keys())
+            places = ["$1"] + [f"${i+2}" for i in range(len(n_dict))]
+            values = [user_id] + list(bool(v) for v in n_dict.values())
+            query = f"""
+                INSERT INTO user_notification_settings ({', '.join(cols)})
+                VALUES ({', '.join(places)})
+            """
+            await db.execute(query, *values)
+            
+    # 2. Update Newsletter tables if newsletter keys provided
+    news_keys = {"weekly_report": "weekly_pulse", "academy_news": "academy"}
+    supplied = prefs.model_dump(exclude_unset=True)
+    n_updates = {news_keys[k]: bool(v) for k, v in supplied.items() if k in news_keys and v is not None}
+    
+    if n_updates:
+        from app.services.newsletter_service import newsletter_service
+        # Existing endpoint in newsletter ignores unsubbed internally or re-enables
+        res = await newsletter_service.update_preferences(user_id, n_updates)
+        if res.get("status") == "updated":
+            # If they subbed to anything, ensure unsubscribed is false
+            if any(n_updates.values()):
+                await db.execute("UPDATE newsletter_preferences SET unsubscribed = FALSE WHERE user_id = $1", user_id)
+
+    return await get_notification_preferences(current_user=current_user)
+

@@ -24,6 +24,26 @@ export interface ChangePasswordData {
     new_password: string;
 }
 
+export interface NotificationPreferences {
+    price_alerts: boolean;
+    volume_spikes: boolean;
+    weekly_report: boolean;
+    academy_news: boolean;
+    push_notifs: boolean;
+    security_alert: boolean;
+}
+
+export const fetchNotificationPreferences = async (): Promise<NotificationPreferences> => {
+    const { data } = await api.get("/user/notifications/preferences");
+    return data;
+};
+
+export const updateNotificationPreferences = async (prefs: Partial<NotificationPreferences>): Promise<NotificationPreferences> => {
+    const { data } = await api.put("/user/notifications/preferences", prefs);
+    return data;
+};
+
+
 export const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,

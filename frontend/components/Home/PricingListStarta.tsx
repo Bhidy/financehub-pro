@@ -1,3 +1,5 @@
+"use client";
+
 import ClipReveal from "../ClipReveal";
 import { check } from "./assets";
 import { pricing } from "./constants";
@@ -21,9 +23,13 @@ const PricingListStarta = () => {
             if (data?.url) {
                 window.location.href = data.url;
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error creating checkout session:", error);
-            alert("Failed to initiate checkout. Please ensure you are logged in.");
+            if (error?.response?.status === 401 || !localStorage.getItem("fh_auth_token")) {
+                router.push("/register");
+            } else {
+                alert("Failed to initiate checkout. Please ensure you are logged in.");
+            }
         } finally {
             setIsLoading(false);
         }

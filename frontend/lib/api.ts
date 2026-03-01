@@ -1130,3 +1130,17 @@ export const fetchYahooProfile = async (symbol: string) => {
     const { data } = await api.get(`/yahoo/stock/${symbol}`);
     return data;
 };
+
+// ============================================================================
+// STRIPE SUBSCRIPTIONS
+// ============================================================================
+
+export const createCheckoutSession = async (priceId: string) => {
+    const { data } = await api.post("/subscriptions/create-checkout-session", { price_id: priceId });
+    return data; // { sessionId, url }
+};
+
+export const createCustomerPortalSession = async () => {
+    const { data } = await api.post("/subscriptions/customer-portal");
+    return data; // { url }
+};

@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY")
     FROM_EMAIL: str = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
     
+    # Stripe
+    STRIPE_SECRET_KEY: Optional[str] = os.getenv("STRIPE_SECRET_KEY")
+    STRIPE_PUBLISHABLE_KEY: Optional[str] = os.getenv("STRIPE_PUBLISHABLE_KEY")
+    STRIPE_WEBHOOK_SECRET: Optional[str] = os.getenv("STRIPE_WEBHOOK_SECRET")
+    
     # Google OAuth
     # Google OAuth - Enterprise Hardcoded Fallbacks Removed for Security
     GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID")

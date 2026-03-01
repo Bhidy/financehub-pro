@@ -351,7 +351,7 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
                 const { url } = await createCustomerPortalSession();
                 if (url) window.location.href = url;
             } else {
-                const { url } = await createCheckoutSession('price_1Qxmtg22UXuH5fA2fVbS4WfA'); // EGP 69 Monthly
+                const { url } = await createCheckoutSession('price_1T66bq2UXuH5fA2IQIuSelxJ'); // Analyst Package Monthly
                 if (url) window.location.href = url;
             }
         } catch (error) {
@@ -781,7 +781,7 @@ function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) 
                 const { url } = await createCustomerPortalSession();
                 if (url) window.location.href = url;
             } else {
-                const { url } = await createCheckoutSession('price_1Qxmtg22UXuH5fA2fVbS4WfA'); // EGP 69 Monthly
+                const { url } = await createCheckoutSession('price_1T66bq2UXuH5fA2IQIuSelxJ'); // Analyst Package Monthly
                 if (url) window.location.href = url;
             }
         } catch (error) {

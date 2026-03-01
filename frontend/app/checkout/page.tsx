@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createCheckoutSession } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
@@ -77,5 +77,19 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Preparing your checkout...</h2>
             <p className="text-slate-500 dark:text-slate-400">Please wait while we securely redirect you to Stripe.</p>
         </div>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-[#0A0F1C]">
+                <Loader2 className="w-10 h-10 animate-spin text-[#14B8A6] mb-4" />
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Preparing your checkout...</h2>
+                <p className="text-slate-500 dark:text-slate-400">Please wait while we securely redirect you to Stripe.</p>
+            </div>
+        }>
+            <CheckoutPageContent />
+        </Suspense>
     );
 }

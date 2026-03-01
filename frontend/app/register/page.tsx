@@ -67,7 +67,8 @@ function MobileRegisterPageContent() {
                     localStorage.setItem("fh_refresh_token", refreshToken);
                 }
                 localStorage.setItem("fh_user", JSON.stringify(user));
-                router.push(getRoute('home'));
+                const returnUrl = searchParams.get("redirect") || getRoute('home');
+                router.push(returnUrl);
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
             }
@@ -106,7 +107,8 @@ function MobileRegisterPageContent() {
         setIsLoading(false);
 
         if (result.success) {
-            router.push(getRoute('home'));
+            const returnUrl = searchParams.get("redirect") || getRoute('home');
+            router.push(returnUrl);
         } else {
             setError(result.error || "Registration failed");
         }

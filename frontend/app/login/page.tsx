@@ -62,7 +62,8 @@ function LoginPageContent() {
                     localStorage.setItem("fh_refresh_token", refreshToken);
                 }
                 localStorage.setItem("fh_user", JSON.stringify(user));
-                router.push(homeRoute);
+                const returnUrl = searchParams.get("redirect") || getRoute('home');
+                router.push(returnUrl);
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
             }
@@ -87,7 +88,8 @@ function LoginPageContent() {
         setIsLoading(false);
 
         if (result.success) {
-            router.push(homeRoute);
+            const returnUrl = searchParams.get("redirect") || getRoute('home');
+            router.push(returnUrl);
         } else {
             setError(result.error || "Login failed");
         }
@@ -406,7 +408,7 @@ function LoginPageContent() {
                         <div className="text-center mt-8">
                             <p className="text-slate-500 dark:text-slate-400 text-sm">
                                 Don't have an account?{" "}
-                                <Link href={getRoute('register')} className="text-[#14B8A6] font-semibold hover:text-[#0D9488] transition-colors hover:underline">
+                                <Link href={`/register${searchParams.toString() ? `?${searchParams.toString()}` : ''}`} className="text-[#14B8A6] font-semibold hover:text-[#0D9488] transition-colors hover:underline">
                                     Create free account
                                 </Link>
                             </p>
@@ -580,7 +582,7 @@ function LoginPageContent() {
                         <div className="text-center mt-6">
                             <p className="text-slate-500 dark:text-slate-400 text-sm">
                                 Don't have an account?{" "}
-                                <Link href={getRoute('register')} className="text-[#14B8A6] font-semibold hover:text-[#0D9488] transition-colors">
+                                <Link href={`/register${searchParams.toString() ? `?${searchParams.toString()}` : ''}`} className="text-[#14B8A6] font-semibold hover:text-[#0D9488] transition-colors">
                                     Create free account
                                 </Link>
                             </p>

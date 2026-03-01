@@ -26,6 +26,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { updateProfile, changePassword } from "@/lib/api";
+import { createCustomerPortalSession, createCheckoutSession } from "@/lib/api";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import Link from "next/link";
 import Image from "next/image";
@@ -339,6 +340,27 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
         full_name: user?.full_name || "",
         phone: user?.phone || "",
     });
+    const [isBillingLoading, setIsBillingLoading] = useState(false);
+
+    const isAnalyst = user?.subscription_plan === 'analyst' || user?.subscription_status === 'active';
+
+    const handleManageBilling = async () => {
+        setIsBillingLoading(true);
+        try {
+            if (isAnalyst) {
+                const { url } = await createCustomerPortalSession();
+                if (url) window.location.href = url;
+            } else {
+                const { url } = await createCheckoutSession('price_1Qxmtg22UXuH5fA2fVbS4WfA'); // EGP 69 Monthly
+                if (url) window.location.href = url;
+            }
+        } catch (error) {
+            console.error("Billing error:", error);
+            setErrorMsg("Failed to connect to billing portal. Please try again later.");
+        } finally {
+            setIsBillingLoading(false);
+        }
+    };
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -403,6 +425,53 @@ function DesktopPersonalTab({ user, updateUser }: { user: any, updateUser: (data
                         </button>
                     </div>
                 </form>
+            </div>
+
+            {/* Subscription & Billing */}
+            <div className="premium-glass rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#047857] flex items-center justify-center shadow-lg shadow-[#10B981]/20">
+                        <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Subscription & Billing</h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Manage your active plans and invoices</p>
+                    </div>
+                </div>
+
+                <div className="bg-[#F8FAFC] dark:bg-[#0A0F1C]/50 rounded-xl border border-slate-200 dark:border-[#2E3A47] p-5 flex items-center justify-between">
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <span className="font-bold text-slate-900 dark:text-white text-lg">
+                                {isAnalyst ? "The Analyst" : "Free Plan"}
+                            </span>
+                            {isAnalyst && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full uppercase tracking-wider">
+                                    <Check className="w-3 h-3" /> Active
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {isAnalyst
+                                ? "You have full access to pro insights and advanced AI chats."
+                                : "Upgrade to unlock advanced AI charts and deep market context."}
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={handleManageBilling}
+                        disabled={isBillingLoading}
+                        className={clsx(
+                            "px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50",
+                            isAnalyst
+                                ? "bg-white dark:bg-[#1A222C] text-slate-900 dark:text-white border border-slate-200 dark:border-[#2E3A47] shadow-sm hover:bg-slate-50 dark:hover:bg-[#24303F]"
+                                : "bg-[#14B8A6] hover:bg-[#0D9488] text-white shadow-lg shadow-[#14B8A6]/20"
+                        )}
+                    >
+                        {isBillingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                        {isAnalyst ? "Manage Billing" : "Upgrade Plan"}
+                    </button>
+                </div>
             </div>
         </motion.div>
     );
@@ -701,6 +770,27 @@ function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) 
         full_name: user?.full_name || "",
         phone: user?.phone || "",
     });
+    const [isBillingLoading, setIsBillingLoading] = useState(false);
+
+    const isAnalyst = user?.subscription_plan === 'analyst' || user?.subscription_status === 'active';
+
+    const handleManageBilling = async () => {
+        setIsBillingLoading(true);
+        try {
+            if (isAnalyst) {
+                const { url } = await createCustomerPortalSession();
+                if (url) window.location.href = url;
+            } else {
+                const { url } = await createCheckoutSession('price_1Qxmtg22UXuH5fA2fVbS4WfA'); // EGP 69 Monthly
+                if (url) window.location.href = url;
+            }
+        } catch (error) {
+            console.error("Billing error:", error);
+            setErrorMsg("Failed to connect to billing. Please try again.");
+        } finally {
+            setIsBillingLoading(false);
+        }
+    };
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -732,6 +822,51 @@ function PersonalTab({ user, updateUser }: { user: any, updateUser: (data: any) 
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Changes"}
                 </button>
             </form>
+
+            {/* Mobile Subscription & Billing */}
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/5">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#047857] flex items-center justify-center shadow-lg shadow-[#10B981]/20">
+                        <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Subscription & Billing</h3>
+                        <p className="text-xs text-slate-500">Manage your plan</p>
+                    </div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="font-bold text-slate-900 dark:text-white text-base">
+                            {isAnalyst ? "The Analyst" : "Free Plan"}
+                        </span>
+                        {isAnalyst && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-[#14B8A6]/10 text-[#14B8A6] rounded-full uppercase tracking-wider">
+                                <Check className="w-3 h-3" /> Active
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                        {isAnalyst
+                            ? "You have full access to premium insights."
+                            : "Upgrade to unlock advanced features."}
+                    </p>
+
+                    <button
+                        onClick={handleManageBilling}
+                        disabled={isBillingLoading}
+                        className={clsx(
+                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50",
+                            isAnalyst
+                                ? "bg-white dark:bg-[#1A222C] text-slate-900 dark:text-white border border-slate-200 dark:border-[#2E3A47] shadow-sm"
+                                : "bg-[#14B8A6] text-white shadow-md shadow-[#14B8A6]/20"
+                        )}
+                    >
+                        {isBillingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                        {isAnalyst ? "Manage Billing" : "Upgrade Plan"}
+                    </button>
+                </div>
+            </div>
         </motion.div>
     );
 }

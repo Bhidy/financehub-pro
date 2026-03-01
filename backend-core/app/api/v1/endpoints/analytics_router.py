@@ -257,9 +257,12 @@ async def get_newsletter_analytics(
                     percentage=(count / academy_total) * 100 if academy_total > 0 else 0
                 ))
             
-            from app.services.scheduler import get_scheduler_service
-            scheduler = get_scheduler_service()
-            ns = scheduler.newsletter_service
+            from app.services.newsletter_service import newsletter_service as ns
+            from app.services.scheduler import scheduler_service
+            
+            is_running = False
+            if hasattr(scheduler_service, 'scheduler') and hasattr(scheduler_service.scheduler, 'running'):
+                is_running = scheduler_service.scheduler.running
 
             # Parse timestamps gracefully
             def parse_ts(ts_str):
@@ -279,7 +282,7 @@ async def get_newsletter_analytics(
                 last_monthly_sent=parse_ts(ns.last_monthly_sent),
                 last_academy_sent=parse_ts(ns.last_academy_sent),
                 last_flash_sent=parse_ts(ns.last_flash_sent),
-                is_scheduler_running=ns.is_running
+                is_scheduler_running=is_running
             )
             
     except Exception as e:

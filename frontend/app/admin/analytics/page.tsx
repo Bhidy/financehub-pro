@@ -120,6 +120,29 @@ interface GeoEntry {
     percentage: number;
 }
 
+interface NewsletterFunnelStep {
+    lesson: number;
+    count: number;
+    percentage: number;
+}
+
+interface NewsletterAnalytics {
+    total_subscribers: number;
+    active_subscribers: number;
+    unsubscribed_count: number;
+    retention_rate: number;
+    weekly_pulse_count: number;
+    monthly_dive_count: number;
+    academy_count: number;
+    flash_alerts_count: number;
+    academy_funnel: NewsletterFunnelStep[];
+    last_weekly_sent: string | null;
+    last_monthly_sent: string | null;
+    last_academy_sent: string | null;
+    last_flash_sent: string | null;
+    is_scheduler_running: boolean;
+}
+
 // ============================================================
 // API BASE
 // ============================================================
@@ -182,6 +205,7 @@ export default function ChatbotAnalyticsPage() {
     const [healthSummary, setHealthSummary] = useState<ProductHealthSummary | null>(null);
     const [feedbackReports, setFeedbackReports] = useState<ChatFeedbackReport[]>([]);
     const [geoDistribution, setGeoDistribution] = useState<GeoEntry[]>([]);
+    const [newsletterStats, setNewsletterStats] = useState<NewsletterAnalytics | null>(null);
 
     // Admin check
     useEffect(() => {
@@ -198,7 +222,7 @@ export default function ChatbotAnalyticsPage() {
             const ts = Date.now();
             const qs = `period=${period}&user_type=${userType}&language=${language}&t=${ts}`;
 
-            const [health, questions, unresolved, intents, resolver, funnel, perf, lang, demand, summary, feedback, geo] = await Promise.all([
+            const [health, questions, unresolved, intents, resolver, funnel, perf, lang, demand, summary, feedback, geo, newsletter] = await Promise.all([
                 fetch(`${API_BASE}/health?${qs}`, { headers }).then(r => r.json()).catch(() => null),
                 fetch(`${API_BASE}/questions?${qs}&limit=20`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/unresolved?${qs}&status=pending&limit=50`, { headers }).then(r => r.json()).catch(() => []),
@@ -210,7 +234,8 @@ export default function ChatbotAnalyticsPage() {
                 fetch(`${API_BASE}/demand/trending?${qs}&limit=10`, { headers }).then(r => r.json()).catch(() => []),
                 fetch(`${API_BASE}/health/summary?period=${period}`, { headers }).then(r => r.json()).catch(() => null),
                 fetch(`${API_BASE}/feedback?limit=50`, { headers }).then(r => r.json()).catch(() => []),
-                fetch(`${API_BASE}/geo?period=${period}`, { headers }).then(r => r.json()).catch(() => [])
+                fetch(`${API_BASE}/geo?period=${period}`, { headers }).then(r => r.json()).catch(() => []),
+                fetch(`${API_BASE}/newsletter`, { headers }).then(r => r.json()).catch(() => null)
             ]);
 
             setHealthKPIs(health);
@@ -225,6 +250,7 @@ export default function ChatbotAnalyticsPage() {
             setHealthSummary(summary);
             setFeedbackReports(feedback);
             setGeoDistribution(geo);
+            setNewsletterStats(newsletter);
             setLastRefresh(new Date());
         } catch (error) {
             console.error("Failed to fetch analytics:", error);
@@ -447,7 +473,147 @@ export default function ChatbotAnalyticsPage() {
                     />
                 </section>
 
-                {/* 4. MAIN CONTENT GRID */}
+                {/* ============================================================ */}
+                {/* NEWSLETTER ANALYTICS (NEW PHASE 4) */}
+                {/* ============================================================ */}
+                {newsletterStats && (
+                    <section className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <Inbox className="w-6 h-6 text-[#3C50E0]" />
+                                Newsletter & Engagement
+                            </h2>
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className={newsletterStats.is_scheduler_running ? "flex items-center gap-1.5 text-[#10B981] font-medium" : "flex items-center gap-1.5 text-amber-500 font-medium"}>
+                                    <span className={`w-2 h-2 rounded-full ${newsletterStats.is_scheduler_running ? "bg-[#10B981] animate-pulse" : "bg-amber-500"}`}></span>
+                                    Scheduler: {newsletterStats.is_scheduler_running ? 'Active Dispatching' : 'Idle / Waiting'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-6">
+                            {/* Card 1: Subscriber Base */}
+                            <div className="premium-glass p-6 rounded-xl border border-slate-200 dark:border-[#2E3A47] hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-[#3C50E0]" />
+                                        Subscribers
+                                    </h3>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{newsletterStats.active_subscribers}</span>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-slate-500 dark:text-slate-400">Total Opt-ins</span>
+                                        <span className="font-medium text-slate-700 dark:text-slate-300">{newsletterStats.total_subscribers}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-slate-500 dark:text-slate-400">Unsubscribed</span>
+                                        <span className="font-medium text-red-500">{newsletterStats.unsubscribed_count}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-slate-500 dark:text-slate-400">Retention Rate</span>
+                                        <span className="font-medium text-[#10B981]">{newsletterStats.retention_rate.toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card 2: List Distribution */}
+                            <div className="premium-glass p-6 rounded-xl border border-slate-200 dark:border-[#2E3A47] hover:shadow-md transition-shadow">
+                                <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
+                                    <BarChart3 className="w-5 h-5 text-[#14B8A6]" />
+                                    Active Lists
+                                </h3>
+                                <div className="space-y-3">
+                                    {[
+                                        { label: 'Weekly Pulse', count: newsletterStats.weekly_pulse_count, color: 'bg-[#3C50E0]' },
+                                        { label: 'Monthly Deep Dive', count: newsletterStats.monthly_dive_count, color: 'bg-indigo-500' },
+                                        { label: 'Starta Academy', count: newsletterStats.academy_count, color: 'bg-purple-500' },
+                                        { label: 'Flash Alerts', count: newsletterStats.flash_alerts_count, color: 'bg-rose-500' },
+                                    ].map(list => (
+                                        <div key={list.label} className="flex items-center gap-3">
+                                            <div className={`w-2 h-2 rounded-full ${list.color}`} />
+                                            <span className="text-sm text-slate-600 dark:text-slate-300 flex-1">{list.label}</span>
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-white w-8 text-right">{list.count}</span>
+                                            <div className="w-16 h-1.5 flex-shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full ${list.color}`}
+                                                    style={{ width: `${(list.count / Math.max(newsletterStats.active_subscribers, 1)) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Card 3: Dispatch Health */}
+                            <div className="premium-glass p-6 rounded-xl border border-slate-200 dark:border-[#2E3A47] hover:shadow-md transition-shadow">
+                                <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
+                                    <Zap className="w-5 h-5 text-amber-500" />
+                                    Last Dispatch
+                                </h3>
+                                <div className="space-y-3">
+                                    {[
+                                        { label: 'Weekly', date: newsletterStats.last_weekly_sent },
+                                        { label: 'Monthly', date: newsletterStats.last_monthly_sent },
+                                        { label: 'Academy', date: newsletterStats.last_academy_sent },
+                                        { label: 'Flash', date: newsletterStats.last_flash_sent }
+                                    ].map(dispatch => (
+                                        <div key={dispatch.label} className="flex items-center justify-between text-sm">
+                                            <span className="text-slate-600 dark:text-slate-300">{dispatch.label}</span>
+                                            {dispatch.date ? (
+                                                <span className="font-medium text-slate-900 dark:text-white">
+                                                    {new Date(dispatch.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-400 dark:text-slate-500 italic">Never</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card 4: Academy Funnel */}
+                        <div className="premium-glass p-6 rounded-xl border border-slate-200 dark:border-[#2E3A47]">
+                            <div className="flex items-start justify-between mb-2">
+                                <div>
+                                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                        <TrendingUp className="w-5 h-5 text-[#10B981]" />
+                                        Starta Academy Journey
+                                    </h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                        Tracking active subscribers across the 8-part educational sequence.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-end gap-2 h-28 mt-4 pt-4 border-t border-slate-100 dark:border-[#2E3A47]">
+                                {newsletterStats.academy_funnel.map((step) => {
+                                    const maxCount = Math.max(...newsletterStats.academy_funnel.map(s => s.count), 1);
+                                    const relativeHeight = (step.count / maxCount) * 100;
+
+                                    return (
+                                        <div key={step.lesson} className="flex-1 flex flex-col items-center justify-end group">
+                                            <span className="text-xs font-semibold text-slate-900 dark:text-white mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {step.count}
+                                            </span>
+                                            <div className="w-full max-w-[40px] px-1 relative">
+                                                <div
+                                                    className={`w-full rounded-t-md transition-all duration-500 ${step.lesson === 0 ? 'bg-slate-300 dark:bg-slate-600' : 'bg-[#14B8A6] hover:bg-[#0D9488]'}`}
+                                                    style={{ height: `${Math.max(relativeHeight, 4)}px`, minHeight: '4px' }}
+                                                />
+                                            </div>
+                                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 mt-2">
+                                                {step.lesson === 0 ? 'Waiting' : `L${step.lesson}`}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
                 {/* 4. MAIN CONTENT GRID */}
                 <div className="grid lg:grid-cols-3 gap-8 relative z-10">
 

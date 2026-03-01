@@ -41,6 +41,7 @@ openpyxl
 yfinance>=0.2.50
 yahooquery>=2.3.0
 cachetools
+stripe
 
 # Optimized for Hetzner VPS (CPU Only)
 --extra-index-url https://download.pytorch.org/whl/cpu

@@ -587,24 +587,25 @@ export default function ChatbotAnalyticsPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-end gap-2 h-28 mt-4 pt-4 border-t border-slate-100 dark:border-[#2E3A47]">
+                            <div className="flex items-end justify-between h-48 mt-6 pt-6 border-t border-slate-100 dark:border-[#2E3A47] pb-2 px-2">
                                 {newsletterStats.academy_funnel.map((step) => {
                                     const maxCount = Math.max(...newsletterStats.academy_funnel.map(s => s.count), 1);
-                                    const relativeHeight = (step.count / maxCount) * 100;
+                                    // Make sure relative height is at least slightly visible when > 0, else 0.
+                                    const relativeHeight = step.count > 0 ? Math.max((step.count / maxCount) * 100, 5) : 0;
 
                                     return (
-                                        <div key={step.lesson} className="flex-1 flex flex-col items-center justify-end group">
+                                        <div key={step.lesson} className="flex flex-col items-center justify-end group h-full w-12">
                                             <span className="text-xs font-semibold text-slate-900 dark:text-white mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {step.count}
                                             </span>
-                                            <div className="w-full max-w-[40px] px-1 relative">
+                                            <div className="w-full h-full flex items-end justify-center relative">
                                                 <div
-                                                    className={`w-full rounded-t-md transition-all duration-500 ${step.lesson === 0 ? 'bg-slate-300 dark:bg-slate-600' : 'bg-[#14B8A6] hover:bg-[#0D9488]'}`}
-                                                    style={{ height: `${Math.max(relativeHeight, 4)}px`, minHeight: '4px' }}
+                                                    className={`w-full max-w-[40px] rounded-t-lg transition-all duration-500 shadow-sm ${step.lesson === 0 ? 'bg-slate-300 dark:bg-slate-600' : 'bg-[#14B8A6] hover:bg-[#0D9488]'}`}
+                                                    style={{ height: `${relativeHeight}%`, minHeight: step.count > 0 ? '4px' : '0' }}
                                                 />
                                             </div>
-                                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 mt-2">
-                                                {step.lesson === 0 ? 'Waiting' : `L${step.lesson}`}
+                                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 mt-3 whitespace-nowrap">
+                                                {step.lesson === 0 ? 'Wait' : `L${step.lesson}`}
                                             </span>
                                         </div>
                                     );

@@ -37,6 +37,8 @@ class User(BaseModel):
     phone: str | None = None
     role: str
     is_active: bool
+    subscription_status: str | None = None
+    subscription_plan: str | None = None
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -183,7 +185,9 @@ async def login_for_access_token(
             "email": user['email'],
             "full_name": user.get('full_name'),
             "phone": user.get('phone'),
-            "role": user['role']
+            "role": user['role'],
+            "subscription_status": user.get('subscription_status', 'none'),
+            "subscription_plan": user.get('subscription_plan'),
         }
     }
 
@@ -206,7 +210,9 @@ async def login_json(req: LoginRequest, response: Response):
             "id": user['id'],
             "email": user['email'],
             "full_name": user.get('full_name'),
-            "role": user['role']
+            "role": user['role'],
+            "subscription_status": user.get('subscription_status', 'none'),
+            "subscription_plan": user.get('subscription_plan')
         }
     }
 
@@ -287,7 +293,9 @@ async def refresh_access_token(
                 "id": user['id'],
                 "email": user['email'],
                 "full_name": user.get('full_name'),
-                "role": user['role']
+                "role": user['role'],
+                "subscription_status": user.get('subscription_status', 'none'),
+                "subscription_plan": user.get('subscription_plan')
             }
         }
     except JWTError:
@@ -320,7 +328,9 @@ async def bootstrap_refresh_session(
             "id": current_user['id'],
             "email": current_user['email'],
             "full_name": current_user.get('full_name'),
-            "role": current_user['role']
+            "role": current_user['role'],
+            "subscription_status": current_user.get('subscription_status', 'none'),
+            "subscription_plan": current_user.get('subscription_plan')
         }
     }
 
@@ -332,7 +342,9 @@ async def get_current_user_info(current_user: Annotated[dict, Depends(get_curren
         "full_name": current_user.get('full_name'),
         "phone": current_user.get('phone'),
         "role": current_user['role'],
-        "is_active": current_user['is_active']
+        "is_active": current_user['is_active'],
+        "subscription_status": current_user.get('subscription_status', 'none'),
+        "subscription_plan": current_user.get('subscription_plan')
     }
 
 @router.put("/me")

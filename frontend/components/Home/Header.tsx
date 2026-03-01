@@ -12,9 +12,9 @@ import { HamburgerMenu } from "./design/Header";
 import ThemeToggle from "../ThemeToggle";
 
 export const navigation = [
-    { id: "0", title: "Features", url: "#features" },
+    { id: "0", title: "Features", url: "#features", hidden: false },
     { id: "about", title: "About Us", url: "#about" },
-    { id: "1", title: "Pricing", url: "#pricing", hidden: true },
+    { id: "1", title: "Pricing", url: "#pricing" },
     { id: "2", title: "How use", url: "#how-to-use" },
     { id: "3", title: "Roadmap", url: "#roadmap" },
     { id: "4", title: "New account", url: "/register", onlyMobile: true },

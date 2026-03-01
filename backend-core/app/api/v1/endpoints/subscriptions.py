@@ -53,6 +53,7 @@ async def create_checkout_session(
             "mode": "subscription",
             "success_url": success_url,
             "cancel_url": cancel_url,
+            "allow_promotion_codes": True,
             "client_reference_id": str(current_user["id"]),
             "customer_email": current_user["email"] if not customer_id else None,
             "customer": customer_id if customer_id else None,

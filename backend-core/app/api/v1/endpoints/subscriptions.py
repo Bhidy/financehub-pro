@@ -32,7 +32,7 @@ async def create_checkout_session(
         
         # We need to construct the success and cancel URLs based on the origin
         origin = request.headers.get("origin") or "https://startamarkets.com"
-        success_url = f"{origin}/dashboard?session_id={{CHECKOUT_SESSION_ID}}&success=true"
+        success_url = f"{origin}/AiChat?session_id={{CHECKOUT_SESSION_ID}}&success=true"
         cancel_url = f"{origin}/?canceled=true"
 
         # Check if user already has a Stripe customer ID

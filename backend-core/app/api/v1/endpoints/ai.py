@@ -289,6 +289,18 @@ async def ai_chat_endpoint(
             # Get user context if authenticated
             user_id = access.get("user_email") if access.get("authenticated") else None
             
+            # SESSION CROSS-CONTAMINATION FIX
+            # If a user logged out and a new user logged in on the same browser, 
+            # the frontend localStorage might pass the old session_id.
+            if user_id:
+                existing_owner = await conn.fetchval("SELECT user_id FROM chat_sessions WHERE session_id = $1", session_id)
+                if existing_owner and existing_owner != user_id:
+                    print(f"[AI Chat] 🔄 Session ownership mismatch! {session_id} belongs to {existing_owner}, overriding for {user_id}")
+                    import random
+                    import string
+                    rnd_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+                    session_id = f"sess_{int(time.time()*1000)}_{rnd_suffix}"
+
             # Ensure session exists for both authenticated and guest users.
             # This keeps continuity metadata available even if requests hit another worker.
             await conn.execute("""

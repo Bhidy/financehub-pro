@@ -187,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem(USER_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem('user_avatar_url');
+        localStorage.removeItem("fh_chat_session"); // Prevent session cross-contamination
         setUser(null);
     }, []);
 

@@ -188,6 +188,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
         clearHistory,
         loadSession,
         sessionId,
+        historyRefreshTrigger
     } = useAIChat(chatConfig);
 
     // Handle session selection wrapper to ensure state updates
@@ -347,6 +348,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                     onLogout={logout}
                     onSettings={() => router.push(getRoute('setting'))}
                     lang={lang}
+                    refreshTrigger={historyRefreshTrigger}
                 />
 
                 {/* ================================================================
@@ -632,6 +634,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                 onSelectSession={loadSession}
                 onNewChat={clearHistory}
                 currentSessionId={sessionId}
+                refreshTrigger={historyRefreshTrigger}
             />
 
             {/* Usage Limit Modal */}

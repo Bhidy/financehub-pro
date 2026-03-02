@@ -2269,7 +2269,10 @@ class ChatService:
             # STRATEGY 1: Same Sector, Market Cap Neighbors
             # We want peers that are similar in size OR larger leaders
             if sector_valid:
-                # Get top peers in sector by Market Cap
+                # Get peers in same sector ranked by CLOSEST market cap (most comparable).
+                # Previously used ORDER BY market_cap DESC which always picked the sector
+                # giant (e.g., EAST at 121B) even when the stock is much smaller (JUFO at 31B).
+                # Now uses ABS(market_cap - $4) to find true peers of similar size.
                 rows = await self.conn.fetch(
                     """
                     SELECT symbol
@@ -2278,12 +2281,14 @@ class ChatService:
                       AND market_code = 'EGX'
                       AND sector_name = $2::text
                       AND UPPER(COALESCE(sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
-                    ORDER BY market_cap DESC NULLS LAST
+                      AND market_cap IS NOT NULL AND market_cap > 0
+                    ORDER BY ABS(market_cap - $4) ASC NULLS LAST
                     LIMIT $3
                     """,
                     primary_symbol,
                     sector,
-                    limit + 2  # Fetch extra to filter
+                    limit + 2,  # Fetch extra to filter
+                    primary_mcap or 0
                 )
                 peers = [r["symbol"] for r in rows if r.get("symbol")]
 

@@ -59,6 +59,7 @@ interface DesktopSidebarProps {
     onSettings: () => void;
     onLogout: () => void;
     lang?: 'en' | 'ar';
+    refreshTrigger?: number;
 }
 
 export const DesktopSidebar = memo(function DesktopSidebar({
@@ -72,7 +73,8 @@ export const DesktopSidebar = memo(function DesktopSidebar({
     onLogin,
     onSettings,
     onLogout,
-    lang = 'en'
+    lang = 'en',
+    refreshTrigger = 0
 }: DesktopSidebarProps) {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -120,7 +122,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
         }
 
         return () => { isMounted = false; };
-    }, [isAuthenticated]);
+    }, [isAuthenticated, refreshTrigger]);
 
     // Handlers
     const handleRename = async (sessionId: string) => {

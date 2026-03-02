@@ -21,6 +21,7 @@ interface HistoryDrawerProps {
     onSelectSession: (sessionId: string) => void;
     onNewChat: () => void;
     currentSessionId: string | null;
+    refreshTrigger?: number;
 }
 
 export function HistoryDrawer({
@@ -28,7 +29,8 @@ export function HistoryDrawer({
     onClose,
     onSelectSession,
     onNewChat,
-    currentSessionId
+    currentSessionId,
+    refreshTrigger = 0
 }: HistoryDrawerProps) {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -47,10 +49,10 @@ export function HistoryDrawer({
     // ... existing refs
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen || refreshTrigger > 0) {
             loadHistory();
         }
-    }, [isOpen]);
+    }, [isOpen, refreshTrigger]);
 
     // Close menu when clicking outside
     useEffect(() => {

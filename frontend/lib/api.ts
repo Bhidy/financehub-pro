@@ -54,6 +54,7 @@ const clearAuthStorage = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem("fh_chat_session"); // Prevent session cross-contamination
 };
 
 const redirectToLogin = () => {

@@ -117,6 +117,54 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
     ),
 
     # =========================================================================
+    # FINANCIAL-SERVICES-PLUGINS ADDITIONS (from equity-research plugin patterns)
+    # =========================================================================
+
+    Intent.EARNINGS_ANALYSIS: (
+        # English: Earnings results, beat/miss analysis, quarterly reports
+        ["quarterly results", "earnings results", "q1 results", "q2 results", "q3 results", "q4 results",
+         "annual results", "earnings beat", "earnings miss", "beat estimates", "miss estimates",
+         "earnings surprise", "reported earnings", "earnings season", "results announced",
+         "quarterly earnings", "earnings report", "how did company do", "earnings analysis",
+         "beat expectations", "miss expectations", "above consensus", "below consensus"],
+        # Arabic: نتائج ربعية، اعلانات ارباح
+        ["نتائج ربعية", "نتائج الربع", "ارباح ربعية", "اعلان النتائج", "تجاوز التوقعات",
+         "نتائج سنوية", "اقل من التوقعات", "تحت التوقعات", "اعلى من المتوقع",
+         "كيف كانت النتائج", "ما هي النتائج", "موسم الارباح", "اعلن عن نتائج",
+         "نتائج مالية", "النتائج الفصلية", "ارباح فوق التوقعات", "ارباح دون التوقعات"],
+        2.5
+    ),
+
+    Intent.MORNING_BRIEF: (
+        # English: Daily market briefs, pre-session analysis, market recap
+        ["morning brief", "morning note", "market brief", "daily brief", "market recap",
+         "today's market", "pre-market", "before trading", "market open", "what happened in market",
+         "market update", "daily market summary", "egx today", "market overview today",
+         "what to watch today", "prepare for trading", "market summary today"],
+        # Arabic: موجز الصباح، ملخص السوق
+        ["موجز الصباح", "تقرير الصباح", "ملخص السوق", "ماذا حدث بالبورصة", "السوق اليوم",
+         "تقرير يومي", "نشرة يومية", "السوق قبل الفتح", "البورصة اليوم", "ملخص التداول",
+         "اخبار البورصة اليوم", "قبل التداول", "تحليل اليوم"],
+        2.5
+    ),
+
+    Intent.CATALYST_CALENDAR: (
+        # English: Upcoming catalysts, events, dividend dates, results calendar
+        ["upcoming catalyst", "next catalyst", "catalyst calendar", "upcoming event",
+         "what to watch", "results calendar", "earnings calendar", "dividend date",
+         "ex-dividend date", "next results", "upcoming results", "important dates",
+         "upcoming announcements", "company events", "market events", "watchlist events"],
+        # Arabic: المحفزات القادمة، مواعيد الاعلان
+        ["المحفزات القادمة", "المواعيد القادمة", "محفزات السهم", "ما الذي نترقبه",
+         "موعد الاعلان", "موعد التوزيع", "متى يعلنون", "المحفز القادم",
+         "اهم الاحداث القادمة", "جدول الاعلانات"],
+        2.0
+    ),
+
+
+    # =========================================================================
+
+    # =========================================================================
     # SECTOR C: TECHNICAL STRATEGY (75+ Intents)
     # =========================================================================
 

@@ -4110,8 +4110,53 @@ class ChatService:
                     suggestions=pending_suggestions
                 )
                 print(f"[ChatService] 🧠 Updated conversation memory for session {session_id[:8]}...")
+
+                # ── Recommendation B: Thesis Persistence ──────────────────
+                # If user says "track this thesis" / "تابع هذه الأطروحة",
+                # store the current analysis signals in the session context
+                # so they're surfaced on the next message about the same stock.
+                thesis_trigger_en = re.search(
+                    r'\btrack\s+(this\s+)?thesis\b', str(message), re.IGNORECASE
+                )
+                thesis_trigger_ar = re.search(
+                    r'(تابع|اتابع|تتبع)\s+(هذه?\s+)?الأطروحة', str(message)
+                )
+                if (thesis_trigger_en or thesis_trigger_ar) and actual_symbol:
+                    try:
+                        # Extract thesis_tracker signals from handler result if available
+                        raw_cards = result_data.get("cards", [])
+                        thesis_signals = []
+                        for card in raw_cards:
+                            if isinstance(card, dict):
+                                card_data = card.get("data", {})
+                                if isinstance(card_data, dict):
+                                    tracker = card_data.get("thesis_tracker", [])
+                                    if tracker:
+                                        thesis_signals = tracker
+                                        break
+
+                        if thesis_signals or actual_symbol:
+                            from datetime import datetime as _dt, timedelta
+                            _now = _dt.utcnow()
+                            new_thesis = {
+                                "symbol": actual_symbol,
+                                "thesis_text": str(message)[:200],
+                                "milestones": thesis_signals,
+                                "added_at": _now.isoformat(),
+                                "expires_at": (_now + timedelta(days=90)).isoformat(),
+                            }
+                            # Append to context (via context_assembler memory if available)
+                            context_assembler.update_thesis(
+                                session_id=session_id,
+                                thesis=new_thesis
+                            ) if hasattr(context_assembler, "update_thesis") else None
+                            print(f"[ChatService] 📌 Thesis tracked for {actual_symbol} session {session_id[:8]}")
+                    except Exception as thesis_err:
+                        print(f"[ChatService] Thesis tracking error (non-fatal): {thesis_err}")
+
             except Exception as ctx_err:
                 print(f"[ChatService] ⚠️ Context update error (non-fatal): {ctx_err}")
+
             
             # ═══════════════════════════════════════════════════════════════
             # 11. GENERATE DYNAMIC FOLLOW-UPS WITH AI
@@ -4737,8 +4782,34 @@ class ChatService:
                  return handle_clarify_symbol(language=language)
              return await handle_score_breakdown(self.conn, symbol, market_code or 'EGX', language)
 
+        # ===== FINANCIAL-SERVICES-PLUGINS: NEW INSTITUTIONAL INTENTS =====
+
+        elif intent == Intent.EARNINGS_ANALYSIS:
+            # Institutional earnings analysis: beat/miss, YoY, thesis tracker
+            from .handlers.earnings_handler import handle_earnings_analysis
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            period = entities.get('period', 'annual')
+            return await handle_earnings_analysis(self.conn, symbol, language, period)
+
+        elif intent == Intent.MORNING_BRIEF:
+            # Daily EGX pre-session market brief: movers, breadth, sectors
+            from .handlers.morning_brief_handler import handle_morning_brief
+            return await handle_morning_brief(self.conn, market_code or 'EGX', language)
+
+        elif intent == Intent.CATALYST_CALENDAR:
+            # Upcoming catalysts: corporate events + macro catalysts
+            from .handlers.catalyst_handler import handle_catalyst_calendar
+            return await handle_catalyst_calendar(
+                self.conn,
+                symbol=symbol,         # Optional: stock-specific or market-wide
+                market_code=market_code or 'EGX',
+                language=language
+            )
+
         else:
             return handle_unknown(language)
+
     
     def _build_response(
         self,

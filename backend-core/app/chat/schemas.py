@@ -115,6 +115,11 @@ class Intent(str, Enum):
     UNKNOWN = "UNKNOWN"
     BLOCKED = "BLOCKED"
 
+    # ===== FINANCIAL-SERVICES-PLUGINS ADDITIONS (equity-research patterns) =====
+    EARNINGS_ANALYSIS = "EARNINGS_ANALYSIS"       # Quarterly results, beat/miss analysis
+    MORNING_BRIEF = "MORNING_BRIEF"               # Daily market recap/pre-session brief
+    CATALYST_CALENDAR = "CATALYST_CALENDAR"       # Upcoming events, dividends, results dates
+
 
 class CardType(str, Enum):
     """Types of UI cards."""
@@ -615,3 +620,30 @@ class ConversationContext(BaseModel):
     # Follow-up Tracking
     last_followup_type: Optional[str] = None  # confirmation|expansion|topic_shift|pronoun
     is_in_followup_chain: bool = False  # Track multi-turn follow-up sequences
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # RECOMMENDATION B: Thesis Persistence (financial-services-plugins)
+    # ═══════════════════════════════════════════════════════════════════
+    #
+    # Stores active investment theses so the bot can check milestone
+    # status across turns in the same session.
+    #
+    # Schema per thesis:
+    # {
+    #   "symbol":       "COMI",
+    #   "thesis_text":  "Buy on CBE rate cuts + loan growth >15%",
+    #   "milestones": [
+    #       {"label": "CBE Rate Cut", "status": "PENDING"},
+    #       {"label": "Loan Growth >15%", "status": "CONFIRMED"},
+    #       {"label": "NPL < 3%", "status": "PENDING"},
+    #   ],
+    #   "added_at":   "2026-03-03T00:38:00",
+    #   "expires_at": "2026-06-03T00:00:00",  # 90-day TTL
+    # }
+    #
+    # Activation: User says "track this thesis" / "تابع هذه الأطروحة"
+    # Check:      When user asks about tracked symbol, bot surfaces thesis status
+    tracked_thesis: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Active investment theses tracked across session turns"
+    )

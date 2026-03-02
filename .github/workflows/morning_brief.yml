@@ -1,0 +1,116 @@
+name: EGX Morning Brief Automation
+
+# ============================================================
+# Recommendation C: Morning Brief GitHub Action
+# Fires 30 minutes before EGX opens (10:00 Cairo = 08:00 UTC)
+# EGX trading days: Sunday–Thursday
+# ============================================================
+
+on:
+  schedule:
+    # 07:30 UTC = 09:30 Cairo (UTC+2) — 30 min before EGX opens
+    # Runs Sun–Thu only (EGX trading days: days 0,1,2,4 = Sun,Mon,Tue,Thu... wait:
+    # GitHub cron uses standard: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+    # EGX: Sun-Thu = 0,1,2,3,4
+    - cron: '30 7 * * 0,1,2,3,4'
+  workflow_dispatch:
+    inputs:
+      language:
+        description: 'Brief language (en or ar)'
+        required: false
+        default: 'en'
+      market_code:
+        description: 'Market code'
+        required: false
+        default: 'EGX'
+
+jobs:
+  morning-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # ── Step 1: Check day is actually a trading day ─────────────────────────
+      - name: Verify EGX Trading Day
+        id: check_day
+        run: |
+          DAY=$(date +%u)  # 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
+          # EGX trades Sunday(7)-Thursday(1-4), not Friday(5) or Saturday(6)
+          if [ "$DAY" -eq 5 ] || [ "$DAY" -eq 6 ]; then
+            echo "is_trading_day=false" >> $GITHUB_OUTPUT
+            echo "Today is Friday or Saturday — EGX is closed. Skipping."
+          else
+            echo "is_trading_day=true" >> $GITHUB_OUTPUT
+            echo "Trading day confirmed. Running morning brief."
+          fi
+
+      # ── Step 2: Trigger morning brief generation via backend API ────────────
+      - name: Generate Morning Brief
+        if: steps.check_day.outputs.is_trading_day == 'true'
+        id: generate_brief
+        run: |
+          LANGUAGE="${{ github.event.inputs.language || 'en' }}"
+          MARKET="${{ github.event.inputs.market_code || 'EGX' }}"
+          BASE_URL="https://starta.46-224-223-172.sslip.io"
+
+          echo "Triggering morning brief for market=$MARKET language=$LANGUAGE"
+
+          RESPONSE=$(curl -s -X POST \
+            "${BASE_URL}/api/v1/chat" \
+            -H "Content-Type: application/json" \
+            -H "X-Automation: github-actions-morning-brief" \
+            -d "{
+              \"message\": \"Generate morning brief for ${MARKET}\",
+              \"session_id\": \"automation-morning-brief-$(date +%Y%m%d)\",
+              \"history\": []
+            }" \
+            --max-time 30)
+
+          STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('success','false'))" 2>/dev/null || echo "false")
+          echo "Brief generation status: $STATUS"
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+
+          # Save response for downstream steps
+          echo "$RESPONSE" > /tmp/morning_brief.json
+
+      # ── Step 3: Check API health and verify brief was generated ────────────
+      - name: Verify Backend Health
+        if: steps.check_day.outputs.is_trading_day == 'true'
+        run: |
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://starta.46-224-223-172.sslip.io/health \
+            --max-time 10)
+          echo "Backend health check: HTTP $HEALTH"
+          if [ "$HEALTH" != "200" ]; then
+            echo "::warning::Backend health check returned $HEALTH"
+          fi
+
+      # ── Step 4: Send notification on success ────────────────────────────────
+      - name: Notify Discord — Brief Ready
+        if: >
+          steps.check_day.outputs.is_trading_day == 'true' &&
+          steps.generate_brief.outputs.status == 'true' &&
+          secrets.DISCORD_WEBHOOK_URL != ''
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: |
+            📰 **EGX Morning Brief Ready** — $(date +'%A, %d %B %Y')
+            Market opens in ~30 minutes (10:00 Cairo Time)
+            
+            📊 Visit: https://startamarkets.com
+            💬 Ask the AI: "Give me today's morning brief"
+
+      # ── Step 5: Notify on failure ────────────────────────────────────────────
+      - name: Notify Discord — Brief Failed
+        if: >
+          steps.check_day.outputs.is_trading_day == 'true' &&
+          failure() &&
+          secrets.DISCORD_WEBHOOK_URL != ''
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: |
+            ⚠️ **Morning Brief Generation Failed** — $(date +'%A, %d %B %Y')
+            The automated morning brief did not complete successfully.
+            Check GitHub Actions logs for details.

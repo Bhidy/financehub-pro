@@ -46,16 +46,16 @@ async def handle_catalyst_calendar(
 
         # Corporate actions (dividends, bonuses)
         corp_actions = await conn.fetch("""
-            SELECT action_type, action_date, amount, currency, ex_date, record_date, description
+            SELECT action_type, ex_date, amount, ex_date, record_date, description
             FROM corporate_actions
             WHERE symbol = $1
-            ORDER BY action_date DESC
+            ORDER BY ex_date DESC
             LIMIT 10
         """, symbol)
 
         for ca in corp_actions:
             action_type = str(ca["action_type"] or "").lower()
-            action_date = ca["action_date"]
+            action_date = ca["ex_date"]
             amount = float(ca["amount"]) if ca["amount"] else None
             
             event_type_en = "Dividend" if "dividend" in action_type or "cash" in action_type else action_type.title()
@@ -68,28 +68,23 @@ async def handle_catalyst_calendar(
                 "date": str(action_date) if action_date else "TBD",
                 "ex_date": str(ca["ex_date"]) if ca.get("ex_date") else None,
                 "record_date": str(ca["record_date"]) if ca.get("record_date") else None,
-                "amount": f"{amount:,.2f} {ca['currency'] or 'EGP'}" if amount else None,
+                "amount": f"{amount:,.2f} EGP" if amount else None,
                 "description": ca["description"],
                 "icon": "💰" if "dividend" in action_type else "📋",
             })
 
-        # Dividends from statistics (TTM)
-        stats = await conn.fetchrow("""
-            SELECT dividend_yield, ttm_dividend, payout_ratio
-            FROM stock_statistics
-            WHERE symbol = $1
-        """, symbol)
+
 
     # ── 2. Market-wide upcoming events ───────────────────────────────────────
     else:
         # Pull upcoming corporate actions across all market stocks (next 60 days)
         upcoming = await conn.fetch("""
-            SELECT ca.symbol, ca.action_type, ca.action_date, ca.amount, ca.currency, ca.ex_date,
+            SELECT ca.symbol, ca.action_type, ca.ex_date, ca.amount, ca.ex_date,
                    mt.name_en, mt.name_ar, mt.sector_name
             FROM corporate_actions ca
             JOIN market_tickers mt ON ca.symbol = mt.symbol AND mt.market_code = $1
-            WHERE ca.action_date >= CURRENT_DATE
-            ORDER BY ca.action_date ASC
+            WHERE ca.ex_date >= CURRENT_DATE
+            ORDER BY ca.ex_date ASC
             LIMIT 20
         """, market_code)
 
@@ -98,7 +93,7 @@ async def handle_catalyst_calendar(
             en_name = ca["name_en"] or ca["symbol"]
             ar_name = ca["name_ar"] or ca["symbol"]
             company_name = ar_name if language == "ar" else en_name
-            action_date = ca["action_date"]
+            action_date = ca["ex_date"]
             amount = float(ca["amount"]) if ca["amount"] else None
 
             events.append({
@@ -108,7 +103,7 @@ async def handle_catalyst_calendar(
                 "sector": ca["sector_name"],
                 "date": str(action_date) if action_date else "TBD",
                 "ex_date": str(ca["ex_date"]) if ca.get("ex_date") else None,
-                "amount": f"{amount:,.2f} {ca['currency'] or 'EGP'}" if amount else None,
+                "amount": f"{amount:,.2f} EGP" if amount else None,
                 "icon": "💰" if "dividend" in action_type else "📋",
             })
 

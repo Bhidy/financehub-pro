@@ -410,6 +410,7 @@ export function useAIChat(config?: {
     const [isHistoryLoading, setIsHistoryLoading] = useState(false);
     const [usageLimitReached, setUsageLimitReached] = useState(false);
     const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
+    const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
     const hasArabicChars = (text?: string) => /[\u0600-\u06FF]/.test(text || "");
 
     // Initialize device fingerprint and session on mount (RUNS ONCE)
@@ -512,6 +513,9 @@ export function useAIChat(config?: {
                 sessionIdRef.current = newSessionId;
                 localStorage.setItem("fh_chat_session", newSessionId);
             }
+
+            // Signal sidebars to refresh chat history
+            setHistoryRefreshTrigger(prev => prev + 1);
 
             // Client-side filter: Remove "Technical" actions as per user request
             if (safeData.actions) {
@@ -669,6 +673,7 @@ export function useAIChat(config?: {
         clearHistory, // Acts as "New Chat"
         sessionId,
         loadSession, // Exported!
-        usageLimitReached  // Exposed for external monitoring
+        usageLimitReached,  // Exposed for external monitoring
+        historyRefreshTrigger // Signals to sync UI
     };
 }

@@ -197,14 +197,17 @@ async def handle_compare_stocks(
                 first_cap or 0)
 
             first_canonical = _canonical_symbol(first_symbol)
-            peer_symbol = None
+            # Find up to 2 peers for 3-stock comparison
+            peer_symbols = []
             for row in peer_rows:
                 candidate = row['symbol']
-                if _canonical_symbol(candidate) != first_canonical:
-                    peer_symbol = candidate
-                    break
+                cand_canonical = _canonical_symbol(candidate)
+                if cand_canonical != first_canonical and cand_canonical not in {_canonical_symbol(p) for p in peer_symbols}:
+                    peer_symbols.append(candidate)
+                    if len(peer_symbols) >= 2:
+                        break
 
-            if not peer_symbol:
+            if not peer_symbols:
                 # Fallback: just pick largest by cap
                 fallback_rows = await conn.fetch("""
                     SELECT symbol FROM market_tickers 
@@ -212,12 +215,14 @@ async def handle_compare_stocks(
                     ORDER BY market_cap DESC NULLS LAST LIMIT 15
                 """, sector_row['sector_name'], first_symbol, sector_row['market_code'])
                 for fr in fallback_rows:
-                    if _canonical_symbol(fr['symbol']) != first_canonical:
-                        peer_symbol = fr['symbol']
-                        break
+                    fr_canonical = _canonical_symbol(fr['symbol'])
+                    if fr_canonical != first_canonical and fr_canonical not in {_canonical_symbol(p) for p in peer_symbols}:
+                        peer_symbols.append(fr['symbol'])
+                        if len(peer_symbols) >= 2:
+                            break
 
-            if peer_symbol:
-                symbols.append(peer_symbol)
+            if peer_symbols:
+                symbols.extend(peer_symbols)
             else:
                  return {
                     'success': False,
@@ -231,7 +236,7 @@ async def handle_compare_stocks(
                 'message': f"Could not find stock {first_symbol}" if language == 'en' else f"لم يتم العثور على السهم {first_symbol}"
             }
 
-    symbols = symbols[:2]
+    symbols = symbols[:3]  # Support up to 3-stock comparison
     
     # 1. Fetch Fundamental Data (Smart Metrics)
     stocks_data = []
@@ -591,12 +596,19 @@ async def handle_compare_stocks(
             # - Percentage metrics: require ≥30% relative difference
             # - Other metrics: require minimum absolute difference
             direction = m.get('direction')
-            if direction and len(stocks_data) == 2:
-                val1 = values[0]
-                val2 = values[1]
-                winner_idx = _declare_winner(val1, val2, direction, key)
-                if winner_idx != -1:
-                    m['winner_symbol'] = stocks_data[winner_idx]['symbol']
+            if direction and len(stocks_data) >= 2:
+                # Generalized winner logic for N stocks
+                if direction == 'max':
+                    best_idx = max(range(len(values)), key=lambda i: values[i] if values[i] is not None else float('-inf'))
+                else:  # min
+                    best_idx = min(range(len(values)), key=lambda i: values[i] if values[i] is not None else float('inf'))
+                # Only declare winner if meaningfully different from others
+                best_val = values[best_idx]
+                others = [v for j, v in enumerate(values) if j != best_idx and v is not None]
+                if others and best_val is not None:
+                    avg_others = sum(others) / len(others)
+                    if avg_others != 0 and abs(best_val - avg_others) / abs(avg_others) >= 0.15:
+                        m['winner_symbol'] = stocks_data[best_idx]['symbol']
             
             chosen_metrics.append(m)
             
@@ -610,9 +622,14 @@ async def handle_compare_stocks(
         if cat in final_metrics_map:
             flat_metrics.extend(final_metrics_map[cat])
 
-    message = f"Here is the comparison between {stocks_data[0]['name']} and {stocks_data[1]['name']}"
+    stock_names = [s['name'] for s in stocks_data]
     if language == 'ar':
-        message = f"مقارنة شاملة بين {stocks_data[0]['name']} و {stocks_data[1]['name']}"
+        message = f"مقارنة شاملة بين {' و '.join(stock_names)}"
+    else:
+        if len(stock_names) == 2:
+            message = f"Here is the comparison between {stock_names[0]} and {stock_names[1]}"
+        else:
+            message = f"Here is the comparison between {', '.join(stock_names[:-1])}, and {stock_names[-1]}"
 
     # ========================================================================
     # NEW: Generate CharacterCards (Stock Personalities)
@@ -621,7 +638,7 @@ async def handle_compare_stocks(
     character_cards = []
     
     for i, stock in enumerate(stocks_data):
-        other = stocks_data[1 - i]  # The other stock for comparison
+        others = [s for j, s in enumerate(stocks_data) if j != i]  # All other stocks
         
         # Determine personality based on data
         profile_emoji = "📊"
@@ -631,8 +648,9 @@ async def handle_compare_stocks(
         bad_points = []
         
         # Market Cap comparison
-        if stock.get('market_cap') and other.get('market_cap'):
-            if stock['market_cap'] > other['market_cap'] * 2:
+        avg_other_cap = sum(o.get('market_cap', 0) or 0 for o in others) / max(len(others), 1)
+        if stock.get('market_cap') and avg_other_cap > 0:
+            if stock['market_cap'] > avg_other_cap * 2:
                 profile_emoji = "🏋️"
                 nickname = "القائد السوقي" if language == 'ar' else "Market Leader"
                 profile_text = (
@@ -640,7 +658,7 @@ async def handle_compare_stocks(
                     else f"Dominant Scale. Market cap {stock['market_cap'] / 1e9:.1f}B."
                 )
                 good_points.append("مزايا الحجم والقيادة" if language == 'ar' else "Scale leadership advantages")
-            elif stock['market_cap'] < other['market_cap'] / 2:
+            elif stock['market_cap'] < avg_other_cap / 2:
                 profile_emoji = "🌱"
                 nickname = "المنافس الصاعد" if language == 'ar' else "Emerging Challenger"
                 profile_text = (
@@ -653,9 +671,12 @@ async def handle_compare_stocks(
         # Valuation positioning
         # Issue 5 Fix: Only make qualitative PE statement if difference is meaningful
         # (at least 3x P/E points, or 30%+ relative). Avoids "Cheaper at 14x" vs "Pricier at 15x".
-        if stock.get('pe_ratio') and other.get('pe_ratio'):
-            pe_winner = _declare_winner(stock['pe_ratio'], other['pe_ratio'], 'min', 'pe_ratio')
-            if pe_winner == 0:  # This stock has clearly lower (better) P/E
+        other_pes = [o.get('pe_ratio') for o in others if o.get('pe_ratio')]
+        if stock.get('pe_ratio') and other_pes:
+            avg_other_pe = sum(other_pes) / len(other_pes)
+            has_lowest_pe = all(stock['pe_ratio'] < ope for ope in other_pes if ope)
+            has_highest_pe = all(stock['pe_ratio'] > ope for ope in other_pes if ope)
+            if has_lowest_pe and avg_other_pe > 0 and abs(stock['pe_ratio'] - avg_other_pe) / avg_other_pe >= 0.15:
                 if not nickname or nickname == stock['symbol']:
                     profile_emoji = "💰"
                     nickname = "فرصة قيمة" if language == 'ar' else "Value Opportunity"
@@ -665,39 +686,37 @@ async def handle_compare_stocks(
                     )
                 good_points.append(
                     f"أرخص عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
-                    else f"Cheaper valuation at {stock['pe_ratio']:.1f}x P/E"
+                    else f"Cheapest valuation at {stock['pe_ratio']:.1f}x P/E"
                 )
-            elif pe_winner == 1:  # Other stock has clearly lower P/E
+            elif has_highest_pe and avg_other_pe > 0 and abs(stock['pe_ratio'] - avg_other_pe) / avg_other_pe >= 0.15:
                 bad_points.append(
                     f"أغلى عند مكرر ربحية {stock['pe_ratio']:.1f}x" if language == 'ar'
-                    else f"Higher multiple at {stock['pe_ratio']:.1f}x P/E"
+                    else f"Highest multiple at {stock['pe_ratio']:.1f}x P/E"
                 )
-            # pe_winner == -1: too close to call, no PE comment added
         
         # Profitability
         # Issue 4 Fix: Only mention if margin difference is meaningful (30% relative)
-        margin_winner = -1
         margin_label = 'profit_margin'
-        if stock.get('profit_margin') and other.get('profit_margin'):
-            margin_winner = _declare_winner(
-                stock['profit_margin'], other['profit_margin'], 'max', 'profit_margin')
-        # Fallback: check gross_margin if profit_margin didn't produce a winner
-        if margin_winner == -1 and stock.get('gross_margin') and other.get('gross_margin'):
-            margin_winner = _declare_winner(
-                stock['gross_margin'], other['gross_margin'], 'max', 'gross_margin')
+        my_margin = stock.get('profit_margin')
+        other_margins = [o.get('profit_margin') for o in others if o.get('profit_margin') is not None]
+        if my_margin is None or not other_margins:
+            my_margin = stock.get('gross_margin')
+            other_margins = [o.get('gross_margin') for o in others if o.get('gross_margin') is not None]
             margin_label = 'gross_margin'
-        if margin_winner == 0:
-            margin_val = stock.get(margin_label, 0)
-            good_points.append(
-                f"هوامش ربح أعلى ({margin_val:.1f}%)" if language == 'ar'
-                else f"Stronger margins ({margin_val:.1f}%)"
-            )
-        elif margin_winner == 1:
-            margin_val = stock.get(margin_label, 0)
-            bad_points.append(
-                f"هوامش ربح أقل ({margin_val:.1f}%)" if language == 'ar'
-                else f"Lower margins ({margin_val:.1f}%)"
-            )
+        if my_margin is not None and other_margins:
+            avg_other_margin = sum(other_margins) / len(other_margins)
+            has_best = all(my_margin > om for om in other_margins)
+            has_worst = all(my_margin < om for om in other_margins)
+            if has_best and avg_other_margin != 0 and abs(my_margin - avg_other_margin) / abs(avg_other_margin) >= 0.15:
+                good_points.append(
+                    f"هوامش ربح أعلى ({my_margin:.1f}%)" if language == 'ar'
+                    else f"Strongest margins ({my_margin:.1f}%)"
+                )
+            elif has_worst and avg_other_margin != 0 and abs(my_margin - avg_other_margin) / abs(avg_other_margin) >= 0.15:
+                bad_points.append(
+                    f"هوامش ربح أقل ({my_margin:.1f}%)" if language == 'ar'
+                    else f"Weakest margins ({my_margin:.1f}%)"
+                )
         
         # Growth
         if stock.get('revenue_growth'):
@@ -801,102 +820,173 @@ async def handle_compare_stocks(
         'framework_card': framework_card,
         # NEW: Character Cards for stock personalities
         'character_cards': character_cards,
+        # === RADAR CHART DATA (Ultra-Premium Visual Comparison) ===
+        'compare_radar': _build_radar_chart_data(stocks_data, language),
         'insight_cards': [
             {
                 'variant': 'info',
                 'title': '🧠 Comparison Snapshot' if language == 'en' else '🧠 خلاصة المقارنة',
                 'items': [
                     (
-                        f"{stocks_data[0]['symbol']} vs {stocks_data[1]['symbol']}: review valuation, profitability, growth, and risk together."
+                        f"{' vs '.join(s['symbol'] for s in stocks_data)}: review valuation, profitability, growth, and risk together."
                         if language == 'en'
-                        else f"مقارنة {stocks_data[0]['symbol']} مع {stocks_data[1]['symbol']} يجب أن تجمع بين التقييم والربحية والنمو والمخاطر."
+                        else f"مقارنة {' مع '.join(s['symbol'] for s in stocks_data)} يجب أن تجمع بين التقييم والربحية والنمو والمخاطر."
                     )
                 ]
             }
         ],
         'disclaimer_card': disclaimer_card,
-        'learning_section': {
-            'title': 'ANALYSIS INSIGHTS' if language == 'en' else 'تحليل الخبراء',
-            'items': [
-                # Issue 5 Fix: Use materiality-aware winner logic in learning section
-                (
-                    "**Profitability:** " + (
-                        f"{stocks_data[0]['symbol']} leads with meaningfully stronger margins"
-                        if _declare_winner(
-                            stocks_data[0].get('profit_margin') or 0,
-                            stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 0
-                        else (
-                            f"{stocks_data[1]['symbol']} leads with meaningfully stronger margins"
-                            if _declare_winner(
-                                stocks_data[0].get('profit_margin') or 0,
-                                stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 1
-                            else "Both stocks show comparable profit margins — review operating efficiency."
-                        )
-                    )
-                ) if language == 'en' else (
-                    "**الربحية:** " + (
-                        f"{stocks_data[0]['symbol']} يتفوق بهوامش ربح أعلى بشكل واضح"
-                        if _declare_winner(
-                            stocks_data[0].get('profit_margin') or 0,
-                            stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 0
-                        else (
-                            f"{stocks_data[1]['symbol']} يتفوق بهوامش ربح أعلى بشكل واضح"
-                            if _declare_winner(
-                                stocks_data[0].get('profit_margin') or 0,
-                                stocks_data[1].get('profit_margin') or 0, 'max', 'profit_margin') == 1
-                            else "كلا السهمين لديهما هوامش متقاربة — راجع الكفاءة التشغيلية."
-                        )
-                    )
-                ),
-                (
-                    "**Valuation:** " + (
-                        f"{stocks_data[0]['symbol']} is trading at a clear discount (Lower P/E)"
-                        if _declare_winner(
-                            stocks_data[0].get('pe_ratio') or 999,
-                            stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 0
-                        else (
-                            f"{stocks_data[1]['symbol']} is trading at a clear discount (Lower P/E)"
-                            if _declare_winner(
-                                stocks_data[0].get('pe_ratio') or 999,
-                                stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 1
-                            else "Both stocks are similarly priced on a P/E basis."
-                        )
-                    )
-                ) if language == 'en' else (
-                    "**التقييم:** " + (
-                        f"{stocks_data[0]['symbol']} يتداول بخصم سعري واضح (مضاعف ربحية أقل)"
-                        if _declare_winner(
-                            stocks_data[0].get('pe_ratio') or 999,
-                            stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 0
-                        else (
-                            f"{stocks_data[1]['symbol']} يتداول بخصم سعري واضح (مضاعف ربحية أقل)"
-                            if _declare_winner(
-                                stocks_data[0].get('pe_ratio') or 999,
-                                stocks_data[1].get('pe_ratio') or 999, 'min', 'pe_ratio') == 1
-                            else "كلا السهمين متقاربان في التقييم."
-                        )
-                    )
-                ),
-                (
-                    "**Growth:** Check revenue growth to see who is expanding faster."
-                    if language == 'en' else
-                    "**النمو:** راقب نمو الإيرادات لتحديد الشركة الأسرع في التوسع."
-                )
-            ]
-        },
+        'learning_section': _build_learning_section(stocks_data, language),
         'follow_up_prompt': f"Which one has better dividends?" if language == 'en' else "أيهما يوزع أرباح أفضل؟",
         'actions': [
             {
-                'label': f'💰 {symbols[0]} Financials',
-                'label_ar': f'💰 القوائم المالية {symbols[0]}',
+                'label': f'💰 {s["symbol"]} Financials',
+                'label_ar': f'💰 القوائم المالية {s["symbol"]}',
                 'action_type': 'query',
-                'payload': f'Show financials for {symbols[0]}'
-            },
-            {
-                'label': f'💰 {symbols[1]} Financials',
-                'label_ar': f'💰 القوائم المالية {symbols[1]}',
-                'action_type': 'query',
-                'payload': f'Show financials for {symbols[1]}'
-            },
+                'payload': f'Show financials for {s["symbol"]}'
+            }
+            for s in stocks_data
         ]
     }
+
+
+def _build_radar_chart_data(stocks_data: list, language: str) -> dict:
+    """Build radar chart data for visual multi-stock comparison.
+    Each category is scored 0-100 based on relative ranking within the group.
+    """
+    BRAND_COLORS = ['#13b8a6', '#3B82F6', '#F59E0B']  # Teal, Blue, Amber
+    
+    categories = [
+        {
+            'name': 'Valuation' if language == 'en' else 'التقييم',
+            'keys': ['pe_ratio', 'pb_ratio', 'ev_ebitda'],
+            'direction': 'min'  # Lower is better
+        },
+        {
+            'name': 'Profitability' if language == 'en' else 'الربحية',
+            'keys': ['profit_margin', 'gross_margin', 'roe'],
+            'direction': 'max'
+        },
+        {
+            'name': 'Growth' if language == 'en' else 'النمو',
+            'keys': ['revenue_growth', 'eps_growth'],
+            'direction': 'max'
+        },
+        {
+            'name': 'Efficiency' if language == 'en' else 'الكفاءة',
+            'keys': ['asset_turnover', 'roic', 'roce'],
+            'direction': 'max'
+        },
+        {
+            'name': 'Health' if language == 'en' else 'الصحة المالية',
+            'keys': ['current_ratio', 'altman_z_score', 'interest_coverage'],
+            'direction': 'max'
+        }
+    ]
+    
+    series = []
+    for idx, stock in enumerate(stocks_data):
+        scores = []
+        for cat in categories:
+            cat_values = []
+            for key in cat['keys']:
+                val = stock.get(key)
+                if val is not None:
+                    cat_values.append(val)
+            
+            if not cat_values:
+                scores.append(50)  # Default neutral
+                continue
+                
+            avg_val = sum(cat_values) / len(cat_values)
+            
+            # Normalize to 0-100 scale based on all stocks
+            all_vals_for_cat = []
+            for s in stocks_data:
+                s_vals = [s.get(k) for k in cat['keys'] if s.get(k) is not None]
+                if s_vals:
+                    all_vals_for_cat.append(sum(s_vals) / len(s_vals))
+            
+            if len(all_vals_for_cat) < 2:
+                scores.append(50)
+                continue
+                
+            min_val = min(all_vals_for_cat)
+            max_val = max(all_vals_for_cat)
+            
+            if max_val == min_val:
+                scores.append(50)
+            else:
+                if cat['direction'] == 'max':
+                    normalized = (avg_val - min_val) / (max_val - min_val)
+                else:  # min is better (e.g., valuation)
+                    normalized = (max_val - avg_val) / (max_val - min_val)
+                # Scale to 25-95 range for visual appeal
+                scores.append(round(25 + normalized * 70))
+        
+        series.append({
+            'name': stock['symbol'],
+            'data': scores
+        })
+    
+    return {
+        'stocks': [s['symbol'] for s in stocks_data],
+        'categories': [c['name'] for c in categories],
+        'series': series,
+        'colors': BRAND_COLORS[:len(stocks_data)]
+    }
+
+
+def _build_learning_section(stocks_data: list, language: str) -> dict:
+    """Build dynamic learning section for N stocks."""
+    symbols = [s['symbol'] for s in stocks_data]
+    
+    # Find best margins
+    margins = [(s['symbol'], s.get('profit_margin') or 0) for s in stocks_data]
+    margins.sort(key=lambda x: x[1], reverse=True)
+    
+    # Find best valuation
+    pes = [(s['symbol'], s.get('pe_ratio') or 999) for s in stocks_data if s.get('pe_ratio')]
+    pes.sort(key=lambda x: x[1])
+    
+    if language == 'en':
+        items = []
+        if margins[0][1] > 0:
+            items.append(
+                f"**Profitability:** {margins[0][0]} leads with the strongest margins at {margins[0][1]:.1f}%."
+                if margins[0][1] > margins[-1][1] * 1.15
+                else "All stocks show comparable profit margins — review operating efficiency."
+            )
+        if pes:
+            items.append(
+                f"**Valuation:** {pes[0][0]} offers the best value at {pes[0][1]:.1f}x P/E."
+                if len(pes) >= 2 and pes[0][1] < pes[-1][1] * 0.85
+                else "All stocks are similarly priced on a P/E basis."
+            )
+        items.append("**Growth:** Check revenue growth to see who is expanding faster.")
+        
+        return {
+            'title': 'ANALYSIS INSIGHTS',
+            'items': items
+        }
+    else:
+        items = []
+        if margins[0][1] > 0:
+            items.append(
+                f"**الربحية:** {margins[0][0]} يتفوق بأعلى هوامش ربح عند {margins[0][1]:.1f}%."
+                if margins[0][1] > margins[-1][1] * 1.15
+                else "جميع الأسهم لديها هوامش متقاربة — راجع الكفاءة التشغيلية."
+            )
+        if pes:
+            items.append(
+                f"**التقييم:** {pes[0][0]} يقدم أفضل قيمة عند مكرر ربحية {pes[0][1]:.1f}x."
+                if len(pes) >= 2 and pes[0][1] < pes[-1][1] * 0.85
+                else "جميع الأسهم متقاربة في التقييم."
+            )
+        items.append("**النمو:** راقب نمو الإيرادات لتحديد الشركة الأسرع في التوسع.")
+        
+        return {
+            'title': 'تحليل الخبراء',
+            'items': items
+        }
+

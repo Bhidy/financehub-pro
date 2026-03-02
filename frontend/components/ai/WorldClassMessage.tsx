@@ -33,6 +33,7 @@ import { GemListCard } from "./GemListCard";
 import { UndervaluedScreenCard } from "./UndervaluedScreenCard";
 import { ChartCard } from "./ChartCard";
 import { ChatCards } from "./ChatCards";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -808,6 +809,15 @@ function StockListCard({ data, lang = 'en' }: { data: any, lang?: Language }) {
 /** Comparison Table Card - Peer comparison (Scenario 5) */
 function ComparisonTableCard({ data }: { data: any }) {
     if (!data?.rows?.length || !data?.headers?.length) return null;
+
+    // Compute winner_symbol -> column index map for highlighting
+    const symbolToColIdx: Record<string, number> = {};
+    if (data.headers?.length) {
+        data.headers.forEach((h: string, idx: number) => {
+            if (idx > 0) symbolToColIdx[h] = idx; // Skip "Metric" header
+        });
+    }
+
     return (
         <div className="my-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700/50">
             {data.title && (
@@ -830,21 +840,103 @@ function ComparisonTableCard({ data }: { data: any }) {
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-slate-800/30 divide-y divide-slate-100 dark:divide-slate-700/30">
-                        {data.rows.map((row: any, rowIdx: number) => (
-                            <tr key={rowIdx} className="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
-                                {row.cells.map((cell: any, cellIdx: number) => (
-                                    <td key={cellIdx} className={`px-4 py-3 text-start ${cell.highlight === 'positive' ? 'text-emerald-600 dark:text-emerald-400 font-semibold' :
-                                        cell.highlight === 'negative' ? 'text-red-600 dark:text-red-400 font-semibold' :
-                                            cell.highlight === 'primary' ? 'text-sky-600 dark:text-sky-400 font-bold' :
-                                                'text-slate-700 dark:text-slate-300'
-                                        }`}>
-                                        {cell.value}
+                        {data.rows.map((row: any, rowIdx: number) => {
+                            // If row has winner_symbol, find which column to highlight
+                            const winnerCol = row.winner_symbol ? symbolToColIdx[row.winner_symbol] : -1;
+                            return (
+                                <tr key={rowIdx} className="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
+                                    {/* Metric name cell */}
+                                    <td className="px-4 py-3 text-start text-slate-600 dark:text-slate-400 font-medium">
+                                        {row.metric || (row.cells && row.cells[0]?.value)}
                                     </td>
-                                ))}
-                            </tr>
-                        ))}
+                                    {/* Value cells */}
+                                    {(row.values || (row.cells && row.cells.slice(1).map((c: any) => c.value)) || []).map((val: any, cellIdx: number) => {
+                                        const isWinner = (cellIdx + 1) === winnerCol;
+                                        const cellHighlight = row.cells?.[cellIdx]?.highlight;
+                                        return (
+                                            <td key={cellIdx} className={`px-4 py-3 text-start ${isWinner ? 'text-teal-600 dark:text-teal-400 font-bold' :
+                                                cellHighlight === 'positive' ? 'text-emerald-600 dark:text-emerald-400 font-semibold' :
+                                                    cellHighlight === 'negative' ? 'text-red-600 dark:text-red-400 font-semibold' :
+                                                        cellHighlight === 'primary' ? 'text-sky-600 dark:text-sky-400 font-bold' :
+                                                            'text-slate-700 dark:text-slate-300'
+                                                }`}>
+                                                {isWinner && <span className="mr-1">✦</span>}
+                                                {typeof val === 'object' ? val?.value : val}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
+            </div>
+        </div>
+    );
+}
+
+/** Radar Compare Chart - Ultra-premium multi-stock radar visualization */
+function RadarCompareChart({ data, lang = 'en' }: { data: any, lang?: Language }) {
+    if (!data?.categories?.length || !data?.series?.length) return null;
+
+    // Transform data for Recharts format
+    const chartData = data.categories.map((cat: string, idx: number) => {
+        const point: any = { category: cat };
+        data.series.forEach((s: any) => {
+            point[s.name] = s.data[idx];
+        });
+        return point;
+    });
+
+    return (
+        <div className="my-4 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden bg-white dark:bg-slate-900/80 backdrop-blur-sm">
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-800/40 px-4 py-3 border-b border-slate-200 dark:border-slate-700/50">
+                <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>📊</span>
+                    {lang === 'ar' ? 'مقارنة بصرية' : 'Visual Comparison'}
+                </div>
+            </div>
+            <div className="p-4" style={{ height: '320px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+                        <PolarGrid stroke="#334155" strokeOpacity={0.3} />
+                        <PolarAngleAxis
+                            dataKey="category"
+                            tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }}
+                        />
+                        <PolarRadiusAxis
+                            angle={90}
+                            domain={[0, 100]}
+                            tick={false}
+                            axisLine={false}
+                        />
+                        {data.series.map((s: any, idx: number) => (
+                            <Radar
+                                key={s.name}
+                                name={s.name}
+                                dataKey={s.name}
+                                stroke={data.colors[idx]}
+                                fill={data.colors[idx]}
+                                fillOpacity={0.15}
+                                strokeWidth={2}
+                                dot={{ r: 3, fill: data.colors[idx], strokeWidth: 0 }}
+                            />
+                        ))}
+                        <Legend
+                            wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                        />
+                        <RechartsTooltip
+                            contentStyle={{
+                                backgroundColor: '#1E293B',
+                                border: '1px solid #334155',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                color: '#F8FAFC'
+                            }}
+                            formatter={(value: number | undefined) => [`${value ?? 0}/100`, '']}
+                        />
+                    </RadarChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );
@@ -1423,6 +1515,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
         lang
     );
 
+    // Radar chart data for multi-stock comparison
+    const compareRadarData = safeResponse?.compare_radar || null;
+
     const normalizedStockList = normalizeStockListData(
         safeResponse?.stock_list || findCardData(["stock_list", "hidden_gems", "discovery_list", "undervalued_stocks"]),
         lang
@@ -1639,6 +1734,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     )}
 
                     {/* Peer Comparison / Tables (Scenario 5) */}
+                    {compareRadarData && (
+                        <motion.div variants={staggerItem}><RadarCompareChart data={compareRadarData} lang={lang} /></motion.div>
+                    )}
                     {normalizedComparisonTable && (
                         <motion.div variants={staggerItem}><ComparisonTableCard data={normalizedComparisonTable} /></motion.div>
                     )}

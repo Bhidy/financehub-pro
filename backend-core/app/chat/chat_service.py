@@ -4576,7 +4576,7 @@ class ChatService:
                 candidate_list = self._dedupe_symbols(resolved_symbols + [resolved_sym])
                 if len(candidate_list) > len(resolved_symbols):
                     resolved_symbols = candidate_list
-                if len(resolved_symbols) >= 2:
+                if len(resolved_symbols) >= 3:
                     break
 
             # One more inference pass after resolution in case aliases collapsed to one symbol.
@@ -4594,7 +4594,7 @@ class ChatService:
                         candidate_list = self._dedupe_symbols(resolved_symbols + [peer_sym])
                         if len(candidate_list) > len(resolved_symbols):
                             resolved_symbols = candidate_list
-                        if len(resolved_symbols) >= 2:
+                        if len(resolved_symbols) >= 3:
                             break
 
             if len(resolved_symbols) < 2:
@@ -4609,7 +4609,7 @@ class ChatService:
                     language=language
                 )
 
-            resolved_pair = self._dedupe_symbols(resolved_symbols[:2])
+            resolved_pair = self._dedupe_symbols(resolved_symbols[:3])
             # Propagate final distinct pair back into shared entities for clean metadata and narrative.
             entities['compare_symbols'] = resolved_pair
             if resolved_pair:

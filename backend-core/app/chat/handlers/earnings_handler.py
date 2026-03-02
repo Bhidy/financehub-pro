@@ -52,10 +52,11 @@ async def handle_earnings_analysis(
 
     # Also pull from TTM statistics for live data
     stats = await conn.fetchrow("""
-        SELECT pe_ratio, pb_ratio, roe, roa, profit_margin, revenue_growth,
-               eps_basic, market_cap, ev_ebitda
-        FROM stock_statistics
-        WHERE symbol = $1
+        SELECT ss.pe_ratio, ss.pb_ratio, ss.roe, ss.roa, ss.profit_margin, ss.revenue_growth,
+               ss.eps_ttm, mt.market_cap, ss.ev_ebitda
+        FROM stock_statistics ss
+        LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol
+        WHERE ss.symbol = $1
     """, symbol)
 
     # ── 3. Build earnings data ───────────────────────────────────────────────
@@ -129,7 +130,7 @@ async def handle_earnings_analysis(
             "roe_pct": _safe_float(s.get("roe"), mult=100),
             "roa_pct": _safe_float(s.get("roa"), mult=100),
             "net_margin_pct": _safe_float(s.get("profit_margin"), mult=100),
-            "eps": _safe_float(s.get("eps_basic")),
+            "eps": _safe_float(s.get("eps_ttm")),
             "ev_ebitda": _safe_float(s.get("ev_ebitda")),
         }
 

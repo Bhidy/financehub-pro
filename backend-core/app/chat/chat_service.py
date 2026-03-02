@@ -4557,15 +4557,12 @@ class ChatService:
             ))
             if compare_request_like and not compare_symbols and not symbol:
                 return self._build_compare_symbol_request_response(language)
-
-            inferred_peers: List[str] = []
-            if len(compare_symbols) < 2 and symbol:
-                inferred_peers = await self._infer_peer_symbols(
-                    primary_symbol=str(symbol).upper(),
-                    market_code=market_code,
-                    limit=6
-                )
-                compare_symbols = self._dedupe_symbols(compare_symbols + inferred_peers)
+            # ── PEER INFERENCE STRATEGY ──
+            # DO NOT pre-infer peers here. compare_handler has robust
+            # auto-peer logic that finds 2 same-sector peers when given 1 symbol,
+            # enabling 3-stock comparisons. If we inject 1 peer here (making len=2),
+            # the handler skips auto-peer and only returns 2 stocks.
+            # We only resolve the user's EXPLICIT symbols and pass them through.
 
             # Resolve aliases (e.g. CIB -> COMI) then deduplicate canonically again.
             resolver = SymbolResolver(self.conn)
@@ -4579,9 +4576,13 @@ class ChatService:
                 if len(resolved_symbols) >= 3:
                     break
 
-            # One more inference pass after resolution in case aliases collapsed to one symbol.
-            if len(resolved_symbols) < 2:
-                base_symbol = str(symbol).upper() if symbol else (resolved_symbols[0] if resolved_symbols else None)
+            # Recovery pass: if alias resolution collapsed 2 user symbols to 1
+            # (e.g. "CIB vs COMI" → both resolve to COMI), try to find a peer
+            # so the user doesn't get an error. compare_handler will expand to 3.
+            if len(resolved_symbols) < 1 and len(compare_symbols) >= 1:
+                base_symbol = resolved_symbols[0] if resolved_symbols else (
+                    str(symbol).upper() if symbol else None
+                )
                 if base_symbol:
                     extra_peers = await self._infer_peer_symbols(
                         primary_symbol=base_symbol,
@@ -4597,15 +4598,14 @@ class ChatService:
                         if len(resolved_symbols) >= 3:
                             break
 
-            if len(resolved_symbols) < 2:
+            if not resolved_symbols:
                 primary_for_prompt = (
                     str(symbol).upper() if symbol else
-                    (resolved_symbols[0] if resolved_symbols else (compare_symbols[0] if compare_symbols else None))
+                    (compare_symbols[0] if compare_symbols else None)
                 )
-                peer_candidates = inferred_peers or compare_symbols[1:]
                 return self._build_compare_clarification_response(
                     primary_symbol=primary_for_prompt,
-                    peer_candidates=peer_candidates,
+                    peer_candidates=compare_symbols[1:],
                     language=language
                 )
 

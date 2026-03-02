@@ -362,93 +362,85 @@ async def handle_compare_stocks(
         deduped_stocks.append(stock)
     stocks_data = deduped_stocks
     logger.info(f"[COMPARE] After dedup: {len(stocks_data)} stocks: {[s['symbol'] for s in stocks_data]}")
-
-    if len(stocks_data) >= 2:
-        sectors = [(s['symbol'], s.get('sector_name')) for s in stocks_data]
-        # Group by sector
+    if len(stocks_data) >= 1:
         primary_sector = stocks_data[0].get('sector_name')
-        if primary_sector and _is_valid_sector(primary_sector):
-            same_sector = [s for s in stocks_data if str(s.get('sector_name', '')).strip().upper() == str(primary_sector).strip().upper()]
-            diff_sector = [s for s in stocks_data if str(s.get('sector_name', '')).strip().upper() != str(primary_sector).strip().upper()]
-            if diff_sector:
-                # Check if this was auto-peer (user only named 1 stock)
-                original_canonicals = {_canonical_symbol(s) for s in symbols}
-                auto_injected = [s for s in diff_sector if _canonical_symbol(s['symbol']) not in original_canonicals]
-                if auto_injected:
-                    logger.warning(
-                        f"[COMPARE] ⚠️ SECTOR MISMATCH: Dropping {[s['symbol'] for s in auto_injected]} "
-                        f"(different sector from primary {primary_sector}). Keeping {[s['symbol'] for s in same_sector]}."
-                    )
-                    stocks_data = same_sector
-
-    # === ROBUST FALLBACK (Chief Expert Fix) ===
-    # If garbage collection left us with 1 valid stock (e.g. "Juhayna vs Garbage"),
-    # we must find a peer to compare against instead of failing.
-    if len(stocks_data) == 1:
-        valid_stock = stocks_data[0]
-        sector_name = valid_stock.get('sector_name')
-        market_code = valid_stock.get('market_code', 'EGX')
-        current_symbol = valid_stock['symbol']
+        market_code = stocks_data[0].get('market_code', 'EGX')
+        primary_canon = _canonical_symbol(stocks_data[0]['symbol'])
         
-        if _is_valid_sector(sector_name):
-             # Smart peer: same sector, closest market cap, has financial data
-             current_cap_row = await conn.fetchrow(
-                 "SELECT market_cap FROM market_tickers WHERE symbol = $1", current_symbol)
-             current_cap = current_cap_row['market_cap'] if current_cap_row else None
+        # 1. Enforce strict sector matching for any user-provided stocks
+        if primary_sector and _is_valid_sector(primary_sector):
+            same_sector = [stocks_data[0]] # Always keep primary
+            
+            for s in stocks_data[1:]:
+                s_sector = str(s.get('sector_name', '')).strip().upper()
+                p_sector = str(primary_sector).strip().upper()
+                if s_sector == p_sector:
+                    same_sector.append(s)
+                else:
+                    logger.warning(f"[COMPARE] ⚠️ SECTOR MISMATCH: Dropping {s['symbol']} (Sector: {s_sector} vs Primary: {p_sector})")
+                    
+            stocks_data = same_sector
+            
+            # 2. Fill missing slots to ensure EXACTLY 3 stocks from the same sector
+            if len(stocks_data) < 3:
+                needed = 3 - len(stocks_data)
+                existing_canons = {_canonical_symbol(d['symbol']) for d in stocks_data}
+                
+                # Fetch closest peers by market cap
+                current_cap_row = await conn.fetchrow(
+                    "SELECT market_cap FROM market_tickers WHERE symbol = $1", stocks_data[0]['symbol'])
+                current_cap = current_cap_row['market_cap'] if current_cap_row else None
 
-             peer_rows = await conn.fetch("""
-                SELECT t.symbol, t.market_cap
-                FROM market_tickers t
-                INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
-                WHERE t.sector_name = $1 AND t.symbol != $2 AND t.market_code = $3
-                  AND t.market_cap IS NOT NULL AND t.market_cap > 0
-                  AND UPPER(COALESCE(t.sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
-                ORDER BY ABS(t.market_cap - $4) ASC NULLS LAST
-                LIMIT 20
-            """, sector_name, current_symbol, market_code, current_cap or 0)
+                peer_rows = await conn.fetch("""
+                    SELECT t.symbol, t.market_cap
+                    FROM market_tickers t
+                    INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+                    WHERE t.sector_name = $1 AND t.market_code = $2
+                      AND t.market_cap IS NOT NULL AND t.market_cap > 0
+                    ORDER BY ABS(t.market_cap - $3) ASC NULLS LAST
+                    LIMIT 20
+                """, primary_sector, market_code, current_cap or 0)
 
-             peer_symbols_fallback = []
-             current_canonical = _canonical_symbol(current_symbol)
-             for row in peer_rows:
-                 candidate = row['symbol']
-                 cand_canonical = _canonical_symbol(candidate)
-                 if cand_canonical != current_canonical and cand_canonical not in {_canonical_symbol(p) for p in peer_symbols_fallback}:
-                     peer_symbols_fallback.append(candidate)
-                     if len(peer_symbols_fallback) >= 2:  # Find 2 peers for 3-stock
-                         break
+                peer_symbols_fallback = []
+                for row in peer_rows:
+                    candidate = row['symbol']
+                    cand_canonical = _canonical_symbol(candidate)
+                    if cand_canonical not in existing_canons and cand_canonical not in {_canonical_symbol(p) for p in peer_symbols_fallback}:
+                        peer_symbols_fallback.append(candidate)
+                        if len(peer_symbols_fallback) >= needed:
+                            break
 
-             if not peer_symbols_fallback:
-                 # Fallback to simple largest
-                 fallback_rows = await conn.fetch("""
-                    SELECT symbol FROM market_tickers 
-                    WHERE sector_name = $1 AND symbol != $2 AND market_code = $3
-                    ORDER BY market_cap DESC NULLS LAST LIMIT 15
-                """, sector_name, current_symbol, market_code)
-                 for fr in fallback_rows:
-                     fr_canonical = _canonical_symbol(fr['symbol'])
-                     if fr_canonical != current_canonical and fr_canonical not in {_canonical_symbol(p) for p in peer_symbols_fallback}:
-                         peer_symbols_fallback.append(fr['symbol'])
-                         if len(peer_symbols_fallback) >= 2:
-                             break
+                if len(peer_symbols_fallback) < needed:
+                     # Fallback to simple largest in sector
+                     fallback_rows = await conn.fetch("""
+                        SELECT symbol FROM market_tickers 
+                        WHERE sector_name = $1 AND market_code = $2
+                        ORDER BY market_cap DESC NULLS LAST LIMIT 15
+                    """, primary_sector, market_code)
+                     for fr in fallback_rows:
+                         fr_canonical = _canonical_symbol(fr['symbol'])
+                         if fr_canonical not in existing_canons and fr_canonical not in {_canonical_symbol(p) for p in peer_symbols_fallback}:
+                             peer_symbols_fallback.append(fr['symbol'])
+                             if len(peer_symbols_fallback) >= needed:
+                                 break
 
-             logger.info(f"[COMPARE] Robust fallback found {len(peer_symbols_fallback)} peers: {peer_symbols_fallback}")
-             for peer_symbol in peer_symbols_fallback:
-                 # FETCH PEER DATA (Duplicated logic for safety/speed without refactor)
-                 # 1. Ticker
-                 p_row = await conn.fetchrow("""
-                    SELECT 
-                        symbol, name_en, name_ar, market_code, currency, sector_name,
-                        last_price, change_percent, volume,
-                        pe_ratio, pb_ratio, dividend_yield, market_cap,
-                        high_52w, low_52w, beta, logo_url
-                    FROM market_tickers
-                    WHERE symbol = $1
-                 """, peer_symbol)
-                 if p_row:
-                     # 2. TTM Stats from stock_statistics (no annual fallback)
-                     p_stats = await conn.fetchrow("""
+                logger.info(f"[COMPARE] Enforcing exactly 3 peers. Appending {len(peer_symbols_fallback)}: {peer_symbols_fallback}")
+                for peer_symbol in peer_symbols_fallback:
+                    # FETCH PEER DATA
+                    p_row = await conn.fetchrow("""
                         SELECT 
-                            revenue_growth, eps_growth,
+                            symbol, name_en, name_ar, market_code, currency, sector_name,
+                            last_price, change_percent, volume,
+                            pe_ratio, pb_ratio, dividend_yield, market_cap,
+                            high_52w, low_52w, beta, logo_url
+                        FROM market_tickers
+                        WHERE symbol = $1
+                    """, peer_symbol)
+                    if p_row:
+                        # 2. TTM Stats from stock_statistics (no annual fallback)
+                        p_stats = await conn.fetchrow("""
+                            SELECT 
+                                revenue_growth, eps_growth,
                             gross_margin, operating_margin, profit_margin, ebitda_margin,
                             roe, roa, roic, roce, asset_turnover,
                             debt_equity, current_ratio, quick_ratio, interest_coverage,
@@ -459,52 +451,52 @@ async def handle_compare_stocks(
                         WHERE symbol = $1
                      """, peer_symbol)
                      
-                     # Construct Peer Data Point
-                     p_dict = dict(p_row)
-                     p_name = p_dict['name_ar'] if language == 'ar' else p_dict['name_en']
-                     
-                     peer_data = {
-                        'symbol': p_dict['symbol'],
-                        'name': p_name,
-                        'sector_name': p_dict.get('sector_name'),
-                        'market_code': p_dict['market_code'],
-                        'currency': p_dict['currency'],
-                        'logo_url': p_dict.get('logo_url'),
-                        'price': safe_float(p_dict.get('last_price')),
-                        'change_percent': safe_float(p_dict.get('change_percent')),
-                        'market_cap': int(p_dict['market_cap']) if p_dict.get('market_cap') else None,
-                        'volume': int(p_dict['volume']) if p_dict.get('volume') else None,
-                        'high_52w': safe_float(p_dict.get('high_52w')),
-                        'low_52w': safe_float(p_dict.get('low_52w')),
-                        'beta': safe_float(p_dict.get('beta')),
-                        # COALESCE: use p_stats dividend_yield if market_tickers is NULL
-                        'dividend_yield': safe_float(p_dict.get('dividend_yield')) or (safe_float(p_dict.get('ss_dividend_yield')) if p_stats else None),
-                        'pe_ratio': safe_float(p_dict.get('pe_ratio')),
-                        # COALESCE: use p_stats pb_ratio if market_tickers is NULL
-                        'pb_ratio': safe_float(p_dict.get('pb_ratio')) or (safe_float(dict(p_stats).get('pb_ratio')) if p_stats else None),
-                     }
-                     
-                     if p_stats:
-                         for k, v in dict(p_stats).items():
-                             peer_data[k] = safe_float(v)
-                         # ── Decimal → Percentage Normalization (same as primary path) ──
-                         _DECIMAL_RATIO_KEYS_PEER = {
-                             'gross_margin', 'operating_margin', 'profit_margin', 'ebitda_margin',
-                             'roe', 'roa', 'roic', 'roce',
-                             'revenue_growth', 'eps_growth', 'net_income_growth',
-                             'payout_ratio',
-                         }
-                         for rk in _DECIMAL_RATIO_KEYS_PEER:
-                             val = peer_data.get(rk)
-                             if val is not None and abs(val) < 1.0:
-                                 peer_data[rk] = val * 100
-                              
-                     if peer_data.get('profit_margin') is None and peer_data.get('net_margin') is not None:
-                         peer_data['profit_margin'] = peer_data.get('net_margin')
-                         
-                     # Final duplicate guard before append
-                     if _canonical_symbol(peer_data.get('symbol', '')) != current_canonical:
-                         stocks_data.append(peer_data)
+                        # Construct Peer Data Point
+                        p_dict = dict(p_row)
+                        p_name = p_dict['name_ar'] if language == 'ar' else p_dict['name_en']
+                        
+                        peer_data = {
+                            'symbol': p_dict['symbol'],
+                            'name': p_name,
+                            'sector_name': p_dict.get('sector_name'),
+                            'market_code': p_dict['market_code'],
+                            'currency': p_dict['currency'],
+                            'logo_url': p_dict.get('logo_url'),
+                            'price': safe_float(p_dict.get('last_price')),
+                            'change_percent': safe_float(p_dict.get('change_percent')),
+                            'market_cap': int(p_dict['market_cap']) if p_dict.get('market_cap') else None,
+                            'volume': int(p_dict['volume']) if p_dict.get('volume') else None,
+                            'high_52w': safe_float(p_dict.get('high_52w')),
+                            'low_52w': safe_float(p_dict.get('low_52w')),
+                            'beta': safe_float(p_dict.get('beta')),
+                            # COALESCE: use p_stats dividend_yield if market_tickers is NULL
+                            'dividend_yield': safe_float(p_dict.get('dividend_yield')) or (safe_float(p_dict.get('ss_dividend_yield')) if p_stats else None),
+                            'pe_ratio': safe_float(p_dict.get('pe_ratio')),
+                            # COALESCE: use p_stats pb_ratio if market_tickers is NULL
+                            'pb_ratio': safe_float(p_dict.get('pb_ratio')) or (safe_float(dict(p_stats).get('pb_ratio')) if p_stats else None),
+                        }
+                        
+                        if p_stats:
+                            for k, v in dict(p_stats).items():
+                                peer_data[k] = safe_float(v)
+                            # ── Decimal → Percentage Normalization (same as primary path) ──
+                            _DECIMAL_RATIO_KEYS_PEER = {
+                                'gross_margin', 'operating_margin', 'profit_margin', 'ebitda_margin',
+                                'roe', 'roa', 'roic', 'roce',
+                                'revenue_growth', 'eps_growth', 'net_income_growth',
+                                'payout_ratio',
+                            }
+                            for rk in _DECIMAL_RATIO_KEYS_PEER:
+                                val = peer_data.get(rk)
+                                if val is not None and abs(val) < 1.0:
+                                    peer_data[rk] = val * 100
+                                
+                        if peer_data.get('profit_margin') is None and peer_data.get('net_margin') is not None:
+                            peer_data['profit_margin'] = peer_data.get('net_margin')
+                            
+                        # Final duplicate guard before append
+                        if _canonical_symbol(peer_data.get('symbol', '')) != current_canonical:
+                            stocks_data.append(peer_data)
 
     if len(stocks_data) < 2:
         existing_canons = {_canonical_symbol(d['symbol']) for d in stocks_data}
@@ -580,10 +572,10 @@ async def handle_compare_stocks(
         for m in metrics_list:
             key = m['key']
             
-            # STRICT DATA POLICY: Only show if data exists for ALL stocks
-            # "Never show NA or dashes"
+            # "Never show NA or dashes" WAS CAUSING MISSING COLUMNS GLOBALLY
+            # Relaxing constraint to allow None to map to 'N/A' on frontend
             values = [s.get(key) for s in stocks_data]
-            if any(v is None for v in values):
+            if all(v is None for v in values):
                 continue
                 
             # Formatting

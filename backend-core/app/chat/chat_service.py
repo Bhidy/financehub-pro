@@ -2287,27 +2287,21 @@ class ChatService:
                 )
                 peers = [r["symbol"] for r in rows if r.get("symbol")]
 
-            # STRATEGY 2: Fallback to EGX30 (Market Leaders) if no sector peers
-            if len(peers) < 1:
-                # Fallback to top EGX stocks by Market Cap (Proxy for EGX30)
-                rows = await self.conn.fetch(
-                    """
-                    SELECT symbol
-                    FROM market_tickers
-                    WHERE symbol <> $1
-                      AND market_code = 'EGX'
-                      AND UPPER(COALESCE(sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
-                    ORDER BY market_cap DESC NULLS LAST
-                    LIMIT $2
-                    """,
-                    primary_symbol,
-                    limit
-                )
-                peers = [r["symbol"] for r in rows]
+            # STRATEGY 2: NO cross-sector fallback.
+            # Previously this picked the largest EGX stocks by market cap regardless
+            # of sector, causing wrong peer matches (e.g. JUFO vs EAST).
+            # Now we return empty and let compare_handler's own robust sector-aware
+            # auto-peer logic handle the case properly.
+            if len(peers) < 1 and not sector_valid:
+                print(f"[ChatService] ⚠️ _infer_peer_symbols: No valid sector for {primary_symbol} "
+                      f"(sector={sector}). Returning empty — compare_handler will auto-peer.")
 
         except Exception as e:
             print(f"[ChatService] ⚠️ Failed to infer peers for {primary_symbol}: {e}")
             return []
+
+        print(f"[ChatService] 🔍 _infer_peer_symbols: symbol={primary_symbol}, sector={sector}, "
+              f"sector_valid={sector_valid}, peers_found={len(peers)}, peers={peers[:3]}")
 
         # Deduplicate by canonical symbol and exclude self aliases (e.g., COMI vs COMI.CA).
         primary_canonical = self._canonical_symbol(primary_symbol)

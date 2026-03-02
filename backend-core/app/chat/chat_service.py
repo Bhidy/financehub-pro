@@ -3681,6 +3681,7 @@ class ChatService:
             # Initialize potentially missing specific handler outputs to None
             handler_index_composition = result_data.get('index_composition')
             handler_key_insight = result_data.get('key_insight')
+            handler_compare_radar = result_data.get('compare_radar')  # NEW: Radar chart for comparison
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
             # NEW: Parse Dynamic Layers from LLM Text (if not provided by handler)
             # Handle both object (ChatResponse) and dict return types
@@ -4055,6 +4056,8 @@ class ChatService:
                 index_composition=handler_index_composition,
                 # NEW: Key Insight (8-Layer)
                 key_insight=handler_key_insight,
+                # NEW: Radar chart for comparison
+                compare_radar=handler_compare_radar,
                 # NEW: Structured Narrative
                 structured_narrative=structured if 'structured' in locals() else None
             )
@@ -4769,7 +4772,9 @@ class ChatService:
         # NEW: Key Insight (8-Layer)
         key_insight: Optional[str] = None,
         # NEW: 7-Layer Structured Narrative
-        structured_narrative: Optional[Any] = None
+        structured_narrative: Optional[Any] = None,
+        # NEW: Radar chart for comparison
+        compare_radar: Optional[Dict[str, Any]] = None
     ) -> ChatResponse:
         """Build the final ChatResponse with structured components."""
         
@@ -5100,6 +5105,7 @@ class ChatService:
             follow_up_prompt=follow_up_prompt,
             key_insight=key_insight,  # 🎯 NEW: Key Insight (8-Layer)
             structured_narrative=structured_narrative, # 🏗️ NEW: 7-Layer Structure
+            compare_radar=compare_radar,  # 📊 NEW: Radar chart for comparison
             language=language,
             cards=cards,
             chart=chart,

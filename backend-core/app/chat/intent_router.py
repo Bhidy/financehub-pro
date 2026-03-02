@@ -126,13 +126,16 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "annual results", "earnings beat", "earnings miss", "beat estimates", "miss estimates",
          "earnings surprise", "reported earnings", "earnings season", "results announced",
          "quarterly earnings", "earnings report", "how did company do", "earnings analysis",
-         "beat expectations", "miss expectations", "above consensus", "below consensus"],
+         "beat expectations", "miss expectations", "above consensus", "below consensus",
+         "annual earnings", "earnings quality", "revenue quality", "earnings growth",
+         "net income growth", "revenue growth yoy", "year over year earnings",
+         "profit growth", "q4 earnings", "q1 earnings", "full year results"],
         # Arabic: نتائج ربعية، اعلانات ارباح
         ["نتائج ربعية", "نتائج الربع", "ارباح ربعية", "اعلان النتائج", "تجاوز التوقعات",
          "نتائج سنوية", "اقل من التوقعات", "تحت التوقعات", "اعلى من المتوقع",
          "كيف كانت النتائج", "ما هي النتائج", "موسم الارباح", "اعلن عن نتائج",
          "نتائج مالية", "النتائج الفصلية", "ارباح فوق التوقعات", "ارباح دون التوقعات"],
-        2.5
+        3.5   # Boosted from 2.5 → 3.5 to outcompete FINANCIALS (3.0) and STOCK_SNAPSHOT (0.9)
     ),
 
     Intent.MORNING_BRIEF: (

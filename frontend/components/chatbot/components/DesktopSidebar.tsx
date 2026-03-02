@@ -470,8 +470,8 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                             <p className="text-xs font-bold text-slate-700 dark:text-white truncate">
                                                 {user?.full_name || "User"}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 truncate">
-                                                Free Plan
+                                            <p className="text-[10px] text-slate-400 truncate capitalize">
+                                                {user?.subscription_plan === 'analyst' || user?.subscription_status === 'active' ? 'Analyst Plan' : 'Free Plan'}
                                             </p>
                                         </div>
                                         <Settings className="w-4 h-4 text-slate-400 group-hover:text-[#13b8a6] transition-colors" />

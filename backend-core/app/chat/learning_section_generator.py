@@ -328,28 +328,47 @@ def generate_learning_section(
     
     # Also check card types for context
     for ct in card_types:
-        if "dividend" in ct.lower():
+        ct_low = ct.lower()
+        # ── Existing types ───────────────────────────────────────────────────
+        if "dividend" in ct_low:
             all_keys.add("dividend_yield")
-        if "movers" in ct.lower():
-            all_keys.add("change_percent")
-        if "snapshot" in ct.lower():
+        if "movers" in ct_low or "gainer" in ct_low or "loser" in ct_low:
+            all_keys.update(["change_percent", "market_cap"])
+        if "snapshot" in ct_low:
             all_keys.update(["pe_ratio", "market_cap", "pb_ratio"])
-        if "valuation" in ct.lower():
+        if "valuation" in ct_low or "fair_value" in ct_low:
             all_keys.update(["pe_ratio", "pb_ratio", "eps", "dcf_model", "wacc"])
-        if "health" in ct.lower() or "safety" in ct.lower():
+        if "health" in ct_low or "safety" in ct_low:
             all_keys.add("z_score")
-        # NEW: financial-services-plugins additions
-        if "earnings" in ct.lower() or "results" in ct.lower():
-            all_keys.update(["earnings_beat_miss", "investment_thesis"])
-        if "comps" in ct.lower() or "compare" in ct.lower() or "peer" in ct.lower():
-            all_keys.add("comps_analysis")
-        if "dcf" in ct.lower() or "fair_value" in ct.lower() or "intrinsic" in ct.lower():
-            all_keys.update(["dcf_model", "wacc"])
-        if "catalyst" in ct.lower():
+
+        # ── FIX: Core card types that previously had no match ────────────────
+        # financials_table — most common card type for FINANCIALS/EARNINGS intents
+        if "financials" in ct_low or "financial" in ct_low:
+            all_keys.update(["pe_ratio", "eps", "earnings_beat_miss", "nim"])
+        # stock_header — always present, add basic valuation
+        if "stock_header" in ct_low or "header" in ct_low:
+            all_keys.update(["pe_ratio", "market_cap"])
+        # stats card — for snapshots and catalysts
+        if ct_low == "stats" or ct_low == "stat":
+            all_keys.update(["pe_ratio", "pb_ratio", "dividend_yield"])
+        # market_summary, market_breadth — for morning briefs
+        if "market" in ct_low or "summary" in ct_low or "breadth" in ct_low:
+            all_keys.update(["change_percent", "market_cap"])
+        # compare_table — for comps
+        if "compare" in ct_low or "comps" in ct_low or "peer" in ct_low:
+            all_keys.update(["comps_analysis", "pe_ratio", "pb_ratio"])
+        # catalyst card types
+        if "catalyst" in ct_low or "calendar" in ct_low or "event" in ct_low:
             all_keys.add("catalyst_calendar")
-        if "bank" in ct.lower() or "financial" in ct.lower():
+
+        # ── financial-services-plugins additions ─────────────────────────────
+        if "earnings" in ct_low or "result" in ct_low:
+            all_keys.update(["earnings_beat_miss", "investment_thesis"])
+        if "dcf" in ct_low or "intrinsic" in ct_low:
+            all_keys.update(["dcf_model", "wacc"])
+        if "bank" in ct_low:
             all_keys.add("nim")
-        if "real_estate" in ct.lower() or "property" in ct.lower() or "presales" in ct.lower():
+        if "real_estate" in ct_low or "property" in ct_low or "presale" in ct_low:
             all_keys.add("pre_sales")
     
     # Find matching definitions

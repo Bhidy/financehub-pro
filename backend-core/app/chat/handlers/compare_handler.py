@@ -155,6 +155,7 @@ async def handle_compare_stocks(
     Handle COMPARE_STOCKS intent.
     """
     symbols = _dedupe_symbol_inputs(symbols)
+    logger.info(f"[COMPARE] ▶▶▶ handle_compare_stocks called with {len(symbols)} symbols: {symbols}")
 
     # AUTO-PEER LOGIC: If only 1 symbol, find a competitor in same sector
     if not symbols:
@@ -237,6 +238,7 @@ async def handle_compare_stocks(
             }
 
     symbols = symbols[:3]  # Support up to 3-stock comparison
+    logger.info(f"[COMPARE] After auto-peer + limit: {len(symbols)} symbols: {symbols}")
     
     # 1. Fetch Fundamental Data (Smart Metrics)
     stocks_data = []
@@ -359,34 +361,25 @@ async def handle_compare_stocks(
         seen_stock_canon.add(canonical)
         deduped_stocks.append(stock)
     stocks_data = deduped_stocks
+    logger.info(f"[COMPARE] After dedup: {len(stocks_data)} stocks: {[s['symbol'] for s in stocks_data]}")
 
-    # === GLOBAL SECTOR MISMATCH GUARD (Cross-Sector Auto-Peer Fix) ===
-    # When a user asks "Compare X to peers", chat_service may pre-inject a peer.
-    # If that peer is from a DIFFERENT sector, it's a wrong match.
-    # We detect this and drop the wrong peer, so the robust auto-peer logic
-    # below (len==1 block) can find a correct same-sector peer.
-    # NOTE: This does NOT block explicit user comparisons like "Compare X vs Y"
-    # because in that case, both symbols came from user input (len(symbols)==2 originally).
-    if len(stocks_data) == 2:
-        s0_sector = stocks_data[0].get('sector_name')
-        s1_sector = stocks_data[1].get('sector_name')
-        s0_valid = _is_valid_sector(s0_sector)
-        s1_valid = _is_valid_sector(s1_sector)
-
-        # Only intervene when at least one has a valid sector and they DON'T match.
-        # If both sectors are valid but different, keep the first (primary) stock
-        # and drop the mismatched peer so auto-peer logic can find a correct one.
-        if s0_valid and s1_valid and str(s0_sector).strip().upper() != str(s1_sector).strip().upper():
-            # Check if this was an auto-peer scenario (user only named 1 stock).
-            # Heuristic: the original `symbols` list had only 1 unique canonical symbol
-            # from the user, and the second was injected by _infer_peer_symbols.
-            original_canonicals = {_canonical_symbol(s) for s in symbols}
-            if len(original_canonicals) <= 1 or _canonical_symbol(stocks_data[1]['symbol']) not in original_canonicals:
-                logger.warning(
-                    f"[COMPARE] ⚠️ SECTOR MISMATCH: {stocks_data[0]['symbol']}={s0_sector} "
-                    f"vs {stocks_data[1]['symbol']}={s1_sector}. Dropping wrong peer for auto-correction."
-                )
-                stocks_data = [stocks_data[0]]  # Keep primary, let auto-peer below find correct match
+    if len(stocks_data) >= 2:
+        sectors = [(s['symbol'], s.get('sector_name')) for s in stocks_data]
+        # Group by sector
+        primary_sector = stocks_data[0].get('sector_name')
+        if primary_sector and _is_valid_sector(primary_sector):
+            same_sector = [s for s in stocks_data if str(s.get('sector_name', '')).strip().upper() == str(primary_sector).strip().upper()]
+            diff_sector = [s for s in stocks_data if str(s.get('sector_name', '')).strip().upper() != str(primary_sector).strip().upper()]
+            if diff_sector:
+                # Check if this was auto-peer (user only named 1 stock)
+                original_canonicals = {_canonical_symbol(s) for s in symbols}
+                auto_injected = [s for s in diff_sector if _canonical_symbol(s['symbol']) not in original_canonicals]
+                if auto_injected:
+                    logger.warning(
+                        f"[COMPARE] ⚠️ SECTOR MISMATCH: Dropping {[s['symbol'] for s in auto_injected]} "
+                        f"(different sector from primary {primary_sector}). Keeping {[s['symbol'] for s in same_sector]}."
+                    )
+                    stocks_data = same_sector
 
     # === ROBUST FALLBACK (Chief Expert Fix) ===
     # If garbage collection left us with 1 valid stock (e.g. "Juhayna vs Garbage"),
@@ -414,15 +407,17 @@ async def handle_compare_stocks(
                 LIMIT 20
             """, sector_name, current_symbol, market_code, current_cap or 0)
 
-             peer_symbol = None
+             peer_symbols_fallback = []
              current_canonical = _canonical_symbol(current_symbol)
              for row in peer_rows:
                  candidate = row['symbol']
-                 if _canonical_symbol(candidate) != current_canonical:
-                     peer_symbol = candidate
-                     break
+                 cand_canonical = _canonical_symbol(candidate)
+                 if cand_canonical != current_canonical and cand_canonical not in {_canonical_symbol(p) for p in peer_symbols_fallback}:
+                     peer_symbols_fallback.append(candidate)
+                     if len(peer_symbols_fallback) >= 2:  # Find 2 peers for 3-stock
+                         break
 
-             if not peer_symbol:
+             if not peer_symbols_fallback:
                  # Fallback to simple largest
                  fallback_rows = await conn.fetch("""
                     SELECT symbol FROM market_tickers 
@@ -430,11 +425,14 @@ async def handle_compare_stocks(
                     ORDER BY market_cap DESC NULLS LAST LIMIT 15
                 """, sector_name, current_symbol, market_code)
                  for fr in fallback_rows:
-                     if _canonical_symbol(fr['symbol']) != current_canonical:
-                         peer_symbol = fr['symbol']
-                         break
+                     fr_canonical = _canonical_symbol(fr['symbol'])
+                     if fr_canonical != current_canonical and fr_canonical not in {_canonical_symbol(p) for p in peer_symbols_fallback}:
+                         peer_symbols_fallback.append(fr['symbol'])
+                         if len(peer_symbols_fallback) >= 2:
+                             break
 
-             if peer_symbol:
+             logger.info(f"[COMPARE] Robust fallback found {len(peer_symbols_fallback)} peers: {peer_symbols_fallback}")
+             for peer_symbol in peer_symbols_fallback:
                  # FETCH PEER DATA (Duplicated logic for safety/speed without refactor)
                  # 1. Ticker
                  p_row = await conn.fetchrow("""

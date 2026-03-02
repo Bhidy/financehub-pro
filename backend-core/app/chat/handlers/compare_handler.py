@@ -355,6 +355,34 @@ async def handle_compare_stocks(
         deduped_stocks.append(stock)
     stocks_data = deduped_stocks
 
+    # === GLOBAL SECTOR MISMATCH GUARD (Cross-Sector Auto-Peer Fix) ===
+    # When a user asks "Compare X to peers", chat_service may pre-inject a peer.
+    # If that peer is from a DIFFERENT sector, it's a wrong match.
+    # We detect this and drop the wrong peer, so the robust auto-peer logic
+    # below (len==1 block) can find a correct same-sector peer.
+    # NOTE: This does NOT block explicit user comparisons like "Compare X vs Y"
+    # because in that case, both symbols came from user input (len(symbols)==2 originally).
+    if len(stocks_data) == 2:
+        s0_sector = stocks_data[0].get('sector_name')
+        s1_sector = stocks_data[1].get('sector_name')
+        s0_valid = _is_valid_sector(s0_sector)
+        s1_valid = _is_valid_sector(s1_sector)
+
+        # Only intervene when at least one has a valid sector and they DON'T match.
+        # If both sectors are valid but different, keep the first (primary) stock
+        # and drop the mismatched peer so auto-peer logic can find a correct one.
+        if s0_valid and s1_valid and str(s0_sector).strip().upper() != str(s1_sector).strip().upper():
+            # Check if this was an auto-peer scenario (user only named 1 stock).
+            # Heuristic: the original `symbols` list had only 1 unique canonical symbol
+            # from the user, and the second was injected by _infer_peer_symbols.
+            original_canonicals = {_canonical_symbol(s) for s in symbols}
+            if len(original_canonicals) <= 1 or _canonical_symbol(stocks_data[1]['symbol']) not in original_canonicals:
+                logger.warning(
+                    f"[COMPARE] ⚠️ SECTOR MISMATCH: {stocks_data[0]['symbol']}={s0_sector} "
+                    f"vs {stocks_data[1]['symbol']}={s1_sector}. Dropping wrong peer for auto-correction."
+                )
+                stocks_data = [stocks_data[0]]  # Keep primary, let auto-peer below find correct match
+
     # === ROBUST FALLBACK (Chief Expert Fix) ===
     # If garbage collection left us with 1 valid stock (e.g. "Juhayna vs Garbage"),
     # we must find a peer to compare against instead of failing.

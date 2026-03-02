@@ -517,6 +517,9 @@ class ChatResponse(BaseModel):
     gem_list: Optional[GemListCard] = Field(None, description="Hidden gems list with detailed metrics and mini bars")
     undervalued_screen: Optional[UndervaluedScreenCard] = Field(None, description="Screening results showing top 5 overall and best by sector")
     
+    # NEW: Radar chart for stock comparison (3-stock visual comparison)
+    compare_radar: Optional[Dict[str, Any]] = Field(None, description="Radar chart data for multi-stock comparison")
+    
     
     # Existing structured components
     learning_section: Optional[Dict[str, Any]] = None  # {"title": "...", "items": ["..."]}

@@ -32,8 +32,9 @@ import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { GemListCard } from "./GemListCard";
 import { UndervaluedScreenCard } from "./UndervaluedScreenCard";
 import { ChartCard } from "./ChartCard";
-import { ChatCards } from "./ChatCards";
+import { ChatCards, FinancialsTableCard } from "./ChatCards";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
+import { BookOpen, Lightbulb } from "lucide-react";
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -165,6 +166,12 @@ function canonicalizeCardType(value: any): string {
     return raw.toLowerCase();
 }
 
+function stripLeadingEmojis(text: string): string {
+    if (!text) return text;
+    // Simple regex to remove leading emojis and spaces
+    return text.replace(/^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]|\s)+/, "").trim();
+}
+
 function localizeMetricLabel(label: string, lang: Language = "en"): string {
     if (!label) return label;
     if (lang !== "ar") return label;
@@ -289,24 +296,94 @@ function normalizeComparisonData(table: any, lang: Language = "en"): any {
         };
     }
 
+    const originalHeaders = lang === "ar" ? headers.map((h: string) => localizeMetricLabel(String(h), lang)) : headers;
+    const finalHeaders = originalHeaders[0] === (lang === "ar" ? "المؤشر" : "Metric")
+        ? originalHeaders
+        : [lang === "ar" ? "المؤشر" : "Metric", ...originalHeaders];
+
     // Shape B: metric + values[]
     return {
         ...table,
-        headers: lang === "ar" ? headers.map((h: string) => localizeMetricLabel(String(h), lang)) : headers,
+        headers: finalHeaders,
         rows: rows.map((row: any) => {
             const values = Array.isArray(row?.values) ? row.values : [];
             return {
+                metric: lang === "ar" ? sanitizeArabicString(String(row?.metric || "غير متاح")) : (row?.metric || "N/A"),
                 cells: [
-                    { value: localizeMetricLabel(String(row?.metric || row?.label || (lang === "ar" ? "المؤشر" : "Metric")), lang), highlight: "primary" },
                     ...values.map((v: any, idx: number) => ({
                         value: typeof v === "number"
                             ? toCompactDisplay(v, lang)
                             : (lang === "ar" ? sanitizeArabicString(String(v ?? "غير متاح")) : String(v ?? "N/A")),
-                        highlight: row?.winner_symbol && headers[idx + 1] === row.winner_symbol ? "positive" : undefined
+                        highlight: row?.winner_symbol && originalHeaders[idx] === row.winner_symbol ? "positive" : undefined
                     }))
                 ]
             };
         })
+    };
+}
+
+function normalizeFinancialsTableData(data: any, lang: Language = "en"): any {
+    if (!data || !Array.isArray(data.years) || data.years.length === 0) return null;
+
+    const years = data.years.map((y: any) => y.year);
+    const rows: any[] = [];
+
+    const getValues = (key: string) => {
+        const values: Record<string, number | null> = {};
+        data.years.forEach((y: any) => {
+            values[y.year] = y[key] !== undefined ? y[key] : null;
+        });
+        return values;
+    };
+
+    rows.push({
+        label: lang === "ar" ? "الإيرادات" : "Revenue",
+        values: getValues("revenue"),
+        isSubtotal: true,
+    });
+
+    rows.push({
+        label: lang === "ar" ? "إجمالي الربح" : "Gross Profit",
+        values: getValues("gross_profit"),
+    });
+
+    if (data.years.some((y: any) => y.gross_margin_pct !== undefined)) {
+        rows.push({
+            label: lang === "ar" ? "هامش إجمالي الربح (%)" : "Gross Margin (%)",
+            values: getValues("gross_margin_pct"),
+            format: "number",
+        });
+    }
+
+    rows.push({
+        label: lang === "ar" ? "الدخل التشغيلي" : "Operating Income",
+        values: getValues("operating_income"),
+    });
+
+    rows.push({
+        label: lang === "ar" ? "صافي الدخل" : "Net Income",
+        values: getValues("net_income"),
+        isSubtotal: true,
+    });
+
+    if (data.years.some((y: any) => y.net_margin_pct !== undefined)) {
+        rows.push({
+            label: lang === "ar" ? "هامش صافي الربح (%)" : "Net Margin (%)",
+            values: getValues("net_margin_pct"),
+            format: "number",
+        });
+    }
+
+    rows.push({
+        label: lang === "ar" ? "ربحية السهم" : "EPS",
+        values: getValues("eps"),
+    });
+
+    return {
+        title: data.title || (lang === "ar" ? "البيانات المالية" : "Earnings Analysis"),
+        years,
+        rows,
+        language: lang,
     };
 }
 
@@ -651,8 +728,8 @@ function LearningSection({ data }: { data: any }) {
     return (
         <div className="border-s-4 border-s-sky-500 ps-4 py-3 pe-4 rounded-e-lg my-4 bg-gradient-to-r from-sky-50 to-sky-50/30 dark:from-sky-900/15 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l">
             <div className="font-semibold text-sky-700 dark:text-sky-300 text-sm mb-2 flex items-center gap-2">
-                <span>📊</span>
-                {data.title}
+                <BookOpen className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                {stripLeadingEmojis(data.title)}
             </div>
             <ul className="space-y-1.5 ms-1">
                 {(data.items || []).map((item: string, i: number) => {
@@ -850,9 +927,10 @@ function ComparisonTableCard({ data }: { data: any }) {
                                         {row.metric || (row.cells && row.cells[0]?.value)}
                                     </td>
                                     {/* Value cells */}
-                                    {(row.values || (row.cells && row.cells.slice(1).map((c: any) => c.value)) || []).map((val: any, cellIdx: number) => {
+                                    {(row.values || (row.cells && (row.metric ? row.cells : row.cells.slice(1)).map((c: any) => c.value)) || []).map((val: any, cellIdx: number) => {
                                         const isWinner = (cellIdx + 1) === winnerCol;
-                                        const cellHighlight = row.cells?.[cellIdx]?.highlight;
+                                        const actualCellIdx = (row.cells && !row.metric && !row.values) ? cellIdx + 1 : cellIdx;
+                                        const cellHighlight = row.cells?.[actualCellIdx]?.highlight;
                                         return (
                                             <td key={cellIdx} className={`px-4 py-3 text-start ${isWinner ? 'text-teal-600 dark:text-teal-400 font-bold' :
                                                 cellHighlight === 'positive' ? 'text-emerald-600 dark:text-emerald-400 font-semibold' :
@@ -968,7 +1046,7 @@ function EducationalCard({ data, lang = 'en' }: { data: any, lang?: Language }) 
             <div className="my-4 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
                 <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 dark:from-sky-900/20 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l px-4 py-3 border-b border-slate-200 dark:border-slate-700/50">
                     <div className="text-lg font-bold text-sky-700 dark:text-sky-300 flex items-center gap-2">
-                        📚 {title}
+                        <Lightbulb className="w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0" /> {stripLeadingEmojis(title)}
                     </div>
                 </div>
                 <div className="p-4 space-y-4">
@@ -994,7 +1072,7 @@ function EducationalCard({ data, lang = 'en' }: { data: any, lang?: Language }) 
         <div className="my-4 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
             <div className="bg-gradient-to-r from-sky-50 to-sky-100/50 dark:from-sky-900/20 dark:to-transparent ltr:bg-gradient-to-r rtl:bg-gradient-to-l px-4 py-3 border-b border-slate-200 dark:border-slate-700/50">
                 <div className="text-lg font-bold text-sky-700 dark:text-sky-300 flex items-center gap-2">
-                    📚 {data.title}
+                    <Lightbulb className="w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0" /> {stripLeadingEmojis(data.title)}
                 </div>
                 {data.subtitle && (
                     <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{data.subtitle}</div>
@@ -1515,6 +1593,11 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
         lang
     );
 
+    const normalizedFinancialsTable = normalizeFinancialsTableData(
+        safeResponse?.financials_table || findCardData(["financials_table", "earnings_table"]),
+        lang
+    );
+
     // Radar chart data for multi-stock comparison
     const compareRadarData = safeResponse?.compare_radar || null;
 
@@ -1740,6 +1823,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     {normalizedComparisonTable && (
                         <motion.div variants={staggerItem}><ComparisonTableCard data={normalizedComparisonTable} /></motion.div>
                     )}
+                    {normalizedFinancialsTable && (
+                        <motion.div variants={staggerItem}><FinancialsTableCard {...normalizedFinancialsTable} /></motion.div>
+                    )}
 
                     {/* Score Breakdown (Scenario 4) */}
                     {normalizedScoreBreakdown && normalizedScoreBreakdown.factors?.length > 0 && (
@@ -1765,11 +1851,7 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     )}
 
                     {/* Legacy Learning Section */}
-                    {normalizedLearningSection && (
-                        <motion.div variants={staggerItem}><LearningSection data={normalizedLearningSection} /></motion.div>
-                    )}
-
-
+                    {/* Removed duplicate LearningSection rendering (was here previously) */}
 
                     {/* ============================================================
                     LAYER 4: FOLLOW UP SUGGESTIONS (Chips)

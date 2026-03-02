@@ -890,7 +890,7 @@ const MessageRenderer = memo(({
                                 'disclaimer', 'disclaimer_card', 'follow_up_prompt',
                                 'follow_up', 'error',
                                 'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
-                                'comparison_table', 'compare_table', 'peer_comparison',
+                                'comparison_table', 'compare_table', 'peer_comparison', 'financials_table', 'earnings_table',
                                 'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
                                 'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
                                 'price_display', 'current_position', 'stock_position',

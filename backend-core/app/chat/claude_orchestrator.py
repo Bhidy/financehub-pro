@@ -74,6 +74,18 @@ INTENT_DESCRIPTIONS = {
     "HELP": "Need help or guidance",
     "NEWS": "Stock or market news",
     "COMPANY_PROFILE": "Company background and description",
+    "INCOME_EXPLORE": "Deep dive into revenue, costs, EBITDA, taxes",
+    "INCOME_TREND": "Historical trends for revenue, EPS, margins",
+    "BALANCE_EXPLORE": "Deep dive into debt structure, assets, equity",
+    "BALANCE_TREND": "Historical trends for debt, cash, equity",
+    "CASHFLOW_EXPLORE": "Deep dive into capex, buybacks, FCF, operations",
+    "CASHFLOW_TREND": "Historical trends for OCF, FCF, capex",
+    "RATIO_TREND": "Historical trends for valuation (PE, PB) or profitability (ROE) ratios",
+    "ADVANCED_STATS": "Yields (FCF yield, earnings yield), BVPS, intangibles",
+    "OWNERSHIP_DETAIL": "Insider vs institutional ownership, free float",
+    "EV_ANALYSIS": "Enterprise Value breakdown (EV/EBITDA, EV/FCF)",
+    "SCORE_DETAIL": "Detailed breakdown of Altman Z, Piotroski F, or overall score",
+    "UNIVERSAL_FINANCIAL": "Specific financial line items like loan loss, depreciation",
 }
 
 
@@ -112,10 +124,14 @@ Your role is to classify user intent and extract structured parameters for datab
    - **Operator**: 'gt' (greater than), 'lt' (less than), 'eq' (equal).
    - **Value**: The numerical threshold.
    - **Direction**: 'desc' (High/Best) or 'asc' (Low/Cheapest).
+4. **Explorer Entities**: For intents like INCOME_EXPLORE, BALANCE_EXPLORE, or RATIO_TREND, optionally include an "explore_type" (e.g., "debt", "cost_structure") or "metric" (e.g., "pe", "margins").
 
 ### EXAMPLES:
 User: "Show me the best chemical stocks"
 JSON: {{"intent": "TOP_GAINERS", "entities": {{"sector": "Basic Resources"}}, "confidence": 0.95}}
+
+User: "What is COMI debt structure?"
+JSON: {{"intent": "BALANCE_EXPLORE", "entities": {{"symbol": "COMI", "explore_type": "debt"}}, "confidence": 0.95}}
 
 User: "Cheap banks with high yield"
 JSON: {{"intent": "SCREENER_DEEP", "entities": {{"sector": "Banks", "filters": [{{"metric": "pe_ratio", "operator": "lt", "value": 15}}, {{"metric": "dividend_yield", "operator": "gt", "value": 0}}], "sort_by": "dividend_yield"}}, "confidence": 0.9}}
@@ -144,6 +160,8 @@ Return JSON format:
            {{"metric": "metric_name", "operator": "gt/lt", "value": 123}}
         ],
         "sort_by": "metric_name",
+        "explore_type": "SubType string or null",
+        "metric": "Metric string or null",
         "limit": 10,
         "compare_symbols": ["SYM1", "SYM2"]
     }},

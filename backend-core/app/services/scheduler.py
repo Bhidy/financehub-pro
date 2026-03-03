@@ -57,6 +57,18 @@ class SchedulerService:
                 id='tier2_weekly_sweep',
                 replace_existing=True
             )
+
+            # --- TIER 2B: Stock Statistics Refresh (Friday 01:00) ---
+            # Refreshes all stock_statistics from StockAnalysis.com
+            # Runs 1 hour after financial statements sweep
+            self.scheduler.add_job(
+                self.run_statistics_refresh_job,
+                CronTrigger(day_of_week='fri', hour=1, minute=0, timezone='Africa/Cairo'),
+                id='tier2b_statistics_refresh',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
             
             # --- TIER 3: Seasonal (Daily 02:00 in Quarter months) ---
             self.scheduler.add_job(
@@ -311,6 +323,49 @@ class SchedulerService:
                 notification_service.send_discord(f"❌ **Weekly Sweep Failed**", is_error=True)
         except Exception as e:
             logger.error(f"Maintenance job error: {e}")
+
+    async def run_statistics_refresh_job(self):
+        """Weekly stock_statistics refresh from StockAnalysis.com (Runs Friday 01:00 Cairo)."""
+        try:
+            from app.services.notification_service import notification_service
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            script_path = os.path.join(base_dir, 'data_pipeline', 'ingest_statistics.py')
+            
+            logger.info("📊 Starting stock_statistics refresh...")
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, script_path,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await proc.communicate()
+            out = (stdout or b'').decode(errors='ignore')
+            
+            if proc.returncode == 0:
+                # Extract success/failed counts from output
+                success_count = '?'
+                failed_count = '?'
+                if 'Success:' in out:
+                    try:
+                        success_count = out.split('Success:')[1].split('\n')[0].strip()
+                    except: pass
+                if 'Failed:' in out:
+                    try:
+                        failed_count = out.split('Failed:')[1].split('\n')[0].strip()
+                    except: pass
+                notification_service.send_discord(
+                    f"✅ **Stock Statistics Refresh Success**\n"
+                    f"Updated: {success_count}\nFailed: {failed_count}",
+                    is_error=False
+                )
+                logger.info(f"✅ Statistics refresh complete: {success_count} updated, {failed_count} failed")
+            else:
+                error_tail = (out or (stderr or b'').decode(errors='ignore'))[-500:]
+                notification_service.send_discord(
+                    f"❌ **Stock Statistics Refresh Failed**\nExit: {proc.returncode}\n```{error_tail}```",
+                    is_error=True
+                )
+                logger.error(f"Statistics refresh failed with exit code {proc.returncode}")
+        except Exception as e:
+            logger.error(f"Statistics refresh job error: {e}")
 
     async def run_decypha_job(self):
         try:

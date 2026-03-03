@@ -361,6 +361,65 @@ async def main():
             print(f"Total: {len(symbols)}")
             print(f"Success: {success}")
             print(f"Failed: {failed}")
+            
+            # ============================================================
+            # POST-INGESTION: Derived fields & cross-fill
+            # ============================================================
+            logger.info("Running post-ingestion derived computations...")
+            async with pool.acquire() as conn:
+                # 1. Compute revenue_growth from income_statements
+                rg_result = await conn.execute("""
+                    WITH ranked AS (
+                        SELECT symbol, fiscal_year, revenue,
+                               ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY fiscal_year DESC) as rn
+                        FROM income_statements
+                        WHERE revenue IS NOT NULL AND revenue != 0
+                    ),
+                    growth AS (
+                        SELECT r1.symbol,
+                               CASE WHEN r2.revenue IS NOT NULL AND r2.revenue != 0 
+                                    THEN (r1.revenue - r2.revenue) / ABS(r2.revenue)
+                                    ELSE NULL
+                               END as yoy_growth
+                        FROM ranked r1
+                        JOIN ranked r2 ON r1.symbol = r2.symbol AND r1.rn = 1 AND r2.rn = 2
+                    )
+                    UPDATE stock_statistics ss
+                    SET revenue_growth = g.yoy_growth
+                    FROM growth g
+                    WHERE ss.symbol = g.symbol AND ss.market_code = 'EGX'
+                    AND g.yoy_growth IS NOT NULL
+                """)
+                logger.info(f"  Revenue growth computed: {rg_result}")
+                
+                # 2. Cross-fill pb_ratio from stock_statistics to market_tickers
+                pb_result = await conn.execute("""
+                    UPDATE market_tickers mt SET pb_ratio = ss.pb_ratio
+                    FROM stock_statistics ss
+                    WHERE mt.symbol = ss.symbol AND mt.market_code = ss.market_code
+                    AND mt.market_code = 'EGX' AND mt.pb_ratio IS NULL AND ss.pb_ratio IS NOT NULL
+                """)
+                logger.info(f"  PB ratio cross-fill: {pb_result}")
+                
+                # 3. Cross-fill pe_ratio where missing
+                pe_result = await conn.execute("""
+                    UPDATE market_tickers mt SET pe_ratio = ss.pe_ratio
+                    FROM stock_statistics ss
+                    WHERE mt.symbol = ss.symbol AND mt.market_code = ss.market_code
+                    AND mt.market_code = 'EGX' AND mt.pe_ratio IS NULL AND ss.pe_ratio IS NOT NULL
+                """)
+                logger.info(f"  PE ratio cross-fill: {pe_result}")
+                
+                # 4. Cross-fill dividend_yield where missing
+                dy_result = await conn.execute("""
+                    UPDATE market_tickers mt SET dividend_yield = ss.dividend_yield
+                    FROM stock_statistics ss
+                    WHERE mt.symbol = ss.symbol AND mt.market_code = ss.market_code
+                    AND mt.market_code = 'EGX' AND mt.dividend_yield IS NULL AND ss.dividend_yield IS NOT NULL
+                """)
+                logger.info(f"  Dividend yield cross-fill: {dy_result}")
+                
+            logger.info("Post-ingestion steps complete.")
     
     await pool.close()
 

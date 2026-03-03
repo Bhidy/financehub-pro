@@ -495,7 +495,7 @@ async def handle_compare_stocks(
                             peer_data['profit_margin'] = peer_data.get('net_margin')
                             
                         # Final duplicate guard before append
-                        if _canonical_symbol(peer_data.get('symbol', '')) != current_canonical:
+                        if _canonical_symbol(peer_data.get('symbol', '')) != primary_canon:
                             stocks_data.append(peer_data)
 
     if len(stocks_data) < 2:

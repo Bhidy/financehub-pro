@@ -25,7 +25,8 @@ import {
     LayoutDashboard,
     Wallet,
     ArrowLeftRight,
-    X
+    X,
+    Database
 } from "lucide-react";
 import { SafeChatCard } from "@/components/ui/SafeChatCard";
 import { clsx, type ClassValue } from "clsx";
@@ -2197,6 +2198,213 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
 }
 
 // ============================================================
+// EXPANSION: Universal Explorer Data Card (For all Phase 1 new cards)
+// ============================================================
+
+export function ExplorerDataCard({ title, type, data, language = "en" }: { title?: string, type?: string, data?: any, language?: "en" | "ar" }) {
+    if (!data) return null;
+    const t = translations[language].chat;
+    const isRtl = language === "ar";
+
+    // 1. Grouped Data (e.g. Advanced Stats, Income Breakdown)
+    if (data.groups) {
+        return (
+            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden mt-2" dir={isRtl ? "rtl" : "ltr"}>
+                <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-transparent flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                        <Zap size={18} />
+                    </div>
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title}</span>
+                </div>
+                <div className="p-1">
+                    {data.groups.map((group: any, idx: number) => (
+                        <div key={idx} className="mb-2 last:mb-0">
+                            <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                                <span>{group.group}</span>
+                                {group.total_value && <span>{group.total_value} {data.currency}</span>}
+                            </div>
+                            <div className="divide-y divide-slate-50 dark:divide-white/5">
+                                {group.items?.map((item: any, i: number) => (
+                                    <div key={i} className="flex justify-between items-center px-4 py-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.label}</span>
+                                        <span className={`font-mono font-black ${item.raw && item.raw < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+                                            {item.value || formatValue(item.raw)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // 2. Timeline / Series Data (e.g. Ratio History, Growth Trends)
+    if (data.series && data.years) {
+        return (
+            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden mt-2" dir={isRtl ? "rtl" : "ltr"}>
+                <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/10 dark:to-transparent flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                            <TrendingUp size={18} />
+                        </div>
+                        <span className="font-black text-slate-800 dark:text-white text-lg">{title}</span>
+                    </div>
+                </div>
+                <div className="overflow-x-auto scrollbar-hide p-1">
+                    <table className="w-full min-w-[300px] text-sm">
+                        <thead className="bg-slate-50/50 dark:bg-white/5">
+                            <tr>
+                                <th className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 ${isRtl ? "text-right" : "text-left"}`}>
+                                    {isRtl ? "البيان" : "Metric"}
+                                </th>
+                                {data.years.map((y: string) => (
+                                    <th key={y} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 ${isRtl ? "text-left" : "text-right"}`}>
+                                        {y}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                            {data.series.map((series: any, i: number) => (
+                                <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-300 ${isRtl ? "text-right" : "text-left"}`}>
+                                        {series.name}
+                                    </td>
+                                    {series.data?.map((val: any, j: number) => (
+                                        <td key={j} className={`px-4 py-2 font-mono font-black ${isRtl ? "text-left" : "text-right"} ${val < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+                                            {formatValue(val, series.format)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    }
+
+    // 3. Dynamic Data Card (from Universal Handler)
+    if (data.items && Array.isArray(data.items)) {
+        // Group items by category to make it look nicer
+        const categories = [...new Set(data.items.map((i: any) => i.category))];
+
+        return (
+            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden mt-2" dir={isRtl ? "rtl" : "ltr"}>
+                <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-transparent flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                        <Database size={18} />
+                    </div>
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title}</span>
+                </div>
+                <div className="p-1">
+                    {categories.map((cat: any, idx: number) => (
+                        <div key={idx} className="mb-2 last:mb-0">
+                            <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                {cat ? cat.replace(/_/g, " ") : "Data"}
+                            </div>
+                            <div className="divide-y divide-slate-50 dark:divide-white/5">
+                                {data.items.filter((i: any) => i.category === cat).map((item: any, i: number) => {
+                                    // Get most recent value
+                                    const latest = item.values?.[0];
+                                    return (
+                                        <div key={i} className="flex justify-between items-center px-4 py-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                                {isRtl ? (item.label_ar || item.label) : item.label}
+                                            </span>
+                                            <div className="flex flex-col items-end">
+                                                <span className={`font-mono font-black ${latest?.raw < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+                                                    {latest ? (latest.formatted || formatValue(latest.raw)) : "-"}
+                                                </span>
+                                                {latest?.year && <span className="text-[10px] font-bold text-slate-400">{latest.year}</span>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // 4. Score Detail (Z-Score / F-Score)
+    if (data.score_name && data.interpretation) {
+        const isDistress = data.interpretation.includes("Distress") || data.interpretation.includes("Weak");
+        const isSafe = data.interpretation.includes("Safe") || data.interpretation.includes("Strong");
+
+        return (
+            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden mt-2" dir={isRtl ? "rtl" : "ltr"}>
+                <div className={`px-5 py-6 border-b border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center ${isDistress ? 'bg-rose-50 dark:bg-rose-900/10' : isSafe ? 'bg-emerald-50 dark:bg-emerald-900/10' : 'bg-slate-50 dark:bg-slate-900/10'}`}>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">{title}</h3>
+                    <div className={`text-5xl font-black tabular-nums tracking-tighter ${isDistress ? 'text-rose-600 dark:text-rose-400' : isSafe ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                        {data.score_value !== null ? data.score_value : "N/A"}
+                    </div>
+                    <div className={`mt-3 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${isDistress ? 'bg-rose-100 border-rose-200 text-rose-700 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-300' : isSafe ? 'bg-emerald-100 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300' : 'bg-slate-200 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}>
+                        {data.interpretation}
+                    </div>
+                </div>
+                <div className="p-5">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4 text-center">
+                        {data.description}
+                    </p>
+                    {data.criteria && (
+                        <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3 text-center">
+                                {isRtl ? "معايير التقييم" : "Evaluation Criteria"}
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                {data.criteria.map((crit: string, i: number) => (
+                                    <div key={i} className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 dark:bg-blue-500"></div>
+                                        <span>{crit}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // 5. Ownership Pie (Simple fallback for pie charts)
+    if (data.pie || data.components) {
+        const items = data.pie || data.components;
+        return (
+            <div className="bg-white dark:bg-[#1A1F2E] rounded-2xl border border-slate-100 dark:border-white/5 shadow-xl overflow-hidden mt-2" dir={isRtl ? "rtl" : "ltr"}>
+                <div className="px-5 py-4 border-b border-slate-100 dark:border-white/5 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-transparent">
+                    <span className="font-black text-slate-800 dark:text-white text-lg">{title}</span>
+                </div>
+                <div className="divide-y divide-slate-50 dark:divide-white/5 p-1">
+                    {items.map((item: any, i: number) => (
+                        <div key={i} className="flex justify-between items-center px-4 py-3">
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.label}</span>
+                            <span className="font-mono font-black text-slate-900 dark:text-white">
+                                {item.percent !== undefined ? `${item.percent}%` : (Array.isArray(item.values) ? item.values[0] : item.value)}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // 6. Generic Object Fallback
+    return (
+        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl">
+            <h4 className="font-bold text-sm mb-2 text-slate-800 dark:text-slate-200">{title}</h4>
+            <div className="text-xs text-slate-500 font-mono">
+                {JSON.stringify(data, null, 2).substring(0, 500)}...
+            </div>
+        </div>
+    );
+}
+
+// ============================================================
 // Legacy Financial Cards
 // ============================================================
 
@@ -2897,6 +3105,30 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
                     <div className="text-sm font-medium">{safeErrorText}</div>
                 </div>
             );
+
+        // ============================================================
+        // EXPANSION: Financial Explorer Card Types (Phase 1)
+        // ============================================================
+        case "revenue_breakdown":
+        case "cost_breakdown":
+        case "ebitda_breakdown":
+        case "debt_structure":
+        case "assets_breakdown":
+        case "equity_breakdown":
+        case "ppe_breakdown":
+        case "debt_activity":
+        case "cashflow_waterfall":
+        case "working_capital_card":
+        case "fcf_vs_income":
+        case "growth_trend":
+        case "ratio_history_chart":
+        case "earnings_quality":
+        case "dynamic_data_card":
+        case "advanced_stats":
+        case "ownership_structure":
+        case "score_detail":
+            return <ExplorerDataCard title={card.title} type={type} data={card.data} language={language} />;
+
         default:
             // Fallback for unknown cards
             return (

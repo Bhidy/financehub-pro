@@ -51,6 +51,13 @@ import { translations } from "@/components/chatbot/translations";
 import { resolveNewsImageSrc, sanitizeNewsText, splitNewsParagraphs } from "@/lib/news-display";
 import { createPortal } from "react-dom";
 
+// Phase 6: Rich Visualization Chart Components
+import { RevenueBreakdown } from "./charts/RevenueBreakdown";
+import { DebtStructure } from "./charts/DebtStructure";
+import { CashflowWaterfall } from "./charts/CashflowWaterfall";
+import { AssetsBreakdown } from "./charts/AssetsBreakdown";
+import { RatioHistoryChart } from "./charts/RatioHistoryChart";
+
 function canonicalizeCardType(value: any): string {
     const raw = String(value ?? "").trim();
     if (!raw) return raw;
@@ -3109,20 +3116,32 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
         // ============================================================
         // EXPANSION: Financial Explorer Card Types (Phase 1)
         // ============================================================
+        // --- Rich Chart Visualizations (Phase 6) ---
         case "revenue_breakdown":
         case "cost_breakdown":
-        case "ebitda_breakdown":
+            return <RevenueBreakdown title={card.title} data={card.data} language={language} />;
+
         case "debt_structure":
+            return <DebtStructure title={card.title} data={card.data} language={language} />;
+
         case "assets_breakdown":
+            return <AssetsBreakdown title={card.title} data={card.data} language={language} />;
+
+        case "cashflow_waterfall":
+            return <CashflowWaterfall title={card.title} data={card.data} language={language} />;
+
+        case "growth_trend":
+        case "ratio_history_chart":
+        case "fcf_vs_income":
+        case "earnings_quality":
+        case "working_capital_card":
+            return <RatioHistoryChart title={card.title} data={card.data} language={language} />;
+
+        // --- Grouped Table / Data Fallbacks (ExplorerDataCard) ---
+        case "ebitda_breakdown":
         case "equity_breakdown":
         case "ppe_breakdown":
         case "debt_activity":
-        case "cashflow_waterfall":
-        case "working_capital_card":
-        case "fcf_vs_income":
-        case "growth_trend":
-        case "ratio_history_chart":
-        case "earnings_quality":
         case "dynamic_data_card":
         case "advanced_stats":
         case "ownership_structure":

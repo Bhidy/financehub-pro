@@ -4807,6 +4807,81 @@ class ChatService:
                 language=language
             )
 
+        # ===== EXPANSION: Financial Explorer Intents (Phase 1) =====
+        elif intent == Intent.INCOME_EXPLORE:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.income_explorer_handler import handle_income_explore
+            return await handle_income_explore(self.conn, symbol, entities, language)
+
+        elif intent == Intent.INCOME_TREND:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.income_explorer_handler import handle_income_trend
+            return await handle_income_trend(self.conn, symbol, entities, language)
+
+        elif intent == Intent.BALANCE_EXPLORE:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.balance_explorer_handler import handle_balance_explore
+            return await handle_balance_explore(self.conn, symbol, entities, language)
+
+        elif intent == Intent.BALANCE_TREND:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.balance_explorer_handler import handle_balance_trend
+            return await handle_balance_trend(self.conn, symbol, entities, language)
+
+        elif intent == Intent.CASHFLOW_EXPLORE:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.cashflow_explorer_handler import handle_cashflow_explore
+            return await handle_cashflow_explore(self.conn, symbol, entities, language)
+
+        elif intent == Intent.CASHFLOW_TREND:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.cashflow_explorer_handler import handle_cashflow_trend
+            return await handle_cashflow_trend(self.conn, symbol, entities, language)
+
+        elif intent == Intent.RATIO_TREND:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.universal_financial_handler import handle_ratio_trend
+            return await handle_ratio_trend(self.conn, symbol, entities, language)
+
+        elif intent == Intent.ADVANCED_STATS:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.universal_financial_handler import handle_advanced_stats
+            return await handle_advanced_stats(self.conn, symbol, entities, language)
+
+        elif intent == Intent.OWNERSHIP_DETAIL:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.universal_financial_handler import handle_ownership_detail
+            return await handle_ownership_detail(self.conn, symbol, language)
+
+        elif intent == Intent.EV_ANALYSIS:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.universal_financial_handler import handle_advanced_stats
+            # EV Analysis routes through advanced_stats with ev focus
+            entities['focus'] = 'ev'
+            return await handle_advanced_stats(self.conn, symbol, entities, language)
+
+        elif intent == Intent.SCORE_DETAIL:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.universal_financial_handler import handle_score_detail
+            return await handle_score_detail(self.conn, symbol, entities, language)
+
+        elif intent == Intent.UNIVERSAL_FINANCIAL:
+            if not symbol:
+                return handle_clarify_symbol(language=language)
+            from .handlers.universal_financial_handler import handle_universal_financial
+            return await handle_universal_financial(self.conn, symbol, str(message), language)
+
         else:
             return handle_unknown(language)
 

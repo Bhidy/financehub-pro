@@ -120,6 +120,20 @@ class Intent(str, Enum):
     MORNING_BRIEF = "MORNING_BRIEF"               # Daily market recap/pre-session brief
     CATALYST_CALENDAR = "CATALYST_CALENDAR"       # Upcoming events, dividends, results dates
 
+    # ===== EXPANSION: Financial Explorer Intents (Phase 1) =====
+    INCOME_EXPLORE = "INCOME_EXPLORE"             # Revenue breakdown, cost structure, EBITDA
+    INCOME_TREND = "INCOME_TREND"                 # Revenue/EPS/margins growth trends
+    BALANCE_EXPLORE = "BALANCE_EXPLORE"           # Debt structure, assets, working capital
+    BALANCE_TREND = "BALANCE_TREND"               # Balance sheet metric trends
+    CASHFLOW_EXPLORE = "CASHFLOW_EXPLORE"         # Cash flow waterfall, capex, financing
+    CASHFLOW_TREND = "CASHFLOW_TREND"             # FCF/OCF/capex trends
+    RATIO_TREND = "RATIO_TREND"                   # Historical ratio charts (5yr)
+    ADVANCED_STATS = "ADVANCED_STATS"             # Yields, turnover, BV, intrinsic data
+    OWNERSHIP_DETAIL = "OWNERSHIP_DETAIL"         # Insider vs institutional vs float
+    EV_ANALYSIS = "EV_ANALYSIS"                   # Enterprise value decomposition
+    SCORE_DETAIL = "SCORE_DETAIL"                 # Z-Score/F-Score explained
+    UNIVERSAL_FINANCIAL = "UNIVERSAL_FINANCIAL"   # Dynamic catch-all for any financial Q
+
 
 class CardType(str, Enum):
     """Types of UI cards."""
@@ -187,6 +201,26 @@ class CardType(str, Enum):
     FINANCIALS = "financials"
     MOVERS = "movers"
     COMPARE = "compare"
+
+    # ===== EXPANSION: New Explorer Card Types (Phase 1) =====
+    REVENUE_BREAKDOWN = "revenue_breakdown"       # Stacked bar: revenue components
+    COST_BREAKDOWN = "cost_breakdown"             # Pie/donut: cost structure
+    EBITDA_BREAKDOWN = "ebitda_breakdown"         # EBITDA vs EBIT with D&A
+    EARNINGS_QUALITY_CARD = "earnings_quality"    # FCF vs Net Income quality check
+    GROWTH_TREND = "growth_trend"                 # Multi-year line chart
+    DEBT_STRUCTURE = "debt_structure"             # Short vs long-term debt bars
+    ASSETS_BREAKDOWN = "assets_breakdown"         # Asset composition treemap/pie
+    EQUITY_BREAKDOWN = "equity_breakdown"         # Equity waterfall
+    PPE_BREAKDOWN = "ppe_breakdown"               # PP&E component bars
+    WORKING_CAPITAL_CARD = "working_capital_card" # Current assets vs liabilities
+    CASHFLOW_WATERFALL = "cashflow_waterfall"     # OCF → ICF → FCF waterfall
+    DEBT_ACTIVITY = "debt_activity"               # Debt issuance vs repayment
+    FCF_VS_INCOME = "fcf_vs_income"               # Dual-line FCF vs NI
+    RATIO_HISTORY_CHART = "ratio_history_chart"   # Multi-line historical ratios
+    ADVANCED_STATS_CARD = "advanced_stats"        # Grouped advanced metrics
+    OWNERSHIP_STRUCTURE = "ownership_structure"   # Pie: insider/institutional/float
+    SCORE_DETAIL_CARD = "score_detail"            # Z-Score/F-Score explanation
+    DYNAMIC_DATA_CARD = "dynamic_data_card"       # Auto-generated data table
 
 
 class ChartType(str, Enum):

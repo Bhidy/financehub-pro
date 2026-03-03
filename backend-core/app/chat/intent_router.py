@@ -396,7 +396,141 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
         ["من انت", "اسمك", "هل انت ذكاء اصطناعي"],
         1.0
     ),
+
+    # =========================================================================
+    # EXPANSION: Financial Explorer Intents (Phase 1)
+    # =========================================================================
+
+    Intent.INCOME_EXPLORE: (
+        ["revenue breakdown", "revenue composition", "revenue sources", "cost structure",
+         "cost breakdown", "operating costs", "cost analysis", "opex breakdown",
+         "ebitda breakdown", "ebitda vs ebit", "tax analysis", "effective tax rate",
+         "earnings quality", "interest income", "interest spread", "net interest income",
+         "fee income", "commission income", "loan loss provisions", "provisions",
+         "non-operating income", "fx gains", "currency gains", "preferred dividends",
+         "minority interest earnings", "r&d spending", "research development"],
+        ["تحليل الإيرادات", "مصادر الإيرادات", "هيكل التكاليف", "تحليل التكاليف",
+         "مصروفات التشغيل", "دخل الفوائد", "صافي فوائد", "مخصصات", "رسوم وعمولات",
+         "ضريبة الدخل", "جودة الأرباح", "تحليل الضرائب"],
+        4.0
+    ),
+
+    Intent.INCOME_TREND: (
+        ["revenue growth trend", "revenue trend", "eps growth trend", "eps trajectory",
+         "net income trend", "profit trend", "margin trend over years", "ebitda trend",
+         "fcf trend", "fcf margin trend", "shares outstanding trend"],
+        ["اتجاه الإيرادات", "اتجاه نمو الإيرادات", "اتجاه ربحية السهم",
+         "اتجاه الأرباح", "اتجاه الهوامش"],
+        3.5
+    ),
+
+    Intent.BALANCE_EXPLORE: (
+        ["debt structure", "debt breakdown", "debt composition", "short term debt",
+         "long term debt", "total debt", "assets breakdown", "asset composition",
+         "working capital", "working capital analysis", "equity breakdown",
+         "shareholders equity", "retained earnings", "treasury stock",
+         "ppe breakdown", "pp&e details", "fixed assets breakdown", "property plant equipment",
+         "machinery", "buildings", "goodwill analysis", "intangible assets",
+         "book value", "tangible book value", "net cash position",
+         "liabilities breakdown", "lease obligations", "deferred revenue"],
+        ["هيكل الديون", "ديون قصيرة الأجل", "ديون طويلة الأجل", "تحليل الأصول",
+         "رأس المال العامل", "حقوق الملكية", "أرباح محتجزة", "أسهم خزينة",
+         "أصول ثابتة", "الشهرة", "القيمة الدفترية", "صافي النقد"],
+        4.0
+    ),
+
+    Intent.BALANCE_TREND: (
+        ["debt trend", "cash position trend", "assets over time", "equity trend",
+         "retained earnings history", "balance sheet trend"],
+        ["اتجاه الديون", "اتجاه السيولة", "اتجاه الأصول"],
+        3.5
+    ),
+
+    Intent.CASHFLOW_EXPLORE: (
+        ["cash flow breakdown", "cash flow waterfall", "cash flow sources",
+         "operating cash flow", "investing activities", "financing activities",
+         "capex", "capital expenditure", "capex spending",
+         "acquisitions", "buybacks", "share repurchases", "share buyback",
+         "dividends paid", "debt issuance", "debt repayment", "net debt issued",
+         "fcf vs net income", "fcf analysis", "free cash flow analysis",
+         "levered fcf", "unlevered fcf", "cash taxes paid",
+         "beginning cash", "ending cash", "cash bridge", "fx effect on cash"],
+        ["تدفقات نقدية", "شلال التدفقات", "إنفاق رأسمالي", "استحواذات",
+         "إعادة شراء أسهم", "توزيعات مدفوعة", "إصدار ديون", "سداد ديون",
+         "تدفق نقدي حر", "ضرائب مدفوعة"],
+        4.0
+    ),
+
+    Intent.CASHFLOW_TREND: (
+        ["operating cash flow trend", "ocf trend", "fcf growth trend",
+         "capex trend", "cash flow trend over years"],
+        ["اتجاه التدفق التشغيلي", "اتجاه التدفق النقدي الحر",
+         "اتجاه الإنفاق الرأسمالي"],
+        3.5
+    ),
+
+    Intent.RATIO_TREND: (
+        ["pe ratio history", "pe trend", "roe trend", "roe history",
+         "roa history", "debt to equity trend", "deleveraging",
+         "margin history", "valuation history", "multiples over time",
+         "dividend yield history", "yield history", "payout ratio history",
+         "turnover trend", "efficiency trend", "ev multiples history",
+         "historical ratios", "ratio history", "5 year ratios"],
+        ["تاريخ مكرر الربحية", "اتجاه العائد على حقوق الملكية",
+         "تاريخ النسب المالية", "اتجاه النسب", "تاريخ التقييم"],
+        3.5
+    ),
+
+    Intent.ADVANCED_STATS: (
+        ["advanced statistics", "advanced metrics", "advanced valuation",
+         "fcf yield", "earnings yield", "price to tangible book",
+         "price to cash flow", "p/tbv", "p/ocf", "p/fcf",
+         "asset turnover ratio", "inventory turnover ratio",
+         "book value per share", "intrinsic data"],
+        ["إحصائيات متقدمة", "مقاييس متقدمة", "عائد التدفق النقدي",
+         "عائد الأرباح", "القيمة الدفترية للسهم"],
+        3.5
+    ),
+
+    Intent.OWNERSHIP_DETAIL: (
+        ["insider ownership", "institutional ownership", "float shares",
+         "share structure", "insider vs institutional", "who holds",
+         "ownership breakdown", "ownership pie"],
+        ["ملكية المطلعين", "ملكية المؤسسات", "هيكل الأسهم",
+         "أسهم حرة التداول", "تحليل الملكية"],
+        3.5
+    ),
+
+    Intent.EV_ANALYSIS: (
+        ["enterprise value", "ev breakdown", "ev decomposition",
+         "ev to ebit", "ev to fcf", "ev to earnings", "ev analysis"],
+        ["قيمة المنشأة", "تحليل قيمة المنشأة"],
+        3.5
+    ),
+
+    Intent.SCORE_DETAIL: (
+        ["z score explained", "z-score detail", "altman z score breakdown",
+         "f score explained", "f-score detail", "piotroski f score breakdown",
+         "z score breakdown", "f score breakdown",
+         "explain z score", "explain f score", "what is z score", "what is f score"],
+        ["شرح مؤشر ألتمان", "تفصيل مؤشر ألتمان", "شرح مؤشر بيوتروسكي",
+         "تفصيل نقاط بيوتروسكي"],
+        4.0
+    ),
+
+    Intent.UNIVERSAL_FINANCIAL: (
+        ["loan loss", "depreciation trend", "amortization", "stock compensation",
+         "change in receivables", "change in inventory", "change in payables",
+         "other investing", "other financing", "investment purchases",
+         "investment sales", "sale of assets", "intangible acquisitions",
+         "deferred taxes", "accrued liabilities", "current taxes",
+         "net cash change", "misc cash flow"],
+        ["مخصصات قروض", "استهلاك", "إطفاء", "تغير ذمم مدينة",
+         "تغير مخزون", "تغير دائنين"],
+        2.0  # Low weight — only activates when nothing else matches
+    ),
 }
+
 
 # Patterns for entity extraction
 RANGE_PATTERNS = {
@@ -778,7 +912,14 @@ class IntentRouter:
         missing_fields = []
         if best_intent in [Intent.STOCK_PRICE, Intent.STOCK_CHART, Intent.STOCK_STAT, 
                            Intent.FINANCIALS, Intent.DIVIDENDS, Intent.COMPANY_PROFILE,
-                           Intent.STOCK_SNAPSHOT]:
+                           Intent.STOCK_SNAPSHOT,
+                           # Expansion: Explorer intents need symbol too
+                           Intent.INCOME_EXPLORE, Intent.INCOME_TREND,
+                           Intent.BALANCE_EXPLORE, Intent.BALANCE_TREND,
+                           Intent.CASHFLOW_EXPLORE, Intent.CASHFLOW_TREND,
+                           Intent.RATIO_TREND, Intent.ADVANCED_STATS,
+                           Intent.OWNERSHIP_DETAIL, Intent.EV_ANALYSIS,
+                           Intent.SCORE_DETAIL, Intent.UNIVERSAL_FINANCIAL]:
             if not entities.get('symbol'):
                 # Check context for last symbol
                 if context and context.get('last_symbol'):
@@ -803,6 +944,73 @@ class IntentRouter:
                 best_intent = Intent.FOLLOW_UP
                 confidence = 0.5
         
+        # ---------------------------------------------------------
+        # EXPANSION: Extract sub-type entities for explorer intents
+        # ---------------------------------------------------------
+        if best_intent in (Intent.INCOME_EXPLORE, Intent.BALANCE_EXPLORE, Intent.CASHFLOW_EXPLORE):
+            explore_map = {
+                # Income explore sub-types
+                "cost structure": "cost_structure", "cost breakdown": "cost_structure",
+                "costs": "cost_structure", "opex": "cost_structure", "operating costs": "cost_structure",
+                "هيكل التكاليف": "cost_structure", "مصروفات التشغيل": "cost_structure",
+                "ebitda breakdown": "ebitda", "ebitda vs ebit": "ebitda", "ebitda": "ebitda",
+                "tax analysis": "tax", "effective tax rate": "tax", "taxes": "tax",
+                "ضريبة الدخل": "tax", "تحليل الضرائب": "tax",
+                "earnings quality": "quality", "جودة الأرباح": "quality",
+                # Balance explore sub-types
+                "debt structure": "debt", "debt breakdown": "debt", "debt composition": "debt",
+                "total debt": "debt", "هيكل الديون": "debt", "ديون": "debt",
+                "equity breakdown": "equity", "shareholders equity": "equity", "retained earnings": "equity",
+                "حقوق الملكية": "equity", "أرباح محتجزة": "equity",
+                "working capital": "working_capital", "رأس المال العامل": "working_capital",
+                "ppe breakdown": "ppe", "fixed assets": "ppe", "machinery": "ppe",
+                "أصول ثابتة": "ppe",
+                # Cashflow explore sub-types
+                "capex": "capex", "capital expenditure": "capex", "إنفاق رأسمالي": "capex",
+                "debt issuance": "debt_activity", "debt repayment": "debt_activity",
+                "financing activities": "debt_activity", "buybacks": "debt_activity",
+                "share repurchases": "debt_activity", "dividends paid": "debt_activity",
+                "fcf analysis": "fcf", "fcf vs net income": "fcf", "free cash flow analysis": "fcf",
+                "تدفق نقدي حر": "fcf",
+            }
+            for pattern, sub_type in explore_map.items():
+                if pattern in merged_text:
+                    entities["explore_type"] = sub_type
+                    break
+
+        if best_intent == Intent.INCOME_TREND:
+            metric_map = {
+                "revenue": "revenue", "eps": "eps", "net income": "net_income",
+                "ebitda": "ebitda", "margins": "margins", "fcf": "fcf",
+                "الإيرادات": "revenue", "ربحية السهم": "eps",
+            }
+            for pattern, metric in metric_map.items():
+                if pattern in merged_text:
+                    entities["metric"] = metric
+                    break
+
+        if best_intent == Intent.RATIO_TREND:
+            ratio_map = {
+                "pe": "pe", "p/e": "pe", "valuation": "valuation", "multiples": "valuation",
+                "roe": "profitability", "roa": "profitability", "roce": "profitability",
+                "margin": "margins", "gross margin": "margins",
+                "debt": "leverage", "leverage": "leverage",
+                "liquidity": "liquidity", "current ratio": "liquidity",
+                "yield": "yield", "dividend yield": "yield",
+                "turnover": "efficiency", "efficiency": "efficiency",
+                "ev": "ev", "enterprise value": "ev",
+            }
+            for pattern, metric in ratio_map.items():
+                if pattern in merged_text:
+                    entities["metric"] = metric
+                    break
+
+        if best_intent == Intent.SCORE_DETAIL:
+            if "f score" in merged_text or "f-score" in merged_text or "piotroski" in merged_text:
+                entities["score_type"] = "f_score"
+            else:
+                entities["score_type"] = "z_score"
+
         return IntentResult(
             intent=best_intent,
             confidence=round(confidence, 2),

@@ -171,6 +171,7 @@ class CardType(str, Enum):
     BULL_CASE = "bull_case"
     BEAR_CASE = "bear_case"
     INSIGHT = "insight"
+    MY_FRAMEWORK = "my_framework"
     
     # Additional Card Types (Frontend expects these)
     DISCOVERY_LIST = "discovery_list"

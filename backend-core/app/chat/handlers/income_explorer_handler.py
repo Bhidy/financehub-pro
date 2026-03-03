@@ -52,8 +52,9 @@ async def handle_income_revenue_breakdown(conn, symbol: str, language: str = "en
         ]
         for col, label in components:
             vals = [format_value(r.get(col), "currency", currency) for r in rows]
+            raw_vals = [float(r.get(col) or 0) for r in rows]
             if any(r.get(col) is not None for r in rows):
-                breakdown_data["components"].append({"label": label, "values": vals})
+                breakdown_data["components"].append({"label": label, "values": vals, "raw": raw_vals})
         # Add total and provisions
         breakdown_data["total"] = [format_value(r.get('total_interest_income'), "currency", currency) for r in rows]
         breakdown_data["provisions"] = [format_value(r.get('loan_loss_provisions'), "currency", currency) for r in rows]
@@ -65,7 +66,8 @@ async def handle_income_revenue_breakdown(conn, symbol: str, language: str = "en
         ]
         for col, label in components:
             vals = [format_value(r.get(col), "currency", currency) for r in rows]
-            breakdown_data["components"].append({"label": label, "values": vals})
+            raw_vals = [float(r.get(col) or 0) for r in rows]
+            breakdown_data["components"].append({"label": label, "values": vals, "raw": raw_vals})
         breakdown_data["margin"] = [format_value(r.get('gross_margin'), "percent", currency) for r in rows]
         breakdown_data["growth"] = [format_value(r.get('revenue_growth'), "percent", currency) for r in rows]
     

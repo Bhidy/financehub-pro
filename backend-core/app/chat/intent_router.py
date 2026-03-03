@@ -412,7 +412,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
         ["تحليل الإيرادات", "مصادر الإيرادات", "هيكل التكاليف", "تحليل التكاليف",
          "مصروفات التشغيل", "دخل الفوائد", "صافي فوائد", "مخصصات", "رسوم وعمولات",
          "ضريبة الدخل", "جودة الأرباح", "تحليل الضرائب"],
-        4.0
+        5.0
     ),
 
     Intent.INCOME_TREND: (
@@ -421,7 +421,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "fcf trend", "fcf margin trend", "shares outstanding trend"],
         ["اتجاه الإيرادات", "اتجاه نمو الإيرادات", "اتجاه ربحية السهم",
          "اتجاه الأرباح", "اتجاه الهوامش"],
-        3.5
+        4.5
     ),
 
     Intent.BALANCE_EXPLORE: (
@@ -436,14 +436,14 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
         ["هيكل الديون", "ديون قصيرة الأجل", "ديون طويلة الأجل", "تحليل الأصول",
          "رأس المال العامل", "حقوق الملكية", "أرباح محتجزة", "أسهم خزينة",
          "أصول ثابتة", "الشهرة", "القيمة الدفترية", "صافي النقد"],
-        4.0
+        5.0
     ),
 
     Intent.BALANCE_TREND: (
         ["debt trend", "cash position trend", "assets over time", "equity trend",
          "retained earnings history", "balance sheet trend"],
         ["اتجاه الديون", "اتجاه السيولة", "اتجاه الأصول"],
-        3.5
+        4.5
     ),
 
     Intent.CASHFLOW_EXPLORE: (
@@ -458,7 +458,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
         ["تدفقات نقدية", "شلال التدفقات", "إنفاق رأسمالي", "استحواذات",
          "إعادة شراء أسهم", "توزيعات مدفوعة", "إصدار ديون", "سداد ديون",
          "تدفق نقدي حر", "ضرائب مدفوعة"],
-        4.0
+        5.0
     ),
 
     Intent.CASHFLOW_TREND: (
@@ -466,7 +466,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "capex trend", "cash flow trend over years"],
         ["اتجاه التدفق التشغيلي", "اتجاه التدفق النقدي الحر",
          "اتجاه الإنفاق الرأسمالي"],
-        3.5
+        4.5
     ),
 
     Intent.RATIO_TREND: (
@@ -478,7 +478,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "historical ratios", "ratio history", "5 year ratios"],
         ["تاريخ مكرر الربحية", "اتجاه العائد على حقوق الملكية",
          "تاريخ النسب المالية", "اتجاه النسب", "تاريخ التقييم"],
-        3.5
+        4.5
     ),
 
     Intent.ADVANCED_STATS: (
@@ -489,7 +489,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "book value per share", "intrinsic data"],
         ["إحصائيات متقدمة", "مقاييس متقدمة", "عائد التدفق النقدي",
          "عائد الأرباح", "القيمة الدفترية للسهم"],
-        3.5
+        4.5
     ),
 
     Intent.OWNERSHIP_DETAIL: (
@@ -498,14 +498,14 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "ownership breakdown", "ownership pie"],
         ["ملكية المطلعين", "ملكية المؤسسات", "هيكل الأسهم",
          "أسهم حرة التداول", "تحليل الملكية"],
-        3.5
+        4.5
     ),
 
     Intent.EV_ANALYSIS: (
         ["enterprise value", "ev breakdown", "ev decomposition",
          "ev to ebit", "ev to fcf", "ev to earnings", "ev analysis"],
         ["قيمة المنشأة", "تحليل قيمة المنشأة"],
-        3.5
+        4.5
     ),
 
     Intent.SCORE_DETAIL: (
@@ -515,7 +515,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "explain z score", "explain f score", "what is z score", "what is f score"],
         ["شرح مؤشر ألتمان", "تفصيل مؤشر ألتمان", "شرح مؤشر بيوتروسكي",
          "تفصيل نقاط بيوتروسكي"],
-        4.0
+        5.0
     ),
 
     Intent.UNIVERSAL_FINANCIAL: (
@@ -527,7 +527,7 @@ INTENT_KEYWORDS: Dict[Intent, Tuple[List[str], List[str], float]] = {
          "net cash change", "misc cash flow"],
         ["مخصصات قروض", "استهلاك", "إطفاء", "تغير ذمم مدينة",
          "تغير مخزون", "تغير دائنين"],
-        2.0  # Low weight — only activates when nothing else matches
+        3.5  # Increased from 2.0
     ),
 }
 

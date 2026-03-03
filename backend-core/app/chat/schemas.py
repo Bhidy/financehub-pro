@@ -131,6 +131,7 @@ class CardType(str, Enum):
     FINANCIAL_EXPLORER = "financial_explorer"  # New ultra-premium
     DIVIDENDS_TABLE = "dividends_table"
     COMPARE_TABLE = "compare_table"
+    COMPARISON_TABLE = "comparison_table" # Legacy mapping alias
     MOVERS_TABLE = "movers_table"
     SECTOR_LIST = "sector_list"
     SCREENER_RESULTS = "screener_results"

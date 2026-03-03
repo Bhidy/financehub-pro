@@ -192,6 +192,8 @@ async def handle_compare_stocks(
                 WHERE t.sector_name = $1 AND t.symbol != $2 AND t.market_code = $3
                   AND t.market_cap IS NOT NULL AND t.market_cap > 0
                   AND UPPER(COALESCE(t.sector_name, '')) NOT IN ('UNCLASSIFIED', 'N/A', '')
+                  AND (ss.roe IS NOT NULL OR ss.profit_margin IS NOT NULL OR ss.ev_ebitda IS NOT NULL
+                       OR ss.gross_margin IS NOT NULL OR ss.current_ratio IS NOT NULL)
                 ORDER BY ABS(t.market_cap - $4) ASC NULLS LAST
                 LIMIT 20
             """, sector_row['sector_name'], first_symbol, sector_row['market_code'],
@@ -397,6 +399,8 @@ async def handle_compare_stocks(
                     INNER JOIN stock_statistics ss ON t.symbol = ss.symbol AND t.market_code = ss.market_code
                     WHERE t.sector_name = $1 AND t.market_code = $2
                       AND t.market_cap IS NOT NULL AND t.market_cap > 0
+                      AND (ss.roe IS NOT NULL OR ss.profit_margin IS NOT NULL OR ss.ev_ebitda IS NOT NULL
+                           OR ss.gross_margin IS NOT NULL OR ss.current_ratio IS NOT NULL)
                     ORDER BY ABS(t.market_cap - $3) ASC NULLS LAST
                     LIMIT 20
                 """, primary_sector, market_code, current_cap or 0)

@@ -55,6 +55,14 @@ async def newsletter_status():
     """Get the current newsletter system status."""
     from app.services.newsletter_service import newsletter_service
     status = newsletter_service.get_status()
+    persistent_status = await newsletter_service.get_persistent_status()
+    status.update({
+        "last_weekly_sent": persistent_status.get("last_weekly_sent") or status.get("last_weekly_sent"),
+        "last_monthly_sent": persistent_status.get("last_monthly_sent") or status.get("last_monthly_sent"),
+        "last_academy_sent": persistent_status.get("last_academy_sent") or status.get("last_academy_sent"),
+        "last_flash_sent": persistent_status.get("last_flash_sent") or status.get("last_flash_sent"),
+        "totals": persistent_status.get("totals", {}),
+    })
     
     # Add subscriber count
     try:
@@ -125,15 +133,23 @@ async def unsubscribe(token: str = Query(...)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         user_id = payload.get("user_id")
+        email = payload.get("email")
         
-        if not user_id or payload.get("action") != "unsubscribe":
+        if (not user_id and not email) or payload.get("action") != "unsubscribe":
             raise HTTPException(status_code=400, detail="Invalid token")
 
-        await db.execute("""
-            UPDATE newsletter_preferences 
-            SET unsubscribed = TRUE, updated_at = NOW() 
-            WHERE user_id = $1
-        """, user_id)
+        if user_id:
+            await db.execute("""
+                UPDATE newsletter_preferences 
+                SET unsubscribed = TRUE, updated_at = NOW() 
+                WHERE user_id = $1
+            """, user_id)
+        else:
+            await db.execute("""
+                UPDATE newsletter_preferences 
+                SET unsubscribed = TRUE, updated_at = NOW() 
+                WHERE LOWER(email) = LOWER($1)
+            """, email)
 
         # Return a friendly HTML page
         from fastapi.responses import HTMLResponse

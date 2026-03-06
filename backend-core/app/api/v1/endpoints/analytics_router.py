@@ -127,6 +127,39 @@ class NewsletterFunnelStep(BaseModel):
     count: int
     percentage: float
 
+class NewsletterEmailTypeAnalytics(BaseModel):
+    key: str
+    label: str
+    subscriber_count: int
+    sent_total: int
+    last_sent: Optional[datetime]
+    last_dispatch_sent_count: int
+    last_dispatch_error_count: int
+    preview_available: bool
+
+class NewsletterPreviewRecipient(BaseModel):
+    email: str
+    full_name: Optional[str]
+    template_variant: Optional[str]
+    lesson_number: Optional[int]
+    sent_at: datetime
+
+class NewsletterLatestPreview(BaseModel):
+    email_type: str
+    label: str
+    total_sent: int
+    last_dispatch_at: Optional[datetime]
+    last_dispatch_sent_count: int
+    last_dispatch_error_count: int
+    preview_available: bool
+    subject: Optional[str]
+    html: Optional[str]
+    template_variant: Optional[str]
+    lesson_number: Optional[int]
+    recipient_email: Optional[str]
+    recipient_name: Optional[str]
+    recipients: List[NewsletterPreviewRecipient]
+
 class NewsletterAnalytics(BaseModel):
     """Newsletter subscription and engagement metrics"""
     total_subscribers: int
@@ -146,6 +179,7 @@ class NewsletterAnalytics(BaseModel):
     last_academy_sent: Optional[datetime]
     last_flash_sent: Optional[datetime]
     is_scheduler_running: bool
+    email_types: List[NewsletterEmailTypeAnalytics]
 
 
 # ============================================================
@@ -257,16 +291,85 @@ async def get_newsletter_analytics(
                     percentage=(count / academy_total) * 100 if academy_total > 0 else 0
                 ))
             
-            from app.services.newsletter_service import newsletter_service as ns
             from app.services.scheduler import scheduler_service
             
             is_running = False
             if hasattr(scheduler_service, 'scheduler') and hasattr(scheduler_service.scheduler, 'running'):
                 is_running = scheduler_service.scheduler.running
 
-            # Parse timestamps gracefully
-            def parse_ts(ts_str):
-                return datetime.fromisoformat(ts_str) if ts_str else None
+            dispatch_rows = await conn.fetch("""
+                WITH totals AS (
+                    SELECT email_type,
+                           COALESCE(SUM(sent_count), 0) AS sent_total,
+                           MAX(completed_at) FILTER (WHERE completed_at IS NOT NULL) AS last_sent
+                    FROM newsletter_dispatches
+                    GROUP BY email_type
+                ),
+                last_dispatch AS (
+                    SELECT DISTINCT ON (email_type)
+                           email_type,
+                           sent_count AS last_dispatch_sent_count,
+                           error_count AS last_dispatch_error_count,
+                           completed_at
+                    FROM newsletter_dispatches
+                    WHERE completed_at IS NOT NULL
+                    ORDER BY email_type, completed_at DESC, id DESC
+                ),
+                preview_rows AS (
+                    SELECT DISTINCT ON (email_type)
+                           email_type,
+                           TRUE AS preview_available
+                    FROM newsletter_delivery_logs
+                    WHERE delivery_status = 'sent'
+                      AND html_content IS NOT NULL
+                      AND html_content != ''
+                    ORDER BY email_type, created_at DESC, id DESC
+                )
+                SELECT base.email_type,
+                       COALESCE(totals.sent_total, 0) AS sent_total,
+                       totals.last_sent,
+                       COALESCE(last_dispatch.last_dispatch_sent_count, 0) AS last_dispatch_sent_count,
+                       COALESCE(last_dispatch.last_dispatch_error_count, 0) AS last_dispatch_error_count,
+                       COALESCE(preview_rows.preview_available, FALSE) AS preview_available
+                FROM (
+                    VALUES
+                        ('weekly_pulse'),
+                        ('monthly_dive'),
+                        ('academy'),
+                        ('flash_alerts')
+                ) AS base(email_type)
+                LEFT JOIN totals ON totals.email_type = base.email_type
+                LEFT JOIN last_dispatch ON last_dispatch.email_type = base.email_type
+                LEFT JOIN preview_rows ON preview_rows.email_type = base.email_type
+            """)
+
+            subscriber_counts = {
+                "weekly_pulse": weekly or 0,
+                "monthly_dive": monthly or 0,
+                "academy": academy or 0,
+                "flash_alerts": flash or 0,
+            }
+            labels = {
+                "weekly_pulse": "Weekly Pulse",
+                "monthly_dive": "Monthly Deep Dive",
+                "academy": "Starta Academy",
+                "flash_alerts": "Flash Alerts",
+            }
+
+            dispatch_stats = {row["email_type"]: dict(row) for row in dispatch_rows}
+            email_type_metrics = [
+                NewsletterEmailTypeAnalytics(
+                    key=email_type,
+                    label=labels[email_type],
+                    subscriber_count=subscriber_counts[email_type],
+                    sent_total=int((dispatch_stats.get(email_type) or {}).get("sent_total") or 0),
+                    last_sent=(dispatch_stats.get(email_type) or {}).get("last_sent"),
+                    last_dispatch_sent_count=int((dispatch_stats.get(email_type) or {}).get("last_dispatch_sent_count") or 0),
+                    last_dispatch_error_count=int((dispatch_stats.get(email_type) or {}).get("last_dispatch_error_count") or 0),
+                    preview_available=bool((dispatch_stats.get(email_type) or {}).get("preview_available")),
+                )
+                for email_type in ("weekly_pulse", "monthly_dive", "academy", "flash_alerts")
+            ]
 
             return NewsletterAnalytics(
                 total_subscribers=total or 0,
@@ -278,13 +381,123 @@ async def get_newsletter_analytics(
                 academy_count=academy or 0,
                 flash_alerts_count=flash or 0,
                 academy_funnel=funnel,
-                last_weekly_sent=parse_ts(ns.last_weekly_sent),
-                last_monthly_sent=parse_ts(ns.last_monthly_sent),
-                last_academy_sent=parse_ts(ns.last_academy_sent),
-                last_flash_sent=parse_ts(ns.last_flash_sent),
-                is_scheduler_running=is_running
+                last_weekly_sent=(dispatch_stats.get("weekly_pulse") or {}).get("last_sent"),
+                last_monthly_sent=(dispatch_stats.get("monthly_dive") or {}).get("last_sent"),
+                last_academy_sent=(dispatch_stats.get("academy") or {}).get("last_sent"),
+                last_flash_sent=(dispatch_stats.get("flash_alerts") or {}).get("last_sent"),
+                is_scheduler_running=is_running,
+                email_types=email_type_metrics,
             )
             
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@router.get("/newsletter/preview", response_model=NewsletterLatestPreview)
+async def get_newsletter_latest_preview(
+    email_type: str = Query(..., regex="^(weekly_pulse|monthly_dive|academy|flash_alerts)$"),
+    _admin: bool = Depends(require_admin)
+):
+    labels = {
+        "weekly_pulse": "Weekly Pulse",
+        "monthly_dive": "Monthly Deep Dive",
+        "academy": "Starta Academy",
+        "flash_alerts": "Flash Alerts",
+    }
+
+    try:
+        async with db._pool.acquire() as conn:
+            total_sent = await conn.fetchval(
+                """
+                SELECT COUNT(*)
+                FROM newsletter_delivery_logs
+                WHERE email_type = $1
+                  AND delivery_status = 'sent'
+                """,
+                email_type,
+            ) or 0
+
+            latest_delivery = await conn.fetchrow(
+                """
+                SELECT l.dispatch_id,
+                       l.subject,
+                       l.html_content,
+                       l.template_variant,
+                       l.lesson_number,
+                       l.recipient_email,
+                       l.recipient_name,
+                       l.created_at AS sent_at,
+                       d.completed_at AS last_dispatch_at,
+                       d.sent_count AS last_dispatch_sent_count,
+                       d.error_count AS last_dispatch_error_count
+                FROM newsletter_delivery_logs l
+                JOIN newsletter_dispatches d ON d.id = l.dispatch_id
+                WHERE l.email_type = $1
+                  AND l.delivery_status = 'sent'
+                ORDER BY l.created_at DESC, l.id DESC
+                LIMIT 1
+                """,
+                email_type,
+            )
+
+            if not latest_delivery:
+                return NewsletterLatestPreview(
+                    email_type=email_type,
+                    label=labels[email_type],
+                    total_sent=int(total_sent),
+                    last_dispatch_at=None,
+                    last_dispatch_sent_count=0,
+                    last_dispatch_error_count=0,
+                    preview_available=False,
+                    subject=None,
+                    html=None,
+                    template_variant=None,
+                    lesson_number=None,
+                    recipient_email=None,
+                    recipient_name=None,
+                    recipients=[],
+                )
+
+            recipient_rows = await conn.fetch(
+                """
+                SELECT recipient_email,
+                       recipient_name,
+                       template_variant,
+                       lesson_number,
+                       created_at
+                FROM newsletter_delivery_logs
+                WHERE dispatch_id = $1
+                  AND delivery_status = 'sent'
+                ORDER BY created_at DESC, id DESC
+                """,
+                latest_delivery["dispatch_id"],
+            )
+
+            return NewsletterLatestPreview(
+                email_type=email_type,
+                label=labels[email_type],
+                total_sent=int(total_sent),
+                last_dispatch_at=latest_delivery["last_dispatch_at"],
+                last_dispatch_sent_count=int(latest_delivery["last_dispatch_sent_count"] or 0),
+                last_dispatch_error_count=int(latest_delivery["last_dispatch_error_count"] or 0),
+                preview_available=bool(latest_delivery["html_content"]),
+                subject=latest_delivery["subject"],
+                html=latest_delivery["html_content"],
+                template_variant=latest_delivery["template_variant"],
+                lesson_number=latest_delivery["lesson_number"],
+                recipient_email=latest_delivery["recipient_email"],
+                recipient_name=latest_delivery["recipient_name"],
+                recipients=[
+                    NewsletterPreviewRecipient(
+                        email=row["recipient_email"],
+                        full_name=row["recipient_name"],
+                        template_variant=row["template_variant"],
+                        lesson_number=row["lesson_number"],
+                        sent_at=row["created_at"],
+                    )
+                    for row in recipient_rows
+                ],
+            )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 

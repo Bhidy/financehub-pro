@@ -1002,7 +1002,16 @@ class NewsletterService:
             except Exception as e:
                 logger.warning(f"Surge check error: {e}")
 
-            return {"status": "no_event", "message": "No significant events detected"}
+            # No crash/surge — send a market pulse summary instead
+            egx30_data = await self._get_egx30_data(1)
+            direction = "up" if egx30_data['change_pct'] >= 0 else "down"
+            arrow = "▲" if direction == "up" else "▼"
+            return await self._send_flash_alert(
+                alert_type="market_pulse",
+                headline=f"EGX30 {arrow} {abs(egx30_data['change_pct']):.1f}% — Market Pulse",
+                details=f"the EGX30 index moved {egx30_data['change_pct']:+.1f}% today, closing at {egx30_data['value']:,.0f}. Here are today's top-performing stocks and key market highlights.",
+                context=f"This is your regular market pulse flash — a quick snapshot of today's Egyptian stock market activity. Ask Starta AI for deeper analysis on any stock.",
+            )
 
         except Exception as e:
             logger.warning(f"Flash alert check error: {e}")

@@ -190,9 +190,9 @@ const API_BASE = "https://starta.46-224-223-172.sslip.io/api/v1/admin/analytics"
 
 const NEWSLETTER_TYPE_META: Record<NewsletterEmailTypeKey, { color: string; accent: string; shortLabel: string }> = {
     weekly_pulse: { color: "bg-[#3C50E0]", accent: "text-[#3C50E0]", shortLabel: "Weekly" },
-    monthly_dive: { color: "bg-indigo-500", accent: "text-indigo-500", shortLabel: "Monthly" },
-    academy: { color: "bg-purple-500", accent: "text-purple-500", shortLabel: "Academy" },
-    flash_alerts: { color: "bg-rose-500", accent: "text-rose-500", shortLabel: "Flash" },
+    monthly_dive: { color: "bg-[#0EA5E9]", accent: "text-[#0EA5E9]", shortLabel: "Monthly" },
+    academy: { color: "bg-[#14B8A6]", accent: "text-[#14B8A6]", shortLabel: "Academy" },
+    flash_alerts: { color: "bg-[#F97316]", accent: "text-[#F97316]", shortLabel: "Flash" },
 };
 
 // ============================================================
@@ -1058,127 +1058,224 @@ export default function ChatbotAnalyticsPage() {
                 </section>
 
                 {selectedNewsletterType && (
-                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[70] flex">
+                        {/* Backdrop */}
                         <button
                             type="button"
                             aria-label="Close preview"
                             onClick={closeNewsletterPreview}
-                            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
                         />
-                        <div className="relative z-10 w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-2xl dark:border-[#2E3A47] dark:bg-[#0B1121]">
-                            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-[#2E3A47]">
-                                <div>
-                                    <p className={`text-xs font-bold uppercase tracking-[0.24em] ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`}>
-                                        Real Email Archive
-                                    </p>
-                                    <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
-                                        {newsletterPreview?.label ?? newsletterEmailTypes.find(item => item.key === selectedNewsletterType)?.label ?? "Newsletter Preview"}
-                                    </h3>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={closeNewsletterPreview}
-                                    className="rounded-full border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-[#2E3A47] dark:text-slate-400 dark:hover:bg-[#111827] dark:hover:text-white"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
-                            </div>
 
-                            <div className="grid max-h-[85vh] min-h-[60vh] lg:grid-cols-[340px,1fr]">
-                                <div className="overflow-y-auto border-b border-slate-200 p-6 dark:border-[#2E3A47] lg:border-b-0 lg:border-r">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-[#2E3A47] dark:bg-[#111827]">
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Sent</p>
-                                            <p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{newsletterPreview?.total_sent ?? 0}</p>
+                        {/* Panel — full viewport height, split layout */}
+                        <div className="relative z-10 flex w-full h-full">
+
+                            {/* LEFT SIDEBAR — scrollable meta panel */}
+                            <div className="relative w-full max-w-[420px] flex-shrink-0 h-full flex flex-col bg-white dark:bg-[#0B1121] border-r border-slate-200/80 dark:border-[#1E293B] overflow-hidden">
+
+                                {/* Header */}
+                                <div className="flex-shrink-0 px-6 pt-6 pb-5 border-b border-slate-100 dark:border-[#1E293B]">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'} bg-current/10 border border-current/20`}
+                                                style={{
+                                                    backgroundColor: selectedNewsletterType === 'weekly_pulse' ? 'rgba(60,80,224,0.08)' :
+                                                        selectedNewsletterType === 'monthly_dive' ? 'rgba(14,165,233,0.08)' :
+                                                            selectedNewsletterType === 'academy' ? 'rgba(20,184,166,0.08)' : 'rgba(249,115,22,0.08)',
+                                                    borderColor: selectedNewsletterType === 'weekly_pulse' ? 'rgba(60,80,224,0.2)' :
+                                                        selectedNewsletterType === 'monthly_dive' ? 'rgba(14,165,233,0.2)' :
+                                                            selectedNewsletterType === 'academy' ? 'rgba(20,184,166,0.2)' : 'rgba(249,115,22,0.2)',
+                                                }}
+                                            >
+                                                <Zap className="w-3 h-3" />
+                                                Real Email Archive
+                                            </div>
+                                            <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                                {newsletterPreview?.label ?? newsletterEmailTypes.find(item => item.key === selectedNewsletterType)?.label ?? "Newsletter Preview"}
+                                            </h3>
                                         </div>
-                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-[#2E3A47] dark:bg-[#111827]">
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Batch</p>
-                                            <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">
-                                                {(newsletterPreview?.last_dispatch_sent_count ?? 0)} sent / {(newsletterPreview?.last_dispatch_error_count ?? 0)} failed
-                                            </p>
+                                        <button
+                                            type="button"
+                                            onClick={closeNewsletterPreview}
+                                            className="rounded-xl p-2 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#1E293B] dark:hover:text-white"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Stats row */}
+                                <div className="flex-shrink-0 px-6 py-4 border-b border-slate-100 dark:border-[#1E293B]">
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#111827] dark:to-[#0F172A] p-3.5 border border-slate-200/50 dark:border-[#1E293B]">
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Sent</p>
+                                            <p className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white tabular-nums">{newsletterPreview?.total_sent ?? 0}</p>
+                                        </div>
+                                        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-500/5 dark:to-emerald-500/10 p-3.5 border border-emerald-200/50 dark:border-emerald-500/10">
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600/70 dark:text-emerald-400/70">Delivered</p>
+                                            <p className="mt-1.5 text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{newsletterPreview?.last_dispatch_sent_count ?? 0}</p>
+                                        </div>
+                                        <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-500/5 dark:to-rose-500/10 p-3.5 border border-rose-200/50 dark:border-rose-500/10">
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-rose-600/70 dark:text-rose-400/70">Failed</p>
+                                            <p className="mt-1.5 text-2xl font-black text-rose-600 dark:text-rose-400 tabular-nums">{newsletterPreview?.last_dispatch_error_count ?? 0}</p>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="mt-6 space-y-4">
-                                        <div>
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Sent</p>
-                                            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                                                {newsletterPreview?.last_dispatch_at
-                                                    ? new Date(newsletterPreview.last_dispatch_at).toLocaleString()
-                                                    : "No successful archived dispatch yet"}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Subject</p>
-                                            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                {/* Metadata section — scrollable */}
+                                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 custom-scrollbar">
+
+                                    {/* Subject */}
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Subject Line</p>
+                                        <div className="rounded-xl bg-slate-50 dark:bg-[#111827] border border-slate-200/50 dark:border-[#1E293B] px-4 py-3">
+                                            <p className="text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
                                                 {newsletterPreview?.subject ?? "No archived subject available"}
                                             </p>
                                         </div>
+                                    </div>
+
+                                    {/* Last Sent */}
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Successful Recipient</p>
-                                            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                                                {newsletterPreview?.recipient_email ?? "No recipient recorded"}
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1.5">Last Dispatch</p>
+                                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                                {newsletterPreview?.last_dispatch_at
+                                                    ? new Date(newsletterPreview.last_dispatch_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                                    : "Never"}
                                             </p>
-                                            {newsletterPreview?.recipient_name && (
-                                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{newsletterPreview.recipient_name}</p>
+                                            {newsletterPreview?.last_dispatch_at && (
+                                                <p className="text-[11px] text-slate-400 mt-0.5">
+                                                    {new Date(newsletterPreview.last_dispatch_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
                                             )}
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1.5">Template</p>
+                                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                                {newsletterPreview?.template_variant || selectedNewsletterType?.replace('_', ' ') || "—"}
+                                            </p>
                                             {newsletterPreview?.lesson_number && (
-                                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Lesson {newsletterPreview.lesson_number}</p>
+                                                <p className="text-[11px] text-slate-400 mt-0.5">Lesson {newsletterPreview.lesson_number}</p>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="mt-6">
-                                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Latest Dispatch Recipients</p>
-                                        <div className="mt-3 space-y-2">
+                                    {/* Last Successful Recipient */}
+                                    {newsletterPreview?.recipient_email && (
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Last Successful Recipient</p>
+                                            <div className="flex items-center gap-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-200/50 dark:border-emerald-500/10 px-4 py-3">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{newsletterPreview.recipient_email}</p>
+                                                    {newsletterPreview.recipient_name && (
+                                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">{newsletterPreview.recipient_name}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Recipients List */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                                Latest Dispatch Recipients
+                                            </p>
+                                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-[#1E293B] px-2 py-0.5 rounded-full">
+                                                {(newsletterPreview?.recipients ?? []).length}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1.5 max-h-[200px] overflow-y-auto custom-scrollbar">
                                             {(newsletterPreview?.recipients ?? []).length > 0 ? (
                                                 newsletterPreview?.recipients.map((recipient) => (
-                                                    <div key={`${recipient.email}-${recipient.sent_at}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-[#2E3A47] dark:bg-[#111827]">
-                                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{recipient.email}</p>
-                                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                                                            {recipient.full_name && <span>{recipient.full_name}</span>}
-                                                            {recipient.lesson_number && <span>Lesson {recipient.lesson_number}</span>}
-                                                            {recipient.template_variant && <span>{recipient.template_variant}</span>}
+                                                    <div key={`${recipient.email}-${recipient.sent_at}`} className="flex items-center gap-2.5 rounded-xl bg-slate-50 dark:bg-[#111827] border border-slate-200/50 dark:border-[#1E293B] px-3 py-2.5 transition-colors hover:bg-slate-100 dark:hover:bg-[#1A222C]">
+                                                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-[#1E293B] flex items-center justify-center flex-shrink-0">
+                                                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                                                {(recipient.full_name || recipient.email).charAt(0).toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{recipient.email}</p>
+                                                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                                                                {recipient.full_name && <span>{recipient.full_name}</span>}
+                                                                {recipient.lesson_number != null && <span>L{recipient.lesson_number}</span>}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-[#2E3A47] dark:text-slate-400">
-                                                    No archived recipients for this template yet.
+                                                <div className="rounded-xl border border-dashed border-slate-200 dark:border-[#1E293B] p-4 text-center">
+                                                    <p className="text-xs text-slate-400">No archived recipients for this dispatch yet.</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="flex min-h-[50vh] flex-col bg-slate-100/70 dark:bg-[#050816]">
+                            {/* RIGHT PANEL — full-height email preview */}
+                            <div className="flex-1 h-full flex flex-col bg-slate-100 dark:bg-[#050816]">
+                                {/* Preview header bar */}
+                                <div className="flex-shrink-0 px-6 py-3 border-b border-slate-200/50 dark:border-[#1E293B] bg-white/60 dark:bg-[#0B1121]/60 backdrop-blur-sm flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Eye className={`w-4 h-4 ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
+                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Preview</span>
+                                    </div>
+                                    {newsletterPreview?.preview_available && (
+                                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                            Live Archive
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Preview content — full remaining height */}
+                                <div className="flex-1 min-h-0">
                                     {newsletterPreviewLoading ? (
                                         <div className="flex h-full items-center justify-center">
-                                            <RefreshCw className="h-8 w-8 animate-spin text-[#14B8A6]" />
+                                            <div className="text-center">
+                                                <RefreshCw className={`h-10 w-10 animate-spin mx-auto ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
+                                                <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Loading email archive…</p>
+                                            </div>
                                         </div>
                                     ) : newsletterPreviewError ? (
                                         <div className="flex h-full items-center justify-center p-8 text-center">
                                             <div>
-                                                <XCircle className="mx-auto h-10 w-10 text-rose-500" />
-                                                <p className="mt-3 text-sm font-medium text-slate-900 dark:text-white">{newsletterPreviewError}</p>
+                                                <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
+                                                    <XCircle className="h-8 w-8 text-rose-500" />
+                                                </div>
+                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">{newsletterPreviewError}</p>
+                                                <p className="mt-2 text-xs text-slate-400">Try refreshing the page or check server logs.</p>
                                             </div>
                                         </div>
                                     ) : newsletterPreview?.preview_available && newsletterPreview.html ? (
                                         <iframe
                                             title={`${newsletterPreview.label} preview`}
                                             srcDoc={newsletterPreview.html}
-                                            className="h-[70vh] w-full bg-white"
+                                            className="w-full h-full bg-white border-0"
                                             sandbox=""
                                         />
                                     ) : (
                                         <div className="flex h-full items-center justify-center p-8 text-center">
-                                            <div className="max-w-md">
-                                                <Eye className={`mx-auto h-10 w-10 ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
-                                                <p className="mt-3 text-sm font-medium text-slate-900 dark:text-white">
-                                                    No archived HTML preview is available for this template yet.
+                                            <div className="max-w-sm">
+                                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4`}
+                                                    style={{
+                                                        backgroundColor: selectedNewsletterType === 'weekly_pulse' ? 'rgba(60,80,224,0.08)' :
+                                                            selectedNewsletterType === 'monthly_dive' ? 'rgba(14,165,233,0.08)' :
+                                                                selectedNewsletterType === 'academy' ? 'rgba(20,184,166,0.08)' : 'rgba(249,115,22,0.08)',
+                                                    }}
+                                                >
+                                                    <Eye className={`h-8 w-8 ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
+                                                </div>
+                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                                                    No archived HTML preview available
                                                 </p>
-                                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                                    New dispatches are now stored with their real sent HTML, so future sends will open here automatically.
+                                                <p className="mt-2 text-xs text-slate-400 leading-relaxed">
+                                                    This template hasn&apos;t been dispatched yet with the new archiving system. Future sends will automatically save the rendered HTML here for instant preview.
                                                 </p>
                                             </div>
                                         </div>

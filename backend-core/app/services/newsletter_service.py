@@ -10,12 +10,11 @@ Schedule:
 """
 
 import logging
-import os
 import httpx
 import asyncio
 from jose import jwt
 from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from app.db.session import db
 from app.core.config import settings
@@ -35,6 +34,13 @@ FINANCE_TIPS = [
     "Book Value Per Share tells you what a company is worth if it liquidated today. A P/B ratio under 1.0 may mean the stock trades below its net asset value.",
     "Ask Starta AI 'compare COMI vs FWRY' for a side-by-side financial analysis of any two EGX stocks.",
 ]
+
+EMAIL_TYPE_LABELS = {
+    "weekly_pulse": "Weekly Pulse",
+    "monthly_dive": "Monthly Deep Dive",
+    "academy": "Starta Academy",
+    "flash_alerts": "Flash Alerts",
+}
 
 
 class NewsletterService:
@@ -273,29 +279,249 @@ class NewsletterService:
     # UNSUBSCRIBE TOKEN
     # ============================================================
 
-    def generate_unsubscribe_token(self, user_id: int) -> str:
+    def generate_unsubscribe_token(self, user_id: Optional[int] = None, email: Optional[str] = None) -> str:
         """Generate a JWT token for one-click unsubscribe (CAN-SPAM compliant)."""
         payload = {
-            "user_id": user_id,
             "action": "unsubscribe",
             "exp": datetime.now(timezone.utc) + timedelta(days=365),
         }
+        if user_id:
+            payload["user_id"] = user_id
+        if email:
+            payload["email"] = email
         return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-    def get_unsubscribe_url(self, user_id: int) -> str:
-        token = self.generate_unsubscribe_token(user_id)
+    def get_unsubscribe_url(self, user_id: Optional[int], email: Optional[str] = None) -> str:
+        token = self.generate_unsubscribe_token(user_id=user_id, email=email)
         return f"https://starta.46-224-223-172.sslip.io/api/v1/newsletter/unsubscribe?token={token}"
+
+    @staticmethod
+    def _display_label(email_type: str) -> str:
+        return EMAIL_TYPE_LABELS.get(email_type, email_type.replace('_', ' ').title())
+
+    async def _create_dispatch(
+        self,
+        email_type: str,
+        target_subscribers: int,
+        subject: Optional[str] = None,
+        dispatch_kind: str = "scheduled",
+    ) -> Optional[int]:
+        if not db._pool:
+            return None
+
+        async with db._pool.acquire() as conn:
+            return await conn.fetchval(
+                """
+                INSERT INTO newsletter_dispatches (
+                    email_type, display_label, dispatch_kind, status, subject, target_subscribers
+                )
+                VALUES ($1, $2, $3, 'running', $4, $5)
+                RETURNING id
+                """,
+                email_type,
+                self._display_label(email_type),
+                dispatch_kind,
+                subject,
+                target_subscribers,
+            )
+
+    async def _update_dispatch_subject(self, dispatch_id: Optional[int], subject: str) -> None:
+        if not dispatch_id:
+            return
+        await db.execute(
+            "UPDATE newsletter_dispatches SET subject = $1 WHERE id = $2 AND (subject IS NULL OR subject = '')",
+            subject,
+            dispatch_id,
+        )
+
+    async def _log_delivery(
+        self,
+        dispatch_id: Optional[int],
+        email_type: str,
+        recipient_email: str,
+        recipient_name: Optional[str],
+        user_id: Optional[int],
+        delivery_status: str,
+        subject: str,
+        html: str,
+        send_result: Dict[str, Any],
+        template_variant: Optional[str] = None,
+        lesson_number: Optional[int] = None,
+    ) -> None:
+        if not dispatch_id:
+            return
+
+        await db.execute(
+            """
+            INSERT INTO newsletter_delivery_logs (
+                dispatch_id,
+                email_type,
+                recipient_email,
+                recipient_name,
+                user_id,
+                delivery_status,
+                subject,
+                html_content,
+                provider_message_id,
+                provider_status_code,
+                error_message,
+                template_variant,
+                lesson_number
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            """,
+            dispatch_id,
+            email_type,
+            recipient_email,
+            recipient_name,
+            user_id,
+            delivery_status,
+            subject,
+            html,
+            send_result.get("provider_message_id"),
+            send_result.get("status_code"),
+            send_result.get("error"),
+            template_variant,
+            lesson_number,
+        )
+
+    async def _finalize_dispatch(
+        self,
+        dispatch_id: Optional[int],
+        attempted_count: int,
+        sent_count: int,
+        error_count: int,
+        status: str,
+    ) -> None:
+        if not dispatch_id:
+            return
+
+        await db.execute(
+            """
+            UPDATE newsletter_dispatches
+            SET attempted_count = $1,
+                sent_count = $2,
+                error_count = $3,
+                status = $4,
+                completed_at = NOW()
+            WHERE id = $5
+            """,
+            attempted_count,
+            sent_count,
+            error_count,
+            status,
+            dispatch_id,
+        )
+
+    async def _mark_dispatch_error(self, dispatch_id: Optional[int], error: str) -> None:
+        if not dispatch_id:
+            return
+
+        await db.execute(
+            """
+            UPDATE newsletter_dispatches
+            SET status = 'error',
+                error_count = COALESCE(error_count, 0) + 1,
+                completed_at = NOW(),
+                subject = COALESCE(subject, $1)
+            WHERE id = $2
+            """,
+            error[:400],
+            dispatch_id,
+        )
+
+    async def _touch_subscriber_last_sent(self, user_id: Optional[int], email: Optional[str] = None) -> None:
+        if user_id:
+            await db.execute(
+                """
+                UPDATE newsletter_preferences
+                SET last_sent_at = NOW(), updated_at = NOW()
+                WHERE user_id = $1
+                """,
+                user_id,
+            )
+            return
+
+        if email:
+            await db.execute(
+                """
+                UPDATE newsletter_preferences
+                SET last_sent_at = NOW(), updated_at = NOW()
+                WHERE LOWER(email) = LOWER($1)
+                """,
+                email,
+            )
+
+    async def _get_last_successful_dispatch_at(self, email_type: str) -> Optional[datetime]:
+        row = await db.fetch_one(
+            """
+            SELECT completed_at
+            FROM newsletter_dispatches
+            WHERE email_type = $1
+              AND sent_count > 0
+              AND completed_at IS NOT NULL
+            ORDER BY completed_at DESC, id DESC
+            LIMIT 1
+            """,
+            email_type,
+        )
+        return row.get("completed_at") if row else None
+
+    async def get_persistent_status(self) -> Dict[str, Any]:
+        rows = await db.fetch_all(
+            """
+            SELECT email_type,
+                   COALESCE(SUM(sent_count), 0) AS sent_total,
+                   MAX(completed_at) FILTER (WHERE sent_count > 0) AS last_sent
+            FROM newsletter_dispatches
+            GROUP BY email_type
+            """
+        )
+
+        status = {
+            "last_weekly_sent": None,
+            "last_monthly_sent": None,
+            "last_academy_sent": None,
+            "last_flash_sent": None,
+            "totals": {
+                "weekly_pulse": 0,
+                "monthly_dive": 0,
+                "academy": 0,
+                "flash_alerts": 0,
+            },
+        }
+        for row in rows:
+            email_type = row["email_type"]
+            sent_total = int(row["sent_total"] or 0)
+            last_sent = row.get("last_sent")
+
+            status["totals"][email_type] = sent_total
+            if email_type == "weekly_pulse":
+                status["last_weekly_sent"] = last_sent.isoformat() if last_sent else None
+            elif email_type == "monthly_dive":
+                status["last_monthly_sent"] = last_sent.isoformat() if last_sent else None
+            elif email_type == "academy":
+                status["last_academy_sent"] = last_sent.isoformat() if last_sent else None
+            elif email_type == "flash_alerts":
+                status["last_flash_sent"] = last_sent.isoformat() if last_sent else None
+
+        return status
 
     # ============================================================
     # EMAIL DISPATCH
     # ============================================================
 
-    async def _send_email(self, to_email: str, subject: str, html: str) -> bool:
+    async def _send_email(self, to_email: str, subject: str, html: str) -> Dict[str, Any]:
         """Send a single email via Resend API."""
         resend_key = settings.RESEND_API_KEY
         if not resend_key:
             logger.error("RESEND_API_KEY not configured")
-            return False
+            return {
+                "success": False,
+                "provider_message_id": None,
+                "status_code": None,
+                "error": "RESEND_API_KEY not configured",
+            }
 
         from_email = settings.FROM_EMAIL or "onboarding@resend.dev"
 
@@ -315,13 +541,34 @@ class NewsletterService:
                     }
                 )
                 if resp.status_code in (200, 201):
-                    return True
-                else:
-                    logger.warning(f"Resend error {resp.status_code}: {resp.text[:200]}")
-                    return False
+                    payload = {}
+                    try:
+                        payload = resp.json()
+                    except Exception:
+                        payload = {}
+                    return {
+                        "success": True,
+                        "provider_message_id": payload.get("id"),
+                        "status_code": resp.status_code,
+                        "error": None,
+                    }
+
+                error_text = resp.text[:500]
+                logger.warning(f"Resend error {resp.status_code}: {error_text[:200]}")
+                return {
+                    "success": False,
+                    "provider_message_id": None,
+                    "status_code": resp.status_code,
+                    "error": error_text,
+                }
         except Exception as e:
             logger.error(f"Send email error: {e}")
-            return False
+            return {
+                "success": False,
+                "provider_message_id": None,
+                "status_code": None,
+                "error": str(e),
+            }
 
     # ============================================================
     # NEWSLETTER DISPATCH METHODS
@@ -333,6 +580,7 @@ class NewsletterService:
             return {"status": "skipped", "reason": "Already running"}
 
         self.is_running = True
+        dispatch_id: Optional[int] = None
         try:
             from app.services.email_templates import build_weekly_pulse
 
@@ -351,12 +599,20 @@ class NewsletterService:
             if not subscribers:
                 return {"status": "no_subscribers", "sent": 0}
 
+            subject = f"📈 EGX Weekly Pulse — {'▲' if egx30['change_pct'] >= 0 else '▼'} {'+' if egx30['change_pct'] >= 0 else ''}{egx30['change_pct']:.1f}%"
+            dispatch_id = await self._create_dispatch(
+                email_type="weekly_pulse",
+                target_subscribers=len(subscribers),
+                subject=subject,
+            )
+
             sent = 0
             errors = 0
 
             for sub in subscribers:
+                html = ""
                 try:
-                    unsub_url = self.get_unsubscribe_url(sub['user_id'])
+                    unsub_url = self.get_unsubscribe_url(sub.get('user_id'), sub.get('email'))
                     first_name = (sub.get('full_name') or '').split(' ')[0]
 
                     html = build_weekly_pulse(
@@ -370,20 +626,53 @@ class NewsletterService:
                         unsubscribe_url=unsub_url,
                     )
 
-                    success = await self._send_email(
+                    send_result = await self._send_email(
                         sub['email'],
-                        f"📈 EGX Weekly Pulse — {'▲' if egx30['change_pct'] >= 0 else '▼'} {'+' if egx30['change_pct'] >= 0 else ''}{egx30['change_pct']:.1f}%",
+                        subject,
                         html
                     )
-                    if success:
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="weekly_pulse",
+                        recipient_email=sub['email'],
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="sent" if send_result["success"] else "failed",
+                        subject=subject,
+                        html=html,
+                        send_result=send_result,
+                        template_variant="weekly_pulse",
+                    )
+
+                    if send_result["success"]:
                         sent += 1
+                        await self._touch_subscriber_last_sent(sub.get('user_id'), sub.get('email'))
                     else:
                         errors += 1
                 except Exception as e:
                     logger.warning(f"Error sending to {sub.get('email', '?')}: {e}")
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="weekly_pulse",
+                        recipient_email=sub.get('email', ''),
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="failed",
+                        subject=subject,
+                        html=html,
+                        send_result={"provider_message_id": None, "status_code": None, "error": str(e)},
+                        template_variant="weekly_pulse",
+                    )
                     errors += 1
                 await asyncio.sleep(0.6)  # Resend rate limit
 
+            await self._finalize_dispatch(
+                dispatch_id=dispatch_id,
+                attempted_count=len(subscribers),
+                sent_count=sent,
+                error_count=errors,
+                status="completed",
+            )
             self.last_weekly_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
 
@@ -396,6 +685,7 @@ class NewsletterService:
 
         except Exception as e:
             self.last_error = str(e)
+            await self._mark_dispatch_error(dispatch_id, str(e))
             logger.exception(f"Weekly pulse error: {e}")
             self._notify_discord(f"❌ **Weekly Pulse FAILED**\nError: {str(e)[:300]}", is_error=True)
             return {"status": "error", "error": str(e)}
@@ -408,6 +698,7 @@ class NewsletterService:
             return {"status": "skipped", "reason": "Already running"}
 
         self.is_running = True
+        dispatch_id: Optional[int] = None
         try:
             from app.services.email_templates import build_monthly_deep_dive
 
@@ -423,12 +714,20 @@ class NewsletterService:
             if not subscribers:
                 return {"status": "no_subscribers", "sent": 0}
 
+            subject = f"📊 {month_name} EGX Deep Dive — Stock of the Month & Hidden Gems Inside"
+            dispatch_id = await self._create_dispatch(
+                email_type="monthly_dive",
+                target_subscribers=len(subscribers),
+                subject=subject,
+            )
+
             sent = 0
             errors = 0
 
             for sub in subscribers:
+                html = ""
                 try:
-                    unsub_url = self.get_unsubscribe_url(sub['user_id'])
+                    unsub_url = self.get_unsubscribe_url(sub.get('user_id'), sub.get('email'))
                     first_name = (sub.get('full_name') or '').split(' ')[0]
 
                     html = build_monthly_deep_dive(
@@ -447,20 +746,53 @@ class NewsletterService:
                         unsubscribe_url=unsub_url,
                     )
 
-                    success = await self._send_email(
+                    send_result = await self._send_email(
                         sub['email'],
-                        f"📊 {month_name} EGX Deep Dive — Stock of the Month & Hidden Gems Inside",
+                        subject,
                         html
                     )
-                    if success:
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="monthly_dive",
+                        recipient_email=sub['email'],
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="sent" if send_result["success"] else "failed",
+                        subject=subject,
+                        html=html,
+                        send_result=send_result,
+                        template_variant="monthly_dive",
+                    )
+
+                    if send_result["success"]:
                         sent += 1
+                        await self._touch_subscriber_last_sent(sub.get('user_id'), sub.get('email'))
                     else:
                         errors += 1
                 except Exception as e:
                     logger.warning(f"Error sending monthly to {sub.get('email', '?')}: {e}")
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="monthly_dive",
+                        recipient_email=sub.get('email', ''),
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="failed",
+                        subject=subject,
+                        html=html,
+                        send_result={"provider_message_id": None, "status_code": None, "error": str(e)},
+                        template_variant="monthly_dive",
+                    )
                     errors += 1
                 await asyncio.sleep(0.6)  # Resend rate limit
 
+            await self._finalize_dispatch(
+                dispatch_id=dispatch_id,
+                attempted_count=len(subscribers),
+                sent_count=sent,
+                error_count=errors,
+                status="completed",
+            )
             self.last_monthly_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
 
@@ -472,6 +804,7 @@ class NewsletterService:
 
         except Exception as e:
             self.last_error = str(e)
+            await self._mark_dispatch_error(dispatch_id, str(e))
             logger.exception(f"Monthly deep dive error: {e}")
             self._notify_discord(f"❌ **Monthly Deep Dive FAILED**\nError: {str(e)[:300]}", is_error=True)
             return {"status": "error", "error": str(e)}
@@ -488,6 +821,7 @@ class NewsletterService:
             return {"status": "skipped", "reason": "Already running"}
 
         self.is_running = True
+        dispatch_id: Optional[int] = None
         try:
             from app.services.email_templates import build_academy_lesson
 
@@ -507,18 +841,28 @@ class NewsletterService:
             if not subscribers:
                 return {"status": "no_subscribers", "sent": 0, "message": "All users completed or no academy subscribers"}
 
+            dispatch_id = await self._create_dispatch(
+                email_type="academy",
+                target_subscribers=len(subscribers),
+                subject="🎓 Starta Academy lesson dispatch",
+            )
+
             sent = 0
             errors = 0
 
             for sub in subscribers:
+                html = ""
+                subject = "🎓 Starta Academy lesson dispatch"
+                lesson_num: Optional[int] = None
                 try:
                     lesson_num = sub['current_lesson'] + 1
                     lesson = ACADEMY_LESSONS[lesson_num - 1]
                     
                     next_teaser = ACADEMY_LESSONS[lesson_num]['title'] if lesson_num < 8 else ""
                     
-                    unsub_url = self.get_unsubscribe_url(sub['user_id'])
+                    unsub_url = self.get_unsubscribe_url(sub.get('user_id'), sub.get('email'))
                     first_name = (sub.get('full_name') or '').split(' ')[0]
+                    subject = f"🎓 Lesson {lesson_num}/8: {lesson['title']} — Starta Academy"
 
                     html = build_academy_lesson(
                         user_name=first_name,
@@ -532,27 +876,65 @@ class NewsletterService:
                         unsubscribe_url=unsub_url,
                     )
 
-                    success = await self._send_email(
+                    await self._update_dispatch_subject(dispatch_id, subject)
+
+                    send_result = await self._send_email(
                         sub['email'],
-                        f"🎓 Lesson {lesson_num}/8: {lesson['title']} — Starta Academy",
+                        subject,
                         html
                     )
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="academy",
+                        recipient_email=sub['email'],
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="sent" if send_result["success"] else "failed",
+                        subject=subject,
+                        html=html,
+                        send_result=send_result,
+                        template_variant=f"lesson_{lesson_num}",
+                        lesson_number=lesson_num,
+                    )
 
-                    if success:
+                    if send_result["success"]:
                         sent += 1
                         # Advance the user's lesson counter
-                        await db.execute("""
-                            UPDATE newsletter_preferences 
-                            SET academy_lesson = $1, updated_at = NOW() 
-                            WHERE user_id = $2
-                        """, lesson_num, sub['user_id'])
+                        if sub.get('user_id'):
+                            await db.execute("""
+                                UPDATE newsletter_preferences 
+                                SET academy_lesson = $1, last_sent_at = NOW(), updated_at = NOW() 
+                                WHERE user_id = $2
+                            """, lesson_num, sub['user_id'])
+                        else:
+                            await self._touch_subscriber_last_sent(None, sub.get('email'))
                     else:
                         errors += 1
                 except Exception as e:
                     logger.warning(f"Academy error for {sub.get('email', '?')}: {e}")
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="academy",
+                        recipient_email=sub.get('email', ''),
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="failed",
+                        subject=subject,
+                        html=html,
+                        send_result={"provider_message_id": None, "status_code": None, "error": str(e)},
+                        template_variant=f"lesson_{lesson_num}" if lesson_num else None,
+                        lesson_number=lesson_num,
+                    )
                     errors += 1
                 await asyncio.sleep(0.6)  # Resend rate limit
 
+            await self._finalize_dispatch(
+                dispatch_id=dispatch_id,
+                attempted_count=len(subscribers),
+                sent_count=sent,
+                error_count=errors,
+                status="completed",
+            )
             self.last_academy_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
 
@@ -564,6 +946,7 @@ class NewsletterService:
 
         except Exception as e:
             self.last_error = str(e)
+            await self._mark_dispatch_error(dispatch_id, str(e))
             logger.exception(f"Academy send error: {e}")
             self._notify_discord(f"❌ **Academy FAILED**\nError: {str(e)[:300]}", is_error=True)
             return {"status": "error", "error": str(e)}
@@ -580,13 +963,9 @@ class NewsletterService:
         Rate-limited to max 1 per week.
         """
         # Rate limit: skip if a flash alert was sent in the last 7 days
-        if self.last_flash_sent:
-            try:
-                last_sent_dt = datetime.fromisoformat(self.last_flash_sent)
-                if (datetime.now(timezone.utc) - last_sent_dt).days < 7:
-                    return {"status": "rate_limited", "message": "Flash alert already sent this week"}
-            except:
-                pass
+        last_sent_dt = await self._get_last_successful_dispatch_at("flash_alerts")
+        if last_sent_dt and (datetime.now(timezone.utc) - last_sent_dt).days < 7:
+            return {"status": "rate_limited", "message": "Flash alert already sent this week"}
 
         if self.is_running:
             return {"status": "skipped", "reason": "Already running"}
@@ -632,6 +1011,7 @@ class NewsletterService:
     async def _send_flash_alert(self, alert_type: str, headline: str, details: str, context: str) -> Dict:
         """Internal: send a flash alert to all flash_alerts subscribers."""
         self.is_running = True
+        dispatch_id: Optional[int] = None
         try:
             from app.services.email_templates import build_flash_alert
 
@@ -640,12 +1020,22 @@ class NewsletterService:
             if not subscribers:
                 return {"status": "no_subscribers", "sent": 0}
 
+            icon = "🔴" if alert_type == "crash" else "🟢"
+            subject = f"{icon} {headline}"
+            dispatch_id = await self._create_dispatch(
+                email_type="flash_alerts",
+                target_subscribers=len(subscribers),
+                subject=subject,
+                dispatch_kind="event_driven",
+            )
+
             sent = 0
             errors = 0
 
             for sub in subscribers:
+                html = ""
                 try:
-                    unsub_url = self.get_unsubscribe_url(sub['user_id'])
+                    unsub_url = self.get_unsubscribe_url(sub.get('user_id'), sub.get('email'))
                     first_name = (sub.get('full_name') or '').split(' ')[0]
 
                     html = build_flash_alert(
@@ -658,21 +1048,53 @@ class NewsletterService:
                         unsubscribe_url=unsub_url,
                     )
 
-                    icon = "🔴" if alert_type == "crash" else "🟢"
-                    success = await self._send_email(
+                    send_result = await self._send_email(
                         sub['email'],
-                        f"{icon} {headline}",
+                        subject,
                         html
                     )
-                    if success:
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="flash_alerts",
+                        recipient_email=sub['email'],
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="sent" if send_result["success"] else "failed",
+                        subject=subject,
+                        html=html,
+                        send_result=send_result,
+                        template_variant=alert_type,
+                    )
+
+                    if send_result["success"]:
                         sent += 1
+                        await self._touch_subscriber_last_sent(sub.get('user_id'), sub.get('email'))
                     else:
                         errors += 1
                 except Exception as e:
                     logger.warning(f"Flash alert error for {sub.get('email', '?')}: {e}")
+                    await self._log_delivery(
+                        dispatch_id=dispatch_id,
+                        email_type="flash_alerts",
+                        recipient_email=sub.get('email', ''),
+                        recipient_name=sub.get('full_name'),
+                        user_id=sub.get('user_id'),
+                        delivery_status="failed",
+                        subject=subject,
+                        html=html,
+                        send_result={"provider_message_id": None, "status_code": None, "error": str(e)},
+                        template_variant=alert_type,
+                    )
                     errors += 1
                 await asyncio.sleep(0.6)  # Resend rate limit
 
+            await self._finalize_dispatch(
+                dispatch_id=dispatch_id,
+                attempted_count=len(subscribers),
+                sent_count=sent,
+                error_count=errors,
+                status="completed",
+            )
             self.last_flash_sent = datetime.now(timezone.utc).isoformat()
             self.last_error = None
 
@@ -684,6 +1106,7 @@ class NewsletterService:
 
         except Exception as e:
             self.last_error = str(e)
+            await self._mark_dispatch_error(dispatch_id, str(e))
             logger.exception(f"Flash alert error: {e}")
             return {"status": "error", "error": str(e)}
         finally:
@@ -895,4 +1318,3 @@ ACADEMY_LESSONS = [
 
 
 newsletter_service = NewsletterService()
-

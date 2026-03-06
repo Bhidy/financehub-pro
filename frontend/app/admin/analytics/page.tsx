@@ -7,7 +7,7 @@ import {
     Activity, BarChart3, MessageSquare, Users, TrendingUp, TrendingDown,
     AlertTriangle, Clock, Globe, Inbox, ChevronRight, Download, RefreshCw,
     CheckCircle, XCircle, HelpCircle, Zap, Filter, Info, ArrowUpRight, ArrowDownRight,
-    Search, LayoutDashboard, Flag, UserCheck, ShieldAlert, Sparkles, ThumbsUp, ThumbsDown
+    Search, LayoutDashboard, Flag, UserCheck, ShieldAlert, Sparkles, ThumbsUp, ThumbsDown, Eye, X
 } from "lucide-react";
 
 // ============================================================
@@ -126,6 +126,44 @@ interface NewsletterFunnelStep {
     percentage: number;
 }
 
+type NewsletterEmailTypeKey = "weekly_pulse" | "monthly_dive" | "academy" | "flash_alerts";
+
+interface NewsletterEmailTypeAnalytics {
+    key: NewsletterEmailTypeKey;
+    label: string;
+    subscriber_count: number;
+    sent_total: number;
+    last_sent: string | null;
+    last_dispatch_sent_count: number;
+    last_dispatch_error_count: number;
+    preview_available: boolean;
+}
+
+interface NewsletterPreviewRecipient {
+    email: string;
+    full_name: string | null;
+    template_variant: string | null;
+    lesson_number: number | null;
+    sent_at: string;
+}
+
+interface NewsletterLatestPreview {
+    email_type: NewsletterEmailTypeKey;
+    label: string;
+    total_sent: number;
+    last_dispatch_at: string | null;
+    last_dispatch_sent_count: number;
+    last_dispatch_error_count: number;
+    preview_available: boolean;
+    subject: string | null;
+    html: string | null;
+    template_variant: string | null;
+    lesson_number: number | null;
+    recipient_email: string | null;
+    recipient_name: string | null;
+    recipients: NewsletterPreviewRecipient[];
+}
+
 interface NewsletterAnalytics {
     total_subscribers: number;
     active_subscribers: number;
@@ -141,6 +179,7 @@ interface NewsletterAnalytics {
     last_academy_sent: string | null;
     last_flash_sent: string | null;
     is_scheduler_running: boolean;
+    email_types: NewsletterEmailTypeAnalytics[];
 }
 
 // ============================================================
@@ -148,6 +187,13 @@ interface NewsletterAnalytics {
 // ============================================================
 
 const API_BASE = "https://starta.46-224-223-172.sslip.io/api/v1/admin/analytics";
+
+const NEWSLETTER_TYPE_META: Record<NewsletterEmailTypeKey, { color: string; accent: string; shortLabel: string }> = {
+    weekly_pulse: { color: "bg-[#3C50E0]", accent: "text-[#3C50E0]", shortLabel: "Weekly" },
+    monthly_dive: { color: "bg-indigo-500", accent: "text-indigo-500", shortLabel: "Monthly" },
+    academy: { color: "bg-purple-500", accent: "text-purple-500", shortLabel: "Academy" },
+    flash_alerts: { color: "bg-rose-500", accent: "text-rose-500", shortLabel: "Flash" },
+};
 
 // ============================================================
 // TOOLTIP COMPONENT
@@ -206,6 +252,10 @@ export default function ChatbotAnalyticsPage() {
     const [feedbackReports, setFeedbackReports] = useState<ChatFeedbackReport[]>([]);
     const [geoDistribution, setGeoDistribution] = useState<GeoEntry[]>([]);
     const [newsletterStats, setNewsletterStats] = useState<NewsletterAnalytics | null>(null);
+    const [selectedNewsletterType, setSelectedNewsletterType] = useState<NewsletterEmailTypeKey | null>(null);
+    const [newsletterPreview, setNewsletterPreview] = useState<NewsletterLatestPreview | null>(null);
+    const [newsletterPreviewLoading, setNewsletterPreviewLoading] = useState(false);
+    const [newsletterPreviewError, setNewsletterPreviewError] = useState<string | null>(null);
 
     // Admin check
     useEffect(() => {
@@ -265,6 +315,16 @@ export default function ChatbotAnalyticsPage() {
         }
     }, [period, userType, language, isAuthenticated, user]);
 
+    useEffect(() => {
+        if (!selectedNewsletterType) return;
+
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, [selectedNewsletterType]);
+
     // Export to CSV
     const exportToCSV = (data: any[], filename: string) => {
         if (!data.length) return;
@@ -289,6 +349,38 @@ export default function ChatbotAnalyticsPage() {
         }
     };
 
+    const openNewsletterPreview = async (emailType: NewsletterEmailTypeAnalytics) => {
+        setSelectedNewsletterType(emailType.key);
+        setNewsletterPreview(null);
+        setNewsletterPreviewError(null);
+        setNewsletterPreviewLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE}/newsletter/preview?email_type=${emailType.key}`, {
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Preview request failed with status ${response.status}`);
+            }
+
+            const preview = await response.json();
+            setNewsletterPreview(preview);
+        } catch (error) {
+            console.error("Failed to fetch newsletter preview:", error);
+            setNewsletterPreviewError("Failed to load the latest archived email preview.");
+        } finally {
+            setNewsletterPreviewLoading(false);
+        }
+    };
+
+    const closeNewsletterPreview = () => {
+        setSelectedNewsletterType(null);
+        setNewsletterPreview(null);
+        setNewsletterPreviewError(null);
+        setNewsletterPreviewLoading(false);
+    };
+
     if (authLoading) {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-[#151925] flex items-center justify-center">
@@ -308,6 +400,50 @@ export default function ChatbotAnalyticsPage() {
             </div>
         );
     }
+
+    const newsletterEmailTypes = newsletterStats?.email_types?.length ? newsletterStats.email_types : newsletterStats ? [
+        {
+            key: "weekly_pulse" as const,
+            label: "Weekly Pulse",
+            subscriber_count: newsletterStats.weekly_pulse_count,
+            sent_total: 0,
+            last_sent: newsletterStats.last_weekly_sent,
+            last_dispatch_sent_count: 0,
+            last_dispatch_error_count: 0,
+            preview_available: false,
+        },
+        {
+            key: "monthly_dive" as const,
+            label: "Monthly Deep Dive",
+            subscriber_count: newsletterStats.monthly_dive_count,
+            sent_total: 0,
+            last_sent: newsletterStats.last_monthly_sent,
+            last_dispatch_sent_count: 0,
+            last_dispatch_error_count: 0,
+            preview_available: false,
+        },
+        {
+            key: "academy" as const,
+            label: "Starta Academy",
+            subscriber_count: newsletterStats.academy_count,
+            sent_total: 0,
+            last_sent: newsletterStats.last_academy_sent,
+            last_dispatch_sent_count: 0,
+            last_dispatch_error_count: 0,
+            preview_available: false,
+        },
+        {
+            key: "flash_alerts" as const,
+            label: "Flash Alerts",
+            subscriber_count: newsletterStats.flash_alerts_count,
+            sent_total: 0,
+            last_sent: newsletterStats.last_flash_sent,
+            last_dispatch_sent_count: 0,
+            last_dispatch_error_count: 0,
+            preview_available: false,
+        },
+    ] : [];
+    const selectedNewsletterMeta = selectedNewsletterType ? NEWSLETTER_TYPE_META[selectedNewsletterType] : null;
 
     return (
         <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300">
@@ -524,24 +660,36 @@ export default function ChatbotAnalyticsPage() {
                                     Active Lists
                                 </h3>
                                 <div className="space-y-3">
-                                    {[
-                                        { label: 'Weekly Pulse', count: newsletterStats.weekly_pulse_count, color: 'bg-[#3C50E0]' },
-                                        { label: 'Monthly Deep Dive', count: newsletterStats.monthly_dive_count, color: 'bg-indigo-500' },
-                                        { label: 'Starta Academy', count: newsletterStats.academy_count, color: 'bg-purple-500' },
-                                        { label: 'Flash Alerts', count: newsletterStats.flash_alerts_count, color: 'bg-rose-500' },
-                                    ].map(list => (
-                                        <div key={list.label} className="flex items-center gap-3">
-                                            <div className={`w-2 h-2 rounded-full ${list.color}`} />
-                                            <span className="text-sm text-slate-600 dark:text-slate-300 flex-1">{list.label}</span>
-                                            <span className="text-sm font-semibold text-slate-900 dark:text-white w-8 text-right">{list.count}</span>
-                                            <div className="w-16 h-1.5 flex-shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full ${list.color}`}
-                                                    style={{ width: `${(list.count / Math.max(newsletterStats.active_subscribers, 1)) * 100}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                    {newsletterEmailTypes.map(list => {
+                                        const meta = NEWSLETTER_TYPE_META[list.key];
+                                        return (
+                                            <button
+                                                key={list.key}
+                                                type="button"
+                                                onClick={() => openNewsletterPreview(list)}
+                                                className="w-full flex items-center gap-3 rounded-xl border border-slate-200/70 dark:border-[#2E3A47] bg-white/60 dark:bg-[#0B1121]/40 px-3 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-[#111827]"
+                                            >
+                                                <div className={`w-2 h-2 rounded-full ${meta.color}`} />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{list.label}</span>
+                                                        <Eye className={`w-3.5 h-3.5 ${meta.accent}`} />
+                                                    </div>
+                                                    <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+                                                        <span>{list.subscriber_count} subscribed</span>
+                                                        <span>{list.sent_total} sent</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-16 h-1.5 flex-shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full ${meta.color}`}
+                                                        style={{ width: `${(list.subscriber_count / Math.max(newsletterStats.active_subscribers, 1)) * 100}%` }}
+                                                    />
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 text-slate-400" />
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -552,66 +700,33 @@ export default function ChatbotAnalyticsPage() {
                                     Last Dispatch
                                 </h3>
                                 <div className="space-y-3">
-                                    {[
-                                        { label: 'Weekly', date: newsletterStats.last_weekly_sent },
-                                        { label: 'Monthly', date: newsletterStats.last_monthly_sent },
-                                        { label: 'Academy', date: newsletterStats.last_academy_sent },
-                                        { label: 'Flash', date: newsletterStats.last_flash_sent }
-                                    ].map(dispatch => (
-                                        <div key={dispatch.label} className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-600 dark:text-slate-300">{dispatch.label}</span>
-                                            {dispatch.date ? (
-                                                <span className="font-medium text-slate-900 dark:text-white">
-                                                    {new Date(dispatch.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400 dark:text-slate-500 italic">Never</span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Card 4: Academy Funnel */}
-                        <div className="premium-glass p-6 rounded-xl border border-slate-200 dark:border-[#2E3A47]">
-                            <div className="flex items-start justify-between mb-2">
-                                <div>
-                                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                        <TrendingUp className="w-5 h-5 text-[#10B981]" />
-                                        Starta Academy Journey
-                                    </h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                        Tracking active subscribers across the 8-part educational sequence.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-end justify-between h-48 mt-6 pt-6 border-t border-slate-100 dark:border-[#2E3A47] pb-2 px-2">
-                                {newsletterStats.academy_funnel.map((step) => {
-                                    const maxCount = Math.max(...newsletterStats.academy_funnel.map(s => s.count), 1);
-                                    // Make sure relative height is at least slightly visible when > 0, else 0.
-                                    const relativeHeight = step.count > 0 ? Math.max((step.count / maxCount) * 100, 5) : 0;
-
-                                    return (
-                                        <div key={step.lesson} className="flex flex-col items-center justify-end group h-full w-12">
-                                            <span className="text-xs font-semibold text-slate-900 dark:text-white mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {step.count}
-                                            </span>
-                                            <div className="w-full h-full flex items-end justify-center relative">
-                                                <div
-                                                    className={`w-full max-w-[40px] rounded-t-lg transition-all duration-500 shadow-sm ${step.lesson === 0 ? 'bg-slate-300 dark:bg-slate-600' : 'bg-[#14B8A6] hover:bg-[#0D9488]'}`}
-                                                    style={{ height: `${relativeHeight}%`, minHeight: step.count > 0 ? '4px' : '0' }}
-                                                />
+                                    {newsletterEmailTypes.map(dispatch => {
+                                        const meta = NEWSLETTER_TYPE_META[dispatch.key];
+                                        return (
+                                            <div key={dispatch.key} className="flex items-start justify-between gap-4 text-sm">
+                                                <div>
+                                                    <span className="text-slate-700 dark:text-slate-200 font-medium">{meta.shortLabel}</span>
+                                                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                                        {dispatch.last_dispatch_sent_count} sent / {dispatch.last_dispatch_error_count} failed
+                                                    </p>
+                                                </div>
+                                                {dispatch.last_sent ? (
+                                                    <span className="font-medium text-right text-slate-900 dark:text-white">
+                                                        {new Date(dispatch.last_sent).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-400 dark:text-slate-500 italic">Never</span>
+                                                )}
                                             </div>
-                                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 mt-3 whitespace-nowrap">
-                                                {step.lesson === 0 ? 'Wait' : `L${step.lesson}`}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                    {!newsletterEmailTypes.length && (
+                                        <div className="text-sm text-slate-400 italic">No dispatch telemetry yet</div>
+                                    )}
+                                </div>
                             </div>
                         </div>
+
                     </section>
                 )}
 
@@ -619,10 +734,10 @@ export default function ChatbotAnalyticsPage() {
                 <div className="grid lg:grid-cols-3 gap-8 relative z-10">
 
                     {/* LEFT COLUMN: 2/3 Width */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-8 lg:h-full lg:min-h-0 lg:flex lg:flex-col">
 
                         {/* DEMAND INTELLIGENCE & TOP QUESTIONS — TABBED */}
-                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300">
+                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300 lg:h-full lg:min-h-0 lg:flex lg:flex-col">
                             <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
@@ -668,7 +783,7 @@ export default function ChatbotAnalyticsPage() {
 
                             {/* TAB: Demand Intelligence */}
                             {demandTab === 'demand' && (
-                                <div className="overflow-x-auto overflow-y-auto max-h-[300px] custom-scrollbar">
+                                <div className="overflow-x-auto overflow-y-auto max-h-[300px] custom-scrollbar lg:max-h-none lg:min-h-0 lg:flex-1">
                                     <table className="w-full relative">
                                         <thead className="sticky top-0 z-20 bg-[#F1F5F9] dark:bg-[#1A222C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shadow-sm after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:right-0 after:border-b after:border-slate-200 dark:after:border-[#2E3A47]">
                                             <tr>
@@ -711,7 +826,7 @@ export default function ChatbotAnalyticsPage() {
 
                             {/* TAB: Top Questions */}
                             {demandTab === 'questions' && (
-                                <div className="divide-y divide-slate-200 dark:divide-[#2E3A47] max-h-[300px] overflow-y-auto custom-scrollbar">
+                                <div className="divide-y divide-slate-200 dark:divide-[#2E3A47] max-h-[300px] overflow-y-auto custom-scrollbar lg:max-h-none lg:min-h-0 lg:flex-1">
                                     {topQuestions.length === 0 ? (
                                         <div className="p-8 text-center text-slate-400">No data yet</div>
                                     ) : (
@@ -941,6 +1056,138 @@ export default function ChatbotAnalyticsPage() {
                         </table>
                     </div>
                 </section>
+
+                {selectedNewsletterType && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                        <button
+                            type="button"
+                            aria-label="Close preview"
+                            onClick={closeNewsletterPreview}
+                            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                        />
+                        <div className="relative z-10 w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-2xl dark:border-[#2E3A47] dark:bg-[#0B1121]">
+                            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-[#2E3A47]">
+                                <div>
+                                    <p className={`text-xs font-bold uppercase tracking-[0.24em] ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`}>
+                                        Real Email Archive
+                                    </p>
+                                    <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                                        {newsletterPreview?.label ?? newsletterEmailTypes.find(item => item.key === selectedNewsletterType)?.label ?? "Newsletter Preview"}
+                                    </h3>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeNewsletterPreview}
+                                    className="rounded-full border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-[#2E3A47] dark:text-slate-400 dark:hover:bg-[#111827] dark:hover:text-white"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            <div className="grid max-h-[85vh] min-h-[60vh] lg:grid-cols-[340px,1fr]">
+                                <div className="overflow-y-auto border-b border-slate-200 p-6 dark:border-[#2E3A47] lg:border-b-0 lg:border-r">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-[#2E3A47] dark:bg-[#111827]">
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Sent</p>
+                                            <p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{newsletterPreview?.total_sent ?? 0}</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-[#2E3A47] dark:bg-[#111827]">
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Batch</p>
+                                            <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">
+                                                {(newsletterPreview?.last_dispatch_sent_count ?? 0)} sent / {(newsletterPreview?.last_dispatch_error_count ?? 0)} failed
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6 space-y-4">
+                                        <div>
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Sent</p>
+                                            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                                {newsletterPreview?.last_dispatch_at
+                                                    ? new Date(newsletterPreview.last_dispatch_at).toLocaleString()
+                                                    : "No successful archived dispatch yet"}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Subject</p>
+                                            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                                {newsletterPreview?.subject ?? "No archived subject available"}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Successful Recipient</p>
+                                            <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                                                {newsletterPreview?.recipient_email ?? "No recipient recorded"}
+                                            </p>
+                                            {newsletterPreview?.recipient_name && (
+                                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{newsletterPreview.recipient_name}</p>
+                                            )}
+                                            {newsletterPreview?.lesson_number && (
+                                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Lesson {newsletterPreview.lesson_number}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6">
+                                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Latest Dispatch Recipients</p>
+                                        <div className="mt-3 space-y-2">
+                                            {(newsletterPreview?.recipients ?? []).length > 0 ? (
+                                                newsletterPreview?.recipients.map((recipient) => (
+                                                    <div key={`${recipient.email}-${recipient.sent_at}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-[#2E3A47] dark:bg-[#111827]">
+                                                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{recipient.email}</p>
+                                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                                                            {recipient.full_name && <span>{recipient.full_name}</span>}
+                                                            {recipient.lesson_number && <span>Lesson {recipient.lesson_number}</span>}
+                                                            {recipient.template_variant && <span>{recipient.template_variant}</span>}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-[#2E3A47] dark:text-slate-400">
+                                                    No archived recipients for this template yet.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex min-h-[50vh] flex-col bg-slate-100/70 dark:bg-[#050816]">
+                                    {newsletterPreviewLoading ? (
+                                        <div className="flex h-full items-center justify-center">
+                                            <RefreshCw className="h-8 w-8 animate-spin text-[#14B8A6]" />
+                                        </div>
+                                    ) : newsletterPreviewError ? (
+                                        <div className="flex h-full items-center justify-center p-8 text-center">
+                                            <div>
+                                                <XCircle className="mx-auto h-10 w-10 text-rose-500" />
+                                                <p className="mt-3 text-sm font-medium text-slate-900 dark:text-white">{newsletterPreviewError}</p>
+                                            </div>
+                                        </div>
+                                    ) : newsletterPreview?.preview_available && newsletterPreview.html ? (
+                                        <iframe
+                                            title={`${newsletterPreview.label} preview`}
+                                            srcDoc={newsletterPreview.html}
+                                            className="h-[70vh] w-full bg-white"
+                                            sandbox=""
+                                        />
+                                    ) : (
+                                        <div className="flex h-full items-center justify-center p-8 text-center">
+                                            <div className="max-w-md">
+                                                <Eye className={`mx-auto h-10 w-10 ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
+                                                <p className="mt-3 text-sm font-medium text-slate-900 dark:text-white">
+                                                    No archived HTML preview is available for this template yet.
+                                                </p>
+                                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                                    New dispatches are now stored with their real sent HTML, so future sends will open here automatically.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </main>
         </div>

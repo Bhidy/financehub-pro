@@ -276,6 +276,50 @@ async def lifespan(app: FastAPI):
                 except Exception as e:
                     pass
 
+                # Persistent newsletter dispatch audit trail
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS newsletter_dispatches (
+                        id SERIAL PRIMARY KEY,
+                        email_type VARCHAR(50) NOT NULL,
+                        display_label VARCHAR(100) NOT NULL,
+                        dispatch_kind VARCHAR(50) DEFAULT 'scheduled',
+                        status VARCHAR(20) DEFAULT 'running',
+                        subject TEXT,
+                        target_subscribers INTEGER DEFAULT 0,
+                        attempted_count INTEGER DEFAULT 0,
+                        sent_count INTEGER DEFAULT 0,
+                        error_count INTEGER DEFAULT 0,
+                        started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        completed_at TIMESTAMP WITH TIME ZONE,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_dispatches_type ON newsletter_dispatches(email_type)")
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_dispatches_completed ON newsletter_dispatches(completed_at DESC)")
+
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS newsletter_delivery_logs (
+                        id SERIAL PRIMARY KEY,
+                        dispatch_id INTEGER REFERENCES newsletter_dispatches(id) ON DELETE CASCADE,
+                        email_type VARCHAR(50) NOT NULL,
+                        recipient_email VARCHAR(255) NOT NULL,
+                        recipient_name VARCHAR(255),
+                        user_id INTEGER,
+                        delivery_status VARCHAR(20) NOT NULL,
+                        subject TEXT,
+                        html_content TEXT,
+                        provider_message_id VARCHAR(255),
+                        provider_status_code INTEGER,
+                        error_message TEXT,
+                        template_variant VARCHAR(100),
+                        lesson_number INTEGER,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    )
+                """)
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_delivery_type ON newsletter_delivery_logs(email_type)")
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_delivery_dispatch ON newsletter_delivery_logs(dispatch_id)")
+                await conn.execute("CREATE INDEX IF NOT EXISTS idx_newsletter_delivery_status ON newsletter_delivery_logs(delivery_status)")
+
                 # ============================================================
                 # USER NOTIFICATION SETTINGS (Added 2026-03-02)
                 # ============================================================

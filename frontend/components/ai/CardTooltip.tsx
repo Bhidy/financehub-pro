@@ -2,7 +2,7 @@
 
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { BookOpen, HelpCircle, Sparkles } from "lucide-react";
+import { BookOpen, ChevronRight, HelpCircle, Sparkles } from "lucide-react";
 import clsx from "clsx";
 
 type TooltipLanguage = "en" | "ar" | "mixed";
@@ -28,15 +28,11 @@ export interface GuideDescriptor {
     data?: unknown;
 }
 
-interface ResponseGuideSection {
-    title: string;
-    bullets: string[];
-}
-
 interface ResponseGuideContent {
+    eyebrow: string;
     title: string;
     summary: string;
-    sections: ResponseGuideSection[];
+    bullets: string[];
 }
 
 interface ResponseGuideButtonProps {
@@ -72,26 +68,6 @@ interface MetricMeta {
 const PANEL_WIDTH = 420;
 const TOOLTIP_GAP = 12;
 const VIEWPORT_MARGIN = 12;
-const GUIDE_SECTION_PRIORITY: Record<string, number> = {
-    "company card": 1,
-    "market card": 2,
-    "score card": 3,
-    "ranking card": 4,
-    "comparison card": 5,
-    "financial card": 6,
-    "insight card": 7,
-    "learning card": 8,
-    "context card": 9,
-    "شرح بطاقة الشركة": 1,
-    "بطاقة السوق": 2,
-    "بطاقة التقييم": 3,
-    "بطاقة الترتيب": 4,
-    "بطاقة المقارنة": 5,
-    "البطاقة المالية": 6,
-    "بطاقة الرؤية": 7,
-    "بطاقة التعلّم": 8,
-    "بطاقة السياق": 9,
-};
 
 const CARD_FAMILIES: CardFamilyMeta[] = [
     {
@@ -607,26 +583,68 @@ function computePosition(
     return { top, left, width };
 }
 
-function shortenGuideSectionTitle(title: string, resolvedLanguage: "en" | "ar"): string {
-    if (!title) return resolvedLanguage === "ar" ? "قراءة البطاقة" : "Card Reading";
-
-    if (resolvedLanguage === "ar") {
-        return title
-            .replace(/^كيفية قراءة /, "")
-            .replace(/^كيفية استخدام /, "")
-            .replace(/^عن /, "")
-            .trim();
-    }
-
-    return title
-        .replace(/^How To Read This /, "")
-        .replace(/^How To Use This /, "")
-        .replace(/^About This /, "")
-        .trim();
+function getGuideTypePriority(cardType: string): number {
+    const normalized = normalizeCardType(cardType);
+    if (["screener_results", "stock_list", "hidden_gems", "gem_list", "undervalued_screen", "index_composition"].includes(normalized)) return 1;
+    if (["compare", "compare_table", "comparison_table", "radar_compare"].includes(normalized)) return 2;
+    if (["deep_health", "deep_valuation", "valuation_score", "macro_score", "score_breakdown", "score_detail", "starta_score", "market_timing"].includes(normalized)) return 3;
+    if (["financials", "financial_explorer", "financials_table", "revenue_breakdown", "debt_structure", "assets_breakdown", "cashflow_waterfall", "growth_trend", "ratio_history_chart", "dynamic_data_card", "advanced_stats", "ownership_structure"].includes(normalized)) return 4;
+    if (["snapshot", "price_display", "chart", "stats", "statistics", "metric", "ratios"].includes(normalized)) return 5;
+    if (["bull_case", "bear_case", "insight", "my_framework", "framework_card", "key_insight", "warning_card", "quantified_drivers", "macro_context", "fair_value", "fund_nav"].includes(normalized)) return 6;
+    if (["stock_header"].includes(normalized)) return 7;
+    if (["educational", "define_term", "definition", "learning_section", "methodology", "screening_criteria", "help", "suggestions"].includes(normalized)) return 8;
+    if (["disclaimer", "disclaimer_card", "news_list"].includes(normalized)) return 9;
+    return 10;
 }
 
-function getGuideSectionPriority(title: string): number {
-    return GUIDE_SECTION_PRIORITY[title.trim().toLowerCase()] ?? 50;
+function getGuideSummary(cardType: string, resolvedLanguage: "en" | "ar"): string {
+    const normalized = normalizeCardType(cardType);
+
+    if (["screener_results", "stock_list", "hidden_gems", "gem_list", "undervalued_screen", "index_composition"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "اقرأ هذه الإجابة كقائمة مختصرة مرتبة داخل نفس مجموعة الأقران، وليس كتوصية شراء مباشرة."
+            : "Read this answer as a ranked shortlist inside one peer set, not as a direct buy recommendation.";
+    }
+
+    if (["compare", "compare_table", "comparison_table", "radar_compare"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "هذه الإجابة تقارن الأسماء على نفس المؤشرات ونفس الفترة، لذا ركز على الفروق النسبية لا على رقم واحد فقط."
+            : "This answer compares names on the same metrics and window, so focus on relative differences rather than one number alone.";
+    }
+
+    if (["deep_health", "deep_valuation", "valuation_score", "macro_score", "score_breakdown", "score_detail", "starta_score", "market_timing"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "استخدم الدرجة كملخص سريع فقط، ثم ارجع إلى العوامل التي رفعتها أو ضغطت عليها."
+            : "Use the score as a fast summary, then read the factors that lifted it or dragged it down.";
+    }
+
+    if (["financials", "financial_explorer", "financials_table", "revenue_breakdown", "debt_structure", "assets_breakdown", "cashflow_waterfall", "growth_trend", "ratio_history_chart", "dynamic_data_card", "advanced_stats", "ownership_structure"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "هذه الإجابة مبنية على بيانات القوائم المالية، لذلك الوحدة والفترة أهم من حجم الرقم وحده."
+            : "This answer is built from financial statement data, so unit and period matter before the headline amount.";
+    }
+
+    if (["snapshot", "price_display", "chart", "stats", "statistics", "metric", "ratios"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "اقرأ السعر والمؤشرات مع توقيت التحديث وسياق الحركة، وليس كأرقام منفصلة."
+            : "Read price and headline ratios with timing and move context, not as isolated figures.";
+    }
+
+    if (["bull_case", "bear_case", "insight", "my_framework", "framework_card", "key_insight", "warning_card", "quantified_drivers", "macro_context", "fair_value", "fund_nav"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "هذه طبقة تفسيرية فوق الأرقام، لذا تحقق من أن السرد مدعوم فعلا بالبيانات المعروضة."
+            : "This is an interpretation layer on top of the data, so check that the narrative is truly supported by the numbers shown.";
+    }
+
+    if (["educational", "define_term", "definition", "learning_section", "methodology", "screening_criteria", "help", "suggestions"].includes(normalized)) {
+        return resolvedLanguage === "ar"
+            ? "تعامل مع هذه الإجابة كتعريف سريع يوضح الفكرة ومتى تكون مفيدة في التحليل."
+            : "Treat this answer as a fast definition that explains the concept and when it is useful in analysis.";
+    }
+
+    return resolvedLanguage === "ar"
+        ? "استخدم هذا الملخص لفهم طريقة قراءة الإجابة قبل الانتقال للخطوة التالية."
+        : "Use this note to frame how the answer should be read before moving to the next step.";
 }
 
 export function deriveResponseGuideContent({
@@ -641,40 +659,50 @@ export function deriveResponseGuideContent({
     const resolvedLanguage = language === "ar" ? "ar" : "en";
     if (!Array.isArray(descriptors) || descriptors.length === 0) return null;
 
-    const sectionMap = new Map<string, ResponseGuideSection>();
+    const normalizedDescriptors = descriptors.map((descriptor) => ({
+        ...descriptor,
+        cardType: normalizeCardType(descriptor.cardType),
+    }));
 
-    descriptors.forEach((descriptor) => {
+    const supportOnlyTypes = new Set(["educational", "define_term", "definition", "learning_section", "methodology", "screening_criteria", "help", "suggestions", "disclaimer", "disclaimer_card", "news_list"]);
+    const primaryPool = normalizedDescriptors.filter((descriptor) => descriptor.cardType && !supportOnlyTypes.has(descriptor.cardType));
+    const candidatePool = primaryPool.length > 0 ? primaryPool : normalizedDescriptors;
+
+    const primaryDescriptor = [...candidatePool].sort((a, b) => {
+        return getGuideTypePriority(a.cardType || "") - getGuideTypePriority(b.cardType || "");
+    })[0];
+
+    if (!primaryDescriptor) return null;
+
+    const primaryContent = deriveCardTooltipContent({
+        cardType: primaryDescriptor.cardType,
+        cardTitle: primaryDescriptor.cardTitle,
+        data: primaryDescriptor.data,
+        language,
+    });
+
+    const metricBullets = normalizedDescriptors.flatMap((descriptor) => {
         const content = deriveCardTooltipContent({
             cardType: descriptor.cardType,
             cardTitle: descriptor.cardTitle,
             data: descriptor.data,
             language,
         });
-        const title = shortenGuideSectionTitle(content.title, resolvedLanguage);
-        const key = title.toLowerCase();
-        const existing = sectionMap.get(key);
-        const mergedBullets = dedupe([
-            ...(existing?.bullets || []),
-            ...content.bullets,
-        ]).slice(0, 2);
-
-        sectionMap.set(key, {
-            title,
-            bullets: mergedBullets,
-        });
+        return content.bullets;
     });
 
-    const sections = Array.from(sectionMap.values())
-        .sort((a, b) => getGuideSectionPriority(a.title) - getGuideSectionPriority(b.title))
-        .slice(0, compact ? 3 : 4);
-    if (sections.length === 0) return null;
+    const bullets = dedupe([
+        ...primaryContent.bullets,
+        ...metricBullets,
+    ]).slice(0, compact ? 2 : 2);
+
+    if (bullets.length === 0) return null;
 
     return {
-        title: resolvedLanguage === "ar" ? "دليل قراءة الإجابة" : "Answer Guide",
-        summary: resolvedLanguage === "ar"
-            ? "اضغط أو مرر المؤشر لتفهم أهم الأرقام والبطاقات في هذه الإجابة بسرعة."
-            : "Hover or tap to understand the few cards and metrics that matter most in this answer.",
-        sections,
+        eyebrow: resolvedLanguage === "ar" ? "قراءة سريعة" : "Quick Read",
+        title: resolvedLanguage === "ar" ? "كيف تقرأ هذه الإجابة" : "How To Read This Answer",
+        summary: getGuideSummary(primaryDescriptor.cardType || "", resolvedLanguage),
+        bullets,
     };
 }
 
@@ -801,16 +829,19 @@ export function ResponseGuideButton({
                     top: position.top,
                     left: position.left,
                     width: position.width,
-                    maxHeight: isCompact ? "72vh" : "560px",
+                    maxHeight: isCompact ? "56vh" : "360px",
                 }}
             >
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-50/80 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-sky-700 dark:border-sky-400/15 dark:bg-sky-400/10 dark:text-sky-200">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-teal-200/70 bg-teal-50/80 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-teal-700 dark:border-teal-400/15 dark:bg-teal-400/10 dark:text-teal-200">
                             <Sparkles className="h-3.5 w-3.5" />
+                            {content.eyebrow}
+                        </div>
+                        <div className="mt-3 text-base font-semibold tracking-tight text-slate-900 dark:text-white">
                             {content.title}
                         </div>
-                        <p className="mt-3 max-w-[34rem] text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        <p className="mt-2 max-w-[34rem] text-sm leading-6 text-slate-600 dark:text-slate-300">
                             {content.summary}
                         </p>
                     </div>
@@ -828,25 +859,15 @@ export function ResponseGuideButton({
                     )}
                 </div>
 
-                <div className="mt-4 space-y-2 overflow-y-auto pe-1" style={{ maxHeight: isCompact ? "calc(72vh - 110px)" : "420px" }}>
-                    {content.sections.map((section) => (
-                        <div
-                            key={section.title}
-                            className="rounded-2xl border border-slate-200/80 bg-slate-50/85 p-3.5 dark:border-white/10 dark:bg-white/[0.035]"
-                        >
-                            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-900 dark:text-white">
-                                {section.title}
-                            </div>
-                            <ul className="mt-2 space-y-1.5">
-                                {section.bullets.map((bullet) => (
-                                    <li key={bullet} className="flex items-start gap-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                        <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500" />
-                                        <span>{bullet}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-3.5 dark:border-white/10 dark:bg-white/[0.035]">
+                    <ul className="space-y-2">
+                        {content.bullets.map((bullet) => (
+                            <li key={bullet} className="flex items-start gap-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500" />
+                                <span>{bullet}</span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </div>,
             document.body
@@ -875,22 +896,30 @@ export function ResponseGuideButton({
                     setIsOpen(true);
                 }}
                 className={clsx(
-                    "group inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 text-slate-700 shadow-[0_16px_40px_-22px_rgba(15,23,42,0.55)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-300 hover:text-slate-900 hover:shadow-[0_20px_50px_-22px_rgba(20,184,166,0.45)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(10,18,32,0.94),rgba(10,18,32,0.82))] dark:text-slate-100 dark:hover:border-teal-400/40 dark:hover:text-white",
+                    "group flex w-full items-center justify-between gap-3 rounded-[20px] border border-slate-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(240,249,255,0.88))] px-4 py-3 text-slate-700 shadow-[0_18px_48px_-28px_rgba(15,23,42,0.42)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-[0_24px_64px_-30px_rgba(20,184,166,0.35)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(9,17,30,0.96),rgba(12,24,41,0.9))] dark:text-slate-100 dark:hover:border-teal-400/40",
                     className
                 )}
             >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-teal-500/20 to-sky-500/15 text-teal-700 dark:text-teal-300">
-                    <BookOpen className="h-4 w-4" />
-                </span>
-                <span className="min-w-0 text-start">
-                    <span className="block text-[11px] font-black uppercase tracking-[0.18em]">
-                        {resolvedLanguage === "ar" ? "دليل" : "Guide"}
+                <span className="flex min-w-0 items-center gap-3 text-start">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500/18 via-sky-500/12 to-transparent text-teal-700 dark:text-teal-300">
+                        <BookOpen className="h-4.5 w-4.5" />
                     </span>
-                    <span className="hidden text-[11px] text-slate-500 dark:text-slate-400 sm:block">
-                        {resolvedLanguage === "ar" ? "اشرح هذه الإجابة بسرعة" : "Read this answer faster"}
+                    <span className="min-w-0">
+                        <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-teal-700 dark:text-teal-300">
+                            {content.eyebrow}
+                        </span>
+                        <span className="mt-0.5 block text-sm font-semibold tracking-tight text-slate-900 dark:text-white">
+                            {content.title}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                            {resolvedLanguage === "ar" ? "ملخص قصير قبل المتابعة" : "Short guidance before you continue"}
+                        </span>
                     </span>
                 </span>
-                <HelpCircle className={clsx("h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-teal-500 dark:text-slate-500 dark:group-hover:text-teal-300", isOpen && "text-teal-500 dark:text-teal-300")} />
+                <span className="flex shrink-0 items-center gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    <span className="hidden sm:inline">{resolvedLanguage === "ar" ? "افتح" : "Open"}</span>
+                    <ChevronRight className={clsx("h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 rtl:rotate-180", isOpen && "rotate-90 rtl:-rotate-90")} />
+                </span>
             </button>
             {guidePanel}
         </>

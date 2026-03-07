@@ -1148,12 +1148,13 @@ interface DeepHealthProps {
 export function DeepHealthCard({ data, language = "en" }: DeepHealthProps & { language?: "en" | "ar" }) {
     const t = translations[language].chat;
     const isRtl = language === "ar";
+    const zNotApplicable = String(data.status || "").toLowerCase().includes("not applicable");
     // Safety check for null Z-Score (e.g. Banks)
     const safeZ = data.z_score ?? 0;
     const isSafe = safeZ > 2.99;
     const isDistress = safeZ < 1.81;
-    const color = (data.z_score === null) ? "text-slate-500" : isSafe ? "text-emerald-600" : isDistress ? "text-red-500" : "text-amber-500";
-    const bg = (data.z_score === null) ? "bg-slate-50" : isSafe ? "bg-emerald-50" : isDistress ? "bg-red-50" : "bg-amber-50";
+    const color = (data.z_score === null || zNotApplicable) ? "text-slate-500" : isSafe ? "text-emerald-600" : isDistress ? "text-red-500" : "text-amber-500";
+    const bg = (data.z_score === null || zNotApplicable) ? "bg-slate-50" : isSafe ? "bg-emerald-50" : isDistress ? "bg-red-50" : "bg-amber-50";
     const gradientId = `gauge-${data.symbol || 'default'}`;
 
     // Calculate gauge percentage (Z-Score typically 0-4 range, capped)
@@ -1249,20 +1250,28 @@ export function DeepHealthCard({ data, language = "en" }: DeepHealthProps & { la
             </div>
 
             {/* Risk Scale Legend */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-white/10">
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "تعثر (<1.81)" : "Distress (<1.81)"}</span>
+            {zNotApplicable ? (
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/10 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {language === "ar"
+                        ? "ملاحظة: مؤشر ألتمان غير مناسب لتقييم البنوك؛ اعتمد على كفاية رأس المال، جودة الأصول، والمخصصات."
+                        : "Note: Altman Z-Score is not suitable for banks; use capital adequacy, asset quality, and provisioning metrics instead."}
                 </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "منطقة رمادية" : "Grey Zone"}</span>
+            ) : (
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-white/10">
+                    <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "تعثر (<1.81)" : "Distress (<1.81)"}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "منطقة رمادية" : "Grey Zone"}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "آمن (>2.99)" : "Safe (>2.99)"}</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{language === "ar" ? "آمن (>2.99)" : "Safe (>2.99)"}</span>
-                </div>
-            </div>
+            )}
         </div>
     );
 }

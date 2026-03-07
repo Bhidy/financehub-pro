@@ -17,6 +17,20 @@ from .column_registry import (
 logger = logging.getLogger(__name__)
 
 
+def _is_bank_like_sector(raw_sector: Optional[str]) -> bool:
+    """Altman Z-Score is not a reliable metric for banks/financial institutions."""
+    if not raw_sector:
+        return False
+    sector = str(raw_sector).strip().lower()
+    return (
+        "bank" in sector
+        or "financial" in sector
+        or "بنوك" in sector
+        or "مصارف" in sector
+        or "خدمات مالية" in sector
+    )
+
+
 # ============================================================================
 # RATIO TREND: Historical ratio charts (5-year)
 # ============================================================================
@@ -214,7 +228,7 @@ async def handle_ownership_detail(conn, symbol: str, language: str = "en") -> Di
 async def handle_score_detail(conn, symbol: str, entities: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
     """Show Z-Score or F-Score with explanation."""
     ticker = await conn.fetchrow(
-        "SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol
+        "SELECT name_en, name_ar, currency, sector_name FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol
     )
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
@@ -244,19 +258,56 @@ async def handle_score_detail(conn, symbol: str, entities: Dict[str, Any], langu
         }
     else:
         score = row.get('altman_z_score')
-        data = {
-            "score_name": "Altman Z-Score",
-            "score_value": round(float(score), 2) if score is not None else None,
-            "zones": {"safe": "> 2.99", "grey": "1.81 - 2.99", "distress": "< 1.81"},
-            "interpretation": _z_score_interp(float(score)) if score is not None else "N/A",
-            "description": "The Altman Z-Score predicts bankruptcy probability using 5 financial ratios weighted by profitability, leverage, liquidity, solvency, and activity.",
-        }
+        is_bank_sector = _is_bank_like_sector(ticker.get("sector_name"))
+        if is_bank_sector:
+            data = {
+                "score_name": "Altman Z-Score",
+                "score_value": None,
+                "interpretation": "Not Applicable for Banks",
+                "description": (
+                    "Altman Z-Score is designed for non-financial corporates and is not a "
+                    "reliable risk model for banks. For banks, prioritize capital adequacy, "
+                    "asset quality (NPLs), provisioning coverage, and funding/liquidity structure."
+                ),
+                "criteria": [
+                    "Capital adequacy / CET1 trend",
+                    "NPL ratio and coverage",
+                    "Provisioning discipline",
+                    "Loan-to-deposit and liquidity profile",
+                    "Cost-to-income and operating resilience",
+                ],
+            }
+        elif score is None:
+            data = {
+                "score_name": "Altman Z-Score",
+                "score_value": None,
+                "interpretation": "Unavailable — Missing Inputs",
+                "description": (
+                    "Altman Z-Score could not be computed because one or more required financial "
+                    "inputs are missing. Please verify balance-sheet and income-statement coverage."
+                ),
+            }
+        else:
+            data = {
+                "score_name": "Altman Z-Score",
+                "score_value": round(float(score), 2),
+                "zones": {"safe": "> 2.99", "grey": "1.81 - 2.99", "distress": "< 1.81"},
+                "interpretation": _z_score_interp(float(score)),
+                "description": "The Altman Z-Score predicts bankruptcy probability using 5 financial ratios weighted by profitability, leverage, liquidity, solvency, and activity.",
+            }
     
     cards = [
         {'type': 'stock_header', 'data': {'symbol': symbol, 'name': name, 'market_code': 'EGX', 'currency': currency}},
         {'type': 'score_detail', 'title': data["score_name"], 'data': data},
     ]
-    return {"cards": cards, "conversational_text": f"Here's {symbol}'s {data['score_name']} analysis.", "actions": _act(symbol, language)}
+    if data.get("interpretation") == "Not Applicable for Banks":
+        conversational_text = (
+            f"{symbol} is in a financial-services sector where Altman Z-Score is not methodologically reliable. "
+            f"I switched the safety framing to bank-appropriate risk lenses."
+        )
+    else:
+        conversational_text = f"Here's {symbol}'s {data['score_name']} analysis."
+    return {"cards": cards, "conversational_text": conversational_text, "actions": _act(symbol, language)}
 
 
 # ============================================================================

@@ -657,6 +657,86 @@ class LLMExplainerService:
         """
         try:
             summary_parts = []
+            statement_sections = {"income", "balance", "cashflow"}
+            percent_keywords = (
+                "growth",
+                "margin",
+                "yield",
+                "return",
+                "tax rate",
+                "rate",
+            )
+            per_share_keywords = (
+                "eps",
+                "per share",
+                "/share",
+                "bvps",
+                "book value per share",
+                "net cash/share",
+                "fcf/share",
+            )
+            count_keywords = (
+                "shares",
+                "share count",
+            )
+
+            def compact_number(value: float, decimals: int = 2) -> str:
+                num = float(value)
+                abs_num = abs(num)
+                sign = "-" if num < 0 else ""
+                if abs_num >= 1_000_000_000:
+                    return f"{sign}{abs_num / 1_000_000_000:.{decimals}f}B"
+                if abs_num >= 1_000_000:
+                    return f"{sign}{abs_num / 1_000_000:.{decimals}f}M"
+                if abs_num >= 1_000:
+                    return f"{sign}{abs_num / 1_000:.{decimals}f}K"
+                return f"{num:.{decimals}f}"
+
+            def is_percent_row(row: Dict[str, Any]) -> bool:
+                if row.get("isPercent"):
+                    return True
+                label = str(row.get("label", "")).lower()
+                fmt = str(row.get("format", "")).lower()
+                return fmt == "percent" or any(keyword in label for keyword in percent_keywords)
+
+            def is_per_share_row(row: Dict[str, Any]) -> bool:
+                label = str(row.get("label", "")).lower()
+                fmt = str(row.get("format", "")).lower()
+                return fmt == "per_share" or any(keyword in label for keyword in per_share_keywords)
+
+            def is_count_row(row: Dict[str, Any]) -> bool:
+                label = str(row.get("label", "")).lower()
+                fmt = str(row.get("format", "")).lower()
+                return (fmt == "number" and "share" in label) or any(keyword in label for keyword in count_keywords)
+
+            def format_context_value(value: Any, row: Dict[str, Any], section_key: str) -> str:
+                if value is None:
+                    return "N/A"
+                if isinstance(value, str):
+                    return str(value)
+                try:
+                    num = float(value)
+                except (TypeError, ValueError):
+                    return str(value)
+                scale = str(row.get("value_scale", "")).lower()
+
+                if is_percent_row(row):
+                    if num != 0 and abs(num) <= 1:
+                        return f"{num * 100:.2f}%"
+                    return f"{num:.2f}%"
+
+                if is_per_share_row(row):
+                    return f"{num:.2f}"
+
+                if is_count_row(row):
+                    if scale == "millions":
+                        num *= 1_000_000
+                    return compact_number(num)
+
+                if scale == "millions" or (section_key in statement_sections and not row.get("isGrowth")):
+                    num *= 1_000_000
+
+                return compact_number(num)
             
             # Simple Translation Helper
             T_MAP = {
@@ -741,13 +821,7 @@ class LLMExplainerService:
                                 for y in years:
                                     v = row['values'].get(y)
                                     if v is not None:
-                                        # Format large numbers
-                                        if isinstance(v, (int, float)) and abs(v) > 1000000:
-                                            v_str = f"{v/1000000:.1f}M"
-                                        elif isinstance(v, (int, float)):
-                                            v_str = f"{v:.2f}"
-                                        else:
-                                            v_str = str(v)
+                                        v_str = format_context_value(v, row, section_key)
                                         vals.append(f"{y}={v_str}")
                                 
                                 # Format Change Deltas (New)
@@ -756,12 +830,7 @@ class LLMExplainerService:
                                 c_pct = row.get('change_pct')
                                 
                                 if c_abs is not None:
-                                    if isinstance(c_abs, (int, float)) and abs(c_abs) > 1000000:
-                                        c_abs_str = f"{c_abs/1000000:.1f}M"
-                                    elif isinstance(c_abs, (int, float)):
-                                        c_abs_str = f"{c_abs:.2f}"
-                                    else:
-                                        c_abs_str = str(c_abs)
+                                    c_abs_str = format_context_value(c_abs, row, section_key)
                                         
                                     if c_pct is not None:
                                         change_str = f" (Chg: {c_abs_str} | {c_pct:.1f}%)"

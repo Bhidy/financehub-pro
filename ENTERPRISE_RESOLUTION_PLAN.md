@@ -60,7 +60,7 @@ We are monitoring the backend via direct API probes.
 
 ### 3.2 User Acceptance Test (UAT)
 Once the monitoring probe turns green (Status 400), you will:
-1.  Open the Mobile Login Page: [Link](https://finhub-pro.vercel.app/mobile-ai-analyst/login)
+1.  Open the production login page: [Link](https://startamarkets.com/login)
 2.  Click "Continue with Google".
 3.  **Result:** Successful Login.
 

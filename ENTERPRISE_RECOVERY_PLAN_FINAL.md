@@ -6,7 +6,7 @@ This document outlines the root cause analysis and resolution plan for the criti
 ## 1. Root Cause Analysis
 
 ### Symptoms
-- **User Impact:** Login fails on both Desktop (`/login`) and Mobile (`/mobile-ai-analyst/login`) platforms.
+- **User Impact:** Login fails on the production login flow (`/login`) and blocks access to the canonical chat experience (`/AiChat`).
 - **Error:** `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`.
 - **Trigger:** Clicking "Sign In".
 
@@ -60,7 +60,7 @@ To prevent future regressions:
 Once the deployment completes:
 1.  **Clear Browser Cache**: Hard reload the login page (`Ctrl+F5` or `Cmd+Shift+R`).
 2.  **Login Test**: Attempt to log in with known credentials.
-3.  **Mobile Test**: Verify functionality on `https://finhub-pro.vercel.app/mobile-ai-analyst/login`.
+3.  **Production Chat Test**: Verify functionality on `https://startamarkets.com/AiChat` after login.
 
 ## 5. Backend Authentication Hardening (Completed)
 

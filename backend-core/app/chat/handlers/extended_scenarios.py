@@ -1069,6 +1069,38 @@ async def handle_undervalued_stocks(
                 return None
             return raw * 100 if abs(raw) <= 1 else raw
 
+        def _safe_float(raw: Any) -> float:
+            try:
+                if raw is None:
+                    return 0.0
+                return float(raw)
+            except (TypeError, ValueError):
+                return 0.0
+
+        def _compute_refined_score(score_res: Any, row: Dict[str, Any]) -> float:
+            """
+            Best-practice tie handling:
+            - Keep the 5-factor integer engine as the base score.
+            - Add a bounded continuous layer for ranking/display to avoid coarse tie clusters.
+            """
+            pe_discount = max(_safe_float(row.get("pe_discount")), 0.0)
+            pb_discount = max(_safe_float(row.get("pb_discount")), 0.0)
+            ev_discount = max(_safe_float(row.get("ev_ebitda_discount")), 0.0)
+            # Blend valuation discounts instead of using a single max value.
+            discount_signal = (0.50 * ev_discount) + (0.35 * pe_discount) + (0.15 * pb_discount)
+
+            relative_alpha = max(_safe_float(row.get("relative_alpha")), 0.0)
+
+            tie_break = (
+                min(discount_signal, 100.0) * 0.020
+                + float(score_res.profitability) * 0.030
+                + float(score_res.earnings_quality) * 0.025
+                + float(score_res.financial_health) * 0.020
+                + float(score_res.momentum) * 0.015
+                + min(relative_alpha, 15.0) * 0.010
+            )
+            return round(min(99.0, float(score_res.total) + tie_break), 1)
+
         scored_rows = []
         for row in rows:
             # Skip high P/E stocks — they are NOT undervalued by definition
@@ -1092,11 +1124,14 @@ async def handle_undervalued_stocks(
             score_res = calculate_score(metrics, hist_avg)
             # Keep stocks with meaningful valuation discount (10%+ below sector)
             if score_res.valuation >= 12:
-                scored_rows.append((score_res, dict(row)))
+                row_dict = dict(row)
+                refined_score = _compute_refined_score(score_res, row_dict)
+                scored_rows.append((score_res, row_dict, refined_score))
 
-        def _sort_key(item: Tuple[Any, Dict[str, Any]]) -> Tuple[float, ...]:
-            score_res, row = item
+        def _sort_key(item: Tuple[Any, Dict[str, Any], float]) -> Tuple[float, ...]:
+            score_res, row, refined_score = item
             return (
+                float(refined_score),
                 float(score_res.total),
                 float(score_res.valuation),
                 float(score_res.profitability),
@@ -1148,11 +1183,14 @@ async def handle_undervalued_stocks(
                 )
             }
 
-        top_band_score = top_candidates[0][0].total
-        top_band_count = sum(1 for score_res, _ in top_candidates if score_res.total == top_band_score)
+        top_refined_score = float(top_candidates[0][2])
+        # Candidates within 0.6 points are treated as a single top cluster.
+        top_band_count = sum(1 for _, _, refined in top_candidates if (top_refined_score - float(refined)) <= 0.6)
+        top_cluster_floor = min(float(refined) for _, _, refined in top_candidates[:top_band_count])
+        top_cluster_spread = round(top_refined_score - top_cluster_floor, 1)
 
         stocks: List[Dict[str, Any]] = []
-        for idx, (score_res, row) in enumerate(top_candidates):
+        for idx, (score_res, row, refined_score) in enumerate(top_candidates):
             pe = row.get("pe_ratio")
             pb = row.get("pb_ratio")
             roe = _pct(row.get("roe"))
@@ -1261,10 +1299,17 @@ async def handle_undervalued_stocks(
                 if language == "ar" and row.get("name_ar")
                 else (row.get("name_en") or row["symbol"])
             )
+
+            display_score: Any
+            if abs(refined_score - round(refined_score)) < 1e-9:
+                display_score = int(round(refined_score))
+            else:
+                display_score = refined_score
+
             stocks.append({
                 "ticker": row["symbol"],
                 "company_name": company_name,
-                "score": score_res.total,
+                "score": display_score,
                 "grade": score_res.grade,
                 "highlighted": idx == 0,
                 "badge": (
@@ -1297,13 +1342,13 @@ async def handle_undervalued_stocks(
 
         conversational_text = (
             (
-                f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) sits in the top value cluster, with {top_band_count} names sharing the same score band."
+                f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) sits in the top value cluster, with {top_band_count} names packed within {top_cluster_spread:.1f} score points."
                 if top_band_count > 1
                 else f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) currently ranks as the strongest value setup."
             )
             if language == "en"
             else (
-                f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتواجد {top_name} ({top_ticker}) ضمن مجموعة الفرص الأعلى، مع {top_band_count} أسماء في نفس الشريحة."
+                f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتواجد {top_name} ({top_ticker}) ضمن مجموعة الفرص الأعلى، مع {top_band_count} أسماء ضمن فارق {top_cluster_spread:.1f} نقطة."
                 if top_band_count > 1
                 else f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتصدر {top_name} ({top_ticker}) حالياً كأقوى فرصة قيمة."
             )
@@ -1311,13 +1356,13 @@ async def handle_undervalued_stocks(
 
         key_insight = (
             (
-                f"{top_ticker} leads a tightly packed shortlist. {top_band_count} names share the same base score, so the order is broken by valuation discount, profitability, cash quality, and balance-sheet strength."
+                f"{top_ticker} leads a tightly packed shortlist. Close names are separated using a composite attractiveness layer on top of the core 5-factor score."
                 if top_band_count > 1
                 else f"{top_ticker} stands out because the valuation discount is backed by quality checks rather than a cheap multiple alone."
             )
             if language == "en"
             else (
-                f"يتصدر {top_ticker} قائمة متقاربة جداً. يوجد {top_band_count} أسماء في نفس الدرجة الأساسية، لذلك يتم كسر التعادل عبر خصم التقييم والربحية وجودة الأرباح ومتانة الميزانية."
+                f"يتصدر {top_ticker} قائمة متقاربة جداً. يتم فصل الأسماء المتقاربة عبر طبقة جاذبية مركبة فوق الدرجة الأساسية ذات العوامل الخمسة."
                 if top_band_count > 1
                 else f"يبرز {top_ticker} لأن خصم التقييم مدعوم بفلاتر الجودة وليس بمجرد مضاعف منخفض فقط."
             )

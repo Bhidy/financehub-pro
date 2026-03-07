@@ -8,6 +8,8 @@ shown in the user's data cards.
 import random
 from typing import List, Dict, Any, Optional
 
+from .educational_content import extract_explainable_terms, get_educational_content, get_term_display_name
+
 # Metric definitions (simplified, beginner-friendly)
 METRIC_DEFINITIONS = {
     "pe_ratio": {
@@ -317,87 +319,102 @@ def generate_learning_section(
         return None
     
     # Collect all keys from card data
-    all_keys = set()
+    explicit_keys = set()
     for card in card_data:
         data = card.get("data", {})
-        all_keys.update(data.keys())
+        explicit_keys.update(data.keys())
         # Also check nested items
         for item in data.get("items", []):
             if isinstance(item, dict):
-                all_keys.update(item.keys())
+                explicit_keys.update(item.keys())
     
     # Also check card types for context
+    inferred_keys = set()
     for ct in card_types:
         ct_low = ct.lower()
         # ── Existing types ───────────────────────────────────────────────────
         if "dividend" in ct_low:
-            all_keys.add("dividend_yield")
+            inferred_keys.add("dividend_yield")
         if "movers" in ct_low or "gainer" in ct_low or "loser" in ct_low:
-            all_keys.update(["change_percent", "market_cap"])
+            inferred_keys.update(["change_percent", "market_cap"])
         if "snapshot" in ct_low:
-            all_keys.update(["pe_ratio", "market_cap", "pb_ratio"])
+            inferred_keys.update(["pe_ratio", "market_cap", "pb_ratio"])
         if "valuation" in ct_low or "fair_value" in ct_low:
-            all_keys.update(["pe_ratio", "pb_ratio", "eps", "dcf_model", "wacc"])
+            inferred_keys.update(["pe_ratio", "pb_ratio", "eps", "dcf_model", "wacc"])
         if "health" in ct_low or "safety" in ct_low:
-            all_keys.add("z_score")
+            inferred_keys.add("z_score")
 
         # ── FIX: Core card types that previously had no match ────────────────
         # financials_table — most common card type for FINANCIALS/EARNINGS intents
         if "financials" in ct_low or "financial" in ct_low:
-            all_keys.update(["pe_ratio", "eps", "earnings_beat_miss", "nim"])
+            inferred_keys.update(["pe_ratio", "eps", "earnings_beat_miss", "nim"])
         # stock_header — always present, add basic valuation
         if "stock_header" in ct_low or "header" in ct_low:
-            all_keys.update(["pe_ratio", "market_cap"])
+            inferred_keys.update(["pe_ratio", "market_cap"])
         # stats card — for snapshots and catalysts
         if ct_low == "stats" or ct_low == "stat":
-            all_keys.update(["pe_ratio", "pb_ratio", "dividend_yield"])
+            inferred_keys.update(["pe_ratio", "pb_ratio", "dividend_yield"])
         # market_summary, market_breadth — for morning briefs
         if "market" in ct_low or "summary" in ct_low or "breadth" in ct_low:
-            all_keys.update(["change_percent", "market_cap"])
+            inferred_keys.update(["change_percent", "market_cap"])
         # compare_table — for comps
         if "compare" in ct_low or "comps" in ct_low or "peer" in ct_low:
-            all_keys.update(["comps_analysis", "pe_ratio", "pb_ratio"])
+            inferred_keys.update(["comps_analysis", "pe_ratio", "pb_ratio"])
         # catalyst card types
         if "catalyst" in ct_low or "calendar" in ct_low or "event" in ct_low:
-            all_keys.add("catalyst_calendar")
+            inferred_keys.add("catalyst_calendar")
 
         # ── financial-services-plugins additions ─────────────────────────────
         if "earnings" in ct_low or "result" in ct_low:
-            all_keys.update(["earnings_beat_miss", "investment_thesis"])
+            inferred_keys.update(["earnings_beat_miss", "investment_thesis"])
         if "dcf" in ct_low or "intrinsic" in ct_low:
-            all_keys.update(["dcf_model", "wacc"])
+            inferred_keys.update(["dcf_model", "wacc"])
         if "bank" in ct_low:
-            all_keys.add("nim")
+            inferred_keys.add("nim")
         if "real_estate" in ct_low or "property" in ct_low or "presale" in ct_low:
-            all_keys.add("pre_sales")
+            inferred_keys.add("pre_sales")
     
+    # First pass: detect actual explainable terms present in the real payload.
+    detected_terms = extract_explainable_terms(card_data, max_terms=max_items)
+
     # Find matching definitions
     items = []
     lang_key = language if language in ["en", "ar"] else "en"
-    
-    for key in all_keys:
+
+    for term in detected_terms:
+        term_key = term.get("key")
+        if not term_key:
+            continue
+        if term_key in METRIC_DEFINITIONS:
+            options = METRIC_DEFINITIONS[term_key].get(lang_key, METRIC_DEFINITIONS[term_key]["en"])
+            items.append(random.choice(options))
+        else:
+            content = get_educational_content(term_key)
+            if content and content.get("definition"):
+                display = get_term_display_name(term_key)
+                if lang_key == "ar":
+                    items.append(f"**{display}**: {content['definition']}")
+                else:
+                    items.append(f"**{display}**: {content['definition']}")
+        if len(items) >= max_items:
+            break
+
+    candidate_keys = explicit_keys if detected_terms else (explicit_keys | inferred_keys)
+
+    for key in candidate_keys:
+        if key in {term.get("key") for term in detected_terms}:
+            continue
         if key in METRIC_DEFINITIONS:
             options = METRIC_DEFINITIONS[key].get(lang_key, METRIC_DEFINITIONS[key]["en"])
             items.append(random.choice(options))
             if len(items) >= max_items:
                 break
-    
-    # Fallback: If we have cards but no matching definitions, add generic ones
-    if len(items) < 2 and card_data:
-        fallbacks = ["pe_ratio", "market_cap", "change_percent"]
-        for fb in fallbacks:
-            if fb in METRIC_DEFINITIONS and fb not in [i for i in all_keys]:
-                options = METRIC_DEFINITIONS[fb].get(lang_key, METRIC_DEFINITIONS[fb]["en"])
-                items.append(random.choice(options))
-                if len(items) >= 2:
-                    break
-    
+
     if not items:
         return None
-    
-    # Select a random title
-    title = random.choice(SECTION_TITLES.get(lang_key, SECTION_TITLES["en"]))
-    
+
+    title = "📘 What These Numbers Mean" if lang_key == "en" else "📘 ماذا تعني هذه الأرقام"
+
     return {
         "title": title,
         "items": items[:max_items]

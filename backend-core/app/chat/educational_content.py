@@ -5,7 +5,9 @@ Provides structured educational responses for DEFINE_TERM intent
 with definition, formula, example, caveats, and practical application.
 """
 
-from typing import Dict, Any, Optional
+import difflib
+import re
+from typing import Dict, Any, Optional, Iterable, List
 
 
 # ============================================================================
@@ -202,6 +204,79 @@ FINANCIAL_TERMS = {
         ],
         "practical_application": "EV/EBITDA is my preferred valuation metric because it captures debt. I compare to historical average and sector peers.",
         "related_metrics": ["P/E", "EV/Sales", "EV/EBIT"]
+    },
+
+    "ttm": {
+        "term": "Trailing Twelve Months (TTM)",
+        "icon": "🗓️",
+        "definition": "TTM means the latest rolling 12-month period, not a calendar year. It keeps the analysis current by combining the most recent reported quarters.",
+        "formula": "TTM = Sum of the latest 4 reported quarters for income and cash flow metrics",
+        "example": {
+            "title": "Egyptian Context Example",
+            "text": "If a company reported Q1, Q2, Q3, and Q4 revenue of EGP 2B, 2.2B, 2.4B, and 2.6B, its TTM revenue is EGP 9.2B. That is more current than using last full-year revenue from an older annual report."
+        },
+        "caveats": [
+            "TTM is rolling, so it changes every quarter",
+            "Balance sheet items are usually read from the latest quarter, not summed",
+            "Seasonal businesses can look stronger or weaker depending on where you are in the cycle",
+            "Always compare TTM to prior TTM or sector peers for context"
+        ],
+        "practical_application": "I use TTM to avoid stale annual numbers. It is the right lens when you want the latest profitability, cash flow, or valuation ratios.",
+        "related_metrics": ["YoY Growth", "QoQ Growth", "YTD"]
+    },
+
+    "yoy_growth": {
+        "term": "Year-over-Year (YoY)",
+        "icon": "📆",
+        "definition": "YoY compares a metric with the same period one year earlier. It filters out seasonality better than comparing one quarter to the immediately previous quarter.",
+        "formula": "YoY Growth = (Current Period - Same Period Last Year) / Same Period Last Year",
+        "example": {
+            "title": "Egyptian Context Example",
+            "text": "If Q3 revenue this year is EGP 3.0B versus EGP 2.4B in Q3 last year, YoY growth is 25%. That is usually more meaningful than comparing Q3 with Q2."
+        },
+        "caveats": [
+            "One-off base effects can exaggerate growth rates",
+            "Inflation can boost nominal YoY growth without real volume improvement",
+            "Always check margins alongside growth"
+        ],
+        "practical_application": "I prefer YoY when assessing whether growth is durable because it neutralizes normal seasonal swings.",
+        "related_metrics": ["TTM", "QoQ Growth", "Revenue Growth"]
+    },
+
+    "qoq_growth": {
+        "term": "Quarter-over-Quarter (QoQ)",
+        "icon": "📈",
+        "definition": "QoQ compares the latest quarter with the immediately previous quarter. It is useful for short-term trend changes and inflection points.",
+        "formula": "QoQ Growth = (Current Quarter - Previous Quarter) / Previous Quarter",
+        "example": {
+            "title": "Egyptian Context Example",
+            "text": "If quarterly earnings rise from EGP 500M to EGP 575M, QoQ growth is 15%. That can signal improving momentum before the annual trend fully shows it."
+        },
+        "caveats": [
+            "QoQ can be noisy in seasonal sectors",
+            "A single strong quarter does not guarantee a durable trend",
+            "Use alongside YoY and TTM to avoid overreacting"
+        ],
+        "practical_application": "I use QoQ to spot accelerating or weakening momentum early, then confirm it with YoY and TTM trends.",
+        "related_metrics": ["YoY Growth", "TTM", "Revenue Growth"]
+    },
+
+    "ytd": {
+        "term": "Year-to-Date (YTD)",
+        "icon": "📅",
+        "definition": "YTD measures performance from the start of the current calendar year up to today or the latest reporting date.",
+        "formula": "YTD Return = (Current Value - Value at Start of Year) / Value at Start of Year",
+        "example": {
+            "title": "Egyptian Context Example",
+            "text": "If a stock started the year at EGP 20 and now trades at EGP 24, its YTD return is 20%. That shows how it performed so far this year."
+        },
+        "caveats": [
+            "YTD resets every new year, so it is not a long-term measure",
+            "A strong YTD move may reflect valuation expansion, not earnings improvement",
+            "Always compare YTD with the index and sector"
+        ],
+        "practical_application": "I use YTD to judge relative market performance this year, not intrinsic value.",
+        "related_metrics": ["TTM", "YoY Growth", "Total Return"]
     }
 }
 
@@ -233,7 +308,276 @@ TERM_ALIASES = {
     "cogs margin": "gross_margin",
     "ev/ebitda": "ev_ebitda",
     "enterprise value": "ev_ebitda",
+    "ttm": "ttm",
+    "trailing twelve months": "ttm",
+    "trailing 12 months": "ttm",
+    "last 12 months": "ttm",
+    "latest 12 months": "ttm",
+    "rolling 12 months": "ttm",
+    "yoy": "yoy_growth",
+    "year over year": "yoy_growth",
+    "year-over-year": "yoy_growth",
+    "annual growth": "yoy_growth",
+    "qoq": "qoq_growth",
+    "quarter over quarter": "qoq_growth",
+    "quarter-over-quarter": "qoq_growth",
+    "sequential growth": "qoq_growth",
+    "ytd": "ytd",
+    "year to date": "ytd",
+    "year-to-date": "ytd",
 }
+
+TERM_DISPLAY_OVERRIDES = {
+    "roe": "ROE",
+    "pe_ratio": "P/E",
+    "pb_ratio": "P/B",
+    "dividend_yield": "Dividend Yield",
+    "ebitda": "EBITDA",
+    "free_cash_flow": "Free Cash Flow",
+    "debt_to_equity": "Debt-to-Equity",
+    "market_cap": "Market Cap",
+    "gross_margin": "Gross Margin",
+    "ev_ebitda": "EV/EBITDA",
+    "ttm": "TTM",
+    "yoy_growth": "YoY",
+    "qoq_growth": "QoQ",
+    "ytd": "YTD",
+}
+
+TERM_CATEGORY_OVERRIDES = {
+    "roe": "profitability",
+    "ebitda": "profitability",
+    "gross_margin": "profitability",
+    "free_cash_flow": "cash_flow",
+    "pe_ratio": "valuation",
+    "pb_ratio": "valuation",
+    "ev_ebitda": "valuation",
+    "market_cap": "valuation",
+    "dividend_yield": "income",
+    "debt_to_equity": "financial_health",
+    "ttm": "time_periods",
+    "yoy_growth": "time_periods",
+    "qoq_growth": "time_periods",
+    "ytd": "time_periods",
+}
+
+TERM_CATEGORY_LABELS = {
+    "en": {
+        "profitability": "Profitability",
+        "valuation": "Valuation",
+        "cash_flow": "Cash Flow",
+        "financial_health": "Financial Health",
+        "income": "Income",
+        "time_periods": "Time Periods",
+        "general": "Key Terms",
+    },
+    "ar": {
+        "profitability": "الربحية",
+        "valuation": "التقييم",
+        "cash_flow": "التدفقات النقدية",
+        "financial_health": "المتانة المالية",
+        "income": "الدخل",
+        "time_periods": "الفترات الزمنية",
+        "general": "مصطلحات مهمة",
+    },
+}
+
+
+def get_term_display_name(term_key: str) -> str:
+    content = FINANCIAL_TERMS.get(term_key, {})
+    return TERM_DISPLAY_OVERRIDES.get(term_key) or content.get("term") or term_key.replace("_", " ").title()
+
+
+def _normalize_lookup_text(value: str) -> str:
+    text = str(value or "").strip().lower()
+    text = re.sub(r"^(what is|what's|define|explain|meaning of|definition of)\s+", "", text)
+    text = re.sub(r"^(ما هو|ما معنى|ما المقصود بـ|اشرح)\s+", "", text)
+    text = re.sub(r"[?؟]+$", "", text).strip()
+    return text
+
+
+def _all_aliases_for_term(term_key: str) -> List[str]:
+    content = FINANCIAL_TERMS.get(term_key, {})
+    aliases = {
+        term_key,
+        term_key.replace("_", " "),
+        get_term_display_name(term_key).lower(),
+        str(content.get("term", "")).lower(),
+    }
+    for alias, canonical in TERM_ALIASES.items():
+        if canonical == term_key:
+            aliases.add(alias.lower())
+    return [a.strip() for a in aliases if a and a.strip()]
+
+
+def match_educational_term(term: str) -> Optional[str]:
+    """Resolve a raw user term into a canonical glossary key."""
+    term_lower = _normalize_lookup_text(term)
+    if not term_lower:
+        return None
+
+    if term_lower in FINANCIAL_TERMS:
+        return term_lower
+
+    if term_lower in TERM_ALIASES:
+        return TERM_ALIASES[term_lower]
+
+    for alias, canonical in TERM_ALIASES.items():
+        if _text_contains_alias(term_lower, alias):
+            return canonical
+
+    for key in FINANCIAL_TERMS:
+        key_label = key.replace("_", " ")
+        if term_lower == key_label or _text_contains_alias(term_lower, key_label):
+            return key
+
+    return None
+
+
+def _iter_text_fragments(value: Any) -> Iterable[str]:
+    if value is None:
+        return
+    if isinstance(value, str):
+        if value.strip():
+            yield value
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_text = str(key).strip()
+            if key_text:
+                yield key_text
+                if "_" in key_text:
+                    yield key_text.replace("_", " ")
+            yield from _iter_text_fragments(item)
+        return
+    if isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _iter_text_fragments(item)
+
+
+def _text_contains_alias(text: str, alias: str) -> bool:
+    escaped = re.escape(alias.lower())
+    return bool(re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", text))
+
+
+def extract_explainable_terms(source: Any, max_terms: int = 8) -> List[Dict[str, str]]:
+    """
+    Pull educationally explainable terms from arbitrary response payloads.
+
+    This is used to build dynamic "What is ...?" prompts from real response content,
+    instead of falling back to static canned examples.
+    """
+    fragments = [frag for frag in _iter_text_fragments(source)]
+    if not fragments:
+        return []
+
+    matches: List[tuple[int, str]] = []
+    for fragment in fragments:
+        text = _normalize_lookup_text(fragment)
+        if not text:
+            continue
+        for term_key in FINANCIAL_TERMS.keys():
+            aliases = sorted(_all_aliases_for_term(term_key), key=len, reverse=True)
+            for alias in aliases:
+                if len(alias) < 2:
+                    continue
+                if _text_contains_alias(text, alias):
+                    pos = text.find(alias)
+                    matches.append((pos if pos >= 0 else 9999, term_key))
+                    break
+
+    ordered: List[Dict[str, str]] = []
+    seen: set[str] = set()
+    for _, term_key in sorted(matches, key=lambda item: (item[0], get_term_display_name(item[1]))):
+        if term_key in seen:
+            continue
+        seen.add(term_key)
+        ordered.append(
+            {
+                "key": term_key,
+                "display": get_term_display_name(term_key),
+                "category": TERM_CATEGORY_OVERRIDES.get(term_key, "general"),
+            }
+        )
+        if len(ordered) >= max_terms:
+            break
+    return ordered
+
+
+def build_definition_prompt(term_display: str, language: str = "en") -> str:
+    return f"ما معنى {term_display}؟" if language == "ar" else f"What is {term_display}?"
+
+
+def build_definition_followups(
+    source: Any,
+    language: str = "en",
+    max_terms: int = 2,
+    exclude_terms: Optional[List[str]] = None
+) -> List[Dict[str, str]]:
+    excluded = {str(term).strip().lower() for term in (exclude_terms or []) if str(term).strip()}
+    followups: List[Dict[str, str]] = []
+    for item in extract_explainable_terms(source, max_terms=max_terms + len(excluded)):
+        if item["display"].lower() in excluded or item["key"].lower() in excluded:
+            continue
+        prompt = build_definition_prompt(item["display"], language)
+        followups.append({"text": prompt, "payload": prompt, "type": "definition"})
+        if len(followups) >= max_terms:
+            break
+    return followups
+
+
+def build_dynamic_help_categories(terms: List[Dict[str, str]], language: str = "en") -> List[Dict[str, Any]]:
+    labels = TERM_CATEGORY_LABELS.get(language, TERM_CATEGORY_LABELS["en"])
+    grouped: Dict[str, List[str]] = {}
+    for item in terms:
+        category = item.get("category") or "general"
+        grouped.setdefault(category, [])
+        prompt = build_definition_prompt(item["display"], language)
+        if prompt not in grouped[category]:
+            grouped[category].append(prompt)
+
+    categories: List[Dict[str, Any]] = []
+    for category_key, prompts in grouped.items():
+        if not prompts:
+            continue
+        categories.append(
+            {
+                "title": labels.get(category_key, labels["general"]),
+                "examples": prompts[:3],
+            }
+        )
+    return categories
+
+
+def suggest_related_explainable_terms(term: str, max_terms: int = 6) -> List[Dict[str, str]]:
+    lookup = _normalize_lookup_text(term)
+    if not lookup:
+        return []
+
+    search_pool: Dict[str, str] = {}
+    for term_key in FINANCIAL_TERMS.keys():
+        search_pool[get_term_display_name(term_key).lower()] = term_key
+        for alias in _all_aliases_for_term(term_key):
+            search_pool[alias.lower()] = term_key
+
+    close_matches = difflib.get_close_matches(lookup, list(search_pool.keys()), n=max_terms * 3, cutoff=0.35)
+    seen: set[str] = set()
+    related: List[Dict[str, str]] = []
+    for matched in close_matches:
+        term_key = search_pool.get(matched)
+        if not term_key or term_key in seen:
+            continue
+        seen.add(term_key)
+        related.append(
+            {
+                "key": term_key,
+                "display": get_term_display_name(term_key),
+                "category": TERM_CATEGORY_OVERRIDES.get(term_key, "general"),
+            }
+        )
+        if len(related) >= max_terms:
+            break
+    return related
 
 
 def get_educational_content(term: str) -> Optional[Dict[str, Any]]:
@@ -246,24 +590,8 @@ def get_educational_content(term: str) -> Optional[Dict[str, Any]]:
     Returns:
         Structured educational content or None if not found
     """
-    # Normalize the term
-    term_lower = term.lower().strip()
-    
-    # Check direct match
-    if term_lower in FINANCIAL_TERMS:
-        return FINANCIAL_TERMS[term_lower]
-    
-    # Check aliases
-    for alias, canonical in TERM_ALIASES.items():
-        if alias in term_lower or term_lower in alias:
-            return FINANCIAL_TERMS.get(canonical)
-    
-    # Fuzzy match - check if term contains any key
-    for key in FINANCIAL_TERMS:
-        if key.replace("_", " ") in term_lower or term_lower in key.replace("_", " "):
-            return FINANCIAL_TERMS[key]
-    
-    return None
+    term_key = match_educational_term(term)
+    return FINANCIAL_TERMS.get(term_key) if term_key else None
 
 
 def format_educational_response(content: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
@@ -544,57 +872,28 @@ def format_unknown_term_response(term: str, language: str = "en") -> Dict[str, A
     """
     Response when the requested term is not in our database.
     """
+    related_terms = suggest_related_explainable_terms(term)
+    categories = build_dynamic_help_categories(related_terms, language) if related_terms else []
+
     if language == "ar":
-        return {
+        result = {
             "success": True,
             "conversational_text": f"لا يتوفر حالياً تعريف تفصيلي للمصطلح: {term}. هذه أهم المؤشرات التي يمكنني شرحها بدقة:",
-            "cards": [
-                {
-                    "type": "help",
-                    "data": {
-                        "categories": [
-                            {
-                                "title": "الربحية",
-                                "examples": ["اشرح العائد على حقوق الملكية", "اشرح هوامش الربح", "اشرح ربحية السهم"]
-                            },
-                            {
-                                "title": "التقييم",
-                                "examples": ["اشرح مضاعف الربحية", "اشرح مضاعف القيمة الدفترية", "اشرح قيمة المنشأة إلى الأرباح التشغيلية"]
-                            },
-                            {
-                                "title": "المتانة المالية",
-                                "examples": ["اشرح نسبة الدين إلى حقوق الملكية", "اشرح التدفق النقدي الحر", "اشرح القيمة السوقية"]
-                            }
-                        ]
-                    }
-                }
-            ],
-            "follow_up_prompt": "يمكنك أن تسأل مثلاً: ما معنى العائد على حقوق الملكية؟ أو ما معنى مضاعف الربحية؟"
+            "cards": [],
+            "follow_up_prompt": "أعد صياغة المصطلح أو اسأل عن مؤشر مشابه وسأشرحه لك."
         }
+        if categories:
+            result["cards"].append({"type": "help", "data": {"categories": categories}})
+            result["follow_up_prompt"] = categories[0]["examples"][0]
+        return result
 
-    return {
+    result = {
         "success": True,
         "conversational_text": f"I don't have a detailed definition for '{term}' in my database yet. Here are some metrics I can explain in detail:",
-        "cards": [
-            {
-                "type": "help",
-                "data": {
-                    "categories": [
-                        {
-                            "title": "Profitability",
-                            "examples": ["What is ROE?", "Explain EBITDA", "Gross margin"]
-                        },
-                        {
-                            "title": "Valuation",
-                            "examples": ["What is P/E?", "P/B ratio", "EV/EBITDA"]
-                        },
-                        {
-                            "title": "Financial Health",
-                            "examples": ["Debt to equity", "Free cash flow", "Market cap"]
-                        }
-                    ]
-                }
-            }
-        ],
-        "follow_up_prompt": "Try asking about a specific metric like ROE, P/E, or dividend yield."
+        "cards": [],
+        "follow_up_prompt": "Try rephrasing the term or ask about a related metric and I'll explain it."
     }
+    if categories:
+        result["cards"].append({"type": "help", "data": {"categories": categories}})
+        result["follow_up_prompt"] = categories[0]["examples"][0]
+    return result

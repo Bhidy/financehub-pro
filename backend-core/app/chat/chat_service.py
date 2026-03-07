@@ -2071,14 +2071,24 @@ class ChatService:
         if is_compare_peers:
             return Intent.COMPARE_STOCKS, updated
 
-        is_roe_definition = (
-            ("roe" in msg_lower and bool(re.search(r"\b(what\s+does|what\s+is|meaning\s+of|mean)\b", msg_lower)))
-            or ("العائد على حقوق الملكية" in msg)
-            or ("ماذا يعني" in msg and "ROE" in msg.upper())
-        )
-        if is_roe_definition:
-            updated["term"] = "ROE"
-            return Intent.DEFINE_TERM, updated
+        try:
+            from .educational_content import match_educational_term, get_term_display_name
+
+            matched_term = match_educational_term(msg)
+            is_definition_pattern = (
+                bool(re.search(r"\b(what\s+does|what\s+is|what'?s|define|explain|meaning\s+of|definition\s+of|mean)\b", msg_lower))
+                or any(tok in msg for tok in ["ما هو", "ما معنى", "ما المقصود", "اشرح", "وضح", "يعني ايه", "يعني إيه"])
+            )
+            is_bare_metric_term = (
+                matched_term is not None
+                and len(msg.split()) <= 4
+                and bool(re.fullmatch(r"[\w\s/\-\+\(\)%.]+", msg.strip(), re.UNICODE))
+            )
+            if matched_term and (is_definition_pattern or is_bare_metric_term):
+                updated["term"] = get_term_display_name(matched_term)
+                return Intent.DEFINE_TERM, updated
+        except Exception:
+            pass
 
         # Deterministic Starta score breakdown override:
         # Keep "inside X score / score breakdown" prompts on SCORE_BREAKDOWN and
@@ -2407,6 +2417,53 @@ class ChatService:
             return False
         pattern = rf"(?<![A-Z0-9]){re.escape(canonical)}(?:\\.[A-Z0-9]+)?(?![A-Z0-9])"
         return bool(re.search(pattern, str(message).upper()))
+
+    def _should_generate_learning_section(self, intent: Intent) -> bool:
+        return intent not in {
+            Intent.HELP,
+            Intent.GREETING,
+            Intent.IDENTITY,
+            Intent.CAPABILITIES,
+            Intent.MOOD,
+            Intent.GRATITUDE,
+            Intent.GOODBYE,
+            Intent.UNKNOWN,
+            Intent.CLARIFY_SYMBOL,
+            Intent.BLOCKED,
+        }
+
+    def _is_unclear_probe_message(self, message: Optional[str]) -> bool:
+        if not message:
+            return True
+
+        raw = str(message).strip()
+        if not raw or re.fullmatch(r"[^\w\u0600-\u06FF]+", raw):
+            return True
+
+        normalized = normalize_text(raw).normalized
+        if not normalized:
+            return True
+
+        lowered = normalized.lower()
+        if lowered in {"help", "hello", "hi", "hey", "thanks", "thank you"}:
+            return False
+
+        try:
+            from .educational_content import match_educational_term
+
+            if match_educational_term(lowered):
+                return False
+        except Exception:
+            pass
+
+        if lowered in {"test", "testing", "tes", "asdf", "qwe", "qwerty"}:
+            return True
+
+        tokens = lowered.split()
+        if len(tokens) <= 2 and self._is_low_quality_text(lowered):
+            return True
+
+        return False
 
     @staticmethod
     def _is_buy_decision_query(message: Optional[str]) -> bool:
@@ -2924,6 +2981,7 @@ class ChatService:
             potential_symbols_original = extract_potential_symbols(message) if intent_uses_symbol_routing else []
             candidate = None
             resolved_from_user_text = None
+            explicit_entity_symbol = bool(symbol and self._message_mentions_symbol(message, symbol))
 
             # Resolve from the original user message first whenever symbol confidence is weak.
             # This prevents paraphraser/LLM hallucinated tickers from hijacking intent.
@@ -2950,7 +3008,16 @@ class ChatService:
             # regex extracts HAL, FEL, COMI — but HAL/FEL are paraphraser artifacts, not stocks).
             # Claude's classification is the authoritative symbol source.
             if intent_uses_symbol_routing:
-                if symbol and len(symbol) >= 3:
+                trust_entity_symbol = bool(
+                    symbol
+                    and len(symbol) >= 3
+                    and (
+                        explicit_entity_symbol
+                        or resolved_from_user_text
+                        or intent in {Intent.FOLLOW_UP, Intent.COMPARE_STOCKS}
+                    )
+                )
+                if trust_entity_symbol:
                     candidate = symbol  # Trust Claude's classification as primary
                     print(f"[ChatService] 🎯 Using Claude's entity symbol: '{candidate}' (from entities)")
                 elif potential_symbols_original:
@@ -3008,6 +3075,20 @@ class ChatService:
             if not resolved_symbol and resolved_from_user_text:
                 resolved_symbol = resolved_from_user_text
                 resolver_method = "user_message"
+
+            if (
+                intent_uses_symbol_routing
+                and not resolved_symbol
+                and not potential_symbols_original
+                and not resolved_from_user_text
+                and self._is_unclear_probe_message(message)
+            ):
+                print("[ChatService] 🛑 Unclear low-signal input detected; forcing UNKNOWN instead of stock fallback")
+                intent = Intent.UNKNOWN
+                entities.pop('symbol', None)
+                entities.pop('market_code', None)
+                candidate = None
+                symbol = None
                 
             # --- CONTEXT RELEVANCE FIX (The "JUFO" Killer) ---
             # Only certain intents should inherit the last symbol from context.
@@ -3488,23 +3569,17 @@ class ChatService:
                     # 2. Learning Section (Educational bullet points)
                     learning_section = handler_learning_section if isinstance(handler_learning_section, dict) else None
                     card_types = [str(c.get('type', '')) for c in result_data.get('cards', [])]
-                    
-                    if not learning_section and result_data.get('cards'):
+
+                    if (
+                        not learning_section
+                        and result_data.get('cards')
+                        and self._should_generate_learning_section(intent)
+                    ):
                         learning_section = generate_learning_section(
                             card_types=card_types,
                             card_data=result_data.get('cards', []),
                             language=language
                         )
-                    
-                    # FALLBACK: If no learning section generated but we have cards, force one
-                    if not learning_section and result_data.get('cards'):
-                        learning_section = {
-                            "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
-                            "items": [
-                                "**P/E Ratio**: Shows how much investors pay for each unit of profit." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح.",
-                                "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
-                            ]
-                        }
                     
                     # 3. Soft Follow-Up Prompt (Intent-based suggestion) - ALWAYS REQUIRED
                     follow_up_prompt = generate_follow_up(
@@ -3649,17 +3724,6 @@ class ChatService:
             # Layer 3: Learning Section (DISABLED)
             # Layer 4: Follow-up Prompt (MUST be present)
             
-            # GUARANTEE Layer 3: Learning Section
-            if not learning_section:
-                learning_section = {
-                    "title": "📘 What These Numbers Mean" if language == 'en' else "📘 ماذا تعني هذه الأرقام",
-                    "items": [
-                        "**P/E Ratio**: Shows how much investors pay for each unit of profit. Lower can mean undervalued." if language == 'en' else "**مضاعف الربحية**: يقيس كم يدفع المستثمرون مقابل كل وحدة ربح. الانخفاض قد يعني فرصة.",
-                        "**Market Cap**: The total value of all shares - indicates company size." if language == 'en' else "**القيمة السوقية**: إجمالي قيمة الأسهم - تشير لحجم الشركة."
-                    ]
-                }
-                print(f"[ChatService] 📘 Injected fallback learning_section")
-            
             # GUARANTEE Layer 4: Follow-up Prompt
             if not follow_up_prompt:
                 follow_up_prompt = "What would you like to explore next?" if language == 'en' else "ماذا تريد استكشافه بعد ذلك؟"
@@ -3670,7 +3734,7 @@ class ChatService:
                 # to ensure universal structure (greeting + data + learning + follow up)
                 if conversational_text and not result.conversational_text:
                     result.conversational_text = conversational_text
-                if not result.learning_section:
+                if learning_section and not result.learning_section:
                     result.learning_section = learning_section
                 if not result.follow_up_prompt:
                     result.follow_up_prompt = follow_up_prompt
@@ -4183,6 +4247,35 @@ class ChatService:
                 convo_logger = logging.getLogger("ChatService")
                 convo_logger.info("Generating dynamic follow-ups...")
                 followup_engine = FollowUpEngine()
+                educational_followups: List[Dict[str, Any]] = []
+
+                if intent not in {
+                    Intent.HELP,
+                    Intent.DEFINE_TERM,
+                    Intent.UNKNOWN,
+                    Intent.CLARIFY_SYMBOL,
+                    Intent.BLOCKED,
+                }:
+                    try:
+                        from .educational_content import build_definition_followups
+
+                        educational_followups = build_definition_followups(
+                            {
+                                "message_text": response.message_text,
+                                "conversational_text": conversational_text,
+                                "cards": result_data.get("cards", []),
+                                "educational_cards": result_data.get("educational_cards"),
+                                "learning_section": learning_section,
+                            },
+                            language=language,
+                            max_terms=2,
+                            exclude_terms=[entities.get("term")] if entities.get("term") else None,
+                        )
+                    except Exception as educational_followup_err:
+                        convo_logger.warning(
+                            "Educational follow-up generation skipped: %s",
+                            educational_followup_err,
+                        )
                 
                 # Pass intent value as dict since FollowUpEngine expects dict
                 intent_info = {"intent": intent.value} if intent else {}
@@ -4196,13 +4289,15 @@ class ChatService:
                     actions=result_data.get('actions', []),
                     anchor_symbols=followup_anchor_symbols
                 )
-                
-                if dynamic_followups:
+
+                merged_followups = [*(educational_followups or []), *(dynamic_followups or [])]
+
+                if merged_followups:
                     normalized_followups: List[Dict[str, Any]] = []
                     has_ambiguous_without_anchor = False
                     seen_payloads: set[str] = set()
                     seen_texts: set[str] = set()
-                    for chip in dynamic_followups:
+                    for chip in merged_followups:
                         if not isinstance(chip, dict):
                             continue
                         chip_text = str(chip.get("text") or "").strip()
@@ -4255,8 +4350,12 @@ class ChatService:
                             if len(normalized_followups) >= 3:
                                 break
 
-                    response.followups = normalized_followups
-                    convo_logger.info(f"✅ Generated {len(dynamic_followups)} dynamic follow-ups.")
+                    response.followups = normalized_followups[:3]
+                    convo_logger.info(
+                        "✅ Generated %s dynamic follow-ups (%s educational).",
+                        len(response.followups),
+                        len(educational_followups),
+                    )
             except Exception as e:
                 convo_logger = logging.getLogger("ChatService")
                 convo_logger.error(f"Failed to generate dynamic follow-ups: {e}")

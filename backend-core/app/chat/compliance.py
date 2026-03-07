@@ -39,6 +39,12 @@ COMPLIANCE_RESPONSE_AR = (
     "القوائم المالية، التوزيعات، ومقارنة الأسهم."
 )
 
+# Canonical Starta disclaimer shown across all response types.
+STARTA_GLOBAL_DISCLAIMER = (
+    "Disclaimer: Educational only. Starta is not a licensed analyst. "
+    "AI insights may have errors; consult a professional before making any decisions."
+)
+
 
 def check_compliance(text: str) -> Tuple[bool, Optional[str], Optional[str]]:
     """
@@ -82,16 +88,5 @@ def get_disclaimer(intent: str, language: str = 'en') -> Optional[str]:
     Returns:
         Disclaimer text or None
     """
-    # Intents that need disclaimers
-    needs_disclaimer = [
-        'STOCK_STAT', 'FINANCIALS', 'DIVIDENDS', 'COMPARE_STOCKS',
-        'TOP_GAINERS', 'TOP_LOSERS', 'SCREENER_PE', 'DIVIDEND_LEADERS'
-    ]
-    
-    if intent in needs_disclaimer:
-        if language == 'ar':
-            return "البيانات للأغراض المعلوماتية فقط. هذا ليس نصيحة استثمارية."
-        else:
-            return "Data is for informational purposes only. This is not investment advice."
-    
-    return None
+    # Product requirement: global disclaimer in all response types.
+    return STARTA_GLOBAL_DISCLAIMER

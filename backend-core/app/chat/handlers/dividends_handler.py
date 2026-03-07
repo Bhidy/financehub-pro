@@ -6,6 +6,7 @@ Ultra-premium responses with graceful fallback when no history exists.
 import asyncpg
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+from ..compliance import STARTA_GLOBAL_DISCLAIMER
 
 
 def _format_number(value: float, decimals: int = 2) -> Optional[str]:
@@ -180,7 +181,7 @@ async def handle_dividends(
         'message': message,
         'cards': cards,
         'actions': base_actions,
-        'disclaimer': 'Dividend data is for informational purposes only. Past dividends do not guarantee future distributions.' if language == 'en' else 'بيانات التوزيعات لأغراض إعلامية فقط. التوزيعات السابقة لا تضمن توزيعات مستقبلية.'
+        'disclaimer': STARTA_GLOBAL_DISCLAIMER
     }
 
 

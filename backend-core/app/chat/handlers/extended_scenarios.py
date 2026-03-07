@@ -1064,6 +1064,11 @@ async def handle_undervalued_stocks(
         # Fetch a larger candidate pool, then score-rank to get best results
         rows = await conn.fetch(query, sector_param)
 
+        def _pct(raw: Optional[float]) -> Optional[float]:
+            if raw is None:
+                return None
+            return raw * 100 if abs(raw) <= 1 else raw
+
         scored_rows = []
         for row in rows:
             # Skip high P/E stocks — they are NOT undervalued by definition
@@ -1089,7 +1094,23 @@ async def handle_undervalued_stocks(
             if score_res.valuation >= 12:
                 scored_rows.append((score_res, dict(row)))
 
-        scored_rows.sort(key=lambda x: x[0].total, reverse=True)
+        def _sort_key(item: Tuple[Any, Dict[str, Any]]) -> Tuple[float, ...]:
+            score_res, row = item
+            return (
+                float(score_res.total),
+                float(score_res.valuation),
+                float(score_res.profitability),
+                float(score_res.earnings_quality),
+                float(score_res.financial_health),
+                float(score_res.momentum),
+                float(row.get("ev_ebitda_discount") or 0),
+                float(row.get("pe_discount") or 0),
+                float(row.get("pb_discount") or 0),
+                float(_pct(row.get("roe")) or 0),
+                float(_pct(row.get("profit_margin")) or 0),
+            )
+
+        scored_rows.sort(key=_sort_key, reverse=True)
         top_candidates = scored_rows[:max(3, min(limit, 10))]
 
         if not top_candidates:
@@ -1127,10 +1148,8 @@ async def handle_undervalued_stocks(
                 )
             }
 
-        def _pct(raw: Optional[float]) -> Optional[float]:
-            if raw is None:
-                return None
-            return raw * 100 if abs(raw) <= 1 else raw
+        top_band_score = top_candidates[0][0].total
+        top_band_count = sum(1 for score_res, _ in top_candidates if score_res.total == top_band_score)
 
         stocks: List[Dict[str, Any]] = []
         for idx, (score_res, row) in enumerate(top_candidates):
@@ -1139,47 +1158,82 @@ async def handle_undervalued_stocks(
             roe = _pct(row.get("roe"))
             margin = _pct(row.get("profit_margin"))
             revenue_growth = _pct(row.get("revenue_growth"))
+            interest_coverage = row.get("interest_coverage")
+            relative_alpha = row.get("relative_alpha")
             pe_discount = row.get("pe_discount") or 0
             pb_discount = row.get("pb_discount") or 0
             ev_ebitda_discount = row.get("ev_ebitda_discount") or 0
             ev_ebitda = row.get("ev_ebitda")
 
             reasons = []
-            if ev_ebitda and ev_ebitda > 0 and ev_ebitda_discount > 0:
+            if ev_ebitda and ev_ebitda > 0 and ev_ebitda_discount >= 10:
                 reasons.append(
                     f"EV/EBITDA at {ev_ebitda:.1f}x ({ev_ebitda_discount:.0f}% below sector)"
                     if language == "en"
                     else f"EV/EBITDA عند {ev_ebitda:.1f}x (خصم {ev_ebitda_discount:.0f}% عن القطاع)"
                 )
-            if pe_discount > 0:
+            if pe_discount >= 10:
                 reasons.append(
                     f"P/E at {pe:.1f}x ({pe_discount:.0f}% below sector)"
                     if language == "en"
                     else f"مكرر ربحية {pe:.1f}x (خصم {pe_discount:.0f}% عن القطاع)"
                 )
-            if pb_discount > 0:
+            if pb_discount >= 10:
                 reasons.append(
                     f"P/B at {pb:.2f}x ({pb_discount:.0f}% below sector)"
                     if language == "en"
                     else f"مضاعف دفترية {pb:.2f}x (خصم {pb_discount:.0f}% عن القطاع)"
                 )
-            if roe:
+            if score_res.profitability >= 16 and roe is not None and roe > 0:
                 reasons.append(
-                    f"ROE {roe:.1f}% supports quality"
+                    f"ROE {roe:.1f}% reinforces quality"
                     if language == "en"
-                    else f"عائد حقوق ملكية {roe:.1f}% يدعم الجودة"
+                    else f"عائد حقوق الملكية {roe:.1f}% يدعم الجودة"
                 )
-            if margin:
+            elif score_res.profitability >= 12 and roe is not None and roe > 0:
                 reasons.append(
-                    f"Net margin {margin:.1f}%"
+                    f"ROE {roe:.1f}% shows decent profitability"
                     if language == "en"
-                    else f"هامش صافي {margin:.1f}%"
+                    else f"عائد حقوق الملكية {roe:.1f}% يعكس ربحية معقولة"
                 )
-            if revenue_growth:
+
+            if score_res.earnings_quality >= 16:
                 reasons.append(
-                    f"Revenue growth {revenue_growth:.1f}%"
+                    "Cash conversion supports reported earnings"
                     if language == "en"
-                    else f"نمو الإيرادات {revenue_growth:.1f}%"
+                    else "التدفقات النقدية تؤكد جودة الأرباح"
+                )
+            elif score_res.earnings_quality >= 12 and margin is not None and margin > 0:
+                reasons.append(
+                    f"Net margin {margin:.1f}% remains healthy"
+                    if language == "en"
+                    else f"هامش صافي {margin:.1f}% ما يزال صحياً"
+                )
+
+            if score_res.financial_health >= 16 and interest_coverage is not None and interest_coverage > 0:
+                reasons.append(
+                    f"Interest coverage {interest_coverage:.1f}x supports balance-sheet resilience"
+                    if language == "en"
+                    else f"تغطية الفوائد عند {interest_coverage:.1f}x تدعم متانة الميزانية"
+                )
+            elif score_res.financial_health >= 12 and row.get("debt_equity") is not None:
+                reasons.append(
+                    "Leverage remains within a manageable range"
+                    if language == "en"
+                    else "الرافعة المالية ما تزال ضمن نطاق مقبول"
+                )
+
+            if score_res.momentum >= 16 and relative_alpha is not None:
+                reasons.append(
+                    f"Relative alpha +{relative_alpha:.1f}% vs EGX30 adds momentum support"
+                    if language == "en"
+                    else f"ألفا نسبية +{relative_alpha:.1f}% مقابل EGX30 تضيف دعماً زخمياً"
+                )
+            elif score_res.momentum >= 12 and revenue_growth is not None and revenue_growth > 0:
+                reasons.append(
+                    f"Revenue growth {revenue_growth:.1f}% adds support"
+                    if language == "en"
+                    else f"نمو الإيرادات {revenue_growth:.1f}% يضيف دعماً"
                 )
 
             if not reasons:
@@ -1202,7 +1256,10 @@ async def handle_undervalued_stocks(
                 "highlighted": idx == 0,
                 "badge": (
                     "Top Pick" if language == "en" and idx == 0
-                    else ("الأفضل" if language == "ar" and idx == 0 else None)
+                    else (
+                        "الأفضل" if language == "ar" and idx == 0
+                        else (f"#{idx + 1}" if idx < 3 else None)
+                    )
                 ),
                 "logo_url": row.get("logo_url"),
                 "metrics": {
@@ -1226,9 +1283,31 @@ async def handle_undervalued_stocks(
         sector_label = _sector_label(sector_filter, language) if sector_filter else ("EGX Market" if language == "en" else "السوق المصري")
 
         conversational_text = (
-            f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) currently ranks as the strongest value setup."
+            (
+                f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) sits in the top value cluster, with {top_band_count} names sharing the same score band."
+                if top_band_count > 1
+                else f"I screened {sector_label} for valuation discounts with quality filters. {top_name} ({top_ticker}) currently ranks as the strongest value setup."
+            )
             if language == "en"
-            else f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتصدر {top_name} ({top_ticker}) حالياً كأقوى فرصة قيمة."
+            else (
+                f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتواجد {top_name} ({top_ticker}) ضمن مجموعة الفرص الأعلى، مع {top_band_count} أسماء في نفس الشريحة."
+                if top_band_count > 1
+                else f"قمت بفحص {sector_label} عبر خصومات التقييم مع فلاتر الجودة، ويتصدر {top_name} ({top_ticker}) حالياً كأقوى فرصة قيمة."
+            )
+        )
+
+        key_insight = (
+            (
+                f"{top_ticker} leads a tightly packed shortlist. {top_band_count} names share the same base score, so the order is broken by valuation discount, profitability, cash quality, and balance-sheet strength."
+                if top_band_count > 1
+                else f"{top_ticker} stands out because the valuation discount is backed by quality checks rather than a cheap multiple alone."
+            )
+            if language == "en"
+            else (
+                f"يتصدر {top_ticker} قائمة متقاربة جداً. يوجد {top_band_count} أسماء في نفس الدرجة الأساسية، لذلك يتم كسر التعادل عبر خصم التقييم والربحية وجودة الأرباح ومتانة الميزانية."
+                if top_band_count > 1
+                else f"يبرز {top_ticker} لأن خصم التقييم مدعوم بفلاتر الجودة وليس بمجرد مضاعف منخفض فقط."
+            )
         )
 
         framework_items_en = [
@@ -1301,6 +1380,7 @@ async def handle_undervalued_stocks(
                 "border_color": "blue",
             },
             "stock_list": stocks,
+            "key_insight": key_insight,
             "undervalued_screen": {
                 "overall_top": stocks,
             },
@@ -1308,13 +1388,7 @@ async def handle_undervalued_stocks(
                 {
                     "variant": "success",
                     "title": "✅ Key Value Insight" if language == "en" else "✅ الخلاصة التقييمية",
-                    "items": [
-                        (
-                            f"Top candidate: {top_name} ({top_ticker}) based on discount + quality."
-                            if language == "en"
-                            else f"أفضل مرشح حالياً: {top_name} ({top_ticker}) بناءً على توازن الخصم والجودة."
-                        )
-                    ],
+                    "items": [key_insight],
                 }
             ],
             "learning_section": {

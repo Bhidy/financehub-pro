@@ -104,7 +104,7 @@ from .handlers.dividends_handler import handle_dividends
 from .handlers.compare_handler import handle_compare_stocks
 from .handlers.compare_handler import handle_compare_stocks
 from .handlers.market_handler import handle_market_summary, handle_most_active
-from .handlers.statistics_handler import handle_stock_statistics
+from .handlers.statistics_handler import handle_stock_statistics, handle_sector_metric_average
 from .handlers.analysis_handler import (
     handle_technical_indicators, handle_ownership, 
     handle_fair_value, handle_financial_health, handle_company_profile
@@ -786,6 +786,184 @@ class ChatService:
             }
             for text, payload in prompts
         ]
+
+    def _build_sector_metric_followups(
+        self,
+        *,
+        sector: Optional[str],
+        metric: Optional[str],
+        language: str,
+    ) -> List[Dict[str, Any]]:
+        sector_name = str(sector or "").strip()
+        if not sector_name:
+            return []
+
+        secondary_metric = "P/B" if str(metric or "").lower() == "pe_ratio" else "P/E"
+        if language == "ar":
+            prompts = [
+                (f"أرخص أسهم {sector_name}", f"Show the most undervalued stocks in {sector_name}"),
+                (f"اعرض أسهم قطاع {sector_name}", f"Show me stocks in the {sector_name} sector"),
+                (f"ما متوسط {secondary_metric} في {sector_name}؟", f"What is the average {secondary_metric} for {sector_name} sector"),
+            ]
+        else:
+            prompts = [
+                (f"Cheapest names in {sector_name}", f"Show the most undervalued stocks in {sector_name}"),
+                (f"Show all {sector_name} stocks", f"Show me stocks in the {sector_name} sector"),
+                (f"Check {secondary_metric} benchmark", f"What is the average {secondary_metric} for {sector_name} sector"),
+            ]
+
+        return [
+            {
+                "text": text,
+                "payload": payload,
+                "type": "next_step",
+                "anchor_symbol": None,
+                "anchor_symbols": [],
+            }
+            for text, payload in prompts
+        ]
+
+    @staticmethod
+    def _infer_sector_metric_key(
+        message: str,
+        entities: Dict[str, Any],
+        matched_term: Optional[str] = None,
+    ) -> Optional[str]:
+        existing_metric = str((entities or {}).get("metric") or "").strip().lower()
+        if existing_metric in {
+            "pe_ratio", "pb_ratio", "ev_ebitda", "roe", "roa", "debt_equity", "current_ratio"
+        }:
+            return existing_metric
+
+        term_map = {
+            "pe_ratio": "pe_ratio",
+            "pb_ratio": "pb_ratio",
+            "ev_ebitda": "ev_ebitda",
+            "roe": "roe",
+            "roa": "roa",
+            "debt_to_equity": "debt_equity",
+            "current_ratio": "current_ratio",
+        }
+        if matched_term and matched_term in term_map:
+            return term_map[matched_term]
+
+        msg_lower = str(message or "").lower()
+        pattern_map = [
+            (r"\b(p/?e|pe\s+ratio|price[-\s]?to[-\s]?earnings)\b", "pe_ratio"),
+            (r"\b(p/?b|pb\s+ratio|price[-\s]?to[-\s]?book)\b", "pb_ratio"),
+            (r"\b(ev/?ebitda|enterprise\s+value)\b", "ev_ebitda"),
+            (r"\b(return\s+on\s+equity|roe)\b", "roe"),
+            (r"\b(return\s+on\s+assets|roa)\b", "roa"),
+            (r"\b(debt\s*(?:to|/)?\s*equity|d/e)\b", "debt_equity"),
+            (r"\b(current\s+ratio)\b", "current_ratio"),
+        ]
+        for pattern, metric_key in pattern_map:
+            if re.search(pattern, msg_lower):
+                return metric_key
+        if any(tok in message for tok in ["مكرر الربحية"]):
+            return "pe_ratio"
+        if any(tok in message for tok in ["مكرر القيمة الدفترية"]):
+            return "pb_ratio"
+        if any(tok in message for tok in ["العائد على حقوق الملكية"]):
+            return "roe"
+        if any(tok in message for tok in ["العائد على الأصول"]):
+            return "roa"
+        if any(tok in message for tok in ["الدين إلى حقوق الملكية"]):
+            return "debt_equity"
+        if any(tok in message for tok in ["نسبة التداول"]):
+            return "current_ratio"
+        return None
+
+    @staticmethod
+    def _is_sector_benchmark_query(
+        message: str,
+        entities: Dict[str, Any],
+        metric_key: Optional[str],
+    ) -> bool:
+        if not metric_key or not entities.get("sector"):
+            return False
+
+        msg = str(message or "")
+        msg_lower = msg.lower()
+        aggregate_cue = (
+            bool(re.search(r"\b(avg|average|median|typical|benchmark|peer\s+median|sector\s+average)\b", msg_lower))
+            or any(tok in msg for tok in ["متوسط", "وسيط", "معدل", "مرجع", "معيار"])
+        )
+        screener_cue = (
+            bool(re.search(r"\b(best|top|highest|lowest|cheapest|most\s+undervalued|undervalued)\b", msg_lower))
+            or any(tok in msg for tok in ["أفضل", "أعلى", "أقل", "أرخص", "الأكثر", "أقل من قيمتها"])
+        )
+        sector_language = (
+            bool(re.search(r"\bsector\b", msg_lower))
+            or any(tok in msg for tok in ["قطاع", "القطاع", "الصناعة"])
+        )
+        return aggregate_cue and sector_language and not screener_cue
+
+    @staticmethod
+    def _canonicalize_sector_entity(
+        sector: Optional[str],
+        message: Optional[str] = None,
+    ) -> Optional[str]:
+        raw_sector = re.sub(r"\s+", " ", str(sector or "").strip())
+        msg_lower = str(message or "").lower()
+        sector_lower = raw_sector.lower()
+
+        alias_map = {
+            "banks": "Banks",
+            "bank": "Banks",
+            "banking": "Banks",
+            "financial services": "Financial Services",
+            "financial": "Financial Services",
+            "food, beverages and tobacco": "Food, Beverages and Tobacco",
+            "food and beverage": "Food, Beverages and Tobacco",
+            "food & beverage": "Food, Beverages and Tobacco",
+            "food beverage": "Food, Beverages and Tobacco",
+            "food": "Food, Beverages and Tobacco",
+            "beverage": "Food, Beverages and Tobacco",
+            "tobacco": "Food, Beverages and Tobacco",
+            "health care and pharmaceuticals": "Health Care and Pharmaceuticals",
+            "healthcare": "Health Care and Pharmaceuticals",
+            "health": "Health Care and Pharmaceuticals",
+            "pharma": "Health Care and Pharmaceuticals",
+            "pharmaceuticals": "Health Care and Pharmaceuticals",
+            "real estate": "Real Estate",
+            "it , media and communication services": "IT , Media and Communication Services",
+            "it, media and communication services": "IT , Media and Communication Services",
+            "it media and communication services": "IT , Media and Communication Services",
+            "it": "IT , Media and Communication Services",
+            "media": "IT , Media and Communication Services",
+            "communication": "IT , Media and Communication Services",
+            "telecom": "IT , Media and Communication Services",
+            "technology": "IT , Media and Communication Services",
+            "basic resources": "Basic Resources",
+            "building materials": "Building Materials",
+            "contracting and construction engineering": "Contracting and Construction Engineering",
+            "construction": "Contracting and Construction Engineering",
+            "education services": "Education Services",
+            "industrial goods , services and automobiles": "Industrial Goods , Services and Automobiles",
+            "industrial goods, services and automobiles": "Industrial Goods , Services and Automobiles",
+            "industrial goods": "Industrial Goods , Services and Automobiles",
+            "automobiles": "Industrial Goods , Services and Automobiles",
+            "paper and packaging": "Paper and Packaging",
+            "shipping and transportation services": "Shipping and Transportation Services",
+            "shipping": "Shipping and Transportation Services",
+            "transportation": "Shipping and Transportation Services",
+            "textile and durables": "Textile and Durables",
+            "trade and distributors": "Trade and Distributors",
+            "travel and leisure": "Travel and Leisure",
+            "utilities": "Utilities",
+            "energy and support services": "Energy and Support Services",
+            "energy": "Energy and Support Services",
+        }
+
+        if sector_lower in alias_map:
+            return alias_map[sector_lower]
+
+        for alias, canonical in alias_map.items():
+            if alias in msg_lower:
+                return canonical
+
+        return raw_sector or None
 
     def _build_answer_grounding(
         self,
@@ -2075,6 +2253,16 @@ class ChatService:
             from .educational_content import match_educational_term, get_term_display_name
 
             matched_term = match_educational_term(msg)
+            sector_metric_key = self._infer_sector_metric_key(msg, updated, matched_term)
+            if self._is_sector_benchmark_query(msg, updated, sector_metric_key):
+                updated["sector"] = self._canonicalize_sector_entity(updated.get("sector"), msg)
+                updated["metric"] = sector_metric_key
+                updated["sector_metric_query"] = True
+                updated.pop("term", None)
+                updated.pop("symbol", None)
+                updated.pop("market_code", None)
+                return Intent.STOCK_STAT, updated
+
             is_definition_pattern = (
                 bool(re.search(r"\b(what\s+does|what\s+is|what'?s|define|explain|meaning\s+of|definition\s+of|mean)\b", msg_lower))
                 or any(tok in msg for tok in ["ما هو", "ما معنى", "ما المقصود", "اشرح", "وضح", "يعني ايه", "يعني إيه"])
@@ -2972,8 +3160,9 @@ class ChatService:
             }
             
             # 5. Resolve symbol
+            sector_metric_query = bool(entities.get("sector_metric_query"))
             intent_uses_symbol_routing = (
-                self._intent_allows_symbol_entity(intent)
+                (self._intent_allows_symbol_entity(intent) and not sector_metric_query)
                 or intent == Intent.COMPARE_STOCKS
             )
             symbol = entities.get('symbol') if intent_uses_symbol_routing else None
@@ -3228,9 +3417,13 @@ class ChatService:
             STRICT_HANDLER_NARRATIVE_INTENTS = {
                 Intent.FIN_EPS,
             }
+            sector_metric_query = bool(entities.get("sector_metric_query"))
             use_handler_narrative_only = (
-                intent in STRICT_HANDLER_NARRATIVE_INTENTS
-                and bool(result_data.get('message'))
+                (
+                    intent in STRICT_HANDLER_NARRATIVE_INTENTS
+                    or sector_metric_query
+                )
+                and bool(result_data.get('message') or result_data.get('conversational_text'))
             )
 
             handler_conversational_text = result_data.get('conversational_text')
@@ -4248,6 +4441,12 @@ class ChatService:
                 convo_logger.info("Generating dynamic follow-ups...")
                 followup_engine = FollowUpEngine()
                 educational_followups: List[Dict[str, Any]] = []
+                sector_metric_query = bool(entities.get("sector_metric_query"))
+                sector_metric_fallbacks = self._build_sector_metric_followups(
+                    sector=entities.get("sector"),
+                    metric=entities.get("metric"),
+                    language=language,
+                ) if sector_metric_query else []
 
                 if intent not in {
                     Intent.HELP,
@@ -4328,12 +4527,16 @@ class ChatService:
                         })
 
                     if has_ambiguous_without_anchor:
-                        normalized_followups = self._build_symbol_clarify_followups(language)
+                        normalized_followups = sector_metric_fallbacks or self._build_symbol_clarify_followups(language)
                     elif len(normalized_followups) < 3:
-                        fallback_followups = self._build_anchor_fallback_followups(
-                            anchor_symbol=context_anchor_symbol,
-                            anchor_symbols=followup_anchor_symbols,
-                            language=language
+                        fallback_followups = (
+                            sector_metric_fallbacks
+                            if sector_metric_query and sector_metric_fallbacks
+                            else self._build_anchor_fallback_followups(
+                                anchor_symbol=context_anchor_symbol,
+                                anchor_symbols=followup_anchor_symbols,
+                                language=language
+                            )
                         )
                         for chip in fallback_followups:
                             payload = str(chip.get("payload") or "").strip()
@@ -4572,6 +4775,11 @@ class ChatService:
             return await handle_stock_chart(self.conn, symbol, range_code, chart_type, language)
         
         elif intent == Intent.STOCK_STAT:
+            if entities.get("sector_metric_query"):
+                sector = entities.get("sector")
+                metric = entities.get("metric")
+                if sector and metric:
+                    return await handle_sector_metric_average(self.conn, sector, metric, language)
             if not symbol:
                 return handle_clarify_symbol(language=language)
             return await handle_stock_statistics(self.conn, symbol, language)  # Uses stock_statistics table

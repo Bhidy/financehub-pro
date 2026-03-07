@@ -2080,6 +2080,24 @@ class ChatService:
             updated["term"] = "ROE"
             return Intent.DEFINE_TERM, updated
 
+        # Deterministic Starta score breakdown override:
+        # Keep "inside X score / score breakdown" prompts on SCORE_BREAKDOWN and
+        # prevent drift to SCORE_DETAIL (Altman/F-Score explainer).
+        mentions_explicit_safety_score = (
+            bool(re.search(r"\b(altman|z[-\s]?score|piotroski|f[-\s]?score)\b", msg_lower))
+            or any(tok in msg for tok in ["ألتمان", "ز سكور", "ز-سكور", "بيوترسكي", "مؤشر الأمان"])
+        )
+        is_starta_score_breakdown = (
+            bool(re.search(r"\b(inside\s+the\s+.+\s+score|inside\s+.+\s+score|score\s+breakdown|break\s+down\s+the\s+score|starta\s+score)\b", msg_lower))
+            or any(tok in msg for tok in ["داخل درجة", "تفاصيل الدرجة", "شرح الدرجة", "درجة ستارتا", "تحليل الدرجة"])
+        )
+        if is_starta_score_breakdown and not mentions_explicit_safety_score:
+            if not updated.get("symbol"):
+                potentials = extract_potential_symbols(message)
+                if potentials:
+                    updated["symbol"] = potentials[0]
+            return Intent.SCORE_BREAKDOWN, updated
+
         is_margins_decline = (
             bool(re.search(r"\bwhy\b.*\bmargins?\b.*\b(declin|fall|drop)\w*", msg_lower))
             or bool(re.search(r"\bdeclining\s+margins?\b", msg_lower))

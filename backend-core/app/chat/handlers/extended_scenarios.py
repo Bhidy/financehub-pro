@@ -979,13 +979,22 @@ async def handle_undervalued_stocks(
         query = """
         WITH sector_averages AS (
             SELECT
-                sector_name,
-                AVG(NULLIF(pe_ratio, 0)) AS avg_pe,
-                AVG(NULLIF(pb_ratio, 0)) AS avg_pb
-            FROM market_tickers
-            WHERE market_code = 'EGX'
-              AND sector_name IS NOT NULL
-            GROUP BY sector_name
+                t.sector_name,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(t.pe_ratio, 0))::numeric AS avg_pe,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(COALESCE(t.pb_ratio, s2.pb_ratio), 0))::numeric AS avg_pb,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(s2.ev_ebitda, 0))::numeric AS avg_ev_ebitda
+            FROM market_tickers t
+            LEFT JOIN stock_statistics s2 ON t.symbol = s2.symbol AND t.market_code = s2.market_code
+            WHERE t.market_code = 'EGX'
+              AND t.sector_name IS NOT NULL
+            GROUP BY t.sector_name
+        ),
+        index_perf AS (
+            SELECT COALESCE(ss2.price_change_52w, 0) as egx_change
+            FROM market_tickers idx_t
+            LEFT JOIN stock_statistics ss2 ON idx_t.symbol = ss2.symbol
+            WHERE idx_t.symbol IN ('^EGX30', 'EGX30')
+            LIMIT 1
         )
         SELECT
             t.symbol,
@@ -999,6 +1008,7 @@ async def handle_undervalued_stocks(
             COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
             COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
             ss.roe,
+            ss.roic,
             ss.profit_margin,
             ss.revenue_growth,
             ss.gross_margin,
@@ -1007,8 +1017,14 @@ async def handle_undervalued_stocks(
             ss.current_ratio,
             ss.altman_z_score,
             ss.piotroski_f_score,
+            ss.ev_ebitda,
+            ss.interest_coverage,
+            ss.net_income_ttm,
+            ss.ocf_ttm,
+            COALESCE(ss.price_change_52w, 0) - COALESCE(idx.egx_change, 0) AS relative_alpha,
             sa.avg_pe,
             sa.avg_pb,
+            sa.avg_ev_ebitda,
             CASE
                 WHEN t.pe_ratio > 0 AND sa.avg_pe > 0
                 THEN ((sa.avg_pe - t.pe_ratio) / sa.avg_pe) * 100
@@ -1018,23 +1034,30 @@ async def handle_undervalued_stocks(
                 WHEN COALESCE(t.pb_ratio, ss.pb_ratio) > 0 AND sa.avg_pb > 0
                 THEN ((sa.avg_pb - COALESCE(t.pb_ratio, ss.pb_ratio)) / sa.avg_pb) * 100
                 ELSE 0
-            END AS pb_discount
+            END AS pb_discount,
+            CASE
+                WHEN ss.ev_ebitda IS NOT NULL AND sa.avg_ev_ebitda IS NOT NULL AND ss.ev_ebitda > 0 AND ss.ev_ebitda < sa.avg_ev_ebitda
+                THEN ROUND(((sa.avg_ev_ebitda - ss.ev_ebitda) / sa.avg_ev_ebitda * 100)::numeric, 0)
+                ELSE 0
+            END AS ev_ebitda_discount
         FROM market_tickers t
         LEFT JOIN sector_averages sa
             ON t.sector_name = sa.sector_name
         LEFT JOIN stock_statistics ss
             ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+        LEFT JOIN index_perf idx ON 1=1
         WHERE t.market_code = 'EGX'
           AND t.last_price IS NOT NULL
           AND ($1::text IS NULL OR t.sector_name ILIKE $1)
           AND (
-                (t.pe_ratio > 0 AND t.pe_ratio <= 40 AND sa.avg_pe IS NOT NULL)
-             OR (t.pb_ratio > 0 AND t.pb_ratio <= 4.0 AND sa.avg_pb IS NOT NULL)
+                (t.pe_ratio > 0 AND t.pe_ratio <= 25 AND sa.avg_pe IS NOT NULL)
+             OR (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 AND COALESCE(t.pb_ratio, ss.pb_ratio) <= 3.0 AND sa.avg_pb IS NOT NULL)
+             OR (ss.ev_ebitda > 0 AND ss.ev_ebitda <= 15 AND sa.avg_ev_ebitda IS NOT NULL)
           )
           AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
           AND COALESCE(t.name_en, '') NOT ILIKE '%fund%'
           AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
-        LIMIT 80
+        LIMIT 120
         """
 
         sector_param = f"%{sector_filter}%" if sector_filter else None
@@ -1043,6 +1066,11 @@ async def handle_undervalued_stocks(
 
         scored_rows = []
         for row in rows:
+            # Skip high P/E stocks — they are NOT undervalued by definition
+            pe = row.get("pe_ratio")
+            if pe and pe > 25:
+                continue
+
             metrics = dict(row)
             # Ensure percentages are correct for scoring engine
             for k in ['roe', 'profit_margin', 'gross_margin', 'operating_margin', 'revenue_growth', 'dividend_yield']:
@@ -1050,14 +1078,15 @@ async def handle_undervalued_stocks(
                 if v is not None and abs(v) <= 1.0:
                     metrics[k] = v * 100
             
-            # Pass historical average for PE and PB so calculation doesn't default to 8
+            # Pass sector median averages for PE, PB, and EV/EBITDA
             hist_avg = {
                 "pe_5yr_avg": row.get("avg_pe"),
-                "pb_5yr_avg": row.get("avg_pb")
+                "pb_5yr_avg": row.get("avg_pb"),
+                "ev_ebitda_5yr_avg": row.get("avg_ev_ebitda"),
             }
             score_res = calculate_score(metrics, hist_avg)
-            # Only keep those with Valuation Score > 20 as they are undervalued
-            if score_res.valuation >= 20:
+            # Keep stocks with meaningful valuation discount (10%+ below sector)
+            if score_res.valuation >= 12:
                 scored_rows.append((score_res, dict(row)))
 
         scored_rows.sort(key=lambda x: x[0].total, reverse=True)
@@ -1112,8 +1141,16 @@ async def handle_undervalued_stocks(
             revenue_growth = _pct(row.get("revenue_growth"))
             pe_discount = row.get("pe_discount") or 0
             pb_discount = row.get("pb_discount") or 0
+            ev_ebitda_discount = row.get("ev_ebitda_discount") or 0
+            ev_ebitda = row.get("ev_ebitda")
 
             reasons = []
+            if ev_ebitda and ev_ebitda > 0 and ev_ebitda_discount > 0:
+                reasons.append(
+                    f"EV/EBITDA at {ev_ebitda:.1f}x ({ev_ebitda_discount:.0f}% below sector)"
+                    if language == "en"
+                    else f"EV/EBITDA عند {ev_ebitda:.1f}x (خصم {ev_ebitda_discount:.0f}% عن القطاع)"
+                )
             if pe_discount > 0:
                 reasons.append(
                     f"P/E at {pe:.1f}x ({pe_discount:.0f}% below sector)"
@@ -1195,16 +1232,18 @@ async def handle_undervalued_stocks(
         )
 
         framework_items_en = [
-            "Sector-relative valuation discount (P/E and P/B)",
-            "Quality filter via ROE and margins",
-            "Preference for sustainable profitability",
-            "Ranking emphasizes discount + quality balance",
+            "Sector-relative valuation (EV/EBITDA, P/E, P/B vs median)",
+            "Profitability check via ROIC and ROE",
+            "Financial health via interest coverage and leverage",
+            "Earnings quality via cash flow vs reported income",
+            "P/E capped at 25x — high PE excluded from value screen",
         ]
         framework_items_ar = [
-            "خصم تقييمي نسبي داخل القطاع (مضاعف الربحية ومضاعف الدفترية)",
-            "فلتر جودة عبر العائد على الحقوق والهوامش",
-            "أولوية للربحية المستدامة",
-            "الترتيب يوازن بين الخصم والجودة",
+            "خصم تقييمي نسبي داخل القطاع (EV/EBITDA ومضاعف الربحية والدفترية)",
+            "فحص الربحية عبر ROIC والعائد على حقوق الملكية",
+            "الصحة المالية عبر تغطية الفوائد والرافعة المالية",
+            "جودة الأرباح عبر التدفقات النقدية مقابل الأرباح المعلنة",
+            "مكرر ربحية أقصى 25x — استبعاد الأسهم المرتفعة التقييم",
         ]
 
         actions: List[Dict[str, Any]] = []
@@ -1235,9 +1274,11 @@ async def handle_undervalued_stocks(
                         "icon": "💎",
                         "description": "Discount + quality approach" if language == "en" else "منهجية الخصم + الجودة",
                         "criteria": [
-                            {"label": "Valuation" if language == "en" else "التقييم", "value": "Sector-relative P/E, P/B" if language == "en" else "مكرر الربحية ومضاعف الدفترية داخل نفس القطاع"},
-                            {"label": "Quality" if language == "en" else "الجودة", "value": "ROE, margin resilience" if language == "en" else "العائد على الحقوق وصلابة الهوامش"},
-                            {"label": "Risk" if language == "en" else "المخاطر", "value": "Avoid weak balance sheet outliers" if language == "en" else "استبعاد المراكز المالية الضعيفة"},
+                            {"label": "Valuation" if language == "en" else "التقييم", "value": "EV/EBITDA, P/E, P/B vs sector median (PE capped at 25x)" if language == "en" else "EV/EBITDA ومكرر الربحية ومضاعف الدفترية مقابل وسيط القطاع (أقصى PE 25x)"},
+                            {"label": "Profitability" if language == "en" else "الربحية", "value": "ROIC/ROE and margin quality" if language == "en" else "كفاءة رأس المال والعائد على الحقوق"},
+                            {"label": "Health" if language == "en" else "الصحة المالية", "value": "Interest coverage and leverage" if language == "en" else "تغطية الفوائد والرافعة المالية"},
+                            {"label": "Quality" if language == "en" else "الجودة", "value": "Operating cash flow vs net income" if language == "en" else "التدفقات النقدية التشغيلية مقابل صافي الربح"},
+                            {"label": "Momentum" if language == "en" else "الزخم", "value": "3-month alpha vs EGX30" if language == "en" else "ألفا 3 أشهر مقابل مؤشر EGX30"},
                         ],
                     },
                 },

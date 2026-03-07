@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { HelpCircle } from "lucide-react";
+import { BookOpen, HelpCircle, Sparkles } from "lucide-react";
 import clsx from "clsx";
 
 type TooltipLanguage = "en" | "ar" | "mixed";
@@ -19,6 +19,29 @@ interface CardTooltipShellProps {
     data?: unknown;
     language?: TooltipLanguage;
     children: React.ReactNode;
+    className?: string;
+}
+
+export interface GuideDescriptor {
+    cardType?: string;
+    cardTitle?: string;
+    data?: unknown;
+}
+
+interface ResponseGuideSection {
+    title: string;
+    bullets: string[];
+}
+
+interface ResponseGuideContent {
+    title: string;
+    summary: string;
+    sections: ResponseGuideSection[];
+}
+
+interface ResponseGuideButtonProps {
+    descriptors: GuideDescriptor[];
+    language?: TooltipLanguage;
     className?: string;
 }
 
@@ -46,7 +69,7 @@ interface MetricMeta {
     };
 }
 
-const TOOLTIP_WIDTH = 360;
+const PANEL_WIDTH = 420;
 const TOOLTIP_GAP = 12;
 const VIEWPORT_MARGIN = 12;
 
@@ -537,17 +560,22 @@ export function deriveCardTooltipContent({
     };
 }
 
-function computePosition(button: HTMLButtonElement | null, panelHeight: number, isRtl: boolean) {
+function computePosition(
+    button: HTMLButtonElement | null,
+    panelHeight: number,
+    panelWidth: number,
+    isRtl: boolean
+) {
     if (!button || typeof window === "undefined") {
         return {
             top: 0,
             left: 0,
-            width: TOOLTIP_WIDTH,
+            width: panelWidth,
         };
     }
 
     const rect = button.getBoundingClientRect();
-    const width = Math.min(TOOLTIP_WIDTH, Math.max(280, window.innerWidth - VIEWPORT_MARGIN * 2));
+    const width = Math.min(panelWidth, Math.max(280, window.innerWidth - VIEWPORT_MARGIN * 2));
     let left = isRtl ? rect.right - width : rect.left + rect.width - width;
     left = Math.min(Math.max(VIEWPORT_MARGIN, left), window.innerWidth - width - VIEWPORT_MARGIN);
 
@@ -559,24 +587,106 @@ function computePosition(button: HTMLButtonElement | null, panelHeight: number, 
     return { top, left, width };
 }
 
-export function CardTooltipShell({
-    cardType,
-    cardTitle,
-    data,
+function shortenGuideSectionTitle(title: string, resolvedLanguage: "en" | "ar"): string {
+    if (!title) return resolvedLanguage === "ar" ? "قراءة البطاقة" : "Card Reading";
+
+    if (resolvedLanguage === "ar") {
+        return title
+            .replace(/^كيفية قراءة /, "")
+            .replace(/^كيفية استخدام /, "")
+            .replace(/^عن /, "")
+            .trim();
+    }
+
+    return title
+        .replace(/^How To Read This /, "")
+        .replace(/^How To Use This /, "")
+        .replace(/^About This /, "")
+        .trim();
+}
+
+export function deriveResponseGuideContent({
+    descriptors,
     language = "en",
-    children,
-    className,
-}: CardTooltipShellProps) {
+    compact = false,
+}: {
+    descriptors: GuideDescriptor[];
+    language?: TooltipLanguage;
+    compact?: boolean;
+}): ResponseGuideContent | null {
     const resolvedLanguage = language === "ar" ? "ar" : "en";
-    const content = deriveCardTooltipContent({ cardType, cardTitle, data, language });
+    if (!Array.isArray(descriptors) || descriptors.length === 0) return null;
+
+    const sectionMap = new Map<string, ResponseGuideSection>();
+
+    descriptors.forEach((descriptor) => {
+        const content = deriveCardTooltipContent({
+            cardType: descriptor.cardType,
+            cardTitle: descriptor.cardTitle,
+            data: descriptor.data,
+            language,
+        });
+        const title = shortenGuideSectionTitle(content.title, resolvedLanguage);
+        const key = title.toLowerCase();
+        const existing = sectionMap.get(key);
+        const mergedBullets = dedupe([
+            ...(existing?.bullets || []),
+            ...content.bullets,
+        ]).slice(0, compact ? 2 : 3);
+
+        sectionMap.set(key, {
+            title,
+            bullets: mergedBullets,
+        });
+    });
+
+    const sections = Array.from(sectionMap.values()).slice(0, compact ? 3 : 4);
+    if (sections.length === 0) return null;
+
+    return {
+        title: resolvedLanguage === "ar" ? "دليل قراءة الإجابة" : "Answer Guide",
+        summary: resolvedLanguage === "ar"
+            ? "اضغط أو مرر المؤشر لتفهم أهم الأرقام والبطاقات في هذه الإجابة بسرعة."
+            : "Hover or tap to understand the few cards and metrics that matter most in this answer.",
+        sections,
+    };
+}
+
+export function ResponseGuideButton({
+    descriptors,
+    language = "en",
+    className,
+}: ResponseGuideButtonProps) {
+    const resolvedLanguage = language === "ar" ? "ar" : "en";
+    const [isCompact, setIsCompact] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isPinned, setIsPinned] = useState(false);
+    const [position, setPosition] = useState({ top: 0, left: 0, width: PANEL_WIDTH });
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     const panelRef = useRef<HTMLDivElement | null>(null);
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const [isOpen, setIsOpen] = useState(false);
-    const [isPinned, setIsPinned] = useState(false);
-    const [position, setPosition] = useState({ top: 0, left: 0, width: TOOLTIP_WIDTH });
-    const tooltipId = useId();
+    const guideId = useId();
     const isRtl = resolvedLanguage === "ar";
+
+    const content = useMemo(
+        () => deriveResponseGuideContent({ descriptors, language, compact: isCompact }),
+        [descriptors, language, isCompact]
+    );
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const syncCompactState = () => {
+            setIsCompact(window.innerWidth < 768);
+        };
+
+        syncCompactState();
+        window.addEventListener("resize", syncCompactState);
+
+        return () => {
+            window.removeEventListener("resize", syncCompactState);
+        };
+    }, []);
 
     useEffect(() => {
         return () => {
@@ -590,8 +700,9 @@ export function CardTooltipShell({
         if (!isOpen || typeof window === "undefined") return;
 
         const syncPosition = () => {
-            const panelHeight = panelRef.current?.offsetHeight || 220;
-            setPosition(computePosition(buttonRef.current, panelHeight, isRtl));
+            const panelHeight = panelRef.current?.offsetHeight || (isCompact ? 320 : 380);
+            const preferredWidth = isCompact ? 340 : PANEL_WIDTH;
+            setPosition(computePosition(buttonRef.current, panelHeight, preferredWidth, isRtl));
         };
 
         syncPosition();
@@ -602,7 +713,7 @@ export function CardTooltipShell({
             window.removeEventListener("resize", syncPosition);
             window.removeEventListener("scroll", syncPosition, true);
         };
-    }, [isOpen, isRtl]);
+    }, [isOpen, isRtl, isCompact]);
 
     useEffect(() => {
         if (!isOpen || typeof document === "undefined") return;
@@ -630,13 +741,15 @@ export function CardTooltipShell({
         };
     }, [isOpen]);
 
+    if (!content) return null;
+
     const clearCloseTimeout = () => {
         if (!closeTimeoutRef.current) return;
         clearTimeout(closeTimeoutRef.current);
         closeTimeoutRef.current = null;
     };
 
-    const openTooltip = () => {
+    const openGuide = () => {
         clearCloseTimeout();
         setIsOpen(true);
     };
@@ -649,27 +762,29 @@ export function CardTooltipShell({
         }, 110);
     };
 
-    const tooltipPanel = typeof document !== "undefined" && isOpen
+    const guidePanel = typeof document !== "undefined" && isOpen
         ? createPortal(
             <div
                 ref={panelRef}
-                id={tooltipId}
+                id={guideId}
                 role="tooltip"
-                onMouseEnter={openTooltip}
+                onMouseEnter={openGuide}
                 onMouseLeave={scheduleClose}
-                className="fixed z-[120] rounded-2xl border border-slate-200/90 bg-white/95 p-4 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-[#08111f]/95 dark:shadow-black/50"
+                className="fixed z-[120] overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/95 p-4 shadow-[0_32px_90px_-24px_rgba(15,23,42,0.4)] backdrop-blur-2xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(7,16,30,0.98),rgba(10,22,39,0.96))] dark:shadow-[0_36px_100px_-28px_rgba(0,0,0,0.7)] sm:p-5"
                 style={{
                     top: position.top,
                     left: position.left,
                     width: position.width,
+                    maxHeight: isCompact ? "72vh" : "560px",
                 }}
             >
                 <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <div className="text-xs font-black uppercase tracking-[0.22em] text-sky-600 dark:text-sky-300">
+                    <div className="min-w-0">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-50/80 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-sky-700 dark:border-sky-400/15 dark:bg-sky-400/10 dark:text-sky-200">
+                            <Sparkles className="h-3.5 w-3.5" />
                             {content.title}
                         </div>
-                        <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        <p className="mt-3 max-w-[34rem] text-sm leading-6 text-slate-600 dark:text-slate-300">
                             {content.summary}
                         </p>
                     </div>
@@ -680,55 +795,86 @@ export function CardTooltipShell({
                                 setIsPinned(false);
                                 setIsOpen(false);
                             }}
-                            className="shrink-0 rounded-full border border-slate-200 bg-white/70 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:border-white/20 dark:hover:text-white"
+                            className="shrink-0 rounded-full border border-slate-200/80 bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:border-white/20 dark:hover:text-white"
                         >
                             {resolvedLanguage === "ar" ? "إغلاق" : "Close"}
                         </button>
                     )}
                 </div>
-                <div className="mt-3 h-px bg-slate-200/80 dark:bg-white/10" />
-                <ul className="mt-3 space-y-2">
-                    {content.bullets.map((bullet) => (
-                        <li key={bullet} className="flex items-start gap-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                            <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                            <span>{bullet}</span>
-                        </li>
+
+                <div className="mt-4 space-y-2 overflow-y-auto pe-1" style={{ maxHeight: isCompact ? "calc(72vh - 110px)" : "420px" }}>
+                    {content.sections.map((section) => (
+                        <div
+                            key={section.title}
+                            className="rounded-2xl border border-slate-200/80 bg-slate-50/85 p-3.5 dark:border-white/10 dark:bg-white/[0.035]"
+                        >
+                            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-900 dark:text-white">
+                                {section.title}
+                            </div>
+                            <ul className="mt-2 space-y-1.5">
+                                {section.bullets.map((bullet) => (
+                                    <li key={bullet} className="flex items-start gap-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                        <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500" />
+                                        <span>{bullet}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </div>,
             document.body
         )
         : null;
 
     return (
-        <div className={clsx("relative", className)} dir={isRtl ? "rtl" : "ltr"}>
-            <div className={clsx("mb-1 flex", isRtl ? "justify-start" : "justify-end")}>
-                <button
-                    ref={buttonRef}
-                    type="button"
-                    aria-label={resolvedLanguage === "ar" ? "شرح البطاقة" : "Explain this card"}
-                    aria-describedby={isOpen ? tooltipId : undefined}
-                    onMouseEnter={openTooltip}
-                    onMouseLeave={scheduleClose}
-                    onFocus={openTooltip}
-                    onBlur={scheduleClose}
-                    onClick={() => {
-                        clearCloseTimeout();
-                        if (isPinned) {
-                            setIsPinned(false);
-                            setIsOpen(false);
-                            return;
-                        }
-                        setIsPinned(true);
-                        setIsOpen(true);
-                    }}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-500 shadow-sm transition-all hover:border-sky-300 hover:text-sky-700 hover:shadow-md dark:border-white/10 dark:bg-[#111827]/80 dark:text-slate-300 dark:hover:border-sky-400/60 dark:hover:text-sky-300"
-                >
-                    <HelpCircle size={16} className={clsx(isOpen ? "text-sky-600 dark:text-sky-300" : "")} />
-                </button>
-            </div>
-            {children}
-            {tooltipPanel}
-        </div>
+        <>
+            <button
+                ref={buttonRef}
+                type="button"
+                aria-label={resolvedLanguage === "ar" ? "دليل قراءة الإجابة" : "Open answer guide"}
+                aria-describedby={isOpen ? guideId : undefined}
+                onMouseEnter={openGuide}
+                onMouseLeave={scheduleClose}
+                onFocus={openGuide}
+                onBlur={scheduleClose}
+                onClick={() => {
+                    clearCloseTimeout();
+                    if (isPinned) {
+                        setIsPinned(false);
+                        setIsOpen(false);
+                        return;
+                    }
+                    setIsPinned(true);
+                    setIsOpen(true);
+                }}
+                className={clsx(
+                    "group inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-3 py-2 text-slate-700 shadow-[0_16px_40px_-22px_rgba(15,23,42,0.55)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-300 hover:text-slate-900 hover:shadow-[0_20px_50px_-22px_rgba(20,184,166,0.45)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(10,18,32,0.94),rgba(10,18,32,0.82))] dark:text-slate-100 dark:hover:border-teal-400/40 dark:hover:text-white",
+                    className
+                )}
+            >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-teal-500/20 to-sky-500/15 text-teal-700 dark:text-teal-300">
+                    <BookOpen className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 text-start">
+                    <span className="block text-[11px] font-black uppercase tracking-[0.18em]">
+                        {resolvedLanguage === "ar" ? "دليل" : "Guide"}
+                    </span>
+                    <span className="hidden text-[11px] text-slate-500 dark:text-slate-400 sm:block">
+                        {resolvedLanguage === "ar" ? "اشرح هذه الإجابة بسرعة" : "Read this answer faster"}
+                    </span>
+                </span>
+                <HelpCircle className={clsx("h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-teal-500 dark:text-slate-500 dark:group-hover:text-teal-300", isOpen && "text-teal-500 dark:text-teal-300")} />
+            </button>
+            {guidePanel}
+        </>
     );
+}
+
+export function CardTooltipShell({
+    children,
+    className,
+}: CardTooltipShellProps) {
+    if (!className) return <>{children}</>;
+    return <div className={className}>{children}</div>;
 }

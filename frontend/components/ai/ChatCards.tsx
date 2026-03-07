@@ -47,6 +47,7 @@ import { HiddenGemCard } from "./HiddenGemCard";
 import { IndexCompositionCard } from "./IndexCompositionCard";
 import { DisclaimerCard } from "./DisclaimerCard";
 import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
+import { CardTooltipShell } from "./CardTooltip";
 import { translations } from "@/components/chatbot/translations";
 import { resolveNewsImageSrc, sanitizeNewsText, splitNewsParagraphs } from "@/lib/news-display";
 import { createPortal } from "react-dom";
@@ -2977,9 +2978,11 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
         language === "ar" && typeof rawErrorText === "string" && /[A-Za-z]/.test(rawErrorText)
     ) ? chatT.unknownSystemFailure : (rawErrorText || chatT.unknownSystemFailure);
 
+    let renderedCard: React.ReactNode = null;
+
     // Handle error cards robustly, even if type is not explicitly "error"
     if (card.data?.error) {
-        return (
+        renderedCard = (
             <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
                 <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
                     <AlertTriangle size={14} />
@@ -2988,183 +2991,236 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
                 <div className="text-sm font-medium">{safeErrorText}</div>
             </div>
         );
-    }
+    } else {
+        switch (type) {
+            case "stock_header":
+                renderedCard = <StockHeaderCard data={card.data} language={language} />;
+                break;
+            case "snapshot":
+                renderedCard = <SnapshotCard data={card.data} language={language} />;
+                break;
+            case "stats":
+            case "statistics": // Alias
+            case "metric": // Alias
+                renderedCard = <StatsCard title={card.title} data={card.data} language={language} />;
+                break;
+            case "movers":
+            case "movers_table":
+                renderedCard = <MoversTable title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
+                break;
+            case "compare":
+            case "compare_table":
+                renderedCard = <CompareTable title={card.title} data={card.data} language={language} />;
+                break;
+            case "help":
+            case "suggestions": // Alias
+                renderedCard = <HelpCard data={card.data} onExampleClick={onExampleClick} language={language} />;
+                break;
+            case "ratios":
+                renderedCard = <RatiosCard title={card.title} data={card.data} language={language} />;
+                break;
+            case "deep_health":
+                renderedCard = <DeepHealthCard data={card.data} language={language} />;
+                break;
+            case "deep_valuation":
+            case "valuation_score": // Added alias for backend compatibility
+                renderedCard = <DeepValuationCard data={card.data} language={language} />;
+                break;
+            case "deep_efficiency":
+                renderedCard = <DeepMetricsCard title={card.title} data={card.data} icon={<Zap className="text-blue-500" />} language={language} />;
+                break;
+            case "deep_growth":
+                renderedCard = <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} language={language} />;
+                break;
+            case "ownership":
+                renderedCard = <OwnershipCard title={card.title} data={card.data} language={language} />;
+                break;
+            case "macro_context":
+            case "macro_score":
+                renderedCard = <MacroScoreCard data={card.data} language={language} />;
+                break;
+            // Fund & Fair Value Cards (Enterprise)
+            case "fund_nav":
+                renderedCard = <FundNavCard data={card.data} language={language} />;
+                break;
+            case "fund_list":
+                renderedCard = <FundListCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
+                break;
+            case "fund_movers":
+                renderedCard = <FundMoversCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
+                break;
+            case "fair_value":
+                renderedCard = <FairValueCard title={card.title} data={card.data} language={language} />;
+                break;
+            case "technicals":
+                // Explicitly hidden as per user request
+                renderedCard = null;
+                break;
+            case "financial_explorer":
+                // Ultra-Premium Financial Explorer (Tabbed Interface)
+                renderedCard = <FinancialExplorerCard data={card.data} language={language} />;
+                break;
+            case "financials":
+                // Handle legacy structures
+                if (card.data.rows) {
+                    renderedCard = (
+                        <FinancialsTableCard
+                            title={card.title}
+                            rows={card.data.rows}
+                            years={card.data.years}
+                            subtitle={card.data.subtitle}
+                            currency={card.data.currency}
+                            language={language}
+                        />
+                    );
+                    break;
+                }
+                // Fallback for FinancialExplorer data sent as 'financials' intent
+                if (card.data.annual_data || card.data.income) {
+                    renderedCard = <FinancialExplorerCard data={card.data} language={language} />;
+                    break;
+                }
+                renderedCard = <FinancialTable financials={card.data} language={language} />;
+                break;
+            case "dividends_table":
+                renderedCard = <DividendsTableCard title={card.title} data={card.data} language={language} />;
+                break;
+            // Insights (Bull/Bear) - Ultra Premium
+            case "bull_case":
+                renderedCard = <InsightCard data={card.data} variant_override="bull" />;
+                break;
+            case "bear_case":
+                renderedCard = <InsightCard data={card.data} variant_override="bear" />;
+                break;
+            case "my_framework":
+                renderedCard = <InsightCard data={{ ...card.data, title: card.title }} variant_override="info" />;
+                break;
+            case "insight":
+                renderedCard = <InsightCard data={card.data} />;
+                break;
 
-    switch (type) {
-        case "stock_header":
-            return <StockHeaderCard data={card.data} language={language} />;
-        case "snapshot":
-            return <SnapshotCard data={card.data} language={language} />;
-        case "stats":
-        case "statistics": // Alias
-        case "metric": // Alias
-            return <StatsCard title={card.title} data={card.data} language={language} />;
-        case "movers":
-        case "movers_table":
-            return <MoversTable title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
-        case "compare":
-        case "compare_table":
-            return <CompareTable title={card.title} data={card.data} language={language} />;
-        case "help":
-        case "suggestions": // Alias
-            return <HelpCard data={card.data} onExampleClick={onExampleClick} language={language} />;
-        case "ratios":
-            return <RatiosCard title={card.title} data={card.data} language={language} />;
-        case "deep_health":
-            return <DeepHealthCard data={card.data} language={language} />;
-        case "deep_valuation":
-        case "valuation_score": // Added alias for backend compatibility
-            return <DeepValuationCard data={card.data} language={language} />;
-        case "deep_efficiency":
-            return <DeepMetricsCard title={card.title} data={card.data} icon={<Zap className="text-blue-500" />} language={language} />;
-        case "deep_growth":
-            return <DeepMetricsCard title={card.title} data={card.data} icon={<TrendingUp className="text-emerald-500" />} language={language} />;
-        case "ownership":
-            return <OwnershipCard title={card.title} data={card.data} language={language} />;
-        case "macro_context":
-        case "macro_score":
-            return <MacroScoreCard data={card.data} language={language} />;
-        // Fund & Fair Value Cards (Enterprise)
-        case "fund_nav":
-            return <FundNavCard data={card.data} language={language} />;
-        case "fund_list":
-            return <FundListCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
-        case "fund_movers":
-            return <FundMoversCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
-        case "fair_value":
-            return <FairValueCard title={card.title} data={card.data} language={language} />;
-        case "technicals":
-            // Explicitly hidden as per user request
-            return null;
-        case "financial_explorer":
-            // Ultra-Premium Financial Explorer (Tabbed Interface)
-            return <FinancialExplorerCard data={card.data} language={language} />;
-        case "financials":
-            // Handle legacy structures
-            if (card.data.rows) {
-                return (
-                    <FinancialsTableCard
-                        title={card.title}
-                        rows={card.data.rows}
-                        years={card.data.years}
-                        subtitle={card.data.subtitle}
-                        currency={card.data.currency}
-                        language={language}
-                    />
-                );
-            }
-            // Fallback for FinancialExplorer data sent as 'financials' intent
-            if (card.data.annual_data || card.data.income) {
-                return <FinancialExplorerCard data={card.data} language={language} />;
-            }
-            return <FinancialTable financials={card.data} language={language} />;
-        case "dividends_table":
-            return <DividendsTableCard title={card.title} data={card.data} language={language} />;
-        // Insights (Bull/Bear) - Ultra Premium
-        case "bull_case":
-            return <InsightCard data={card.data} variant_override="bull" />;
-        case "bear_case":
-            return <InsightCard data={card.data} variant_override="bear" />;
-        case "my_framework":
-            return <InsightCard data={{ ...card.data, title: card.title }} variant_override="info" />;
-        case "insight":
-            return <InsightCard data={card.data} />;
+            // ============================================================
+            // EXTENDED SCENARIO COMPONENTS (Enterprise)
+            // ============================================================
+            case "market_timing":
+                renderedCard = <MacroScoreCard data={card.data} language={language} />;
+                break;
+            case "educational":
+            case "define_term":
+            case "definition":
+                renderedCard = <EducationalCard data={card.data} language={language} />;
+                break;
+            case "methodology":
+            case "screening_criteria":
+                renderedCard = <MethodologyCard data={card.data} language={language} />;
+                break;
+            case "hidden_gems":
+            case "gem_list":
+            case "discovery_list":
+                renderedCard = <HiddenGemCard data={card.data} onStockClick={onSymbolClick} language={language} />;
+                break;
+            case "index_composition":
+            case "index_view":
+                renderedCard = <IndexCompositionCard data={card.data} onStockClick={onSymbolClick} language={language} />;
+                break;
+            case "disclaimer":
+            case "disclaimer_card":
+                renderedCard = <DisclaimerCard data={card.data} language={language} />;
+                break;
 
-        // ============================================================
-        // EXTENDED SCENARIO COMPONENTS (Enterprise)
-        // ============================================================
-        case "macro_score":
-        case "market_timing":
-            return <MacroScoreCard data={card.data} language={language} />;
-        case "educational":
-        case "define_term":
-        case "definition":
-            return <EducationalCard data={card.data} language={language} />;
-        case "methodology":
-        case "screening_criteria":
-            return <MethodologyCard data={card.data} language={language} />;
-        case "hidden_gems":
-        case "gem_list":
-        case "discovery_list":
-            return <HiddenGemCard data={card.data} onStockClick={onSymbolClick} language={language} />;
-        case "index_composition":
-        case "index_view":
-            return <IndexCompositionCard data={card.data} onStockClick={onSymbolClick} language={language} />;
-        case "disclaimer":
-        case "disclaimer_card":
-            return <DisclaimerCard data={card.data} language={language} />;
-
-        case "score_breakdown":
-        case "starta_score":
-            return <ScoreBreakdownCard data={card.data} language={language} />;
+            case "score_breakdown":
+            case "starta_score":
+                renderedCard = <ScoreBreakdownCard data={card.data} language={language} />;
+                break;
 
 
-        case "news_list":
-            return <NewsListCard title={card.title} data={card.data as any} language={language} />;
-        case "screener_results":
-        case "stock_list":
-        case "sector_list": // Reuse screener card or fallback?
-            // Sector list data usually different. Fallback to screener if compatible or TODO. 
-            // ScreenerResultsCard expects { stocks: [], metric: str }
-            // Let's assume sector_list maps closely or default to fallback for now to avoid crash.
-            // Actually, handle_screener sends { sectors: [{name, ...}], metric } for sector_list.
-            // ScreenerResults expects `stocks`. It might break.
-            // Safest is to handle "dividends_table" which is THE user error.
-            return <ScreenerResultsCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
-        case "error":
-            return (
-                <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
-                    <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
-                        <AlertTriangle size={14} />
-                        {chatT.systemError}
+            case "news_list":
+                renderedCard = <NewsListCard title={card.title} data={card.data as any} language={language} />;
+                break;
+            case "screener_results":
+            case "stock_list":
+            case "sector_list": // Reuse screener card or fallback?
+                // Sector list data usually different. Fallback to screener if compatible or TODO.
+                renderedCard = <ScreenerResultsCard title={card.title} data={card.data} onSymbolClick={onSymbolClick} language={language} />;
+                break;
+            case "error":
+                renderedCard = (
+                    <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400">
+                        <div className="flex items-center gap-2 font-bold mb-1 uppercase tracking-tighter text-xs">
+                            <AlertTriangle size={14} />
+                            {chatT.systemError}
+                        </div>
+                        <div className="text-sm font-medium">{safeErrorText}</div>
                     </div>
-                    <div className="text-sm font-medium">{safeErrorText}</div>
-                </div>
-            );
+                );
+                break;
 
-        // ============================================================
-        // EXPANSION: Financial Explorer Card Types (Phase 1)
-        // ============================================================
-        // --- Rich Chart Visualizations (Phase 6) ---
-        case "revenue_breakdown":
-        case "cost_breakdown":
-            return <RevenueBreakdown title={card.title} data={card.data} language={language} />;
+            // ============================================================
+            // EXPANSION: Financial Explorer Card Types (Phase 1)
+            // ============================================================
+            // --- Rich Chart Visualizations (Phase 6) ---
+            case "revenue_breakdown":
+            case "cost_breakdown":
+                renderedCard = <RevenueBreakdown title={card.title} data={card.data} language={language} />;
+                break;
 
-        case "debt_structure":
-            return <DebtStructure title={card.title} data={card.data} language={language} />;
+            case "debt_structure":
+                renderedCard = <DebtStructure title={card.title} data={card.data} language={language} />;
+                break;
 
-        case "assets_breakdown":
-            return <AssetsBreakdown title={card.title} data={card.data} language={language} />;
+            case "assets_breakdown":
+                renderedCard = <AssetsBreakdown title={card.title} data={card.data} language={language} />;
+                break;
 
-        case "cashflow_waterfall":
-            return <CashflowWaterfall title={card.title} data={card.data} language={language} />;
+            case "cashflow_waterfall":
+                renderedCard = <CashflowWaterfall title={card.title} data={card.data} language={language} />;
+                break;
 
-        case "growth_trend":
-        case "ratio_history_chart":
-        case "fcf_vs_income":
-        case "earnings_quality":
-        case "working_capital_card":
-            return <RatioHistoryChart title={card.title} data={card.data} language={language} />;
+            case "growth_trend":
+            case "ratio_history_chart":
+            case "fcf_vs_income":
+            case "earnings_quality":
+            case "working_capital_card":
+                renderedCard = <RatioHistoryChart title={card.title} data={card.data} language={language} />;
+                break;
 
-        // --- Grouped Table / Data Fallbacks (ExplorerDataCard) ---
-        case "ebitda_breakdown":
-        case "equity_breakdown":
-        case "ppe_breakdown":
-        case "debt_activity":
-        case "dynamic_data_card":
-        case "advanced_stats":
-        case "ownership_structure":
-        case "score_detail":
-            return <ExplorerDataCard title={card.title} type={type} data={card.data} language={language} />;
+            // --- Grouped Table / Data Fallbacks (ExplorerDataCard) ---
+            case "ebitda_breakdown":
+            case "equity_breakdown":
+            case "ppe_breakdown":
+            case "debt_activity":
+            case "dynamic_data_card":
+            case "advanced_stats":
+            case "ownership_structure":
+            case "score_detail":
+                renderedCard = <ExplorerDataCard title={card.title} type={type} data={card.data} language={language} />;
+                break;
 
-        default:
-            // Fallback for unknown cards
-            return (
-                <div className="p-4 bg-slate-50 dark:bg-slate-500/10 border border-slate-100 dark:border-slate-500/20 rounded-xl text-xs text-slate-500">
-                    {language === "ar" ? chatT.unsupportedCard : `${chatT.unsupportedCard}: ${type}`}
-                </div>
-            );
+            default:
+                // Fallback for unknown cards
+                renderedCard = (
+                    <div className="p-4 bg-slate-50 dark:bg-slate-500/10 border border-slate-100 dark:border-slate-500/20 rounded-xl text-xs text-slate-500">
+                        {language === "ar" ? chatT.unsupportedCard : `${chatT.unsupportedCard}: ${type}`}
+                    </div>
+                );
+                break;
+        }
     }
+
+    if (!renderedCard) {
+        return null;
+    }
+
+    return (
+        <CardTooltipShell
+            cardType={type}
+            cardTitle={card.title}
+            data={card.data}
+            language={language}
+        >
+            {renderedCard}
+        </CardTooltipShell>
+    );
 }
 
 // ============================================================

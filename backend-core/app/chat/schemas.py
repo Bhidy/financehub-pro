@@ -330,7 +330,7 @@ class StockListItem(BaseModel):
     """Stock item in a screener list with score."""
     ticker: str
     company_name: str
-    score: int  # 0-100 undervaluation score
+    score: float  # 0-100 undervaluation score (supports decimal tie-break precision)
     metrics: Dict[str, str]  # e.g. {"P/B": "0.9x", "P/E": "5.5x", "ROE": "18.2%"}
     description: Optional[str] = None
     badge: Optional[str] = None

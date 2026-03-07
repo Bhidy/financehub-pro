@@ -1099,7 +1099,8 @@ async def handle_undervalued_stocks(
                 + float(score_res.momentum) * 0.015
                 + min(relative_alpha, 15.0) * 0.010
             )
-            return round(min(99.0, float(score_res.total) + tie_break), 1)
+            # Keep 2 decimals so close names remain visibly distinguishable in UI.
+            return round(min(99.0, float(score_res.total) + tie_break), 2)
 
         scored_rows = []
         for row in rows:
@@ -1300,16 +1301,10 @@ async def handle_undervalued_stocks(
                 else (row.get("name_en") or row["symbol"])
             )
 
-            display_score: Any
-            if abs(refined_score - round(refined_score)) < 1e-9:
-                display_score = int(round(refined_score))
-            else:
-                display_score = refined_score
-
             stocks.append({
                 "ticker": row["symbol"],
                 "company_name": company_name,
-                "score": display_score,
+                "score": float(refined_score),
                 "grade": score_res.grade,
                 "highlighted": idx == 0,
                 "badge": (

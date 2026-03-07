@@ -221,6 +221,7 @@ class CardType(str, Enum):
     OWNERSHIP_STRUCTURE = "ownership_structure"   # Pie: insider/institutional/float
     SCORE_DETAIL_CARD = "score_detail"            # Z-Score/F-Score explanation
     DYNAMIC_DATA_CARD = "dynamic_data_card"       # Auto-generated data table
+    SCORE_BREAKDOWN_CARD = "score_breakdown"      # Starta 5-pillar score breakdown
 
 
 class ChartType(str, Enum):

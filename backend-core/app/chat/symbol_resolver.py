@@ -10,6 +10,7 @@ Features:
 """
 
 import asyncpg
+import re
 from typing import Optional, List, Tuple
 from pydantic import BaseModel
 from .text_normalizer import normalize_text
@@ -26,7 +27,8 @@ STOPWORDS = {
     'financial', 'financials', 'earnings', 'revenue', 'profit', 'loss',
     'dividend', 'dividends', 'sector', 'sectors', 'compare', 'vs', 'versus',
     'top', 'best', 'worst', 'gainers', 'losers', 'movers', 'all', 'list',
-    'debt', 'equity', 'metric', 'metrics', 'ratio',
+    'debt', 'equity', 'metric', 'metrics', 'ratio', 'test', 'testing',
+    'help', 'tes', 'asdf', 'qwe', 'qwerty',
     # Arabic transliterations often seen  
     'سعر', 'اليوم', 'كم', 'ايش', 'شو', 'معلومات', 'بيانات',
 }
@@ -84,6 +86,25 @@ class SymbolResolver:
     def __init__(self, conn: asyncpg.Connection):
         self.conn = conn
         self._cache = {}  # Simple in-memory cache
+
+    @staticmethod
+    def _is_low_information_query(query_norm: str) -> bool:
+        tokens = [tok for tok in str(query_norm or "").split() if tok]
+        if not tokens:
+            return True
+        if len(tokens) > 1:
+            return False
+
+        token = tokens[0].lower()
+        if token in STOPWORDS:
+            return True
+        if len(token) <= 2:
+            return True
+
+        # Single lowercase 3-4 char strings are too noisy for fuzzy/name search.
+        if re.fullmatch(r"[a-z]+", token) and len(token) <= 4:
+            return True
+        return False
     
     async def resolve(self, query: str, market_code: Optional[str] = None) -> Optional[ResolvedSymbol]:
         """
@@ -99,6 +120,7 @@ class SymbolResolver:
         # FORCE EGX MARKET ONLY
         target_market = "EGX"
         
+        normalized_query = normalize_text(query)
         candidates = await self.resolve_with_candidates(query, target_market, limit=5)
         
         if not candidates:
@@ -106,6 +128,12 @@ class SymbolResolver:
         
         # Get best candidate
         best = candidates[0]
+
+        # Never allow weak fuzzy/name style matches for low-information text.
+        if self._is_low_information_query(normalized_query.normalized) and best.match_type in {
+            "name", "fuzzy", "similarity", "phrase_similarity"
+        }:
+            return None
         
         # If confidence is too low, might want to trigger clarification
         # For now, return best match if score >= 50
@@ -409,6 +437,9 @@ class SymbolResolver:
         self, query_norm: str, clean_query: str, market_code: Optional[str]
     ) -> List[ResolutionCandidate]:
         """Match via company name (English or Arabic)."""
+        if self._is_low_information_query(clean_query):
+            return []
+
         candidates = []
         
         for query in [query_norm, clean_query]:
@@ -450,26 +481,32 @@ class SymbolResolver:
         """
         candidates = []
         
-        # Skip very short queries
-        if len(query_norm) < 3:
+        # Skip very short or low-information queries
+        if len(query_norm) < 3 or self._is_low_information_query(query_norm):
             return []
         
         # ========================================
         # TIER 5a: pg_trgm similarity search on aliases (PREFERRED)
         # ========================================
         try:
+            min_similarity = 0.25
+            if len(query_norm.split()) == 1 and len(query_norm) <= 4:
+                min_similarity = 0.55
+            elif len(query_norm.split()) == 1 and len(query_norm) <= 6:
+                min_similarity = 0.45
+
             sql = """
                 SELECT ta.symbol, ta.alias_text, ta.alias_text_norm, ta.priority, ta.alias_type,
                        mt.name_en, mt.name_ar, mt.market_code,
                        similarity(ta.alias_text_norm, $1) AS sim_score
                 FROM ticker_aliases ta
                 LEFT JOIN market_tickers mt ON ta.symbol = mt.symbol AND ta.market_code = mt.market_code
-                WHERE similarity(ta.alias_text_norm, $1) > 0.25
+                WHERE similarity(ta.alias_text_norm, $1) > $2
             """
-            params = [query_norm]
+            params = [query_norm, min_similarity]
             
             if market_code:
-                sql += " AND ta.market_code = $2"
+                sql += " AND ta.market_code = $3"
                 params.append(market_code)
             
             sql += " ORDER BY sim_score DESC LIMIT 5"
@@ -477,6 +514,12 @@ class SymbolResolver:
             rows = await self.conn.fetch(sql, *params)
             
             for row in rows:
+                alias_norm = str(row.get('alias_text_norm') or '').strip().lower()
+                if len(query_norm.split()) == 1 and len(query_norm) <= 5:
+                    if len(alias_norm) < 3:
+                        continue
+                    if abs(len(alias_norm) - len(query_norm)) > 2 and alias_norm not in query_norm and query_norm not in alias_norm:
+                        continue
                 sim_score = float(row['sim_score'])
                 candidates.append(ResolutionCandidate(
                     symbol=row['symbol'],

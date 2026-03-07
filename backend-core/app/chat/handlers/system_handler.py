@@ -131,9 +131,9 @@ def handle_unknown(language: str = 'en') -> Dict[str, Any]:
     """Handle UNKNOWN intent - fallback response."""
     
     if language == 'ar':
-        message = "لم أفهم طلبك. يمكنني مساعدتك في: أسعار الأسهم، الشارتات، البيانات المالية، والتوزيعات."
+        message = "لم أفهم طلبك بوضوح. يرجى توضيح السؤال أو كتابة اسم الشركة أو الرمز حتى أقدم لك الإجابة الصحيحة."
     else:
-        message = "I didn't understand your request. I can help you with: stock prices, charts, financials, and dividends."
+        message = "I couldn't understand that request clearly. Please clarify your question, or type the company name or symbol so I can answer it properly."
     
     return {
         'success': True,

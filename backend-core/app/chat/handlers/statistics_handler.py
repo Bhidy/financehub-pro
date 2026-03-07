@@ -7,6 +7,66 @@ import asyncpg
 from typing import Dict, Any, Optional
 import math
 
+
+SECTOR_METRIC_CONFIG = {
+    "pe_ratio": {
+        "expression": "COALESCE(mt.pe_ratio, ss.pe_ratio)",
+        "label_en": "P/E",
+        "label_ar": "مكرر الربحية",
+        "unit": "x",
+        "filter_sql": "COALESCE(mt.pe_ratio, ss.pe_ratio) > 0 AND COALESCE(mt.pe_ratio, ss.pe_ratio) < 100",
+        "format_kind": "multiple",
+    },
+    "pb_ratio": {
+        "expression": "COALESCE(mt.pb_ratio, ss.pb_ratio)",
+        "label_en": "P/B",
+        "label_ar": "مضاعف القيمة الدفترية",
+        "unit": "x",
+        "filter_sql": "COALESCE(mt.pb_ratio, ss.pb_ratio) > 0 AND COALESCE(mt.pb_ratio, ss.pb_ratio) < 20",
+        "format_kind": "multiple",
+    },
+    "ev_ebitda": {
+        "expression": "ss.ev_ebitda",
+        "label_en": "EV/EBITDA",
+        "label_ar": "EV/EBITDA",
+        "unit": "x",
+        "filter_sql": "ss.ev_ebitda > 0 AND ss.ev_ebitda < 50",
+        "format_kind": "multiple",
+    },
+    "roe": {
+        "expression": "ss.roe",
+        "label_en": "ROE",
+        "label_ar": "العائد على حقوق الملكية",
+        "unit": "%",
+        "filter_sql": "ss.roe > -1 AND ss.roe < 5",
+        "format_kind": "decimal_percent",
+    },
+    "roa": {
+        "expression": "ss.roa",
+        "label_en": "ROA",
+        "label_ar": "العائد على الأصول",
+        "unit": "%",
+        "filter_sql": "ss.roa > -1 AND ss.roa < 2",
+        "format_kind": "decimal_percent",
+    },
+    "debt_equity": {
+        "expression": "ss.debt_equity",
+        "label_en": "Debt/Equity",
+        "label_ar": "الدين إلى حقوق الملكية",
+        "unit": "x",
+        "filter_sql": "ss.debt_equity >= 0 AND ss.debt_equity < 20",
+        "format_kind": "multiple",
+    },
+    "current_ratio": {
+        "expression": "ss.current_ratio",
+        "label_en": "Current Ratio",
+        "label_ar": "نسبة التداول",
+        "unit": "x",
+        "filter_sql": "ss.current_ratio > 0 AND ss.current_ratio < 20",
+        "format_kind": "multiple",
+    },
+}
+
 def safe_float(val: Any) -> Optional[float]:
     """Safely convert to float, handling None and NaN."""
     if val is None:
@@ -33,6 +93,204 @@ def _format_percent(value: float) -> Optional[str]:
     if f_val is None:
         return None
     return f"{f_val * 100:.2f}%"
+
+
+def _normalize_sector_metric(metric: Optional[str]) -> Optional[str]:
+    text = str(metric or "").strip().lower().replace("-", "_").replace(" ", "_")
+    mapping = {
+        "pe": "pe_ratio",
+        "p/e": "pe_ratio",
+        "pe_ratio": "pe_ratio",
+        "price_to_earnings": "pe_ratio",
+        "pb": "pb_ratio",
+        "p/b": "pb_ratio",
+        "pb_ratio": "pb_ratio",
+        "price_to_book": "pb_ratio",
+        "ev_ebitda": "ev_ebitda",
+        "ev/ebitda": "ev_ebitda",
+        "roe": "roe",
+        "roa": "roa",
+        "debt_equity": "debt_equity",
+        "debt_to_equity": "debt_equity",
+        "current_ratio": "current_ratio",
+    }
+    return mapping.get(text)
+
+
+def _format_sector_metric_value(value: Any, format_kind: str, unit: str) -> Optional[str]:
+    f_val = safe_float(value)
+    if f_val is None:
+        return None
+
+    if format_kind == "decimal_percent":
+        return f"{f_val * 100:.1f}%"
+
+    decimals = 2 if unit == "x" else 1
+    return f"{f_val:.{decimals}f}{unit}"
+
+
+async def handle_sector_metric_average(
+    conn: asyncpg.Connection,
+    sector: str,
+    metric: str,
+    language: str = "en",
+) -> Dict[str, Any]:
+    """
+    Return a sector-level benchmark for a requested metric.
+
+    This is for prompts like "What is the average P/E for the food and beverage sector?"
+    and must stay separate from single-stock statistics flows.
+    """
+    metric_key = _normalize_sector_metric(metric)
+    config = SECTOR_METRIC_CONFIG.get(metric_key or "")
+
+    if not sector or not config:
+        return {
+            "success": False,
+            "error": "sector_metric_not_supported",
+            "message": (
+                "I need both a valid sector and metric to calculate a sector benchmark."
+                if language == "en"
+                else "أحتاج إلى قطاع ومقياس صالحين لحساب مرجع القطاع."
+            ),
+            "cards": [],
+        }
+
+    sql = f"""
+        WITH sector_universe AS (
+            SELECT COUNT(*)::int AS total_companies
+            FROM market_tickers mt
+            WHERE mt.market_code = 'EGX'
+              AND mt.sector_name = $1
+        ),
+        sector_metrics AS (
+            SELECT
+                mt.symbol,
+                mt.name_en,
+                mt.name_ar,
+                ({config["expression"]})::double precision AS metric_value
+            FROM market_tickers mt
+            LEFT JOIN stock_statistics ss
+                ON mt.symbol = ss.symbol
+               AND mt.market_code = ss.market_code
+            WHERE mt.market_code = 'EGX'
+              AND mt.sector_name = $1
+              AND {config["filter_sql"]}
+        )
+        SELECT
+            u.total_companies,
+            COUNT(sm.symbol)::int AS covered_companies,
+            AVG(sm.metric_value) AS average_value,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY sm.metric_value) AS median_value,
+            MIN(sm.metric_value) AS min_value,
+            MAX(sm.metric_value) AS max_value
+        FROM sector_universe u
+        LEFT JOIN sector_metrics sm ON true
+        GROUP BY u.total_companies
+    """
+    row = await conn.fetchrow(sql, sector)
+
+    if not row or not row["covered_companies"]:
+        metric_label = config["label_ar"] if language == "ar" else config["label_en"]
+        return {
+            "success": True,
+            "message": (
+                f"I couldn't find enough usable {metric_label} data for the {sector} sector yet."
+                if language == "en"
+                else f"لا توجد بيانات كافية حالياً عن {metric_label} لقطاع {sector}."
+            ),
+            "cards": [],
+            "source_tables": ["market_tickers", "stock_statistics"],
+        }
+
+    label = config["label_ar"] if language == "ar" else config["label_en"]
+    avg_display = _format_sector_metric_value(row["average_value"], config["format_kind"], config["unit"])
+    median_display = _format_sector_metric_value(row["median_value"], config["format_kind"], config["unit"])
+    min_display = _format_sector_metric_value(row["min_value"], config["format_kind"], config["unit"])
+    max_display = _format_sector_metric_value(row["max_value"], config["format_kind"], config["unit"])
+    covered = int(row["covered_companies"] or 0)
+    total = int(row["total_companies"] or covered)
+
+    if language == "ar":
+        message = (
+            f"متوسط {label} لقطاع **{sector}** يبلغ **{avg_display}** "
+            f"استناداً إلى **{covered}** شركة من أصل **{total}** شركة EGX لديها بيانات قابلة للاستخدام.\n\n"
+            f"الوسيط يبلغ **{median_display}**، وهو المرجع الأكثر صلابة في التحليل لأن اسماً أو اسمين مرتفعي المضاعف "
+            f"قد يرفعان المتوسط الحسابي بشكل مضلل."
+        )
+        title = f"مرجع القطاع: {label}"
+        methodology = "المرجع المفضل"
+        coverage_label = "التغطية"
+        range_label = "النطاق"
+        average_label = f"متوسط {label}"
+        median_label = f"وسيط {label}"
+        methodology_value = "الوسيط"
+    else:
+        message = (
+            f"The **{sector}** sector is trading at an arithmetic average **{label}** of **{avg_display}**, "
+            f"based on **{covered}** out of **{total}** EGX names with usable data.\n\n"
+            f"The median is **{median_display}**, which is the more reliable valuation benchmark because one or two "
+            f"high-multiple names can skew the simple average."
+        )
+        title = f"{sector} {label} Benchmark"
+        methodology = "Preferred benchmark"
+        coverage_label = "Coverage"
+        range_label = "Range"
+        average_label = f"Average {label}"
+        median_label = f"Median {label}"
+        methodology_value = "Median"
+
+    return {
+        "success": True,
+        "message": message,
+        "conversational_text": message,
+        "cards": [
+            {
+                "type": "metric",
+                "title": title,
+                "data": {
+                    average_label: avg_display,
+                    median_label: median_display,
+                    coverage_label: f"{covered}/{total}",
+                    range_label: f"{min_display} - {max_display}",
+                    methodology: methodology_value,
+                },
+            }
+        ],
+        "key_insight": (
+            f"For sector valuation work, anchor on the median {label}, not just the arithmetic average."
+            if language == "en"
+            else f"في تقييم القطاع، اعتمد على وسيط {label} وليس المتوسط الحسابي فقط."
+        ),
+        "follow_up_prompt": (
+            f"Want me to rank the cheapest names in {sector}, or compare this sector's valuation with another EGX sector?"
+            if language == "en"
+            else f"هل تريد ترتيب أرخص أسهم {sector} أو مقارنة تقييم هذا القطاع بقطاع آخر في EGX؟"
+        ),
+        "actions": [
+            {
+                "label": (
+                    f"Cheapest {sector} stocks"
+                    if language == "en"
+                    else f"أرخص أسهم {sector}"
+                ),
+                "label_ar": f"أرخص أسهم {sector}",
+                "action_type": "query",
+                "payload": f"Show the most undervalued stocks in {sector}",
+            },
+            {
+                "label": (
+                    f"Compare {sector} valuation to the market"
+                    if language == "en"
+                    else f"قارن تقييم {sector} بالسوق"
+                ),
+                "label_ar": f"قارن تقييم {sector} بالسوق",
+                "action_type": "query",
+                "payload": f"How does the {sector} sector valuation compare to the overall market?",
+            },
+        ],
+        "source_tables": ["market_tickers", "stock_statistics"],
+    }
 
 
 async def handle_stock_statistics(

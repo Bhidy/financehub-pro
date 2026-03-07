@@ -41,7 +41,6 @@ import { clsx } from "clsx";
 import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { ChartCard } from "@/components/ai/ChartCard";
 import { FactExplanations } from "@/components/ai/FactExplanations";
-import { ResponseGuideButton, type GuideDescriptor } from "@/components/ai/CardTooltip";
 import { useMobileRoutes } from "./hooks/useMobileRoutes";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { AnalystDesktopGrid } from "./components/AnalystDesktopGrid";
@@ -75,58 +74,6 @@ export const resolveMessageLanguage = (msg: any): Language => {
     const combined = `${msg?.response?.conversational_text || ""} ${msg?.response?.message_text || ""} ${msg?.content || ""}`;
     return containsArabicChars(combined) ? "ar" : "en";
 };
-
-function hasGuideData(value: any): boolean {
-    if (value === null || value === undefined) return false;
-    if (Array.isArray(value)) return value.length > 0;
-    if (typeof value === "object") return Object.keys(value).length > 0;
-    if (typeof value === "string") return value.trim().length > 0;
-    return true;
-}
-
-function buildResponseGuideDescriptors(response: any): GuideDescriptor[] {
-    if (!response) return [];
-
-    const descriptors: GuideDescriptor[] = [];
-    const seen = new Set<string>();
-
-    const pushDescriptor = (cardType: string, data: any, cardTitle?: string) => {
-        if (!hasGuideData(data)) return;
-        const key = `${canonicalizeCardType(cardType)}::${String(cardTitle || "")}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        descriptors.push({ cardType, cardTitle, data });
-    };
-
-    if (Array.isArray(response.cards)) {
-        response.cards.forEach((card: any) => {
-            pushDescriptor(card?.type, card?.data, card?.title);
-        });
-    }
-
-    pushDescriptor("chart", response.chart, response.chart?.title);
-    pushDescriptor("price_display", response.price_display, response.price_display?.title);
-    pushDescriptor("character_cards", response.character_cards, response.character_cards?.title);
-    pushDescriptor("warning_card", response.warning_card, response.warning_card?.title);
-    pushDescriptor("quantified_drivers", response.quantified_drivers, response.quantified_drivers?.title);
-    pushDescriptor("macro_score", response.macro_score, response.macro_score?.title);
-    pushDescriptor("insight", response.insight_cards, response.insight_cards?.title);
-    pushDescriptor("bull_case", response.bull_case, response.bull_case?.title);
-    pushDescriptor("bear_case", response.bear_case, response.bear_case?.title);
-    pushDescriptor("gem_list", response.gem_list, response.gem_list?.title);
-    pushDescriptor("undervalued_screen", response.undervalued_screen, response.undervalued_screen?.title);
-    pushDescriptor("stock_list", response.stock_list, response.stock_list?.title);
-    pushDescriptor("comparison_table", response.comparison_table, response.comparison_table?.title);
-    pushDescriptor("financials_table", response.financials_table, response.financials_table?.title);
-    pushDescriptor("score_breakdown", response.score_breakdown, response.score_breakdown?.title);
-    pushDescriptor("index_composition", response.index_composition, response.index_composition?.title);
-    pushDescriptor("learning_section", response.learning_section, response.learning_section?.title);
-    pushDescriptor("educational", response.educational_cards, response.educational_cards?.title);
-    pushDescriptor("framework_card", response.framework_card, response.framework_card?.title);
-    pushDescriptor("disclaimer", response.disclaimer_card || response.disclaimer, "Disclaimer");
-
-    return descriptors;
-}
 
 /**
  * Responsive AI Analyst with Domain-Based Layout
@@ -888,10 +835,6 @@ const MessageRenderer = memo(({
     const isUser = m.role === 'user';
     const isRtl = !isUser && resolveMessageLanguage(m) === "ar";
     const responseLanguage = resolveMessageLanguage(m);
-    const guideDescriptors = useMemo(
-        () => (isUser ? [] : buildResponseGuideDescriptors(m.response)),
-        [isUser, m.response]
-    );
 
     return (
         <div
@@ -985,19 +928,6 @@ const MessageRenderer = memo(({
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             >
                                 <FactExplanations explanations={m.response.fact_explanations} language={responseLanguage} />
-                            </motion.div>
-                        )}
-
-                        {isTypingCompleted && guideDescriptors.length > 0 && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            >
-                                <ResponseGuideButton
-                                    descriptors={guideDescriptors}
-                                    language={responseLanguage}
-                                />
                             </motion.div>
                         )}
 

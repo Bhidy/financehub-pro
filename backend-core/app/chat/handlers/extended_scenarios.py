@@ -10,7 +10,7 @@ Handles the new extended scenarios:
 """
 
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 
 # NEW: Import scoring engine

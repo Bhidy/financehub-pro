@@ -33,6 +33,7 @@ import { GemListCard } from "./GemListCard";
 import { UndervaluedScreenCard } from "./UndervaluedScreenCard";
 import { ChartCard } from "./ChartCard";
 import { ChatCards, FinancialsTableCard } from "./ChatCards";
+import { CardTooltipShell } from "./CardTooltip";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import { BookOpen, Lightbulb } from "lucide-react";
 
@@ -65,6 +66,31 @@ interface WorldClassMessageProps {
     onTyping?: () => void;
     /** Callback to notify parent when typing completes */
     onTypingComplete?: () => void;
+}
+
+function TooltipWrappedCard({
+    cardType,
+    cardTitle,
+    data,
+    lang = "en",
+    children,
+}: {
+    cardType: string;
+    cardTitle?: string;
+    data?: any;
+    lang?: Language;
+    children: React.ReactNode;
+}) {
+    return (
+        <CardTooltipShell
+            cardType={cardType}
+            cardTitle={cardTitle}
+            data={data}
+            language={lang}
+        >
+            {children}
+        </CardTooltipShell>
+    );
 }
 
 const ARABIC_METRIC_LABELS: Record<string, string> = {
@@ -1710,7 +1736,13 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     {/* Layer 5: Key Insight (If passed in structured narrative) */}
                     {safeResponse.structured_narrative.key_insight && (
                         <motion.div variants={staggerItem} initial="hidden" animate={isTypingCompleted ? "show" : "hidden"}>
-                            <KeyInsightCard data={safeResponse.structured_narrative.key_insight} lang={lang} />
+                            <TooltipWrappedCard
+                                cardType="key_insight"
+                                data={safeResponse.structured_narrative.key_insight}
+                                lang={lang}
+                            >
+                                <KeyInsightCard data={safeResponse.structured_narrative.key_insight} lang={lang} />
+                            </TooltipWrappedCard>
                         </motion.div>
                     )}
 
@@ -1722,7 +1754,14 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                 normalizedFrameworkCard && textElements.length > 0 ? (
                     <>
                         {textElements[0]}
-                        <FrameworkCard data={normalizedFrameworkCard} />
+                        <TooltipWrappedCard
+                            cardType="framework_card"
+                            cardTitle={normalizedFrameworkCard?.title}
+                            data={normalizedFrameworkCard}
+                            lang={lang}
+                        >
+                            <FrameworkCard data={normalizedFrameworkCard} />
+                        </TooltipWrappedCard>
                         {textElements.slice(1)}
                     </>
                 ) : (
@@ -1752,80 +1791,154 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     {/* Chart (if present) */}
                     {safeResponse?.chart && (
                         <motion.div variants={staggerItem} className="my-3">
-                            <ChartCard chart={safeResponse.chart} language={lang} />
+                            <TooltipWrappedCard
+                                cardType="chart"
+                                cardTitle={safeResponse.chart?.title}
+                                data={safeResponse.chart}
+                                lang={lang}
+                            >
+                                <ChartCard chart={safeResponse.chart} language={lang} />
+                            </TooltipWrappedCard>
                         </motion.div>
                     )}
 
                     {/* Quick Stats / Price (Scenario 1) */}
                     {normalizedPriceDisplay && (
-                        <motion.div variants={staggerItem}><PriceDisplayCard data={normalizedPriceDisplay} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="price_display" data={normalizedPriceDisplay} lang={lang}>
+                                <PriceDisplayCard data={normalizedPriceDisplay} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Character Cards (Scenario 8) */}
                     {safeResponse?.character_cards?.length > 0 && (
-                        <motion.div variants={staggerItem}><CharacterCards data={safeResponse.character_cards} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="character_cards" data={safeResponse.character_cards} lang={lang}>
+                                <CharacterCards data={safeResponse.character_cards} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Warning Card (Scenario 9) */}
                     {safeResponse?.warning_card && (
-                        <motion.div variants={staggerItem}><WarningCard data={safeResponse.warning_card} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="warning_card" data={safeResponse.warning_card} lang={lang}>
+                                <WarningCard data={safeResponse.warning_card} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Quantified Drivers (Scenario 7) */}
                     {safeResponse?.quantified_drivers && (
-                        <motion.div variants={staggerItem}><QuantifiedDriversCard data={safeResponse.quantified_drivers} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="quantified_drivers" data={safeResponse.quantified_drivers} lang={lang}>
+                                <QuantifiedDriversCard data={safeResponse.quantified_drivers} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Macro Score (Scenario 7) */}
                     {normalizedMacroScore && (
-                        <motion.div variants={staggerItem}><MacroScoreCard data={normalizedMacroScore} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="macro_score" data={normalizedMacroScore} lang={lang}>
+                                <MacroScoreCard data={normalizedMacroScore} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Key Insight (8-Layer Guarantee) */}
                     {normalizedInsightCards && normalizedInsightCards.length > 0 && (
                         <motion.div variants={staggerItem}>
                             {normalizedInsightCards.map((insight: any, idx: number) => (
-                                <KeyInsightCard key={idx} data={insight} lang={lang} />
+                                <TooltipWrappedCard key={idx} cardType="key_insight" data={insight} lang={lang}>
+                                    <KeyInsightCard data={insight} lang={lang} />
+                                </TooltipWrappedCard>
                             ))}
                         </motion.div>
                     )}
 
                     {/* Bull / Bear Cases (Scenario 1, 7) */}
                     {safeResponse?.bull_case && (
-                        <motion.div variants={staggerItem}><BullCaseCard data={safeResponse.bull_case} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="bull_case" data={safeResponse.bull_case} lang={lang}>
+                                <BullCaseCard data={safeResponse.bull_case} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
                     {safeResponse?.bear_case && (
-                        <motion.div variants={staggerItem}><BearCaseCard data={safeResponse.bear_case} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="bear_case" data={safeResponse.bear_case} lang={lang}>
+                                <BearCaseCard data={safeResponse.bear_case} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Stock Identification / Lists (Scenario 2, 3, 9, 10) */}
                     {normalizedGemList && normalizedGemList.stocks?.length > 0 ? (
-                        <motion.div variants={staggerItem}><GemListCard data={normalizedGemList} language={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="gem_list" data={normalizedGemList} lang={lang}>
+                                <GemListCard data={normalizedGemList} language={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     ) : normalizedUndervaluedScreen && normalizedUndervaluedScreen.top_stocks?.length > 0 ? (
-                        <motion.div variants={staggerItem}><UndervaluedScreenCard data={normalizedUndervaluedScreen} language={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="undervalued_screen" data={normalizedUndervaluedScreen} lang={lang}>
+                                <UndervaluedScreenCard data={normalizedUndervaluedScreen} language={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     ) : normalizedStockList && (
-                        <motion.div variants={staggerItem}><StockListCard data={normalizedStockList} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="stock_list" data={normalizedStockList} lang={lang}>
+                                <StockListCard data={normalizedStockList} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Peer Comparison / Tables (Scenario 5) */}
                     {compareRadarData && (
-                        <motion.div variants={staggerItem}><RadarCompareChart data={compareRadarData} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="radar_compare" data={compareRadarData} lang={lang}>
+                                <RadarCompareChart data={compareRadarData} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
                     {normalizedComparisonTable && (
-                        <motion.div variants={staggerItem}><ComparisonTableCard data={normalizedComparisonTable} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="comparison_table" data={normalizedComparisonTable} lang={lang}>
+                                <ComparisonTableCard data={normalizedComparisonTable} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
                     {normalizedFinancialsTable && (
-                        <motion.div variants={staggerItem}><FinancialsTableCard {...normalizedFinancialsTable} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard
+                                cardType="financials_table"
+                                cardTitle={normalizedFinancialsTable?.title}
+                                data={normalizedFinancialsTable}
+                                lang={lang}
+                            >
+                                <FinancialsTableCard {...normalizedFinancialsTable} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Score Breakdown (Scenario 4) */}
                     {normalizedScoreBreakdown && normalizedScoreBreakdown.factors?.length > 0 && (
-                        <motion.div variants={staggerItem}><ScoreBreakdownCard data={normalizedScoreBreakdown} language={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="score_breakdown" data={normalizedScoreBreakdown} lang={lang}>
+                                <ScoreBreakdownCard data={normalizedScoreBreakdown} language={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* Index Composition (Scenario 10) */}
                     {normalizedIndexComposition && (
-                        <motion.div variants={staggerItem}><IndexCompositionCard data={normalizedIndexComposition} lang={lang} /></motion.div>
+                        <motion.div variants={staggerItem}>
+                            <TooltipWrappedCard cardType="index_composition" data={normalizedIndexComposition} lang={lang}>
+                                <IndexCompositionCard data={normalizedIndexComposition} lang={lang} />
+                            </TooltipWrappedCard>
+                        </motion.div>
                     )}
 
                     {/* ============================================================
@@ -1836,7 +1949,15 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                     {normalizedEducationalCards && normalizedEducationalCards.length > 0 && (
                         <motion.div variants={staggerItem}>
                             {normalizedEducationalCards.map((card: any, idx: number) => (
-                                <EducationalCard key={idx} data={card} lang={lang} />
+                                <TooltipWrappedCard
+                                    key={idx}
+                                    cardType="educational"
+                                    cardTitle={card?.title}
+                                    data={card}
+                                    lang={lang}
+                                >
+                                    <EducationalCard data={card} lang={lang} />
+                                </TooltipWrappedCard>
                             ))}
                         </motion.div>
                     )}
@@ -1853,7 +1974,14 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
 
             {isTypingCompleted && normalizedLearningSection && (
                 <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
-                    <LearningSection data={normalizedLearningSection} />
+                    <TooltipWrappedCard
+                        cardType="learning_section"
+                        cardTitle={normalizedLearningSection?.title}
+                        data={normalizedLearningSection}
+                        lang={lang}
+                    >
+                        <LearningSection data={normalizedLearningSection} />
+                    </TooltipWrappedCard>
                 </div>
             )}
 
@@ -1862,10 +1990,17 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
                ============================================================ */}
             {isTypingCompleted && shouldRenderDisclaimer && (
                 <div className="mt-6 text-slate-500 dark:text-slate-400">
-                    <DisclaimerCard
-                        text={disclaimerTextCandidate}
+                    <TooltipWrappedCard
+                        cardType="disclaimer"
+                        cardTitle="Disclaimer"
+                        data={{ text: disclaimerTextCandidate }}
                         lang={lang}
-                    />
+                    >
+                        <DisclaimerCard
+                            text={disclaimerTextCandidate}
+                            lang={lang}
+                        />
+                    </TooltipWrappedCard>
                 </div>
             )}
         </div>

@@ -72,6 +72,26 @@ interface MetricMeta {
 const PANEL_WIDTH = 420;
 const TOOLTIP_GAP = 12;
 const VIEWPORT_MARGIN = 12;
+const GUIDE_SECTION_PRIORITY: Record<string, number> = {
+    "company card": 1,
+    "market card": 2,
+    "score card": 3,
+    "ranking card": 4,
+    "comparison card": 5,
+    "financial card": 6,
+    "insight card": 7,
+    "learning card": 8,
+    "context card": 9,
+    "شرح بطاقة الشركة": 1,
+    "بطاقة السوق": 2,
+    "بطاقة التقييم": 3,
+    "بطاقة الترتيب": 4,
+    "بطاقة المقارنة": 5,
+    "البطاقة المالية": 6,
+    "بطاقة الرؤية": 7,
+    "بطاقة التعلّم": 8,
+    "بطاقة السياق": 9,
+};
 
 const CARD_FAMILIES: CardFamilyMeta[] = [
     {
@@ -605,6 +625,10 @@ function shortenGuideSectionTitle(title: string, resolvedLanguage: "en" | "ar"):
         .trim();
 }
 
+function getGuideSectionPriority(title: string): number {
+    return GUIDE_SECTION_PRIORITY[title.trim().toLowerCase()] ?? 50;
+}
+
 export function deriveResponseGuideContent({
     descriptors,
     language = "en",
@@ -632,7 +656,7 @@ export function deriveResponseGuideContent({
         const mergedBullets = dedupe([
             ...(existing?.bullets || []),
             ...content.bullets,
-        ]).slice(0, compact ? 2 : 3);
+        ]).slice(0, 2);
 
         sectionMap.set(key, {
             title,
@@ -640,7 +664,9 @@ export function deriveResponseGuideContent({
         });
     });
 
-    const sections = Array.from(sectionMap.values()).slice(0, compact ? 3 : 4);
+    const sections = Array.from(sectionMap.values())
+        .sort((a, b) => getGuideSectionPriority(a.title) - getGuideSectionPriority(b.title))
+        .slice(0, compact ? 3 : 4);
     if (sections.length === 0) return null;
 
     return {

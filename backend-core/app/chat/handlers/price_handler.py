@@ -12,6 +12,7 @@ from datetime import datetime
 from ..bull_bear_generator import generate_data_card
 # NEW: Starta Logic Engine
 from ..scoring_engine import calculate_score
+from ..compliance import STARTA_GLOBAL_DISCLAIMER
 
 
 
@@ -399,7 +400,7 @@ async def handle_stock_price(
         'message': message,
         'cards': cards,
         'actions': base_actions,
-        'disclaimer': 'Data is for informational purposes only. This is not investment advice.' if language == 'en' else 'البيانات لأغراض إعلامية فقط. هذه ليست نصيحة استثمارية.',
+        'disclaimer': STARTA_GLOBAL_DISCLAIMER,
         'follow_up_prompt': follow_up_prompt,
         # CRITICAL: Top-level structured components for WorldClassMessage rendering
         # These are extracted by chat_service._build_response() 

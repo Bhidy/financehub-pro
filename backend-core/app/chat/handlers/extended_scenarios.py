@@ -42,6 +42,13 @@ def _sector_label(sector_name: Optional[str], language: str = "en") -> str:
     return sector_name
 
 
+def _peer_scope_label(scope: Optional[str], language: str = "en") -> str:
+    scope_norm = str(scope or "sector").strip().lower()
+    if language == "ar":
+        return "وسيط أقران الصناعة" if scope_norm == "industry" else "وسيط أقران القطاع"
+    return "industry peer median" if scope_norm == "industry" else "sector peer median"
+
+
 
 def _build_gem_actions(gems: list, language: str = "en") -> list:
     """
@@ -980,14 +987,38 @@ async def handle_undervalued_stocks(
         WITH sector_averages AS (
             SELECT
                 t.sector_name,
-                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(t.pe_ratio, 0))::numeric AS avg_pe,
-                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(COALESCE(t.pb_ratio, s2.pb_ratio), 0))::numeric AS avg_pb,
-                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(s2.ev_ebitda, 0))::numeric AS avg_ev_ebitda
+                COUNT(*) FILTER (WHERE t.pe_ratio > 0 AND t.pe_ratio <= 25) AS pe_peer_count,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY t.pe_ratio)
+                    FILTER (WHERE t.pe_ratio > 0 AND t.pe_ratio <= 25)::numeric AS avg_pe,
+                COUNT(*) FILTER (WHERE COALESCE(t.pb_ratio, s2.pb_ratio) > 0 AND COALESCE(t.pb_ratio, s2.pb_ratio) <= 5) AS pb_peer_count,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY COALESCE(t.pb_ratio, s2.pb_ratio))
+                    FILTER (WHERE COALESCE(t.pb_ratio, s2.pb_ratio) > 0 AND COALESCE(t.pb_ratio, s2.pb_ratio) <= 5)::numeric AS avg_pb,
+                COUNT(*) FILTER (WHERE s2.ev_ebitda > 0 AND s2.ev_ebitda <= 15) AS ev_peer_count,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY s2.ev_ebitda)
+                    FILTER (WHERE s2.ev_ebitda > 0 AND s2.ev_ebitda <= 15)::numeric AS avg_ev_ebitda
             FROM market_tickers t
             LEFT JOIN stock_statistics s2 ON t.symbol = s2.symbol AND t.market_code = s2.market_code
             WHERE t.market_code = 'EGX'
               AND t.sector_name IS NOT NULL
             GROUP BY t.sector_name
+        ),
+        industry_averages AS (
+            SELECT
+                t.industry,
+                COUNT(*) FILTER (WHERE t.pe_ratio > 0 AND t.pe_ratio <= 25) AS pe_peer_count,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY t.pe_ratio)
+                    FILTER (WHERE t.pe_ratio > 0 AND t.pe_ratio <= 25)::numeric AS avg_pe,
+                COUNT(*) FILTER (WHERE COALESCE(t.pb_ratio, s2.pb_ratio) > 0 AND COALESCE(t.pb_ratio, s2.pb_ratio) <= 5) AS pb_peer_count,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY COALESCE(t.pb_ratio, s2.pb_ratio))
+                    FILTER (WHERE COALESCE(t.pb_ratio, s2.pb_ratio) > 0 AND COALESCE(t.pb_ratio, s2.pb_ratio) <= 5)::numeric AS avg_pb,
+                COUNT(*) FILTER (WHERE s2.ev_ebitda > 0 AND s2.ev_ebitda <= 15) AS ev_peer_count,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY s2.ev_ebitda)
+                    FILTER (WHERE s2.ev_ebitda > 0 AND s2.ev_ebitda <= 15)::numeric AS avg_ev_ebitda
+            FROM market_tickers t
+            LEFT JOIN stock_statistics s2 ON t.symbol = s2.symbol AND t.market_code = s2.market_code
+            WHERE t.market_code = 'EGX'
+              AND t.industry IS NOT NULL
+            GROUP BY t.industry
         ),
         index_perf AS (
             SELECT COALESCE(ss2.price_change_52w, 0) as egx_change
@@ -995,68 +1026,79 @@ async def handle_undervalued_stocks(
             LEFT JOIN stock_statistics ss2 ON idx_t.symbol = ss2.symbol
             WHERE idx_t.symbol IN ('^EGX30', 'EGX30')
             LIMIT 1
+        ),
+        benchmarked_candidates AS (
+            SELECT
+                t.symbol,
+                t.name_en,
+                t.name_ar,
+                t.sector_name,
+                t.industry,
+                t.market_cap,
+                t.last_price,
+                t.logo_url,
+                t.pe_ratio,
+                COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
+                COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
+                ss.roe,
+                ss.roic,
+                ss.profit_margin,
+                ss.revenue_growth,
+                ss.gross_margin,
+                ss.operating_margin,
+                ss.debt_equity,
+                ss.current_ratio,
+                ss.altman_z_score,
+                ss.piotroski_f_score,
+                ss.ev_ebitda,
+                ss.interest_coverage,
+                ss.net_income_ttm,
+                ss.ocf_ttm,
+                COALESCE(ss.price_change_52w, 0) - COALESCE(idx.egx_change, 0) AS relative_alpha,
+                CASE WHEN COALESCE(ia.pe_peer_count, 0) >= 3 THEN ia.avg_pe ELSE sa.avg_pe END AS avg_pe,
+                CASE WHEN COALESCE(ia.pb_peer_count, 0) >= 3 THEN ia.avg_pb ELSE sa.avg_pb END AS avg_pb,
+                CASE WHEN COALESCE(ia.ev_peer_count, 0) >= 3 THEN ia.avg_ev_ebitda ELSE sa.avg_ev_ebitda END AS avg_ev_ebitda,
+                CASE WHEN COALESCE(ia.pe_peer_count, 0) >= 3 THEN 'industry' ELSE 'sector' END AS pe_benchmark_level,
+                CASE WHEN COALESCE(ia.pb_peer_count, 0) >= 3 THEN 'industry' ELSE 'sector' END AS pb_benchmark_level,
+                CASE WHEN COALESCE(ia.ev_peer_count, 0) >= 3 THEN 'industry' ELSE 'sector' END AS ev_benchmark_level
+            FROM market_tickers t
+            LEFT JOIN sector_averages sa
+                ON t.sector_name = sa.sector_name
+            LEFT JOIN industry_averages ia
+                ON t.industry = ia.industry
+            LEFT JOIN stock_statistics ss
+                ON t.symbol = ss.symbol AND t.market_code = ss.market_code
+            LEFT JOIN index_perf idx ON 1=1
+            WHERE t.market_code = 'EGX'
+              AND t.last_price IS NOT NULL
+              AND ($1::text IS NULL OR t.sector_name ILIKE $1)
+              AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
+              AND COALESCE(t.name_en, '') NOT ILIKE '%fund%'
+              AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
         )
         SELECT
-            t.symbol,
-            t.name_en,
-            t.name_ar,
-            t.sector_name,
-            t.market_cap,
-            t.last_price,
-            t.logo_url,
-            t.pe_ratio,
-            COALESCE(t.pb_ratio, ss.pb_ratio) AS pb_ratio,
-            COALESCE(t.dividend_yield, ss.dividend_yield) AS dividend_yield,
-            ss.roe,
-            ss.roic,
-            ss.profit_margin,
-            ss.revenue_growth,
-            ss.gross_margin,
-            ss.operating_margin,
-            ss.debt_equity,
-            ss.current_ratio,
-            ss.altman_z_score,
-            ss.piotroski_f_score,
-            ss.ev_ebitda,
-            ss.interest_coverage,
-            ss.net_income_ttm,
-            ss.ocf_ttm,
-            COALESCE(ss.price_change_52w, 0) - COALESCE(idx.egx_change, 0) AS relative_alpha,
-            sa.avg_pe,
-            sa.avg_pb,
-            sa.avg_ev_ebitda,
+            *,
             CASE
-                WHEN t.pe_ratio > 0 AND sa.avg_pe > 0
-                THEN ((sa.avg_pe - t.pe_ratio) / sa.avg_pe) * 100
+                WHEN pe_ratio > 0 AND avg_pe > 0
+                THEN ((avg_pe - pe_ratio) / avg_pe) * 100
                 ELSE 0
             END AS pe_discount,
             CASE
-                WHEN COALESCE(t.pb_ratio, ss.pb_ratio) > 0 AND sa.avg_pb > 0
-                THEN ((sa.avg_pb - COALESCE(t.pb_ratio, ss.pb_ratio)) / sa.avg_pb) * 100
+                WHEN pb_ratio > 0 AND avg_pb > 0
+                THEN ((avg_pb - pb_ratio) / avg_pb) * 100
                 ELSE 0
             END AS pb_discount,
             CASE
-                WHEN ss.ev_ebitda IS NOT NULL AND sa.avg_ev_ebitda IS NOT NULL AND ss.ev_ebitda > 0 AND ss.ev_ebitda < sa.avg_ev_ebitda
-                THEN ROUND(((sa.avg_ev_ebitda - ss.ev_ebitda) / sa.avg_ev_ebitda * 100)::numeric, 0)
+                WHEN ev_ebitda IS NOT NULL AND avg_ev_ebitda IS NOT NULL AND ev_ebitda > 0 AND ev_ebitda < avg_ev_ebitda
+                THEN ROUND(((avg_ev_ebitda - ev_ebitda) / avg_ev_ebitda * 100)::numeric, 0)
                 ELSE 0
             END AS ev_ebitda_discount
-        FROM market_tickers t
-        LEFT JOIN sector_averages sa
-            ON t.sector_name = sa.sector_name
-        LEFT JOIN stock_statistics ss
-            ON t.symbol = ss.symbol AND t.market_code = ss.market_code
-        LEFT JOIN index_perf idx ON 1=1
-        WHERE t.market_code = 'EGX'
-          AND t.last_price IS NOT NULL
-          AND ($1::text IS NULL OR t.sector_name ILIKE $1)
-          AND (
-                (t.pe_ratio > 0 AND t.pe_ratio <= 25 AND sa.avg_pe IS NOT NULL)
-             OR (COALESCE(t.pb_ratio, ss.pb_ratio) > 0 AND COALESCE(t.pb_ratio, ss.pb_ratio) <= 3.0 AND sa.avg_pb IS NOT NULL)
-             OR (ss.ev_ebitda > 0 AND ss.ev_ebitda <= 15 AND sa.avg_ev_ebitda IS NOT NULL)
+        FROM benchmarked_candidates
+        WHERE (
+                (pe_ratio > 0 AND pe_ratio <= 25 AND avg_pe IS NOT NULL)
+             OR (pb_ratio > 0 AND pb_ratio <= 3.0 AND avg_pb IS NOT NULL)
+             OR (ev_ebitda > 0 AND ev_ebitda <= 15 AND avg_ev_ebitda IS NOT NULL)
           )
-          AND COALESCE(t.sector_name, '') NOT ILIKE '%fund%'
-          AND COALESCE(t.name_en, '') NOT ILIKE '%fund%'
-          AND COALESCE(t.name_en, '') NOT ILIKE '%certificate%'
         LIMIT 120
         """
 
@@ -1204,25 +1246,28 @@ async def handle_undervalued_stocks(
             pb_discount = row.get("pb_discount") or 0
             ev_ebitda_discount = row.get("ev_ebitda_discount") or 0
             ev_ebitda = row.get("ev_ebitda")
+            pe_benchmark_label = _peer_scope_label(row.get("pe_benchmark_level"), language)
+            pb_benchmark_label = _peer_scope_label(row.get("pb_benchmark_level"), language)
+            ev_benchmark_label = _peer_scope_label(row.get("ev_benchmark_level"), language)
 
             reasons = []
             if ev_ebitda and ev_ebitda > 0 and ev_ebitda_discount >= 10:
                 reasons.append(
-                    f"EV/EBITDA at {ev_ebitda:.1f}x ({ev_ebitda_discount:.0f}% below sector)"
+                    f"EV/EBITDA at {ev_ebitda:.1f}x ({ev_ebitda_discount:.0f}% below {ev_benchmark_label})"
                     if language == "en"
-                    else f"EV/EBITDA عند {ev_ebitda:.1f}x (خصم {ev_ebitda_discount:.0f}% عن القطاع)"
+                    else f"EV/EBITDA عند {ev_ebitda:.1f}x (خصم {ev_ebitda_discount:.0f}% عن {ev_benchmark_label})"
                 )
             if pe_discount >= 10:
                 reasons.append(
-                    f"P/E at {pe:.1f}x ({pe_discount:.0f}% below sector)"
+                    f"P/E at {pe:.1f}x ({pe_discount:.0f}% below {pe_benchmark_label})"
                     if language == "en"
-                    else f"مكرر ربحية {pe:.1f}x (خصم {pe_discount:.0f}% عن القطاع)"
+                    else f"مكرر ربحية {pe:.1f}x (خصم {pe_discount:.0f}% عن {pe_benchmark_label})"
                 )
             if pb_discount >= 10:
                 reasons.append(
-                    f"P/B at {pb:.2f}x ({pb_discount:.0f}% below sector)"
+                    f"P/B at {pb:.2f}x ({pb_discount:.0f}% below {pb_benchmark_label})"
                     if language == "en"
-                    else f"مضاعف دفترية {pb:.2f}x (خصم {pb_discount:.0f}% عن القطاع)"
+                    else f"مضاعف دفترية {pb:.2f}x (خصم {pb_discount:.0f}% عن {pb_benchmark_label})"
                 )
             if score_res.profitability >= 16 and roic is not None and roic > 0:
                 reasons.append(
@@ -1364,18 +1409,18 @@ async def handle_undervalued_stocks(
         )
 
         framework_items_en = [
-            "Sector-relative valuation (EV/EBITDA, P/E, P/B vs median)",
+            "Peer-relative valuation (industry median when enough peers exist, otherwise sector median)",
             "Profitability check via ROIC and ROE",
             "Financial health via interest coverage and leverage",
             "Earnings quality via cash flow vs reported income",
-            "P/E capped at 25x — high PE excluded from value screen",
+            "Outlier control: P/E capped at 25x, P/B at 5x, EV/EBITDA at 15x for peer benchmarks",
         ]
         framework_items_ar = [
-            "خصم تقييمي نسبي داخل القطاع (EV/EBITDA ومضاعف الربحية والدفترية)",
+            "تقييم نسبي مقابل الأقران (وسيط الصناعة عند كفاية الأقران وإلا وسيط القطاع)",
             "فحص الربحية عبر ROIC والعائد على حقوق الملكية",
             "الصحة المالية عبر تغطية الفوائد والرافعة المالية",
             "جودة الأرباح عبر التدفقات النقدية مقابل الأرباح المعلنة",
-            "مكرر ربحية أقصى 25x — استبعاد الأسهم المرتفعة التقييم",
+            "ضبط القيم الشاذة: P/E حتى 25x وP/B حتى 5x وEV/EBITDA حتى 15x داخل المقارنة",
         ]
 
         actions: List[Dict[str, Any]] = []
@@ -1406,7 +1451,7 @@ async def handle_undervalued_stocks(
                         "icon": "💎",
                         "description": "Discount + quality approach" if language == "en" else "منهجية الخصم + الجودة",
                         "criteria": [
-                            {"label": "Valuation" if language == "en" else "التقييم", "value": "EV/EBITDA, P/E, P/B vs sector median (PE capped at 25x)" if language == "en" else "EV/EBITDA ومكرر الربحية ومضاعف الدفترية مقابل وسيط القطاع (أقصى PE 25x)"},
+                            {"label": "Valuation" if language == "en" else "التقييم", "value": "EV/EBITDA, P/E, P/B vs trimmed peer median (industry first, sector fallback)" if language == "en" else "EV/EBITDA ومكرر الربحية ومضاعف الدفترية مقابل وسيط أقران مُهذب (الصناعة أولاً ثم القطاع)"},
                             {"label": "Profitability" if language == "en" else "الربحية", "value": "ROIC/ROE and margin quality" if language == "en" else "كفاءة رأس المال والعائد على الحقوق"},
                             {"label": "Health" if language == "en" else "الصحة المالية", "value": "Interest coverage and leverage" if language == "en" else "تغطية الفوائد والرافعة المالية"},
                             {"label": "Quality" if language == "en" else "الجودة", "value": "Operating cash flow vs net income" if language == "en" else "التدفقات النقدية التشغيلية مقابل صافي الربح"},

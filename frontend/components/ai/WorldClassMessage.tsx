@@ -807,6 +807,9 @@ const BLOCKED_GENERIC_DISCLAIMER_SNIPPETS = [
     "هذا تحليل للسوق لأغراض تعليمية، وليس نصيحة استثمارية شخصية",
 ];
 
+const STARTA_GLOBAL_DISCLAIMER_TEXT =
+    "Disclaimer: Educational only. Starta is not a licensed analyst. AI insights may have errors; consult a professional before making any decisions.";
+
 function isBlockedGenericDisclaimer(value?: string): boolean {
     if (!value) return false;
     const normalized = value.toLowerCase().replace(/\s+/g, " ").trim();
@@ -1670,21 +1673,9 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
         return !(title.includes("bull case") || title.includes("bear case") || title.includes("السيناريو"));
     });
 
-    const normalizedDisclaimer = safeResponse?.disclaimer_card || findCardData(["disclaimer_card", "disclaimer"]);
     const normalizedLearningSection = safeResponse?.learning_section;
-    const disclaimerTextCandidate = String(
-        normalizedDisclaimer?.content || safeResponse?.disclaimer || normalizedDisclaimer?.text || ""
-    ).trim();
+    const disclaimerTextCandidate = STARTA_GLOBAL_DISCLAIMER_TEXT;
     const shouldRenderDisclaimer = !!disclaimerTextCandidate && !isBlockedGenericDisclaimer(disclaimerTextCandidate);
-
-    // Check for disclaimer in text to avoid duplication
-    const hasInlineDisclaimer = safeConversationalText?.toLowerCase().includes("educational analysis") ||
-        safeConversationalText?.toLowerCase().includes("not investment advice") ||
-        safeConversationalText?.toLowerCase().includes("methodology note") ||
-        safeConversationalText?.toLowerCase().includes("important context") ||
-        safeConversationalText?.toLowerCase().includes("liquidity warning") ||
-        safeConversationalText?.includes("تحليل تعليمي") ||
-        safeConversationalText?.includes("⚠️");
 
     const direction = lang === 'ar' ? 'rtl' : 'ltr';
     const fontClass = lang === 'ar' ? 'font-arabic' : '';
@@ -1869,12 +1860,10 @@ export function WorldClassMessage({ conversationalText, response, lang = 'en', i
             {/* ============================================================
                 LAYER 4: DISCLAIMER (Regulatory Compliance)
                ============================================================ */}
-            {isTypingCompleted && (!hasInlineDisclaimer || normalizedDisclaimer) && shouldRenderDisclaimer && (
+            {isTypingCompleted && shouldRenderDisclaimer && (
                 <div className="mt-6 text-slate-500 dark:text-slate-400">
                     <DisclaimerCard
-                        text={safeResponse?.disclaimer || normalizedDisclaimer?.text}
-                        content={normalizedDisclaimer?.content}
-                        title={normalizedDisclaimer?.title}
+                        text={disclaimerTextCandidate}
                         lang={lang}
                     />
                 </div>

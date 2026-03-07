@@ -57,7 +57,7 @@ We will enforce a "Return Null" policy for all sub-components if their primary d
 | **`Deep*Cards`** | (Completed) Already enforcing strict hiding. |
 
 ### B. Mobile Parity
-*   Verify `mobile-ai-analyst/page.tsx` receives the exact same payload.
+*   Verify the canonical `/AiChat` experience receives the exact same payload.
 *   (Confirmed: Architecture shares the same `ChatCards` component, so fix is universal).
 
 ---

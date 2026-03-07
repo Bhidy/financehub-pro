@@ -203,10 +203,8 @@ text-[#EF4444]       // Bearish (price down)
 | `app/login/page.tsx` | Midnight Teal login experience |
 | `app/register/page.tsx` | Consistent registration flow |
 | `app/page.tsx` | Dashboard with brand colors |
-| `app/ai-analyst/page.tsx` | Desktop AI chat interface |
-| `app/mobile-ai-analyst/page.tsx` | Mobile AI chat interface |
-| `app/mobile-ai-analyst/components/MobileHeader.tsx` | Branded mobile header |
-| `app/mobile-ai-analyst/components/MobileInput.tsx` | Trust Blue input area |
+| `app/AiChat/page.tsx` | Canonical AI chat route |
+| `components/chatbot/ResponsivePage.tsx` | Shared responsive AI chat experience |
 | `components/AppSidebar.tsx` | Starta branding in sidebar |
 | `components/ai/ChatCards.tsx` | Data cards with brand colors |
 

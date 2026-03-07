@@ -8,7 +8,7 @@ import sys
 API_URL = "https://finhub-pro.vercel.app/api/v1/ai/chat"
 # API_URL = "https://starta.46-224-223-172.sslip.io/api/v1/ai/chat"
 
-# Questions to verify (Extracted from ai-analyst/page.tsx)
+# Questions to verify (Extracted from the canonical AiChat experience)
 QUESTIONS = [
     # User Reported Issues
     "PE ratio for SWDY",

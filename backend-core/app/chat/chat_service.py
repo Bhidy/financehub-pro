@@ -3583,8 +3583,8 @@ class ChatService:
                         user_level=user_level # Phase 4
                     )
                     
-                    # Update the conversational text with composed response
-                    conversational_text = full_text
+                    # Preserve the handler's factual core narrative. The structured payload
+                    # already carries the premium insight/opening layers separately.
                     
                     # Track what we used for next time
                     if opening_category:
@@ -4017,8 +4017,7 @@ class ChatService:
                 convo_logger = logging.getLogger("ChatService")
                 full_text_len = len(full_text) if full_text else 0
                 convo_logger.info(f"✅ 8-Layer Assembly Complete. Length: {full_text_len}")
-                conversational_text = full_text
-                
+
             except Exception as composer_err:
                 print(f"[ChatService] ⚠️ ResponseComposer Error: {composer_err}")
                 # Fallback to raw text if composer fails

@@ -13,6 +13,19 @@ def format_number(val: float) -> str:
     return f"{val:,.2f}"
 
 
+def _is_bank_like_sector(raw_sector: Optional[str]) -> bool:
+    if not raw_sector:
+        return False
+    sector = str(raw_sector).strip().lower()
+    return (
+        "bank" in sector
+        or "financial" in sector
+        or "بنوك" in sector
+        or "مصارف" in sector
+        or "خدمات مالية" in sector
+    )
+
+
 async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str, lang: str = 'en') -> ChatResponse:
     """Analyze Financial Safety (Altman Z-Score, Piotroski F-Score)."""
     
@@ -21,7 +34,7 @@ async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str,
         SELECT 
             s.altman_z_score, s.piotroski_f_score, s.debt_equity, s.current_ratio, 
             s.interest_coverage, s.quick_ratio, s.debt_ebitda,
-            m.name_en, m.name_ar, m.currency
+            m.name_en, m.name_ar, m.currency, m.sector_name
         FROM stock_statistics s
         JOIN market_tickers m ON s.symbol = m.symbol
         WHERE s.symbol = $1 AND s.market_code = $2
@@ -42,8 +55,13 @@ async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str,
     int_cov = row['interest_coverage']
     debt_ebitda = row['debt_ebitda']
 
+    is_bank_sector = _is_bank_like_sector(row.get("sector_name"))
     safety_status = "Unknown"
-    if z_score is not None:
+    if is_bank_sector:
+        # Altman Z is not a bank-valid framework.
+        z_score = None
+        safety_status = "Not Applicable for Banks ⚪"
+    elif z_score is not None:
         if z_score > 2.99:
             safety_status = "Safe Zone 🟢"
         elif z_score > 1.81:
@@ -55,11 +73,17 @@ async def handle_deep_safety(conn: asyncpg.Connection, symbol: str, market: str,
 
     msg = f"🛡️ **Safety Analysis for {symbol}**\n\n"
     if lang == 'en':
-        msg += f"**Altman Z-Score**: {z_score if z_score is not None else 'N/A'} ({safety_status})\n"
+        if is_bank_sector:
+            msg += "**Altman Z-Score**: Not Applicable for Banks (use capital adequacy, NPL quality, provisioning, and liquidity structure)\n"
+        else:
+            msg += f"**Altman Z-Score**: {z_score if z_score is not None else 'N/A'} ({safety_status})\n"
         msg += f"**Piotroski F-Score**: {f_score if f_score is not None else 'N/A'}/9\n"
     else:
         msg = f"🛡️ **تحليل المخاطر لـ {symbol}**\n\n"
-        msg += f"**مؤشر ألتمان**: {z_score if z_score is not None else 'N/A'} ({safety_status})\n"
+        if is_bank_sector:
+            msg += "**مؤشر ألتمان**: غير مناسب للبنوك (الأفضل التركيز على كفاية رأس المال وجودة الأصول والمخصصات والسيولة)\n"
+        else:
+            msg += f"**مؤشر ألتمان**: {z_score if z_score is not None else 'N/A'} ({safety_status})\n"
         msg += f"**مؤشر بيوتروسكي**: {f_score if f_score is not None else 'N/A'}/9\n"
 
     # 4. Ultra Premium Card
@@ -308,4 +332,3 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
     )
     
     return ChatResponse(message_text=msg, cards=[card], chart=chart, meta={'intent': 'DEEP_GROWTH', 'confidence': 1.0})
-

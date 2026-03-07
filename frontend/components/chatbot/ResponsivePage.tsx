@@ -929,15 +929,6 @@ const MessageRenderer = memo(({
                     m.content
                 ) : (
                     <div className="w-full flex flex-col gap-3">
-                        {isTypingCompleted && guideDescriptors.length > 0 && (
-                            <div className="flex justify-end">
-                                <ResponseGuideButton
-                                    descriptors={guideDescriptors}
-                                    language={responseLanguage}
-                                />
-                            </div>
-                        )}
-
                         <MessageErrorBoundary>
                             <WorldClassMessage
                                 conversationalText={m.response?.conversational_text || m.content}
@@ -994,6 +985,19 @@ const MessageRenderer = memo(({
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             >
                                 <FactExplanations explanations={m.response.fact_explanations} language={responseLanguage} />
+                            </motion.div>
+                        )}
+
+                        {isTypingCompleted && guideDescriptors.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                            >
+                                <ResponseGuideButton
+                                    descriptors={guideDescriptors}
+                                    language={responseLanguage}
+                                />
                             </motion.div>
                         )}
 

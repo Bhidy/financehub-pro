@@ -1156,6 +1156,7 @@ async def handle_undervalued_stocks(
             pe = row.get("pe_ratio")
             pb = row.get("pb_ratio")
             roe = _pct(row.get("roe"))
+            roic = _pct(row.get("roic"))
             margin = _pct(row.get("profit_margin"))
             revenue_growth = _pct(row.get("revenue_growth"))
             interest_coverage = row.get("interest_coverage")
@@ -1184,7 +1185,19 @@ async def handle_undervalued_stocks(
                     if language == "en"
                     else f"مضاعف دفترية {pb:.2f}x (خصم {pb_discount:.0f}% عن القطاع)"
                 )
-            if score_res.profitability >= 16 and roe is not None and roe > 0:
+            if score_res.profitability >= 16 and roic is not None and roic > 0:
+                reasons.append(
+                    f"ROIC {roic:.1f}% reinforces quality"
+                    if language == "en"
+                    else f"العائد على رأس المال المستثمر {roic:.1f}% يدعم الجودة"
+                )
+            elif score_res.profitability >= 12 and roic is not None and roic > 0:
+                reasons.append(
+                    f"ROIC {roic:.1f}% shows decent capital efficiency"
+                    if language == "en"
+                    else f"العائد على رأس المال المستثمر {roic:.1f}% يعكس كفاءة معقولة"
+                )
+            elif score_res.profitability >= 16 and roe is not None and roe > 0:
                 reasons.append(
                     f"ROE {roe:.1f}% reinforces quality"
                     if language == "en"

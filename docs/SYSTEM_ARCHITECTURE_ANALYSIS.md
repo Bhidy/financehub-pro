@@ -96,8 +96,7 @@ FinanceHub Pro (branded as **Starta**) is an enterprise-grade financial intellig
 mubasher-deep-extract/
 ├── frontend/                    # Next.js Application (Vercel)
 │   ├── app/                     # App Router Pages
-│   │   ├── ai-analyst/          # Desktop AI Chat
-│   │   ├── mobile-ai-analyst/   # Mobile AI Chat
+│   │   ├── AiChat/              # Canonical AI Chat
 │   │   ├── portfolio/           # Portfolio Management
 │   │   ├── screener/            # Stock Screener
 │   │   ├── api/                 # Next.js API Routes
@@ -466,8 +465,8 @@ mubasher-deep-extract/
 |-----------|------|------------------|
 | 4-Layer Response Structure | chat_service.py (lines 504-540) | 🔴 CRITICAL |
 | Narrative Generation | llm_explainer.py | 🔴 CRITICAL |
-| Mobile AI Rendering | mobile-ai-analyst/page.tsx | 🔴 CRITICAL |
-| Desktop AI Rendering | ai-analyst/page.tsx | 🔴 CRITICAL |
+| Canonical AI Chat Route | AiChat/page.tsx | 🔴 CRITICAL |
+| Shared AI Rendering | components/chatbot/ResponsivePage.tsx | 🔴 CRITICAL |
 | Response Types | useAIChat.ts | 🟠 HIGH |
 | Learning Generator | learning_section_generator.py | 🟠 HIGH |
 | Follow-up Generator | follow_up_generator.py | 🟠 HIGH |

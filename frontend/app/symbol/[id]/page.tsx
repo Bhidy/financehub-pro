@@ -289,7 +289,7 @@ export default function SymbolDetailPage() {
             if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
 
             const chart = createChart(chartContainerRef.current, {
-                layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', -apple-system, sans-serif" },
+                layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#64748b', fontFamily: "'Manrope', -apple-system, sans-serif" },
                 width: chartContainerRef.current.clientWidth, height: 420,
                 grid: { vertLines: { color: 'rgba(148, 163, 184, 0.1)' }, horzLines: { color: 'rgba(148, 163, 184, 0.1)' } },
                 timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(148, 163, 184, 0.2)', rightOffset: 5 },

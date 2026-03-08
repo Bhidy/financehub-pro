@@ -19,7 +19,7 @@ export function ChartCard({ chart, height = 350, language = "en" }: ChartCardPro
     const isDark = theme === 'dark';
     const isRtl = language === "ar";
     const locale = isRtl ? "ar-EG" : "en-US";
-    const chartFontFamily = isRtl ? "Cairo, sans-serif" : "Inter, sans-serif";
+    const chartFontFamily = isRtl ? "Cairo, sans-serif" : "Manrope, sans-serif";
     const ui = useMemo(() => (
         isRtl
             ? {

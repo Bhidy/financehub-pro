@@ -30,20 +30,21 @@ async function readUpstreamPayload(res: Response): Promise<unknown> {
 async function proxyWithBody(
     req: NextRequest,
     params: Promise<{ path: string[] }>,
-    method: "POST" | "PUT"
+    method: "POST" | "PUT" | "PATCH" | "DELETE"
 ) {
     const url = await resolveUpstreamUrl(req, params);
     const authHeader = getAuthorizationHeader(req);
+    const contentType = req.headers.get("content-type");
     const body = await req.text();
 
     try {
         const res = await fetch(url, {
             method,
             headers: {
-                "Content-Type": "application/json",
+                ...(contentType ? { "Content-Type": contentType } : {}),
                 ...(authHeader ? { Authorization: authHeader } : {}),
             },
-            body,
+            ...(body.length > 0 ? { body } : {}),
         });
 
         const data = await readUpstreamPayload(res);
@@ -116,4 +117,18 @@ export async function PUT(
     { params }: { params: Promise<{ path: string[] }> }
 ) {
     return proxyWithBody(req, params, "PUT");
+}
+
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    return proxyWithBody(req, params, "PATCH");
+}
+
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    return proxyWithBody(req, params, "DELETE");
 }

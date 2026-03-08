@@ -2,16 +2,72 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
 
+async function resolveUpstreamUrl(
+    req: NextRequest,
+    params: Promise<{ path: string[] }>
+): Promise<string> {
+    const { path } = await params;
+    const pathString = path.join("/");
+    return `${BACKEND_URL}/${pathString}${req.nextUrl.search}`;
+}
+
+function getAuthorizationHeader(req: NextRequest): string | null {
+    return req.headers.get("authorization") ?? req.headers.get("Authorization");
+}
+
+async function readUpstreamPayload(res: Response): Promise<unknown> {
+    const text = await res.text();
+
+    if (!text) return null;
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        return { detail: text };
+    }
+}
+
+async function proxyWithBody(
+    req: NextRequest,
+    params: Promise<{ path: string[] }>,
+    method: "POST" | "PUT"
+) {
+    const url = await resolveUpstreamUrl(req, params);
+    const authHeader = getAuthorizationHeader(req);
+    const body = await req.text();
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                ...(authHeader ? { Authorization: authHeader } : {}),
+            },
+            body,
+        });
+
+        const data = await readUpstreamPayload(res);
+
+        return NextResponse.json(data, {
+            status: res.status,
+            headers: {
+                "Cache-Control": "no-store, must-revalidate",
+                "Access-Control-Allow-Origin": "*",
+            },
+        });
+    } catch (error) {
+        console.error(`Proxy ${method} Error:`, error);
+        return NextResponse.json({ error: "Proxy Failed" }, { status: 500 });
+    }
+}
+
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ path: string[] }> }
 ) {
-    const { path } = await params;
-    const pathString = path.join("/");
-    const url = `${BACKEND_URL}/${pathString}${req.nextUrl.search}`;
-
     try {
-        const authHeader = req.headers.get("Authorization");
+        const authHeader = getAuthorizationHeader(req);
+        const url = await resolveUpstreamUrl(req, params);
 
         // SECURITY: Do not cache authenticated requests (user data). Cache public data (tickers, news).
         // If Authorization header is present, revalidate = 0 (no cache).
@@ -30,7 +86,7 @@ export async function GET(
             // For now, pass through.
         }
 
-        const data = await res.json();
+        const data = await readUpstreamPayload(res);
 
         return NextResponse.json(data, {
             status: res.status,
@@ -52,30 +108,12 @@ export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ path: string[] }> }
 ) {
-    const { path } = await params;
-    const pathString = path.join("/");
-    const url = `${BACKEND_URL}/${pathString}${req.nextUrl.search}`;
+    return proxyWithBody(req, params, "POST");
+}
 
-    try {
-        const body = await req.json();
-        const authHeader = req.headers.get("Authorization");
-
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...(authHeader ? { Authorization: authHeader } : {}),
-            },
-            body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-
-        return NextResponse.json(data, {
-            status: res.status,
-        });
-    } catch (error) {
-        console.error("Proxy POST Error:", error);
-        return NextResponse.json({ error: "Proxy Failed" }, { status: 500 });
-    }
+export async function PUT(
+    req: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    return proxyWithBody(req, params, "PUT");
 }

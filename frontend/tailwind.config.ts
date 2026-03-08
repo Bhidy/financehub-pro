@@ -38,7 +38,7 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                sans: ["var(--font-inter)", "sans-serif"],
+                sans: ["var(--font-manrope)", "sans-serif"],
                 heading: ["var(--font-manrope)", "sans-serif"],
                 mono: ["var(--font-jetbrains)", "monospace"],
                 arabic: ["var(--font-arabic)", "sans-serif"],

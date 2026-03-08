@@ -206,66 +206,82 @@ const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
     );
 };
 
-// Premium Card Component - Matches Global Design System
+// Premium Card Component - Reimagined 2026 Signature Layer
 const GlassCard = ({ children, className = '', noPadding = false, premium = false }: any) => (
-    <div className={clsx(
-        "relative overflow-hidden rounded-2xl transition-all duration-300",
-        "bg-white/70 dark:bg-[#0B1121]/70 backdrop-blur-xl",
-        "border border-white/40 dark:border-white/[0.08]",
-        "shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]",
-        "hover:shadow-[0_0_20px_rgba(20,184,166,0.08)] hover:border-[#14B8A6]/20",
-        premium && "hover:shadow-[0_0_25px_rgba(20,184,166,0.15)] hover:border-[#14B8A6]/30",
-        !noPadding && "p-6",
-        className
-    )}>
-        {premium && (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#14B8A6]/[0.03] via-transparent to-[#3B82F6]/[0.03] dark:from-[#14B8A6]/5 dark:via-transparent dark:to-[#3B82F6]/5 pointer-events-none" />
+    <section
+        className={clsx(
+            "group/card relative overflow-hidden rounded-3xl transition-all duration-500",
+            "border border-slate-200/70 dark:border-white/[0.10]",
+            "bg-white/90 dark:bg-[#0B1121]/85 backdrop-blur-2xl",
+            "shadow-[0_14px_40px_rgba(15,23,42,0.08)] dark:shadow-[0_16px_44px_rgba(2,6,23,0.42)]",
+            "hover:-translate-y-0.5 hover:border-[#14B8A6]/35 hover:shadow-[0_20px_48px_rgba(20,184,166,0.14)] dark:hover:shadow-[0_22px_56px_rgba(20,184,166,0.22)]",
+            !noPadding && "p-6",
+            className
         )}
-        {children}
-    </div>
+    >
+        <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#14B8A6]/10 blur-3xl dark:bg-[#14B8A6]/18" />
+            <div className="absolute -left-14 bottom-0 h-32 w-32 rounded-full bg-[#3B82F6]/8 blur-3xl dark:bg-[#3B82F6]/16" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#14B8A6]/50 to-transparent opacity-40" />
+            {premium && (
+                <>
+                    <div className="absolute right-4 top-4 h-16 w-16 rounded-full border border-[#14B8A6]/25 opacity-60" />
+                    <div className="absolute bottom-4 left-4 h-12 w-12 rounded-full border border-[#3B82F6]/25 opacity-50" />
+                </>
+            )}
+        </div>
+        <div className="relative">{children}</div>
+    </section>
 );
 
 const StatCard = ({ label, value, subValue, icon: Icon, trend, color = 'default' }: any) => {
-    const iconColors: any = {
-        default: 'text-slate-500 dark:text-slate-400',
-        green: 'text-[#10B981]',
-        red: 'text-[#EF4444]',
-        blue: 'text-[#3B82F6]',
-        teal: 'text-[#14B8A6]',
+    const iconStyle: any = {
+        default: "text-slate-600 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800/70",
+        green: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30",
+        red: "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30",
+        blue: "text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30",
+        teal: "text-teal-600 dark:text-teal-300 bg-teal-50 dark:bg-teal-900/30",
     };
 
     return (
-        <div className={clsx(
-            "relative p-5 rounded-2xl overflow-hidden transition-all duration-300 group/stat",
-            "bg-white/60 dark:bg-[#0B1121]/60 backdrop-blur-xl",
-            "border border-slate-200/60 dark:border-white/[0.08]",
-            "shadow-sm dark:shadow-[0_4px_12px_rgb(0,0,0,0.15)]",
-            "hover:shadow-[0_0_15px_rgba(20,184,166,0.1)] hover:border-[#14B8A6]/20 hover:-translate-y-0.5"
-        )}>
-            <div className="flex items-start justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <article
+            className={clsx(
+                "group/stat relative overflow-hidden rounded-3xl p-5 transition-all duration-500",
+                "border border-slate-200/70 dark:border-white/[0.10]",
+                "bg-white/90 dark:bg-[#0F172A]/88 backdrop-blur-xl",
+                "shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_10px_30px_rgba(2,6,23,0.35)]",
+                "hover:-translate-y-1 hover:border-[#14B8A6]/35 hover:shadow-[0_14px_34px_rgba(20,184,166,0.16)]"
+            )}
+        >
+            <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-[#14B8A6]/50 to-transparent opacity-60" />
+            <div className="mb-4 flex items-start justify-between">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                     {label}
                 </span>
-                {Icon && <Icon className={clsx("w-4 h-4", iconColors[color])} />}
+                {Icon && (
+                    <span className={clsx("inline-flex h-8 w-8 items-center justify-center rounded-xl ring-1 ring-black/5 dark:ring-white/10", iconStyle[color] || iconStyle.default)}>
+                        <Icon className="h-4 w-4" />
+                    </span>
+                )}
             </div>
             <div className="flex items-end gap-2">
-                <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+                <span className="text-[1.85rem] leading-none font-black text-slate-900 dark:text-white font-mono tracking-tight">
                     {value}
                 </span>
                 {trend !== undefined && (
-                    <span className={clsx(
-                        "text-xs font-bold flex items-center gap-0.5 mb-1",
-                        trend >= 0 ? "text-emerald-500" : "text-rose-500"
-                    )}>
-                        {trend >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    <span
+                        className={clsx(
+                            "mb-0.5 inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-bold",
+                            trend >= 0 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
+                        )}
+                    >
+                        {trend >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                         {Math.abs(trend).toFixed(2)}%
                     </span>
                 )}
             </div>
-            {subValue && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{subValue}</p>
-            )}
-        </div>
+            {subValue && <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{subValue}</p>}
+        </article>
     );
 };
 
@@ -273,34 +289,35 @@ const TabButton = ({ active, onClick, label, icon: Icon }: any) => (
     <button
         onClick={onClick}
         className={clsx(
-            "flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-300",
+            "relative inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold transition-all duration-300 whitespace-nowrap",
             active
-                ? "bg-[#0B1121] dark:bg-white text-white dark:text-[#0B1121] shadow-lg shadow-black/10 dark:shadow-white/10"
-                : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white"
+                ? "bg-gradient-to-r from-[#14B8A6] via-[#0EA5E9] to-[#14B8A6] text-white shadow-[0_10px_22px_rgba(20,184,166,0.35)]"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/85 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white"
         )}
     >
-        {Icon && <Icon className={clsx("w-4 h-4", active ? "text-[#14B8A6]" : "")} />}
+        {active && <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/35" />}
+        {Icon && <Icon className={clsx("h-4 w-4", active ? "text-white" : "text-slate-500 dark:text-slate-400")} />}
         {label}
     </button>
 );
 
 const RangeIndicator = ({ current, low, high, label }: any) => {
-    const percent = ((current - low) / (high - low)) * 100;
+    const spread = (high || 0) - (low || 0);
+    const percent = spread > 0 ? ((current - low) / spread) * 100 : 0;
+    const clamped = Math.min(100, Math.max(0, percent));
+
     return (
-        <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+        <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
                 <span>{formatNumber(low)}</span>
-                <span className="font-bold text-slate-700 dark:text-slate-200">{label}</span>
+                <span className="text-slate-700 dark:text-slate-200">{label}</span>
                 <span>{formatNumber(high)}</span>
             </div>
-            <div className="relative h-2.5 bg-slate-100 dark:bg-[#1A222C] rounded-full overflow-hidden">
+            <div className="relative h-3 rounded-full border border-slate-200/80 bg-slate-100 dark:border-white/10 dark:bg-[#111827]">
+                <div className="absolute inset-[1px] rounded-full bg-gradient-to-r from-rose-500 via-amber-500 via-emerald-500 to-cyan-500" />
                 <div
-                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#EF4444] via-[#F59E0B] to-[#10B981] rounded-full"
-                    style={{ width: '100%' }}
-                />
-                <div
-                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white dark:bg-[#0B1121] rounded-full border-2 border-[#14B8A6] shadow-[0_0_8px_rgba(20,184,166,0.4)] transition-all"
-                    style={{ left: `calc(${Math.min(100, Math.max(0, percent))}% - 8px)` }}
+                    className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-white bg-[#0B1121] shadow-[0_0_0_3px_rgba(20,184,166,0.35)] dark:border-[#0B1121] dark:bg-white"
+                    style={{ left: `calc(${clamped}% - 8px)` }}
                 />
             </div>
         </div>
@@ -308,10 +325,14 @@ const RangeIndicator = ({ current, low, high, label }: any) => {
 };
 
 const DataRow = ({ label, value, highlight = false }: any) => (
-    <div className={clsx(
-        "flex justify-between items-center py-3 border-b border-slate-100 dark:border-white/[0.05] last:border-0",
-        highlight && "bg-[#14B8A6]/5 dark:bg-[#14B8A6]/10 -mx-4 px-4 rounded-lg"
-    )}>
+    <div
+        className={clsx(
+            "group/row flex items-center justify-between rounded-xl px-3 py-2.5 transition-all",
+            "border-b border-slate-100 dark:border-white/[0.05] last:border-b-0",
+            "hover:bg-slate-50 dark:hover:bg-white/[0.04]",
+            highlight && "bg-[#14B8A6]/8 dark:bg-[#14B8A6]/12 ring-1 ring-[#14B8A6]/20"
+        )}
+    >
         <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
         <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{value}</span>
     </div>
@@ -459,79 +480,107 @@ export default function EnterpriseStockProfile() {
     ];
 
     return (
-        <div className="min-h-[100dvh] finhub-page bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-[#0B1121] dark:via-[#0B1121] dark:to-[#0B1121]">
+        <div className="relative min-h-[100dvh] finhub-page overflow-x-clip bg-slate-50 dark:bg-[#050B17]">
+            <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-28 top-16 h-80 w-80 rounded-full bg-[#14B8A6]/12 blur-3xl dark:bg-[#14B8A6]/18" />
+                <div className="absolute right-[-7rem] top-0 h-[28rem] w-[28rem] rounded-full bg-[#3B82F6]/10 blur-3xl dark:bg-[#3B82F6]/16" />
+                <div className="absolute bottom-10 left-1/3 h-72 w-72 rounded-full bg-[#0EA5E9]/8 blur-3xl dark:bg-[#0EA5E9]/14" />
+            </div>
 
-            {/* === PREMIUM HEADER === */}
-            <header className="finhub-glass sticky top-0 z-50 bg-white/85 dark:bg-[#0B1121]/90 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/[0.08]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* === HERO HEADER === */}
+            <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/70 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#050B17]/78">
+                <div className="mx-auto max-w-7xl px-4 pb-5 pt-5 sm:px-6 lg:px-8">
+                    <div className="relative overflow-hidden rounded-[30px] border border-slate-200/80 bg-gradient-to-br from-white/95 via-white/85 to-[#EAF7F6] shadow-[0_18px_42px_rgba(15,23,42,0.10)] dark:border-white/[0.10] dark:from-[#0B1121]/95 dark:via-[#0F172A]/92 dark:to-[#0B2230]/92 dark:shadow-[0_20px_50px_rgba(2,6,23,0.52)]">
+                        <div className="pointer-events-none absolute inset-0">
+                            <div className="absolute -left-10 -top-14 h-40 w-40 rounded-full bg-[#14B8A6]/20 blur-3xl dark:bg-[#14B8A6]/26" />
+                            <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-[#3B82F6]/14 blur-3xl dark:bg-[#3B82F6]/22" />
+                            <div className="absolute bottom-0 right-1/3 h-24 w-24 rounded-full border border-[#14B8A6]/30" />
+                        </div>
 
-                        {/* Left: Company Identity */}
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#14B8A6] to-[#3B82F6] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#14B8A6]/30 ring-1 ring-white/20">
-                                {symbol.substring(0, 2)}
+                        <div className="relative grid gap-6 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                            <div className="flex items-start gap-4">
+                                <div className="relative mt-0.5 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#14B8A6] via-[#0EA5E9] to-[#3B82F6] text-xl font-black text-white shadow-[0_14px_34px_rgba(14,165,233,0.45)] ring-1 ring-white/40">
+                                    {symbol.substring(0, 2)}
+                                    <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] dark:border-[#0B1121]" />
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                                        <h1 className="truncate text-2xl font-black tracking-tight text-slate-900 dark:text-white lg:text-[1.95rem]">
+                                            {displayCompanyName}
+                                        </h1>
+                                        <span className="rounded-lg border border-slate-300/70 bg-white/90 px-2 py-0.5 text-xs font-black uppercase tracking-[0.08em] text-slate-700 dark:border-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
+                                            {symbol}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-white/[0.05]">
+                                            <Building2 className="h-3 w-3 text-[#14B8A6]" />
+                                            {p.fullExchangeName || 'EGX'}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-white/[0.05]">
+                                            <Briefcase className="h-3 w-3 text-[#3B82F6]" />
+                                            {p.sector || 'Financial Services'}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-white/[0.05]">
+                                            <Banknote className="h-3 w-3 text-emerald-500" />
+                                            {(p.currency || 'EGP').toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                                        {displayCompanyName}
-                                    </h1>
-                                    <span className="px-2 py-0.5 text-xs font-bold bg-slate-100 dark:bg-[#1A222C] text-slate-600 dark:text-slate-300 rounded-lg">
-                                        {symbol}
-                                    </span>
+
+                            <div className="flex items-center gap-3">
+                                <div className="rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 text-right shadow-sm dark:border-white/[0.12] dark:bg-white/[0.03]">
+                                    <div className="flex items-end justify-end gap-2">
+                                        <span className="text-[2rem] font-black leading-none tracking-tight text-slate-900 dark:text-white font-mono">
+                                            {formatNumber(currentPrice)}
+                                        </span>
+                                        <span className="mb-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{p.currency || 'EGP'}</span>
+                                    </div>
+                                    <div className={clsx("mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-bold", isPositive ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/35 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-900/35 dark:text-rose-300")}>
+                                        {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                                        <span>{formatNumber(priceChange)}</span>
+                                        <span className="text-xs">{formatPercent(priceChangePct, true)}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 dark:text-slate-400">
-                                    <span className="flex items-center gap-1">
-                                        <Building2 className="w-3 h-3" />
-                                        {p.fullExchangeName || 'EGX'}
-                                    </span>
-                                    <span>•</span>
-                                    <span>{p.sector || 'Financial Services'}</span>
-                                    <span>•</span>
-                                    <span className="uppercase">{p.currency || 'EGP'}</span>
-                                </div>
+                                <button
+                                    onClick={toggleWatchlist}
+                                    className={clsx(
+                                        "inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all",
+                                        isWatched
+                                            ? "border-amber-300 bg-amber-100 text-amber-600 shadow-[0_10px_20px_rgba(245,158,11,0.25)] dark:border-amber-500/60 dark:bg-amber-900/30 dark:text-amber-300"
+                                            : "border-slate-300/80 bg-white/90 text-slate-500 hover:border-amber-300 hover:text-amber-600 dark:border-white/[0.15] dark:bg-white/[0.04] dark:text-slate-300"
+                                    )}
+                                >
+                                    <Star className={clsx("h-5 w-5", isWatched && "fill-current")} />
+                                </button>
                             </div>
                         </div>
 
-                        {/* Right: Price Display */}
-                        <div className="flex items-center gap-6">
-                            <div className="text-right">
-                                <div className="flex items-baseline gap-2 justify-end">
-                                    <span className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
-                                        {formatNumber(currentPrice)}
-                                    </span>
-                                    <span className="text-sm font-medium text-slate-400">{p.currency || 'EGP'}</span>
-                                </div>
-                                <div className={clsx(
-                                    "flex items-center gap-2 justify-end font-semibold",
-                                    isPositive ? "text-emerald-600" : "text-rose-600"
-                                )}>
-                                    {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                                    <span>{formatNumber(priceChange)}</span>
-                                    <span className={clsx(
-                                        "px-2 py-0.5 rounded text-xs",
-                                        isPositive ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-rose-100 dark:bg-rose-900/30"
-                                    )}>
-                                        {formatPercent(priceChangePct, true)}
-                                    </span>
-                                </div>
+                        <div className="relative border-t border-slate-200/70 bg-white/70 px-5 py-3 dark:border-white/[0.08] dark:bg-white/[0.03] md:px-6">
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
+                                    <ChartLine className="h-3 w-3 text-[#14B8A6]" />
+                                    52W: {formatNumber(p.fiftyTwoWeekLow || p.year_low)} - {formatNumber(p.fiftyTwoWeekHigh || p.year_high)}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
+                                    <BarChart2 className="h-3 w-3 text-[#3B82F6]" />
+                                    Vol: {formatLarge(p.volume || p.regularMarketVolume)}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
+                                    <Scale className="h-3 w-3 text-emerald-500" />
+                                    P/E: {formatNumber(p.trailingPE || f.pe_ratio)}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
+                                    <Building className="h-3 w-3 text-cyan-500" />
+                                    MCap: {formatLarge(p.marketCap || p.market_cap)}
+                                </span>
                             </div>
-                            <button
-                                onClick={toggleWatchlist}
-                                className={clsx(
-                                    "p-3 rounded-xl border transition-all",
-                                    isWatched
-                                        ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 text-amber-600"
-                                        : "bg-slate-50 dark:bg-[#1A222C] border-slate-200 dark:border-[#2E3A47] text-slate-400 hover:text-amber-500"
-                                )}
-                            >
-                                <Star className={clsx("w-5 h-5", isWatched && "fill-current")} />
-                            </button>
                         </div>
                     </div>
 
                     {/* Navigation Tabs */}
-                    <div className="flex gap-1 pb-4 overflow-x-auto">
+                    <div className="mt-4 flex max-w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/80 p-1.5 dark:border-white/[0.10] dark:bg-white/[0.04]">
                         {tabs.map(tab => (
                             <TabButton
                                 key={tab.id}
@@ -546,7 +595,7 @@ export default function EnterpriseStockProfile() {
             </header>
 
             {/* === MAIN CONTENT === */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-10">
+            <main className="relative mx-auto max-w-7xl px-4 py-8 pb-12 sm:px-6 lg:px-8">
 
                 {/* SUMMARY TAB */}
                 {activeTab === 'summary' && (

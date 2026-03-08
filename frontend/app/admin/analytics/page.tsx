@@ -382,15 +382,15 @@ export default function ChatbotAnalyticsPage() {
     }, [isAuthenticated, authLoading, user, router]);
 
     const getAdminRequestHeaders = () => {
-        const token = getToken();
-
-        if (!token) {
-            throw new Error("Admin session token missing. Please sign in again.");
-        }
+        const token =
+            getToken() ||
+            (typeof window !== "undefined"
+                ? localStorage.getItem("fh_auth_token") || localStorage.getItem("financehub_access_token")
+                : null);
 
         return {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
     };
 

@@ -4,14 +4,15 @@ import { TickerResponseSchema, Ticker } from "./schemas";
 // =============================================================================
 // UNIFIED SERVERLESS ARCHITECTURE - HETZNER PRODUCTION
 // =============================================================================
-// Pointing to Hetzner VPS (Primary Production) via HTTPS
-const API_BASE_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+const DIRECT_BACKEND_BASE_URL = "https://starta.46-224-223-172.sslip.io/api/v1";
+const PROXY_API_BASE_URL = "/api/proxy";
+const API_BASE_URL = typeof window === "undefined" ? DIRECT_BACKEND_BASE_URL : PROXY_API_BASE_URL;
 const ACCESS_TOKEN_KEY = "fh_auth_token";
 const USER_KEY = "fh_user";
 const REFRESH_TOKEN_KEY = "fh_refresh_token";
 
 if (typeof window !== 'undefined') {
-    console.log(`[FinanceHub Pro] Connected to Backend: ${API_BASE_URL}`);
+    console.log(`[FinanceHub Pro] API gateway: ${API_BASE_URL}`);
 }
 
 export interface UpdateProfileData {

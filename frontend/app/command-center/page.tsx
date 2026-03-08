@@ -147,9 +147,7 @@ export default function CommandCenterPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            // Use production HuggingFace API
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
-            const res = await fetch(`${API_URL}/api/v1/dashboard/summary`);
+            const res = await fetch(`/api/proxy/dashboard/summary`);
             const summary = await res.json();
 
             // Transform API response to InventoryData format

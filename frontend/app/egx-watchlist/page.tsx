@@ -7,7 +7,7 @@ import {
 import Link from 'next/link';
 import clsx from 'clsx';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
+const API_BASE = '/api/proxy';
 const fmt = (n: any, d = 2) => (n == null || isNaN(n)) ? '-' : Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtLarge = (n: any) => {
     if (!n || isNaN(n)) return '-';
@@ -23,7 +23,7 @@ export default function WatchlistPage() {
     const [sort, setSort] = useState({ key: 'volume', asc: false });
 
     useEffect(() => {
-        fetch(`${API_BASE}/api/v1/yahoo/watchlist`)
+        fetch(`${API_BASE}/yahoo/watchlist`)
             .then(res => res.json())
             .then(res => {
                 setData(res.data || []);

@@ -68,23 +68,23 @@
 
 ## Typography
 
-### Primary Brand Font: Inter
+### Primary Brand Font: Manrope
 
-**Inter** is the official typeface for all English text in Starta. It's a carefully crafted open-source typeface designed for computer screens with a focus on high legibility at small sizes.
+**Manrope** is the official typeface for all English text in Starta. It provides a clean fintech tone with strong readability across dashboards, cards, and dense data UI.
 
-> 🔗 **Google Fonts**: https://fonts.google.com/specimen/Inter
+> 🔗 **Google Fonts**: https://fonts.google.com/specimen/Manrope
 
 | Property | Value |
 |----------|-------|
-| **Font Family** | Inter |
-| **Designer** | Rasmus Andersson |
+| **Font Family** | Manrope |
+| **Designer** | Mikhail Sharanda |
 | **Category** | Sans-serif |
 | **License** | Open Font License |
 
 ### Font Stack
 ```css
 /* Primary Sans (English) */
---font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+--font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
 /* Monospace (Code/Data) */
 --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -117,10 +117,10 @@
 ### Implementation (Next.js)
 ```tsx
 // app/layout.tsx
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Manrope, JetBrains_Mono } from "next/font/google";
 
-const inter = Inter({
-  variable: "--font-inter",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700", "800", "900"],

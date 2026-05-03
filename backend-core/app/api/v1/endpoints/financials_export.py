@@ -219,7 +219,8 @@ async def export_financials(
     if not ticker:
         raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found")
     
-    currency = ticker.get('currency') or 'EGP'
+    from app.chat.currency_utils import get_ticker_currency
+    currency = get_ticker_currency(ticker)
     company_name = ticker.get('name_en') or symbol
     
     # Fetch financial data - FILTER OUT FUTURE YEARS (> current year)

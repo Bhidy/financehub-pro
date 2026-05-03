@@ -3,6 +3,7 @@ Balance Sheet Explorer Handler.
 Handles BALANCE_EXPLORE and BALANCE_TREND intents.
 Provides detailed balance sheet data with multi-year trends.
 """
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 from typing import Dict, Any, List
 from .column_registry import BALANCE_COLUMNS, format_value
@@ -18,7 +19,7 @@ async def handle_balance_debt_structure(conn, symbol: str, language: str = "en")
     if not ticker:
         return _not_found(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, short_term_debt, current_portion_ltd, long_term_debt,
@@ -51,7 +52,7 @@ async def handle_balance_assets_breakdown(conn, symbol: str, language: str = "en
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _not_found(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, cash_equivalents, accounts_receivable, inventory,
@@ -91,7 +92,7 @@ async def handle_balance_working_capital(conn, symbol: str, language: str = "en"
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _not_found(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, total_current_assets, total_current_liabilities, working_capital,
@@ -126,7 +127,7 @@ async def handle_balance_equity_breakdown(conn, symbol: str, language: str = "en
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _not_found(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, common_stock, retained_earnings, treasury_stock,
@@ -159,7 +160,7 @@ async def handle_balance_ppe_breakdown(conn, symbol: str, language: str = "en") 
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _not_found(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, property_plant_equipment, ppe_land, ppe_buildings,

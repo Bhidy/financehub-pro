@@ -10,6 +10,7 @@ OPTIMIZED VERSION with:
 - Phase 5: Response caching (avoids duplicate LLM calls)
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import os
 import json
 import logging
@@ -785,7 +786,7 @@ class LLMExplainerService:
                     # Compact: "TMGH (Talaat Moustafa) [EGP]"
                     symbol = c_data.get('symbol', '')
                     name = c_data.get('name', '')[:20]  # Truncate long names
-                    curr = c_data.get('currency', 'EGP') # Default to EGP for EGX context which prevents '$' hallucination
+                    curr = get_ticker_currency(c_data) # Default to EGP for EGX context which prevents '$' hallucination
                     sector = c_data.get('sector') or c_data.get('sector_name') or ''
                     sector_suffix = f" | Sector={sector}" if sector else ""
                     summary_parts.append(f"{symbol} ({name}) [{curr}]{sector_suffix}")
@@ -793,7 +794,7 @@ class LLMExplainerService:
                 elif c_type == "financial_explorer":
                     # DEEP DIVE IDENTITY FIX: Explicitly extract symbol from explorer package
                     symbol = c_data.get('symbol', '')
-                    curr = c_data.get('currency', 'EGP')
+                    curr = get_ticker_currency(c_data)
                     lbl_rep = t('FINANCIAL_REPORT_FOR') if language == 'ar' else 'FINANCIAL_REPORT_FOR'
                     summary_parts.append(f"{lbl_rep}: {symbol} [{curr}]")
                     
@@ -971,7 +972,7 @@ class LLMExplainerService:
                         sym = s.get('symbol', '?')
                         name = s.get('name', '')[:25]
                         sector = s.get('sector_name', 'N/A')
-                        curr = s.get('currency', 'EGP')
+                        curr = get_ticker_currency(s)
                         summary_parts.append(f"COMPARE: {sym} ({name}) | Sector={sector} [{curr}]")
                     
                     # 2. All metric rows with actual values per stock

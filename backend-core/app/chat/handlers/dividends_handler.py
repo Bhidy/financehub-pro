@@ -3,6 +3,7 @@ Dividends Handler - DIVIDENDS intent.
 Ultra-premium responses with graceful fallback when no history exists.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -43,7 +44,7 @@ async def handle_dividends(
         }
     
     name = ticker_row['name_ar'] if language == 'ar' else ticker_row['name_en']
-    currency = ticker_row['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker_row)
     current_yield = float(ticker_row['dividend_yield']) if ticker_row['dividend_yield'] else None
     last_price = float(ticker_row['last_price']) if ticker_row['last_price'] else None
     
@@ -171,7 +172,7 @@ async def handle_dividends(
             {'label': '⚖️ Yield vs Peers', 'label_ar': '⚖️ العائد مقارنة بالأقران', 'action_type': 'query', 'payload': f'Compare {symbol} dividend yield to sector peers'},
     ]
 
-    is_egx = ticker_row['market_code'] == 'EGX' or currency == 'EGP'
+    is_egx = is_egx_market(ticker_row)
     if is_egx:
         base_actions.extend([
         ])

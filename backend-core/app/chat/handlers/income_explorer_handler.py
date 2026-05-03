@@ -3,6 +3,7 @@ Income Statement Explorer Handler.
 Handles INCOME_EXPLORE and INCOME_TREND intents.
 Provides detailed income statement data with multi-year trends.
 """
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 from typing import Dict, Any, List, Optional
 from .column_registry import INCOME_COLUMNS, format_value, get_category_columns
@@ -22,7 +23,7 @@ async def handle_income_revenue_breakdown(conn, symbol: str, language: str = "en
         return _not_found(symbol, language)
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     # Industrial/Commercial stocks: revenue, cost_of_revenue, gross_profit
     # Banking stocks: interest_income_loans, fee_commission_income, etc.
@@ -95,7 +96,7 @@ async def handle_income_cost_structure(conn, symbol: str, language: str = "en") 
         return _not_found(symbol, language)
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, revenue, cost_of_revenue, operating_expenses, sga_expense,
@@ -154,7 +155,7 @@ async def handle_income_growth_trend(conn, symbol: str, metric: str = "revenue",
         return _not_found(symbol, language)
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     # Map metric to columns
     metric_map = {
@@ -212,7 +213,7 @@ async def handle_income_ebitda_breakdown(conn, symbol: str, language: str = "en"
         return _not_found(symbol, language)
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, ebitda, ebitda_margin, ebit, ebit_margin, da_for_ebitda,
@@ -257,7 +258,7 @@ async def handle_income_tax_analysis(conn, symbol: str, language: str = "en") ->
         return _not_found(symbol, language)
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, pretax_income, income_tax, effective_tax_rate, net_income
@@ -301,7 +302,7 @@ async def handle_income_earnings_quality(conn, symbol: str, language: str = "en"
         return _not_found(symbol, language)
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, net_income, free_cashflow, earnings_continuing_ops,

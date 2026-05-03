@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 
 export const runtime = 'edge'; // Use Edge for faster response times
 export const dynamic = 'force-dynamic'; // Disable caching
 
-const BACKEND_AI_URL = 'https://starta.46-224-223-172.sslip.io/api/v1/ai/chat';
+const BACKEND_AI_URL = `${env.NEXT_PUBLIC_API_URL}/api/v1/ai/chat`;
 
 export async function POST(request: NextRequest) {
     try {

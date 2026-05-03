@@ -1,4 +1,5 @@
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, List
 from ..schemas import Card, CardType
@@ -54,7 +55,7 @@ async def handle_ownership(conn: asyncpg.Connection, symbol: str, language: str 
                     'data': {
                         'symbol': symbol,
                         'name': name,
-                        'currency': ticker.get('currency') or 'EGP',
+                        'currency': get_ticker_currency(ticker),
                         'market_code': 'EGX'
                     }
                 },
@@ -204,7 +205,7 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
                     'data': {
                         'symbol': symbol,
                         'name': name,
-                        'currency': ticker.get('currency') or 'EGP',
+                        'currency': get_ticker_currency(ticker),
                         'market_code': 'EGX'
                     }
                 }
@@ -253,7 +254,7 @@ async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str
                 'data': {
                     'symbol': symbol,
                     'name': name,
-                    'currency': ticker.get('currency') or 'EGP',
+                    'currency': get_ticker_currency(ticker),
                     'market_code': 'EGX'
                 }
             },

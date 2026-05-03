@@ -3,6 +3,7 @@ Financials Handler - FINANCIALS and REVENUE_TREND intents.
 Ultra-premium responses with complete data from BOTH market_tickers AND raw_data.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 import json
 import asyncio
@@ -812,7 +813,7 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
         }
     
     name = ticker_row['name_ar'] if language == 'ar' else ticker_row['name_en']
-    currency = ticker_row['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker_row)
 
     rows = await conn.fetch("""
         SELECT fiscal_year, revenue, net_income
@@ -871,7 +872,7 @@ async def handle_revenue_trend(conn: asyncpg.Connection, symbol: str, language: 
     ]
 
     # Add Egypt-specific suggestions
-    is_egx = ticker_row['market_code'] == 'EGX' or currency == 'EGP'
+    is_egx = is_egx_market(ticker_row)
     if is_egx:
         actions.extend([
         ])
@@ -937,7 +938,7 @@ async def handle_financials_package(
     if not ticker:
         return {'success': False, 'message': 'Symbol not found'}
 
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
 
     # 2. Define Queries - Fetch BOTH annual and quarterly for frontend switching
@@ -1379,7 +1380,7 @@ async def handle_financials_package(
         {'label': '💰 Dividends', 'label_ar': '💰 توزيعات الأرباح', 'action_type': 'query', 'payload': f'{symbol} dividends'},
     ]
 
-    is_egx = ticker['market_code'] == 'EGX' or currency == 'EGP'
+    is_egx = is_egx_market(ticker)
     if is_egx:
         actions.extend([
         ])
@@ -1675,7 +1676,7 @@ async def handle_financial_metric(
     if not ticker: return {'success': False, 'message': 'Symbol not found'}
     
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    curr = ticker['currency'] or 'EGP'
+    curr = get_ticker_currency(ticker)
     
     # 2. Fetch Latest Financials (Income Statement & Balance Sheet)
     # Get last 2 years to calculate growth if needed

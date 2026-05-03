@@ -6,6 +6,7 @@ Handles CATALYST_CALENDAR intent: dividend dates, analyst events, key watchlist 
 
 Note: Full calendar data requires a dedicated 'corporate_events' table.
 If not yet available, this handler gracefully falls back to dividend signals
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 from stock_statistics + company calendar from corporate_actions.
 """
 
@@ -146,7 +147,7 @@ async def handle_catalyst_calendar(
             "data": {
                 "symbol": symbol,
                 "name": header_name,
-                "currency": ticker.get("currency") or "EGP",
+                'currency': get_ticker_currency(ticker),
                 "market_code": market_code,
             },
         })

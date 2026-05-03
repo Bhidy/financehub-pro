@@ -3,6 +3,7 @@ Chart Handler - STOCK_CHART intent.
 Enhanced with live data fallback when database is stale.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 import asyncio
 import httpx
@@ -205,7 +206,7 @@ async def handle_stock_chart(
     ]
 
     # Add Egypt-specific suggestions
-    currency = name_row['currency'] or 'EGP'
+    currency = get_ticker_currency(name_row)
     
     if is_egx:
         base_actions.extend([

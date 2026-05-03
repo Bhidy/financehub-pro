@@ -103,7 +103,7 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                 </h2>
 
                                 <p className="text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed mb-8">
-                                    You've used your <span className="font-bold text-slate-900 dark:text-white">5 free questions</span>.
+                                    You've used your <span className="font-bold text-slate-900 dark:text-white">1 Guest question</span>.
                                     <br />
                                     Register now for <span className="text-[#13b8a6] font-bold">unlimited access</span>.
                                 </p>

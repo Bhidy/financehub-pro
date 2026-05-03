@@ -25,7 +25,28 @@ from app.services.geo_resolver import resolve_country
 
 router = APIRouter()
 
-GUEST_QUESTION_LIMIT = 5
+GUEST_QUESTION_LIMIT = 1
+
+
+def _truncate_teaser(text: str, ratio: float = 0.4) -> str:
+    """Truncate text to ~ratio of its length at a sentence boundary."""
+    if not text:
+        return text
+    target_len = max(int(len(text) * ratio), 80)  # At least 80 chars
+    if len(text) <= target_len:
+        return text
+    # Find the last sentence-ending punctuation before the target length
+    truncated = text[:target_len]
+    # Try to cut at sentence boundary (. ! ? ، )
+    for sep in ['. ', '! ', '? ', '، ', '\n']:
+        last_idx = truncated.rfind(sep)
+        if last_idx > target_len * 0.5:  # Don't cut too early
+            return truncated[:last_idx + len(sep)].rstrip()
+    # Fallback: cut at last space
+    last_space = truncated.rfind(' ')
+    if last_space > target_len * 0.5:
+        return truncated[:last_space] + '...'
+    return truncated + '...'
 
 
 class ChatRequest(BaseModel):
@@ -232,40 +253,17 @@ async def ai_chat_endpoint(
             raise HTTPException(status_code=401, detail=access.get("error"))
 
         if not access.get("can_ask"):
-            # Log this case for debugging - this should ONLY happen for guests
-            print(f"[AI Chat] ⛔ Rate limit triggered - access: {access}")
-            primary_msg = (
-                "You've used your 5 free questions! Register for unlimited access."
-                if response_language == "en" else
-                "لقد استخدمت أسئلتك الخمسة المجانية. أنشئ حساباً للوصول غير المحدود."
-            )
-            register_label = "Register Now" if response_language == "en" else "سجل الآن"
-            login_label = "Login" if response_language == "en" else "تسجيل الدخول"
-            return {
-                "success": False,
-                "response_status": "fail",
-                "message_text": primary_msg,
-                "message_text_ar": "لقد استخدمت أسئلتك الخمسة المجانية. أنشئ حساباً للوصول غير المحدود.",
-                "language": response_language,
-                "cards": [],
-                "chart": None,
-                "actions": [
-                    {"label": register_label, "label_ar": "سجل الآن", "action_type": "navigate", "payload": "/register"},
-                    {"label": login_label, "label_ar": "تسجيل الدخول", "action_type": "navigate", "payload": "/login"}
-                ],
-                "disclaimer": None,
-                "meta": {
-                    "intent": "USAGE_LIMIT_REACHED",
-                    "confidence": 1.0,
-                    "entities": {"limit_reached": True, "question_count": access.get("question_count", 0)},
-                    "latency_ms": 0,
-                    "authenticated": access.get("authenticated", False),
-                    "auth_debug": access.get("auth_debug")  # Include debug info for troubleshooting
-                }
-            }
+            # =====================================================================
+            # FREEMIUM TEASER MODE: Process the question, but truncate the response
+            # This creates a premium paywall UX - user sees partial value first
+            # =====================================================================
+            print(f"[AI Chat] 🎭 Teaser mode triggered - access: {access}")
+            is_teaser_request = True
+        else:
+            is_teaser_request = False
         
-        # Increment guest usage if not authenticated
-        if not access.get("authenticated") and x_device_fingerprint:
+        # Increment guest usage if not authenticated (skip for teaser - already at limit)
+        if not is_teaser_request and not access.get("authenticated") and x_device_fingerprint:
             ip_address = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else None
             increment_query = """
                 INSERT INTO guest_sessions (device_fingerprint, ip_address, question_count, first_question_at, last_question_at)
@@ -440,6 +438,25 @@ async def ai_chat_endpoint(
                 response_dict["response_status"] = "pass" if response_dict.get("success", True) else "fail"
             response_dict['session_id'] = session_id 
             response_dict['message_id'] = inserted_msg_id
+
+            # =====================================================================
+            # TEASER TRUNCATION: If this was a teaser request, truncate the response
+            # =====================================================================
+            if is_teaser_request:
+                print(f"[AI Chat] 🎭 Applying teaser truncation to response")
+                # NOTE: Do NOT truncate text here - frontend handles the visual blur split
+                # The full text and ALL CARDS are sent so there's real content behind the blur overlay
+                # Override meta to signal teaser mode
+                if 'meta' not in response_dict:
+                    response_dict['meta'] = {}
+                response_dict['meta']['intent'] = 'USAGE_LIMIT_TEASER'
+                response_dict['meta']['entities'] = {
+                    'teaser': True,
+                    'limit_reached': True,
+                    'question_count': access.get('question_count', 0)
+                }
+                response_dict['success'] = True
+                response_dict['response_status'] = 'pass'
             
             return response_dict
 

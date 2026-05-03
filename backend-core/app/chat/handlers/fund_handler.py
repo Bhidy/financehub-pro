@@ -2,6 +2,7 @@
 Fund Handlers - Handle mutual fund queries.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 from typing import Dict, Any
 import asyncpg
 
@@ -49,7 +50,7 @@ async def handle_fund_nav(conn: asyncpg.Connection, fund_id: str, language: str 
     fund_dict = dict(fund)
     name = fund_dict.get('fund_name') or fund_dict.get('fund_name_en') or f"Fund {fund_id}"
     nav = fund_dict.get('latest_nav')
-    currency = fund_dict.get('currency', 'EGP')
+    currency = get_ticker_currency(fund_dict)
     aum = fund_dict.get('aum_millions')
     is_shariah = fund_dict.get('is_shariah', False)
     returns_ytd = fund_dict.get('returns_ytd') or fund_dict.get('ytd_return')

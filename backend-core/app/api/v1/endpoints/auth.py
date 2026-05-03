@@ -397,7 +397,7 @@ async def change_password(
 # GUEST USAGE TRACKING
 # ============================================================
 
-GUEST_QUESTION_LIMIT = 5
+GUEST_QUESTION_LIMIT = 1
 
 @router.get("/check-guest-usage", response_model=GuestUsageResponse)
 async def check_guest_usage(
@@ -466,24 +466,53 @@ async def get_all_users(
         query = """
             SELECT id, email, full_name, phone, role, is_active, created_at, last_login
             FROM users 
-            WHERE email ILIKE $1 OR full_name ILIKE $1
+            WHERE (email ILIKE $1 OR full_name ILIKE $1)
+              AND email NOT ILIKE '%@example.com'
+              AND email NOT ILIKE '%@test.com'
+              AND email NOT ILIKE 'test_%'
+              AND email NOT ILIKE 'qa_%'
+              AND email NOT ILIKE 'browser\_test%'
+              AND email != 'myadmin@financehub.pro'
             ORDER BY created_at DESC
             OFFSET $2 LIMIT $3
         """
         users = await db.fetch_all(query, f"%{search}%", skip, limit)
         
-        count_query = "SELECT COUNT(*) FROM users WHERE email ILIKE $1 OR full_name ILIKE $1"
+        count_query = """
+            SELECT COUNT(*) FROM users 
+            WHERE (email ILIKE $1 OR full_name ILIKE $1)
+              AND email NOT ILIKE '%@example.com'
+              AND email NOT ILIKE '%@test.com'
+              AND email NOT ILIKE 'test_%'
+              AND email NOT ILIKE 'qa_%'
+              AND email NOT ILIKE 'browser\_test%'
+              AND email != 'myadmin@financehub.pro'
+        """
         total = await db.fetch_val(count_query, f"%{search}%")
     else:
         query = """
             SELECT id, email, full_name, phone, role, is_active, created_at, last_login
             FROM users 
+            WHERE email NOT ILIKE '%@example.com'
+              AND email NOT ILIKE '%@test.com'
+              AND email NOT ILIKE 'test_%'
+              AND email NOT ILIKE 'qa_%'
+              AND email NOT ILIKE 'browser\_test%'
+              AND email != 'myadmin@financehub.pro'
             ORDER BY created_at DESC
             OFFSET $1 LIMIT $2
         """
         users = await db.fetch_all(query, skip, limit)
         
-        count_query = "SELECT COUNT(*) FROM users"
+        count_query = """
+            SELECT COUNT(*) FROM users 
+            WHERE email NOT ILIKE '%@example.com'
+              AND email NOT ILIKE '%@test.com'
+              AND email NOT ILIKE 'test_%'
+              AND email NOT ILIKE 'qa_%'
+              AND email NOT ILIKE 'browser\_test%'
+              AND email != 'myadmin@financehub.pro'
+        """
         total = await db.fetch_val(count_query)
     
     return {

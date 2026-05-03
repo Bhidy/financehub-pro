@@ -3,6 +3,7 @@ Price Handler - STOCK_PRICE and STOCK_SNAPSHOT intents.
 Ultra-premium responses with real OHLC from ohlc_data table.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -100,7 +101,7 @@ async def handle_stock_price(
     price = float(data['last_price']) if data['last_price'] is not None else None
     change = float(data['change']) if data['change'] is not None else None
     change_pct = float(data['change_percent']) if data['change_percent'] is not None else None
-    currency = data['currency'] or 'EGP'
+    currency = get_ticker_currency(data)
     volume = int(data['volume']) if data['volume'] is not None else None
     
     # OHLC Data
@@ -370,7 +371,7 @@ async def handle_stock_price(
         ]
 
     # Add Egypt-specific suggestions if applicable
-    is_egx = data.get('market_code') == 'EGX' or currency == 'EGP'
+    is_egx = is_egx_market(data)
     if is_egx:
         base_actions.extend([
         ])

@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // ============================================================
 
 const STORAGE_KEY = "fh_guest_usage";
-const QUESTION_LIMIT = 5;
+const QUESTION_LIMIT = 1;
 
 // ============================================================
 // DEVICE FINGERPRINT

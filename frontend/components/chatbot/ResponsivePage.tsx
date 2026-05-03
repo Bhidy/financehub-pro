@@ -21,7 +21,7 @@
 "use client";
 
 import { useState, useRef, useEffect, Suspense, useCallback, useMemo, memo } from "react";
-import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart, ArrowLeftRight, BookOpen } from "lucide-react";
+import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart, ArrowLeftRight, BookOpen, Newspaper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
 import { useTypewriter } from "@/hooks/useTypewriter";
@@ -204,11 +204,15 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
         if (messages.length > prevMessageCount.current) {
             const lastMessage = messages[messages.length - 1];
             if (lastMessage.role === 'assistant' && !isAuthenticated) {
-                if (lastMessage.response?.meta?.intent !== 'USAGE_LIMIT_REACHED') {
-                    incrementUsage();
-                } else {
-                    // Trigger popup if limit reached intent is received
+                const intent = lastMessage.response?.meta?.intent;
+                if (intent === 'USAGE_LIMIT_REACHED') {
+                    // Hard block - show modal immediately
                     setShowUsageModal(true);
+                } else if (intent === 'USAGE_LIMIT_TEASER') {
+                    // Teaser mode - delay modal to let typing animation play
+                    setTimeout(() => setShowUsageModal(true), 2500);
+                } else {
+                    incrementUsage();
                 }
             }
         }
@@ -517,7 +521,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                     { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.scenario_undervalued.title, subtitle: translations[lang].cards.scenario_undervalued.subtitle, query: translations[lang].cards.scenario_undervalued.query, color: 'teal' },
                                                     { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.scenario_hidden_gems.title, subtitle: translations[lang].cards.scenario_hidden_gems.subtitle, query: translations[lang].cards.scenario_hidden_gems.query, color: 'coral' },
                                                     { icon: <BarChart3 className="w-5 h-5" />, title: translations[lang].cards.scenario_score.title, subtitle: translations[lang].cards.scenario_score.subtitle, query: translations[lang].cards.scenario_score.query, color: 'teal' },
-                                                    { icon: <TrendingUp className="w-5 h-5" />, title: translations[lang].cards.scenario_jufo.title, subtitle: translations[lang].cards.scenario_jufo.subtitle, query: translations[lang].cards.scenario_jufo.query, color: 'teal' },
+                                                    { icon: <Newspaper className="w-5 h-5" />, title: translations[lang].cards.scenario_news.title, subtitle: translations[lang].cards.scenario_news.subtitle, query: translations[lang].cards.scenario_news.query, color: 'teal' },
                                                     { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.scenario_market_timing.title, subtitle: translations[lang].cards.scenario_market_timing.subtitle, query: translations[lang].cards.scenario_market_timing.query, color: 'coral' }
                                                 ].map((item, idx) => (
                                                     <button
@@ -723,7 +727,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                             { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.scenario_undervalued.title, query: translations[lang].cards.scenario_undervalued.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
                                             { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.scenario_hidden_gems.title, query: translations[lang].cards.scenario_hidden_gems.query, subtitle: translations[lang].askStarta, color: 'bg-rose-500' },
                                             { icon: <BarChart3 className="w-5 h-5" />, title: translations[lang].cards.scenario_score.title, query: translations[lang].cards.scenario_score.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
-                                            { icon: <TrendingUp className="w-5 h-5" />, title: translations[lang].cards.scenario_jufo.title, query: translations[lang].cards.scenario_jufo.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <Newspaper className="w-5 h-5" />, title: translations[lang].cards.scenario_news.title, query: translations[lang].cards.scenario_news.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
                                             { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.scenario_market_timing.title, query: translations[lang].cards.scenario_market_timing.query, subtitle: translations[lang].askStarta, color: 'bg-rose-500' },
                                         ].map((item, idx) => (
                                             <button
@@ -835,6 +839,7 @@ const MessageRenderer = memo(({
     const isUser = m.role === 'user';
     const isRtl = !isUser && resolveMessageLanguage(m) === "ar";
     const responseLanguage = resolveMessageLanguage(m);
+    const isTeaser = !isUser && m.response?.meta?.entities?.teaser === true;
 
     return (
         <div
@@ -858,10 +863,11 @@ const MessageRenderer = memo(({
 
             {/* Bubble */}
             <div className={clsx(
-                "max-w-[85%] rounded-2xl p-4 shadow-sm",
+                "max-w-[85%] rounded-2xl shadow-sm relative flex flex-col",
                 isUser
-                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[14.5px] leading-relaxed"
-                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[14.5px] leading-relaxed text-slate-800 dark:text-slate-200"
+                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[14.5px] leading-relaxed p-4"
+                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[14.5px] leading-relaxed text-slate-800 dark:text-slate-200",
+                !isUser && isTeaser ? "p-0 overflow-hidden h-[450px]" : !isUser ? "p-4" : ""
             )}
                 data-response-status={!isUser
                     ? (m.response?.success === false ? "fail" : (m.response ? "pass" : undefined))
@@ -871,121 +877,191 @@ const MessageRenderer = memo(({
                 {isUser ? (
                     m.content
                 ) : (
-                    <div className="w-full flex flex-col gap-3">
-                        <MessageErrorBoundary>
-                            <WorldClassMessage
-                                conversationalText={m.response?.conversational_text || m.content}
-                                response={m.response}
-                                lang={responseLanguage}
-                                isLatest={isLatest}
-                                onTyping={scrollToBottom}
-                                onTypingComplete={() => setIsTypingCompleted(true)}
-                            />
-                        </MessageErrorBoundary>
+                    <>
+                        <div className={clsx("w-full flex flex-col gap-3", isTeaser ? "p-5" : "")}>
+                            <MessageErrorBoundary>
+                                <WorldClassMessage
+                                    conversationalText={m.response?.conversational_text || m.content}
+                                    response={m.response}
+                                    lang={responseLanguage}
+                                    isLatest={isLatest}
+                                    onTyping={scrollToBottom}
+                                    onTypingComplete={() => setIsTypingCompleted(true)}
+                                />
+                            </MessageErrorBoundary>
 
-                        {/* Data Cards - Keep for stock metrics display */}
-                        {isTypingCompleted && (() => {
-                            // All card types handled by WorldClassMessage's ultra-premium components
-                            const worldClassHandledTypes = [
-                                'bull_case', 'bear_case', 'learning_section',
-                                'disclaimer', 'disclaimer_card', 'follow_up_prompt',
-                                'follow_up', 'error',
-                                'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
-                                'comparison_table', 'compare_table', 'peer_comparison', 'financials_table', 'earnings_table',
-                                'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
-                                'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
-                                'price_display', 'current_position', 'stock_position',
-                                'index_composition', 'egx_constituents',
-                                'insight', 'insights', 'warning_card', 'reality_check',
-                                'character_cards', 'stock_personalities',
-                                'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria',
-                                'stock_header'
-                            ];
-                            const filteredCards = (m.response?.cards || []).filter(
-                                (card: any) => !worldClassHandledTypes.includes(canonicalizeCardType(card?.type))
-                            );
-                            return filteredCards.length > 0 ? (
+                            {/* Data Cards - Keep for stock metrics display */}
+                            {isTypingCompleted && (() => {
+                                // All card types handled by WorldClassMessage's ultra-premium components
+                                const worldClassHandledTypes = [
+                                    'bull_case', 'bear_case', 'learning_section',
+                                    'disclaimer', 'disclaimer_card', 'follow_up_prompt',
+                                    'follow_up', 'error',
+                                    'stock_list', 'stock_ranking', 'hidden_gems', 'undervalued_stocks',
+                                    'comparison_table', 'compare_table', 'peer_comparison', 'financials_table', 'earnings_table',
+                                    'educational', 'educational_card', 'define_term', 'definition', 'metric_explanation',
+                                    'positives', 'concerns', 'mixed_signals', 'headwinds', 'tailwinds',
+                                    'price_display', 'current_position', 'stock_position',
+                                    'index_composition', 'egx_constituents',
+                                    'insight', 'insights', 'warning_card', 'reality_check',
+                                    'character_cards', 'stock_personalities',
+                                    'macro_score', 'market_environment', 'framework_card', 'methodology', 'screening_criteria',
+                                    'stock_header'
+                                ];
+                                const filteredCards = (m.response?.cards || []).filter(
+                                    (card: any) => !worldClassHandledTypes.includes(canonicalizeCardType(card?.type))
+                                );
+                                return filteredCards.length > 0 ? (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 15 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                    >
+                                        <ChatCards
+                                            cards={filteredCards}
+                                            language={responseLanguage}
+                                            onSymbolClick={handleSymbolClick}
+                                            onExampleClick={handleExampleClick}
+                                        />
+                                    </motion.div>
+                                ) : null;
+                            })()}
+
+                            {isTypingCompleted && m.response?.fact_explanations && (
+                                <motion.div
+                                    className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <FactExplanations explanations={m.response.fact_explanations} language={responseLanguage} />
+                                </motion.div>
+                            )}
+
+                            {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
+                            {isTypingCompleted && (m.response?.followups && m.response.followups.length > 0 ? (
                                 <motion.div
                                     initial={{ opacity: 0, y: 15 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ type: "spring", stiffness: 200, damping: 20 }}
                                 >
-                                    <ChatCards
-                                        cards={filteredCards}
+                                    <FollowUpChips
+                                        followups={m.response.followups}
+                                        onAction={(prompt) => sendDirectMessage && sendDirectMessage(prompt)}
                                         language={responseLanguage}
-                                        onSymbolClick={handleSymbolClick}
-                                        onExampleClick={handleExampleClick}
                                     />
                                 </motion.div>
-                            ) : null;
-                        })()}
+                            ) : m.response?.follow_up_prompt ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <FollowUpPrompt content={m.response.follow_up_prompt} />
+                                </motion.div>
+                            ) : null)}
 
-                        {isTypingCompleted && m.response?.fact_explanations && (
-                            <motion.div
-                                className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5"
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            >
-                                <FactExplanations explanations={m.response.fact_explanations} language={responseLanguage} />
-                            </motion.div>
+                            {/* Actions */}
+                            {isTypingCompleted && m.response?.actions && m.response.actions.length > 0 && !(m.response?.followups && m.response.followups.length > 0) && (
+                                <motion.div
+                                    className="pt-2"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                >
+                                    <ActionsBar
+                                        actions={m.response.actions}
+                                        language={resolveMessageLanguage(m)}
+                                        onAction={handleAction || (() => { })}
+                                    />
+                                </motion.div>
+                            )}
+
+                            {/* Feedback & Share */}
+                            {isTypingCompleted && !isTeaser && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.3, duration: 0.3 }}
+                                >
+                                    <MessageFeedback
+                                        messageId={m.id?.toString() || ""}
+                                        sessionId={sessionId || ""}
+                                        contentToShare={m.response?.conversational_text || m.content}
+                                        language={resolveMessageLanguage(m)}
+                                    />
+                                </motion.div>
+                            )}
+
+                            {/* DUMMY TEXT EXTENSION FOR TEASERS */}
+                            {/* Guarantees highly dense, juicy text flows into the blur zone even if the actual response was tiny */}
+                            {isTeaser && isTypingCompleted && (
+                                <div className="text-slate-800 dark:text-slate-200 text-[14.5px] leading-relaxed select-none blur-[0.5px]" aria-hidden="true" style={{ opacity: 0.85 }}>
+                                    <p className="mt-4">Furthermore, our algorithmic breakdown identifies critical resistance levels that could dictate short-term momentum. The underlying volume metrics indicate a potential accumulation phase by institutional investors, which historically precedes a substantial upward revision in consensus price targets.</p>
+                                    <p className="mt-3">Analyzing the peer group comparisons, the valuation gap suggests a fundamental mispricing that the market has yet to fully internalize. The proprietary scoring model highlights several tailwinds expected to materialize over the next two quarters, heavily skewing the risk-reward ratio in favor of long-term upside capture.</p>
+                                    <p className="mt-3">Considering the macroeconomic backdrop and sector rotation trends, the current entry point appears highly strategic. Detailed balance sheet analysis reveals hidden operational efficiencies that will likely compound future earnings growth well above analyst expectations.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* TEASER BLUR + CTA OVERLAY */}
+                        {isTeaser && (
+                            <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col pointer-events-none">
+                                {/* Ultra-premium glassmorphism transition */}
+                                <div className="h-48 w-full relative">
+                                    {/* The Blur Filter - Masked so it fades in beautifully. Lower blur radius (4.5px) keeps text shapes vividly visible! */}
+                                    <div className="absolute inset-0 z-10 pointer-events-none" style={{
+                                        backdropFilter: 'blur(4.5px)',
+                                        WebkitBackdropFilter: 'blur(4.5px)',
+                                        maskImage: 'linear-gradient(to bottom, transparent, black 70%)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 70%)'
+                                    }} />
+
+                                    {/* Bottom solid band to merge with the block below seamlessly */}
+                                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-b from-transparent to-white dark:to-slate-900 pointer-events-none z-20" />
+                                </div>
+
+                                {/* The solid CTA section - Re-enable pointers here */}
+                                <div className="bg-white dark:bg-slate-900 w-full px-6 pb-6 flex flex-col items-center gap-3 relative z-30 pointer-events-auto">
+                                    {/* Animated lock with glow */}
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-[#13b8a6]/20 rounded-full blur-xl animate-pulse" />
+                                        <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-[#13b8a6]/15 to-[#13b8a6]/5 border border-[#13b8a6]/20 flex items-center justify-center shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#13b8a6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <p className="text-[14px] font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+                                            Register to unlock full analysis
+                                        </p>
+                                        <p className="text-[12.5px] text-slate-500 dark:text-slate-400 mt-1">
+                                            Get unlimited AI-powered insights — it&apos;s free
+                                        </p>
+                                    </div>
+
+                                    {/* Primary CTA */}
+                                    <a
+                                        href="/register"
+                                        className="w-full max-w-[220px] mt-1 py-2.5 px-6 rounded-full bg-gradient-to-r from-[#13b8a6] to-[#0f9f94] text-white text-[13.5px] font-semibold text-center shadow-lg shadow-[#13b8a6]/25 hover:shadow-xl hover:shadow-[#13b8a6]/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                                    >
+                                        Register Free →
+                                    </a>
+
+                                    {/* Secondary CTA */}
+                                    <a
+                                        href="/login"
+                                        className="text-[12.5px] text-slate-500 hover:text-[#13b8a6] transition-colors cursor-pointer mt-1"
+                                    >
+                                        Already have an account? <span className="font-semibold underline underline-offset-2">Log in</span>
+                                    </a>
+                                </div>
+                            </div>
                         )}
-
-                        {/* Follow Up Chips (Dynamic Array) or Fallback to Legacy Prompt */}
-                        {isTypingCompleted && (m.response?.followups && m.response.followups.length > 0 ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            >
-                                <FollowUpChips
-                                    followups={m.response.followups}
-                                    onAction={(prompt) => sendDirectMessage && sendDirectMessage(prompt)}
-                                    language={responseLanguage}
-                                />
-                            </motion.div>
-                        ) : m.response?.follow_up_prompt ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            >
-                                <FollowUpPrompt content={m.response.follow_up_prompt} />
-                            </motion.div>
-                        ) : null)}
-
-                        {/* Actions */}
-                        {isTypingCompleted && m.response?.actions && m.response.actions.length > 0 && !(m.response?.followups && m.response.followups.length > 0) && (
-                            <motion.div
-                                className="pt-2"
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                            >
-                                <ActionsBar
-                                    actions={m.response.actions}
-                                    language={resolveMessageLanguage(m)}
-                                    onAction={handleAction || (() => { })}
-                                />
-                            </motion.div>
-                        )}
-
-                        {/* Feedback & Share */}
-                        {isTypingCompleted && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.3, duration: 0.3 }}
-                            >
-                                <MessageFeedback
-                                    messageId={m.id?.toString() || ""}
-                                    sessionId={sessionId || ""}
-                                    contentToShare={m.response?.conversational_text || m.content}
-                                    language={resolveMessageLanguage(m)}
-                                />
-                            </motion.div>
-                        )}
-                    </div>
+                    </>
                 )}
             </div>
         </div>

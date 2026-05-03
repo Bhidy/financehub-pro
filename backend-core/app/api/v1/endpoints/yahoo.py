@@ -313,7 +313,7 @@ async def get_stock_profile(symbol_or_isin: str):
                             "address": info.get('address1'),
                             
                             "market_cap": info.get('marketCap'),
-                            "currency": info.get('currency', 'EGP'),
+                            "currency": __import__('app.chat.currency_utils', fromlist=['']).get_ticker_currency({'symbol': real_symbol, 'market_code': 'EGX' if real_symbol.endswith('.CA') else '', 'currency': info.get('currency')}),
                             "price": info.get('currentPrice') or info.get('regularMarketPrice'),
                             "volume": info.get('volume'),
                             "avg_vol_10d": info.get('averageVolume10days'),

@@ -7,6 +7,7 @@ Returns a premium card showing the 5-component score: Valuation, Profitability,
 Financial Health, Earnings Quality, and Momentum.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, Optional
 from ..scoring_engine import calculate_score, ScoreBreakdown
@@ -88,7 +89,7 @@ async def handle_score_breakdown(
     sector = ticker_row["sector_name"] or "General"
     price = float(ticker_row["last_price"]) if ticker_row["last_price"] else 0
     change_pct = float(ticker_row["change_percent"]) if ticker_row["change_percent"] is not None else 0
-    currency = ticker_row["currency"] or "EGP"
+    currency = get_ticker_currency(ticker_row)
 
     grade_color = _grade_color(breakdown.grade)
 

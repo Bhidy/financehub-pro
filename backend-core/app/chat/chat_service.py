@@ -4553,7 +4553,34 @@ class ChatService:
                             if len(normalized_followups) >= 3:
                                 break
 
-                    response.followups = normalized_followups[:3]
+                    # === Inject News Follow-up if Applicable ===
+                    if context_anchor_symbol:
+                        try:
+                            news_count = await self.conn.fetchval(
+                                """
+                                SELECT COUNT(id) FROM market_news 
+                                WHERE symbol = $1 
+                                  AND (source_country = 'EG' OR source_country IS NULL)
+                                  AND (published_at >= NOW() - INTERVAL '30 days' OR created_at >= NOW() - INTERVAL '30 days')
+                                """,
+                                context_anchor_symbol
+                            )
+                            if news_count and news_count > 0:
+                                news_text = f"أحدث أخبار {context_anchor_symbol}" if language == "ar" else f"{context_anchor_symbol} Latest News"
+                                news_payload = f"{context_anchor_symbol} news"
+                                
+                                if not any("news" in str(f.get("payload", "")).lower() for f in normalized_followups):
+                                    normalized_followups.append({
+                                        "text": news_text,
+                                        "payload": news_payload,
+                                        "type": "news_update",
+                                        "anchor_symbol": context_anchor_symbol,
+                                        "anchor_symbols": [context_anchor_symbol],
+                                    })
+                        except Exception as e:
+                            convo_logger.warning(f"Failed to check news for follow-up: {e}")
+
+                    response.followups = normalized_followups[:4]
                     convo_logger.info(
                         "✅ Generated %s dynamic follow-ups (%s educational).",
                         len(response.followups),

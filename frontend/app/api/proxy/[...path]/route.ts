@@ -35,15 +35,26 @@ async function proxyWithBody(
     const url = await resolveUpstreamUrl(req, params);
     const authHeader = getAuthorizationHeader(req);
     const contentType = req.headers.get("content-type");
+    const deviceFingerprint = req.headers.get("x-device-fingerprint");
+    const marketContext = req.headers.get("x-market-context");
+    const language = req.headers.get("x-language");
+    const forwardedFor = req.headers.get("x-forwarded-for") || "";
+    
+    // Explicitly read body as string or buffer
     const body = await req.text();
 
     try {
+        const headers: Record<string, string> = {};
+        if (contentType) headers["Content-Type"] = contentType;
+        if (authHeader) headers["Authorization"] = authHeader;
+        if (deviceFingerprint) headers["X-Device-Fingerprint"] = deviceFingerprint;
+        if (marketContext) headers["X-Market-Context"] = marketContext;
+        if (language) headers["X-Language"] = language;
+        if (forwardedFor) headers["X-Forwarded-For"] = forwardedFor;
+
         const res = await fetch(url, {
             method,
-            headers: {
-                ...(contentType ? { "Content-Type": contentType } : {}),
-                ...(authHeader ? { Authorization: authHeader } : {}),
-            },
+            headers,
             ...(body.length > 0 ? { body } : {}),
         });
 
@@ -68,17 +79,26 @@ export async function GET(
 ) {
     try {
         const authHeader = getAuthorizationHeader(req);
+        const deviceFingerprint = req.headers.get("x-device-fingerprint");
+        const marketContext = req.headers.get("x-market-context");
+        const language = req.headers.get("x-language");
+        const forwardedFor = req.headers.get("x-forwarded-for") || "";
+        
         const url = await resolveUpstreamUrl(req, params);
 
         // SECURITY: Do not cache authenticated requests (user data). Cache public data (tickers, news).
         // If Authorization header is present, revalidate = 0 (no cache).
         const revalidateTime = authHeader ? 0 : 60;
 
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (authHeader) headers["Authorization"] = authHeader;
+        if (deviceFingerprint) headers["X-Device-Fingerprint"] = deviceFingerprint;
+        if (marketContext) headers["X-Market-Context"] = marketContext;
+        if (language) headers["X-Language"] = language;
+        if (forwardedFor) headers["X-Forwarded-For"] = forwardedFor;
+
         const res = await fetch(url, {
-            headers: {
-                "Content-Type": "application/json",
-                ...(authHeader ? { Authorization: authHeader } : {}),
-            },
+            headers,
             next: { revalidate: revalidateTime }
         });
 

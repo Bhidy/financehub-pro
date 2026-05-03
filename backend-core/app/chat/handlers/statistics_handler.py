@@ -3,6 +3,7 @@ Statistics Handler - Handles queries about stock statistics (PE, ROE, margins, e
 Uses the stock_statistics table for comprehensive metrics.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, Optional
 import math
@@ -373,7 +374,7 @@ async def handle_stock_statistics(
                         'symbol': symbol,
                         'name': name,
                         'market_code': ticker['market_code'],
-                        'currency': ticker['currency'] or 'EGP',
+                        'currency': get_ticker_currency(ticker),
                         'sector': ticker.get('sector_name')
                     }
                 },
@@ -394,7 +395,7 @@ async def handle_stock_statistics(
     stats = dict(stats_record)
     
     name = stats['name_ar'] if language == 'ar' else stats['name_en']
-    currency = stats['currency'] or 'EGP'
+    currency = get_ticker_currency(stats)
     
     # helper using new unified TTM column names
     def get_val(key, fallback_key=None):

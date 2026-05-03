@@ -5,6 +5,7 @@ Ported from Anthropic equity-research/skills/earnings-analysis.
 Handles EARNINGS_ANALYSIS intent: quarterly results, beat/miss, YoY analysis.
 """
 
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, List, Optional
 
@@ -36,7 +37,7 @@ async def handle_earnings_analysis(
 
     name = ticker["name_ar"] if language == "ar" else ticker["name_en"]
     sector = ticker.get("sector_name") or "General"
-    currency = ticker.get("currency") or "EGP"
+    currency = get_ticker_currency(ticker)
 
     # ── 2. Pull latest 2 years of financials for YoY comparison ─────────────
     fin_rows = await conn.fetch("""

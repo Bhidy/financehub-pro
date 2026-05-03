@@ -50,7 +50,8 @@ async def get_company_profile(symbol: str):
         
     # Ensure critical fields exist for frontend
     result.setdefault('price', result.get('last_price'))
-    result.setdefault('currency', 'EGP')
+    from app.chat.currency_utils import get_ticker_currency
+    result['currency'] = get_ticker_currency(result)
     result.setdefault('market', 'EGX')
     
     return result

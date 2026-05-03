@@ -9,6 +9,7 @@ import {
     PolarRadiusAxis, Radar, Tooltip, AreaChart, Area, XAxis, YAxis, Legend, BarChart,
     Bar, CartesianGrid, ComposedChart, Line, LineChart, ReferenceLine
 } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     TrendingUp, TrendingDown, Activity, BarChart2, DollarSign,
     PieChart as PieIcon, Building2, Calendar, FileText, Globe, MapPin, Users,
@@ -159,7 +160,7 @@ const RadialGauge = ({ value, max = 100, label, color = 'cyan', size = 120 }: an
                 />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{formatPercent(value, true)}</span>
+                <span className="text-2xl font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight">{formatPercent(value, true)}</span>
                 <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</span>
             </div>
         </div>
@@ -207,97 +208,58 @@ const MiniSparkline = ({ data, color = '#00d4ff', height = 40 }: any) => {
 };
 
 // Premium Card Component - Reimagined 2026 Signature Layer
-const GlassCard = ({ children, className = '', noPadding = false, premium = false }: any) => (
-    <section
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { ease: "circOut", duration: 0.4 } }
+};
+
+const Card = ({ children, className = '', noPadding = false, premium = false, ...props }: any) => (
+    <motion.section
+        variants={itemVariants}
+        {...props}
         className={clsx(
-            "group/card relative overflow-hidden rounded-3xl transition-all duration-500",
-            "border border-slate-200/70 dark:border-white/[0.10]",
-            "bg-white/90 dark:bg-[#0B1121]/85 backdrop-blur-2xl",
-            "shadow-[0_14px_40px_rgba(15,23,42,0.08)] dark:shadow-[0_16px_44px_rgba(2,6,23,0.42)]",
-            "hover:-translate-y-0.5 hover:border-[#14B8A6]/35 hover:shadow-[0_20px_48px_rgba(20,184,166,0.14)] dark:hover:shadow-[0_22px_56px_rgba(20,184,166,0.22)]",
+            "group/card relative overflow-hidden rounded-xl transition-all duration-200",
+            "border border-[#e5e7eb] dark:border-[#27272a]",
+            "bg-white dark:bg-[#09090b]",
+            "shadow-sm dark:shadow-none hover:shadow-md dark:hover:shadow-none dark:hover:border-[#3f3f46]",
             !noPadding && "p-6",
             className
         )}
     >
-        <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#14B8A6]/10 blur-3xl dark:bg-[#14B8A6]/18" />
-            <div className="absolute -left-14 bottom-0 h-32 w-32 rounded-full bg-[#3B82F6]/8 blur-3xl dark:bg-[#3B82F6]/16" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#14B8A6]/50 to-transparent opacity-40" />
-            {premium && (
-                <>
-                    <div className="absolute right-4 top-4 h-16 w-16 rounded-full border border-[#14B8A6]/25 opacity-60" />
-                    <div className="absolute bottom-4 left-4 h-12 w-12 rounded-full border border-[#3B82F6]/25 opacity-50" />
-                </>
-            )}
-        </div>
-        <div className="relative">{children}</div>
-    </section>
+        <div className="relative z-10">{children}</div>
+    </motion.section>
 );
 
-const StatCard = ({ label, value, subValue, icon: Icon, trend, color = 'default' }: any) => {
-    const iconStyle: any = {
-        default: "text-slate-600 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800/70",
-        green: "text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30",
-        red: "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30",
-        blue: "text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30",
-        teal: "text-teal-600 dark:text-teal-300 bg-teal-50 dark:bg-teal-900/30",
-    };
-
-    return (
-        <article
-            className={clsx(
-                "group/stat relative overflow-hidden rounded-3xl p-5 transition-all duration-500",
-                "border border-slate-200/70 dark:border-white/[0.10]",
-                "bg-white/90 dark:bg-[#0F172A]/88 backdrop-blur-xl",
-                "shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_10px_30px_rgba(2,6,23,0.35)]",
-                "hover:-translate-y-1 hover:border-[#14B8A6]/35 hover:shadow-[0_14px_34px_rgba(20,184,166,0.16)]"
-            )}
-        >
-            <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-[#14B8A6]/50 to-transparent opacity-60" />
-            <div className="mb-4 flex items-start justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-                    {label}
-                </span>
-                {Icon && (
-                    <span className={clsx("inline-flex h-8 w-8 items-center justify-center rounded-xl ring-1 ring-black/5 dark:ring-white/10", iconStyle[color] || iconStyle.default)}>
-                        <Icon className="h-4 w-4" />
-                    </span>
-                )}
-            </div>
-            <div className="flex items-end gap-2">
-                <span className="text-[1.85rem] leading-none font-black text-slate-900 dark:text-white font-mono tracking-tight">
-                    {value}
-                </span>
-                {trend !== undefined && (
-                    <span
-                        className={clsx(
-                            "mb-0.5 inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-bold",
-                            trend >= 0 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
-                        )}
-                    >
-                        {trend >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                        {Math.abs(trend).toFixed(2)}%
-                    </span>
-                )}
-            </div>
-            {subValue && <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{subValue}</p>}
-        </article>
-    );
-};
 
 const TabButton = ({ active, onClick, label, icon: Icon }: any) => (
     <button
         onClick={onClick}
         className={clsx(
-            "relative inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold transition-all duration-300 whitespace-nowrap",
+            "relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-300 whitespace-nowrap z-10",
             active
-                ? "bg-gradient-to-r from-[#14B8A6] via-[#0EA5E9] to-[#14B8A6] text-white shadow-[0_10px_22px_rgba(20,184,166,0.35)]"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100/85 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white"
+                ? "text-white"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
         )}
     >
-        {active && <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/35" />}
-        {Icon && <Icon className={clsx("h-4 w-4", active ? "text-white" : "text-slate-500 dark:text-slate-400")} />}
-        {label}
+        {active && (
+            <motion.div
+                layoutId="activeTabPill"
+                className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-[#14B8A6] to-[#0EA5E9] shadow-[0_8px_20px_rgba(20,184,166,0.3)]"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+        )}
+        {Icon && <Icon className={clsx("h-4 w-4 relative z-10", active ? "text-white" : "text-slate-500")} />}
+        <span className="relative z-10">{label}</span>
     </button>
 );
 
@@ -334,7 +296,7 @@ const DataRow = ({ label, value, highlight = false }: any) => (
         )}
     >
         <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
-        <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{value}</span>
+        <span className="text-sm font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight">{value}</span>
     </div>
 );
 
@@ -431,7 +393,7 @@ export default function EnterpriseStockProfile() {
     // Loading State
     if (loading) {
         return (
-            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0B1121] flex items-center justify-center">
+            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-black flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <div className="w-16 h-16 mx-auto border-4 border-slate-200 dark:border-[#2E3A47] border-t-[#14B8A6] rounded-full animate-spin" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Loading market data...</p>
@@ -443,15 +405,15 @@ export default function EnterpriseStockProfile() {
     // Error State
     if (!data || !data.profile) {
         return (
-            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-[#0B1121] flex items-center justify-center p-4">
-                <GlassCard className="max-w-md text-center">
+            <div className="min-h-[100dvh] finhub-page bg-slate-50 dark:bg-black flex items-center justify-center p-4">
+                <Card className="max-w-md text-center">
                     <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Symbol Not Found</h2>
                     <p className="text-slate-600 dark:text-slate-400 mb-6">Unable to retrieve data for {symbol}</p>
                     <a href="/egx" className="inline-block px-6 py-3 bg-[#14B8A6] text-white font-bold rounded-xl hover:bg-[#0D9488] transition-all shadow-lg shadow-[#14B8A6]/20">
                         Back to Market
                     </a>
-                </GlassCard>
+                </Card>
             </div>
         );
     }
@@ -480,116 +442,97 @@ export default function EnterpriseStockProfile() {
     ];
 
     return (
-        <div className="relative min-h-[100dvh] finhub-page overflow-x-clip bg-slate-50 dark:bg-[#050B17]">
-            <div className="pointer-events-none absolute inset-0">
-                <div className="absolute -left-28 top-16 h-80 w-80 rounded-full bg-[#14B8A6]/12 blur-3xl dark:bg-[#14B8A6]/18" />
-                <div className="absolute right-[-7rem] top-0 h-[28rem] w-[28rem] rounded-full bg-[#3B82F6]/10 blur-3xl dark:bg-[#3B82F6]/16" />
-                <div className="absolute bottom-10 left-1/3 h-72 w-72 rounded-full bg-[#0EA5E9]/8 blur-3xl dark:bg-[#0EA5E9]/14" />
-            </div>
+        <div className="relative min-h-[100dvh] finhub-page overflow-x-clip bg-[#fafafa] dark:bg-black">
+            {/* === HERO HEADER (Full Bleed Glassmorphic) === */}
+            <header className="relative w-full border-b border-[#e5e7eb] dark:border-[#27272a] bg-white dark:bg-[#000000] pt-[6dvh] pb-8">
 
-            {/* === HERO HEADER === */}
-            <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/70 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#050B17]/78">
-                <div className="mx-auto max-w-7xl px-4 pb-5 pt-5 sm:px-6 lg:px-8">
-                    <div className="relative overflow-hidden rounded-[30px] border border-slate-200/80 bg-gradient-to-br from-white/95 via-white/85 to-[#EAF7F6] shadow-[0_18px_42px_rgba(15,23,42,0.10)] dark:border-white/[0.10] dark:from-[#0B1121]/95 dark:via-[#0F172A]/92 dark:to-[#0B2230]/92 dark:shadow-[0_20px_50px_rgba(2,6,23,0.52)]">
-                        <div className="pointer-events-none absolute inset-0">
-                            <div className="absolute -left-10 -top-14 h-40 w-40 rounded-full bg-[#14B8A6]/20 blur-3xl dark:bg-[#14B8A6]/26" />
-                            <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-[#3B82F6]/14 blur-3xl dark:bg-[#3B82F6]/22" />
-                            <div className="absolute bottom-0 right-1/3 h-24 w-24 rounded-full border border-[#14B8A6]/30" />
-                        </div>
-
-                        <div className="relative grid gap-6 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-                            <div className="flex items-start gap-4">
-                                <div className="relative mt-0.5 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#14B8A6] via-[#0EA5E9] to-[#3B82F6] text-xl font-black text-white shadow-[0_14px_34px_rgba(14,165,233,0.45)] ring-1 ring-white/40">
-                                    {symbol.substring(0, 2)}
-                                    <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] dark:border-[#0B1121]" />
+                <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                        className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8"
+                    >
+                        <div className="flex items-start gap-6">
+                            <div className="relative mt-1 flex h-20 w-20 shrink-0 items-center justify-center rounded-[1.5rem] bg-slate-100 dark:bg-[#18181b] text-3xl font-bold text-slate-800 dark:text-zinc-100 border border-slate-200 dark:border-zinc-800">
+                                {symbol.substring(0, 2)}
+                                <span className={clsx("absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-[#0a0a0a]", isPositive ? "bg-emerald-500" : "bg-rose-500")} />
+                            </div>
+                            <div className="min-w-0">
+                                <div className="mb-3 flex items-center gap-3">
+                                    <h1 className="truncate text-4xl font-bold tracking-tight text-slate-900 dark:text-white lg:text-5xl">
+                                        {displayCompanyName}
+                                    </h1>
+                                    <span className="rounded-xl border border-slate-300/80 bg-white/60 px-2.5 py-1 text-sm font-bold uppercase tracking-[0.1em] text-slate-700 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                                        {symbol}
+                                    </span>
                                 </div>
-                                <div className="min-w-0">
-                                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                                        <h1 className="truncate text-2xl font-black tracking-tight text-slate-900 dark:text-white lg:text-[1.95rem]">
-                                            {displayCompanyName}
-                                        </h1>
-                                        <span className="rounded-lg border border-slate-300/70 bg-white/90 px-2 py-0.5 text-xs font-black uppercase tracking-[0.08em] text-slate-700 dark:border-slate-600 dark:bg-white/[0.06] dark:text-slate-300">
-                                            {symbol}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-white/[0.05]">
-                                            <Building2 className="h-3 w-3 text-[#14B8A6]" />
-                                            {p.fullExchangeName || 'EGX'}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-white/[0.05]">
-                                            <Briefcase className="h-3 w-3 text-[#3B82F6]" />
-                                            {p.sector || 'Financial Services'}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100/90 px-2.5 py-1 dark:bg-white/[0.05]">
-                                            <Banknote className="h-3 w-3 text-emerald-500" />
-                                            {(p.currency || 'EGP').toUpperCase()}
-                                        </span>
-                                    </div>
+                                <div className="flex flex-wrap items-center gap-3 text-sm font-bold text-slate-600 dark:text-slate-300">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/5 px-3 py-1.5 dark:bg-white/5 backdrop-blur-md border border-slate-200/50 dark:border-white/5">
+                                        <Building2 className="h-4 w-4 text-[#14B8A6]" />
+                                        {p.fullExchangeName || 'EGX'}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/5 px-3 py-1.5 dark:bg-white/5 backdrop-blur-md border border-slate-200/50 dark:border-white/5">
+                                        <Briefcase className="h-4 w-4 text-[#3B82F6]" />
+                                        {p.sector || 'Financial Services'}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/5 px-3 py-1.5 dark:bg-white/5 backdrop-blur-md border border-slate-200/50 dark:border-white/5">
+                                        <Banknote className="h-4 w-4 text-emerald-500" />
+                                        {(p.currency || 'EGP').toUpperCase()}
+                                    </span>
                                 </div>
                             </div>
+                        </div>
 
+                        <div className="flex flex-col items-start lg:items-end gap-3">
+                            <div className="flex items-end gap-3">
+                                <motion.span 
+                                    className="text-[3.5rem] font-semibold tracking-tighter leading-none tracking-tight text-slate-900 dark:text-zinc-50 font-mono tracking-tight"
+                                    layout
+                                >
+                                    {formatNumber(currentPrice)}
+                                </motion.span>
+                                <span className="mb-2 text-lg font-bold text-slate-500 dark:text-slate-400">{p.currency || 'EGP'}</span>
+                            </div>
                             <div className="flex items-center gap-3">
-                                <div className="rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 text-right shadow-sm dark:border-white/[0.12] dark:bg-white/[0.03]">
-                                    <div className="flex items-end justify-end gap-2">
-                                        <span className="text-[2rem] font-black leading-none tracking-tight text-slate-900 dark:text-white font-mono">
-                                            {formatNumber(currentPrice)}
-                                        </span>
-                                        <span className="mb-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{p.currency || 'EGP'}</span>
-                                    </div>
-                                    <div className={clsx("mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-bold", isPositive ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/35 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-900/35 dark:text-rose-300")}>
-                                        {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                                        <span>{formatNumber(priceChange)}</span>
-                                        <span className="text-xs">{formatPercent(priceChangePct, true)}</span>
-                                    </div>
+                                <div className={clsx(
+                                    "inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-lg font-bold shadow-sm backdrop-blur-md",
+                                    isPositive 
+                                        ? "bg-emerald-100/80 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" 
+                                        : "bg-rose-100/80 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
+                                )}>
+                                    {isPositive ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
+                                    <span>{formatNumber(priceChange)}</span>
+                                    <span className="opacity-80">({formatPercent(priceChangePct, true)})</span>
                                 </div>
                                 <button
                                     onClick={toggleWatchlist}
                                     className={clsx(
-                                        "inline-flex h-12 w-12 items-center justify-center rounded-xl border transition-all",
+                                        "inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all duration-300 backdrop-blur-md",
                                         isWatched
-                                            ? "border-amber-300 bg-amber-100 text-amber-600 shadow-[0_10px_20px_rgba(245,158,11,0.25)] dark:border-amber-500/60 dark:bg-amber-900/30 dark:text-amber-300"
-                                            : "border-slate-300/80 bg-white/90 text-slate-500 hover:border-amber-300 hover:text-amber-600 dark:border-white/[0.15] dark:bg-white/[0.04] dark:text-slate-300"
+                                            ? "border-amber-300 bg-amber-100 text-amber-600 shadow-[0_8px_16px_rgba(245,158,11,0.25)] dark:border-amber-500/50 dark:bg-amber-500/20 dark:text-amber-300"
+                                            : "border-slate-300/80 bg-white/60 text-slate-500 hover:scale-105 hover:border-amber-300 hover:text-amber-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
                                     )}
                                 >
-                                    <Star className={clsx("h-5 w-5", isWatched && "fill-current")} />
+                                    <Star className={clsx("h-5 w-5 transition-transform", isWatched && "fill-current scale-110")} />
                                 </button>
                             </div>
                         </div>
+                    </motion.div>
 
-                        <div className="relative border-t border-slate-200/70 bg-white/70 px-5 py-3 dark:border-white/[0.08] dark:bg-white/[0.03] md:px-6">
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
-                                    <ChartLine className="h-3 w-3 text-[#14B8A6]" />
-                                    52W: {formatNumber(p.fiftyTwoWeekLow || p.year_low)} - {formatNumber(p.fiftyTwoWeekHigh || p.year_high)}
-                                </span>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
-                                    <BarChart2 className="h-3 w-3 text-[#3B82F6]" />
-                                    Vol: {formatLarge(p.volume || p.regularMarketVolume)}
-                                </span>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
-                                    <Scale className="h-3 w-3 text-emerald-500" />
-                                    P/E: {formatNumber(p.trailingPE || f.pe_ratio)}
-                                </span>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/70 bg-white px-2.5 py-1 text-slate-600 dark:border-white/[0.14] dark:bg-white/[0.04] dark:text-slate-300">
-                                    <Building className="h-3 w-3 text-cyan-500" />
-                                    MCap: {formatLarge(p.marketCap || p.market_cap)}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Navigation Tabs */}
-                    <div className="mt-4 flex max-w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/80 p-1.5 dark:border-white/[0.10] dark:bg-white/[0.04]">
-                        {tabs.map(tab => (
-                            <TabButton
-                                key={tab.id}
-                                active={activeTab === tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                label={tab.label}
-                                icon={tab.icon}
-                            />
-                        ))}
+                    {/* Navigation Tabs - Floating bottom style */}
+                    <div className="mt-10 flex max-w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/70 p-1.5 shadow-[0_8px_32px_rgba(15,23,42,0.04)] dark:border-white/[0.08] dark:bg-white/[0.02] backdrop-blur-xl supports-[backdrop-filter]:bg-white/40">
+                        <AnimatePresence>
+                            {tabs.map(tab => (
+                                <TabButton
+                                    key={tab.id}
+                                    active={activeTab === tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    label={tab.label}
+                                    icon={tab.icon}
+                                />
+                            ))}
+                        </AnimatePresence>
                     </div>
                 </div>
             </header>
@@ -599,63 +542,78 @@ export default function EnterpriseStockProfile() {
 
                 {/* SUMMARY TAB */}
                 {activeTab === 'summary' && (
-                    <div className="space-y-6">
-                        {/* Key Stats Row */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            <StatCard label="Market Cap" value={formatLarge(p.marketCap || p.market_cap)} icon={Building2} color="teal" />
-                            <StatCard label="P/E Ratio" value={formatNumber(p.trailingPE || f.pe_ratio)} icon={Scale} />
-                            <StatCard label="EPS (TTM)" value={formatNumber(p.epsTrailingTwelveMonths || f.trailing_eps)} icon={DollarSign} color="green" />
-                            <StatCard label="Book Value" value={formatNumber(p.bookValue || f.book_value)} icon={Banknote} />
-                            <StatCard label="P/B Ratio" value={formatNumber(p.priceToBook || f.price_to_book)} icon={BarChart2} />
-                            <StatCard label="Shares Out" value={formatLarge(p.sharesOutstanding || p.shares_outstanding)} icon={Users} />
-                        </div>
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+                        {/* 2026 Ultra-Premium Bento Grid */}
+                        <motion.div 
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="show"
+                            className="grid grid-cols-2 lg:grid-cols-6 gap-4"
+                        >
+                            <Card premium className="col-span-2 flex flex-col justify-between overflow-hidden relative group">
+                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#14B8A6]/10 to-transparent pointer-events-none" />
+                                <div className="flex justify-between items-start mb-6 w-full">
+                                    <div className="flex items-center gap-2 text-[#14B8A6] dark:text-[#5EEAD4] font-bold text-sm uppercase tracking-wider relative z-10 w-full text-left">
+                                        <Building2 className="w-5 h-5" />
+                                        Market Cap
+                                    </div>
+                                </div>
+                                <div className="relative z-10 w-full text-left">
+                                    <div className="text-4xl lg:text-5xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 font-mono tracking-tight tracking-tighter group-hover:scale-[1.02] transition-transform origin-left duration-500">
+                                        {formatLarge(p.marketCap || p.market_cap)}
+                                    </div>
+                                    <div className="text-sm font-semibold text-slate-500 mt-1">Valuation</div>
+                                </div>
+                            </Card>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <Card premium className="col-span-2 flex flex-col justify-between overflow-hidden relative group">
+                                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0EA5E9]/10 to-transparent pointer-events-none" />
+                                <div className="flex justify-between items-start mb-6 w-full">
+                                    <div className="flex items-center gap-2 text-[#0EA5E9] dark:text-[#38BDF8] font-bold text-sm uppercase tracking-wider relative z-10 w-full text-left">
+                                        <BarChart2 className="w-5 h-5" />
+                                        Volume
+                                    </div>
+                                </div>
+                                <div className="relative w-full text-left">
+                                    <div className="text-4xl lg:text-5xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 font-mono tracking-tight tracking-tighter group-hover:scale-[1.02] transition-transform origin-left duration-500 z-10 relative">
+                                        {formatLarge(p.volume || p.regularMarketVolume)}
+                                    </div>
+                                    <div className="text-sm font-semibold text-slate-500 mt-1">Avg: {formatLarge(p.averageDailyVolume3Month || p.avg_vol_3m)}</div>
+                                    <div className="absolute -bottom-8 -right-6 w-32 opacity-30 group-hover:opacity-60 transition-opacity">
+                                        <MiniSparkline data={chartData} color="#0EA5E9" height={60} />
+                                    </div>
+                                </div>
+                            </Card>
+
+                            <Card className="col-span-1 flex flex-col justify-center items-center text-center group">
+                                <Scale className="w-6 h-6 text-emerald-500 mb-2 opacity-80 group-hover:scale-110 transition-transform" />
+                                <div className="text-2xl font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">{formatNumber(p.trailingPE || f.pe_ratio)}</div>
+                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">P/E</div>
+                            </Card>
+
+                            <Card className="col-span-1 flex flex-col justify-center items-center text-center group">
+                                <DollarSign className="w-6 h-6 text-amber-500 mb-2 opacity-80 group-hover:scale-110 transition-transform" />
+                                <div className="text-2xl font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">{formatNumber(p.epsTrailingTwelveMonths || f.trailing_eps)}</div>
+                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">EPS</div>
+                            </Card>
+                        </motion.div>
+
+                        <motion.div 
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="show"
+                            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+                        >
                             {/* Price Chart Mini */}
-                            <GlassCard className="lg:col-span-2" noPadding>
+                            <Card className="lg:col-span-2" noPadding>
                                 <div className="p-6 border-b border-slate-100 dark:border-white/[0.05]">
                                     <h3 className="font-bold text-slate-900 dark:text-white">Price Performance</h3>
                                 </div>
                                 <div className="h-[300px] p-4">
                                     {chartData.length > 0 ? (
-                                        <ResponsiveContainer>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <AreaChart data={chartData}>
-                                                <defs>
-                                                    <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.3} />
-                                                        <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <XAxis
-                                                    dataKey="date"
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{ fill: '#64748b', fontSize: 10 }}
-                                                    tickFormatter={(v) => v.split('-').slice(1).join('/')}
-                                                />
-                                                <YAxis
-                                                    domain={['dataMin - 5', 'dataMax + 5']}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{ fill: '#64748b', fontSize: 10 }}
-                                                    width={50}
-                                                />
-                                                <Tooltip
-                                                    contentStyle={{
-                                                        backgroundColor: '#0f172a',
-                                                        border: 'none',
-                                                        borderRadius: 12,
-                                                        color: '#fff'
-                                                    }}
-                                                    formatter={(value: any) => [formatNumber(value), 'Price']}
-                                                />
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="price"
-                                                    stroke="#14b8a6"
-                                                    strokeWidth={2}
-                                                    fill="url(#priceGradient)"
-                                                />
+                                                <Area type="monotone" dataKey="price" stroke={isPositive ? "#10b981" : "#f43f5e"} strokeWidth={1.5} fillOpacity={0} />
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     ) : (
@@ -664,10 +622,10 @@ export default function EnterpriseStockProfile() {
                                         </div>
                                     )}
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* 52 Week Range + Moving Averages */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Trading Range</h3>
 
                                 <RangeIndicator
@@ -704,27 +662,46 @@ export default function EnterpriseStockProfile() {
                                         </span>
                                     </div>
                                 </div>
-                            </GlassCard>
-                        </div>
+                            </Card>
+                        </motion.div>
 
                         {/* Volume & Trading Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <StatCard label="Volume" value={formatLarge(p.volume || p.regularMarketVolume)} icon={BarChart2} />
-                            <StatCard label="Avg Vol (10D)" value={formatLarge(p.averageDailyVolume10Day || p.avg_vol_10d)} icon={Activity} />
-                            <StatCard label="Avg Vol (3M)" value={formatLarge(p.averageDailyVolume3Month || p.avg_vol_3m)} icon={BarChart3} />
-                            <StatCard
-                                label="52W Change"
-                                value={formatPercent(p.fiftyTwoWeekChangePercent, true)}
-                                icon={TrendingUp}
-                                color={(p.fiftyTwoWeekChangePercent || 0) >= 0 ? 'green' : 'red'}
-                            />
+                            <Card className="flex flex-col justify-between">
+                                <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                                    <BarChart2 className="w-4 h-4 text-slate-400" /> Volume
+                                </div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight tracking-tight">{formatLarge(p.volume || p.regularMarketVolume)}</div>
+                            </Card>
+                            <Card className="flex flex-col justify-between">
+                                <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                                    <Activity className="w-4 h-4 text-slate-400" /> Avg Vol (10D)
+                                </div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight tracking-tight">{formatLarge(p.averageDailyVolume10Day || p.avg_vol_10d)}</div>
+                            </Card>
+                            <Card className="flex flex-col justify-between">
+                                <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                                    <BarChart3 className="w-4 h-4 text-slate-400" /> Avg Vol (3M)
+                                </div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight tracking-tight">{formatLarge(p.averageDailyVolume3Month || p.avg_vol_3m)}</div>
+                            </Card>
+                            <Card className="flex flex-col justify-between">
+                                <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                                    <TrendingUp className="w-4 h-4 text-slate-400" /> 52W Change
+                                </div>
+                                <div className="flex items-end gap-2 text-2xl font-bold font-mono tracking-tight">
+                                    <span className={(p.fiftyTwoWeekChangePercent || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
+                                        {formatPercent(p.fiftyTwoWeekChangePercent, true)}
+                                    </span>
+                                </div>
+                            </Card>
                         </div>
 
                         {/* === 2026 ULTRA-PREMIUM VISUALIZATION SECTION === */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
                             {/* Performance Momentum - Ultra Premium Redesign */}
-                            <GlassCard premium className="flex flex-col">
+                            <Card premium className="flex flex-col">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         <Activity className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
@@ -791,16 +768,16 @@ export default function EnterpriseStockProfile() {
                                     </div>
                                     <MiniSparkline data={chartData} color="#0891b2" height={45} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Valuation Radar */}
-                            <GlassCard className="flex flex-col">
+                            <Card className="flex flex-col">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <Scale className="w-5 h-5 text-teal-500" />
                                     Valuation Profile
                                 </h3>
-                                <div className="flex-1 min-h-[250px]">
-                                    <ResponsiveContainer>
+                                <div className="h-[280px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
                                         <RadarChart data={[
                                             { metric: 'P/E', value: Math.min(100, ((p.trailingPE || f.pe_ratio || 15) / 30) * 100), fullMark: 100 },
                                             { metric: 'P/B', value: Math.min(100, ((p.priceToBook || f.price_to_book || 1) / 5) * 100), fullMark: 100 },
@@ -835,10 +812,10 @@ export default function EnterpriseStockProfile() {
                                         </RadarChart>
                                     </ResponsiveContainer>
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Financial Health Cards */}
-                            <GlassCard className="flex flex-col">
+                            <Card className="flex flex-col">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <DollarSign className="w-5 h-5 text-emerald-500" />
                                     Financial Highlights
@@ -887,15 +864,15 @@ export default function EnterpriseStockProfile() {
                                         />
                                     </div>
                                 </div>
-                            </GlassCard>
+                            </Card>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* CHART TAB */}
                 {activeTab === 'chart' && (
-                    <div className="space-y-6">
-                        <GlassCard noPadding>
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+                        <Card noPadding>
                             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <ChartLine className="w-5 h-5 text-blue-500" />
@@ -986,16 +963,16 @@ export default function EnterpriseStockProfile() {
                                     </div>
                                 )}
                             </div>
-                        </GlassCard>
-                    </div>
+                        </Card>
+                    </motion.div>
                 )}
 
                 {/* FINANCIALS TAB */}
                 {activeTab === 'financials' && (
-                    <div className="space-y-6">
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Valuation Metrics */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Scale className="w-5 h-5 text-blue-500" /> Valuation
                                 </h3>
@@ -1009,10 +986,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="EV/Revenue" value={formatNumber(f.enterprise_to_revenue)} />
                                     <DataRow label="EV/EBITDA" value={formatNumber(f.enterprise_to_ebitda)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Profitability */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Percent className="w-5 h-5 text-emerald-500" /> Profitability
                                 </h3>
@@ -1024,10 +1001,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Return on Assets" value={formatPercent(f.return_on_assets)} />
                                     <DataRow label="Return on Equity" value={formatPercent(f.return_on_equity)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Per Share Data */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <DollarSign className="w-5 h-5 text-amber-500" /> Per Share Data
                                 </h3>
@@ -1037,10 +1014,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Book Value / Share" value={formatNumber(p.bookValue || f.book_value)} />
                                     <DataRow label="Revenue / Share" value={formatNumber(f.revenue_per_share)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Dividends */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Banknote className="w-5 h-5 text-green-500" /> Dividends
                                 </h3>
@@ -1050,10 +1027,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Payout Ratio" value={formatPercent(f.payout_ratio)} />
                                     <DataRow label="Ex-Dividend Date" value={formatDate(f.ex_dividend_date)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Balance Sheet */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <BarChart3 className="w-5 h-5 text-teal-500" /> Balance Sheet
                                 </h3>
@@ -1065,10 +1042,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Quick Ratio" value={formatNumber(f.quick_ratio)} />
                                     <DataRow label="Debt to Equity" value={formatNumber(f.debt_to_equity)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Cash Flow */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Activity className="w-5 h-5 text-cyan-500" /> Cash Flow
                                 </h3>
@@ -1076,12 +1053,12 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Operating Cash Flow" value={formatLarge(f.operating_cash_flow)} />
                                     <DataRow label="Free Cash Flow" value={formatLarge(f.free_cash_flow)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
                         </div>
 
                         {/* Earnings Calendar */}
                         {p.earningsTimestamp && (
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <Calendar className="w-5 h-5 text-indigo-500" /> Upcoming Earnings
                                 </h3>
@@ -1101,14 +1078,14 @@ export default function EnterpriseStockProfile() {
                                         </p>
                                     </div>
                                 </div>
-                            </GlassCard>
+                            </Card>
                         )}
 
                         {/* === 2026 ULTRA-PREMIUM FINANCIAL VISUALIZATIONS === */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                             {/* Margin Waterfall Chart */}
-                            <GlassCard premium>
+                            <Card premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <BarChart3 className="w-5 h-5 text-cyan-500" />
                                     Margin Analysis
@@ -1168,10 +1145,10 @@ export default function EnterpriseStockProfile() {
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Returns Comparison */}
-                            <GlassCard premium>
+                            <Card premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-emerald-500" />
                                     Returns Profile
@@ -1209,8 +1186,8 @@ export default function EnterpriseStockProfile() {
                                                 radius={[8, 8, 0, 0]}
                                                 maxBarSize={80}
                                             >
-                                                <Cell fill="#00d4ff" style={{ filter: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.5))' }} />
-                                                <Cell fill="#10b981" style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))' }} />
+                                                <Cell fill="#00d4ff"  />
+                                                <Cell fill="#10b981"  />
                                             </Bar>
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -1219,47 +1196,47 @@ export default function EnterpriseStockProfile() {
                                 <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.05] grid grid-cols-2 gap-4">
                                     <div className="text-center p-3 rounded-xl bg-gradient-to-br from-cyan-500/10 to-transparent">
                                         <p className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase">Total Cash</p>
-                                        <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatLarge(f.total_cash)}</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight">{formatLarge(f.total_cash)}</p>
                                     </div>
                                     <div className="text-center p-3 rounded-xl bg-gradient-to-br from-emerald-500/10 to-transparent">
                                         <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Free Cash Flow</p>
-                                        <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatLarge(f.free_cash_flow)}</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight">{formatLarge(f.free_cash_flow)}</p>
                                     </div>
                                 </div>
-                            </GlassCard>
+                            </Card>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* PROFILE TAB */}
                 {activeTab === 'profile' && (
-                    <div className="space-y-6">
-                        <GlassCard>
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+                        <Card>
                             <h3 className="font-bold text-slate-900 dark:text-white mb-4">About {displayCompanyName}</h3>
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                                 {p.description || p.longBusinessSummary || "Company description not available for this security."}
                             </p>
-                        </GlassCard>
+                        </Card>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <GlassCard>
+                            <Card>
                                 <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                                     <Briefcase className="w-4 h-4" /> Industry
                                 </h4>
                                 <DataRow label="Sector" value={p.sector || '—'} />
                                 <DataRow label="Industry" value={p.industry || '—'} />
-                            </GlassCard>
+                            </Card>
 
-                            <GlassCard>
+                            <Card>
                                 <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                                     <Building2 className="w-4 h-4" /> Exchange
                                 </h4>
                                 <DataRow label="Exchange" value={p.fullExchangeName || p.exchange || '—'} />
                                 <DataRow label="Market" value={p.market || '—'} />
                                 <DataRow label="Timezone" value={p.exchangeTimezoneShortName || '—'} />
-                            </GlassCard>
+                            </Card>
 
-                            <GlassCard>
+                            <Card>
                                 <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                                     <Globe className="w-4 h-4" /> Contact
                                 </h4>
@@ -1269,17 +1246,17 @@ export default function EnterpriseStockProfile() {
                                         Visit <ExternalLink className="w-3 h-3" />
                                     </a>
                                 ) : '—'} />
-                            </GlassCard>
+                            </Card>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* STATISTICS TAB */}
                 {activeTab === 'statistics' && (
-                    <div className="space-y-6">
+                    <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Trading Statistics */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Trading Statistics</h3>
                                 <div className="space-y-1">
                                     <DataRow label="Open" value={formatNumber(p.regularMarketOpen || p.open)} />
@@ -1290,10 +1267,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="52W Low" value={formatNumber(p.fiftyTwoWeekLow || p.year_low)} />
                                     <DataRow label="52W Range" value={p.fiftyTwoWeekRange || '—'} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Moving Averages */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Moving Averages</h3>
                                 <div className="space-y-1">
                                     <DataRow label="50-Day Average" value={formatNumber(p.fiftyDayAverage)} />
@@ -1303,20 +1280,20 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="200-Day Change" value={formatNumber(p.twoHundredDayAverageChange)} />
                                     <DataRow label="200-Day Change %" value={formatPercent(p.twoHundredDayAverageChangePercent)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Volume Analysis */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Volume Analysis</h3>
                                 <div className="space-y-1">
                                     <DataRow label="Today's Volume" value={formatLarge(p.volume || p.regularMarketVolume)} />
                                     <DataRow label="10-Day Avg Volume" value={formatLarge(p.averageDailyVolume10Day || p.avg_vol_10d)} />
                                     <DataRow label="3-Month Avg Volume" value={formatLarge(p.averageDailyVolume3Month || p.avg_vol_3m)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Shares Information */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Share Statistics</h3>
                                 <div className="space-y-1">
                                     <DataRow label="Shares Outstanding" value={formatLarge(p.sharesOutstanding || p.shares_outstanding)} />
@@ -1326,10 +1303,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Insider Ownership" value={formatPercent(f.insider_percent)} />
                                     <DataRow label="Institutional Ownership" value={formatPercent(f.institution_percent)} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Risk Metrics */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Risk Metrics</h3>
                                 <div className="space-y-1">
                                     <DataRow label="Beta" value={formatNumber(f.beta)} />
@@ -1339,10 +1316,10 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Shareholder Rights Risk" value={f.shareholder_rights_risk || '—'} />
                                     <DataRow label="Overall Risk" value={f.overall_risk || '—'} />
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Technical Metadata */}
-                            <GlassCard>
+                            <Card>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6">Technical Data</h3>
                                 <div className="space-y-1">
                                     <DataRow label="Quote Type" value={p.quoteType || '—'} />
@@ -1351,14 +1328,14 @@ export default function EnterpriseStockProfile() {
                                     <DataRow label="Source Interval" value={p.sourceInterval ? `${p.sourceInterval} min` : '—'} />
                                     <DataRow label="First Trade Date" value={p.firstTradeDateMilliseconds ? formatDate(p.firstTradeDateMilliseconds / 1000) : '—'} />
                                 </div>
-                            </GlassCard>
+                            </Card>
                         </div>
 
                         {/* === 2026 ULTRA-PREMIUM STATISTICS VISUALIZATIONS === */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
 
                             {/* Volume Distribution Chart */}
-                            <GlassCard premium className="lg:col-span-2">
+                            <Card premium className="lg:col-span-2">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <BarChart3 className="w-5 h-5 text-cyan-500" />
                                     Volume History (Last 30 Days)
@@ -1396,7 +1373,7 @@ export default function EnterpriseStockProfile() {
                                             />
                                             <Bar
                                                 dataKey="volume"
-                                                fill="url(#volumeGradient)"
+                                                fill="#cbd5e1"
                                                 radius={[4, 4, 0, 0]}
                                             />
                                             <ReferenceLine
@@ -1408,10 +1385,10 @@ export default function EnterpriseStockProfile() {
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Moving Averages Comparison */}
-                            <GlassCard premium>
+                            <Card premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <ChartLine className="w-5 h-5 text-teal-500" />
                                     Price vs Moving Averages
@@ -1491,10 +1468,10 @@ export default function EnterpriseStockProfile() {
                                         </div>
                                     </div>
                                 </div>
-                            </GlassCard>
+                            </Card>
 
                             {/* Price Range Gauge */}
-                            <GlassCard premium>
+                            <Card premium>
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                     <Activity className="w-5 h-5 text-emerald-500" />
                                     52-Week Position
@@ -1514,7 +1491,7 @@ export default function EnterpriseStockProfile() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">Current</p>
-                                            <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{formatNumber(currentPrice)}</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-zinc-50 font-mono tracking-tight">{formatNumber(currentPrice)}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">52W High</p>
@@ -1522,9 +1499,9 @@ export default function EnterpriseStockProfile() {
                                         </div>
                                     </div>
                                 </div>
-                            </GlassCard>
+                            </Card>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
             </main>
         </div>

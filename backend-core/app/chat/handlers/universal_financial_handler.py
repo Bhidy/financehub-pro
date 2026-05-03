@@ -6,6 +6,7 @@ SCORE_DETAIL, and UNIVERSAL_FINANCIAL (catch-all) intents.
 Uses the column registry to dynamically answer ANY financial question
 about EGX stocks by finding the right columns and querying the DB.
 """
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 import re
 from typing import Dict, Any, List, Optional
@@ -42,7 +43,7 @@ async def handle_ratio_trend(conn, symbol: str, entities: Dict[str, Any], langua
     if not ticker:
         return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     metric = entities.get("metric", "pe_ratio")
     
@@ -121,7 +122,7 @@ async def handle_advanced_stats(conn, symbol: str, entities: Dict[str, Any], lan
     )
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     row = await conn.fetchrow("""
         SELECT p_tbv, p_ocf, p_fcf, fcf_yield, earnings_yield,
@@ -190,7 +191,7 @@ async def handle_ownership_detail(conn, symbol: str, language: str = "en") -> Di
     )
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     row = await conn.fetchrow("""
         SELECT insider_ownership, institutional_ownership, float_shares, shares_outstanding, market_cap
@@ -232,7 +233,7 @@ async def handle_score_detail(conn, symbol: str, entities: Dict[str, Any], langu
     )
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     row = await conn.fetchrow("""
         SELECT altman_z_score, piotroski_f_score FROM stock_statistics WHERE symbol=$1
@@ -324,7 +325,7 @@ async def handle_universal_financial(conn, symbol: str, message: str, language: 
     if not ticker:
         return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     # Extract keywords from the message
     msg_lower = message.lower()

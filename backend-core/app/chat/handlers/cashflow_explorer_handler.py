@@ -3,6 +3,7 @@ Cash Flow Statement Explorer Handler.
 Handles CASHFLOW_EXPLORE and CASHFLOW_TREND intents.
 Provides detailed cashflow analysis with multi-year trends.
 """
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 from typing import Dict, Any, List
 from .column_registry import CASHFLOW_COLUMNS, format_value
@@ -17,7 +18,7 @@ async def handle_cashflow_waterfall(conn, symbol: str, language: str = "en") -> 
     )
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, cash_from_operating, cash_from_investing, cash_from_financing,
@@ -52,7 +53,7 @@ async def handle_cashflow_capex_trend(conn, symbol: str, language: str = "en") -
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, capex, cash_from_operating, free_cashflow, sale_of_ppe
@@ -79,7 +80,7 @@ async def handle_cashflow_debt_activity(conn, symbol: str, language: str = "en")
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, total_debt_issued, total_debt_repaid, net_debt_issued,
@@ -113,7 +114,7 @@ async def handle_cashflow_fcf_analysis(conn, symbol: str, language: str = "en") 
     ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol=$1 AND market_code='EGX'", symbol)
     if not ticker: return _nf(symbol, language)
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    currency = ticker['currency'] or 'EGP'
+    currency = get_ticker_currency(ticker)
     
     rows = await conn.fetch("""
         SELECT fiscal_year, net_income, cash_from_operating, free_cashflow,

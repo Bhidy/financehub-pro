@@ -39,7 +39,7 @@ export const translations = {
             scenario_undervalued: { title: "Undervalued Stocks", subtitle: "Value opportunities", query: "Get me the most undervalued stocks" },
             scenario_hidden_gems: { title: "Hidden Gems", subtitle: "Mid-cap discoveries", query: "What are the hidden gems?" },
             scenario_score: { title: "COMI Score", subtitle: "Score breakdown", query: "Show me inside the COMI score" },
-            scenario_jufo: { title: "Should I Buy JUFO?", subtitle: "Investment Thesis", query: "Should I look at JUFO?" },
+            scenario_news: { title: "ETEL Latest News", subtitle: "Market Updates", query: "Give me the latest news on ETEL" },
             scenario_market_timing: { title: "Market Timing", subtitle: "Macro environment", query: "Is this a good time to be in equities?" }
         },
         chat: {
@@ -170,8 +170,8 @@ export const translations = {
             // Predefined Scenarios (Arabic - 5 items max)
             scenario_undervalued: { title: "أسهم مقيمة بأقل من قيمتها", subtitle: "فرص القيمة", query: "ما هي الأسهم الأكثر تقييماً بأقل من قيمتها؟" },
             scenario_hidden_gems: { title: "الجواهر الخفية", subtitle: "أسهم واعدة", query: "ما هي الجواهر الخفية؟" },
-            scenario_score: { title: "تفاصيل تقييم COMI", subtitle: "تحليل התقييم", query: "أرني تفاصيل تقييم التجاري الدولي (COMI)" },
-            scenario_jufo: { title: "هل أشتري جهينة؟", subtitle: "تحليل استثماري", query: "هل يجب أن أنظر في سهم جهينة (JUFO)؟" },
+            scenario_score: { title: "تفاصيل تقييم COMI", subtitle: "تحليل التقييم", query: "أرني تفاصيل تقييم التجاري الدولي (COMI)" },
+            scenario_news: { title: "أحدث أخبار المصرية للاتصالات", subtitle: "تحديثات السوق", query: "أعطني أحدث الأخبار عن المصرية للاتصالات (ETEL)" },
             scenario_market_timing: { title: "توقيت السوق", subtitle: "بيئة الاقتصاد الكلي", query: "هل هذا وقت جيد للاستثمار في الأسهم؟" }
         },
         chat: {

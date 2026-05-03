@@ -110,3 +110,5 @@ ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS market_cap BIGINT;
 -- \i /app/app/db/portfolio_schema.sql
 -- Note: The above is for psql. For direct SQL execution in Python, we append the content.
 
+ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS currency VARCHAR(10);
+ALTER TABLE market_tickers ADD COLUMN IF NOT EXISTS trading_currency VARCHAR(10);

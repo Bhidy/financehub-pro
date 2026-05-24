@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Topic | Starta Markets</title>
+    <meta name="description" content="Beginner-friendly bilingual Starta learning guides for mutual funds, stock market basics, risk, and investing decisions.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="/data/learn-topics.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'var(--c-page)',
+                        surface: 'var(--c-surface)',
+                        panel: 'var(--c-panel)',
+                        main: 'var(--c-text-main)',
+                        muted: 'var(--c-text-muted)',
+                        border: 'var(--c-border)',
+                        starta: { teal: '#14B8A6', darkTeal: '#0F766E' }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        premium: 'var(--shadow-premium)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --c-page: #f4f7fb;
+            --c-surface: #ffffff;
+            --c-panel: rgba(255, 255, 255, 0.88);
+            --c-text-main: #0f172a;
+            --c-text-muted: #5b6677;
+            --c-border: rgba(148, 163, 184, 0.18);
+            --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.16);
+        }
+
+        html[dir="rtl"] body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        html[dir="rtl"] .font-display { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        body { background: var(--c-page); color: var(--c-text-main); font-family: 'Manrope', sans-serif; overflow-x: hidden; }
+        .glass-premium { background: rgba(255,255,255,0.84); backdrop-filter: blur(22px); border: 1px solid rgba(148,163,184,0.18); box-shadow: var(--shadow-premium); }
+        .surface-card { background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,255,0.95)); border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 24px 60px rgba(148,163,184,0.12); }
+        .catalog-link.active { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.22); color: #0F766E; }
+        .cover-panel { position: relative; overflow: hidden; }
+        .cover-panel::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at top left, rgba(255,255,255,0.6), transparent 28%), linear-gradient(135deg, color-mix(in srgb, var(--topic-accent) 20%, white), rgba(255,255,255,0.12)); }
+        .visual-card { border: 1px solid rgba(148,163,184,0.18); background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,247,251,0.95)); }
+        .nav-pill { border: 1px solid rgba(148,163,184,0.16); background: rgba(255,255,255,0.88); color: var(--c-text-main); }
+        .btn-secondary { border: 1px solid rgba(148, 163, 184, 0.18); background: rgba(255, 255, 255, 0.84); color: var(--c-text-main); }
+        .copy-body { line-height: 1.95; }
+        .article-figure { border: 1px solid rgba(148,163,184,0.16); background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(246,249,252,0.96)); box-shadow: 0 22px 54px rgba(148,163,184,0.12); }
+        .article-figure img { display: block; width: 100%; height: auto; border-radius: 1.35rem; }
+    </style>
+</head>
+
+<body>
+    <div class="fixed inset-0 z-[-2] pointer-events-none opacity-80" style="background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px); background-size: 42px 42px;"></div>
+    <div class="fixed inset-0 z-[-1] pointer-events-none" style="background: radial-gradient(circle at top left, rgba(20, 184, 166, 0.16), transparent 28%), radial-gradient(circle at top right, rgba(45, 212, 191, 0.08), transparent 24%);"></div>
+
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-8 h-8 bg-starta-teal rounded-lg flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                <span class="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+            </div>
+            <div class="hidden lg:flex items-center gap-10">
+                <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
+                    <a href="/#brain" class="hover:text-starta-teal transition-colors" data-key="nav_features">FEATURES</a>
+                    <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
+                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/Learn" class="hover:text-starta-teal transition-colors text-starta-darkTeal" data-key="nav_learn">LEARN</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
+                    <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
+                    <a href="/#pricing" class="hover:text-starta-teal transition-colors" data-key="nav_pricing">PRICING</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/Learn" class="btn-secondary hidden md:inline-flex rounded-full px-5 py-2 text-xs font-semibold tracking-widest" data-key="back_learn">Back to Learn</a>
+                <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-20 min-h-screen">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8">
+            <div class="grid gap-8 xl:grid-cols-[280px_minmax(0,1fr)]">
+                <aside class="glass-premium h-fit rounded-[2rem] p-5 reveal-block xl:sticky xl:top-28">
+                    <div class="text-sm font-display font-bold text-main" data-key="catalog_title">Catalog</div>
+                    <div class="mt-4 flex flex-col gap-2" id="catalogList"></div>
+                </aside>
+
+                <section class="surface-card rounded-[2.6rem] p-6 sm:p-8 lg:p-10 reveal-block">
+                    <div class="text-sm text-muted" id="breadcrumb"></div>
+                    <div class="cover-panel mt-5 rounded-[2rem] p-6 sm:p-8" id="heroCover"></div>
+                    <article class="mt-8">
+                        <div class="max-w-4xl">
+                            <div class="text-[0.72rem] font-semibold uppercase tracking-[0.24em]" id="topicCategory"></div>
+                            <h1 class="mt-4 text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-[-0.05em] text-main" id="topicTitle"></h1>
+                            <div class="mt-4 text-sm text-muted" id="topicMeta"></div>
+                            <p class="copy-body mt-8 text-lg text-muted" id="topicIntro"></p>
+                        </div>
+
+                        <div class="mt-10 space-y-10" id="topicSections"></div>
+                    </article>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+        const topics = window.STARTA_LEARN_TOPICS || [];
+        const translations = {
+            en: {
+                nav_features: "FEATURES", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "NEWS", nav_about: "ABOUT US", nav_pricing: "PRICING",
+                back_learn: "Back to Learn", catalog_title: "Catalog", breadcrumb_home: "Home", breadcrumb_learn: "Learn", open_topic: "Open topic"
+            },
+            ar: {
+                nav_features: "المزايا", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "الأخبار", nav_about: "معلومات عنا", nav_pricing: "الأسعار",
+                back_learn: "العودة إلى تعلم", catalog_title: "الفهرس", breadcrumb_home: "الرئيسية", breadcrumb_learn: "تعلّم", open_topic: "افتح الموضوع"
+            }
+        };
+        const state = { lang: 'en', topic: null };
+
+        function getStoredLanguage() {
+            const stored = localStorage.getItem('starta-lang') || localStorage.getItem('lang');
+            return stored === 'ar' ? 'ar' : 'en';
+        }
+
+        function getSlug() {
+            const parts = window.location.pathname.split('/').filter(Boolean);
+            return parts[1] || topics[0]?.slug;
+        }
+
+        function setLanguage(lang) {
+            state.lang = lang === 'ar' ? 'ar' : 'en';
+            localStorage.setItem('starta-lang', state.lang);
+            localStorage.setItem('lang', state.lang);
+            document.documentElement.lang = state.lang;
+            document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('langToggle').textContent = state.lang === 'ar' ? 'EN' : 'AR';
+            document.querySelectorAll('[data-key]').forEach((el) => {
+                const key = el.getAttribute('data-key');
+                if (translations[state.lang][key]) el.innerHTML = translations[state.lang][key];
+            });
+            renderTopic();
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderVisual(section, accent) {
+            const items = (section.visual?.items || []).map((item) => `
+                <div class="rounded-2xl bg-white/80 px-4 py-3 text-sm font-semibold text-main">${escapeHtml(item)}</div>
+            `).join('');
+            return `
+                <div class="visual-card rounded-[1.8rem] p-5" style="border-color:${accent}22;">
+                    <div class="text-[0.72rem] font-semibold uppercase tracking-[0.22em]" style="color:${accent}">${escapeHtml(section.visual?.title || '')}</div>
+                    <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${items}</div>
+                </div>
+            `;
+        }
+
+        function renderSectionImage(section) {
+            if (state.lang !== 'en' || !section.image?.src) return '';
+            return `
+                <figure class="article-figure overflow-hidden rounded-[1.9rem] p-4 sm:p-5">
+                    <img src="${escapeHtml(section.image.src)}" alt="${escapeHtml(section.image.alt || section.heading)}" loading="lazy">
+                    ${section.image.caption ? `<figcaption class="mt-4 text-sm leading-7 text-muted">${escapeHtml(section.image.caption)}</figcaption>` : ''}
+                </figure>
+            `;
+        }
+
+        function renderCatalog() {
+            const contentLang = state.lang;
+            const labels = translations[contentLang];
+            document.getElementById('catalogList').innerHTML = topics.map((topic) => {
+                const content = topic[contentLang];
+                const active = topic.slug === state.topic.slug;
+                return `
+                    <a href="/Learn/${topic.slug}" class="catalog-link rounded-[1.2rem] border border-border px-4 py-3 text-sm transition-colors ${active ? 'active' : ''}">
+                        <div class="font-semibold text-main">${escapeHtml(content.title)}</div>
+                        <div class="mt-1 text-xs text-muted">${escapeHtml(content.category)}</div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        function renderTopic() {
+            const content = state.topic[state.lang];
+            const labels = translations[state.lang];
+            document.title = `${content.title} | Starta Learn`;
+            document.getElementById('breadcrumb').innerHTML = `${labels.breadcrumb_home} / ${labels.breadcrumb_learn} / ${content.title}`;
+            document.getElementById('topicCategory').textContent = content.category;
+            document.getElementById('topicCategory').style.color = state.topic.accent;
+            document.getElementById('topicTitle').innerHTML = content.title;
+            document.getElementById('topicMeta').textContent = content.readTime;
+            document.getElementById('topicIntro').textContent = content.intro;
+            document.getElementById('heroCover').style.setProperty('--topic-accent', state.topic.accent);
+            document.getElementById('heroCover').innerHTML = `
+                <div class="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <div class="text-[0.72rem] font-semibold uppercase tracking-[0.22em]" style="color:${state.topic.accent}">${escapeHtml(content.category)}</div>
+                        <div class="mt-8 text-6xl font-display font-bold tracking-[-0.06em] text-main">${state.topic.icon}</div>
+                    </div>
+                    <div class="rounded-full border border-white/70 bg-white/70 px-4 py-2 text-sm font-bold text-slate-700">${escapeHtml(content.readTime)}</div>
+                </div>
+            `;
+            document.getElementById('topicSections').innerHTML = content.sections.map((section) => `
+                <section class="space-y-6">
+                    <div class="max-w-4xl">
+                        <h2 class="text-2xl font-display font-bold tracking-[-0.04em] text-main">${escapeHtml(section.heading)}</h2>
+                        <p class="copy-body mt-4 text-base text-muted">${escapeHtml(section.body)}</p>
+                    </div>
+                    ${renderSectionImage(section)}
+                    ${renderVisual(section, state.topic.accent)}
+                    <ul class="grid gap-3 md:grid-cols-3">
+                        ${(section.bullets || []).map((bullet) => `<li class="rounded-[1.4rem] border border-border bg-white/84 px-4 py-4 text-sm leading-7 text-main">${escapeHtml(bullet)}</li>`).join('')}
+                    </ul>
+                </section>
+            `).join('');
+            renderCatalog();
+        }
+
+        function revealSections() {
+            document.querySelectorAll('.reveal-block').forEach((element) => {
+                gsap.fromTo(element, { y: 24, opacity: 0 }, {
+                    y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+                    scrollTrigger: { trigger: element, start: 'top 88%' }
+                });
+            });
+        }
+
+        state.topic = topics.find((topic) => topic.slug === getSlug()) || topics[0];
+        document.getElementById('langToggle').addEventListener('click', () => setLanguage(state.lang === 'en' ? 'ar' : 'en'));
+        setLanguage(getStoredLanguage());
+        revealSections();
+    </script>
+</body>
+
+</html>

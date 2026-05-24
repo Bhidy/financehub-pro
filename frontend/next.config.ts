@@ -69,6 +69,34 @@ const nextConfig = {
         destination: '/home.html',
       },
       {
+        source: '/Funds',
+        destination: '/marketplace.html',
+      },
+      {
+        source: '/Fund',
+        destination: '/fund-details.html',
+      },
+      {
+        source: '/Funds/Compare',
+        destination: '/fund-compare.html',
+      },
+      {
+        source: '/Learn',
+        destination: '/learn.html',
+      },
+      {
+        source: '/Learn/:slug',
+        destination: '/learn-topic.html',
+      },
+      {
+        source: '/News',
+        destination: '/news.html',
+      },
+      {
+        source: '/News/:id',
+        destination: '/news-article.html',
+      },
+      {
         source: '/Market-Pulse',
         destination: '/market-pulse.html',
       },

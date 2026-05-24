@@ -112,6 +112,18 @@ async def get_egx_ohlc(symbol: str, period: str = "1y", limit: int = 500):
                     except Exception as e:
                         continue
             
+            # Robust Quantitative Data Cleaning (Spikes/Outliers Filter)
+            valid_closes = [h['close'] for h in history if h['close'] > 0]
+            if len(valid_closes) > 5:
+                sorted_closes = sorted(valid_closes)
+                median_close = sorted_closes[len(sorted_closes) // 2]
+                if median_close > 2.0:
+                    history = [
+                        h for h in history 
+                        if h['close'] >= median_close * 0.25 
+                        and h['close'] <= median_close * 4.0
+                    ]
+            
             return history
     except Exception as e:
         print(f"StockAnalysis OHLC error for {symbol}: {e}")

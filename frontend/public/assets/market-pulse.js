@@ -612,6 +612,48 @@
             document.querySelectorAll(".overview-tabs span").forEach((t) => t.classList.toggle("active", t === tab));
             renderOverviewTab();
         }));
+
+        // Theme Toggle handling
+        const themeBtn = byId("themeToggle");
+        if (themeBtn) {
+            const darkIcon = themeBtn.querySelector(".dark-icon");
+            const lightIcon = themeBtn.querySelector(".light-icon");
+            
+            const applyTheme = (theme) => {
+                document.documentElement.setAttribute("data-theme", theme);
+                localStorage.setItem("theme", theme);
+                if (darkIcon && lightIcon) {
+                    darkIcon.style.opacity = theme === "light" ? "0" : "1";
+                    lightIcon.style.opacity = theme === "light" ? "1" : "0";
+                }
+            };
+            
+            // Set initial theme
+            const savedTheme = localStorage.getItem("theme") || "dark";
+            applyTheme(savedTheme);
+            
+            themeBtn.addEventListener("click", () => {
+                const current = document.documentElement.getAttribute("data-theme") || "dark";
+                const nextTheme = current === "light" ? "dark" : "light";
+                applyTheme(nextTheme);
+            });
+            
+            // Sync theme changes across tabs/windows
+            window.addEventListener("storage", (e) => {
+                if (e.key === "theme") {
+                    applyTheme(e.newValue || "dark");
+                }
+            });
+            
+            // Fallback interval to sync theme changes from other sub-pages/iframes
+            setInterval(() => {
+                const current = document.documentElement.getAttribute("data-theme");
+                const saved = localStorage.getItem("theme") || "dark";
+                if (current !== saved) {
+                    applyTheme(saved);
+                }
+            }, 500);
+        }
     }
 
     bind();

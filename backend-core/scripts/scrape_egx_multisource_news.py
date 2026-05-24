@@ -24,12 +24,15 @@ logger = logging.getLogger("egx-multisource-news")
 class SourceJob:
     name: str
     script_name: str
+    language: str
 
 
 SOURCE_JOBS = [
-    SourceJob(name="Mubasher", script_name="scrape_mubasher_egx_news_scrapling.py"),
-    SourceJob(name="Zawya", script_name="scrape_zawya_egx_news_scrapling.py"),
-    SourceJob(name="ArabFinance", script_name="scrape_arabfinance_egx_news_scrapling.py"),
+    SourceJob(name="Mubasher EN", script_name="scrape_mubasher_egx_news_scrapling.py", language="en"),
+    SourceJob(name="Zawya EN", script_name="scrape_zawya_egx_news_scrapling.py", language="en"),
+    SourceJob(name="ArabFinance EN", script_name="scrape_arabfinance_egx_news_scrapling.py", language="en"),
+    SourceJob(name="Mubasher AR", script_name="scrape_mubasher_egx_news_scrapling.py", language="ar"),
+    SourceJob(name="ArabFinance AR", script_name="scrape_arabfinance_egx_news_scrapling.py", language="ar"),
 ]
 
 
@@ -67,6 +70,8 @@ def run_source_job(job: SourceJob, args: argparse.Namespace, script_dir: str) ->
         "--timeout",
         str(args.timeout),
     ]
+    if job.script_name != "scrape_zawya_egx_news_scrapling.py":
+        command.extend(["--language", job.language])
     if args.dry_run:
         command.append("--dry-run")
     if args.verbose:
@@ -99,6 +104,7 @@ async def report_combined_metrics(days: int) -> None:
             """
             SELECT
                 source,
+                content_language,
                 COUNT(*)::int AS total,
                 COUNT(*) FILTER (WHERE headline IS NOT NULL AND LENGTH(TRIM(headline)) > 0)::int AS with_title,
                 COUNT(*) FILTER (WHERE published_at IS NOT NULL)::int AS with_date,
@@ -108,8 +114,8 @@ async def report_combined_metrics(days: int) -> None:
             WHERE source_country = 'EG'
               AND source IN ('Mubasher', 'Zawya', 'ArabFinance')
               AND published_at >= $1
-            GROUP BY source
-            ORDER BY source
+            GROUP BY source, content_language
+            ORDER BY content_language, source
             """,
             cutoff_utc,
         )
@@ -133,8 +139,9 @@ async def report_combined_metrics(days: int) -> None:
         logger.info("Per-source coverage last %s days:", days)
         for row in source_rows:
             logger.info(
-                "%s -> total:%s title:%s date:%s image:%s body:%s",
+                "%s [%s] -> total:%s title:%s date:%s image:%s body:%s",
                 row["source"],
+                row["content_language"],
                 row["total"],
                 row["with_title"],
                 row["with_date"],

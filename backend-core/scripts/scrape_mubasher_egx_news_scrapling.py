@@ -32,6 +32,7 @@ from scrapling import Selector
 
 
 BASE_SECTION_URL = "https://english.mubasher.info/news/eg/pulse/stocks"
+ARABIC_BASE_SECTION_URL = "https://www.mubasher.info/news/eg/pulse/stocks"
 SOURCE_NAME = "Mubasher"
 SOURCE_COUNTRY = "EG"
 SOURCE_SECTION = "eg/pulse/stocks"
@@ -64,6 +65,7 @@ class ArticleRecord:
     external_id: str | None
     source_section: str
     source_country: str
+    content_language: str
     symbol: str | None
 
 
@@ -86,8 +88,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--base-url",
-        default=BASE_SECTION_URL,
+        default=None,
         help="Mubasher listing section URL.",
+    )
+    parser.add_argument(
+        "--language",
+        choices=("en", "ar"),
+        default="en",
+        help="Language of native stories to collect.",
     )
     parser.add_argument(
         "--dry-run",
@@ -157,12 +165,43 @@ def get_cairo_tz() -> timezone | ZoneInfo:
         return timezone.utc
 
 
+ARABIC_MONTHS = {
+    "يناير": "January",
+    "فبراير": "February",
+    "مارس": "March",
+    "أبريل": "April",
+    "ابريل": "April",
+    "مايو": "May",
+    "يونيو": "June",
+    "يوليو": "July",
+    "أغسطس": "August",
+    "اغسطس": "August",
+    "سبتمبر": "September",
+    "أكتوبر": "October",
+    "اكتوبر": "October",
+    "نوفمبر": "November",
+    "ديسمبر": "December",
+}
+
+
+def normalize_mubasher_datetime(value: str | None) -> str:
+    value = clean_text(value)
+    if not value:
+        return ""
+    value = value.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    for arabic, english in ARABIC_MONTHS.items():
+        value = value.replace(arabic, english)
+    value = re.sub(r"\s+ص$", " AM", value)
+    value = re.sub(r"\s+م$", " PM", value)
+    return value
+
+
 def parse_listing_datetime_to_utc(value: str | None, now_utc: datetime) -> datetime | None:
     """
     Listing pages expose dates like: '24 February 04:24 PM' (no year).
     Infer the year from current date and map to Cairo time.
     """
-    value = clean_text(value)
+    value = normalize_mubasher_datetime(value)
     if not value:
         return None
 
@@ -194,7 +233,7 @@ def parse_article_datetime_to_utc(value: str | None, now_utc: datetime) -> datet
     """
     Article pages usually expose dates like: '24 February 2026 04:24 PM'.
     """
-    value = clean_text(value)
+    value = normalize_mubasher_datetime(value)
     if not value:
         return None
 
@@ -314,9 +353,11 @@ def extract_article_body(article_doc) -> str:
 
 
 class MubasherEgxNewsScraper:
-    def __init__(self, timeout: int, now_utc: datetime):
+    def __init__(self, timeout: int, now_utc: datetime, content_language: str):
         self.timeout = timeout
         self.now_utc = now_utc
+        self.content_language = content_language
+        self.source_section = SOURCE_SECTION if content_language == "en" else f"{SOURCE_SECTION}/ar"
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -325,7 +366,7 @@ class MubasherEgxNewsScraper:
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
                 ),
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Language": "ar-EG,ar;q=0.9,en;q=0.6" if content_language == "ar" else "en-US,en;q=0.9",
             }
         )
 
@@ -448,8 +489,9 @@ class MubasherEgxNewsScraper:
             published_date_raw=published_raw or None,
             article_body=body,
             external_id=extract_external_id(card.url),
-            source_section=SOURCE_SECTION,
+            source_section=self.source_section,
             source_country=SOURCE_COUNTRY,
+            content_language=self.content_language,
             symbol=extract_symbol_from_article(doc),
         )
 
@@ -464,6 +506,7 @@ async def ensure_market_news_schema(conn: asyncpg.Connection) -> None:
             ADD COLUMN IF NOT EXISTS source_section VARCHAR(100),
             ADD COLUMN IF NOT EXISTS source_country VARCHAR(10),
             ADD COLUMN IF NOT EXISTS external_id VARCHAR(64),
+            ADD COLUMN IF NOT EXISTS content_language VARCHAR(2) NOT NULL DEFAULT 'en',
             ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
         """
     )
@@ -471,6 +514,24 @@ async def ensure_market_news_schema(conn: asyncpg.Connection) -> None:
         """
         CREATE INDEX IF NOT EXISTS idx_market_news_source_section_published
         ON market_news (source_country, source_section, published_at DESC);
+
+        CREATE INDEX IF NOT EXISTS idx_market_news_country_language_published
+        ON market_news (source_country, content_language, published_at DESC);
+        """
+    )
+    await conn.execute(
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint
+                WHERE conname = 'market_news_content_language_check'
+            ) THEN
+                ALTER TABLE market_news
+                ADD CONSTRAINT market_news_content_language_check
+                CHECK (content_language IN ('en', 'ar'));
+            END IF;
+        END $$;
         """
     )
 
@@ -523,11 +584,12 @@ async def upsert_articles(
             """
             INSERT INTO market_news (
                 symbol, headline, source, url, published_at, sentiment_score, created_at,
-                article_body, image_url, published_date_raw, source_section, source_country, external_id, updated_at
+                article_body, image_url, published_date_raw, source_section, source_country,
+                external_id, content_language, updated_at
             )
             VALUES (
                 $1, $2, $3, $4, $5, 0, NOW(),
-                $6, $7, $8, $9, $10, $11, NOW()
+                $6, $7, $8, $9, $10, $11, $12, NOW()
             )
             ON CONFLICT (url) DO UPDATE SET
                 symbol = COALESCE(EXCLUDED.symbol, market_news.symbol),
@@ -540,6 +602,7 @@ async def upsert_articles(
                 source_section = EXCLUDED.source_section,
                 source_country = EXCLUDED.source_country,
                 external_id = COALESCE(EXCLUDED.external_id, market_news.external_id),
+                content_language = EXCLUDED.content_language,
                 updated_at = NOW()
             """,
             db_symbol,
@@ -553,13 +616,14 @@ async def upsert_articles(
             record.source_section,
             record.source_country,
             record.external_id,
+            record.content_language,
         )
 
     return insert_count, update_count
 
 
 async def query_quality_metrics(
-    conn: asyncpg.Connection, cutoff_utc: datetime
+    conn: asyncpg.Connection, cutoff_utc: datetime, content_language: str, source_section: str
 ) -> dict[str, int]:
     row = await conn.fetchrow(
         """
@@ -573,11 +637,13 @@ async def query_quality_metrics(
         WHERE source = $1
           AND source_country = $2
           AND source_section = $3
-          AND published_at >= $4
+          AND content_language = $4
+          AND published_at >= $5
         """,
         SOURCE_NAME,
         SOURCE_COUNTRY,
-        SOURCE_SECTION,
+        source_section,
+        content_language,
         cutoff_utc,
     )
     return dict(row or {})
@@ -597,16 +663,18 @@ async def run(args: argparse.Namespace) -> None:
 
     now_utc = datetime.now(timezone.utc)
     cutoff_utc = now_utc - timedelta(days=args.days)
+    content_language = args.language
+    base_url = args.base_url or (ARABIC_BASE_SECTION_URL if content_language == "ar" else BASE_SECTION_URL)
     logger.info("Cutoff UTC: %s", cutoff_utc.isoformat())
 
-    scraper = MubasherEgxNewsScraper(timeout=args.timeout, now_utc=now_utc)
+    scraper = MubasherEgxNewsScraper(timeout=args.timeout, now_utc=now_utc, content_language=content_language)
 
     all_cards: list[ListingCard] = []
     seen_urls: set[str] = set()
     reached_cutoff = False
 
     for page in range(1, args.max_pages + 1):
-        list_url = args.base_url if page == 1 else f"{args.base_url}/{page}"
+        list_url = base_url if page == 1 else f"{base_url}/{page}"
         cards = scraper.extract_listing_cards(list_url)
         logger.info("Listing page %s -> %s cards", page, len(cards))
 
@@ -645,8 +713,9 @@ async def run(args: argparse.Namespace) -> None:
             skipped_old += 1
             continue
 
-        if not record.article_body:
-            logger.debug("Empty article body for %s", record.url)
+        if not (record.headline and record.published_at and record.image_url and record.article_body):
+            logger.debug("Skipping incomplete article for %s", record.url)
+            continue
 
         article_records.append(record)
         if idx % 20 == 0:
@@ -686,7 +755,7 @@ async def run(args: argparse.Namespace) -> None:
             await ensure_market_news_schema(conn)
             known_symbols = await load_known_symbols(conn)
             inserted, updated = await upsert_articles(conn, article_records, known_symbols)
-            metrics = await query_quality_metrics(conn, cutoff_utc)
+            metrics = await query_quality_metrics(conn, cutoff_utc, content_language, scraper.source_section)
 
             logger.info("DB upsert complete -> inserted:%s updated:%s", inserted, updated)
             logger.info(
@@ -707,13 +776,15 @@ async def run(args: argparse.Namespace) -> None:
                 WHERE source = $1
                   AND source_country = $2
                   AND source_section = $3
-                  AND published_at >= $4
+                  AND content_language = $4
+                  AND published_at >= $5
                 ORDER BY published_at DESC
                 LIMIT 3
                 """,
                 SOURCE_NAME,
                 SOURCE_COUNTRY,
-                SOURCE_SECTION,
+                scraper.source_section,
+                content_language,
                 cutoff_utc,
             )
             logger.info("Sample rows:")

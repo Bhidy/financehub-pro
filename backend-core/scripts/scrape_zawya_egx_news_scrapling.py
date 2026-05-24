@@ -575,6 +575,7 @@ class ZawyaEgxNewsScraper:
             source=SOURCE_NAME,
             source_section=source_section,
             source_country=SOURCE_COUNTRY,
+            content_language="en",
             symbol=symbol,
         )
 
@@ -700,6 +701,7 @@ async def run(args: argparse.Namespace) -> None:
                 cutoff_utc=cutoff_utc,
                 source_country=SOURCE_COUNTRY,
                 source_name=SOURCE_NAME,
+                content_language="en",
             )
 
             logger.info("DB upsert complete -> inserted:%s updated:%s", inserted, updated)

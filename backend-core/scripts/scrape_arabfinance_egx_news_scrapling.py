@@ -49,6 +49,7 @@ from egx_news_shared import (
 
 
 BASE_SECTION_URL = "https://www.arabfinance.com/en/news/newssinglecategory/2"
+ARABIC_BASE_SECTION_URL = "https://www.arabfinance.com/ar/news/newssinglecategory/2"
 SOURCE_NAME = "ArabFinance"
 SOURCE_COUNTRY = "EG"
 SOURCE_SECTION = "arabfinance/news/newssinglecategory/2"
@@ -111,6 +112,13 @@ EXCLUDE_MARKERS = (
     "remittances",
 )
 
+ARABIC_EGYPT_MARKERS = ("مصر", "المصري", "المصرية", "القاهرة", "الجنيه")
+ARABIC_MARKET_MARKERS = (
+    "البورصة", "سهم", "أسهم", "مؤشر", "تداول", "أرباح", "ربحية",
+    "القابضة", "بنك", "المصرف", "تمويل", "استثمار", "استثمارات",
+)
+ARABIC_EXCLUDE_MARKERS = ("سعر الصرف", "أسعار الذهب", "الذهب", "التضخم")
+
 
 logger = logging.getLogger("arabfinance-egx-news")
 
@@ -143,8 +151,14 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--base-url",
-        default=BASE_SECTION_URL,
+        default=None,
         help="ArabFinance listing section URL.",
+    )
+    parser.add_argument(
+        "--language",
+        choices=("en", "ar"),
+        default="en",
+        help="Language of native stories to collect.",
     )
     parser.add_argument(
         "--dry-run",
@@ -172,12 +186,18 @@ def parse_arabfinance_datetime(value: str | None) -> datetime | None:
         return None
 
     value = re.sub(r"^updated\s+", "", value, flags=re.IGNORECASE)
+    value = re.sub(r"^أخر\s+تحديث\s+(?:منذ\s+)?", "", value)
+    value = value.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    value = re.sub(r"\s+ص$", " AM", value)
+    value = re.sub(r"\s+م$", " PM", value)
     parsed = parse_datetime_with_formats(
         value,
         (
             "%m/%d/%Y %I:%M:%S %p",
             "%m/%d/%Y %H:%M:%S",
             "%m/%d/%Y %I:%M %p",
+            "%Y/%m/%d %I:%M:%S %p",
+            "%Y/%m/%d %H:%M:%S",
         ),
         assume_cairo_tz=True,
     )
@@ -255,15 +275,19 @@ def article_is_egypt_stock_or_index_news(
     body: str,
     url: str,
     symbol: str | None,
+    content_language: str,
 ) -> bool:
     combined = f"{headline}\n{body}\n{url}".lower()
 
-    has_egypt_marker = any(token in combined for token in EGYPT_MARKERS)
+    egypt_markers = ARABIC_EGYPT_MARKERS if content_language == "ar" else EGYPT_MARKERS
+    market_markers = ARABIC_MARKET_MARKERS if content_language == "ar" else MARKET_MARKERS
+    exclude_markers = ARABIC_EXCLUDE_MARKERS if content_language == "ar" else EXCLUDE_MARKERS
+    has_egypt_marker = any(token in combined for token in egypt_markers)
     if not has_egypt_marker:
         return False
 
-    has_market_marker = any(token in combined for token in MARKET_MARKERS)
-    has_exclude_marker = any(token in combined for token in EXCLUDE_MARKERS)
+    has_market_marker = any(token in combined for token in market_markers)
+    has_exclude_marker = any(token in combined for token in exclude_markers)
 
     if has_exclude_marker:
         return False
@@ -278,8 +302,11 @@ def article_is_egypt_stock_or_index_news(
 
 
 class ArabFinanceEgxNewsScraper:
-    def __init__(self, timeout: int):
+    def __init__(self, timeout: int, content_language: str):
         self.timeout = timeout
+        self.content_language = content_language
+        self.source_section = f"{SOURCE_SECTION}/{content_language}"
+        self.article_path = f"/{content_language}/news/newdetails/"
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -288,7 +315,7 @@ class ArabFinanceEgxNewsScraper:
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
                 ),
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Language": "ar-EG,ar;q=0.9,en;q=0.6" if content_language == "ar" else "en-US,en;q=0.9",
             }
         )
 
@@ -321,7 +348,7 @@ class ArabFinanceEgxNewsScraper:
         cards: list[ListingCard] = []
         item_nodes = doc.css("div.row.m-0.news-single-category > div")
         for item in item_nodes:
-            link = item.css('a[href*="/en/news/newdetails/"]')
+            link = item.css(f'a[href*="{self.article_path}"]')
             if not link:
                 continue
 
@@ -330,7 +357,7 @@ class ArabFinanceEgxNewsScraper:
                 continue
 
             full_url = urljoin(str(doc.url), href)
-            if "/en/news/newdetails/" not in full_url:
+            if self.article_path not in full_url:
                 continue
 
             title_node = item.css("div.news-thumb a.py-2")
@@ -426,8 +453,9 @@ class ArabFinanceEgxNewsScraper:
             article_body=body,
             external_id=extract_arabfinance_external_id(card.url),
             source=SOURCE_NAME,
-            source_section=SOURCE_SECTION,
+            source_section=self.source_section,
             source_country=SOURCE_COUNTRY,
+            content_language=self.content_language,
             symbol=symbol,
         )
 
@@ -439,6 +467,8 @@ async def run(args: argparse.Namespace) -> None:
         raise RuntimeError("DATABASE_URL is not set. Put it in environment or .env.")
 
     cutoff_utc = cutoff_from_days(args.days)
+    content_language = args.language
+    base_url = args.base_url or (ARABIC_BASE_SECTION_URL if content_language == "ar" else BASE_SECTION_URL)
     logger.info("Cutoff UTC: %s", cutoff_utc.isoformat())
 
     pool = await asyncpg.create_pool(
@@ -451,16 +481,17 @@ async def run(args: argparse.Namespace) -> None:
 
     try:
         async with pool.acquire() as conn:
-            await ensure_market_news_schema(conn)
+            if not args.dry_run:
+                await ensure_market_news_schema(conn)
             known_symbols = await load_known_symbols(conn)
 
-        scraper = ArabFinanceEgxNewsScraper(timeout=args.timeout)
+        scraper = ArabFinanceEgxNewsScraper(timeout=args.timeout, content_language=content_language)
 
         all_cards: list[ListingCard] = []
         seen_urls: set[str] = set()
 
         for page in range(1, args.max_pages + 1):
-            list_url = build_page_url(args.base_url, page)
+            list_url = build_page_url(base_url, page)
             cards = scraper.extract_listing_cards(list_url)
             logger.info("Listing page %s -> %s cards", page, len(cards))
 
@@ -514,6 +545,7 @@ async def run(args: argparse.Namespace) -> None:
                 body=record.article_body,
                 url=record.url,
                 symbol=record.symbol,
+                content_language=content_language,
             ):
                 skipped_irrelevant += 1
                 continue
@@ -556,6 +588,7 @@ async def run(args: argparse.Namespace) -> None:
                 cutoff_utc=cutoff_utc,
                 source_country=SOURCE_COUNTRY,
                 source_name=SOURCE_NAME,
+                content_language=content_language,
             )
 
             logger.info("DB upsert complete -> inserted:%s updated:%s", inserted, updated)
@@ -577,13 +610,15 @@ async def run(args: argparse.Namespace) -> None:
                 WHERE source = $1
                   AND source_country = $2
                   AND source_section = $3
-                  AND published_at >= $4
+                  AND content_language = $4
+                  AND published_at >= $5
                 ORDER BY published_at DESC
                 LIMIT 3
                 """,
                 SOURCE_NAME,
                 SOURCE_COUNTRY,
-                SOURCE_SECTION,
+                scraper.source_section,
+                content_language,
                 cutoff_utc,
             )
             logger.info("Sample rows:")

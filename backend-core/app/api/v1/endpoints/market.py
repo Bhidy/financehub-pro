@@ -116,13 +116,14 @@ async def get_news(
     source_country: str = None,
     source_section: str = None,
     days: int = None,
+    language: str = None,
 ):
     limit = max(1, min(limit, 1000))
 
     query = """
         SELECT
             id, symbol, headline, source, url, published_at, sentiment_score,
-            article_body, image_url, published_date_raw, source_section, source_country, external_id
+            article_body, image_url, published_date_raw, source_section, source_country, external_id, content_language
         FROM market_news
         WHERE 1=1
     """
@@ -154,6 +155,13 @@ async def get_news(
         params.append(days)
         idx += 1
 
+    if language:
+        lang_val = language.lower().strip()
+        if lang_val == "ar":
+            query += f" AND (content_language = 'ar' OR (content_language IS NULL AND headline ~ '[\\u0600-\\u06FF]'))"
+        elif lang_val == "en":
+            query += f" AND (content_language = 'en' OR (content_language IS NULL AND headline !~ '[\\u0600-\\u06FF]'))"
+
     query += f" ORDER BY published_at DESC LIMIT ${idx}"
     params.append(limit)
 
@@ -163,7 +171,7 @@ async def get_news(
     except Exception:
         # Backward-compatible fallback for older schemas lacking extended fields.
         fallback_query = """
-            SELECT id, symbol, headline, source, url, published_at, sentiment_score
+            SELECT id, symbol, headline, source, url, published_at, sentiment_score, content_language
             FROM market_news
             WHERE 1=1
         """
@@ -183,6 +191,13 @@ async def get_news(
             fallback_query += f" AND published_at >= NOW() - (${fallback_idx} * INTERVAL '1 day')"
             fallback_params.append(days)
             fallback_idx += 1
+
+        if language:
+            lang_val = language.lower().strip()
+            if lang_val == "ar":
+                fallback_query += f" AND (content_language = 'ar' OR (content_language IS NULL AND headline ~ '[\\u0600-\\u06FF]'))"
+            elif lang_val == "en":
+                fallback_query += f" AND (content_language = 'en' OR (content_language IS NULL AND headline !~ '[\\u0600-\\u06FF]'))"
 
         fallback_query += f" ORDER BY published_at DESC LIMIT ${fallback_idx}"
         fallback_params.append(limit)

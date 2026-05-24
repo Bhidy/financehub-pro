@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funds Marketplace | Starta Markets</title>
+    <meta name="description"
+        content="Explore the full Egypt mutual funds universe with Starta. Filter by manager, performance, risk, and Shariah status with a premium research-grade interface.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'var(--c-page)',
+                        surface: 'var(--c-surface)',
+                        panel: 'var(--c-panel)',
+                        main: 'var(--c-text-main)',
+                        muted: 'var(--c-text-muted)',
+                        border: 'var(--c-border)',
+                        starta: {
+                            teal: '#14B8A6',
+                            darkTeal: '#0F766E',
+                            accent: '#2DD4BF',
+                            ink: '#0F172A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        premium: 'var(--shadow-premium)',
+                        halo: 'var(--shadow-halo)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --c-page: #f4f7fb;
+            --c-surface: #ffffff;
+            --c-panel: rgba(255, 255, 255, 0.86);
+            --c-text-main: #0f172a;
+            --c-text-muted: #5b6677;
+            --c-border: rgba(148, 163, 184, 0.18);
+            --c-border-strong: rgba(15, 118, 110, 0.22);
+            --c-soft: #ecf3f8;
+            --c-soft-2: #e2f7f2;
+            --c-hero: linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(45, 212, 191, 0.03) 40%, rgba(255, 255, 255, 0) 70%);
+            --c-grid: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px);
+            --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.18);
+            --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.12);
+            --glass-bg: rgba(255, 255, 255, 0.76);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            --glass-blur: 22px;
+            --teal: #14B8A6;
+            --teal-dark: #0F766E;
+            --ink: #0f172a;
+        }
+
+        html[dir="rtl"] body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        html[dir="rtl"] .font-display {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        body {
+            background: var(--c-page);
+            color: var(--c-text-main);
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+        }
+
+        body.compare-dock-open {
+            padding-bottom: 11.5rem;
+        }
+
+        .glass-premium {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .surface-card {
+            background:
+                radial-gradient(circle at top right, rgba(45, 212, 191, 0.16), transparent 36%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(252, 254, 255, 0.92));
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 22px 54px rgba(148, 163, 184, 0.14);
+        }
+
+        .metric-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 247, 251, 0.88));
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 18px 42px rgba(148, 163, 184, 0.12);
+        }
+
+        .filter-shell {
+            background:
+                radial-gradient(circle at 0% 0%, rgba(20, 184, 166, 0.12), transparent 35%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 252, 255, 0.94));
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08);
+        }
+
+        .fund-card {
+            background:
+                radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 28%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 24px 52px rgba(148, 163, 184, 0.12);
+            transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+        }
+
+        .fund-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(20, 184, 166, 0.28);
+            box-shadow: 0 28px 62px rgba(20, 184, 166, 0.1);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--c-text-main);
+        }
+
+        .chip button {
+            width: 1.1rem;
+            height: 1.1rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.08);
+            color: var(--c-text-main);
+            font-size: 0.7rem;
+            line-height: 1;
+        }
+
+        .period-btn,
+        .view-btn {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--c-text-muted);
+            transition: all 180ms ease;
+        }
+
+        .period-btn.active,
+        .view-btn.active {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.14), rgba(45, 212, 191, 0.08));
+            color: var(--teal-dark);
+            border-color: rgba(15, 118, 110, 0.2);
+            box-shadow: 0 12px 24px rgba(20, 184, 166, 0.1);
+        }
+
+        .control-input,
+        .control-select {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            color: var(--c-text-main);
+            border-radius: 1rem;
+            min-height: 3.1rem;
+            width: 100%;
+            transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .control-input:focus,
+        .control-select:focus {
+            outline: none;
+            border-color: rgba(15, 118, 110, 0.35);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.08);
+        }
+
+        .control-select {
+            appearance: none;
+            -webkit-appearance: none;
+            padding-inline-end: 2.8rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235b6677'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.8' d='m6 9 6 6 6-6' /%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.95rem center;
+            background-size: 1rem;
+        }
+
+        html[dir="rtl"] .control-select {
+            background-position: left 0.95rem center;
+        }
+
+        .nav-pill {
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--c-text-main);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #14B8A6 20%, #0f766e 100%);
+            color: #fff;
+            border: 1px solid rgba(45, 212, 191, 0.35);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-halo);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--c-text-main);
+        }
+
+        .compare-btn {
+            border: 1px solid rgba(15, 118, 110, 0.16);
+            background: rgba(240, 253, 250, 0.94);
+            color: var(--teal-dark);
+            transition: all 180ms ease;
+        }
+
+        .compare-btn.active {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.18), rgba(45, 212, 191, 0.08));
+            border-color: rgba(15, 118, 110, 0.32);
+            box-shadow: 0 12px 24px rgba(20, 184, 166, 0.12);
+        }
+
+        .compare-dock {
+            position: fixed;
+            inset-inline: 0;
+            bottom: 1.1rem;
+            z-index: 70;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(120%);
+            transition: opacity 240ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .compare-dock.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .compare-dock-shell {
+            width: min(1280px, calc(100vw - 1.5rem));
+            pointer-events: auto;
+        }
+
+        .compare-tray {
+            background:
+                radial-gradient(circle at 8% 18%, rgba(20, 184, 166, 0.18), transparent 24%),
+                radial-gradient(circle at 88% 24%, rgba(15, 118, 110, 0.08), transparent 22%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 255, 0.92));
+            border: 1px solid rgba(15, 118, 110, 0.16);
+            box-shadow: 0 34px 70px rgba(15, 23, 42, 0.14), 0 14px 34px rgba(20, 184, 166, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .compare-dock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.55rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 118, 110, 0.12);
+            background: rgba(240, 253, 250, 0.9);
+            color: var(--teal-dark);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .compare-dock-counter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 0.55rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%);
+            color: white;
+            font-size: 0.84rem;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(20, 184, 166, 0.2);
+        }
+
+        .compare-dock-title {
+            font-size: clamp(1rem, 1.2vw, 1.1rem);
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--c-text-main);
+        }
+
+        .compare-dock-hint {
+            font-size: 0.84rem;
+            line-height: 1.55;
+            color: var(--c-text-muted);
+        }
+
+        .compare-slots {
+            display: flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+        }
+
+        .compare-slot {
+            width: 0.7rem;
+            height: 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+        }
+
+        .compare-slot.active {
+            background: linear-gradient(135deg, #14B8A6 0%, #2DD4BF 100%);
+            border-color: rgba(15, 118, 110, 0.18);
+            box-shadow: 0 8px 16px rgba(20, 184, 166, 0.18);
+        }
+
+        .compare-selection-row {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            overflow-x: auto;
+            padding-bottom: 0.1rem;
+            scrollbar-width: none;
+        }
+
+        .compare-selection-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .compare-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.84rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 12px 26px rgba(148, 163, 184, 0.1);
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--c-text-main);
+            white-space: nowrap;
+        }
+
+        .compare-pill button {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.08);
+            color: var(--c-text-main);
+            font-size: 0.72rem;
+            line-height: 1;
+        }
+
+        .compare-pill-placeholder {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 11.5rem;
+            padding: 0.84rem 1rem;
+            border-radius: 999px;
+            border: 1px dashed rgba(148, 163, 184, 0.28);
+            background: rgba(255, 255, 255, 0.42);
+            color: var(--c-text-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        html[dir="rtl"] .compare-dock .rtl-order-fix {
+            flex-direction: row-reverse;
+        }
+
+        .mini-chart {
+            position: relative;
+            min-height: 5.6rem;
+        }
+
+        .mini-chart::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            background: linear-gradient(90deg, rgba(228, 235, 244, 0.9), rgba(245, 248, 251, 0.95), rgba(228, 235, 244, 0.9));
+            background-size: 200% 100%;
+            animation: shimmer 1.5s linear infinite;
+        }
+
+        .mini-chart.ready::before,
+        .mini-chart.empty::before {
+            display: none;
+        }
+
+        .mini-chart svg {
+            position: relative;
+            z-index: 1;
+        }
+
+        .mini-chart-canvas {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mini-chart-tooltip {
+            position: absolute;
+            inset-inline-start: 1rem;
+            top: 0.85rem;
+            z-index: 2;
+            min-width: 7rem;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.95rem;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 140ms ease, transform 140ms ease;
+            pointer-events: none;
+        }
+
+        .mini-chart-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mini-chart-tooltip-label {
+            font-size: 0.62rem;
+            line-height: 1;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--c-text-muted);
+        }
+
+        .mini-chart-tooltip-value {
+            margin-top: 0.45rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--c-text-main);
+        }
+
+        .table-shell {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 20px 46px rgba(148, 163, 184, 0.1);
+        }
+
+        .table-row:hover {
+            background: rgba(20, 184, 166, 0.04);
+        }
+
+        .section-tag {
+            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.24em;
+            color: var(--teal-dark);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #0f172a 30%, #0f766e 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .rtl-flip {
+            transform: scaleX(-1);
+        }
+
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-stack {
+                grid-template-columns: 1fr;
+            }
+
+            body.compare-dock-open {
+                padding-bottom: 15rem;
+            }
+
+            .compare-dock {
+                bottom: 0.75rem;
+            }
+
+            .compare-dock-shell {
+                width: calc(100vw - 1rem);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--c-page);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.44);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-starta-teal selection:text-white">
+    <div class="fixed inset-0 z-[-3]" style="background: var(--c-page);"></div>
+    <div class="fixed inset-0 z-[-2] pointer-events-none opacity-80" style="background-image: var(--c-grid); background-size: 42px 42px;"></div>
+    <div class="fixed inset-0 z-[-1] pointer-events-none" style="background: var(--c-hero);"></div>
+
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-8 h-8 bg-starta-teal rounded-lg flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                <span class="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-10">
+                <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
+                    <a href="/#brain" class="hover:text-starta-teal transition-colors" data-key="nav_features">FEATURES</a>
+                    <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
+                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
+                    <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
+                    <a href="/#pricing" class="hover:text-starta-teal transition-colors" data-key="nav_pricing">PRICING</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="window.location.href='https://startamarkets.com/AiChat'"
+                    class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
+                    data-key="nav_cta">
+                    Try Now
+                </button>
+                <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-20 min-h-screen">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8">
+            <section class="relative overflow-hidden rounded-[2.5rem] border border-border bg-white/70 px-6 py-10 sm:px-8 lg:px-12 lg:py-14 shadow-premium reveal-block">
+                <div class="absolute inset-y-0 right-0 w-[38%] hidden xl:block"
+                    style="background: radial-gradient(circle at 20% 50%, rgba(20, 184, 166, 0.18), transparent 38%), radial-gradient(circle at 80% 10%, rgba(15, 118, 110, 0.1), transparent 28%);"></div>
+                <h1 class="relative mx-auto max-w-4xl text-center text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-[-0.04em] leading-[1] text-main"
+                    data-key="marketplace_title">
+                    Comprehensive coverage across every mutual fund.
+                </h1>
+            </section>
+
+            <section id="filters" class="mt-8 reveal-block">
+                <div class="filter-shell rounded-[2.4rem] p-5 sm:p-6 lg:p-7">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                            <div class="flex items-center gap-2 self-start xl:self-auto">
+                                <button id="gridViewBtn" class="view-btn active rounded-full px-4 py-2 text-sm font-semibold" data-view="grid" data-key="grid_view">Grid</button>
+                                <button id="tableViewBtn" class="view-btn rounded-full px-4 py-2 text-sm font-semibold" data-view="table" data-key="table_view">Table</button>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 lg:grid-cols-12 mobile-stack">
+                            <label class="lg:col-span-4">
+                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="search_label">Search fund</span>
+                                <input id="fundSearch" type="text" class="control-input px-4 text-sm"
+                                    placeholder="Search by fund or manager">
+                            </label>
+                            <label class="lg:col-span-2">
+                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="type_label">Fund type</span>
+                                <select id="fundTypeFilter" class="control-select px-4 text-sm"></select>
+                            </label>
+                            <label class="lg:col-span-2">
+                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="manager_label">Manager</span>
+                                <select id="managerFilter" class="control-select px-4 text-sm"></select>
+                            </label>
+                            <label class="lg:col-span-2">
+                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="risk_label">Risk</span>
+                                <select id="riskFilter" class="control-select px-4 text-sm"></select>
+                            </label>
+                            <label class="lg:col-span-2">
+                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="sort_label">Sort by</span>
+                                <select id="sortSelect" class="control-select px-4 text-sm"></select>
+                            </label>
+                        </div>
+
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                            <div class="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
+                                <div class="flex items-center gap-3">
+                                    <button id="shariahToggle"
+                                        class="btn-secondary rounded-full px-4 py-2.5 text-sm font-semibold">
+                                        <span data-key="shariah_only">Shariah only</span>
+                                    </button>
+                                    <button id="resetFilters" class="btn-secondary rounded-full px-4 py-2.5 text-sm font-semibold" data-key="reset_btn">Reset</button>
+                                </div>
+                                <div class="flex flex-wrap gap-2" id="periodSelector">
+                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="3m">3M</button>
+                                    <button class="period-btn active rounded-full px-4 py-2 text-sm font-semibold" data-period="ytd">YTD</button>
+                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="1y">1Y</button>
+                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="3y">3Y</button>
+                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="5y">5Y</button>
+                                </div>
+                            </div>
+
+                            <div class="text-sm font-medium text-muted">
+                                <span id="resultsCount" class="font-display text-2xl font-bold tracking-[-0.04em] text-main">0</span>
+                                <span data-key="results_label">funds matching your filters</span>
+                            </div>
+                        </div>
+
+                        <div id="activeFilters" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mt-8">
+                <div id="fundsGrid" class="grid gap-5 lg:grid-cols-2"></div>
+
+                <div id="fundsTableShell" class="hidden table-shell overflow-hidden rounded-[2rem]">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-slate-50/90 text-left">
+                                <tr class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
+                                    <th class="px-5 py-4" data-key="th_fund">Fund</th>
+                                    <th class="px-5 py-4" data-key="th_manager">Manager</th>
+                                    <th class="px-5 py-4" data-key="th_type">Type</th>
+                                    <th class="px-5 py-4" data-key="th_nav">NAV</th>
+                                    <th class="px-5 py-4" data-key="th_period_return">Return</th>
+                                    <th class="px-5 py-4" data-key="th_update">Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fundsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-white/88 px-8 py-16 text-center shadow-premium">
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-starta-teal/10 text-starta-teal">
+                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m-3 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
+                        </svg>
+                    </div>
+                    <h3 class="mt-5 text-2xl font-display font-bold text-main" data-key="empty_title">No funds matched this filter set.</h3>
+                    <p class="mt-2 text-muted" data-key="empty_desc">Reset the filters or broaden the manager and type selection to restore the full Egypt universe.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <section id="compareTray" class="compare-dock hidden" aria-live="polite">
+        <div class="compare-dock-shell">
+            <div class="compare-tray rounded-[2rem] px-4 py-4 sm:px-5 sm:py-5 lg:px-6">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between rtl-order-fix">
+                    <div class="flex min-w-0 flex-col gap-3 lg:max-w-[24rem]">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="compare-dock-badge" data-key="compare_tag">Compare funds</span>
+                            <span id="compareCount" class="compare-dock-counter">0</span>
+                            <div class="compare-slots" id="compareSlots" aria-hidden="true"></div>
+                        </div>
+                        <div>
+                            <div class="compare-dock-title" data-key="compare_title">Build a side-by-side view before you decide.</div>
+                            <p class="mt-1 compare-dock-hint" data-key="compare_hint">Select between 2 and 4 funds to compare returns, NAV, manager quality, and chart history.</p>
+                        </div>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <div id="compareSelectionList" class="compare-selection-row"></div>
+                    </div>
+
+                    <div class="flex shrink-0 items-center gap-3 rtl-order-fix">
+                        <button id="clearCompare" class="btn-secondary rounded-full px-4 py-2.5 text-sm font-semibold" data-key="compare_clear">Clear</button>
+                        <button id="openCompare" class="btn-primary rounded-full px-5 py-2.5 text-sm font-semibold" data-key="compare_cta">Open comparison</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-24 bg-surface border-t border-border mt-20">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <h2 class="text-3xl font-display font-bold text-main mb-8" data-key="close_title">Research with clarity, then act.</h2>
+            <p class="text-muted text-lg mb-12" data-key="close_text">
+                Starta turns the full mutual-funds market into a cleaner workflow, from discovery to fund-level due diligence.
+            </p>
+            <button onclick="window.location.href='https://startamarkets.com/AiChat'"
+                class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Try Starta Now</button>
+            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">&copy; 2026 Starta Financial Intelligence.</div>
+        </div>
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const translations = {
+            en: {
+                nav_features: "FEATURES",
+                nav_learn: "LEARN",
+                nav_mobile: "MUTUAL FUNDS",
+                nav_pulse: "MARKET PULSE",
+                nav_news: "NEWS",
+                nav_about: "ABOUT US",
+                nav_pricing: "PRICING",
+                nav_cta: "TRY NOW",
+                marketplace_tag: "Investment hub",
+                marketplace_title: "Comprehensive coverage across every mutual fund.",
+                grid_view: "Grid",
+                table_view: "Table",
+                search_label: "Search fund",
+                search_placeholder: "Search by fund or manager",
+                type_label: "Fund type",
+                manager_label: "Manager",
+                risk_label: "Risk",
+                sort_label: "Sort by",
+                shariah_only: "Shariah only",
+                reset_btn: "Reset",
+                results_label: "funds matching your filters",
+                sort_period_desc: "Period return",
+                sort_nav_desc: "Highest NAV",
+                sort_nav_asc: "Lowest NAV",
+                sort_aum_desc: "Largest AUM",
+                sort_name_asc: "Name A-Z",
+                sort_updated_desc: "Latest update",
+                th_fund: "Fund",
+                th_manager: "Manager",
+                th_type: "Type",
+                th_nav: "NAV",
+                th_period_return: "Return",
+                th_update: "Updated",
+                empty_title: "No funds matched this filter set.",
+                empty_desc: "Reset the filters or broaden the manager and type selection to restore the full Egypt universe.",
+                close_title: "Research with clarity, then act.",
+                close_text: "Starta turns the full mutual-funds market into a cleaner workflow, from discovery to fund-level due diligence.",
+                close_btn: "Try Starta Now",
+                all_types: "All types",
+                all_managers: "All managers",
+                all_risks: "All risk buckets",
+                filter_search: "Search",
+                filter_type: "Type",
+                filter_manager: "Manager",
+                filter_risk: "Risk",
+                filter_shariah: "Shariah only",
+                invest_now: "View profile",
+                no_chart: "No history yet",
+                updated: "Updated",
+                nav: "NAV",
+                aum: "AUM",
+                latest: "Latest",
+                one_line: "Live NAV history",
+                risk_low: "Low",
+                risk_medium: "Medium",
+                risk_high: "High",
+                risk_unclassified: "Unclassified",
+                type_unclassified: "Investment fund",
+                manager_unavailable: "Manager unavailable"
+                ,
+                compare_tag: "Compare funds",
+                compare_title: "Keep your short list in view.",
+                compare_hint: "Choose 2 to 4 funds, then open a cleaner side-by-side comparison when you're ready.",
+                compare_cta: "Open comparison",
+                compare_clear: "Clear",
+                compare_add: "Compare",
+                compare_added: "Selected",
+                compare_limit: "You can compare up to 4 funds.",
+                compare_placeholder: "Choose another fund",
+                compare_count: "selected"
+            },
+            ar: {
+                nav_features: "المزايا",
+                nav_learn: "تعلّم",
+                nav_mobile: "الصناديق الاستثمارية",
+                nav_pulse: "نبض السوق",
+                nav_news: "الأخبار",
+                nav_about: "معلومات عنا",
+                nav_pricing: "الأسعار",
+                nav_cta: "جرّب الآن",
+                marketplace_tag: "مركز الاستثمار",
+                marketplace_title: "تغطيه شاملة لكل الصناديق الاستثمارية",
+                grid_view: "بطاقات",
+                table_view: "جدول",
+                search_label: "ابحث عن صندوق",
+                search_placeholder: "ابحث باسم الصندوق أو المدير",
+                type_label: "نوع الصندوق",
+                manager_label: "مدير الاستثمار",
+                risk_label: "المخاطر",
+                sort_label: "الترتيب",
+                shariah_only: "متوافق مع الشريعة فقط",
+                reset_btn: "إعادة تعيين",
+                results_label: "صندوقاً مطابقاً للفلاتر",
+                sort_period_desc: "أعلى عائد للفترة",
+                sort_nav_desc: "أعلى NAV",
+                sort_nav_asc: "أقل NAV",
+                sort_aum_desc: "أكبر حجم أصول",
+                sort_name_asc: "الاسم أ-ي",
+                sort_updated_desc: "الأحدث تحديثاً",
+                th_fund: "الصندوق",
+                th_manager: "المدير",
+                th_type: "النوع",
+                th_nav: "NAV",
+                th_period_return: "العائد",
+                th_update: "آخر تحديث",
+                empty_title: "لم نجد صناديق بهذا المزيج من الفلاتر.",
+                empty_desc: "أعد ضبط الفلاتر أو وسّع اختيار المدير والنوع لاستعادة كامل سوق مصر.",
+                close_title: "ابحث بوضوح ثم تحرك بثقة.",
+                close_text: "تحول ستارتا سوق الصناديق بالكامل إلى تجربة أنظف من الاكتشاف وحتى دراسة كل صندوق.",
+                close_btn: "ابدأ مع ستارتا",
+                all_types: "كل الأنواع",
+                all_managers: "كل المديرين",
+                all_risks: "كل مستويات المخاطر",
+                filter_search: "بحث",
+                filter_type: "النوع",
+                filter_manager: "المدير",
+                filter_risk: "المخاطر",
+                filter_shariah: "شريعة فقط",
+                invest_now: "عرض الصفحة",
+                no_chart: "لا يوجد تاريخ بعد",
+                updated: "التحديث",
+                nav: "NAV",
+                aum: "الأصول",
+                latest: "الأحدث",
+                one_line: "تاريخ NAV حقيقي",
+                risk_low: "منخفضة",
+                risk_medium: "متوسطة",
+                risk_high: "مرتفعة",
+                risk_unclassified: "غير مصنفة",
+                type_unclassified: "صندوق استثمار",
+                manager_unavailable: "المدير غير متاح"
+                ,
+                compare_tag: "مقارنة الصناديق",
+                compare_title: "احتفظ بقائمتك المختارة أمامك.",
+                compare_hint: "اختر من صندوقين إلى أربعة، ثم افتح مقارنة أوضح وأكثر احترافية عندما تصبح جاهزاً.",
+                compare_cta: "افتح المقارنة",
+                compare_clear: "مسح",
+                compare_add: "قارن",
+                compare_added: "محدد",
+                compare_limit: "يمكنك مقارنة 4 صناديق كحد أقصى.",
+                compare_placeholder: "اختر صندوقاً آخر",
+                compare_count: "محدد"
+            }
+        };
+
+        const state = {
+            funds: [],
+            filtered: [],
+            lang: 'en',
+            period: 'ytd',
+            view: 'grid',
+            shariahOnly: false,
+            compareIds: [],
+        };
+        const DEFAULT_LOGO = '/assets/funds/starta-fund-placeholder.svg';
+        const COMPARE_STORAGE_KEY = 'starta-funds-compare';
+
+        const navHistoryCache = new Map();
+        const miniChartInstances = new Map();
+        let chartObserver = null;
+
+        const grid = document.getElementById('fundsGrid');
+        const tableShell = document.getElementById('fundsTableShell');
+        const tableBody = document.getElementById('fundsTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const activeFiltersEl = document.getElementById('activeFilters');
+        const resultsCount = document.getElementById('resultsCount');
+        const compareTray = document.getElementById('compareTray');
+        const compareSelectionList = document.getElementById('compareSelectionList');
+        const compareCount = document.getElementById('compareCount');
+        const compareSlots = document.getElementById('compareSlots');
+        const fundSearch = document.getElementById('fundSearch');
+        const typeFilter = document.getElementById('fundTypeFilter');
+        const managerFilter = document.getElementById('managerFilter');
+        const riskFilter = document.getElementById('riskFilter');
+        const sortSelect = document.getElementById('sortSelect');
+        const shariahToggle = document.getElementById('shariahToggle');
+        const langToggle = document.getElementById('langToggle');
+
+        const periodMap = {
+            '3m': ['returns_3m', 'profit_3month'],
+            'ytd': ['returns_ytd', 'ytd_return'],
+            '1y': ['returns_1y', 'one_year_return'],
+            '3y': ['returns_3y', 'three_year_return'],
+            '5y': ['returns_5y', 'five_year_return']
+        };
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        const safeNumber = (value) => {
+            if (value === null || value === undefined || value === '') return null;
+            const num = Number(value);
+            return Number.isFinite(num) ? num : null;
+        };
+
+        const getLocale = () => state.lang === 'ar' ? 'ar-EG' : 'en-US';
+        const getLabels = () => translations[state.lang];
+
+        function getStoredLanguage() {
+            const stored = localStorage.getItem('starta-lang') || localStorage.getItem('lang');
+            return stored === 'ar' ? 'ar' : 'en';
+        }
+
+        function getStoredCompareIds() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(COMPARE_STORAGE_KEY) || '[]');
+                return Array.isArray(raw) ? raw.map((value) => String(value)).filter(Boolean).slice(0, 4) : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function persistCompareIds() {
+            localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(state.compareIds.slice(0, 4)));
+        }
+
+        function normalizeText(value) {
+            return String(value ?? '').toLowerCase().trim();
+        }
+
+        function localizedPair(primary, fallback) {
+            const first = String(primary || '').trim();
+            if (first) return first;
+            const second = String(fallback || '').trim();
+            return second || null;
+        }
+
+        function deriveRisk(fund) {
+            const raw = normalizeText([fund.risk_level_en, fund.risk_level].filter(Boolean).join(' '));
+            if (raw.includes('high') || raw.includes('مرتفع') || raw.includes('عالية')) return 'high';
+            if (raw.includes('low') || raw.includes('منخفض')) return 'low';
+            if (raw.includes('medium') || raw.includes('متوسط') || raw.includes('متوسطة')) return 'medium';
+            return 'unclassified';
+        }
+
+        function getRiskLabel(bucket) {
+            const labels = getLabels();
+            if (bucket === 'high') return labels.risk_high;
+            if (bucket === 'low') return labels.risk_low;
+            if (bucket === 'medium') return labels.risk_medium;
+            return labels.risk_unclassified;
+        }
+
+        function normalizeType(raw) {
+            const value = String(raw || '').trim();
+            return value || null;
+        }
+
+        function getFundTypeName(fund, lang = state.lang) {
+            if (lang === 'ar') {
+                return localizedPair(fund.fund_type, fund.classification) || getLabels().type_unclassified;
+            }
+
+            return localizedPair(fund.fund_type_en, fund.fund_type)
+                || localizedPair(fund.classification_en, fund.classification)
+                || getLabels().type_unclassified;
+        }
+
+        function getFundName(fund, lang = state.lang) {
+            if (lang === 'ar') {
+                return localizedPair(fund.fund_name, fund.fund_name_en) || 'Egypt Fund';
+            }
+            return localizedPair(fund.fund_name_en, fund.fund_name) || 'Egypt Fund';
+        }
+
+        function getManagerName(fund, lang = state.lang) {
+            const english = localizedPair(fund.manager_name_en, fund.manager);
+            const arabic = localizedPair(fund.manager_name, fund.manager_name_en) || localizedPair(fund.issuer, fund.issuer_en);
+            return (lang === 'ar' ? localizedPair(arabic, english) : localizedPair(english, arabic)) || getLabels().manager_unavailable;
+        }
+
+        function getReturnForPeriod(fund, period = state.period) {
+            const candidates = periodMap[period] || [];
+            for (const key of candidates) {
+                const value = safeNumber(fund[key]);
+                if (value !== null) return value;
+            }
+            return null;
+        }
+
+        function formatPercent(value) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            const num = Number(value);
+            return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
+        }
+
+        function formatNumber(value, options = {}) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            return new Intl.NumberFormat(getLocale(), { maximumFractionDigits: 2, ...options }).format(Number(value));
+        }
+
+        function formatDate(value) {
+            if (!value) return '—';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleDateString(getLocale(), {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function normalizeFund(fund) {
+            const aum = safeNumber(fund.aum_millions ?? fund.aum);
+            const latestNav = safeNumber(fund.latest_nav);
+            return {
+                ...fund,
+                fund_id: fund.fund_id || fund.symbol,
+                riskBucket: deriveRisk(fund),
+                latestNav,
+                latestNavDisplay: latestNav,
+                aumValue: aum,
+                lastUpdated: fund.last_update_date || fund.last_updated || null,
+                isShariah: Boolean(fund.is_shariah),
+                currency: fund.currency || 'EGP',
+                logo_url: fund.logo_url || DEFAULT_LOGO,
+                logo_scale: Number(fund.logo_scale || 1) || 1,
+            };
+        }
+
+        function setLanguage(lang) {
+            state.lang = lang === 'ar' ? 'ar' : 'en';
+            localStorage.setItem('starta-lang', state.lang);
+            localStorage.setItem('lang', state.lang);
+            document.documentElement.lang = state.lang;
+            document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+            langToggle.textContent = state.lang === 'ar' ? 'EN' : 'AR';
+            document.querySelectorAll('[data-key]').forEach((el) => {
+                const key = el.getAttribute('data-key');
+                if (translations[state.lang][key]) el.innerHTML = translations[state.lang][key];
+            });
+            fundSearch.placeholder = getLabels().search_placeholder;
+            populateFilterOptions();
+            renderFunds();
+        }
+
+        function populateSelect(select, items, defaultLabel, currentValue) {
+            select.innerHTML = [`<option value="">${escapeHtml(defaultLabel)}</option>`]
+                .concat(items.map((item) => `<option value="${escapeHtml(item)}"${item === currentValue ? ' selected' : ''}>${escapeHtml(item)}</option>`))
+                .join('');
+        }
+
+        function populateFilterOptions() {
+            const types = [...new Set(state.funds.map((fund) => getFundTypeName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            const managers = [...new Set(state.funds.map((fund) => getManagerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            const risks = ['low', 'medium', 'high', 'unclassified'].filter((bucket) => state.funds.some((fund) => fund.riskBucket === bucket));
+
+            populateSelect(typeFilter, types, getLabels().all_types, typeFilter.value);
+            populateSelect(managerFilter, managers, getLabels().all_managers, managerFilter.value);
+            populateSelect(riskFilter, risks.map((bucket) => getRiskLabel(bucket)), getLabels().all_risks, riskFilter.value);
+
+            sortSelect.innerHTML = [
+                { value: 'period-desc', label: getLabels().sort_period_desc },
+                { value: 'nav-desc', label: getLabels().sort_nav_desc },
+                { value: 'nav-asc', label: getLabels().sort_nav_asc },
+                { value: 'aum-desc', label: getLabels().sort_aum_desc },
+                { value: 'updated-desc', label: getLabels().sort_updated_desc },
+                { value: 'name-asc', label: getLabels().sort_name_asc }
+            ].map((option) => `<option value="${option.value}"${sortSelect.value === option.value ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+        }
+
+        function updateHeroMetrics() {
+            return;
+        }
+
+        function getCompareFunds() {
+            return state.compareIds
+                .map((id) => state.funds.find((fund) => String(fund.fund_id) === String(id)))
+                .filter(Boolean);
+        }
+
+        function renderCompareTray() {
+            const selected = getCompareFunds();
+            const visible = selected.length > 0;
+            compareTray.classList.toggle('hidden', !visible);
+            compareTray.classList.toggle('show', visible);
+            document.body.classList.toggle('compare-dock-open', visible);
+
+            compareCount.textContent = String(selected.length);
+            compareCount.setAttribute('aria-label', `${selected.length} ${getLabels().compare_count}`);
+            compareSlots.innerHTML = Array.from({ length: 4 }, (_, index) => `
+                <span class="compare-slot ${index < selected.length ? 'active' : ''}"></span>
+            `).join('');
+
+            const placeholders = Array.from({ length: Math.max(0, 4 - selected.length) }, () => `
+                <span class="compare-pill-placeholder">${escapeHtml(getLabels().compare_placeholder)}</span>
+            `).join('');
+
+            compareSelectionList.innerHTML = selected.map((fund) => `
+                <span class="compare-pill">
+                    <span>${escapeHtml(getFundName(fund))}</span>
+                    <button type="button" data-remove-compare="${escapeHtml(fund.fund_id)}">×</button>
+                </span>
+            `).join('') + placeholders;
+
+            document.getElementById('openCompare').disabled = selected.length < 2;
+            document.getElementById('openCompare').classList.toggle('opacity-50', selected.length < 2);
+            document.getElementById('openCompare').classList.toggle('pointer-events-none', selected.length < 2);
+        }
+
+        function toggleCompareSelection(fundId) {
+            const id = String(fundId);
+            if (state.compareIds.includes(id)) {
+                state.compareIds = state.compareIds.filter((item) => item !== id);
+            } else {
+                if (state.compareIds.length >= 4) {
+                    window.alert(getLabels().compare_limit);
+                    return;
+                }
+                state.compareIds = [...state.compareIds, id];
+            }
+            persistCompareIds();
+            renderFunds();
+        }
+
+        function getAppliedFilters() {
+            const chips = [];
+            if (fundSearch.value.trim()) chips.push({ key: 'search', label: `${getLabels().filter_search}: ${fundSearch.value.trim()}` });
+            if (typeFilter.value) chips.push({ key: 'type', label: `${getLabels().filter_type}: ${typeFilter.value}` });
+            if (managerFilter.value) chips.push({ key: 'manager', label: `${getLabels().filter_manager}: ${managerFilter.value}` });
+            if (riskFilter.value) chips.push({ key: 'risk', label: `${getLabels().filter_risk}: ${riskFilter.value}` });
+            if (state.shariahOnly) chips.push({ key: 'shariah', label: getLabels().filter_shariah });
+            return chips;
+        }
+
+        function renderActiveFilters() {
+            const filters = getAppliedFilters();
+            activeFiltersEl.innerHTML = filters.map((filter) => `
+                <span class="chip">
+                    <span>${escapeHtml(filter.label)}</span>
+                    <button type="button" data-chip="${escapeHtml(filter.key)}">×</button>
+                </span>
+            `).join('');
+
+            activeFiltersEl.querySelectorAll('[data-chip]').forEach((button) => {
+                button.addEventListener('click', () => clearFilter(button.getAttribute('data-chip')));
+            });
+        }
+
+        function clearFilter(key) {
+            if (key === 'search') fundSearch.value = '';
+            if (key === 'type') typeFilter.value = '';
+            if (key === 'manager') managerFilter.value = '';
+            if (key === 'risk') riskFilter.value = '';
+            if (key === 'shariah') state.shariahOnly = false;
+            renderFunds();
+        }
+
+        function getFilteredFunds() {
+            const search = normalizeText(fundSearch.value);
+            const selectedType = typeFilter.value;
+            const selectedManager = managerFilter.value;
+            const selectedRisk = riskFilter.value;
+
+            return state.funds.filter((fund) => {
+                const haystack = [
+                    getFundName(fund, 'en'),
+                    getFundName(fund, 'ar'),
+                    getManagerName(fund, 'en'),
+                    getManagerName(fund, 'ar'),
+                    fund.symbol,
+                    fund.isin
+                ].join(' ').toLowerCase();
+
+                if (search && !haystack.includes(search)) return false;
+                if (selectedType && getFundTypeName(fund) !== selectedType) return false;
+                if (selectedManager && getManagerName(fund) !== selectedManager) return false;
+                if (selectedRisk && getRiskLabel(fund.riskBucket) !== selectedRisk) return false;
+                if (state.shariahOnly && !fund.isShariah) return false;
+                return true;
+            }).sort((a, b) => {
+                const sort = sortSelect.value || 'period-desc';
+                if (sort === 'name-asc') return getFundName(a).localeCompare(getFundName(b), state.lang === 'ar' ? 'ar' : 'en');
+                if (sort === 'nav-desc') return (b.latestNav || -Infinity) - (a.latestNav || -Infinity);
+                if (sort === 'nav-asc') return (a.latestNav || Infinity) - (b.latestNav || Infinity);
+                if (sort === 'aum-desc') return (b.aumValue || -Infinity) - (a.aumValue || -Infinity);
+                if (sort === 'updated-desc') return new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime();
+
+                const retA = getReturnForPeriod(a);
+                const retB = getReturnForPeriod(b);
+                return (retB ?? -Infinity) - (retA ?? -Infinity);
+            });
+        }
+
+        function getMiniChartLimit(period = state.period) {
+            if (period === '5y') return 2200;
+            if (period === '3y') return 1400;
+            if (period === '1y') return 500;
+            if (period === 'ytd') return 260;
+            return 120;
+        }
+
+        function getMiniChartRange(history, period = state.period) {
+            const sorted = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            if (period === 'all') return sorted;
+
+            const now = new Date();
+            const start = new Date(now);
+            if (period === '5y') start.setFullYear(now.getFullYear() - 5);
+            else if (period === '3y') start.setFullYear(now.getFullYear() - 3);
+            else if (period === '1y') start.setFullYear(now.getFullYear() - 1);
+            else if (period === 'ytd') start.setMonth(0, 1);
+            else start.setMonth(now.getMonth() - 3);
+
+            const filtered = sorted.filter((item) => {
+                const pointDate = new Date(item.date);
+                return !Number.isNaN(pointDate.getTime()) && pointDate >= start;
+            });
+
+            return filtered.length >= 2 ? filtered : sorted;
+        }
+
+        function destroyMiniChart(element) {
+            const key = element?.getAttribute?.('data-fund-id');
+            const existing = key ? miniChartInstances.get(key) : null;
+            if (!existing) return;
+
+            try {
+                existing.resizeObserver?.disconnect();
+            } catch (error) { }
+
+            try {
+                existing.chart?.remove();
+            } catch (error) { }
+
+            miniChartInstances.delete(key);
+        }
+
+        async function loadMiniChart(fundId, element, period) {
+            const cacheKey = `${fundId}:${period}`;
+            if (navHistoryCache.has(cacheKey)) {
+                paintMiniChart(element, navHistoryCache.get(cacheKey));
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/v1/funds/${encodeURIComponent(fundId)}/nav?limit=${getMiniChartLimit(period)}`);
+                if (!response.ok) throw new Error('nav failed');
+                const history = await response.json();
+                navHistoryCache.set(cacheKey, history);
+                paintMiniChart(element, history);
+            } catch (error) {
+                element.classList.add('empty');
+                element.innerHTML = `<div class="relative z-[1] flex h-full items-center justify-center rounded-2xl border border-dashed border-border text-xs font-semibold text-muted">${escapeHtml(getLabels().no_chart)}</div>`;
+            }
+        }
+
+        function paintMiniChart(element, history) {
+            const points = Array.isArray(history) ? getMiniChartRange(history) : [];
+            const sorted = points
+                .map((item) => ({ date: item.date, nav: safeNumber(item.nav) }))
+                .filter((item) => item.nav !== null)
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            destroyMiniChart(element);
+
+            if (sorted.length < 2) {
+                element.classList.add('empty');
+                element.innerHTML = `<div class="relative z-[1] flex h-full items-center justify-center rounded-2xl border border-dashed border-border text-xs font-semibold text-muted">${escapeHtml(getLabels().no_chart)}</div>`;
+                return;
+            }
+
+            const first = safeNumber(sorted[0]?.nav);
+            const last = safeNumber(sorted[sorted.length - 1]?.nav);
+            const positive = (last ?? 0) >= (first ?? 0);
+            const lineColor = positive ? '#14B8A6' : '#EF4444';
+            const topColor = positive ? 'rgba(20, 184, 166, 0.22)' : 'rgba(239, 68, 68, 0.18)';
+            const bottomColor = positive ? 'rgba(20, 184, 166, 0.02)' : 'rgba(239, 68, 68, 0.02)';
+            const chartData = sorted.map((item) => ({ time: item.date, value: Number(item.nav) }));
+            const currency = element.getAttribute('data-fund-currency') || 'EGP';
+
+            element.classList.remove('empty');
+            element.classList.add('ready');
+            element.innerHTML = `
+                <div class="mini-chart-canvas"></div>
+                <div class="mini-chart-tooltip">
+                    <div class="mini-chart-tooltip-label"></div>
+                    <div class="mini-chart-tooltip-value"></div>
+                </div>
+            `;
+
+            const canvas = element.querySelector('.mini-chart-canvas');
+            const tooltip = element.querySelector('.mini-chart-tooltip');
+            const tooltipLabel = element.querySelector('.mini-chart-tooltip-label');
+            const tooltipValue = element.querySelector('.mini-chart-tooltip-value');
+
+            const chart = LightweightCharts.createChart(canvas, {
+                layout: {
+                    background: { color: 'transparent' },
+                    textColor: '#5b6677',
+                    fontFamily: "'Manrope', sans-serif",
+                    attributionLogo: false,
+                },
+                width: element.clientWidth,
+                height: 94,
+                rightPriceScale: {
+                    visible: false,
+                    borderVisible: false,
+                },
+                leftPriceScale: {
+                    visible: false,
+                    borderVisible: false,
+                },
+                timeScale: {
+                    visible: false,
+                    borderVisible: false,
+                },
+                grid: {
+                    vertLines: { visible: false },
+                    horzLines: { visible: false },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                    vertLine: {
+                        color: 'rgba(20, 184, 166, 0.28)',
+                        width: 1,
+                    },
+                    horzLine: {
+                        color: 'rgba(20, 184, 166, 0.18)',
+                        width: 1,
+                    },
+                },
+                handleScale: false,
+                handleScroll: false,
+                localization: { locale: getLocale() },
+            });
+
+            const series = chart.addAreaSeries({
+                lineColor,
+                topColor,
+                bottomColor,
+                lineWidth: 2.4,
+                crosshairMarkerRadius: 4,
+                priceLineVisible: false,
+                lastValueVisible: false,
+                priceFormat: {
+                    type: 'custom',
+                    formatter: (price) => `${currency} ${Number(price).toFixed(4)}`,
+                },
+            });
+
+            series.setData(chartData);
+            chart.timeScale().fitContent();
+            chart.subscribeCrosshairMove((param) => {
+                if (!param?.point || !param?.time) {
+                    tooltip.classList.remove('visible');
+                    return;
+                }
+
+                const data = param.seriesData.get(series);
+                if (!data || data.value === undefined) {
+                    tooltip.classList.remove('visible');
+                    return;
+                }
+
+                const hoveredDate = new Date(param.time);
+                tooltipLabel.textContent = Number.isNaN(hoveredDate.getTime())
+                    ? String(param.time)
+                    : hoveredDate.toLocaleDateString(getLocale(), { month: 'short', day: 'numeric', year: 'numeric' });
+                tooltipValue.textContent = `${currency} ${Number(data.value).toFixed(4)}`;
+                tooltip.style.left = `${Math.min(Math.max(param.point.x, 74), element.clientWidth - 74)}px`;
+                tooltip.classList.add('visible');
+            });
+
+            const resizeObserver = new ResizeObserver(() => {
+                chart.applyOptions({ width: element.clientWidth });
+            });
+            resizeObserver.observe(element);
+            miniChartInstances.set(element.getAttribute('data-fund-id'), {
+                chart,
+                resizeObserver,
+            });
+        }
+
+        function hydrateMiniCharts() {
+            const chartNodes = document.querySelectorAll('[data-mini-chart]');
+            if (chartObserver) chartObserver.disconnect();
+
+            chartObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    const node = entry.target;
+                    const fundId = node.getAttribute('data-fund-id');
+                    if (!fundId || node.classList.contains('ready') || node.classList.contains('empty')) return;
+                    loadMiniChart(fundId, node, state.period);
+                    chartObserver.unobserve(node);
+                });
+            }, { rootMargin: '220px' });
+
+            chartNodes.forEach((node) => chartObserver.observe(node));
+        }
+
+        function renderGrid(funds) {
+            miniChartInstances.forEach((instance, key) => {
+                try {
+                    instance.resizeObserver?.disconnect();
+                    instance.chart?.remove();
+                } catch (error) { }
+            });
+            miniChartInstances.clear();
+            grid.innerHTML = funds.map((fund) => {
+                const name = escapeHtml(getFundName(fund));
+                const manager = escapeHtml(getManagerName(fund));
+                const type = escapeHtml(getFundTypeName(fund));
+                const risk = escapeHtml(getRiskLabel(fund.riskBucket));
+                const ret = getReturnForPeriod(fund);
+                const retText = formatPercent(ret);
+                const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
+                const aum = fund.aumValue ? `${escapeHtml(getLabels().aum)} ${escapeHtml(formatNumber(fund.aumValue))}` : '';
+                const updated = escapeHtml(formatDate(fund.lastUpdated));
+                const isSelected = state.compareIds.includes(String(fund.fund_id));
+
+                return `
+                    <article class="fund-card rounded-[2rem] p-6 sm:p-7">
+                        <div class="flex flex-col gap-6">
+                            <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                                <div class="flex gap-4">
+                                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-white p-3 shadow-sm">
+                                        <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="${manager}" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Number(fund.logo_scale || 1)}); transform-origin:center center;">
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-display font-bold tracking-[-0.04em] text-main">${name}</h3>
+                                        <p class="mt-1 text-sm text-muted">${manager}</p>
+                                    </div>
+                                </div>
+                                <div class="${state.lang === 'ar' ? 'sm:text-left' : 'sm:text-right'}">
+                                    <div class="text-[0.68rem] uppercase tracking-[0.2em] text-muted">${state.period.toUpperCase()}</div>
+                                    <div class="mt-2 text-2xl font-display font-bold ${retClass}">${retText}</div>
+                                    <button type="button" class="compare-btn mt-3 rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}">${escapeHtml(isSelected ? getLabels().compare_added : getLabels().compare_add)}</button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <span class="chip">${type}</span>
+                                <span class="chip">${risk}</span>
+                                ${fund.isShariah ? `<span class="chip border-emerald-200 bg-emerald-50 text-emerald-700">${escapeHtml(getLabels().filter_shariah)}</span>` : ''}
+                                ${aum ? `<span class="chip">${aum}</span>` : ''}
+                            </div>
+
+                            <div class="mini-chart rounded-2xl bg-slate-50/80 px-2 py-2" data-mini-chart data-fund-id="${escapeHtml(fund.fund_id)}" data-fund-currency="${escapeHtml(fund.currency || 'EGP')}"></div>
+
+                            <div class="grid gap-4 rounded-[1.4rem] bg-slate-50/80 p-4 sm:grid-cols-3">
+                                <div>
+                                    <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels().nav)}</div>
+                                    <div class="mt-2 text-lg font-semibold text-main">${escapeHtml(fund.currency)} ${escapeHtml(formatNumber(fund.latestNav))}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels().updated)}</div>
+                                    <div class="mt-2 text-sm font-semibold text-main">${updated}</div>
+                                </div>
+                                <div class="${state.lang === 'ar' ? 'sm:text-left' : 'sm:text-right'}">
+                                    <button class="btn-primary rounded-full px-5 py-3 text-sm font-semibold" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.fund_id)}'">${escapeHtml(getLabels().invest_now)}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            hydrateMiniCharts();
+        }
+
+        function renderTable(funds) {
+            tableBody.innerHTML = funds.map((fund) => {
+                const ret = getReturnForPeriod(fund);
+                const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
+                const isSelected = state.compareIds.includes(String(fund.fund_id));
+                return `
+                    <tr class="table-row cursor-pointer border-t border-slate-100 text-main" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.fund_id)}'">
+                        <td class="px-5 py-4">
+                            <div class="font-semibold">${escapeHtml(getFundName(fund))}</div>
+                            <div class="mt-1 text-xs text-muted">${escapeHtml(fund.symbol || fund.fund_id)}</div>
+                            <button type="button" class="compare-btn mt-3 rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(isSelected ? getLabels().compare_added : getLabels().compare_add)}</button>
+                        </td>
+                        <td class="px-5 py-4 text-muted">${escapeHtml(getManagerName(fund))}</td>
+                        <td class="px-5 py-4 text-muted">${escapeHtml(getFundTypeName(fund))}</td>
+                        <td class="px-5 py-4 font-semibold">${escapeHtml(fund.currency)} ${escapeHtml(formatNumber(fund.latestNav))}</td>
+                        <td class="px-5 py-4 font-semibold ${retClass}">${escapeHtml(formatPercent(ret))}</td>
+                        <td class="px-5 py-4 text-muted">${escapeHtml(formatDate(fund.lastUpdated))}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderFunds() {
+            shariahToggle.classList.toggle('bg-emerald-50', state.shariahOnly);
+            shariahToggle.classList.toggle('border-emerald-200', state.shariahOnly);
+            shariahToggle.classList.toggle('text-emerald-700', state.shariahOnly);
+
+            state.filtered = getFilteredFunds();
+            const hasResults = state.filtered.length > 0;
+            resultsCount.textContent = formatNumber(state.filtered.length, { maximumFractionDigits: 0 });
+            renderActiveFilters();
+            renderCompareTray();
+
+            emptyState.classList.toggle('hidden', hasResults);
+            grid.classList.toggle('hidden', !hasResults || state.view !== 'grid');
+            tableShell.classList.toggle('hidden', !hasResults || state.view !== 'table');
+
+            if (!hasResults) {
+                miniChartInstances.forEach((instance) => {
+                    try {
+                        instance.resizeObserver?.disconnect();
+                        instance.chart?.remove();
+                    } catch (error) { }
+                });
+                miniChartInstances.clear();
+                grid.innerHTML = '';
+                tableBody.innerHTML = '';
+                return;
+            }
+
+            if (state.view === 'grid') renderGrid(state.filtered);
+            if (state.view === 'table') renderTable(state.filtered);
+        }
+
+        async function loadFundsData() {
+            try {
+                const response = await fetch('/api/v1/funds?market=EGX');
+                if (!response.ok) throw new Error('Failed to load funds');
+                const raw = await response.json();
+                state.funds = raw
+                    .map(normalizeFund)
+                    .filter((fund) => fund.fund_id && (fund.fund_name || fund.fund_name_en));
+                updateHeroMetrics();
+                populateFilterOptions();
+                renderFunds();
+            } catch (error) {
+                console.error(error);
+                state.funds = [];
+                updateHeroMetrics();
+                renderFunds();
+            }
+        }
+
+        function resetFilters() {
+            fundSearch.value = '';
+            typeFilter.value = '';
+            managerFilter.value = '';
+            riskFilter.value = '';
+            sortSelect.value = 'period-desc';
+            state.shariahOnly = false;
+            renderFunds();
+        }
+
+        function setView(view) {
+            state.view = view === 'table' ? 'table' : 'grid';
+            document.querySelectorAll('.view-btn').forEach((button) => {
+                button.classList.toggle('active', button.dataset.view === state.view);
+            });
+            renderFunds();
+        }
+
+        function setPeriod(period) {
+            state.period = periodMap[period] ? period : 'ytd';
+            document.querySelectorAll('[data-period]').forEach((button) => {
+                button.classList.toggle('active', button.dataset.period === state.period);
+            });
+            navHistoryCache.clear();
+            renderFunds();
+        }
+
+        function bindEvents() {
+            fundSearch.addEventListener('input', renderFunds);
+            typeFilter.addEventListener('change', renderFunds);
+            managerFilter.addEventListener('change', renderFunds);
+            riskFilter.addEventListener('change', renderFunds);
+            sortSelect.addEventListener('change', renderFunds);
+            shariahToggle.addEventListener('click', () => {
+                state.shariahOnly = !state.shariahOnly;
+                renderFunds();
+            });
+            document.getElementById('resetFilters').addEventListener('click', resetFilters);
+            document.getElementById('gridViewBtn').addEventListener('click', () => setView('grid'));
+            document.getElementById('tableViewBtn').addEventListener('click', () => setView('table'));
+            document.querySelectorAll('[data-period]').forEach((button) => {
+                button.addEventListener('click', () => setPeriod(button.dataset.period));
+            });
+            langToggle.addEventListener('click', () => {
+                setLanguage(state.lang === 'en' ? 'ar' : 'en');
+            });
+            document.getElementById('clearCompare').addEventListener('click', () => {
+                state.compareIds = [];
+                persistCompareIds();
+                renderFunds();
+            });
+            document.getElementById('openCompare').addEventListener('click', () => {
+                if (state.compareIds.length < 2) return;
+                const params = new URLSearchParams();
+                params.set('ids', state.compareIds.join(','));
+                params.set('lang', state.lang);
+                window.location.href = `/Funds/Compare?${params.toString()}`;
+            });
+            document.addEventListener('click', (event) => {
+                const compareButton = event.target.closest?.('[data-compare-fund]');
+                if (compareButton) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleCompareSelection(compareButton.getAttribute('data-compare-fund'));
+                    return;
+                }
+
+                const removeButton = event.target.closest?.('[data-remove-compare]');
+                if (removeButton) {
+                    event.preventDefault();
+                    state.compareIds = state.compareIds.filter((id) => id !== removeButton.getAttribute('data-remove-compare'));
+                    persistCompareIds();
+                    renderFunds();
+                }
+            });
+        }
+
+        function revealSections() {
+            document.querySelectorAll('.reveal-block').forEach((element) => {
+                gsap.fromTo(element, { y: 30, opacity: 0 }, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: element,
+                        start: 'top 88%'
+                    }
+                });
+            });
+        }
+
+        bindEvents();
+        sortSelect.value = 'period-desc';
+        state.compareIds = getStoredCompareIds();
+        setLanguage(getStoredLanguage());
+        loadFundsData();
+        revealSections();
+    </script>
+</body>
+
+</html>

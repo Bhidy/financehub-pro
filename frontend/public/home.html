@@ -518,6 +518,30 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
+        .mf-stat-card {
+            border: 1px solid rgba(45, 212, 191, 0.18);
+            background: linear-gradient(180deg, rgba(45, 212, 191, 0.08), rgba(45, 212, 191, 0.02));
+            border-radius: 1.25rem;
+        }
+
+        [data-theme="dark"] .mf-stat-card {
+            background: linear-gradient(180deg, rgba(10, 26, 29, 0.88), rgba(8, 17, 24, 0.68));
+        }
+
+        .mf-clamp-2 {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+        }
+
+        .mf-clamp-1 {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+            overflow: hidden;
+        }
+
         .ultra-card::before {
             content: "";
             position: absolute;
@@ -835,9 +859,10 @@
                 <div class="flex gap-10 text-xs font-mono text-muted tracking-widest">
                     <a href="#brain" class="hover:text-starta-teal transition-colors"
                         data-key="nav_features">FEATURES</a>
-                    <a href="#mobile" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MOBILE</a>
-                    <a href="#roadmap" class="hover:text-starta-teal transition-colors"
-                        data-key="nav_roadmap">ROADMAP</a>
+                    <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
+                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
                     <a href="#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
                     <a href="#pricing" class="hover:text-starta-teal transition-colors"
                         data-key="nav_pricing">PRICING</a>
@@ -892,6 +917,8 @@
                     <button onclick="window.location.href='https://startamarkets.com/AiChat'"
                         class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Try Now for
                         Free</button>
+                    <button onclick="document.getElementById('funds-section').scrollIntoView({behavior: 'smooth'})"
+                        class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_funds">Mutual Funds</button>
                 </div>
             </div>
 
@@ -1064,6 +1091,85 @@
                         <div class="text-main bg-panel px-3 py-1 rounded inline-block border border-border processing-line delay-3"
                             data-key="brain_load3">
                             <span class="processing-dot"></span><span>Insight ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4.1 MUTUAL FUNDS -->
+    <section id="funds-section" class="py-32 bg-page border-t border-border relative overflow-hidden section-premium">
+        <div class="absolute inset-0 pointer-events-none opacity-70"
+            style="background: radial-gradient(circle at 0% 0%, rgba(20, 184, 166, 0.14), transparent 28%), radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.12), transparent 26%);">
+        </div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-1 xl:grid-cols-[0.92fr_1.08fr] gap-8 items-start">
+                <div class="glass-premium rounded-[2.5rem] p-8 md:p-10 border border-starta-teal/20 premium-hover">
+                    <h2 class="section-title text-main mb-6" data-key="mf_title">Mutual Funds.<br>Inside Starta.</h2>
+                    <p class="text-muted copy-premium mb-8" data-key="mf_text">
+                        Explore the fund universe we already cover with verified pricing, current YTD performance, and
+                        direct access to the full marketplace.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+                        <div class="mf-stat-card p-5">
+                            <div class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2"
+                                data-key="mf_stat_coverage">Covered Funds</div>
+                            <div id="mf-covered-count" class="text-3xl font-display font-bold text-main">20</div>
+                        </div>
+                        <div class="mf-stat-card p-5">
+                            <div class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2"
+                                data-key="mf_stat_best">Best YTD</div>
+                            <div id="mf-best-ytd" class="text-3xl font-display font-bold text-starta-teal">+0.00%</div>
+                        </div>
+                        <div class="mf-stat-card p-5">
+                            <div class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2"
+                                data-key="mf_stat_houses">Fund Houses</div>
+                            <div id="mf-fund-houses" class="text-3xl font-display font-bold text-main">0</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <button onclick="window.location.href='/Funds'"
+                            class="px-8 py-4 font-bold text-lg rounded-lg btn-primary" data-key="mf_cta">
+                            Explore Mutual Funds
+                        </button>
+                    </div>
+                </div>
+
+                <div class="min-w-0">
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 px-1 reveal-text">
+                        <div>
+                            <p class="text-sm text-muted copy-soft max-w-xl" data-key="mf_cards_text">
+                                Selected from funds already tracked inside Starta and ranked by current performance.
+                            </p>
+                        </div>
+                        <button onclick="window.location.href='/Funds'"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-starta-teal/30 bg-starta-teal/5 text-starta-teal text-[10px] font-bold uppercase tracking-[0.22em] hover:bg-starta-teal/15 transition-colors"
+                            data-key="mf_view_all">
+                            View All Funds
+                        </button>
+                    </div>
+
+                    <div id="mf-featured-grid" class="grid grid-cols-1 gap-4">
+                        <div class="glass-premium rounded-[2rem] p-6 border border-border animate-pulse">
+                            <div class="h-4 w-24 bg-panel rounded mb-4"></div>
+                            <div class="h-7 w-3/4 bg-panel rounded mb-3"></div>
+                            <div class="h-4 w-1/2 bg-panel rounded mb-6"></div>
+                            <div class="h-2 w-full bg-panel rounded"></div>
+                        </div>
+                        <div class="glass-premium rounded-[2rem] p-6 border border-border animate-pulse">
+                            <div class="h-4 w-24 bg-panel rounded mb-4"></div>
+                            <div class="h-7 w-3/4 bg-panel rounded mb-3"></div>
+                            <div class="h-4 w-1/2 bg-panel rounded mb-6"></div>
+                            <div class="h-2 w-full bg-panel rounded"></div>
+                        </div>
+                        <div class="glass-premium rounded-[2rem] p-6 border border-border animate-pulse">
+                            <div class="h-4 w-24 bg-panel rounded mb-4"></div>
+                            <div class="h-7 w-3/4 bg-panel rounded mb-3"></div>
+                            <div class="h-4 w-1/2 bg-panel rounded mb-6"></div>
+                            <div class="h-2 w-full bg-panel rounded"></div>
                         </div>
                     </div>
                 </div>
@@ -1794,13 +1900,13 @@
         // --- TRANSLATION ENGINE ---
         const translations = {
             en: {
-                nav_features: "FEATURES", nav_mobile: "MOBILE", nav_roadmap: "ROADMAP", nav_pricing: "PRICING", nav_about: "ABOUT US", nav_cta: "TRY NOW",
+                nav_features: "FEATURES", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "NEWS", nav_pricing: "PRICING", nav_about: "ABOUT US", nav_cta: "TRY NOW",
                 about_tag: "OUR MISSION", about_title: "Empowering Intelligent<br>Investing.", about_text: "At Starta, we believe that high-quality financial intelligence should be accessible, transparent, and actionable. Our team of data scientists and financial experts has built an institutional-grade platform designed to remove the noise and highlight what truly matters in the market.", about_val1_title: "Innovation", about_val1_text: "Cutting-edge AI meets proven financial models.", about_val2_title: "Integrity", about_val2_text: "Data-driven insights with zero bias.", about_vision: "Redefining Market Analysis", about_vision_text: "We are committed to delivering clarity and precision to every investor, equipping you with the edge needed to navigate today's markets.",
                 hero_kicker: "Institutional AI Research",
-                hero_title: `AI that understands the market ...`,
-                hero_sub: `Smart analysis for the Egyptian stock market, powered by <span class="text-main font-semibold">real-time EGX data</span>.<br><br>Ask about any stock or market move and get clear, easy-to-understand insights built on real data — not noise.`,
-                hero_point1: "Instant Analyst Chat", hero_point2: "Valuation + Risk Context", hero_point3: "Arabic + English Fluency",
-                hero_btn: "Get Started",
+                hero_title: `Institutional-Grade<br>AI Research & <span class="text-gradient">Wealth Management.</span>`,
+                hero_sub: `Ask about any stock, explore top-performing funds, or build automated savings plans backed by <span class="text-main font-semibold">real-time EGX data</span> and institutional logic.`,
+                hero_point1: "Instant Analyst Chat", hero_point2: "Automated Savings Plans", hero_point3: "Arabic + English Fluency",
+                hero_btn: "Get Started", hero_btn_funds: "Mutual Funds",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE EGX FEED`,
                 trusted_by: "Follow Your Prefered Stocks",
                 gap_tag: "THE PROBLEM",
@@ -1809,6 +1915,10 @@
                 brain_tag: "CORE LOGIC", brain_title: "Meet Your New<br>Senior Analyst.", brain_sub: "Institutional Decision Logic.",
                 brain_text: "Starta is not a chat wrapper. It is built on analyst-grade frameworks that combine deterministic models, market context, and disciplined recommendation logic.",
                 brain_feat1_title: "Deterministic", brain_feat1_text: "Hard-coded Math", brain_feat2_title: "Zero Bias", brain_feat2_text: "Pure Data Driven",
+                mf_title: "Mutual Funds.<br>Inside Starta.", mf_text: "Explore every mutual fund with verified pricing, updated performance, and comprehensive comparison.",
+                mf_stat_coverage: "Covered Funds", mf_stat_best: "Best YTD", mf_stat_houses: "Fund Houses", mf_cta: "Explore Mutual Funds",
+                mf_cards_text: "Best yearly performers.", mf_view_all: "View All Funds",
+                mf_return_label: "YTD Return", mf_price_label: "Price", mf_liquidity_label: "Liquidity", mf_open_label: "Open Fund",
                 trust_tag: "TRUST ENGINE", trust_title: "Trust, Not Guesswork.", trust_text: "Accuracy is non-negotiable. Starta runs on a <strong>hybrid deterministic engine</strong>: language is generated by AI, while every number is locked to verified financial datasets.",
                 lang_tag: "NATIVE FLUENCY", lang_title: "Fluent in Market<br>Arabic.", lang_text: `Starta understands <span class="text-main font-semibold">real investor Arabic</span>, from formal language to Egyptian dialect, and maps it instantly to EGX tickers, sectors, and valuation context.`,
                 live_tag: "LIVE DATA", live_title: "Live Market Pulse.", live_feed_header: "LIVE FEED", live_source: "SOURCE: EGX DIRECT",
@@ -1841,16 +1951,28 @@
                 p2_name: "The Analyst", p2_sub: "Real-time intelligence for active traders", curr: "EGP", p2_bill: "Monthly or 662 EGP Annually (20% off)", p2_btn: "Get Started", p2_f1: "Unlimited AI Chat", p2_f2: "Unlimited Income Statements", p2_f3: "Unlimited Balance Sheets", p2_f4: "Unlimited Cash Flows", p2_f5: "Full Financial History", p2_f6: "Complete Ratios & KPIs", p2_f7: "Advanced Excel Exports", p2_f8: "Unlimited PDF Reports", p2_f9: "Daily Market Briefing",
                 p3_name: "Institutional", p3_sub: "API access and raw data for funds", p3_price: "Custom", p3_btn: "Contact Sales", p3_f1: "Direct API Access", p3_f2: "Custom Risk Models", p3_f3: "Dedicated Account Mgr", p3_f4: "White-label Reports", p3_f5: "Custom Data Integration", p3_f6: "Historical Tick Data", p3_f7: "Model Fine-Tuning", p3_f8: "99.9% Uptime SLA", p3_f9: "Priority Support",
                 close_title: "Decide With Confidence.", close_text: "Ask better questions, get clearer answers, and make every financial decision with confidence.", close_btn: "Activate Starta",
+                why_funds_tag: "SMART SAVING", why_funds_title: "Why Mutual Funds?",
+                why_funds_c1_title: "High Returns", why_funds_c1_text: "Competitive yields that consistently outperform traditional banking.",
+                why_funds_c2_title: "Flexible Liquidity", why_funds_c2_text: "No lock-in periods. Access your money whenever you need it.",
+                why_funds_c3_title: "Inclusive Entry", why_funds_c3_text: "Start building your future with as little as 10 EGP.",
+                why_funds_c4_title: "Expert Managed", why_funds_c4_text: "Institutional-grade portfolios managed by the market's top professionals.",
+                top_funds_tag: "PERFORMANCE", top_funds_title: "Top Performing Funds.", view_more_funds: "View More",
+                fund1_name: "Bank Misr Fund", fund1_desc: "Money Market - Daily Liquidity",
+                fund2_name: "QNB Alahli Fund", fund2_desc: "Fixed Income - Weekly",
+                fund_return_label: "YTD Return", fund_price_label: "Price", fund_invest_btn: "Invest Now",
+                calc_tag: "WEALTH PROJECTION", calc_title: "The Power of Compound Returns.",
+                calc_goal_title: "Reach Your Goal", calc_goal_desc: "How much to invest monthly to reach a specific amount.",
+                calc_save_title: "Build Your Future", calc_save_desc: "See how much your monthly savings will grow over time.",
                 brain_load1: "Analyzing market signals", brain_load2: "Cross-checking EGX data", brain_load3: "Insight ready", dialect_egy: "EGYPTIAN DIALECT", dialect_msa: "MODERN STANDARD"
             },
             ar: {
-                nav_features: "المزايا", nav_mobile: "الجوال", nav_roadmap: "خارطة الطريق", nav_pricing: "الأسعار", nav_about: "معلومات عنا", nav_cta: "جرّب الآن",
+                nav_features: "المزايا", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "الأخبار", nav_pricing: "الأسعار", nav_about: "معلومات عنا", nav_cta: "جرّب الآن",
                 about_tag: "مهمتنا", about_title: "تمكين الاستثمار<br>الذكي.", about_text: "في ستاراتا، نؤمن بأن الذكاء المالي عالي الجودة يجب أن يكون متاحاً وشفافاً وقابلاً للتنفيذ. قام فريقنا من علماء البيانات والخبراء الماليين ببناء منصة على مستوى مؤسساتي مصممة لإزالة الضوضاء وتسليط الضوء على ما يهم حقاً في السوق.", about_val1_title: "الابتكار", about_val1_text: "أحدث التقنيات القائمة على الذكاء الاصطناعي تجتمع مع نماذج مالية مثبتة.", about_val2_title: "النزاهة", about_val2_text: "رؤى مدعومة بالبيانات بدون تحيز.", about_vision: "إعادة تعريف تحليل السوق", about_vision_text: "نحن ملتزمون بتقديم الوضوح والدقة لكل مستثمر، وتزويدك بالميزة اللازمة للتنقل في أسواق اليوم.",
                 hero_kicker: "بحث استثماري مدعوم بالذكاء الاصطناعي",
-                hero_title: `ذكاء اصطناعي يفهم السوق…`,
-                hero_sub: `تحليل ذكي لسوق الأسهم المصري مدعوم بـ <span class="text-main font-semibold">بيانات EGX اللحظية</span>.<br><br>اسأل عن أي سهم أو حركة في السوق، واحصل على تحليل بسيط، واضح، ومبني على بيانات حقيقية — بدون تعقيد.`,
-                hero_point1: "محادثة تحليلية فورية", hero_point2: "تقييم واضح مع سياق المخاطر", hero_point3: "فهم عربي وإنجليزي باحترافية",
-                hero_btn: "ابدأ الآن",
+                hero_title: `ذكاء اصطناعي للأبحاث<br>وإدارة <span class="text-gradient">الثروات.</span>`,
+                hero_sub: `حلل أي سهم، اكتشف أفضل الصناديق، وابدأ خطط ادخار ذكية مدعومة بـ <span class="text-main font-semibold">بيانات EGX اللحظية</span> ومنطق مالي مؤسسي.`,
+                hero_point1: "محادثة تحليلية فورية", hero_point2: "خطط ادخار تلقائية", hero_point3: "فهم عربي وإنجليزي باحترافية",
+                hero_btn: "ابدأ الآن", hero_btn_funds: "الصناديق الاستثمارية",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> بث مباشر للبورصة المصرية`,
                 trusted_by: "تابع اسهمك المفضلة",
                 gap_tag: "المشكلة",
@@ -1859,6 +1981,10 @@
                 brain_tag: "منطق المنصة", brain_title: "تعرّف على<br>محللك الجديد.", brain_sub: "منهجية مؤسسية لاتخاذ القرار.",
                 brain_text: "ستارتا ليست واجهة محادثة فقط، بل منظومة تحليلية مبنية على أطر احترافية تجمع النماذج الحتمية الدقيقة مع سياق السوق لإنتاج توصيات منضبطة.",
                 brain_feat1_title: "حتمي", brain_feat1_text: "نماذج قابلة للتحقق", brain_feat2_title: "منضبط", brain_feat2_text: "مدفوع بالبيانات",
+                mf_title: "الصناديق الاستثمارية.<br>داخل ستارتا.", mf_text: "استكشف كافة الصناديق مع أسعار موثقة، أداء محدث، ومقارنة شاملة",
+                mf_stat_coverage: "الصناديق المغطاة", mf_stat_best: "أفضل عائد سنوي", mf_stat_houses: "مديرو الصناديق", mf_cta: "استكشف الصناديق",
+                mf_cards_text: "أفضل الصناديق أداءً سنويًا", mf_view_all: "عرض كل الصناديق",
+                mf_return_label: "العائد السنوي", mf_price_label: "السعر", mf_liquidity_label: "السيولة", mf_open_label: "افتح الصندوق",
                 trust_tag: "محرك الثقة", trust_title: "ثقة بلا تخمين.", trust_text: "في الاستثمار لا مجال للتخمين. تعمل ستارتا عبر <strong>محرك تحليلي موثوق</strong>: الذكاء الاصطناعي يشرح الصورة، بينما كل رقم مرتبط مباشرةً بمصادر مالية موثوقة.",
                 lang_tag: "اللغة والسياق", lang_title: "تفهم لغة<br>المستثمر المصري.", lang_text: `تفهم ستارتا <span class="text-main font-semibold">لغة المستثمر الفعلية</span> بالفصحى وباللهجة المصرية، وتربط سؤالك فورًا بالرموز والقطاعات وسياق التقييم داخل EGX.`,
                 live_tag: "بيانات مباشرة", live_title: "نبض السوق لحظةً بلحظة.", live_feed_header: "البث المباشر", live_source: "المصدر: EGX مباشر",
@@ -1890,6 +2016,18 @@
                 p2_name: "المحلل", p2_sub: "ذكاء لحظي للمتداول النشط", curr: "ج.م", p2_bill: "شهريًا أو 662 ج.م سنويًا (خصم 20%)", p2_btn: "ابدأ الآن", p2_f1: "محادثات غير محدودة مع المحلل", p2_f2: "قوائم دخل غير محدودة", p2_f3: "ميزانيات عمومية غير محدودة", p2_f4: "تدفقات نقدية غير محدودة", p2_f5: "سجل مالي تاريخي كامل", p2_f6: "نسب ومؤشرات أداء كاملة", p2_f7: "تصدير Excel متقدم", p2_f8: "تقارير PDF غير محدودة", p2_f9: "إحاطة سوق يومية",
                 p3_name: "المؤسسات", p3_sub: "وصول API وبيانات خام للصناديق", p3_price: "مخصص", p3_btn: "تواصل مع المبيعات", p3_f1: "وصول مباشر إلى API", p3_f2: "نماذج مخاطر مخصصة", p3_f3: "مدير حساب مخصص", p3_f4: "تقارير بعلامتك التجارية", p3_f5: "تكامل بيانات مخصص", p3_f6: "بيانات تاريخية دقيقة", p3_f7: "تخصيص نموذج الذكاء الاصطناعي", p3_f8: "اتفاقية إتاحة 99.9%", p3_f9: "دعم هندسي أولوية 24/7",
                 close_title: "قرارات أوضح بثقة.", close_text: "اطرح أسئلة أفضل، واحصل على إجابات أدق، واتخذ قراراتك المالية بثقة أكبر.", close_btn: "فعّل ستارتا الآن",
+                why_funds_tag: "ادخار ذكي", why_funds_title: "ليه صناديق الاستثمار؟",
+                why_funds_c1_title: "عوائد مرتفعة", why_funds_c1_text: "عائدات تنافسية تتفوق باستمرار على حسابات الادخار التقليدية.",
+                why_funds_c2_title: "سيولة مرنة", why_funds_c2_text: "بدون فترات تجميد. اسحب أموالك في أي وقت تحتاج إليها.",
+                why_funds_c3_title: "بداية ميسرة", why_funds_c3_text: "ابدأ رحلة بناء ثروتك بمبالغ تبدأ من 10 جنيهات فقط.",
+                why_funds_c4_title: "إدارة احترافية", why_funds_c4_text: "محافظ استثمارية تدار بواسطة نخبة من الخبراء في سوق المال.",
+                top_funds_tag: "الأداء", top_funds_title: "أهم الصناديق الاستثمارية", view_more_funds: "عرض المزيد",
+                fund1_name: "صندوق استثمار بنك مصر", fund1_desc: "نقدي - سيولة يومية",
+                fund2_name: "صندوق استثمار QNB الأهلي", fund2_desc: "دخل ثابت - أسبوعي",
+                fund_return_label: "العائد منذ بداية العام", fund_price_label: "السعر", fund_invest_btn: "استثمر الآن",
+                calc_tag: "توقع الثروة", calc_title: "جرب قوة العائد التراكمي",
+                calc_goal_title: "حقق هدفك", calc_goal_desc: "احسب المبلغ المطلوب استثماره شهرياً للوصول لهدفك.",
+                calc_save_title: "ابنِ مستقبلك", calc_save_desc: "شاهد كيف ستنمو مدخراتك الشهرية مع مرور الوقت.",
                 brain_load1: "جارٍ تحليل إشارات السوق", brain_load2: "جارٍ تدقيق بيانات EGX", brain_load3: "تم تجهيز الخلاصة", dialect_egy: "اللهجة المصرية", dialect_msa: "العربية الفصحى",
                 app_store: "متجر التطبيقات", google_play: "جوجل بلاي",
                 comp_title: "لماذا نتفوق.", comp_feat: "الميزة", comp_others: "منصات التداول", comp_logic: "منهجية مؤسسية", comp_arabic: "لغة السوق", comp_data: "دقة بيانات موثقة",
@@ -1898,14 +2036,21 @@
         };
 
         const langToggle = document.getElementById('langToggle');
+        function getStoredLanguage() {
+            const stored = localStorage.getItem('starta-lang') || localStorage.getItem('lang');
+            return stored === 'ar' ? 'ar' : 'en';
+        }
         function applyTranslations(lang) {
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.getAttribute('data-key');
                 if (translations[lang][key]) el.innerHTML = translations[lang][key];
             });
         }
-        applyTranslations(document.documentElement.lang);
-        langToggle.innerText = document.documentElement.lang === 'ar' ? 'EN' : 'AR';
+        const initialLang = getStoredLanguage();
+        document.documentElement.lang = initialLang;
+        document.documentElement.dir = initialLang === 'ar' ? 'rtl' : 'ltr';
+        applyTranslations(initialLang);
+        langToggle.innerText = initialLang === 'ar' ? 'EN' : 'AR';
 
         langToggle.addEventListener('click', () => {
             const currentLang = document.documentElement.lang;
@@ -1913,6 +2058,8 @@
 
             document.documentElement.lang = newLang;
             document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+            localStorage.setItem('starta-lang', newLang);
+            localStorage.setItem('lang', newLang);
             langToggle.innerText = newLang === 'ar' ? 'EN' : 'AR';
 
             // Restart Animation cleanly
@@ -1923,6 +2070,7 @@
             gsap.to("body", {
                 opacity: 0, duration: 0.2, onComplete: () => {
                     applyTranslations(newLang);
+                    renderTopFunds();
                     setMarketTimestamp();
                     gsap.to("body", { opacity: 1, duration: 0.2 });
                 }
@@ -2049,6 +2197,16 @@
         });
 
         // Animations
+        gsap.utils.toArray('.chart-line').forEach(line => {
+            const length = line.getTotalLength();
+            gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
+            gsap.to(line, {
+                strokeDashoffset: 0,
+                duration: 2,
+                ease: 'power2.out',
+                scrollTrigger: { trigger: line, start: 'top 90%' }
+            });
+        });
         const texts = document.querySelectorAll('.reveal-text');
         texts.forEach(text => {
             gsap.fromTo(text, { y: 32, opacity: 0 }, { y: 0, opacity: 1, duration: 1.15, ease: 'power3.out', scrollTrigger: { trigger: text, start: 'top 82%' } });
@@ -2155,6 +2313,69 @@
         const barElements = document.querySelectorAll('.bar-anim');
         barElements.forEach(el => { const width = el.dataset.width; ScrollTrigger.create({ trigger: el, start: "top 85%", onEnter: () => { el.style.width = width; } }); });
 
+        // --- CALCULATOR LOGIC ---
+        const goalAmountInput = document.getElementById('goal-amount-input');
+        const goalYearsInput = document.getElementById('goal-years-input');
+        const goalAmountVal = document.getElementById('goal-amount-val');
+        const goalYearsVal = document.getElementById('goal-years-val');
+        const goalResult = document.getElementById('goal-result');
+
+        const saveAmountInput = document.getElementById('save-amount-input');
+        const saveYearsInput = document.getElementById('save-years-input');
+        const saveAmountVal = document.getElementById('save-amount-val');
+        const saveYearsVal = document.getElementById('save-years-val');
+        const saveResult = document.getElementById('save-result');
+
+        const ANNUAL_RETURN = 0.18;
+        const MONTHLY_RETURN = ANNUAL_RETURN / 12;
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat(document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US').format(Math.round(val)) + ' EGP';
+        }
+
+        function updateGoalCalc() {
+            if (!goalAmountInput) return;
+            const goal = parseFloat(goalAmountInput.value);
+            const years = parseInt(goalYearsInput.value);
+            const months = years * 12;
+            const pmt = goal * (MONTHLY_RETURN / (Math.pow(1 + MONTHLY_RETURN, months) - 1));
+            goalAmountVal.innerText = formatCurrency(goal);
+            goalYearsVal.innerText = years + (document.documentElement.lang === 'ar' ? ' سنة' : ' Years');
+            gsap.to(goalResult, {
+                innerHTML: pmt,
+                duration: 0.5,
+                snap: { innerHTML: 1 },
+                onUpdate: function() {
+                    goalResult.innerHTML = formatCurrency(this.targets()[0].innerHTML).replace(' EGP', ' <span class="text-lg">EGP</span>');
+                }
+            });
+        }
+
+        function updateSaveCalc() {
+            if (!saveAmountInput) return;
+            const pmt = parseFloat(saveAmountInput.value);
+            const years = parseInt(saveYearsInput.value);
+            const months = years * 12;
+            const fv = pmt * ((Math.pow(1 + MONTHLY_RETURN, months) - 1) / MONTHLY_RETURN);
+            saveAmountVal.innerText = formatCurrency(pmt);
+            saveYearsVal.innerText = years + (document.documentElement.lang === 'ar' ? ' سنة' : ' Years');
+            gsap.to(saveResult, {
+                innerHTML: fv,
+                duration: 0.5,
+                snap: { innerHTML: 1 },
+                onUpdate: function() {
+                    saveResult.innerHTML = formatCurrency(this.targets()[0].innerHTML).replace(' EGP', ' <span class="text-lg">EGP</span>');
+                }
+            });
+        }
+
+        if(goalAmountInput) {
+            [goalAmountInput, goalYearsInput].forEach(el => el.addEventListener('input', updateGoalCalc));
+            [saveAmountInput, saveYearsInput].forEach(el => el.addEventListener('input', updateSaveCalc));
+            updateGoalCalc();
+            updateSaveCalc();
+        }
+
         async function handleAnalystCheckout(btnElement) {
             const token = localStorage.getItem("fh_auth_token");
             if (!token) {
@@ -2196,6 +2417,139 @@
                 }
             }
         }
+
+        function translateFundType(type, lang) {
+            const typeMap = {
+                en: {
+                    'Investment Fund': 'Investment Fund',
+                    'Equity': 'Equity',
+                    'Gold': 'Gold',
+                    'Money Market': 'Money Market'
+                },
+                ar: {
+                    'Investment Fund': 'صندوق استثمار',
+                    'Equity': 'أسهم',
+                    'Gold': 'ذهب',
+                    'Money Market': 'سوق النقد'
+                }
+            };
+            return typeMap[lang]?.[type] || type;
+        }
+
+        function translateLiquidity(liquidity, lang) {
+            const liquidityMap = {
+                en: { Daily: 'Daily', Weekly: 'Weekly', Monthly: 'Monthly' },
+                ar: { Daily: 'يومي', Weekly: 'أسبوعي', Monthly: 'شهري' }
+            };
+            return liquidityMap[lang]?.[liquidity] || liquidity;
+        }
+
+        function normalizeFundFromApi(fund) {
+            const ytd = Number(fund.returns_ytd ?? fund.ytd_return ?? 0) || 0;
+            const latestNav = Number(fund.latest_nav ?? 0) || 0;
+            return {
+                id: fund.fund_id,
+                nameAr: fund.fund_name || fund.fund_name_en || 'Egypt Fund',
+                nameEn: fund.fund_name_en || fund.fund_name || 'Egypt Fund',
+                fundHouseAr: fund.manager_name || fund.manager_name_en || fund.issuer || 'Fund Manager',
+                fundHouseEn: fund.manager_name_en || fund.manager || fund.manager_name || fund.issuer || 'Fund Manager',
+                type: fund.fund_type || fund.classification || 'Investment Fund',
+                liquidity: fund.nav_frequency || 'Daily',
+                price: latestNav,
+                return: ytd,
+                currency: fund.currency || 'EGP',
+                logo: fund.logo_url || '/assets/funds/starta-fund-placeholder.svg',
+                logoScale: Number(fund.logo_scale || 1) || 1
+            };
+        }
+
+        function getLocalizedFeaturedFundName(fund, lang) {
+            return (lang === 'ar' ? fund.nameAr : fund.nameEn) || fund.nameEn || fund.nameAr || 'Egypt Fund';
+        }
+
+        function getLocalizedFeaturedFundHouse(fund, lang) {
+            return (lang === 'ar' ? fund.fundHouseAr : fund.fundHouseEn) || fund.fundHouseEn || fund.fundHouseAr || 'Fund Manager';
+        }
+
+        async function renderTopFunds() {
+            try {
+                const response = await fetch('/api/v1/funds?market=EGX');
+                if (!response.ok) return;
+                const rawData = await response.json();
+                const lang = document.documentElement.lang;
+                const data = rawData
+                    .map(normalizeFundFromApi)
+                    .filter((fund) => fund.id && (fund.nameAr || fund.nameEn))
+                    .sort((a, b) => b.return - a.return || b.price - a.price || getLocalizedFeaturedFundName(a, lang).localeCompare(getLocalizedFeaturedFundName(b, lang), lang === 'ar' ? 'ar' : 'en'));
+                const container = document.getElementById('mf-featured-grid');
+                if (!container) return;
+                const featured = data.slice(0, 3);
+
+                const coveredCount = document.getElementById('mf-covered-count');
+                const bestYtd = document.getElementById('mf-best-ytd');
+                const fundHouses = document.getElementById('mf-fund-houses');
+
+                if (coveredCount) coveredCount.innerText = String(data.length);
+                if (bestYtd) bestYtd.innerText = `+${(featured[0]?.return || 0).toFixed(2)}%`;
+                if (fundHouses) fundHouses.innerText = String(new Set(data.map(fund => getLocalizedFeaturedFundHouse(fund, lang))).size);
+
+                container.innerHTML = featured.map((fund, index) => {
+                    const barWidth = Math.max(18, Math.min(100, fund.return * 3.1));
+                    const localizedName = getLocalizedFeaturedFundName(fund, lang);
+                    const localizedFundHouse = getLocalizedFeaturedFundHouse(fund, lang);
+                    return `
+                    <article class="glass-premium ultra-card p-6 rounded-[2rem] border border-border premium-hover cursor-pointer" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.id)}'">
+                        <div class="flex items-start justify-between gap-4 mb-5">
+                            <div class="flex items-start gap-4 min-w-0">
+                                <div class="w-12 h-12 overflow-hidden rounded-2xl bg-white flex items-center justify-center p-2 border border-border shrink-0">
+                                    <img src="${fund.logo || '/assets/funds/starta-fund-placeholder.svg'}" class="h-full w-full object-contain opacity-90" style="transform:scale(${Number(fund.logoScale || 1)}); transform-origin:center center;" alt="${localizedFundHouse}">
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-[10px] text-starta-teal font-mono tracking-[0.22em] uppercase mb-2">
+                                        ${String(index + 1).padStart(2, '0')} • ${translateFundType(fund.type, lang)}
+                                    </div>
+                                    <h3 class="text-main font-bold text-lg leading-snug mf-clamp-2">${localizedName}</h3>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="text-green-500 font-bold font-mono text-2xl">+${fund.return.toFixed(2)}%</div>
+                                <div class="text-[9px] text-muted font-mono uppercase tracking-widest">${translations[lang].mf_return_label}</div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted mb-4 mf-clamp-1">${localizedFundHouse}</p>
+                        <div class="h-2 w-full bg-border rounded-full overflow-hidden mb-6">
+                            <div class="h-full rounded-full bg-gradient-to-r from-starta-teal to-starta-accent" style="width:${barWidth}%"></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 items-end">
+                            <div class="min-w-0">
+                                <div class="text-[9px] text-muted font-mono uppercase tracking-widest mb-1">${translations[lang].mf_price_label}</div>
+                                <div class="text-main font-bold">${fund.price.toFixed(2)} ${fund.currency}</div>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-[9px] text-muted font-mono uppercase tracking-widest mb-1">${translations[lang].mf_liquidity_label}</div>
+                                <div class="text-main font-bold">${translateLiquidity(fund.liquidity, lang)}</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-flex items-center gap-2 text-starta-teal text-[10px] font-bold uppercase tracking-[0.18em]">
+                                    ${translations[lang].mf_open_label}
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                `;
+                }).join('');
+
+                gsap.from("#mf-featured-grid > article", {
+                    y: 24,
+                    opacity: 0,
+                    duration: 0.5,
+                    stagger: 0.1,
+                    ease: "power2.out"
+                });
+            } catch (error) { console.error(error); }
+        }
+        renderTopFunds();
     </script>
 </body>
 

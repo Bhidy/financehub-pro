@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fund Details | Starta Markets</title>
+    <meta name="description"
+        content="Premium fund profile pages for the full Egypt mutual funds universe, with real NAV history, bilingual labels, and research-grade detail cards.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'var(--c-page)',
+                        surface: 'var(--c-surface)',
+                        panel: 'var(--c-panel)',
+                        main: 'var(--c-text-main)',
+                        muted: 'var(--c-text-muted)',
+                        border: 'var(--c-border)',
+                        starta: {
+                            teal: '#14B8A6',
+                            darkTeal: '#0F766E',
+                            ink: '#0F172A',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        premium: 'var(--shadow-premium)',
+                        halo: 'var(--shadow-halo)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --c-page: #f4f7fb;
+            --c-surface: #ffffff;
+            --c-panel: rgba(255, 255, 255, 0.88);
+            --c-text-main: #0f172a;
+            --c-text-muted: #5b6677;
+            --c-border: rgba(148, 163, 184, 0.18);
+            --c-hero: linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(45, 212, 191, 0.04) 42%, rgba(255, 255, 255, 0) 72%);
+            --c-grid: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px);
+            --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.18);
+            --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.12);
+            --glass-bg: rgba(255, 255, 255, 0.78);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            --glass-blur: 22px;
+            --teal: #14B8A6;
+            --teal-dark: #0F766E;
+            --ink: #0F172A;
+            --danger: #ef4444;
+            --success: #14b87c;
+        }
+
+        html[dir="rtl"] body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        html[dir="rtl"] .font-display {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        body {
+            background: var(--c-page);
+            color: var(--c-text-main);
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-premium {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .surface-card {
+            background:
+                radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(249, 251, 254, 0.92));
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 22px 52px rgba(148, 163, 184, 0.13);
+        }
+
+        .summary-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 247, 251, 0.88));
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 18px 42px rgba(148, 163, 184, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #14B8A6 20%, #0f766e 100%);
+            color: #fff;
+            border: 1px solid rgba(45, 212, 191, 0.35);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-halo);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--c-text-main);
+        }
+
+        .nav-pill {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--c-text-main);
+        }
+
+        .range-btn {
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--c-text-muted);
+            min-width: 4.25rem;
+            letter-spacing: 0.02em;
+            transition: all 180ms ease;
+            backdrop-filter: blur(14px);
+        }
+
+        .range-btn.active {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.14), rgba(45, 212, 191, 0.08));
+            border-color: rgba(15, 118, 110, 0.2);
+            color: var(--teal-dark);
+            box-shadow: 0 14px 28px rgba(20, 184, 166, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .chart-toolbar {
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.9));
+            border-radius: 1.6rem;
+            padding: 0.9rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .chart-range-shell {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        html[dir="rtl"] .chart-range-shell {
+            justify-content: flex-end;
+        }
+
+        .chart-metrics-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        @media (max-width: 640px) {
+            .chart-metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--c-text-main);
+        }
+
+        .section-tag {
+            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.24em;
+            color: var(--teal-dark);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #0f172a 30%, #0f766e 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .detail-card {
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .tooltip-shell {
+            position: absolute;
+            pointer-events: none;
+            z-index: 3;
+            min-width: 9rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
+            padding: 0.9rem 1rem;
+            transform: translate(-50%, -100%);
+            opacity: 0;
+            transition: opacity 120ms ease;
+        }
+
+        .tooltip-shell.visible {
+            opacity: 1;
+        }
+
+        #chartContainer {
+            min-height: 26rem;
+        }
+
+        #chartEmpty {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px dashed rgba(148, 163, 184, 0.2);
+            border-radius: 1.5rem;
+            color: var(--c-text-muted);
+            background: rgba(248, 250, 252, 0.86);
+        }
+
+        .doc-link:hover {
+            border-color: rgba(20, 184, 166, 0.3);
+            box-shadow: 0 14px 32px rgba(20, 184, 166, 0.08);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--c-page);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.44);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-starta-teal selection:text-white">
+    <div class="fixed inset-0 z-[-3]" style="background: var(--c-page);"></div>
+    <div class="fixed inset-0 z-[-2] pointer-events-none opacity-80" style="background-image: var(--c-grid); background-size: 42px 42px;"></div>
+    <div class="fixed inset-0 z-[-1] pointer-events-none" style="background: var(--c-hero);"></div>
+
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/82 backdrop-blur-xl">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-8 h-8 bg-starta-teal rounded-lg flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                <span class="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-10">
+                <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
+                    <a href="/#brain" class="hover:text-starta-teal transition-colors" data-key="nav_features">FEATURES</a>
+                    <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
+                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
+                    <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
+                    <a href="/#pricing" class="hover:text-starta-teal transition-colors" data-key="nav_pricing">PRICING</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-20 min-h-screen">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8">
+            <section class="surface-card rounded-[2.6rem] p-6 sm:p-8 lg:p-10 reveal-block">
+                <div class="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] xl:items-stretch">
+                    <div class="flex flex-col gap-6">
+                        <div class="flex items-start gap-4">
+                            <div class="h-20 w-20 overflow-hidden rounded-[1.6rem] border border-border bg-white p-2 shadow-sm sm:h-24 sm:w-24">
+                                <img id="fundLogo" src="/assets/funds/starta-fund-placeholder.svg" alt="Fund logo" class="h-full w-full rounded-xl object-contain">
+                            </div>
+                            <div>
+                                <h1 id="fundName" class="text-3xl sm:text-4xl lg:text-[3.25rem] font-display font-bold tracking-[-0.05em] leading-[0.98] text-main">Loading fund</h1>
+                                <p id="fundManagerLine" class="mt-3 text-base text-muted">Loading manager</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2" id="fundChips"></div>
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="summary-card rounded-[1.8rem] p-5">
+                                <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="latest_nav_label">Latest NAV</div>
+                                <div id="fundNavValue" class="mt-4 text-4xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                                <p id="fundNavMeta" class="mt-2 text-sm text-muted">EGP</p>
+                            </div>
+                            <div class="summary-card rounded-[1.8rem] p-5">
+                                <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="selected_return_label">Selected period return</div>
+                                <div id="fundSelectedReturn" class="mt-4 text-4xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                                <p id="fundSelectedRange" class="mt-2 text-sm text-muted">ALL</p>
+                            </div>
+                        </div>
+
+                        <p id="fundShortDesc" class="max-w-2xl text-sm sm:text-base leading-relaxed text-muted"></p>
+
+                        <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="summary-card rounded-[1.5rem] p-4">
+                                <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="summary_aum">AUM</div>
+                                <div id="summaryAum" class="mt-3 text-lg font-semibold text-main">—</div>
+                            </div>
+                            <div class="summary-card rounded-[1.5rem] p-4">
+                                <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="summary_risk">Risk</div>
+                                <div id="summaryRisk" class="mt-3 text-lg font-semibold text-main">—</div>
+                            </div>
+                            <div class="summary-card rounded-[1.5rem] p-4">
+                                <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="summary_update">Last update</div>
+                                <div id="summaryUpdate" class="mt-3 text-lg font-semibold text-main">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-premium rounded-[2.2rem] p-5 sm:p-6 lg:p-7">
+                        <div class="chart-toolbar">
+                            <div class="chart-range-shell" id="rangeButtons">
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="1M">1M</button>
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="3M">3M</button>
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="1Y">1Y</button>
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="3Y">3Y</button>
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="5Y">5Y</button>
+                                <button class="range-btn active rounded-full px-4 py-2 text-sm font-semibold" data-range="ALL">ALL</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 relative">
+                            <div id="chartContainer" class="w-full rounded-[1.7rem] border border-border bg-white/86"></div>
+                            <div id="chartEmpty">
+                                <div>
+                                    <div class="text-lg font-display font-bold text-main" data-key="chart_empty_title">Not enough chart history yet.</div>
+                                    <p class="mt-2 text-sm text-muted" data-key="chart_empty_desc">This fund profile will show the full NAV chart automatically once enough history is available in the saved dataset.</p>
+                                </div>
+                            </div>
+                            <div id="chartTooltip" class="tooltip-shell">
+                                <div id="tooltipDate" class="text-[0.68rem] uppercase tracking-[0.18em] text-muted"></div>
+                                <div id="tooltipValue" class="mt-2 text-lg font-semibold text-main"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mt-8 grid gap-5 lg:grid-cols-4 reveal-block">
+                <div class="summary-card rounded-[1.7rem] p-5">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">YTD</div>
+                    <div id="perfYtd" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </div>
+                <div class="summary-card rounded-[1.7rem] p-5">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">1Y</div>
+                    <div id="perf1y" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </div>
+                <div class="summary-card rounded-[1.7rem] p-5">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">3Y</div>
+                    <div id="perf3y" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </div>
+                <div class="summary-card rounded-[1.7rem] p-5">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">5Y</div>
+                    <div id="perf5y" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </div>
+            </section>
+
+            <section class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)] reveal-block">
+                <div class="glass-premium rounded-[2.2rem] p-6 sm:p-7">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <span class="section-tag" data-key="details_tag">Fund details</span>
+                            <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="details_title">Fund details that stay readable.</h3>
+                        </div>
+                        <p class="max-w-xl text-sm text-muted" data-key="details_desc">Manager, benchmark, identifiers, fees, and the core profile metrics are organized into a cleaner research layout.</p>
+                    </div>
+                    <div id="fundDetailsGrid" class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+                </div>
+
+                <div class="flex flex-col gap-8">
+                    <div class="glass-premium rounded-[2.2rem] p-6 sm:p-7">
+                        <span class="section-tag" data-key="strategy_tag">Investment thesis</span>
+                        <div class="mt-4 space-y-6">
+                            <div>
+                                <h4 class="text-lg font-semibold text-main" data-key="strategy_title">Investment strategy</h4>
+                                <p id="fundStrategy" class="mt-3 text-sm leading-relaxed text-muted"></p>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-main" data-key="objective_title">Fund objective</h4>
+                                <p id="fundObjective" class="mt-3 text-sm leading-relaxed text-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mt-8 reveal-block">
+                <span class="section-tag" data-key="similar_tag">Explore more</span>
+                <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="similar_title">Similar funds in the same universe.</h3>
+                <div id="similarFunds" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="py-24 bg-surface border-t border-border mt-20">
+        <div class="max-w-3xl mx-auto px-6 text-center">
+            <h2 class="text-3xl font-display font-bold text-main mb-8" data-key="close_title">One fund page, built for deeper due diligence.</h2>
+            <p class="text-muted text-lg mb-12" data-key="close_text">Starta keeps the market, the profile details, and the historical chart in one light, research-grade workflow.</p>
+            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">&copy; 2026 Starta Financial Intelligence.</div>
+        </div>
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const translations = {
+            en: {
+                nav_features: "FEATURES",
+                nav_learn: "LEARN",
+                nav_mobile: "MUTUAL FUNDS",
+                nav_pulse: "MARKET PULSE",
+                nav_news: "NEWS",
+                nav_about: "ABOUT US",
+                nav_pricing: "PRICING",
+                back_to_funds: "Back to funds",
+                profile_tag: "Fund profile",
+                latest_nav_label: "Latest NAV",
+                selected_return_label: "Selected period return",
+                summary_aum: "AUM",
+                summary_risk: "Risk",
+                summary_update: "Last update",
+                chart_eyebrow: "Real NAV history",
+                chart_title: "Professional NAV history, built for real diligence.",
+                metric_range_return: "Range return",
+                metric_points: "Data points",
+                metric_window: "Window",
+                chart_empty_title: "Not enough chart history yet.",
+                chart_empty_desc: "This fund profile will show the full NAV chart automatically once enough history is available in the saved dataset.",
+                details_tag: "Fund details",
+                details_title: "Fund details that stay readable.",
+                details_desc: "Manager, benchmark, identifiers, fees, and the core profile metrics are organized into a cleaner research layout.",
+                strategy_tag: "Investment thesis",
+                strategy_title: "Investment strategy",
+                objective_title: "Fund objective",
+                similar_tag: "Explore more",
+                similar_title: "Similar funds in the same universe.",
+                close_title: "One fund page, built for deeper due diligence.",
+                close_text: "Starta keeps the market, the profile details, and the historical chart in one light, research-grade workflow.",
+                no_description: "This fund profile is live and will display more narrative detail as verified fields are available.",
+                no_strategy: "Strategy information is not exposed yet for this fund.",
+                no_objective: "Objective information is not exposed yet for this fund.",
+                latest: "Latest",
+                nav: "NAV",
+                updated: "Updated",
+                risk_low: "Low",
+                risk_medium: "Medium",
+                risk_high: "High",
+                risk_unclassified: "Unclassified",
+                type_unclassified: "Investment fund",
+                yes: "Yes",
+                no: "No",
+                shariah: "Shariah compliant",
+                currency: "Currency",
+                inception: "Inception",
+                manager: "Manager",
+                type: "Fund type",
+                liquidity: "Liquidity",
+                benchmark: "Benchmark",
+                eligibility: "Eligibility",
+                isin: "ISIN",
+                owner_name: "Owner",
+                issuer: "Issuer",
+                aum_millions: "AUM",
+                minimum_investment: "Minimum investment",
+                expense_ratio: "Expense ratio",
+                fee_subscription: "Subscription fee",
+                fee_redemption: "Redemption fee",
+                fee_management: "Management fee",
+                fee_custodian: "Custodian fee",
+                fee_performance: "Performance fee",
+                last_update_date: "Last update",
+                is_shariah: "Shariah compliant",
+                returns_1y: "1Y return",
+                returns_3y: "3Y return",
+                returns_5y: "5Y return",
+                manager_unavailable: "Manager unavailable"
+            },
+            ar: {
+                nav_features: "المزايا",
+                nav_learn: "تعلّم",
+                nav_mobile: "الصناديق الاستثمارية",
+                nav_pulse: "نبض السوق",
+                nav_news: "الأخبار",
+                nav_about: "معلومات عنا",
+                nav_pricing: "الأسعار",
+                back_to_funds: "العودة إلى الصناديق",
+                profile_tag: "ملف الصندوق",
+                latest_nav_label: "أحدث NAV",
+                selected_return_label: "عائد الفترة المختارة",
+                summary_aum: "حجم الأصول",
+                summary_risk: "المخاطر",
+                summary_update: "آخر تحديث",
+                chart_eyebrow: "تاريخ NAV الحقيقي",
+                chart_title: "تاريخ NAV احترافي مبني للدراسة الجادة.",
+                metric_range_return: "عائد الفترة",
+                metric_points: "عدد النقاط",
+                metric_window: "النافذة",
+                chart_empty_title: "لا يوجد تاريخ كافٍ للرسم بعد.",
+                chart_empty_desc: "ستظهر هذه الصفحة كامل الرسم البياني تلقائياً بمجرد توفر تاريخ كافٍ داخل البيانات المحفوظة.",
+                details_tag: "تفاصيل الصندوق",
+                details_title: "تفاصيل الصندوق بشكل أسهل للقراءة.",
+                details_desc: "تم تنظيم المدير، والمؤشر، والمعرفات، والرسوم، وأهم بيانات الملف داخل تخطيط أوضح للبحث.",
+                strategy_tag: "أطروحة الاستثمار",
+                strategy_title: "استراتيجية الاستثمار",
+                objective_title: "هدف الصندوق",
+                similar_tag: "استكشف المزيد",
+                similar_title: "صناديق مشابهة داخل نفس السوق.",
+                close_title: "صفحة صندوق واحدة، مصممة لدراسة أعمق.",
+                close_text: "تجمع ستارتا السوق، والتفاصيل، والرسم التاريخي في تجربة بحث واحدة مضيئة وواضحة.",
+                no_description: "هذه الصفحة حية وستعرض مزيداً من التفاصيل النصية كلما توفرت الحقول المعتمدة.",
+                no_strategy: "لم تظهر معلومات الاستراتيجية لهذا الصندوق بعد.",
+                no_objective: "لم تظهر معلومات الهدف لهذا الصندوق بعد.",
+                latest: "الأحدث",
+                nav: "NAV",
+                updated: "التحديث",
+                risk_low: "منخفضة",
+                risk_medium: "متوسطة",
+                risk_high: "مرتفعة",
+                risk_unclassified: "غير مصنفة",
+                type_unclassified: "صندوق استثمار",
+                yes: "نعم",
+                no: "لا",
+                shariah: "متوافق مع الشريعة",
+                currency: "العملة",
+                inception: "تاريخ الإنشاء",
+                manager: "المدير",
+                type: "نوع الصندوق",
+                liquidity: "السيولة",
+                benchmark: "المؤشر",
+                eligibility: "الأهلية",
+                isin: "آيزين",
+                owner_name: "المالك",
+                issuer: "الجهة المصدرة",
+                aum_millions: "حجم الأصول",
+                minimum_investment: "الحد الأدنى للاستثمار",
+                expense_ratio: "نسبة المصروفات",
+                fee_subscription: "رسوم الاكتتاب",
+                fee_redemption: "رسوم الاسترداد",
+                fee_management: "رسوم الإدارة",
+                fee_custodian: "رسوم الحفظ",
+                fee_performance: "رسوم الأداء",
+                last_update_date: "آخر تحديث",
+                is_shariah: "متوافق مع الشريعة",
+                returns_1y: "عائد سنة",
+                returns_3y: "عائد 3 سنوات",
+                returns_5y: "عائد 5 سنوات",
+                manager_unavailable: "المدير غير متاح"
+            }
+        };
+
+        const detailFields = [
+            'currency',
+            'inception',
+            'manager',
+            'type',
+            'liquidity',
+            'benchmark',
+            'eligibility',
+            'isin',
+            'owner_name',
+            'issuer',
+            'aum_millions',
+            'minimum_investment',
+            'expense_ratio',
+            'fee_subscription',
+            'fee_redemption',
+            'fee_management',
+            'fee_custodian',
+            'fee_performance',
+            'last_update_date',
+            'is_shariah'
+        ];
+
+        const state = {
+            lang: 'en',
+            funds: [],
+            fund: null,
+            history: [],
+            chartRange: 'ALL',
+            chart: null,
+            chartSeries: null,
+            similarObserver: null,
+        };
+
+        const safeNumber = (value) => {
+            if (value === null || value === undefined || value === '') return null;
+            const num = Number(value);
+            return Number.isFinite(num) ? num : null;
+        };
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        function getStoredLanguage() {
+            const stored = localStorage.getItem('starta-lang') || localStorage.getItem('lang');
+            return stored === 'ar' ? 'ar' : 'en';
+        }
+
+        function getLocale() {
+            return state.lang === 'ar' ? 'ar-EG' : 'en-US';
+        }
+
+        function getChartLocale() {
+            return 'en-US';
+        }
+
+        function getLabels() {
+            return translations[state.lang];
+        }
+
+        function localizedPair(primary, fallback) {
+            const first = String(primary || '').trim();
+            if (first) return first;
+            const second = String(fallback || '').trim();
+            return second || null;
+        }
+
+        function getLocalizedField(fund, baseKey) {
+            if (state.lang === 'ar') {
+                return localizedPair(fund[baseKey], fund[`${baseKey}_en`]);
+            }
+
+            return localizedPair(fund[`${baseKey}_en`], fund[baseKey]);
+        }
+
+        function getFundTypeName(fund, lang = state.lang) {
+            if (lang === 'ar') {
+                return localizedPair(fund.fund_type, fund.classification) || getLabels().type_unclassified;
+            }
+
+            return localizedPair(fund.fund_type_en, fund.fund_type)
+                || localizedPair(fund.classification_en, fund.classification)
+                || getLabels().type_unclassified;
+        }
+
+        function getFundName(fund, lang = state.lang) {
+            if (lang === 'ar') {
+                return localizedPair(fund.fund_name, fund.fund_name_en) || 'Egypt Fund';
+            }
+            return localizedPair(fund.fund_name_en, fund.fund_name) || 'Egypt Fund';
+        }
+
+        function getManagerName(fund, lang = state.lang) {
+            const english = localizedPair(fund.manager_name_en, fund.manager);
+            const arabic = localizedPair(fund.manager_name, fund.manager_name_en) || localizedPair(fund.issuer, fund.issuer_en);
+            return (lang === 'ar' ? localizedPair(arabic, english) : localizedPair(english, arabic)) || getLabels().manager_unavailable;
+        }
+
+        function deriveRisk(fund) {
+            const raw = String([fund.risk_level_en, fund.risk_level].filter(Boolean).join(' ')).toLowerCase();
+            if (raw.includes('high') || raw.includes('مرتفع') || raw.includes('عالية')) return getLabels().risk_high;
+            if (raw.includes('low') || raw.includes('منخفض')) return getLabels().risk_low;
+            if (raw.includes('medium') || raw.includes('متوسط') || raw.includes('متوسطة')) return getLabels().risk_medium;
+            return getLabels().risk_unclassified;
+        }
+
+        function formatNumber(value, options = {}) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            return new Intl.NumberFormat(getLocale(), { maximumFractionDigits: 2, ...options }).format(Number(value));
+        }
+
+        function formatPercent(value) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            const num = Number(value);
+            return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
+        }
+
+        function formatDate(value) {
+            if (!value) return '—';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleDateString(getLocale(), {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function normalizeFund(fund) {
+            return {
+                ...fund,
+                fund_id: fund.fund_id || fund.symbol,
+                latest_nav: safeNumber(fund.latest_nav),
+                currency: fund.currency || 'EGP',
+                aum_millions: safeNumber(fund.aum_millions ?? fund.aum),
+                last_update_date: fund.last_update_date || fund.last_updated || null,
+                logo_url: fund.logo_url || '/assets/funds/starta-fund-placeholder.svg',
+                logo_scale: Number(fund.logo_scale || 1) || 1,
+            };
+        }
+
+        function setLanguage(lang) {
+            state.lang = lang === 'ar' ? 'ar' : 'en';
+            localStorage.setItem('starta-lang', state.lang);
+            localStorage.setItem('lang', state.lang);
+            document.documentElement.lang = state.lang;
+            document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('langToggle').textContent = state.lang === 'ar' ? 'EN' : 'AR';
+
+            document.querySelectorAll('[data-key]').forEach((el) => {
+                const key = el.getAttribute('data-key');
+                if (translations[state.lang][key]) el.innerHTML = translations[state.lang][key];
+            });
+
+            if (state.fund) {
+                renderFund(state.fund);
+            }
+        }
+
+        function buildRangeState() {
+            const history = [...state.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            if (!history.length) {
+                return { history: [], visibleHistory: [], anchorPoint: null, targetDate: null };
+            }
+
+            if (state.chartRange === 'ALL') {
+                return {
+                    history,
+                    visibleHistory: history,
+                    anchorPoint: history[0] || null,
+                    targetDate: null,
+                };
+            }
+
+            const latestDate = new Date(history[history.length - 1].date);
+            const targetDate = new Date(latestDate);
+            if (state.chartRange === '1M') targetDate.setMonth(latestDate.getMonth() - 1);
+            if (state.chartRange === '3M') targetDate.setMonth(latestDate.getMonth() - 3);
+            if (state.chartRange === '1Y') targetDate.setFullYear(latestDate.getFullYear() - 1);
+            if (state.chartRange === '3Y') targetDate.setFullYear(latestDate.getFullYear() - 3);
+            if (state.chartRange === '5Y') targetDate.setFullYear(latestDate.getFullYear() - 5);
+
+            let anchorPoint = null;
+            for (let index = history.length - 1; index >= 0; index -= 1) {
+                const itemDate = new Date(history[index].date);
+                if (!Number.isNaN(itemDate.getTime()) && itemDate <= targetDate) {
+                    anchorPoint = history[index];
+                    break;
+                }
+            }
+
+            const visibleHistory = anchorPoint
+                ? history.slice(history.indexOf(anchorPoint))
+                : history.filter((item) => {
+                    const date = new Date(item.date);
+                    return !Number.isNaN(date.getTime()) && date >= targetDate;
+                });
+
+            return { history, visibleHistory, anchorPoint, targetDate };
+        }
+
+        function buildChartData(history) {
+            return history
+                .map((item) => ({
+                    time: item.date,
+                    value: safeNumber(item.nav),
+                }))
+                .filter((item) => item.value !== null);
+        }
+
+        function calculateRangeReturn(anchorPoint, history) {
+            if (!anchorPoint || history.length < 2) return null;
+            const first = safeNumber(anchorPoint.nav);
+            const last = safeNumber(history[history.length - 1]?.nav);
+            if (first === null || last === null || first === 0) return null;
+            return ((last - first) / first) * 100;
+        }
+
+        function ensureChart() {
+            const container = document.getElementById('chartContainer');
+            if (!container || state.chart) return;
+
+            state.chart = LightweightCharts.createChart(container, {
+                layout: {
+                    background: { color: '#ffffff' },
+                    textColor: '#5b6677',
+                    fontFamily: "'Manrope', sans-serif",
+                    attributionLogo: false,
+                },
+                width: container.clientWidth,
+                height: 420,
+                rightPriceScale: {
+                    borderColor: 'rgba(148, 163, 184, 0.16)',
+                },
+                timeScale: {
+                    borderColor: 'rgba(148, 163, 184, 0.16)',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+                grid: {
+                    vertLines: { color: 'rgba(148, 163, 184, 0.08)' },
+                    horzLines: { color: 'rgba(148, 163, 184, 0.08)' },
+                },
+                crosshair: {
+                    vertLine: {
+                        color: 'rgba(20, 184, 166, 0.24)',
+                        width: 1,
+                        style: 0,
+                    },
+                    horzLine: {
+                        color: 'rgba(20, 184, 166, 0.24)',
+                        width: 1,
+                        style: 0,
+                    }
+                },
+                localization: {
+                    locale: getChartLocale(),
+                },
+            });
+
+            state.chartSeries = state.chart.addAreaSeries({
+                lineColor: '#14B8A6',
+                topColor: 'rgba(20, 184, 166, 0.24)',
+                bottomColor: 'rgba(20, 184, 166, 0.02)',
+                lineWidth: 3,
+                crosshairMarkerRadius: 5,
+                priceLineVisible: false,
+                lastValueVisible: false,
+                priceFormat: {
+                    type: 'custom',
+                    formatter: (price) => `${state.fund?.currency || 'EGP'} ${Number(price).toFixed(4)}`
+                }
+            });
+
+            const tooltip = document.getElementById('chartTooltip');
+            const tooltipDate = document.getElementById('tooltipDate');
+            const tooltipValue = document.getElementById('tooltipValue');
+
+            state.chart.subscribeCrosshairMove((param) => {
+                if (!param || !param.point || !param.time || !param.seriesData) {
+                    tooltip.classList.remove('visible');
+                    return;
+                }
+
+                const data = param.seriesData.get(state.chartSeries);
+                if (!data || data.value === undefined) {
+                    tooltip.classList.remove('visible');
+                    return;
+                }
+
+                const containerRect = document.getElementById('chartContainer').getBoundingClientRect();
+                const date = new Date(param.time);
+                tooltipDate.textContent = Number.isNaN(date.getTime())
+                    ? param.time
+                    : date.toLocaleDateString(getChartLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
+                tooltipValue.textContent = `${state.fund?.currency || 'EGP'} ${Number(data.value).toFixed(4)}`;
+
+                tooltip.style.left = `${Math.min(Math.max(param.point.x, 90), containerRect.width - 90)}px`;
+                tooltip.style.top = `${Math.max(param.point.y - 14, 70)}px`;
+                tooltip.classList.add('visible');
+            });
+
+            window.addEventListener('resize', () => {
+                if (state.chart) {
+                    state.chart.applyOptions({ width: container.clientWidth });
+                }
+            });
+        }
+
+        function renderChart() {
+            ensureChart();
+            const chartEmpty = document.getElementById('chartEmpty');
+            const rangeState = buildRangeState();
+            const history = rangeState.visibleHistory;
+            const chartData = buildChartData(history);
+            const rangeReturn = calculateRangeReturn(rangeState.anchorPoint, history);
+
+            document.getElementById('fundSelectedReturn').textContent = formatPercent(rangeReturn);
+            document.getElementById('fundSelectedReturn').className = `mt-4 text-4xl font-display font-bold tracking-[-0.04em] ${(rangeReturn !== null && rangeReturn < 0) ? 'text-red-500' : 'text-main'}`;
+            document.getElementById('fundSelectedRange').textContent = state.chartRange;
+
+            if (chartData.length < 2) {
+                chartEmpty.style.display = 'flex';
+                if (state.chartSeries) state.chartSeries.setData([]);
+                return;
+            }
+
+            chartEmpty.style.display = 'none';
+            state.chartSeries.setData(chartData);
+            state.chart.timeScale().fitContent();
+        }
+
+        function formatDetailValue(key, value) {
+            if (value === null || value === undefined || value === '') return '—';
+            const labels = getLabels();
+            if (key === 'is_shariah') return value ? labels.yes : labels.no;
+            if (key === 'last_update_date' || key === 'inception') return formatDate(value);
+            if (['aum_millions', 'minimum_investment'].includes(key)) return `${state.fund?.currency || 'EGP'} ${formatNumber(value)}`;
+            if (['expense_ratio', 'fee_subscription', 'fee_redemption', 'fee_management', 'fee_custodian', 'fee_performance'].includes(key)) return `${Number(value).toFixed(2)}%`;
+            return escapeHtml(value);
+        }
+
+        function renderProfileDetails(fund) {
+            const grid = document.getElementById('fundDetailsGrid');
+            const labels = getLabels();
+            const values = {
+                currency: fund.currency,
+                inception: fund.establishment_date,
+                manager: getManagerName(fund),
+                type: getFundTypeName(fund),
+                liquidity: getLocalizedField(fund, 'nav_frequency') || '—',
+                benchmark: getLocalizedField(fund, 'benchmark'),
+                eligibility: getLocalizedField(fund, 'eligibility'),
+                isin: fund.isin,
+                owner_name: state.lang === 'ar' ? (fund.owner_name || fund.owner_name_en) : (fund.owner_name_en || fund.owner_name),
+                issuer: getLocalizedField(fund, 'issuer'),
+                aum_millions: fund.aum_millions,
+                minimum_investment: fund.minimum_investment,
+                expense_ratio: fund.expense_ratio,
+                fee_subscription: fund.fee_subscription,
+                fee_redemption: fund.fee_redemption,
+                fee_management: fund.fee_management,
+                fee_custodian: fund.fee_custodian,
+                fee_performance: fund.fee_performance,
+                last_update_date: fund.last_update_date,
+                is_shariah: fund.is_shariah
+            };
+
+            grid.innerHTML = detailFields
+                .filter((key) => values[key] !== null && values[key] !== undefined && values[key] !== '')
+                .map((key) => `
+                    <div class="detail-card rounded-[1.5rem] p-5">
+                        <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(labels[key] || key)}</div>
+                        <div class="mt-3 text-sm font-semibold text-main break-words">${formatDetailValue(key, values[key])}</div>
+                    </div>
+                `).join('');
+        }
+
+        function renderSimilar() {
+            const container = document.getElementById('similarFunds');
+            if (!state.fund) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const peers = state.funds
+                .filter((fund) => fund.fund_id !== state.fund.fund_id)
+                .filter((fund) => (fund.fund_type || fund.classification || '') === (state.fund.fund_type || state.fund.classification || ''))
+                .slice(0, 4);
+
+            container.innerHTML = peers.map((fund) => `
+                <article class="surface-card cursor-pointer rounded-[1.8rem] p-5 transition-transform hover:-translate-y-1" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.fund_id)}'">
+                    <div class="flex items-start gap-4">
+                        <div class="h-12 w-12 overflow-hidden rounded-2xl border border-border bg-white p-2 shadow-sm">
+                            <img src="${escapeHtml(fund.logo_url || '/assets/funds/starta-fund-placeholder.svg')}" alt="${escapeHtml(getManagerName(fund))}" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Math.max(Number(fund.logo_scale || 1), 1.45)}); transform-origin:center center;">
+                        </div>
+                        <div>
+                            <h4 class="text-base font-display font-bold tracking-[-0.03em] text-main">${escapeHtml(getFundName(fund))}</h4>
+                            <p class="mt-2 text-sm text-muted">${escapeHtml(getManagerName(fund))}</p>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function renderFund(fund) {
+            const labels = getLabels();
+            const description = getLocalizedField(fund, 'objective') || getLocalizedField(fund, 'investment_strategy') || labels.no_description;
+            document.title = `${getFundName(fund)} | Starta Markets`;
+            const titleValue = getFundName(fund);
+            const fundNameEl = document.getElementById('fundName');
+            fundNameEl.textContent = titleValue;
+            fundNameEl.style.fontSize = titleValue.length > 72 ? '3.1rem' : '';
+            fundNameEl.style.lineHeight = titleValue.length > 72 ? '0.94' : '';
+            document.getElementById('fundLogo').src = fund.logo_url || '/assets/funds/starta-fund-placeholder.svg';
+            document.getElementById('fundLogo').alt = getManagerName(fund);
+            document.getElementById('fundLogo').style.transform = `scale(${Math.max(Number(fund.logo_scale || 1), 1.45)})`;
+            document.getElementById('fundLogo').style.transformOrigin = 'center center';
+            document.getElementById('fundManagerLine').textContent = getManagerName(fund);
+            document.getElementById('fundNavValue').textContent = `${fund.currency || 'EGP'} ${formatNumber(fund.latest_nav)}`;
+            document.getElementById('fundNavMeta').textContent = `${labels.latest} • ${formatDate(fund.last_update_date)}`;
+            document.getElementById('fundShortDesc').textContent = description;
+            document.getElementById('fundStrategy').textContent = getLocalizedField(fund, 'investment_strategy') || labels.no_strategy;
+            document.getElementById('fundObjective').textContent = getLocalizedField(fund, 'objective') || labels.no_objective;
+            document.getElementById('summaryAum').textContent = fund.aum_millions ? `${fund.currency || 'EGP'} ${formatNumber(fund.aum_millions)}` : '—';
+            document.getElementById('summaryRisk').textContent = deriveRisk(fund);
+            document.getElementById('summaryUpdate').textContent = formatDate(fund.last_update_date);
+
+            const chips = [];
+            chips.push(`<span class="chip">${escapeHtml(getFundTypeName(fund))}</span>`);
+            chips.push(`<span class="chip">${escapeHtml(deriveRisk(fund))}</span>`);
+            if (getLocalizedField(fund, 'nav_frequency')) chips.push(`<span class="chip">${escapeHtml(getLocalizedField(fund, 'nav_frequency'))}</span>`);
+            if (fund.is_shariah) chips.push(`<span class="chip border-emerald-200 bg-emerald-50 text-emerald-700">${escapeHtml(labels.shariah)}</span>`);
+            document.getElementById('fundChips').innerHTML = chips.join('');
+
+            document.getElementById('perfYtd').textContent = formatPercent(safeNumber(fund.returns_ytd ?? fund.ytd_return));
+            document.getElementById('perf1y').textContent = formatPercent(safeNumber(fund.returns_1y ?? fund.one_year_return));
+            document.getElementById('perf3y').textContent = formatPercent(safeNumber(fund.returns_3y ?? fund.three_year_return));
+            document.getElementById('perf5y').textContent = formatPercent(safeNumber(fund.returns_5y ?? fund.five_year_return));
+
+            renderProfileDetails(fund);
+            renderSimilar();
+            renderChart();
+        }
+
+        async function loadFundUniverse() {
+            try {
+                const response = await fetch('/api/v1/funds?market=EGX');
+                if (!response.ok) return [];
+                const universe = await response.json();
+                state.funds = universe.map(normalizeFund).filter((fund) => fund.fund_id);
+                if (state.fund) renderSimilar();
+                return state.funds;
+            } catch (error) {
+                console.warn('Similar funds unavailable.', error);
+                return [];
+            }
+        }
+
+        function deferFundUniverse() {
+            if (state.funds.length || state.similarObserver) return;
+            const similarFunds = document.getElementById('similarFunds');
+            if (!similarFunds || !('IntersectionObserver' in window)) {
+                window.setTimeout(loadFundUniverse, 1500);
+                return;
+            }
+
+            state.similarObserver = new IntersectionObserver((entries, observer) => {
+                if (!entries.some((entry) => entry.isIntersecting)) return;
+                observer.disconnect();
+                state.similarObserver = null;
+                loadFundUniverse();
+            }, { rootMargin: '320px' });
+            state.similarObserver.observe(similarFunds);
+        }
+
+        async function loadFundHistory(fundId) {
+            try {
+                const response = await fetch(`/api/v1/funds/${encodeURIComponent(fundId)}/nav?limit=2200`);
+                state.history = response.ok
+                    ? (await response.json())
+                        .map((item) => ({ ...item, nav: safeNumber(item.nav) }))
+                        .filter((item) => item.nav !== null && item.date)
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    : [];
+            } catch (error) {
+                console.warn('NAV history unavailable.', error);
+                state.history = [];
+            }
+
+            if (state.fund && state.fund.fund_id === fundId) renderChart();
+        }
+
+        async function loadFundDetails() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                let fundId = params.get('id');
+
+                if (!fundId) {
+                    const universe = await loadFundUniverse();
+                    fundId = universe[0]?.fund_id;
+                }
+                if (!fundId) throw new Error('missing fund id');
+
+                const fundResponse = await fetch(`/api/v1/funds/${encodeURIComponent(fundId)}`);
+                if (!fundResponse.ok) throw new Error('fund detail failed');
+
+                state.fund = normalizeFund(await fundResponse.json());
+                renderFund(state.fund);
+
+                loadFundHistory(fundId);
+                if (!state.funds.length) deferFundUniverse();
+            } catch (error) {
+                console.error(error);
+                document.getElementById('fundName').textContent = 'Fund not found';
+                document.getElementById('fundShortDesc').textContent = 'We could not load this fund profile right now.';
+                document.getElementById('chartEmpty').style.display = 'flex';
+            }
+        }
+
+        function bindEvents() {
+            document.getElementById('langToggle').addEventListener('click', () => {
+                setLanguage(state.lang === 'en' ? 'ar' : 'en');
+            });
+
+            document.querySelectorAll('[data-range]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    state.chartRange = button.dataset.range;
+                    document.querySelectorAll('[data-range]').forEach((candidate) => {
+                        candidate.classList.toggle('active', candidate.dataset.range === state.chartRange);
+                    });
+                    renderChart();
+                });
+            });
+        }
+
+        function revealSections() {
+            document.querySelectorAll('.reveal-block').forEach((element) => {
+                gsap.fromTo(element, { y: 30, opacity: 0 }, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: element,
+                        start: 'top 88%'
+                    }
+                });
+            });
+        }
+
+        bindEvents();
+        setLanguage(getStoredLanguage());
+        loadFundDetails();
+        revealSections();
+    </script>
+</body>
+
+</html>

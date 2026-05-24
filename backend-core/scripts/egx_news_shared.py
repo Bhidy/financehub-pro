@@ -28,6 +28,7 @@ class ArticleRecord:
     source: str
     source_section: str
     source_country: str
+    content_language: str
     symbol: str | None
 
 
@@ -197,6 +198,7 @@ async def ensure_market_news_schema(conn: asyncpg.Connection) -> None:
             ADD COLUMN IF NOT EXISTS source_section VARCHAR(100),
             ADD COLUMN IF NOT EXISTS source_country VARCHAR(10),
             ADD COLUMN IF NOT EXISTS external_id VARCHAR(64),
+            ADD COLUMN IF NOT EXISTS content_language VARCHAR(2) NOT NULL DEFAULT 'en',
             ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
         """
     )
@@ -204,6 +206,24 @@ async def ensure_market_news_schema(conn: asyncpg.Connection) -> None:
         """
         CREATE INDEX IF NOT EXISTS idx_market_news_source_section_published
         ON market_news (source_country, source_section, published_at DESC);
+
+        CREATE INDEX IF NOT EXISTS idx_market_news_country_language_published
+        ON market_news (source_country, content_language, published_at DESC);
+        """
+    )
+    await conn.execute(
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint
+                WHERE conname = 'market_news_content_language_check'
+            ) THEN
+                ALTER TABLE market_news
+                ADD CONSTRAINT market_news_content_language_check
+                CHECK (content_language IN ('en', 'ar'));
+            END IF;
+        END $$;
         """
     )
 
@@ -260,11 +280,12 @@ async def upsert_articles(
             """
             INSERT INTO market_news (
                 symbol, headline, source, url, published_at, sentiment_score, created_at,
-                article_body, image_url, published_date_raw, source_section, source_country, external_id, updated_at
+                article_body, image_url, published_date_raw, source_section, source_country,
+                external_id, content_language, updated_at
             )
             VALUES (
                 $1, $2, $3, $4, $5, 0, NOW(),
-                $6, $7, $8, $9, $10, $11, NOW()
+                $6, $7, $8, $9, $10, $11, $12, NOW()
             )
             ON CONFLICT (url) DO UPDATE SET
                 symbol = COALESCE(EXCLUDED.symbol, market_news.symbol),
@@ -277,6 +298,7 @@ async def upsert_articles(
                 source_section = EXCLUDED.source_section,
                 source_country = EXCLUDED.source_country,
                 external_id = COALESCE(EXCLUDED.external_id, market_news.external_id),
+                content_language = EXCLUDED.content_language,
                 updated_at = NOW()
             """,
             db_symbol,
@@ -290,6 +312,7 @@ async def upsert_articles(
             record.source_section,
             record.source_country,
             record.external_id,
+            record.content_language,
         )
 
     return insert_count, update_count
@@ -301,6 +324,7 @@ async def query_quality_metrics(
     cutoff_utc: datetime,
     source_country: str,
     source_name: str | None = None,
+    content_language: str | None = None,
 ) -> dict[str, int]:
     params: list[object] = [source_country.upper(), cutoff_utc]
     predicate = "source_country = $1 AND published_at >= $2"
@@ -308,6 +332,9 @@ async def query_quality_metrics(
     if source_name:
         predicate += " AND source = $3"
         params.append(source_name)
+    if content_language:
+        params.append(content_language)
+        predicate += f" AND content_language = ${len(params)}"
 
     row = await conn.fetchrow(
         f"""

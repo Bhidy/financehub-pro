@@ -13,6 +13,29 @@
     --red: #df5361;
     --shadow: 0 20px 50px rgba(44, 66, 91, .07);
     --shadow-high: 0 26px 68px rgba(44, 66, 91, .1);
+    
+    --c-text-main: var(--ink);
+    --glass-bg: rgba(255, 255, 255, 0.75);
+}
+
+html[data-theme="dark"] {
+    --page: #0b0f19;
+    --surface: #101726;
+    --surface-soft: rgba(16, 23, 38, .76);
+    --ink: #f1f5f9;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --line: rgba(148, 163, 184, .14);
+    --teal: #14b8a6;
+    --teal-dark: #2dd4bf;
+    --teal-soft: rgba(20, 184, 166, 0.08);
+    --green: #10b981;
+    --red: #f43f5e;
+    --shadow: 0 20px 50px rgba(0, 0, 0, .3);
+    --shadow-high: 0 26px 68px rgba(0, 0, 0, .45);
+    
+    --c-text-main: var(--ink);
+    --glass-bg: rgba(16, 23, 38, 0.75);
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -575,15 +598,12 @@ html[dir="rtl"] .company-search input { padding: 0 2.65rem 0 .95rem; }
 /* World-class interactive tooltips */
 .chart-tooltip {
     position: absolute;
-    background: rgba(16, 24, 45, 0.93);
-    border: 1px solid rgba(20, 184, 166, 0.45);
     border-radius: 10px;
     padding: 10px 14px;
-    color: #f8fafc;
     font-size: 0.72rem;
     pointer-events: none;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     z-index: 1000;
     transition: opacity 120ms ease;
     display: none;
@@ -592,17 +612,52 @@ html[dir="rtl"] .company-search input { padding: 0 2.65rem 0 .95rem; }
 .chart-tooltip strong {
     display: block;
     font-size: 0.85rem;
-    color: #14b8a6;
     margin-top: 4px;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
     font-weight: 600;
 }
 .chart-tooltip span {
-    color: #94a3b8;
     font-size: 0.65rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+}
+
+/* Dark Mode Tooltip (Default) */
+html[data-theme="dark"] .chart-tooltip,
+body.dark-theme .chart-tooltip,
+.chart-tooltip {
+    background: rgba(16, 24, 45, 0.93);
+    border: 1px solid rgba(20, 184, 166, 0.45);
+    color: #f8fafc;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25);
+}
+html[data-theme="dark"] .chart-tooltip span,
+body.dark-theme .chart-tooltip span,
+.chart-tooltip span {
+    color: #94a3b8;
+}
+html[data-theme="dark"] .chart-tooltip strong,
+body.dark-theme .chart-tooltip strong,
+.chart-tooltip strong {
+    color: #14b8a6;
+}
+
+/* Light Mode Tooltip */
+html[data-theme="light"] .chart-tooltip,
+body.light-theme .chart-tooltip {
+    background: rgba(255, 255, 255, 0.93);
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    color: #0f172a;
+    box-shadow: 0 16px 36px rgba(148, 163, 184, 0.18);
+}
+html[data-theme="light"] .chart-tooltip span,
+body.light-theme .chart-tooltip span {
+    color: #64748b;
+}
+html[data-theme="light"] .chart-tooltip strong,
+body.light-theme .chart-tooltip strong {
+    color: #0d9488;
 }
 
 /* Interactive SVG hover bars */
@@ -624,5 +679,57 @@ html[dir="rtl"] .company-search input { padding: 0 2.65rem 0 .95rem; }
     border: 1px solid var(--line);
     background: #ffffff;
     padding: 1px;
+}
+
+/* Dark Mode Theme specific support overrides */
+html[data-theme="dark"] .grid-backdrop {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20, 184, 166, .018) 1px, transparent 1px);
+}
+html[data-theme="dark"] .atmosphere {
+    background:
+        radial-gradient(circle at 1% 0%, rgba(20, 184, 166, 0.07), transparent 28%),
+        radial-gradient(circle at 100% 4%, rgba(45, 212, 191, 0.05), transparent 26%);
+}
+html[data-theme="dark"] .site-nav {
+    background: rgba(11, 15, 25, .86);
+}
+html[data-theme="dark"] .market-tape {
+    background: rgba(11, 15, 25, .94);
+}
+html[data-theme="dark"] .watch-row:hover,
+html[data-theme="dark"] .watch-row.active {
+    background: rgba(20, 184, 166, 0.12);
+}
+html[data-theme="dark"] .segmented {
+    background: rgba(15, 23, 42, .45);
+}
+html[data-theme="dark"] .segmented button.active {
+    background: #1e293b;
+    color: #2dd4bf;
+    box-shadow: 0 5px 13px rgba(0,0,0,0.3);
+}
+html[data-theme="dark"] .company-search input {
+    background: rgba(15, 23, 42, .5);
+}
+html[data-theme="dark"] .lang-toggle {
+    background: rgba(16, 23, 38, .84);
+}
+html[data-theme="dark"] .watch-row img,
+html[data-theme="dark"] .mover-row img {
+    background: #1e293b;
+}
+html[data-theme="dark"] .control-btn .dark-icon {
+    color: #2dd4bf;
+}
+html[data-theme="dark"] .control-btn .light-icon {
+    color: #94a3b8;
+}
+html[data-theme="light"] .control-btn .dark-icon {
+    color: #64748b;
+}
+html[data-theme="light"] .control-btn .light-icon {
+    color: #0d9488;
 }
 

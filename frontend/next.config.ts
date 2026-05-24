@@ -68,6 +68,10 @@ const nextConfig = {
         source: '/',
         destination: '/home.html',
       },
+      {
+        source: '/Market-Pulse',
+        destination: '/market-pulse.html',
+      },
     ];
   },
 
@@ -77,6 +81,11 @@ const nextConfig = {
       {
         source: '/home',
         destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/MarketPulse',
+        destination: '/Market-Pulse',
         permanent: true,
       },
     ];

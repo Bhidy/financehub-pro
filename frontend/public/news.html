@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News | Starta Markets</title>
+    <meta name="description" content="Read market news and company developments through Starta's premium investor experience.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/news-public.css">
+</head>
+<body data-page="listing">
+    <div class="backdrop"></div>
+    <div class="aurora"></div>
+    <nav class="site-nav">
+        <div class="nav-inner">
+            <a class="brand" href="/"><span class="brand-mark display">S</span><span class="brand-name display">STARTA</span></a>
+            <div class="nav-links">
+                <a href="/#brain" data-key="nav_features">FEATURES</a>
+                <a href="/Funds" data-key="nav_funds">MUTUAL FUNDS</a>
+                <a href="/Market-Pulse" data-key="nav_pulse">MARKET PULSE</a>
+                <a href="/Learn" data-key="nav_learn">LEARN</a>
+                <a class="active" href="/News" data-key="nav_news">NEWS</a>
+                <a href="/#about" data-key="nav_about">ABOUT US</a>
+                <a href="/#pricing" data-key="nav_pricing">PRICING</a>
+            </div>
+            <button id="langToggle" class="lang-toggle display" type="button">AR</button>
+        </div>
+    </nav>
+    <main class="page">
+        <div class="container">
+            <section class="hero">
+                <div class="hero-content">
+                    <h1 class="display" data-key="news_title">Market stories, clearly told.</h1>
+                    <p id="newsIntro" class="hero-subtitle" hidden></p>
+                </div>
+            </section>
+            <section aria-label="News search and filters" class="toolbar">
+                <label class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
+                    <input id="newsSearch" type="search" data-placeholder="search_placeholder" placeholder="Search headlines or companies">
+                </label>
+                <div class="periods" aria-label="Time period">
+                    <button type="button" data-days="7" data-key="latest">Latest</button>
+                    <button class="active" type="button" data-days="30" data-key="month">30 days</button>
+                    <button type="button" data-days="90" data-key="quarter">90 days</button>
+                </div>
+            </section>
+            <section id="featuredStory" aria-label="Featured story"></section>
+            <section id="newsGrid" class="news-grid" aria-label="Market stories"></section>
+        </div>
+    </main>
+    <script src="/assets/news-public.js"></script>
+</body>
+</html>

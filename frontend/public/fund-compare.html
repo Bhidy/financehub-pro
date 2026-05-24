@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fund Comparison | Starta Markets</title>
+    <meta name="description" content="Compare Egypt mutual funds side by side with real NAV history, performance ranges, manager context, and premium Starta research design.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'var(--c-page)',
+                        surface: 'var(--c-surface)',
+                        panel: 'var(--c-panel)',
+                        main: 'var(--c-text-main)',
+                        muted: 'var(--c-text-muted)',
+                        border: 'var(--c-border)',
+                        starta: {
+                            teal: '#14B8A6',
+                            darkTeal: '#0F766E',
+                            accent: '#2DD4BF',
+                            ink: '#0F172A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        premium: 'var(--shadow-premium)',
+                        halo: 'var(--shadow-halo)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --c-page: #f4f7fb;
+            --c-surface: #ffffff;
+            --c-panel: rgba(255, 255, 255, 0.86);
+            --c-text-main: #0f172a;
+            --c-text-muted: #5b6677;
+            --c-border: rgba(148, 163, 184, 0.18);
+            --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.18);
+            --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.12);
+            --glass-bg: rgba(255, 255, 255, 0.76);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            --glass-blur: 22px;
+            --teal: #14B8A6;
+            --teal-dark: #0F766E;
+        }
+
+        html[dir="rtl"] body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        html[dir="rtl"] .font-display {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        body {
+            background: var(--c-page);
+            color: var(--c-text-main);
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-premium {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .surface-card {
+            background:
+                radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 28%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 24px 52px rgba(148, 163, 184, 0.12);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #14B8A6 20%, #0f766e 100%);
+            color: #fff;
+            border: 1px solid rgba(45, 212, 191, 0.35);
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-halo);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.84);
+            color: var(--c-text-main);
+        }
+
+        .nav-pill {
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--c-text-main);
+        }
+
+        .range-btn {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--c-text-muted);
+            transition: all 180ms ease;
+        }
+
+        .range-btn.active {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.14), rgba(45, 212, 191, 0.08));
+            color: var(--teal-dark);
+            border-color: rgba(15, 118, 110, 0.24);
+            box-shadow: 0 12px 24px rgba(20, 184, 166, 0.1);
+        }
+
+        .compare-card {
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .compare-table th,
+        .compare-table td {
+            border-top: 1px solid rgba(148, 163, 184, 0.14);
+        }
+
+        .metric-best {
+            color: #0F766E;
+            font-weight: 800;
+        }
+
+        .chart-shell {
+            min-height: 39rem;
+        }
+
+        .chart-canvas {
+            min-height: 37rem;
+        }
+
+        .tooltip-shell {
+            position: absolute;
+            inset-inline-start: 1.5rem;
+            top: 1.5rem;
+            z-index: 20;
+            min-width: 15rem;
+            max-width: 22rem;
+            pointer-events: none;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fixed inset-0 z-[-2] pointer-events-none opacity-80" style="background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px); background-size: 42px 42px;"></div>
+    <div class="fixed inset-0 z-[-1] pointer-events-none" style="background: radial-gradient(circle at top left, rgba(20, 184, 166, 0.16), transparent 26%), radial-gradient(circle at top right, rgba(45, 212, 191, 0.08), transparent 24%);"></div>
+
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-8 h-8 bg-starta-teal rounded-lg flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                <span class="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-10">
+                <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
+                    <a href="/#brain" class="hover:text-starta-teal transition-colors" data-key="nav_features">FEATURES</a>
+                    <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
+                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
+                    <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
+                    <a href="/#pricing" class="hover:text-starta-teal transition-colors" data-key="nav_pricing">PRICING</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-20 min-h-screen">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8">
+            <section class="surface-card rounded-[2.6rem] p-6 sm:p-8 lg:p-10 reveal-block">
+                <div class="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+                    <div class="max-w-3xl">
+                        <div class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-starta-darkTeal" data-key="hero_tag">Fund comparison</div>
+                        <h1 class="mt-4 text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-[-0.05em] text-main" data-key="hero_title">Compare funds with real pricing, real history, and clearer decisions.</h1>
+                        <p class="mt-4 text-base sm:text-lg text-muted" data-key="hero_text">Compare funds through normalized performance, updated returns, manager context, and clean multi-fund analytics.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2" id="rangeSelector">
+                        <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="ytd">YTD</button>
+                        <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="3m">3M</button>
+                        <button class="range-btn active rounded-full px-4 py-2 text-sm font-semibold" data-period="1y">1Y</button>
+                        <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="3y">3Y</button>
+                        <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="5y">5Y</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mt-8 surface-card rounded-[2.4rem] p-6 sm:p-8 reveal-block">
+                <div class="relative chart-shell">
+                    <div id="compareTooltip" class="tooltip-shell hidden rounded-[1.45rem] p-4"></div>
+                    <div class="chart-canvas" id="compareChart"></div>
+                </div>
+            </section>
+
+            <section class="mt-8 grid gap-6 xl:grid-cols-4 reveal-block" id="compareCards"></section>
+
+            <section class="mt-8 surface-card overflow-hidden rounded-[2.4rem] reveal-block">
+                <div class="overflow-x-auto">
+                    <table class="compare-table min-w-full text-sm">
+                        <thead class="bg-slate-50/90">
+                            <tr class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
+                                <th class="px-6 py-4 text-left" data-key="metric_label">Metric</th>
+                                <th class="px-6 py-4" colspan="4" data-key="funds_label">Selected funds</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compareTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-white/88 px-8 py-16 text-center shadow-premium">
+                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-starta-teal/10 text-starta-teal">
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m-3 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
+                    </svg>
+                </div>
+                <h3 class="mt-5 text-2xl font-display font-bold text-main" data-key="empty_title">Choose at least two funds to compare.</h3>
+                <p class="mt-2 text-muted" data-key="empty_desc">Return to the Funds page, select your shortlist, and open the comparison view again.</p>
+                <a href="/Funds" class="btn-primary mt-6 inline-flex rounded-full px-6 py-3 text-sm font-semibold" data-key="empty_cta">Go back to Funds</a>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const DEFAULT_LOGO = '/assets/funds/starta-fund-placeholder.svg';
+        const COMPARE_STORAGE_KEY = 'starta-funds-compare';
+        const COLORS = ['#14B8A6', '#0F766E', '#0EA5E9', '#F59E0B'];
+        const translations = {
+            en: {
+                nav_features: "FEATURES",
+                nav_learn: "LEARN",
+                nav_mobile: "MUTUAL FUNDS",
+                nav_pulse: "MARKET PULSE",
+                nav_news: "NEWS",
+                nav_about: "ABOUT US",
+                nav_pricing: "PRICING",
+                back_to_funds: "Back to funds",
+                hero_tag: "Fund comparison",
+                hero_title: "Compare funds with real pricing, real history, and clearer decisions.",
+                hero_text: "Compare funds through normalized performance, updated returns, manager context, and clean multi-fund analytics.",
+                metric_label: "Metric",
+                funds_label: "Selected funds",
+                empty_title: "Choose at least two funds to compare.",
+                empty_desc: "Return to the Funds page, select your shortlist, and open the comparison view again.",
+                empty_cta: "Go back to Funds",
+                tooltip_change: "Change",
+                metric_nav: "Latest NAV",
+                metric_manager: "Manager",
+                metric_type: "Type",
+                metric_risk: "Risk",
+                metric_ytd: "YTD",
+                metric_3m: "3M",
+                metric_1y: "1Y",
+                metric_3y: "3Y",
+                metric_5y: "5Y",
+                metric_aum: "AUM",
+                metric_update: "Updated",
+                shariah_yes: "Shariah",
+                shariah_no: "Conventional",
+                risk_low: "Low",
+                risk_medium: "Medium",
+                risk_high: "High",
+                risk_unclassified: "Unclassified",
+                type_unclassified: "Investment fund",
+                manager_unavailable: "Manager unavailable"
+            },
+            ar: {
+                nav_features: "المزايا",
+                nav_learn: "تعلّم",
+                nav_mobile: "الصناديق الاستثمارية",
+                nav_pulse: "نبض السوق",
+                nav_news: "الأخبار",
+                nav_about: "معلومات عنا",
+                nav_pricing: "الأسعار",
+                back_to_funds: "العودة إلى الصناديق",
+                hero_tag: "مقارنة الصناديق",
+                hero_title: "قارن الصناديق بثقة",
+                hero_text: "حلّل الأداء والعوائد التاريخية في لوحة واحدة واضحة تساعدك على اختيار الصندوق الأنسب.",
+                metric_label: "المعيار",
+                funds_label: "الصناديق المحددة",
+                empty_title: "اختر صندوقين على الأقل للمقارنة.",
+                empty_desc: "ارجع إلى صفحة الصناديق، حدّد قائمتك المختصرة، ثم افتح المقارنة مرة أخرى.",
+                empty_cta: "العودة إلى الصناديق",
+                tooltip_change: "التغير",
+                metric_nav: "أحدث NAV",
+                metric_manager: "المدير",
+                metric_type: "النوع",
+                metric_risk: "المخاطر",
+                metric_ytd: "منذ بداية السنة",
+                metric_3m: "3 أشهر",
+                metric_1y: "سنة",
+                metric_3y: "3 سنوات",
+                metric_5y: "5 سنوات",
+                metric_aum: "الأصول",
+                metric_update: "آخر تحديث",
+                shariah_yes: "متوافق مع الشريعة",
+                shariah_no: "تقليدي",
+                risk_low: "منخفضة",
+                risk_medium: "متوسطة",
+                risk_high: "مرتفعة",
+                risk_unclassified: "غير مصنفة",
+                type_unclassified: "صندوق استثمار",
+                manager_unavailable: "المدير غير متاح"
+            }
+        };
+
+        const state = {
+            lang: 'en',
+            period: '1y',
+            funds: [],
+            histories: new Map(),
+            chart: null,
+            chartSeries: [],
+        };
+
+        const safeNumber = (value) => {
+            if (value === null || value === undefined || value === '') return null;
+            const num = Number(value);
+            return Number.isFinite(num) ? num : null;
+        };
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        const getLabels = () => translations[state.lang];
+        const getLocale = () => state.lang === 'ar' ? 'ar-EG' : 'en-US';
+
+        function getStoredLanguage() {
+            const stored = new URLSearchParams(window.location.search).get('lang') || localStorage.getItem('starta-lang') || localStorage.getItem('lang');
+            return stored === 'ar' ? 'ar' : 'en';
+        }
+
+        function getCompareIds() {
+            const params = new URLSearchParams(window.location.search).get('ids');
+            if (params) {
+                return params.split(',').map((value) => value.trim()).filter(Boolean).slice(0, 4);
+            }
+
+            try {
+                const stored = JSON.parse(localStorage.getItem(COMPARE_STORAGE_KEY) || '[]');
+                return Array.isArray(stored) ? stored.map((value) => String(value)).filter(Boolean).slice(0, 4) : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function localizedPair(primary, fallback) {
+            const first = String(primary || '').trim();
+            if (first) return first;
+            const second = String(fallback || '').trim();
+            return second || null;
+        }
+
+        function getFundName(fund) {
+            if (state.lang === 'ar') return localizedPair(fund.fund_name, fund.fund_name_en) || 'صندوق';
+            return localizedPair(fund.fund_name_en, fund.fund_name) || 'Fund';
+        }
+
+        function getManagerName(fund) {
+            const english = localizedPair(fund.manager_name_en, fund.manager_name);
+            const arabic = localizedPair(fund.manager_name, fund.manager_name_en);
+            return (state.lang === 'ar' ? localizedPair(arabic, english) : localizedPair(english, arabic)) || getLabels().manager_unavailable;
+        }
+
+        function getFundTypeName(fund) {
+            if (state.lang === 'ar') return localizedPair(fund.fund_type, fund.classification) || getLabels().type_unclassified;
+            return localizedPair(fund.fund_type_en, fund.fund_type) || localizedPair(fund.classification_en, fund.classification) || getLabels().type_unclassified;
+        }
+
+        function deriveRisk(fund) {
+            const raw = String([fund.risk_level_en, fund.risk_level].filter(Boolean).join(' ')).toLowerCase();
+            if (raw.includes('high') || raw.includes('مرتفع') || raw.includes('عالية')) return 'high';
+            if (raw.includes('low') || raw.includes('منخفض')) return 'low';
+            if (raw.includes('medium') || raw.includes('متوسط') || raw.includes('متوسطة')) return 'medium';
+            return 'unclassified';
+        }
+
+        function getRiskLabel(bucket) {
+            const labels = getLabels();
+            if (bucket === 'high') return labels.risk_high;
+            if (bucket === 'low') return labels.risk_low;
+            if (bucket === 'medium') return labels.risk_medium;
+            return labels.risk_unclassified;
+        }
+
+        function formatNumber(value, options = {}) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            return new Intl.NumberFormat(getLocale(), { maximumFractionDigits: 2, ...options }).format(Number(value));
+        }
+
+        function formatPercent(value) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            const num = Number(value);
+            return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
+        }
+
+        function formatPercentCompact(value) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+            const num = Number(value);
+            return `${num > 0 ? '+' : ''}${num.toFixed(2)}%`;
+        }
+
+        function formatDate(value) {
+            if (!value) return '—';
+            if (typeof value === 'object' && value.year && value.month && value.day) {
+                const date = new Date(Date.UTC(Number(value.year), Number(value.month) - 1, Number(value.day)));
+                return date.toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function getReturnForPeriod(fund, period = state.period) {
+            const map = {
+                '3m': ['returns_3m', 'profit_3month'],
+                'ytd': ['returns_ytd', 'ytd_return'],
+                '1y': ['returns_1y', 'one_year_return'],
+                '3y': ['returns_3y', 'three_year_return'],
+                '5y': ['returns_5y', 'five_year_return']
+            };
+            for (const key of map[period] || []) {
+                const value = safeNumber(fund[key]);
+                if (value !== null) return value;
+            }
+            return null;
+        }
+
+        function setLanguage(lang) {
+            state.lang = lang === 'ar' ? 'ar' : 'en';
+            localStorage.setItem('starta-lang', state.lang);
+            localStorage.setItem('lang', state.lang);
+            document.documentElement.lang = state.lang;
+            document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('langToggle').textContent = state.lang === 'ar' ? 'EN' : 'AR';
+            document.querySelectorAll('[data-key]').forEach((el) => {
+                const key = el.getAttribute('data-key');
+                if (translations[state.lang][key]) el.innerHTML = translations[state.lang][key];
+            });
+            renderCompare();
+        }
+
+        function renderCompareCards() {
+            const container = document.getElementById('compareCards');
+            container.innerHTML = state.funds.map((fund, index) => {
+                const ret = getReturnForPeriod(fund);
+                return `
+                    <article class="compare-card rounded-[1.8rem] p-5">
+                        <div class="flex items-start gap-4">
+                            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-[1.3rem] border border-border bg-white p-2">
+                                <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Math.max(Number(fund.logo_scale || 1), 1.2)}); transform-origin:center center;" alt="${escapeHtml(getManagerName(fund))}">
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-[0.7rem] font-semibold uppercase tracking-[0.18em]" style="color:${COLORS[index % COLORS.length]}">${escapeHtml(getLabels().funds_label)} ${index + 1}</div>
+                                <h2 class="mt-2 text-xl font-display font-bold tracking-[-0.04em] text-main">${escapeHtml(getFundName(fund))}</h2>
+                                <p class="mt-1 text-sm text-muted">${escapeHtml(getManagerName(fund))}</p>
+                            </div>
+                        </div>
+                        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                            <div class="rounded-2xl bg-slate-50/85 p-4">
+                                <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels().metric_nav)}</div>
+                                <div class="mt-2 text-2xl font-display font-bold text-main">${escapeHtml(fund.currency || 'EGP')} ${escapeHtml(formatNumber(fund.latest_nav))}</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50/85 p-4">
+                                <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels()[`metric_${state.period}`] || state.period.toUpperCase())}</div>
+                                <div class="mt-2 text-2xl font-display font-bold ${ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600'}">${escapeHtml(formatPercent(ret))}</div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function renderCompareTable() {
+            const metrics = [
+                { label: getLabels().metric_manager, get: (fund) => getManagerName(fund) },
+                { label: getLabels().metric_type, get: (fund) => getFundTypeName(fund) },
+                { label: getLabels().metric_risk, get: (fund) => getRiskLabel(deriveRisk(fund)) },
+                { label: getLabels().metric_nav, get: (fund) => `${fund.currency || 'EGP'} ${formatNumber(fund.latest_nav)}`, numeric: (fund) => safeNumber(fund.latest_nav) },
+                { label: getLabels().metric_ytd, get: (fund) => formatPercent(getReturnForPeriod(fund, 'ytd')), numeric: (fund) => getReturnForPeriod(fund, 'ytd') },
+                { label: getLabels().metric_3m, get: (fund) => formatPercent(getReturnForPeriod(fund, '3m')), numeric: (fund) => getReturnForPeriod(fund, '3m') },
+                { label: getLabels().metric_1y, get: (fund) => formatPercent(getReturnForPeriod(fund, '1y')), numeric: (fund) => getReturnForPeriod(fund, '1y') },
+                { label: getLabels().metric_3y, get: (fund) => formatPercent(getReturnForPeriod(fund, '3y')), numeric: (fund) => getReturnForPeriod(fund, '3y') },
+                { label: getLabels().metric_5y, get: (fund) => formatPercent(getReturnForPeriod(fund, '5y')), numeric: (fund) => getReturnForPeriod(fund, '5y') },
+                { label: getLabels().metric_aum, get: (fund) => formatNumber(fund.aum_millions ?? fund.aum), numeric: (fund) => safeNumber(fund.aum_millions ?? fund.aum) },
+                { label: getLabels().metric_update, get: (fund) => formatDate(fund.last_nav_date || fund.last_update_date || fund.last_updated) },
+            ];
+
+            const body = document.getElementById('compareTableBody');
+            body.innerHTML = metrics.map((metric) => {
+                const values = state.funds.map((fund) => metric.numeric ? metric.numeric(fund) : null);
+                const max = metric.numeric ? Math.max(...values.filter((value) => value !== null)) : null;
+                return `
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-main">${escapeHtml(metric.label)}</th>
+                        ${state.funds.map((fund, index) => {
+                            const numeric = metric.numeric ? metric.numeric(fund) : null;
+                            const isBest = max !== null && numeric !== null && numeric === max;
+                            return `<td class="px-6 py-4 ${isBest ? 'metric-best' : 'text-main'}">${escapeHtml(metric.get(fund))}</td>`;
+                        }).join('')}
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadHistories() {
+            await Promise.all(state.funds.map(async (fund) => {
+                try {
+                    const response = await fetch(`/api/v1/funds/${encodeURIComponent(fund.fund_id)}/nav?limit=2500`);
+                    if (!response.ok) throw new Error('nav failed');
+                    const history = await response.json();
+                    state.histories.set(String(fund.fund_id), Array.isArray(history) ? history : []);
+                } catch (error) {
+                    state.histories.set(String(fund.fund_id), []);
+                }
+            }));
+        }
+
+        function filterHistory(history) {
+            const sorted = [...history]
+                .map((item) => ({ time: item.date, value: safeNumber(item.nav) }))
+                .filter((item) => item.value !== null)
+                .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+            if (state.period === 'all') return sorted;
+
+            const now = new Date();
+            const start = new Date(now);
+            if (state.period === '5y') start.setFullYear(now.getFullYear() - 5);
+            else if (state.period === '3y') start.setFullYear(now.getFullYear() - 3);
+            else if (state.period === '1y') start.setFullYear(now.getFullYear() - 1);
+            else if (state.period === 'ytd') start.setMonth(0, 1);
+            else start.setMonth(now.getMonth() - 3);
+
+            const filtered = sorted.filter((item) => new Date(item.time) >= start);
+            return filtered.length >= 2 ? filtered : sorted;
+        }
+
+        function buildPerformanceSeries(history) {
+            const filtered = filterHistory(history);
+            if (filtered.length < 2) return [];
+            const base = filtered[0]?.value;
+            if (!Number.isFinite(base) || base <= 0) return [];
+            return filtered.map((item) => ({
+                time: item.time,
+                value: ((item.value - base) / base) * 100
+            }));
+        }
+
+        function timeToEpoch(value) {
+            if (!value) return null;
+            if (typeof value === 'string') {
+                const parsed = new Date(value).getTime();
+                return Number.isFinite(parsed) ? parsed : null;
+            }
+            if (typeof value === 'object' && value.year && value.month && value.day) {
+                return Date.UTC(Number(value.year), Number(value.month) - 1, Number(value.day));
+            }
+            return null;
+        }
+
+        function getNearestSeriesValue(seriesData, hoverTime) {
+            if (!Array.isArray(seriesData) || !seriesData.length) return null;
+            const target = timeToEpoch(hoverTime);
+            if (target === null) return null;
+            let nearest = null;
+            for (const point of seriesData) {
+                const epoch = timeToEpoch(point.time);
+                if (epoch === null) continue;
+                if (epoch <= target) nearest = point;
+                if (epoch > target) break;
+            }
+            return nearest;
+        }
+
+        function renderChart() {
+            const chartShell = document.getElementById('compareChart');
+            chartShell.innerHTML = '';
+            document.getElementById('compareTooltip').classList.add('hidden');
+            if (state.chart) {
+                try { state.chart.remove(); } catch (error) { }
+            }
+            state.chartSeries = [];
+
+            const chart = LightweightCharts.createChart(chartShell, {
+                layout: {
+                    background: { color: 'transparent' },
+                    textColor: '#5b6677',
+                    fontFamily: "'Manrope', sans-serif",
+                    attributionLogo: false,
+                },
+                width: chartShell.clientWidth,
+                height: 620,
+                grid: {
+                    vertLines: { color: 'rgba(148, 163, 184, 0.12)' },
+                    horzLines: { color: 'rgba(148, 163, 184, 0.12)' },
+                },
+                rightPriceScale: {
+                    borderVisible: false,
+                    scaleMargins: { top: 0.16, bottom: 0.14 },
+                },
+                timeScale: {
+                    borderVisible: false,
+                    rightOffset: 10,
+                    fixLeftEdge: true,
+                },
+                crosshair: {
+                    vertLine: { color: 'rgba(15, 118, 110, 0.18)', width: 1, labelBackgroundColor: '#0F766E' },
+                    horzLine: { color: 'rgba(15, 118, 110, 0.18)', width: 1, labelBackgroundColor: '#0F766E' },
+                },
+                localization: {
+                    locale: getLocale(),
+                    priceFormatter: (price) => formatPercentCompact(price),
+                },
+            });
+
+            state.funds.forEach((fund, index) => {
+                const series = chart.addLineSeries({
+                    color: COLORS[index % COLORS.length],
+                    lineWidth: 3.4,
+                    priceLineVisible: false,
+                    lastValueVisible: false,
+                    crosshairMarkerVisible: true,
+                    crosshairMarkerRadius: 5,
+                    crosshairMarkerBorderWidth: 2,
+                    crosshairMarkerBackgroundColor: '#ffffff',
+                    title: getFundName(fund),
+                    lineType: LightweightCharts.LineType.Curved,
+                    priceFormat: {
+                        type: 'custom',
+                        formatter: (price) => formatPercentCompact(price),
+                        minMove: 0.01,
+                    },
+                });
+                const performanceData = buildPerformanceSeries(state.histories.get(String(fund.fund_id)) || []);
+                series.setData(performanceData);
+                state.chartSeries.push({ fund, series, color: COLORS[index % COLORS.length], data: performanceData });
+            });
+
+            chart.timeScale().fitContent();
+            chart.subscribeCrosshairMove((param) => {
+                const tooltip = document.getElementById('compareTooltip');
+                if (!param.point || !param.time || param.point.x < 0 || param.point.y < 0) {
+                    tooltip.classList.add('hidden');
+                    return;
+                }
+
+                const rows = state.chartSeries.map((entry) => {
+                    const directData = param.seriesData.get(entry.series);
+                    const nearestData = getNearestSeriesValue(entry.data, param.time);
+                    const value = directData?.value ?? directData?.close ?? nearestData?.value ?? null;
+                    return value === null ? '' : `
+                        <div class="flex items-center justify-between gap-4 py-1.5">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <span class="inline-block h-2.5 w-2.5 rounded-full" style="background:${entry.color}"></span>
+                                <span class="truncate text-xs font-medium text-main">${escapeHtml(getFundName(entry.fund))}</span>
+                            </div>
+                            <span class="text-sm font-display font-bold ${value < 0 ? 'text-red-500' : 'text-emerald-600'}">${escapeHtml(formatPercentCompact(value))}</span>
+                        </div>
+                    `;
+                }).filter(Boolean).join('');
+
+                if (!rows) {
+                    tooltip.classList.add('hidden');
+                    return;
+                }
+
+                tooltip.innerHTML = `
+                    <div class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels().tooltip_change)}</div>
+                    <div class="mt-1 text-sm font-semibold text-main">${escapeHtml(formatDate(param.time))}</div>
+                    <div class="mt-3 border-t border-slate-200/80 pt-2">${rows}</div>
+                `;
+                tooltip.classList.remove('hidden');
+            });
+            new ResizeObserver(() => chart.applyOptions({ width: chartShell.clientWidth })).observe(chartShell);
+            state.chart = chart;
+        }
+
+        function renderCompare() {
+            const hasEnough = state.funds.length >= 2;
+            document.getElementById('emptyState').classList.toggle('hidden', hasEnough);
+            document.querySelectorAll('.reveal-block').forEach((block, index) => {
+                if (index === 0) return;
+                block.classList.toggle('hidden', !hasEnough);
+            });
+            if (!hasEnough) return;
+            renderCompareCards();
+            renderCompareTable();
+            renderChart();
+        }
+
+        async function loadFunds() {
+            const ids = getCompareIds();
+            if (ids.length < 2) {
+                renderCompare();
+                return;
+            }
+
+            const response = await fetch(`/api/v1/funds?market=EGX&ids=${encodeURIComponent(ids.join(','))}`);
+            const funds = await response.json();
+            state.funds = Array.isArray(funds) ? funds : [];
+            await loadHistories();
+            renderCompare();
+        }
+
+        function bindEvents() {
+            document.querySelectorAll('[data-period]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    state.period = button.getAttribute('data-period');
+                    document.querySelectorAll('[data-period]').forEach((node) => node.classList.toggle('active', node === button));
+                    renderCompare();
+                });
+            });
+
+            document.getElementById('langToggle').addEventListener('click', () => {
+                setLanguage(state.lang === 'en' ? 'ar' : 'en');
+            });
+        }
+
+        function revealSections() {
+            document.querySelectorAll('.reveal-block').forEach((element) => {
+                gsap.fromTo(element, { y: 26, opacity: 0 }, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: 'power3.out',
+                    scrollTrigger: { trigger: element, start: 'top 88%' }
+                });
+            });
+        }
+
+        bindEvents();
+        setLanguage(getStoredLanguage());
+        loadFunds();
+        revealSections();
+    </script>
+</body>
+
+</html>

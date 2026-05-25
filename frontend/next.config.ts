@@ -100,6 +100,14 @@ const nextConfig = {
         source: '/Market-Pulse',
         destination: '/market-pulse.html',
       },
+      {
+        source: '/Portfolio',
+        destination: '/portfolio.html',
+      },
+      {
+        source: '/Portfolio/:id',
+        destination: '/portfolio-detail.html',
+      },
     ];
   },
 

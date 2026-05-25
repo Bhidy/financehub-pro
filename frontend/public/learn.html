@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" dir="ltr" data-theme="light">
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="dark">
 
 <head>
+    <script src="/assets/starta-theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn | Starta Markets</title>
@@ -52,16 +53,26 @@
             --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.16);
         }
 
+        [data-theme="dark"] {
+            --c-page: #010101;
+            --c-surface: #0b0c0d;
+            --c-panel: rgba(18, 19, 20, 0.62);
+            --c-text-main: #eef2f6;
+            --c-text-muted: #9ca6b5;
+            --c-border: rgba(255, 255, 255, 0.08);
+            --shadow-premium: 0 24px 70px rgba(0, 0, 0, 0.5);
+        }
+
         html[dir="rtl"] body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
         html[dir="rtl"] .font-display { font-family: 'IBM Plex Sans Arabic', sans-serif; }
         body { background: var(--c-page); color: var(--c-text-main); font-family: 'Manrope', sans-serif; overflow-x: hidden; }
-        .glass-premium { background: rgba(255,255,255,0.84); backdrop-filter: blur(22px); border: 1px solid rgba(148,163,184,0.18); box-shadow: var(--shadow-premium); }
+        .glass-premium { background: var(--c-panel); backdrop-filter: blur(22px); border: 1px solid var(--c-border); box-shadow: var(--shadow-premium); }
         .topic-card {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(247,250,253,0.97));
-            border: 1px solid rgba(148,163,184,0.18);
-            box-shadow: 0 22px 54px rgba(148,163,184,0.12);
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            box-shadow: var(--shadow-premium);
             transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
         }
         .topic-card:hover {
@@ -76,6 +87,10 @@
             isolation: isolate;
             border: 1px solid rgba(255,255,255,0.65);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        [data-theme="dark"] .cover-art {
+            border-color: var(--c-border);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .cover-art::before {
             content: "";
@@ -97,15 +112,26 @@
             mix-blend-mode: multiply;
             opacity: 0.95;
         }
+        [data-theme="dark"] .cover-art::before {
+            background:
+                radial-gradient(circle at top left, rgba(45,212,191,0.12), transparent 28%),
+                linear-gradient(180deg, rgba(20,184,166,0.04), rgba(11,12,13,0.86) 74%, var(--c-surface) 100%);
+        }
+        [data-theme="dark"] .cover-art::after {
+            background:
+                linear-gradient(135deg, color-mix(in srgb, var(--topic-accent) 16%, var(--c-surface)), transparent),
+                radial-gradient(circle at 80% 14%, color-mix(in srgb, var(--topic-accent) 20%, var(--c-surface)), transparent 24%);
+            mix-blend-mode: normal;
+        }
         .cover-art.has-image {
             min-height: 0;
             aspect-ratio: 4 / 3;
             padding: 0;
-            background: #fff;
-            border-color: rgba(148, 163, 184, 0.12);
+            background: var(--c-surface);
+            border-color: var(--c-border);
             box-shadow:
                 0 18px 38px rgba(15, 23, 42, 0.06),
-                inset 0 1px 0 rgba(255,255,255,0.92);
+                inset 0 1px 0 rgba(255,255,255,0.1);
         }
         .cover-art.has-image::before,
         .cover-art.has-image::after {
@@ -118,6 +144,27 @@
             object-fit: contain;
             object-position: center;
         }
+        .cover-art-number {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 3rem;
+            height: 3rem;
+            padding: 0 0.7rem;
+            border: 1px solid color-mix(in srgb, var(--topic-accent) 34%, var(--c-border));
+            border-radius: 1rem;
+            background: color-mix(in srgb, var(--c-surface) 88%, transparent);
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+            color: var(--topic-accent);
+            font-size: 1.02rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            backdrop-filter: blur(10px);
+        }
         .cover-art-chip {
             display: inline-flex;
             align-items: center;
@@ -126,12 +173,11 @@
             height: 4.9rem;
             padding: 0 1rem;
             border-radius: 1.4rem;
-            background: rgba(255,255,255,0.68);
+            background: var(--c-panel);
             backdrop-filter: blur(14px);
             box-shadow: 0 14px 32px rgba(148,163,184,0.14);
         }
         .cover-art-title {
-            text-shadow: 0 8px 24px rgba(255,255,255,0.6);
             text-wrap: balance;
         }
         .cover-art-footer {
@@ -140,7 +186,7 @@
             margin-top: auto;
             padding-top: 4.25rem;
         }
-        .nav-pill { border: 1px solid rgba(148,163,184,0.16); background: rgba(255,255,255,0.88); color: var(--c-text-main); }
+        .nav-pill { border: 1px solid var(--c-border); background: var(--c-panel); color: var(--c-text-main); }
         .hero-copy { text-wrap: balance; }
         .topic-summary { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
@@ -158,16 +204,23 @@
             </div>
             <div class="hidden lg:flex items-center gap-10">
                 <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
-                    <a href="/#brain" class="hover:text-starta-teal transition-colors" data-key="nav_features">FEATURES</a>
+                    <a href="/" class="hover:text-starta-teal transition-colors" data-key="nav_home">HOME</a>
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
                     <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors text-starta-darkTeal" data-key="nav_learn">LEARN</a>
-                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
                     <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
-                    <a href="/#pricing" class="hover:text-starta-teal transition-colors" data-key="nav_pricing">PRICING</a>
                 </div>
             </div>
             <div class="flex items-center gap-3">
+                <button id="themeToggle" class="nav-pill rounded-full p-2.5 flex items-center justify-center relative w-10 h-10" type="button" aria-label="Toggle theme">
+                    <svg class="dark-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="light-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
                 <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
             </div>
         </div>
@@ -193,11 +246,11 @@
         gsap.registerPlugin(ScrollTrigger);
         const translations = {
             en: {
-                nav_features: "FEATURES", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "NEWS", nav_about: "ABOUT US", nav_pricing: "PRICING",
+                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_about: "ABOUT US",
                 hero_tag: "Starta Learn", hero_title: '<span class="block">Starta Academy: Build Your</span><span class="block">Investing Confidence</span>', hero_text: "Clear beginner lessons covering markets, mutual funds, risk, and portfolio basics.", open_topic: "Open topic"
             },
             ar: {
-                nav_features: "المزايا", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "الأخبار", nav_about: "معلومات عنا", nav_pricing: "الأسعار",
+                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_about: "معلومات عنا",
                 hero_tag: "أكاديمية ستارتا", hero_title: '<span class="block">أكاديمية ستارتا: ابنِ ثقتك</span><span class="block">في الاستثمار</span>', hero_text: "دروس واضحة للمبتدئين تغطي الأسواق والصناديق الاستثمارية والمخاطر وأساسيات المحفظة.", open_topic: "افتح الموضوع"
             }
         };
@@ -232,20 +285,25 @@
                     ? (topic.coverImageAr || '')
                     : (topic.coverImageEn || '');
                 const hasCover = Boolean(activeCover);
+                const lessonNumber = state.lang === 'ar'
+                    ? `<span class="cover-art-number" aria-label="الدرس ${topic.icon}">${topic.icon}</span>`
+                    : '';
                 const coverVisual = hasCover ? `
                     <div class="cover-art has-image rounded-[1.7rem]" style="--topic-accent:${topic.accent};">
+                        ${lessonNumber}
                         <img class="cover-art-image" src="${activeCover}" alt="${content.title}" loading="lazy">
                     </div>
                 ` : `
                     <div class="cover-art rounded-[1.7rem] p-6 text-main" style="--topic-accent:${topic.accent};">
+                        ${lessonNumber}
                         <div class="relative z-[1] flex items-start justify-between gap-5">
                             <div class="text-[0.72rem] font-semibold uppercase tracking-[0.22em]" style="color:${topic.accent}">${content.category}</div>
-                            <div class="rounded-full border border-white/70 bg-white/70 px-3 py-1 text-xs font-bold text-slate-700">${content.readTime}</div>
+                            <div class="rounded-full border border-border bg-surface px-3 py-1 text-xs font-bold text-muted">${content.readTime}</div>
                         </div>
                         <div class="cover-art-footer">
                             <div class="flex items-end justify-between gap-4">
                                 <div class="cover-art-chip text-4xl font-display font-bold tracking-[-0.05em] text-main">${topic.icon}</div>
-                                <div class="max-w-[14rem] rounded-full border border-white/75 bg-white/72 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                                <div class="max-w-[14rem] rounded-full border border-border bg-surface px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted">
                                     ${content.category}
                                 </div>
                             </div>

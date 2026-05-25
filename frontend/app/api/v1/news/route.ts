@@ -10,6 +10,7 @@ export async function GET(request: Request) {
         const symbol = searchParams.get('symbol');
         const sourceCountry = searchParams.get('source_country');
         const sourceSection = searchParams.get('source_section');
+        const language = searchParams.get('language'); // 'ar' | 'en' — filters by source_section suffix
         const days = parseInt(searchParams.get('days') || '0');
         const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '100'), 1), 1000);
         const newsId = idParam ? parseInt(idParam, 10) : null;
@@ -36,6 +37,14 @@ export async function GET(request: Request) {
         if (sourceSection) {
             params.push(sourceSection);
             filters.push(`source_section = $${params.length}`);
+        }
+        // Language filter: Arabic sections end with '/ar', English sections do not
+        if (language === 'ar') {
+            params.push('%/ar');
+            filters.push(`source_section LIKE $${params.length}`);
+        } else if (language === 'en') {
+            params.push('%/ar');
+            filters.push(`(source_section NOT LIKE $${params.length} OR source_section IS NULL)`);
         }
         if (days > 0) {
             params.push(days);

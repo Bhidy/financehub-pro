@@ -9,6 +9,20 @@
     /* ─── State ───────────────────────────────────────────────────────── */
     var lang     = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'en';
     var pfId     = location.pathname.split('/').filter(Boolean)[1] || 'demo';
+
+    /* ─── Nav translations ────────────────────────────────────────────── */
+    var NAV = {
+        en: { nav_home: 'HOME', nav_funds: 'MUTUAL FUNDS', nav_pulse: 'MARKET PULSE',
+              nav_news: 'MARKET NEWS', nav_learn: 'LEARN', nav_portfolio: 'PORTFOLIO', nav_about: 'ABOUT US' },
+        ar: { nav_home: 'الرئيسية', nav_funds: 'الصناديق الاستثمارية', nav_pulse: 'نبض السوق',
+              nav_news: 'أخبار السوق', nav_learn: 'تعلّم', nav_portfolio: 'المحفظة', nav_about: 'معلومات عنا' }
+    };
+    function applyNavLang(l) {
+        var map = NAV[l] || NAV.en;
+        document.querySelectorAll('[data-key]').forEach(function(el) {
+            if (map[el.dataset.key]) el.textContent = map[el.dataset.key];
+        });
+    }
     var portfolio, metrics;
     var perfChart = null, allocChart = null;
     var chartPeriod = '3M', chartMode = 'value', showBenchmark = true;
@@ -857,6 +871,7 @@
         document.documentElement.lang = l;
         document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
         document.getElementById('langToggle').textContent = l === 'ar' ? 'EN' : 'AR';
+        applyNavLang(l);
         if (perfChart)  { perfChart.destroy();  perfChart  = null; }
         if (allocChart) { allocChart.destroy(); allocChart = null; }
         load();
@@ -881,6 +896,7 @@
         document.documentElement.dir = 'rtl';
         document.getElementById('langToggle').textContent = 'EN';
     }
+    applyNavLang(lang);
 
     load();
 

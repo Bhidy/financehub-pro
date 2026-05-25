@@ -7,6 +7,20 @@
 
     var lang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'en';
 
+    /* ─── Nav translations ────────────────────────────────────────────── */
+    var NAV = {
+        en: { nav_home: 'HOME', nav_funds: 'MUTUAL FUNDS', nav_pulse: 'MARKET PULSE',
+              nav_news: 'MARKET NEWS', nav_learn: 'LEARN', nav_portfolio: 'PORTFOLIO', nav_about: 'ABOUT US' },
+        ar: { nav_home: 'الرئيسية', nav_funds: 'الصناديق الاستثمارية', nav_pulse: 'نبض السوق',
+              nav_news: 'أخبار السوق', nav_learn: 'تعلّم', nav_portfolio: 'المحفظة', nav_about: 'معلومات عنا' }
+    };
+    function applyNavLang(l) {
+        var map = NAV[l] || NAV.en;
+        document.querySelectorAll('[data-key]').forEach(function(el) {
+            if (map[el.dataset.key]) el.textContent = map[el.dataset.key];
+        });
+    }
+
     var T = {
         en: {
             title: 'Portfolio Intelligence',
@@ -219,6 +233,7 @@
         document.documentElement.lang = l;
         document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
         document.getElementById('langToggle').textContent = l === 'ar' ? 'EN' : 'AR';
+        applyNavLang(l);
         render();
     }
 
@@ -237,6 +252,7 @@
         document.documentElement.dir = 'rtl';
         document.getElementById('langToggle').textContent = 'EN';
     }
+    applyNavLang(lang);
 
     render();
 

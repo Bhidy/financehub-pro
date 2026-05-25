@@ -2,6 +2,7 @@
 <html lang="en" class="scroll-smooth" dir="ltr" data-theme="dark">
 
 <head>
+    <script src="/assets/starta-theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starta | Master the EGX</title>
@@ -33,6 +34,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- GSAP & Plugins -->
+    <script src="/assets/news-covers.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
@@ -819,6 +821,469 @@
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask-composite: exclude;
         }
+
+        /* ===== MARKET PULSE SECTION ===== */
+        .hp-terminal {
+            background: var(--c-page);
+            border: 1px solid var(--c-border);
+            border-radius: 1.25rem;
+            overflow: hidden;
+        }
+        .hp-terminal-chrome {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--c-border);
+            background: var(--c-surface);
+        }
+        .hp-td { width: 10px; height: 10px; border-radius: 50%; }
+        .hp-terminal-head {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1.2rem;
+            padding: 0.38rem 1rem;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            color: var(--c-text-muted);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--c-border);
+            font-family: monospace;
+        }
+        .hp-stock-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1.2rem;
+            padding: 0.62rem 1rem;
+            font-size: 0.78rem;
+            align-items: center;
+            border-bottom: 1px solid var(--c-border);
+            transition: background 0.15s;
+        }
+        .hp-stock-row:last-child { border-bottom: none; }
+        .hp-stock-row:hover { background: var(--c-surface); }
+        .hp-stock-sym { font-weight: 700; color: var(--c-text-main); font-family: monospace; }
+        .hp-stock-sub { font-size: 0.61rem; color: var(--c-text-muted); font-family: monospace; }
+        .hp-stock-price { font-family: monospace; font-weight: 600; text-align: right; color: var(--c-text-main); }
+        .hp-stock-chg {
+            font-size: 0.68rem;
+            text-align: right;
+            padding: 0.15rem 0.45rem;
+            border-radius: 0.25rem;
+            font-weight: 700;
+            font-family: monospace;
+            min-width: 3.8rem;
+        }
+        .hp-stock-chg.pos { color: #22c55e; background: rgba(34,197,94,0.1); }
+        .hp-stock-chg.neg { color: #ef4444; background: rgba(239,68,68,0.1); }
+        .hp-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+        .hp-stat-box {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: 0.875rem;
+            padding: 1rem 1.15rem;
+        }
+        .hp-stat-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--c-text-muted);
+            margin-bottom: 0.32rem;
+            font-family: monospace;
+        }
+        .hp-stat-val { font-size: 1.22rem; font-weight: 700; color: var(--c-text-main); font-family: monospace; line-height: 1.1; }
+        .hp-stat-sub { font-size: 0.61rem; color: var(--c-text-muted); margin-top: 0.18rem; }
+        .hp-stat-val.pos { color: #22c55e; }
+        .hp-stat-val.neg { color: #ef4444; }
+        .hp-live-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e;
+            animation: hpBlink 1.4s ease-in-out infinite;
+        }
+        @keyframes hpBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* ===== MARKET NEWS V2 — ULTRA PREMIUM ===== */
+        .hn2-ticker-strip {
+            border: 1px solid var(--c-border);
+            border-radius: 2rem;
+            display: flex;
+            align-items: stretch;
+            overflow: hidden;
+            height: 2.5rem;
+            background: var(--c-surface);
+        }
+        .hn2-ticker-badge {
+            padding: 0 1.1rem;
+            font-size: 0.55rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #22c55e;
+            background: rgba(34,197,94,0.1);
+            border-inline-end: 1px solid var(--c-border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-family: monospace;
+        }
+        .hn2-live-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: #22c55e;
+            animation: hpBlink 1.4s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .hn2-ticker-track {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+        }
+        .hn2-ticker-inner {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            animation: hn2Scroll 48s linear infinite;
+        }
+        @keyframes hn2Scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        html[dir="rtl"] .hn2-ticker-inner { animation-name: hn2ScrollRtl; }
+        @keyframes hn2ScrollRtl { from { transform: translateX(0); } to { transform: translateX(50%); } }
+        .hn2-tick-item { font-size: 0.69rem; color: var(--c-text-muted); padding: 0 1.6rem; font-family: monospace; }
+        .hn2-tick-sep { color: rgba(20,184,166,0.45); font-size: 0.55rem; flex-shrink: 0; }
+
+        /* Hero card — always dark editorial surface */
+        .hn2-hero {
+            position: relative;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 100%;
+            min-height: 420px;
+            background: #060d1a;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: box-shadow 0.38s ease;
+        }
+        .hn2-hero:hover { box-shadow: 0 32px 80px rgba(0,0,0,0.42); }
+        .hn2-hero-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.48;
+            transition: opacity 0.5s ease, transform 0.7s ease;
+            z-index: 0;
+        }
+        .hn2-hero:hover .hn2-hero-img { opacity: 0.6; transform: scale(1.04); }
+        .hn2-hero-pattern {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(45,212,191,0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45,212,191,0.055) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .hn2-hero-vignette {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(to top,
+                rgba(3,8,20,0.97) 0%,
+                rgba(3,8,20,0.68) 42%,
+                rgba(3,8,20,0.12) 100%);
+        }
+        .hn2-hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+        }
+        .hn2-story-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.54rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #2DD4BF;
+            background: rgba(45,212,191,0.14);
+            border: 1px solid rgba(45,212,191,0.28);
+            border-radius: 2rem;
+            padding: 0.22rem 0.72rem;
+            margin-bottom: 0.9rem;
+            font-family: monospace;
+        }
+        .hn2-hero-headline {
+            font-size: clamp(1.05rem, 1.7vw, 1.38rem);
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.38;
+            margin-bottom: 1.1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+        }
+        .hn2-hero-foot {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+        }
+        .hn2-hero-source { font-size: 0.59rem; color: rgba(255,255,255,0.52); font-family: monospace; text-transform: uppercase; letter-spacing: 0.1em; }
+        .hn2-hero-time { font-size: 0.59rem; color: rgba(255,255,255,0.35); font-family: monospace; }
+        .hn2-read-cta {
+            margin-inline-start: auto;
+            font-size: 0.59rem;
+            font-weight: 700;
+            color: #2DD4BF;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-family: monospace;
+            opacity: 0;
+            transform: translateX(-8px);
+            transition: opacity 0.28s, transform 0.28s;
+        }
+        html[dir="rtl"] .hn2-read-cta { transform: translateX(8px); }
+        .hn2-hero:hover .hn2-read-cta { opacity: 1; transform: translateX(0); }
+
+        /* Sidebar story items */
+        .hn2-item {
+            display: grid;
+            grid-template-columns: 1.4rem 3.2rem 1fr auto;
+            gap: 0.7rem;
+            padding: 0.9rem 0.55rem;
+            border-bottom: 1px solid var(--c-border);
+            cursor: pointer;
+            border-radius: 0.6rem;
+            transition: background 0.18s;
+            align-items: center;
+        }
+        .hn2-item:last-child { border-bottom: none; }
+        .hn2-item:hover { background: var(--c-surface); }
+        .hn2-item-num {
+            font-size: 0.56rem;
+            font-weight: 800;
+            font-family: monospace;
+            color: #14B8A6;
+            letter-spacing: 0.04em;
+            align-self: start;
+            padding-top: 0.1rem;
+        }
+        .hn2-thumb {
+            width: 3.2rem;
+            height: 3.2rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: var(--c-panel);
+            border: 1px solid var(--c-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .hn2-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hn2-thumb-fb { font-size: 1rem; font-weight: 800; color: #14B8A6; font-family: 'Sora', sans-serif; }
+        .hn2-item-body { min-width: 0; }
+        .hn2-item-headline {
+            font-size: 0.81rem;
+            font-weight: 600;
+            color: var(--c-text-main);
+            line-height: 1.44;
+            margin-bottom: 0.26rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .hn2-item-meta { font-size: 0.59rem; color: var(--c-text-muted); font-family: monospace; }
+        .hn2-item-arr {
+            color: #14B8A6;
+            opacity: 0;
+            font-size: 0.72rem;
+            font-family: monospace;
+            font-weight: 700;
+            transition: opacity 0.18s, transform 0.18s;
+            flex-shrink: 0;
+        }
+        .hn2-item:hover .hn2-item-arr { opacity: 1; transform: translateX(3px); }
+        html[dir="rtl"] .hn2-item:hover .hn2-item-arr { transform: translateX(-3px); }
+
+        /* ===== ACADEMY SECTION ===== */
+        .hac-bg-glow {
+            position: absolute;
+            top: -8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90vw;
+            height: 55vh;
+            background: radial-gradient(ellipse at center, oklch(0.65 0.12 185 / 0.06) 0%, transparent 68%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hac-header {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: end;
+            margin-bottom: 3.5rem;
+        }
+        @media (max-width: 1024px) {
+            .hac-header { grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2.5rem; }
+        }
+        .hac-headline {
+            font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+            font-weight: 800;
+            font-family: 'Sora', sans-serif;
+            line-height: 1.1;
+            color: var(--c-text-main);
+            margin: 0.65rem 0 1.25rem;
+        }
+        .hac-sub {
+            font-size: 1rem;
+            line-height: 1.72;
+            color: var(--c-text-muted);
+            max-width: 38ch;
+            margin-bottom: 2rem;
+        }
+        .hac-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .hac-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.66rem;
+            font-weight: 600;
+            color: var(--c-text-muted);
+            background: var(--c-panel);
+            border: 1px solid var(--c-border);
+            border-radius: 2rem;
+            padding: 0.28rem 0.78rem;
+            font-family: monospace;
+        }
+        .hac-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+        }
+        @media (max-width: 1024px) { .hac-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .hac-grid { grid-template-columns: 1fr; } }
+        .hac-card {
+            position: relative;
+            background: var(--c-panel);
+            border: 1px solid var(--c-border);
+            border-radius: 1.25rem;
+            padding: 1.75rem 1.75rem 1.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        border-color 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .hac-card--wide { grid-column: span 2; }
+        @media (max-width: 1024px) { .hac-card--wide { grid-column: span 1; } }
+        .hac-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 56px -10px oklch(0 0 0 / 0.3);
+        }
+        .hac-card-accent {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1.5px;
+        }
+        .hac-card-shimmer {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(108deg, transparent 35%, oklch(1 0 0 / 0.045) 50%, transparent 65%);
+            transform: translateX(-120%);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+        }
+        .hac-card:hover .hac-card-shimmer { transform: translateX(120%); }
+        html[dir="rtl"] .hac-card .hac-card-shimmer { transform: translateX(120%); }
+        html[dir="rtl"] .hac-card:hover .hac-card-shimmer { transform: translateX(-120%); }
+        .hac-card-icon {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+            flex-shrink: 0;
+        }
+        .hac-card-cat {
+            font-size: 0.57rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.17em;
+            margin-bottom: 0.45rem;
+            font-family: monospace;
+        }
+        .hac-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--c-text-main);
+            line-height: 1.36;
+            margin-bottom: 0.6rem;
+            font-family: 'Sora', sans-serif;
+        }
+        .hac-card--wide .hac-card-title { font-size: 1.18rem; }
+        .hac-card-desc {
+            font-size: 0.8rem;
+            color: var(--c-text-muted);
+            line-height: 1.65;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .hac-card--wide .hac-card-desc { -webkit-line-clamp: 4; }
+        .hac-card-read {
+            margin-top: 1.2rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-family: monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: gap 0.2s ease;
+        }
+        .hac-card:hover .hac-card-read { gap: 0.6rem; }
+        .hac-card-num {
+            position: absolute;
+            bottom: 0.4rem;
+            right: 1.1rem;
+            font-size: 6.5rem;
+            font-weight: 800;
+            font-family: 'Sora', sans-serif;
+            line-height: 1;
+            opacity: 0.042;
+            color: var(--c-text-main);
+            pointer-events: none;
+            user-select: none;
+        }
+        html[dir="rtl"] .hac-card-num { right: auto; left: 1.1rem; }
     </style>
 
     <!-- Hotjar Tracking Code -->
@@ -857,15 +1322,14 @@
             <!-- Menu -->
             <div class="hidden lg:flex items-center gap-10">
                 <div class="flex gap-10 text-xs font-mono text-muted tracking-widest">
-                    <a href="#brain" class="hover:text-starta-teal transition-colors"
-                        data-key="nav_features">FEATURES</a>
+                    <a href="/" class="hover:text-starta-teal transition-colors"
+                        data-key="nav_home">HOME</a>
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
                     <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
-                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
+                    <a href="/Portfolio" class="hover:text-starta-teal transition-colors" data-key="nav_portfolio">PORTFOLIO</a>
                     <a href="#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
-                    <a href="#pricing" class="hover:text-starta-teal transition-colors"
-                        data-key="nav_pricing">PRICING</a>
                 </div>
             </div>
 
@@ -1177,6 +1641,203 @@
         </div>
     </section>
 
+    <!-- 4.2 MARKET PULSE SECTION -->
+    <section id="hp-pulse-section" class="py-32 bg-surface border-t border-border relative overflow-hidden section-premium">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                <div class="reveal-text">
+                    <span class="section-tag" data-key="hp_pulse_tag">MARKET PULSE</span>
+                    <h2 class="section-title text-main mb-5" data-key="hp_pulse_title">Real-Time EGX Snapshot.</h2>
+                    <p class="text-muted copy-premium mb-8" data-key="hp_pulse_text">Track listed equities, index direction, and market breadth — all in one live terminal view.</p>
+                    <div class="hp-stat-grid mb-9">
+                        <div class="hp-stat-box">
+                            <div class="hp-stat-label" data-key="hp_pulse_stat1">EGX 30 Index</div>
+                            <div id="hp-pulse-index" class="hp-stat-val">--</div>
+                            <div class="hp-stat-sub">pts</div>
+                        </div>
+                        <div class="hp-stat-box">
+                            <div class="hp-stat-label" data-key="hp_pulse_stat2">Advancers / Decliners</div>
+                            <div id="hp-pulse-breadth" class="hp-stat-val pos">--</div>
+                        </div>
+                        <div class="hp-stat-box">
+                            <div class="hp-stat-label" data-key="hp_pulse_stat3">Trading Value</div>
+                            <div id="hp-pulse-value" class="hp-stat-val">--</div>
+                        </div>
+                        <div class="hp-stat-box">
+                            <div class="hp-stat-label" data-key="hp_pulse_stat4">Market Status</div>
+                            <div id="hp-pulse-status" class="hp-stat-val">--</div>
+                        </div>
+                    </div>
+                    <a href="/Market-Pulse" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm">
+                        <span data-key="hp_pulse_cta">Open Market Pulse</span>
+                        <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+                <div class="hp-terminal">
+                    <div class="hp-terminal-chrome">
+                        <span class="hp-td" style="background:#ff5f56;"></span>
+                        <span class="hp-td" style="background:#ffbd2e;"></span>
+                        <span class="hp-td" style="background:#27c93f;"></span>
+                        <span style="flex:1;"></span>
+                        <div style="display:flex;align-items:center;gap:0.45rem;">
+                            <span class="hp-live-dot"></span>
+                            <span style="font-size:0.61rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--c-text-muted);font-family:monospace;">EGX LIVE FEED</span>
+                        </div>
+                    </div>
+                    <div class="hp-terminal-head">
+                        <span data-key="hp_pulse_col1">Symbol</span>
+                        <span data-key="hp_pulse_col2">Last</span>
+                        <span data-key="hp_pulse_col3">Chg%</span>
+                    </div>
+                    <div id="hp-pulse-rows"></div>
+                    <div style="padding:0.48rem 1rem;font-size:0.58rem;color:var(--c-text-muted);font-family:monospace;letter-spacing:0.06em;border-top:1px solid var(--c-border);" data-key="hp_pulse_footer">Simulated data for illustration</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4.3 MARKET NEWS SECTION -->
+    <section id="hp-news-section" class="py-32 bg-page border-t border-border relative overflow-hidden section-premium">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <!-- Header -->
+            <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-9 reveal-text">
+                <div>
+                    <span class="section-tag" data-key="hp_news_tag">MARKET NEWS</span>
+                    <h2 class="section-title text-main mb-2" data-key="hp_news_title">Stories That Move Markets.</h2>
+                    <p class="text-muted copy-premium max-w-lg" data-key="hp_news_text">Curated financial coverage, company developments, and sector analysis.</p>
+                </div>
+                <a href="/News" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm self-start lg:self-auto shrink-0">
+                    <span data-key="hp_news_cta">Read All News</span>
+                    <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </a>
+            </div>
+
+            <!-- Live headline ticker -->
+            <div id="hn2-ticker" class="hn2-ticker-strip mb-8" style="display:none;">
+                <div class="hn2-ticker-badge">
+                    <span class="hn2-live-dot"></span>
+                    <span data-key="hp_news_live">LIVE</span>
+                </div>
+                <div class="hn2-ticker-track">
+                    <div id="hn2-ticker-inner" class="hn2-ticker-inner"></div>
+                </div>
+            </div>
+
+            <!-- Main editorial grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+                <!-- Hero featured story -->
+                <div class="lg:col-span-3" id="hn2-hero-wrap">
+                    <div class="hn2-hero">
+                        <div class="hn2-hero-pattern"></div>
+                        <div class="hn2-hero-vignette"></div>
+                        <div class="hn2-hero-content">
+                            <div class="hn2-story-badge">
+                                <span class="hn2-live-dot" style="background:#2DD4BF;"></span>
+                                <span data-key="hp_news_top_story">TOP STORY</span>
+                            </div>
+                            <div style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+                                <div class="animate-pulse rounded" style="height:1.3rem;background:rgba(255,255,255,0.1);width:88%;margin-bottom:0.6rem;"></div>
+                                <div class="animate-pulse rounded" style="height:1.3rem;background:rgba(255,255,255,0.07);width:70%;margin-bottom:0.6rem;"></div>
+                                <div class="animate-pulse rounded" style="height:1.3rem;background:rgba(255,255,255,0.05);width:50%;margin-bottom:1.1rem;"></div>
+                            </div>
+                            <div class="hn2-hero-foot">
+                                <span class="animate-pulse rounded" style="height:0.7rem;background:rgba(255,255,255,0.1);width:4rem;display:block;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar stories -->
+                <div class="lg:col-span-2" id="hn2-side">
+                    <div class="hn2-item">
+                        <span class="hn2-item-num">01</span>
+                        <div class="hn2-thumb"><span class="hn2-thumb-fb">S</span></div>
+                        <div class="hn2-item-body">
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:92%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:70%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.65rem;background:var(--c-panel);width:40%;"></div>
+                        </div>
+                        <span class="hn2-item-arr">→</span>
+                    </div>
+                    <div class="hn2-item">
+                        <span class="hn2-item-num">02</span>
+                        <div class="hn2-thumb"><span class="hn2-thumb-fb">S</span></div>
+                        <div class="hn2-item-body">
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:85%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:60%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.65rem;background:var(--c-panel);width:35%;"></div>
+                        </div>
+                        <span class="hn2-item-arr">→</span>
+                    </div>
+                    <div class="hn2-item">
+                        <span class="hn2-item-num">03</span>
+                        <div class="hn2-thumb"><span class="hn2-thumb-fb">S</span></div>
+                        <div class="hn2-item-body">
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:88%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:66%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.65rem;background:var(--c-panel);width:42%;"></div>
+                        </div>
+                        <span class="hn2-item-arr">→</span>
+                    </div>
+                    <div class="hn2-item">
+                        <span class="hn2-item-num">04</span>
+                        <div class="hn2-thumb"><span class="hn2-thumb-fb">S</span></div>
+                        <div class="hn2-item-body">
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:80%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.8rem;background:var(--c-panel);width:55%;margin-bottom:0.35rem;"></div>
+                            <div class="animate-pulse rounded" style="height:0.65rem;background:var(--c-panel);width:30%;"></div>
+                        </div>
+                        <span class="hn2-item-arr">→</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer link -->
+            <div style="margin-top:2.5rem;text-align:center;">
+                <a href="/News" style="font-size:0.72rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-text-muted);font-family:monospace;transition:color 0.22s;" onmouseover="this.style.color='#14B8A6'" onmouseout="this.style.color=''">
+                    <span data-key="hp_news_view_all">VIEW ALL MARKET NEWS</span> →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4.4 STARTA ACADEMY SECTION -->
+    <section id="hp-academy-section" class="py-32 bg-surface border-t border-border relative overflow-hidden section-premium">
+        <div class="hac-bg-glow" aria-hidden="true"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="hac-header reveal-text">
+                <div>
+                    <span class="section-tag" data-key="hp_learn_tag">STARTA ACADEMY</span>
+                    <h2 class="hac-headline" data-key="hp_learn_title">Build Investor Intelligence.</h2>
+                    <div class="hac-chips">
+                        <span class="hac-chip">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                            <span data-key="hp_learn_stat1">10 Topics</span>
+                        </span>
+                        <span class="hac-chip">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            <span data-key="hp_learn_stat2">Arabic & English</span>
+                        </span>
+                        <span class="hac-chip">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                            <span data-key="hp_learn_stat3">All Levels</span>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <p class="hac-sub" data-key="hp_learn_sub">From market basics to advanced valuation — structured modules built for Egyptian market investors.</p>
+                    <a href="/Learn" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm shrink-0">
+                        <span data-key="hp_learn_cta">Explore All Topics</span>
+                        <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+            </div>
+            <div id="hp-academy-grid" class="hac-grid"></div>
+        </div>
+    </section>
+
     <!-- 5. FEATURE: ZERO HALLUCINATION -->
     <section class="py-32 bg-page border-t border-border section-premium">
         <div class="max-w-4xl mx-auto px-6 text-center reveal-text">
@@ -1458,57 +2119,55 @@
         </div>
     </section>
 
-    <!-- 15. PORTFOLIO HEALTH (Smart Portfolio Tracker) -->
-    <section class="py-32 bg-page border-t border-border section-premium">
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div
-                class="glass-premium p-12 rounded-full h-80 w-80 flex flex-col items-center justify-center border-4 border-starta-teal mx-auto shine-border relative">
-                <div class="absolute inset-0 rounded-full border border-border animate-ping opacity-20"></div>
-                <div class="text-6xl font-bold text-main font-display counter-anim" data-value="92">0</div>
-                <div class="text-sm text-starta-teal font-bold tracking-widest mt-2" data-key="port_optimal">OPTIMAL
-                </div>
-                <div class="text-xs text-muted mt-1" data-key="port_score">Diversification Score</div>
-            </div>
-            <div class="space-y-6 reveal-text">
-                <span class="section-tag" data-key="port_tag">SMART PORTFOLIO TRACKER</span>
-                <h2 class="section-title text-main" data-key="port_title">Your Personal<br>Risk Manager.</h2>
-                <p class="text-muted copy-premium" data-key="port_text">
-                    Are you overexposed to Real Estate? Is your Beta too high? Starta analyzes your holdings for
-                    concentration risk and correlation traps.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- 16. THE ACADEMY (Masterclass) -->
-    <section class="py-32 bg-surface section-premium">
+    <!-- 15. PORTFOLIO INTELLIGENCE -->
+    <section id="hp-portfolio-section" class="py-32 bg-surface border-t border-border section-premium relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background:radial-gradient(circle at 80% 50%,rgba(20,184,166,.10),transparent 45%),radial-gradient(circle at 15% 80%,rgba(139,92,246,.07),transparent 35%)"></div>
         <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <span class="section-tag" data-key="acad_tag">STARTA MASTERCLASS</span>
-                <h2 class="section-title text-main" data-key="acad_title">The Knowledge Vault.</h2>
-                <p class="text-muted mt-4 max-w-2xl mx-auto" data-key="acad_sub">Comprehensive educational modules to
-                    elevate your financial IQ.</p>
+            <!-- Header -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16 reveal-text">
+                <div class="space-y-5">
+                    <span class="section-tag" data-key="port_tag">PORTFOLIO INTELLIGENCE</span>
+                    <h2 class="section-title text-main" data-key="port_title">Your Holdings.<br>Fully Understood.</h2>
+                    <p class="text-muted copy-premium" data-key="port_text">Track every EGX position with institutional analytics — real-time P/L, risk metrics, benchmark comparison, and AI-driven insights, all in one workspace.</p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <a href="/Portfolio" class="btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold">
+                            <span data-key="port_cta">Open Portfolio</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <!-- KPI cards cluster -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
+                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k1_label">Total Value</div>
+                        <div class="text-2xl font-bold font-mono text-main">EGP 1.24M</div>
+                        <div class="text-xs font-bold" style="color:#22c55e">+24.54% total return</div>
+                    </div>
+                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
+                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k2_label">vs EGX30</div>
+                        <div class="text-2xl font-bold font-mono" style="color:#14b8a6">+6.12%</div>
+                        <div class="text-xs text-muted" data-key="port_outperform">Outperforming</div>
+                    </div>
+                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
+                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k3_label">Sharpe Ratio</div>
+                        <div class="text-2xl font-bold font-mono text-main">1.45</div>
+                        <div class="text-xs text-muted" data-key="port_risk_adj">Risk-adjusted</div>
+                    </div>
+                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
+                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k4_label">Dividends YTD</div>
+                        <div class="text-2xl font-bold font-mono text-main">EGP 26.5K</div>
+                        <div class="text-xs font-bold" style="color:#22c55e">+18.4% vs last year</div>
+                    </div>
+                </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div
-                    class="glass-premium ultra-card p-8 rounded-2xl hover:border-starta-teal/50 transition-all cursor-pointer group">
-                    <h4 class="text-xl font-bold text-main mb-2" data-key="acad_c1_title">Financial Statement Analysis
-                    </h4>
-                    <p class="text-sm text-muted" data-key="acad_c1_text">Master the Income Statement, Balance Sheet,
-                        and Cash Flow.</p>
-                </div>
-                <div
-                    class="glass-premium ultra-card p-8 rounded-2xl hover:border-starta-teal/50 transition-all cursor-pointer group">
-                    <h4 class="text-xl font-bold text-main mb-2" data-key="acad_c2_title">Valuation Models 101</h4>
-                    <p class="text-sm text-muted" data-key="acad_c2_text">Learn DCF, Multiples, and how to find fair
-                        value.</p>
-                </div>
-                <div
-                    class="glass-premium ultra-card p-8 rounded-2xl hover:border-starta-teal/50 transition-all cursor-pointer group">
-                    <h4 class="text-xl font-bold text-main mb-2" data-key="acad_c3_title">Technical Analysis</h4>
-                    <p class="text-sm text-muted" data-key="acad_c3_text">Identify trends, support levels, and entry
-                        points.</p>
-                </div>
+            <!-- Feature chips -->
+            <div class="flex flex-wrap gap-3 justify-center">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">📊 <span data-key="port_f1">Performance Charts</span></span>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">⚖️ <span data-key="port_f2">Risk Analytics</span></span>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">🧠 <span data-key="port_f3">AI Insights</span></span>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">📈 <span data-key="port_f4">EGX30 Benchmark</span></span>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">💰 <span data-key="port_f5">Dividend Tracker</span></span>
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">🏦 <span data-key="port_f6">Multi-Portfolio</span></span>
             </div>
         </div>
     </section>
@@ -1900,7 +2559,7 @@
         // --- TRANSLATION ENGINE ---
         const translations = {
             en: {
-                nav_features: "FEATURES", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "NEWS", nav_pricing: "PRICING", nav_about: "ABOUT US", nav_cta: "TRY NOW",
+                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "PORTFOLIO", nav_about: "ABOUT US", nav_cta: "TRY NOW",
                 about_tag: "OUR MISSION", about_title: "Empowering Intelligent<br>Investing.", about_text: "At Starta, we believe that high-quality financial intelligence should be accessible, transparent, and actionable. Our team of data scientists and financial experts has built an institutional-grade platform designed to remove the noise and highlight what truly matters in the market.", about_val1_title: "Innovation", about_val1_text: "Cutting-edge AI meets proven financial models.", about_val2_title: "Integrity", about_val2_text: "Data-driven insights with zero bias.", about_vision: "Redefining Market Analysis", about_vision_text: "We are committed to delivering clarity and precision to every investor, equipping you with the edge needed to navigate today's markets.",
                 hero_kicker: "Institutional AI Research",
                 hero_title: `Institutional-Grade<br>AI Research & <span class="text-gradient">Wealth Management.</span>`,
@@ -1934,11 +2593,7 @@
                 screen_tag: "DISCOVERY ENGINE", screen_title: "Find Alpha Faster.", screen_placeholder: "Show me undervalued Real Estate stocks with high growth...",
                 owner_tag: "INSIDER TRACKING", owner_title: "Track Smart Capital.", owner_text: "See who truly owns the stock: institutions, insiders, and concentration shifts that often signal conviction before price reacts.", owner_inst: "Institutional", owner_free: "Free Float",
                 news_tag: "NLP ENGINE", news_title: "News With Context.", news_pos: "POSITIVE SENTIMENT", news_ex1: "\"Board approves record dividend distribution of 2.5 EGP.\"", news_neg: "NEGATIVE SENTIMENT", news_ex2: "\"Supply chain disruptions impact Q3 gross margins.\"",
-                port_tag: "SMART PORTFOLIO TRACKER", port_title: "Protect Returns<br>Before Risk Hits.", port_text: "Starta stress-tests your portfolio for concentration, hidden correlation, and beta imbalance so risk is managed before drawdowns happen.", port_optimal: "OPTIMAL", port_score: "Diversification Score",
-                acad_tag: "STARTA MASTERCLASS", acad_title: "Starta Academy.", acad_sub: "Practical, market-ready education for investors who want institutional thinking.",
-                acad_c1_title: "Financial Analysis", acad_c1_text: "Master the Income Statement, Balance Sheet, and Cash Flow.",
-                acad_c2_title: "Valuation Models 101", acad_c2_text: "Learn DCF, Multiples, and how to find fair value.",
-                acad_c3_title: "Technical Analysis", acad_c3_text: "Identify trends, support levels, and entry points.",
+                port_tag: "PORTFOLIO INTELLIGENCE", port_title: "Your Holdings.<br>Fully Understood.", port_text: "Track every EGX position with institutional analytics — real-time P/L, risk metrics, benchmark comparison, and AI-driven insights, all in one workspace.", port_cta: "Open Portfolio", port_outperform: "Outperforming", port_risk_adj: "Risk-adjusted", port_k1_label: "Total Value", port_k2_label: "vs EGX30", port_k3_label: "Sharpe Ratio", port_k4_label: "Dividends YTD", port_f1: "Performance Charts", port_f2: "Risk Analytics", port_f3: "AI Insights", port_f4: "EGX30 Benchmark", port_f5: "Dividend Tracker", port_f6: "Multi-Portfolio",
                 mob_tag: "EVERYWHERE", mob_title: "Your AI Analyst<br>In Your Pocket.", mob_text: "Native iOS and Android apps with instant chat, smart alerts, and personalized financial answers anywhere.",
                 app_store: "App Store", google_play: "Google Play",
                 road_title: "What we're working on.", road_c1_title: "Smart Portfolio", road_c1_text: "Automated rebalancing and risk analysis tailored to your holdings.", road_c2_title: "Market Expansion", road_c2_text: "Deep dive coverage for Tadawul (TASI) and Gulf markets.", road_c3_title: "News 2.0", road_c3_text: "Sentiment analysis on local news sources and social signals.", road_c4_title: "Mobile App", road_c4_text: "Native iOS and Android experience with push notifications.",
@@ -1963,10 +2618,18 @@
                 calc_tag: "WEALTH PROJECTION", calc_title: "The Power of Compound Returns.",
                 calc_goal_title: "Reach Your Goal", calc_goal_desc: "How much to invest monthly to reach a specific amount.",
                 calc_save_title: "Build Your Future", calc_save_desc: "See how much your monthly savings will grow over time.",
-                brain_load1: "Analyzing market signals", brain_load2: "Cross-checking EGX data", brain_load3: "Insight ready", dialect_egy: "EGYPTIAN DIALECT", dialect_msa: "MODERN STANDARD"
+                brain_load1: "Analyzing market signals", brain_load2: "Cross-checking EGX data", brain_load3: "Insight ready", dialect_egy: "EGYPTIAN DIALECT", dialect_msa: "MODERN STANDARD",
+                hp_pulse_tag: "MARKET PULSE", hp_pulse_title: "Real-Time EGX Snapshot.", hp_pulse_text: "Track listed equities, index direction, and market breadth — all in one live terminal view.",
+                hp_pulse_cta: "Open Market Pulse", hp_pulse_stat1: "EGX 30 Index", hp_pulse_stat2: "Advancers / Decliners", hp_pulse_stat3: "Trading Value", hp_pulse_stat4: "Market Status",
+                hp_pulse_col1: "Symbol", hp_pulse_col2: "Last", hp_pulse_col3: "Chg%", hp_pulse_footer: "Simulated data for illustration",
+                hp_news_tag: "MARKET NEWS", hp_news_title: "Stories That Move Markets.", hp_news_text: "Curated financial coverage, company developments, and sector analysis.",
+                hp_news_cta: "Read All News", hp_news_live: "LIVE", hp_news_top_story: "TOP STORY", hp_news_view_all: "VIEW ALL MARKET NEWS",
+                hp_news_fallback_title: "EGX market closes higher on banking sector gains", hp_news_fallback_src: "Starta Markets",
+                hp_learn_tag: "STARTA ACADEMY", hp_learn_title: "Build Investor Intelligence.", hp_learn_sub: "From market basics to advanced valuation — structured modules built for Egyptian market investors.", hp_learn_stat1: "10 Topics", hp_learn_stat2: "Arabic & English", hp_learn_stat3: "All Levels",
+                hp_learn_cta: "Explore All Topics", hp_learn_read: "Read topic"
             },
             ar: {
-                nav_features: "المزايا", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "الأخبار", nav_pricing: "الأسعار", nav_about: "معلومات عنا", nav_cta: "جرّب الآن",
+                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "المحفظة", nav_about: "معلومات عنا", nav_cta: "جرّب الآن",
                 about_tag: "مهمتنا", about_title: "تمكين الاستثمار<br>الذكي.", about_text: "في ستاراتا، نؤمن بأن الذكاء المالي عالي الجودة يجب أن يكون متاحاً وشفافاً وقابلاً للتنفيذ. قام فريقنا من علماء البيانات والخبراء الماليين ببناء منصة على مستوى مؤسساتي مصممة لإزالة الضوضاء وتسليط الضوء على ما يهم حقاً في السوق.", about_val1_title: "الابتكار", about_val1_text: "أحدث التقنيات القائمة على الذكاء الاصطناعي تجتمع مع نماذج مالية مثبتة.", about_val2_title: "النزاهة", about_val2_text: "رؤى مدعومة بالبيانات بدون تحيز.", about_vision: "إعادة تعريف تحليل السوق", about_vision_text: "نحن ملتزمون بتقديم الوضوح والدقة لكل مستثمر، وتزويدك بالميزة اللازمة للتنقل في أسواق اليوم.",
                 hero_kicker: "بحث استثماري مدعوم بالذكاء الاصطناعي",
                 hero_title: `ذكاء اصطناعي للأبحاث<br>وإدارة <span class="text-gradient">الثروات.</span>`,
@@ -2000,11 +2663,7 @@
                 screen_tag: "محرك الاكتشاف", screen_title: "اعثر على الفرص أسرع.", screen_placeholder: "اعرض أسهمًا عقارية أقل من قيمتها مع نمو مرتفع...",
                 owner_tag: "ملكية السهم", owner_title: "تتبّع رأس المال الذكي.", owner_text: "اعرف من يملك السهم فعليًا: المؤسسات، المطلعون، وتغيرات التركز التي غالبًا ما تسبق حركة السعر.", owner_inst: "المؤسسات", owner_free: "التداول الحر",
                 news_tag: "محرك الأخبار", news_title: "خبر مالي ضمن سياقه.", news_pos: "إشارات إيجابية", news_ex1: "\"مجلس الإدارة يعتمد توزيع أرباح نقدية استثنائية بقيمة 2.5 جنيه.\"", news_neg: "إشارات سلبية", news_ex2: "\"اضطرابات سلسلة الإمداد تضغط على هوامش الربع الثالث.\"",
-                port_tag: "متابعة المحفظة الذكية", port_title: "احمِ العائد<br>قبل ارتفاع المخاطر.", port_text: "تجري ستارتا اختبارات ضغط لمحفظتك لكشف التركز والارتباطات الخفية واختلال بيتا قبل أن تتحول إلى خسائر.", port_optimal: "متوازن", port_score: "درجة التنويع",
-                acad_tag: "أكاديمية ستارتا", acad_title: "أكاديمية ستارتا", acad_sub: "محتوى عملي يساعدك على تبني عقلية استثمار مؤسسية في اتخاذ القرار.",
-                acad_c1_title: "تحليل القوائم المالية", acad_c1_text: "أتقن قراءة قائمة الدخل والميزانية العمومية والتدفقات النقدية.",
-                acad_c2_title: "أساسيات التقييم", acad_c2_text: "تعلّم نماذج التدفقات المخصومة والمضاعفات لتحديد القيمة العادلة بثقة.",
-                acad_c3_title: "التحليل الفني", acad_c3_text: "حدد الاتجاهات، مستويات الدعم والمقاومة، ونقاط الدخول والخروج.",
+                port_tag: "ذكاء المحفظة", port_title: "محفظتك.<br>مفهومة بالكامل.", port_text: "تتبع كل مركز في البورصة المصرية بتحليلات مؤسسية — ربح وخسارة فوري، مقاييس مخاطر، مقارنة بالمؤشر، ورؤى مدعومة بالذكاء الاصطناعي.", port_cta: "فتح المحفظة", port_outperform: "يتفوق على المؤشر", port_risk_adj: "معدّل بالمخاطر", port_k1_label: "إجمالي القيمة", port_k2_label: "مقابل EGX30", port_k3_label: "نسبة شارب", port_k4_label: "التوزيعات (هذا العام)", port_f1: "مخططات الأداء", port_f2: "تحليل المخاطر", port_f3: "رؤى الذكاء الاصطناعي", port_f4: "مؤشر EGX30", port_f5: "متابعة التوزيعات", port_f6: "محافظ متعددة",
                 mob_tag: "في كل مكان", mob_title: "محللك الذكي<br>في جيبك.", mob_text: "تطبيقات أصلية على iOS وAndroid تتيح محادثة فورية، تنبيهات ذكية، وإجابات مالية مخصصة أينما كنت.",
                 road_title: "ما نعمل عليه الآن.", road_c1_title: "محفظة ذكية", road_c1_text: "إعادة توازن آلية وتحليل مخاطر مخصص لبنية محفظتك.", road_c2_title: "توسّع الأسواق", road_c2_text: "تغطية تحليلية أعمق للسوق السعودي (تاسي) وأسواق الخليج.", road_c3_title: "الأخبار 2.0", road_c3_text: "تحليل مشاعر متقدم لمصادر الأخبار المحلية والإشارات الاجتماعية.", road_c4_title: "تطبيق الجوال", road_c4_text: "تجربة أصلية كاملة مع تنبيهات لحظية مخصصة.",
                 proof_tag: "طبقة الثقة", proof_title: "مصمم للمستثمر المحترف.", proof_sub: "كل استنتاج في ستارتا مرتبط بنموذج واضح وأرقام قابلة للتدقيق ومعايير تقارير مؤسسية.",
@@ -2031,7 +2690,15 @@
                 brain_load1: "جارٍ تحليل إشارات السوق", brain_load2: "جارٍ تدقيق بيانات EGX", brain_load3: "تم تجهيز الخلاصة", dialect_egy: "اللهجة المصرية", dialect_msa: "العربية الفصحى",
                 app_store: "متجر التطبيقات", google_play: "جوجل بلاي",
                 comp_title: "لماذا نتفوق.", comp_feat: "الميزة", comp_others: "منصات التداول", comp_logic: "منهجية مؤسسية", comp_arabic: "لغة السوق", comp_data: "دقة بيانات موثقة",
-                sec_tag: "البنية التحتية", sec_title: "أمان بمستوى مصرفي"
+                sec_tag: "البنية التحتية", sec_title: "أمان بمستوى مصرفي",
+                hp_pulse_tag: "نبض السوق", hp_pulse_title: "لقطة حية من البورصة المصرية.", hp_pulse_text: "تابع الأسهم المقيدة واتجاه المؤشر وعرض السوق — كل شيء في واجهة واحدة.",
+                hp_pulse_cta: "افتح نبض السوق", hp_pulse_stat1: "مؤشر EGX 30", hp_pulse_stat2: "صاعدة / هابطة", hp_pulse_stat3: "قيمة التداول", hp_pulse_stat4: "حالة السوق",
+                hp_pulse_col1: "الرمز", hp_pulse_col2: "الأخير", hp_pulse_col3: "التغيير%", hp_pulse_footer: "بيانات توضيحية للسوق",
+                hp_news_tag: "أخبار السوق", hp_news_title: "الأخبار التي تحرّك الأسواق.", hp_news_text: "تغطية مالية منتقاة وأخبار الشركات وتحليلات القطاعات.",
+                hp_news_cta: "قراءة كل الأخبار", hp_news_live: "مباشر", hp_news_top_story: "الخبر الأبرز", hp_news_view_all: "عرض كل أخبار السوق",
+                hp_news_fallback_title: "البورصة المصرية تغلق على ارتفاع بدعم القطاع المصرفي", hp_news_fallback_src: "ستارتا ماركتس",
+                hp_learn_tag: "أكاديمية ستارتا", hp_learn_title: "ابنِ ذكاءك الاستثماري.", hp_learn_sub: "من أساسيات السوق إلى نماذج التقييم المتقدمة — وحدات تعليمية مبنية لمستثمر السوق المصري.", hp_learn_stat1: "١٠ موضوعات", hp_learn_stat2: "عربي وإنجليزي", hp_learn_stat3: "لجميع المستويات",
+                hp_learn_cta: "استعرض جميع المواضيع", hp_learn_read: "اقرأ الموضوع"
             }
         };
 
@@ -2072,6 +2739,9 @@
                     applyTranslations(newLang);
                     renderTopFunds();
                     setMarketTimestamp();
+                    _hpNewsData = null; // force re-fetch in new language
+                    renderHpNews(newLang);
+                    renderHpAcademy(newLang);
                     gsap.to("body", { opacity: 1, duration: 0.2 });
                 }
             });
@@ -2165,37 +2835,6 @@
         playHeroSequence();
 
 
-        // Theme Toggle Logic
-        const themeBtn = document.getElementById('themeToggle');
-        const darkIcon = document.querySelector('.dark-icon');
-        const lightIcon = document.querySelector('.light-icon');
-
-        const savedTheme = localStorage.getItem('theme');
-        const initialTheme = savedTheme === 'light' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', initialTheme);
-        darkIcon.style.opacity = initialTheme === 'light' ? '0' : '1';
-        lightIcon.style.opacity = initialTheme === 'light' ? '1' : '0';
-
-        themeBtn.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            if (current === 'light') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                darkIcon.style.opacity = '1';
-                lightIcon.style.opacity = '0';
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                darkIcon.style.opacity = '0';
-                lightIcon.style.opacity = '1';
-            }
-            const navElement = document.querySelector('nav');
-            if (navElement) {
-                const light = document.documentElement.getAttribute('data-theme') === 'light';
-                navElement.style.backgroundColor = light ? 'rgba(246, 248, 251, 0.68)' : 'rgba(2, 8, 8, 0.52)';
-            }
-        });
-
         // Animations
         gsap.utils.toArray('.chart-line').forEach(line => {
             const length = line.getTotalLength();
@@ -2229,6 +2868,9 @@
             return light ? 'rgba(246, 248, 251, 0.9)' : 'rgba(2, 8, 8, 0.82)';
         }
         gsap.set(navEl, { backgroundColor: navTone(false) });
+        document.addEventListener('starta:themechange', () => {
+            gsap.to(navEl, { backgroundColor: navTone(window.scrollY > 30), duration: 0.35, overwrite: true });
+        });
         window.addEventListener('scroll', () => {
             const isScrolled = window.scrollY > 30;
             gsap.to(navEl, { backgroundColor: navTone(isScrolled), duration: 0.35, overwrite: true });
@@ -2501,7 +3143,7 @@
                     <article class="glass-premium ultra-card p-6 rounded-[2rem] border border-border premium-hover cursor-pointer" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.id)}'">
                         <div class="flex items-start justify-between gap-4 mb-5">
                             <div class="flex items-start gap-4 min-w-0">
-                                <div class="w-12 h-12 overflow-hidden rounded-2xl bg-white flex items-center justify-center p-2 border border-border shrink-0">
+                                <div class="w-12 h-12 overflow-hidden rounded-2xl bg-surface flex items-center justify-center p-2 border border-border shrink-0">
                                     <img src="${fund.logo || '/assets/funds/starta-fund-placeholder.svg'}" class="h-full w-full object-contain opacity-90" style="transform:scale(${Number(fund.logoScale || 1)}); transform-origin:center center;" alt="${localizedFundHouse}">
                                 </div>
                                 <div class="min-w-0">
@@ -2549,6 +3191,291 @@
                 });
             } catch (error) { console.error(error); }
         }
+        // ===== MARKET PULSE TERMINAL =====
+        (function initHpPulse() {
+            const stocks = [
+                { sym: 'COMI',  name: 'CIB Egypt',      price: 82.45,  chg:  1.23 },
+                { sym: 'HRHO',  name: 'EFG Hermes',      price: 19.80,  chg: -0.54 },
+                { sym: 'SWDY',  name: 'Edita Food',       price: 26.30,  chg:  2.17 },
+                { sym: 'FWRY',  name: 'Fawry',            price: 6.20,   chg:  0.78 },
+                { sym: 'AMER',  name: 'Americana',        price: 5.95,   chg: -1.04 },
+                { sym: 'CLHO',  name: 'Cleopatra Hosp',  price: 4.85,   chg: -0.33 }
+            ];
+
+            const tbody = document.getElementById('hp-pulse-rows');
+            if (!tbody) return;
+
+            function renderRows() {
+                tbody.innerHTML = stocks.map(s => {
+                    const pos = s.chg >= 0;
+                    return `<div class="hp-stock-row">
+                        <div><div class="hp-stock-sym">${s.sym}</div><div class="hp-stock-sub">${s.name}</div></div>
+                        <div class="hp-stock-price">${s.price.toFixed(2)}</div>
+                        <div class="hp-stock-chg ${pos ? 'pos' : 'neg'}">${pos ? '+' : ''}${s.chg.toFixed(2)}%</div>
+                    </div>`;
+                }).join('');
+            }
+
+            renderRows();
+            setInterval(() => {
+                stocks.forEach(s => {
+                    s.price = Math.max(0.1, s.price + (Math.random() - 0.49) * 0.22);
+                    s.chg += (Math.random() - 0.5) * 0.05;
+                });
+                renderRows();
+            }, 2600);
+
+            const idxEl    = document.getElementById('hp-pulse-index');
+            const breadthEl = document.getElementById('hp-pulse-breadth');
+            const valueEl  = document.getElementById('hp-pulse-value');
+            const statusEl = document.getElementById('hp-pulse-status');
+            if (idxEl)    idxEl.textContent    = '30,241.7';
+            if (breadthEl) breadthEl.textContent = '142 / 58';
+            if (valueEl)  valueEl.textContent   = '2.4B EGP';
+            if (statusEl) { statusEl.textContent = 'OPEN'; statusEl.style.color = '#22c55e'; }
+
+            gsap.from('#hp-pulse-section .hp-terminal', {
+                opacity: 0, y: 28, duration: 0.7, ease: 'power2.out',
+                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 78%', once: true }
+            });
+            gsap.from('#hp-pulse-section .hp-stat-box', {
+                opacity: 0, y: 18, duration: 0.5, stagger: 0.1, ease: 'power2.out',
+                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 80%', once: true }
+            });
+        })();
+
+        // ===== MARKET NEWS V2 =====
+        let _hpNewsData = null;
+
+        function hn2ImageSrc(url) {
+            if (!url) return '';
+            if (url.includes('static.mubasher.info/File.Story_Image/'))
+                return '/api/v1/news-image?url=' + encodeURIComponent(url);
+            return url;
+        }
+
+        function hn2Sanitize(v) {
+            return String(v || '')
+                .replace(/^\s*(?:cairo|egypt|dubai|riyadh)\s*[-–—:]\s*/i, '')
+                .replace(/^\s*(?:mubasher(?:\.info)?|arab\s*finance|zawya)\s*[-–—:]\s*/i, '')
+                .replace(/^\s*(?:القاهرة|مصر)\s*[-–—:]\s*/, '')
+                .replace(/^\s*(?:مباشر|زاوية)\s*[-–—:]\s*/, '')
+                .replace(/[ \t]{2,}/g, ' ').trim();
+        }
+
+        function hn2Age(dateStr, lang) {
+            try {
+                const diff = Math.floor((Date.now() - new Date(dateStr)) / 60000);
+                if (diff < 60) return diff + (lang === 'ar' ? ' د' : 'm ago');
+                const h = Math.floor(diff / 60);
+                if (h < 24) return h + (lang === 'ar' ? ' س' : 'h ago');
+                return Math.floor(h / 24) + (lang === 'ar' ? ' ي' : 'd ago');
+            } catch { return ''; }
+        }
+
+        async function renderHpNews(lang) {
+            const heroWrap = document.getElementById('hn2-hero-wrap');
+            const side     = document.getElementById('hn2-side');
+            const ticker   = document.getElementById('hn2-ticker');
+            const tickerInner = document.getElementById('hn2-ticker-inner');
+            if (!heroWrap || !side) return;
+
+            function buildTicker(items) {
+                if (!ticker || !tickerInner) return;
+                const headlines = items.slice(0, 10).map(it =>
+                    hn2Sanitize(it.headline || it.title || '')
+                ).filter(Boolean);
+                if (!headlines.length) return;
+                const doubled = [...headlines, ...headlines];
+                tickerInner.innerHTML = doubled.map(h =>
+                    `<span class="hn2-tick-item">${h}</span><span class="hn2-tick-sep">◆</span>`
+                ).join('');
+                ticker.style.display = 'flex';
+                gsap.from(ticker, { opacity: 0, y: -6, duration: 0.5, ease: 'power2.out' });
+            }
+
+            function buildHero(item) {
+                const headline  = hn2Sanitize(item.headline || item.title || (lang === 'ar' ? 'تحديث من السوق' : 'Market update'));
+                const src       = item.source || item.provider || (lang === 'ar' ? 'ستارتا ماركتس' : 'Starta Markets');
+                const age       = hn2Age(item.published_at || item.date || item.created_at, lang);
+                const imgSrc    = window.StarTaNewsCovers ? window.StarTaNewsCovers.getUrl(item, lang) : '';
+                const id        = item.id || item.news_id || '';
+                const href      = `/News${id ? '/' + encodeURIComponent(id) : ''}`;
+                const topLabel  = translations[lang].hp_news_top_story || 'TOP STORY';
+                const readLabel = lang === 'ar' ? 'اقرأ الخبر' : 'READ STORY';
+
+                heroWrap.innerHTML = `
+                <div class="hn2-hero" onclick="window.location.href='${href}'">
+                    ${imgSrc ? `<img class="hn2-hero-img" src="${imgSrc}" alt="" loading="eager">` : ''}
+                    <div class="hn2-hero-pattern"></div>
+                    <div class="hn2-hero-vignette"></div>
+                    <div class="hn2-hero-content">
+                        <div class="hn2-story-badge">
+                            <span class="hn2-live-dot" style="background:#2DD4BF;animation:hpBlink 2s ease-in-out infinite;"></span>
+                            ${topLabel}
+                        </div>
+                        <p class="hn2-hero-headline">${headline}</p>
+                        <div class="hn2-hero-foot">
+                            <span class="hn2-hero-source">${src}</span>
+                            <span class="hn2-hero-time">${age}</span>
+                            <span class="hn2-read-cta">${readLabel} →</span>
+                        </div>
+                    </div>
+                </div>`;
+
+                gsap.from(heroWrap.firstElementChild, {
+                    opacity: 0, scale: 0.97, y: 20, duration: 0.7, ease: 'power3.out',
+                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 80%', once: true }
+                });
+            }
+
+            function buildSide(items) {
+                side.innerHTML = items.slice(0, 4).map((item, i) => {
+                    const headline = hn2Sanitize(item.headline || item.title || '');
+                    const src      = item.source || item.provider || '';
+                    const age      = hn2Age(item.published_at || item.date || item.created_at, lang);
+                    const imgSrc   = window.StarTaNewsCovers ? window.StarTaNewsCovers.getUrl(item, lang) : '';
+                    const id       = item.id || item.news_id || '';
+                    const href     = `/News${id ? '/' + encodeURIComponent(id) : ''}`;
+                    const arrow    = lang === 'ar' ? '←' : '→';
+                    const thumb    = imgSrc
+                        ? `<img src="${imgSrc}" alt="" loading="lazy">`
+                        : '<span class="hn2-thumb-fb">S</span>';
+                    return `<div class="hn2-item" onclick="window.location.href='${href}'">
+                        <span class="hn2-item-num">${String(i + 1).padStart(2, '0')}</span>
+                        <div class="hn2-thumb">${thumb}</div>
+                        <div class="hn2-item-body">
+                            <p class="hn2-item-headline">${headline}</p>
+                            <span class="hn2-item-meta">${src ? src + ' · ' : ''}${age}</span>
+                        </div>
+                        <span class="hn2-item-arr">${arrow}</span>
+                    </div>`;
+                }).join('');
+
+                gsap.from('#hn2-side .hn2-item', {
+                    opacity: 0, x: lang === 'ar' ? -16 : 16, duration: 0.45,
+                    stagger: 0.09, ease: 'power2.out',
+                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 78%', once: true }
+                });
+            }
+
+            if (_hpNewsData) {
+                buildHero(_hpNewsData[0]);
+                buildSide(_hpNewsData.slice(1));
+                buildTicker(_hpNewsData);
+                return;
+            }
+
+            const fallbackItems = [
+                { headline: lang === 'ar' ? 'البورصة المصرية تغلق على ارتفاع بدعم القطاع المصرفي' : 'EGX closes higher led by banking sector gains', source: lang === 'ar' ? 'ستارتا ماركتس' : 'Starta Markets', published_at: new Date(Date.now() - 3600000).toISOString() },
+                { headline: lang === 'ar' ? 'الأهلي المصري يسجل أعلى عائد في الربع الثالث' : 'National Bank Fund records highest Q3 yield', source: 'EGX', published_at: new Date(Date.now() - 7200000).toISOString() },
+                { headline: lang === 'ar' ? 'مجلس الإدارة يوافق على توزيع أرباح استثنائية' : 'Board approves exceptional dividend distribution', source: 'EGX', published_at: new Date(Date.now() - 14400000).toISOString() },
+                { headline: lang === 'ar' ? 'البتروكيماويات تعزز مكاسب مؤشر EGX 30' : 'Petrochemicals lift EGX 30 index gains', source: 'EGX', published_at: new Date(Date.now() - 86400000).toISOString() },
+                { headline: lang === 'ar' ? 'أسعار الفائدة تضغط على قطاع العقارات' : 'Rate pressure weighs on real estate sector', source: 'EGX', published_at: new Date(Date.now() - 172800000).toISOString() }
+            ];
+
+            try {
+                const r = await fetch(`/api/v1/news?source_country=EG&language=${lang}&limit=10`);
+                if (!r.ok) throw new Error('fail');
+                const raw = await r.json();
+                const items = (Array.isArray(raw) ? raw : (raw.items || raw.news || raw.data || [])).filter(it => it.headline || it.title);
+                if (!items.length) throw new Error('empty');
+                _hpNewsData = items;
+                buildHero(items[0]);
+                buildSide(items.slice(1));
+                buildTicker(items);
+            } catch {
+                _hpNewsData = fallbackItems;
+                buildHero(fallbackItems[0]);
+                buildSide(fallbackItems.slice(1));
+                buildTicker(fallbackItems);
+            }
+        }
+
+        // ===== ACADEMY CARDS =====
+        const _hpAcademyTopics = [
+            {
+                slug: 'what-is-the-stock-market',
+                accent: '#14B8A6', num: '01', wide: true,
+                icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="4" height="8" rx="0.5"/><line x1="4" y1="4" x2="4" y2="7"/><line x1="4" y1="15" x2="4" y2="19"/><rect x="10" y="10" width="4" height="6" rx="0.5"/><line x1="12" y1="7" x2="12" y2="10"/><line x1="12" y1="16" x2="12" y2="19"/><rect x="18" y="8" width="4" height="7" rx="0.5"/><line x1="20" y1="5" x2="20" y2="8"/><line x1="20" y1="15" x2="20" y2="19"/></svg>`,
+                en: { tag: 'FOUNDATIONS', title: 'What Is the Stock Market?', desc: 'A structured look at how exchanges work, what listed companies are, and why the EGX matters to every Egyptian investor making financial decisions.' },
+                ar: { tag: 'الأساسيات', title: 'ما هو سوق الأسهم؟', desc: 'نظرة منهجية على آلية عمل البورصات والشركات المقيدة، ولماذا تهم البورصة المصرية كل مستثمر يتخذ قرارات مالية.' }
+            },
+            {
+                slug: 'how-nav-works',
+                accent: '#8B5CF6', num: '03', wide: false,
+                icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,18 7,12 11,15 16,8 21,5"/><circle cx="21" cy="5" r="2" fill="currentColor" stroke="none"/><line x1="3" y1="21" x2="21" y2="21" stroke-width="1.2"/></svg>`,
+                en: { tag: 'MUTUAL FUNDS', title: 'How NAV Works', desc: 'Decode Net Asset Value, what drives it daily, and how to read fund pricing like a professional.' },
+                ar: { tag: 'الصناديق', title: 'كيف يعمل صافي الأصول', desc: 'افهم صافي قيمة الأصول وما يحركه يومياً وكيف تقرأ تسعير الصناديق باحترافية.' }
+            },
+            {
+                slug: 'risk-and-return-for-beginners',
+                accent: '#EF4444', num: '05', wide: false,
+                icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="20"/><line x1="7" y1="20" x2="17" y2="20"/><path d="M4 9h6l-3 5z"/><path d="M14 9h6l-3 5z"/><line x1="4" y1="9" x2="20" y2="9"/></svg>`,
+                en: { tag: 'FUNDAMENTALS', title: 'Risk & Return', desc: 'Understand the core trade-off every investor faces: higher potential returns always come with higher risk.' },
+                ar: { tag: 'الأساسيات', title: 'المخاطرة والعائد', desc: 'افهم المعادلة الأساسية لكل مستثمر: العوائد الأعلى تأتي دائماً مع مخاطر أعلى.' }
+            },
+            {
+                slug: 'diversification-explained',
+                accent: '#22C55E', num: '06', wide: false,
+                icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="5" r="1.8" fill="currentColor" stroke="none"/><circle cx="19.5" cy="5" r="1.8" fill="currentColor" stroke="none"/><circle cx="4.5" cy="19" r="1.8" fill="currentColor" stroke="none"/><circle cx="19.5" cy="19" r="1.8" fill="currentColor" stroke="none"/><line x1="12" y1="12" x2="4.5" y2="5"/><line x1="12" y1="12" x2="19.5" y2="5"/><line x1="12" y1="12" x2="4.5" y2="19"/><line x1="12" y1="12" x2="19.5" y2="19"/></svg>`,
+                en: { tag: 'PORTFOLIO', title: 'Diversification Explained', desc: 'Why spreading capital across assets reduces risk without sacrificing expected returns.' },
+                ar: { tag: 'المحفظة', title: 'التنويع: الفكرة الأساسية', desc: 'لماذا يقلل توزيع رأس المال على الأصول المختلفة المخاطر دون التضحية بالعوائد المتوقعة.' }
+            },
+            {
+                slug: 'support-and-resistance-basics',
+                accent: '#3B82F6', num: '09', wide: false,
+                icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 7,11 11,14 15,8 21,6"/><line x1="3" y1="6" x2="21" y2="6" stroke-dasharray="2.5 2"/><line x1="3" y1="17" x2="21" y2="17" stroke-dasharray="2.5 2"/></svg>`,
+                en: { tag: 'TECHNICAL ANALYSIS', title: 'Support & Resistance', desc: 'Learn how price floors and ceilings form on charts and how traders use these levels to time entries.' },
+                ar: { tag: 'التحليل الفني', title: 'الدعم والمقاومة', desc: 'تعلّم كيف تتشكل أرضيات وسقوف السعر على الرسوم البيانية وكيف يستخدمها المتداولون.' }
+            },
+            {
+                slug: 'long-term-investing-vs-trading',
+                accent: '#A855F7', num: '10', wide: true,
+                icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 15.5,14.5"/></svg>`,
+                en: { tag: 'STRATEGY', title: 'Investing vs. Trading: Choose Your Edge', desc: 'Compare the two main approaches — risk profiles, time horizons, and which path aligns with your financial goals and temperament as an Egyptian market participant.' },
+                ar: { tag: 'الاستراتيجية', title: 'الاستثمار مقابل التداول: اختر أسلوبك', desc: 'قارن بين النهجين الرئيسيين في السوق — مستويات المخاطرة، الآفاق الزمنية، وأيهما يتناسب مع أهدافك المالية ومزاجك الاستثماري كمشارك في السوق المصري.' }
+            }
+        ];
+
+        function renderHpAcademy(lang) {
+            const grid = document.getElementById('hp-academy-grid');
+            if (!grid) return;
+            grid.innerHTML = _hpAcademyTopics.map(topic => {
+                const d = topic[lang];
+                const wideClass = topic.wide ? ' hac-card--wide' : '';
+                return `<article
+                    class="hac-card${wideClass}"
+                    onclick="window.location.href='/Learn/${topic.slug}'"
+                    onmouseenter="this.style.borderColor='${topic.accent}44'"
+                    onmouseleave="this.style.borderColor=''">
+                    <div class="hac-card-accent" style="background:${topic.accent};"></div>
+                    <div class="hac-card-shimmer" aria-hidden="true"></div>
+                    <div class="hac-card-icon" style="background:${topic.accent}1a;color:${topic.accent};">${topic.icon}</div>
+                    <div class="hac-card-cat" style="color:${topic.accent};">${d.tag}</div>
+                    <h3 class="hac-card-title">${d.title}</h3>
+                    <p class="hac-card-desc">${d.desc}</p>
+                    <div class="hac-card-read" style="color:${topic.accent};">
+                        ${translations[lang].hp_learn_read}
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="arrow-icon"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                    </div>
+                    <div class="hac-card-num" aria-hidden="true">${topic.num}</div>
+                </article>`;
+            }).join('');
+
+            if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+                gsap.from('#hp-academy-grid > article', {
+                    opacity: 0, y: 28, duration: 0.6, stagger: 0.09, ease: 'power3.out',
+                    scrollTrigger: { trigger: '#hp-academy-grid', start: 'top 82%', once: true }
+                });
+            }
+        }
+
+        // Initial render
+        const _initLang = document.documentElement.lang;
+        renderHpNews(_initLang);
+        renderHpAcademy(_initLang);
+
         renderTopFunds();
     </script>
 </body>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" dir="ltr" data-theme="light">
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="dark">
 
 <head>
+    <script src="/assets/starta-theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fund Comparison | Starta Markets</title>
@@ -65,6 +66,21 @@
             --teal-dark: #0F766E;
         }
 
+        [data-theme="dark"] {
+            --c-page: #010101;
+            --c-surface: #0b0c0d;
+            --c-panel: rgba(18, 19, 20, 0.62);
+            --c-text-main: #eef2f6;
+            --c-text-muted: #9ca6b5;
+            --c-border: rgba(255, 255, 255, 0.08);
+            --shadow-premium: 0 24px 70px rgba(0, 0, 0, 0.5);
+            --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.2);
+            --glass-bg: rgba(18, 19, 20, 0.62);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: 40px;
+            --teal-dark: #2DD4BF;
+        }
+
         html[dir="rtl"] body {
             font-family: 'IBM Plex Sans Arabic', sans-serif;
         }
@@ -90,10 +106,10 @@
 
         .surface-card {
             background:
-                radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 28%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            box-shadow: 0 24px 52px rgba(148, 163, 184, 0.12);
+                radial-gradient(circle at top right, rgba(20, 184, 166, 0.1), transparent 28%),
+                var(--c-surface);
+            border: 1px solid var(--c-border);
+            box-shadow: var(--shadow-premium);
         }
 
         .btn-primary {
@@ -109,20 +125,20 @@
         }
 
         .btn-secondary {
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            background: rgba(255, 255, 255, 0.84);
+            border: 1px solid var(--c-border);
+            background: var(--c-surface);
             color: var(--c-text-main);
         }
 
         .nav-pill {
-            border: 1px solid rgba(148, 163, 184, 0.16);
-            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--c-border);
+            background: var(--c-surface);
             color: var(--c-text-main);
         }
 
         .range-btn {
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid var(--c-border);
+            background: var(--c-surface);
             color: var(--c-text-muted);
             transition: all 180ms ease;
         }
@@ -135,13 +151,13 @@
         }
 
         .compare-card {
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--c-border);
+            background: var(--c-surface);
         }
 
         .compare-table th,
         .compare-table td {
-            border-top: 1px solid rgba(148, 163, 184, 0.14);
+            border-top: 1px solid var(--c-border);
         }
 
         .metric-best {
@@ -165,8 +181,8 @@
             min-width: 15rem;
             max-width: 22rem;
             pointer-events: none;
-            border: 1px solid rgba(148, 163, 184, 0.14);
-            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--c-border);
+            background: var(--c-surface);
             backdrop-filter: blur(14px);
             box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
         }
@@ -186,17 +202,24 @@
 
             <div class="hidden lg:flex items-center gap-10">
                 <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
-                    <a href="/#brain" class="hover:text-starta-teal transition-colors" data-key="nav_features">FEATURES</a>
+                    <a href="/" class="hover:text-starta-teal transition-colors" data-key="nav_home">HOME</a>
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
                     <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
-                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">NEWS</a>
                     <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
-                    <a href="/#pricing" class="hover:text-starta-teal transition-colors" data-key="nav_pricing">PRICING</a>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
+                <button id="themeToggle" class="nav-pill rounded-full p-2.5 flex items-center justify-center relative w-10 h-10" type="button" aria-label="Toggle theme">
+                    <svg class="dark-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="light-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
                 <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
             </div>
         </div>
@@ -233,7 +256,7 @@
             <section class="mt-8 surface-card overflow-hidden rounded-[2.4rem] reveal-block">
                 <div class="overflow-x-auto">
                     <table class="compare-table min-w-full text-sm">
-                        <thead class="bg-slate-50/90">
+                        <thead class="bg-surface">
                             <tr class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
                                 <th class="px-6 py-4 text-left" data-key="metric_label">Metric</th>
                                 <th class="px-6 py-4" colspan="4" data-key="funds_label">Selected funds</th>
@@ -244,7 +267,7 @@
                 </div>
             </section>
 
-            <section id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-white/88 px-8 py-16 text-center shadow-premium">
+            <section id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-surface px-8 py-16 text-center shadow-premium">
                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-starta-teal/10 text-starta-teal">
                     <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m-3 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
@@ -261,17 +284,15 @@
         gsap.registerPlugin(ScrollTrigger);
 
         const DEFAULT_LOGO = '/assets/funds/starta-fund-placeholder.svg';
-        const COMPARE_STORAGE_KEY = 'starta-funds-compare';
         const COLORS = ['#14B8A6', '#0F766E', '#0EA5E9', '#F59E0B'];
         const translations = {
             en: {
-                nav_features: "FEATURES",
+                nav_home: "HOME",
                 nav_learn: "LEARN",
                 nav_mobile: "MUTUAL FUNDS",
                 nav_pulse: "MARKET PULSE",
-                nav_news: "NEWS",
+                nav_news: "MARKET NEWS",
                 nav_about: "ABOUT US",
-                nav_pricing: "PRICING",
                 back_to_funds: "Back to funds",
                 hero_tag: "Fund comparison",
                 hero_title: "Compare funds with real pricing, real history, and clearer decisions.",
@@ -303,13 +324,12 @@
                 manager_unavailable: "Manager unavailable"
             },
             ar: {
-                nav_features: "المزايا",
+                nav_home: "الرئيسية",
                 nav_learn: "تعلّم",
                 nav_mobile: "الصناديق الاستثمارية",
                 nav_pulse: "نبض السوق",
-                nav_news: "الأخبار",
+                nav_news: "أخبار السوق",
                 nav_about: "معلومات عنا",
-                nav_pricing: "الأسعار",
                 back_to_funds: "العودة إلى الصناديق",
                 hero_tag: "مقارنة الصناديق",
                 hero_title: "قارن الصناديق بثقة",
@@ -378,12 +398,7 @@
                 return params.split(',').map((value) => value.trim()).filter(Boolean).slice(0, 4);
             }
 
-            try {
-                const stored = JSON.parse(localStorage.getItem(COMPARE_STORAGE_KEY) || '[]');
-                return Array.isArray(stored) ? stored.map((value) => String(value)).filter(Boolean).slice(0, 4) : [];
-            } catch (error) {
-                return [];
-            }
+            return [];
         }
 
         function localizedPair(primary, fallback) {
@@ -489,7 +504,7 @@
                 return `
                     <article class="compare-card rounded-[1.8rem] p-5">
                         <div class="flex items-start gap-4">
-                            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-[1.3rem] border border-border bg-white p-2">
+                            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-[1.3rem] border border-border bg-surface p-2">
                                 <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Math.max(Number(fund.logo_scale || 1), 1.2)}); transform-origin:center center;" alt="${escapeHtml(getManagerName(fund))}">
                             </div>
                             <div class="min-w-0">
@@ -499,11 +514,11 @@
                             </div>
                         </div>
                         <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                            <div class="rounded-2xl bg-slate-50/85 p-4">
+                            <div class="rounded-2xl bg-panel p-4">
                                 <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels().metric_nav)}</div>
                                 <div class="mt-2 text-2xl font-display font-bold text-main">${escapeHtml(fund.currency || 'EGP')} ${escapeHtml(formatNumber(fund.latest_nav))}</div>
                             </div>
-                            <div class="rounded-2xl bg-slate-50/85 p-4">
+                            <div class="rounded-2xl bg-panel p-4">
                                 <div class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">${escapeHtml(getLabels()[`metric_${state.period}`] || state.period.toUpperCase())}</div>
                                 <div class="mt-2 text-2xl font-display font-bold ${ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600'}">${escapeHtml(formatPercent(ret))}</div>
                             </div>
@@ -615,6 +630,14 @@
             return nearest;
         }
 
+        function chartTheme() {
+            const styles = getComputedStyle(document.documentElement);
+            return {
+                text: styles.getPropertyValue('--c-text-muted').trim() || '#5b6677',
+                marker: styles.getPropertyValue('--c-surface').trim() || '#ffffff',
+            };
+        }
+
         function renderChart() {
             const chartShell = document.getElementById('compareChart');
             chartShell.innerHTML = '';
@@ -623,11 +646,12 @@
                 try { state.chart.remove(); } catch (error) { }
             }
             state.chartSeries = [];
+            const colors = chartTheme();
 
             const chart = LightweightCharts.createChart(chartShell, {
                 layout: {
                     background: { color: 'transparent' },
-                    textColor: '#5b6677',
+                    textColor: colors.text,
                     fontFamily: "'Manrope', sans-serif",
                     attributionLogo: false,
                 },
@@ -665,7 +689,7 @@
                     crosshairMarkerVisible: true,
                     crosshairMarkerRadius: 5,
                     crosshairMarkerBorderWidth: 2,
-                    crosshairMarkerBackgroundColor: '#ffffff',
+                    crosshairMarkerBackgroundColor: colors.marker,
                     title: getFundName(fund),
                     lineType: LightweightCharts.LineType.Curved,
                     priceFormat: {
@@ -756,6 +780,9 @@
 
             document.getElementById('langToggle').addEventListener('click', () => {
                 setLanguage(state.lang === 'en' ? 'ar' : 'en');
+            });
+            document.addEventListener('starta:themechange', () => {
+                if (state.chart) renderChart();
             });
         }
 

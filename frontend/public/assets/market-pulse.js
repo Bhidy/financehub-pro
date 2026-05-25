@@ -3,7 +3,7 @@
 
     const translations = {
         en: {
-            nav_features: "FEATURES", nav_funds: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_learn: "LEARN", nav_news: "NEWS", nav_about: "ABOUT US", nav_pricing: "PRICING",
+            nav_home: "HOME", nav_funds: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_learn: "LEARN", nav_news: "MARKET NEWS", nav_about: "ABOUT US",
             exchange: "Egyptian Exchange", egx30: "EGX 30 Index", breadth: "Advancers / Decliners", turnover: "Trading Value", volume: "Trading Volume", currency: "EGP", shares: "shares",
             search: "Search a company or symbol", watchlist: "Watchlist", egx_equities: "EGX equities", most_active: "Most Active", gainers: "Gainers", losers: "Losers",
             symbol: "Symbol", last: "Last", change: "Change", quick_stats: "Market Scope", listed: "Listed securities", trading_value: "Trading value", trading_volume: "Trading volume", advancers_decliners: "Advancers / Decliners",
@@ -15,7 +15,7 @@
             no_match: "No company matched your search.", no_news: "No market news available at this time.", company_text: "{name} is listed on the Egyptian Exchange in the {sector} sector. The workspace displays its latest stored quote and available price history."
         },
         ar: {
-            nav_features: "المزايا", nav_funds: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_learn: "تعلّم", nav_news: "الأخبار", nav_about: "معلومات عنا", nav_pricing: "الأسعار",
+            nav_home: "الرئيسية", nav_funds: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_learn: "تعلّم", nav_news: "أخبار السوق", nav_about: "معلومات عنا",
             exchange: "البورصة المصرية", egx30: "مؤشر EGX 30", breadth: "صاعد / هابط", turnover: "قيمة التداول", volume: "حجم التداول", currency: "جنيه", shares: "سهم",
             search: "ابحث عن شركة أو رمز", watchlist: "قائمة المتابعة", egx_equities: "أسهم EGX", most_active: "الأكثر نشاطا", gainers: "الرابحون", losers: "الخاسرون",
             symbol: "الرمز", last: "الإغلاق", change: "التغير", quick_stats: "نطاق السوق", listed: "الأوراق المقيدة", trading_value: "قيمة التداول", trading_volume: "حجم التداول", advancers_decliners: "صاعد / هابط",
@@ -613,47 +613,6 @@
             renderOverviewTab();
         }));
 
-        // Theme Toggle handling
-        const themeBtn = byId("themeToggle");
-        if (themeBtn) {
-            const darkIcon = themeBtn.querySelector(".dark-icon");
-            const lightIcon = themeBtn.querySelector(".light-icon");
-            
-            const applyTheme = (theme) => {
-                document.documentElement.setAttribute("data-theme", theme);
-                localStorage.setItem("theme", theme);
-                if (darkIcon && lightIcon) {
-                    darkIcon.style.opacity = theme === "light" ? "0" : "1";
-                    lightIcon.style.opacity = theme === "light" ? "1" : "0";
-                }
-            };
-            
-            // Set initial theme
-            const savedTheme = localStorage.getItem("theme") || "dark";
-            applyTheme(savedTheme);
-            
-            themeBtn.addEventListener("click", () => {
-                const current = document.documentElement.getAttribute("data-theme") || "dark";
-                const nextTheme = current === "light" ? "dark" : "light";
-                applyTheme(nextTheme);
-            });
-            
-            // Sync theme changes across tabs/windows
-            window.addEventListener("storage", (e) => {
-                if (e.key === "theme") {
-                    applyTheme(e.newValue || "dark");
-                }
-            });
-            
-            // Fallback interval to sync theme changes from other sub-pages/iframes
-            setInterval(() => {
-                const current = document.documentElement.getAttribute("data-theme");
-                const saved = localStorage.getItem("theme") || "dark";
-                if (current !== saved) {
-                    applyTheme(saved);
-                }
-            }, 500);
-        }
     }
 
     bind();

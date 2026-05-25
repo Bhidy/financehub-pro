@@ -1,13 +1,12 @@
 (function () {
     const translations = {
         en: {
-            nav_features: "FEATURES",
+            nav_home: "HOME",
             nav_funds: "MUTUAL FUNDS",
             nav_pulse: "MARKET PULSE",
             nav_learn: "LEARN",
-            nav_news: "NEWS",
+            nav_news: "MARKET NEWS",
             nav_about: "ABOUT US",
-            nav_pricing: "PRICING",
             news_title: "Track market news in real-time.",
             news_intro: "Follow key market developments, corporate news, and economic updates.",
             search_placeholder: "Search headlines or companies",
@@ -25,13 +24,12 @@
             minute_read: "min read"
         },
         ar: {
-            nav_features: "المزايا",
+            nav_home: "الرئيسية",
             nav_funds: "الصناديق الاستثمارية",
             nav_pulse: "نبض السوق",
             nav_learn: "تعلّم",
-            nav_news: "الأخبار",
+            nav_news: "أخبار السوق",
             nav_about: "معلومات عنا",
-            nav_pricing: "الأسعار",
             news_title: "تابع أخبار السوق لحظة بلحظة",
             news_intro: "تابع أهم تطورات السوق وأخبار الشركات والمستجدات الاقتصادية",
             search_placeholder: "ابحث في الأخبار أو الشركات",
@@ -50,10 +48,97 @@
         }
     };
 
+    // ===== NEWS CATEGORIES =====
+    const CATEGORIES = [
+        {
+            id: 'all',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="9.5" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="1" y="9.5" width="5.5" height="5.5" rx="1.2"/><rect x="9.5" y="9.5" width="5.5" height="5.5" rx="1.2"/></svg>`,
+            en: 'All', ar: 'الكل',
+            match: () => true
+        },
+        {
+            id: 'stocks',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="1" y="5" width="3" height="6" rx="0.5"/><line x1="2.5" y1="2.5" x2="2.5" y2="5"/><line x1="2.5" y1="11" x2="2.5" y2="13.5"/><rect x="6.5" y="7" width="3" height="4" rx="0.5"/><line x1="8" y1="5" x2="8" y2="7"/><line x1="8" y1="11" x2="8" y2="13"/><rect x="12" y="6" width="3" height="5" rx="0.5"/><line x1="13.5" y1="3.5" x2="13.5" y2="6"/><line x1="13.5" y1="11" x2="13.5" y2="13.5"/></svg>`,
+            en: 'Stocks', ar: 'الأسهم',
+            match: (item) => !!item.symbol || /stocks?/i.test(item.source_section || '')
+        },
+        {
+            id: 'economy',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c-2 2.3-3 4.4-3 6.5s1 4.2 3 6.5M8 1.5c2 2.3 3 4.4 3 6.5s-1 4.2-3 6.5"/></svg>`,
+            en: 'Economy', ar: 'الاقتصاد',
+            match: (item) => {
+                const h = (item.headline || '').toLowerCase();
+                const s = (item.source_section || '').toLowerCase();
+                return /economy|gdp|inflation|central.bank|cbe|imf|fiscal|monetary|export|import|\btrade\b|investment|macr|growth|currency|pound|egp|dollar/.test(h)
+                    || /اقتصاد|ناتج|تضخم|فائدة|مركزي|صادرات|واردات|تجارة|صندوق|عملة|جنيه/.test(h)
+                    || /economy|north-africa|gcc|macro/.test(s);
+            }
+        },
+        {
+            id: 'banking',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 13.5h13M1.5 6h13M8 1.5 1.5 6h13z"/><line x1="3.5" y1="6" x2="3.5" y2="13.5"/><line x1="6.5" y1="6" x2="6.5" y2="13.5"/><line x1="9.5" y1="6" x2="9.5" y2="13.5"/><line x1="12.5" y1="6" x2="12.5" y2="13.5"/></svg>`,
+            en: 'Banking', ar: 'البنوك',
+            match: (item) => {
+                const h = (item.headline || '').toLowerCase();
+                const sym = (item.symbol || '').toUpperCase();
+                return /bank(?:ing)?|\bloan\b|credit|deposit|lender|lending|mortgage|npl|fintech|payment/.test(h)
+                    || /بنك|مصرف|ائتمان|قرض|ودائع|تمويل مصرفي|دفع/.test(h)
+                    || /banking/.test(item.source_section || '')
+                    || /^(CIB|COMI|QNBE|EGBE|ADIB|MASR|SAIB|EGAL|NBEK|ABUK|ARAB|AIBANK|CVMC)$/.test(sym);
+            }
+        },
+        {
+            id: 'realestate',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 8 8 2l6.5 6M3 7.2v7h10v-7"/><path d="M6.5 14.2v-4h3v4"/></svg>`,
+            en: 'Real Estate', ar: 'العقارات',
+            match: (item) => {
+                const h = (item.headline || '').toLowerCase();
+                const sym = (item.symbol || '').toUpperCase();
+                return /real.estate|propert(?:y|ies)|housing|residential|compound|villa|apartment|development.project|construction|new.capital|new.cairo|hillage|madaar/.test(h)
+                    || /عقار|عقارات|إسكان|تطوير|مجمع|قرية|شقق|فيلا|سكني|العاصمة الإدارية/.test(h)
+                    || /^(TMGH|HRHO|PRMH|MNHD|AMER|ORAS|MFPC|PHDC)$/.test(sym);
+            }
+        },
+        {
+            id: 'energy',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 1.5 4.5 8.5h5.5L7.5 14.5l7-8H9z"/></svg>`,
+            en: 'Energy', ar: 'الطاقة',
+            match: (item) => {
+                const h = (item.headline || '').toLowerCase();
+                const sym = (item.symbol || '').toUpperCase();
+                return /\benergy\b|\boil\b|\bgas\b|petroleum|electricity|power.station|solar|nuclear|fuel|renewable|lng|lpg|hydro|hydrogen/.test(h)
+                    || /طاقة|نفط|غاز|بترول|كهرباء|محطة|شمسي|نووي|وقود|هيدروجين/.test(h)
+                    || /energy/.test(item.source_section || '')
+                    || /^(TAQA|ELEC|PICO|EKHO|HELI)$/.test(sym);
+            }
+        },
+        {
+            id: 'earnings',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v.6M8 10.9v.6M10.2 6.5a2.2 2.2 0 0 0-4.4 0c0 2.3 4.4 2.3 4.4 4.5a2.2 2.2 0 0 1-4.4 0"/></svg>`,
+            en: 'Earnings', ar: 'الأرباح',
+            match: (item) => {
+                const h = (item.headline || '').toLowerCase();
+                return /earnings?|dividend|profit|revenue|results?|annual.report|quarterly|half.year|net.income|\beps\b|payout|distribution|financial.results/.test(h)
+                    || /أرباح|توزيع|إيرادات|نتائج|ربحية|ربع|سنوي|صافي|عائد|دخل|عائد توزيع/.test(h);
+            }
+        },
+        {
+            id: 'markets',
+            icon: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1.5,11 4.5,7.5 7,9.5 11,5.5 14.5,3"/><circle cx="14.5" cy="3" r="1.5" fill="currentColor" stroke="none"/><line x1="1.5" y1="14" x2="14.5" y2="14"/></svg>`,
+            en: 'Markets', ar: 'السوق',
+            match: (item) => {
+                const h = (item.headline || '').toLowerCase();
+                return /\bipo\b|public.offering|\blisting\b|egx.30|egx.70|market.cap|sukuk|bond.issu|capital.increas|\bbourse\b|stock.exchange|index.close|index.rise|index.fall/.test(h)
+                    || /اكتتاب|طرح عام|قيد|مؤشر|رأس المال|صكوك|سند|بورصة|تداول|مؤشر البورصة/.test(h);
+            }
+        }
+    ];
+
     const state = {
         lang: "en",
         days: 30,
         query: "",
+        category: "all",
         items: []
     };
     let listingController = null;
@@ -71,13 +156,13 @@
     function sanitize(value) {
         if (!value) return "";
         return String(value)
-            .replace(/^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-\u2013\u2014:]\s*/i, "")
-            .replace(/^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\s*[-\u2013\u2014:]\s*/i, "")
-            .replace(/^\s*(?:القاهرة|مصر)\s*[-\u2013\u2014:]\s*/, "")
-            .replace(/^\s*(?:مباشر|[عآ]راب\s*فاينانس|زاوية)\s*[-\u2013\u2014:]\s*/, "")
+            .replace(/^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i, "")
+            .replace(/^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\s*[-–—:]\s*/i, "")
+            .replace(/^\s*(?:القاهرة|مصر)\s*[-–—:]\s*/, "")
+            .replace(/^\s*(?:مباشر|[عآ]راب\s*فاينانس|زاوية)\s*[-–—:]\s*/, "")
             .replace(/\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\b/gi, "")
             .replace(/(مباشر|[عآ]راب\s*فاينانس|زاوية)/g, "")
-            .replace(/^[-\u2013\u2014:\s]+/, "")
+            .replace(/^[-–—:\s]+/, "")
             .replace(/[ \t]+([,.;:!?])/g, "$1")
             .replace(/\r\n/g, "\n")
             .replace(/[ \t]{2,}/g, " ")
@@ -110,6 +195,26 @@
         return new Intl.RelativeTimeFormat(state.lang === "ar" ? "ar" : "en", { numeric: "auto" }).format(-days, "day");
     }
 
+    // ===== RENDER CATEGORY CHIPS =====
+    function renderCategories() {
+        const strip = document.getElementById("catStrip");
+        if (!strip) return;
+        strip.innerHTML = CATEGORIES.map(cat => {
+            const label = cat[state.lang] || cat.en;
+            const isActive = state.category === cat.id;
+            return `<button type="button" class="cat-chip${isActive ? " active" : ""}" data-cat="${cat.id}" aria-pressed="${isActive}">
+                ${cat.icon}<span>${label}</span>
+            </button>`;
+        }).join("");
+        strip.querySelectorAll(".cat-chip").forEach(btn => {
+            btn.addEventListener("click", () => {
+                state.category = btn.dataset.cat;
+                renderCategories();
+                renderListing();
+            });
+        });
+    }
+
     function setLanguage(lang, options = {}) {
         const refresh = options.refresh !== false;
         state.lang = lang === "ar" ? "ar" : "en";
@@ -131,17 +236,25 @@
             intro.hidden = !text.news_intro;
         }
         document.getElementById("langToggle").textContent = state.lang === "ar" ? "EN" : "AR";
+        renderCategories();
         if (refresh && document.body.dataset.page === "listing" && state.items.length) loadListing();
         if (refresh && document.body.dataset.page === "article" && state.items.length) location.href = "/News";
     }
 
     function media(item, eager = false) {
-        const src = imageSource(item.image_url);
-        if (src) {
-            const priority = eager ? ' loading="eager" fetchpriority="high"' : ' loading="lazy"';
-            return `<div class="media-fallback"><span class="display">S</span></div><img src="${escapeHtml(src)}" alt="${escapeHtml(sanitize(item.headline))}"${priority} decoding="async">`;
+        // Always use the deterministic category cover. Never fall back to scraped image_url —
+        // those images are unrelated, broken, or wrong-language. If news-covers.js somehow
+        // isn't loaded, derive a safe path inline so the cover is always on-brand.
+        let src;
+        if (window.StarTaNewsCovers) {
+            src = window.StarTaNewsCovers.getUrl(item, state.lang);
+        } else {
+            // Inline fallback: economy catch-all cover for the current lang.
+            const l = state.lang === 'ar' ? 'ar' : 'en';
+            src = `/assets/news-covers/${l}-economy.webp`;
         }
-        return `<div class="media-fallback"><span class="display">S</span></div>`;
+        const priority = eager ? ' loading="eager" fetchpriority="high"' : ' loading="lazy"';
+        return `<div class="media-fallback"><span class="display">S</span></div><img src="${escapeHtml(src)}" alt="" ${priority} decoding="async">`;
     }
 
     function itemLink(id) {
@@ -174,9 +287,13 @@
     function renderListing() {
         const text = translations[state.lang];
         const query = state.query.toLowerCase().trim();
+        const cat = CATEGORIES.find(c => c.id === state.category) || CATEGORIES[0];
         const filtered = state.items.filter((item) => {
-            if (!query) return true;
-            return `${sanitize(item.headline)} ${sanitize(item.article_body)} ${item.symbol || ""}`.toLowerCase().includes(query);
+            if (query) {
+                const searchText = `${sanitize(item.headline)} ${sanitize(item.article_body)} ${item.symbol || ""}`.toLowerCase();
+                if (!searchText.includes(query)) return false;
+            }
+            return cat.match(item);
         });
         const featured = document.getElementById("featuredStory");
         const grid = document.getElementById("newsGrid");
@@ -280,6 +397,7 @@
     function init() {
         const stored = localStorage.getItem("starta-lang") || localStorage.getItem("lang");
         setLanguage(stored === "ar" ? "ar" : "en", { refresh: false });
+        renderCategories();
         document.getElementById("langToggle").addEventListener("click", () => setLanguage(state.lang === "ar" ? "en" : "ar"));
         if (document.body.dataset.page === "listing") {
             document.getElementById("newsSearch").addEventListener("input", (event) => {

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="dark">
 <head>
+    <script src="/assets/starta-theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Pulse | Starta Markets</title>
@@ -17,13 +18,13 @@
         <div class="nav-inner">
             <a class="brand" href="/" aria-label="Starta home"><span class="brand-mark display">S</span><span class="brand-name display">STARTA</span></a>
             <div class="nav-links">
-                <a href="/#brain" data-key="nav_features">FEATURES</a>
+                <a href="/" data-key="nav_home">HOME</a>
                 <a href="/Funds" data-key="nav_funds">MUTUAL FUNDS</a>
                 <a class="active" href="/Market-Pulse" data-key="nav_pulse">MARKET PULSE</a>
+                <a href="/News" data-key="nav_news">MARKET NEWS</a>
                 <a href="/Learn" data-key="nav_learn">LEARN</a>
-                <a href="/News" data-key="nav_news">NEWS</a>
+                <a href="/Portfolio" data-key="nav_portfolio">PORTFOLIO</a>
                 <a href="/#about" data-key="nav_about">ABOUT US</a>
-                <a href="/#pricing" data-key="nav_pricing">PRICING</a>
             </div>
             <div class="nav-controls" style="display: flex; align-items: center; gap: 0.5rem;">
                 <button id="themeToggle" class="control-btn" type="button" aria-label="Toggle theme" style="position: relative; width: 2.35rem; height: 2.35rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -114,7 +115,7 @@
                 <article class="panel equity-workspace">
                     <header class="security-head">
                         <div>
-                            <div class="ticker-row"><div class="logo-box" style="width: 2.2rem; height: 2.2rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #ffffff; border: 1px solid var(--line); overflow: hidden; margin-inline-end: 0.15rem; flex-shrink: 0;"><img id="selectedLogo" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; display: none;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="logo-fallback display" style="font-size: 0.85rem; font-weight: 700; color: var(--teal-dark); text-transform: uppercase;">--</span></div><h1 id="selectedSymbol" class="display">COMI</h1><span class="favorite" aria-hidden="true">+</span></div>
+                            <div class="ticker-row"><div class="logo-box" style="width: 2.2rem; height: 2.2rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); overflow: hidden; margin-inline-end: 0.15rem; flex-shrink: 0;"><img id="selectedLogo" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; display: none;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="logo-fallback display" style="font-size: 0.85rem; font-weight: 700; color: var(--teal-dark); text-transform: uppercase;">--</span></div><h1 id="selectedSymbol" class="display">COMI</h1><span class="favorite" aria-hidden="true">+</span></div>
                             <p id="selectedName" class="security-name">Commercial International Bank Egypt</p>
                         </div>
                         <div class="quote">

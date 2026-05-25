@@ -6,6 +6,19 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
+const publicPages = ["home", "marketplace", "fund-details", "fund-compare", "market-pulse", "learn", "learn-topic", "news", "news-article"];
+
+function hasCurrentPublicNav(text) {
+  const nav = text.match(/<nav[\s\S]*?<\/nav>/i)?.[0] || "";
+  const fundsKey = nav.includes('data-key="nav_mobile"') ? "nav_mobile" : "nav_funds";
+  const positions = ["nav_home", fundsKey, "nav_pulse", "nav_news", "nav_learn", "nav_about"]
+    .map((key) => nav.indexOf(`data-key="${key}"`));
+
+  return positions.every((position) => position >= 0) &&
+    positions.every((position, index) => index === 0 || position > positions[index - 1]) &&
+    !/data-key=["']nav_(features|pricing)["']/.test(nav) &&
+    /data-key=["']nav_news["'][^>]*>\s*MARKET NEWS\s*</i.test(nav);
+}
 
 const checks = [
   {
@@ -48,11 +61,53 @@ const checks = [
       !/proof_title:\s*["']Built for Professional Investors\./.test(text),
   },
   {
-    name: "home page defaults to dark theme for premium card styling",
-    file: "public/home.html",
+    name: "shared theme controller persists a valid public theme",
+    file: "public/assets/starta-theme.js",
+    assert: (text) =>
+      /localStorage\.setItem\(STORAGE_KEY,\s*resolved\)/.test(text) &&
+      /document\.documentElement\.setAttribute\("data-theme",\s*resolved\)/.test(text),
+  },
+  ...publicPages.map((page) => ({
+    name: `${page} uses the shared persistent theme controller`,
+    file: `public/${page}.html`,
     assert: (text) =>
       /<html[^>]*data-theme=["']dark["']/i.test(text) &&
-      /const initialTheme = savedTheme === 'light' \? 'light' : 'dark';/.test(text),
+      /<script src=["']\/assets\/starta-theme\.js["']><\/script>/.test(text),
+  })),
+  ...publicPages.map((page) => ({
+    name: `${page} uses the current public header navigation`,
+    file: `public/${page}.html`,
+    assert: hasCurrentPublicNav,
+  })),
+  {
+    name: "fund comparison dock never restores selections after refresh or navigation",
+    file: "public/marketplace.html",
+    assert: (text) =>
+      /localStorage\.removeItem\(COMPARE_STORAGE_KEY\)/.test(text) &&
+      /window\.addEventListener\(['"]pagehide['"]/.test(text) &&
+      !/getStoredCompareIds|persistCompareIds/.test(text),
+  },
+  {
+    name: "fund comparison page accepts deliberate URL selections only",
+    file: "public/fund-compare.html",
+    assert: (text) =>
+      /new URLSearchParams\(window\.location\.search\)\.get\(['"]ids['"]\)/.test(text) &&
+      !/starta-funds-compare|COMPARE_STORAGE_KEY/.test(text),
+  },
+  {
+    name: "Learn only serves compressed topic imagery",
+    file: "public/data/learn-topics.js",
+    assert: (text) => {
+      const displayedImages = text.match(/(?:coverImage(?:En|Ar):\s*|src:\s*)["']\/assets\/learn\/[^"']+["']/g) || [];
+      return displayedImages.length >= 30 && displayedImages.every((asset) => /\.webp["']$/.test(asset));
+    },
+  },
+  {
+    name: "Arabic Learn cards display a lesson number over image covers",
+    file: "public/learn.html",
+    assert: (text) =>
+      /const lessonNumber = state\.lang === ['"]ar['"]/.test(text) &&
+      /class=["']cover-art-number["']/.test(text),
   },
 ];
 

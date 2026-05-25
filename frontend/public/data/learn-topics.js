@@ -3,8 +3,8 @@ window.STARTA_LEARN_TOPICS = [
     slug: "what-is-the-stock-market",
     accent: "#14B8A6",
     icon: "01",
-    coverImageEn: "/assets/learn/covers-v4/en/lesson-01-stock-market-en.png",
-    coverImageAr: "/assets/learn/covers-v4/ar/lesson-01-stock-market-ar.png",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-01-stock-market-en.webp",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-01-stock-market-ar.webp",
     en: {
       category: "Beginner Basics",
       title: "What Is the Stock Market?",
@@ -17,7 +17,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Companies need funding to expand, build products, hire talent, or enter new markets. Listing on an exchange gives them access to investor capital, while investors gain a chance to participate in the company’s future growth.",
           bullets: ["Companies sell shares to raise money.", "Investors buy shares to own a piece of the company.", "The exchange makes trading transparent and organized."],
           image: {
-            src: "/assets/learn/stock-market/how-the-stock-market-works.png",
+            src: "/assets/learn/stock-market/how-the-stock-market-works.webp",
             alt: "How the stock market works through companies, investors, and exchanges",
             caption: "A simple view of how capital, ownership, and trade execution connect inside one market."
           },
@@ -28,7 +28,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Retail investors, institutions, brokers, market makers, analysts, and regulators all influence how the market works. Each participant plays a different role, from executing trades to setting research expectations and monitoring fairness.",
           bullets: ["Retail investors trade personal savings.", "Institutions manage larger pools of money.", "Brokers and exchanges handle execution."],
           image: {
-            src: "/assets/learn/stock-market/who-participates-in-the-stock-market.png",
+            src: "/assets/learn/stock-market/who-participates-in-the-stock-market.webp",
             alt: "The main participants in the stock market including investors, companies, brokers, and regulators",
             caption: "The market works because each participant adds a different layer: capital, access, execution, and oversight."
           },
@@ -53,12 +53,22 @@ window.STARTA_LEARN_TOPICS = [
           heading: "لماذا يوجد سوق الأسهم؟",
           body: "تحتاج الشركات إلى تمويل للتوسع وبناء المنتجات وتوظيف الكفاءات والدخول إلى أسواق جديدة. الإدراج في البورصة يمنحها الوصول إلى رأس مال المستثمرين، بينما يحصل المستثمر على فرصة للمشاركة في نمو الشركة.",
           bullets: ["الشركات تبيع أسهماً للحصول على التمويل.", "المستثمر يشتري السهم ليملك جزءاً من الشركة.", "البورصة تجعل التداول منظماً وشفافاً."],
+          image: {
+            src: "/assets/learn/ar/stock-market/how-the-stock-market-works-ar.webp",
+            alt: "كيف يعمل سوق الأسهم من إصدار الأسهم إلى شراء الملكية وتنفيذ الصفقات في البورصة",
+            caption: "يجمع سوق الأسهم الشركات التي تحتاج إلى التمويل مع المستثمرين الباحثين عن الملكية والعائد ضمن تداول منظم."
+          },
           visual: { title: "تدفق رأس المال", items: ["الشركة تصدر أسهماً", "المستثمر يضخ التمويل", "البورصة تنفذ التداول"] }
         },
         {
           heading: "من يشارك في السوق؟",
           body: "المستثمرون الأفراد، المؤسسات، الوسطاء، صناع السوق، المحللون والجهات الرقابية جميعهم يؤثرون في شكل السوق. لكل طرف دور مختلف، من تنفيذ الأوامر إلى متابعة عدالة السوق.",
           bullets: ["الأفراد يديرون مدخراتهم الشخصية.", "المؤسسات تدير رؤوس أموال أكبر.", "الوسطاء والبورصة يتولون التنفيذ."],
+          image: {
+            src: "/assets/learn/ar/stock-market/who-participates-ar.webp",
+            alt: "المشاركون الرئيسيون في سوق الأسهم من مستثمرين وشركات ووسطاء وجهات تنظيمية",
+            caption: "يكمل كل طرف دور الآخر: المستثمر يوفر رأس المال، والشركة تصدر الأسهم، والوسيط ينفذ، والرقابة تحمي نزاهة السوق."
+          },
           visual: { title: "الأطراف الرئيسية", items: ["المستثمرون", "الشركات", "الوسطاء", "الرقابة"] }
         },
         {
@@ -74,8 +84,8 @@ window.STARTA_LEARN_TOPICS = [
     slug: "what-is-a-mutual-fund",
     accent: "#0EA5E9",
     icon: "02",
-    coverImageEn: "/assets/learn/covers-v4/en/lesson-02-mutual-fund-en.png",
-    coverImageAr: "/assets/learn/covers-v4/ar/lesson-02-mutual-fund-ar.png",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-02-mutual-fund-en.webp",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-02-mutual-fund-ar.webp",
     en: {
       category: "Mutual Funds",
       title: "What Is a Mutual Fund?",
@@ -88,7 +98,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "When investors subscribe to a fund, their money goes into one pool. The fund manager allocates that pool into stocks, bonds, deposits, or other instruments based on the fund mandate.",
           bullets: ["Many investors enter one pool.", "One manager makes portfolio decisions.", "The fund follows a clear investment mandate."],
           image: {
-            src: "/assets/learn/mutual-fund/how-a-mutual-fund-works.jpg",
+            src: "/assets/learn/mutual-fund/how-a-mutual-fund-works.webp",
             alt: "How a mutual fund works from investors to a pooled fund and then into a managed portfolio",
             caption: "Many investors contribute to one pool, and that combined capital is then allocated into a professionally managed portfolio."
           },
@@ -99,7 +109,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Funds can make diversification easier, reduce the need for daily portfolio management, and provide access to professional oversight. They are often useful for investors who want structure and convenience.",
           bullets: ["Simple diversification.", "Professional management.", "Convenient access to many assets."],
           image: {
-            src: "/assets/learn/mutual-fund/why-investors-use-mutual-funds.jpg",
+            src: "/assets/learn/mutual-fund/why-investors-use-mutual-funds.webp",
             alt: "Why investors use mutual funds for diversification, convenience, and professional oversight",
             caption: "A single fund can spread exposure across different assets while giving investors a simpler and more guided experience."
           },
@@ -124,12 +134,22 @@ window.STARTA_LEARN_TOPICS = [
           heading: "كيف تعمل فكرة التجميع؟",
           body: "عندما يشترك المستثمرون في الصندوق، تذهب أموالهم إلى وعاء واحد. بعد ذلك يوزع مدير الصندوق هذا الوعاء على الأسهم أو السندات أو الودائع أو غيرها بحسب سياسة الصندوق.",
           bullets: ["أموال متعددة تدخل في وعاء واحد.", "مدير واحد يتخذ قرارات التوزيع.", "الصندوق يلتزم بسياسة استثمار واضحة."],
+          image: {
+            src: "/assets/learn/ar/mutual-fund/how-a-mutual-fund-works-ar.webp",
+            alt: "كيف يجمع صندوق الاستثمار أموال المستثمرين في محفظة تدار باحتراف",
+            caption: "تجتمع مساهمات المستثمرين في صندوق واحد ثم يوزعها المدير عبر محفظة متوافقة مع هدف الصندوق."
+          },
           visual: { title: "هيكل التجميع", items: ["المستثمرون", "وعاء الصندوق", "المحفظة المدارة"] }
         },
         {
           heading: "لماذا يستخدم المستثمرون الصناديق؟",
           body: "تجعل الصناديق التنويع أسهل، وتقلل الحاجة لإدارة المحفظة يومياً، وتوفر إشرافاً مهنياً. لذلك فهي مناسبة لمن يريد إطاراً منضبطاً واستثماراً أكثر سهولة.",
           bullets: ["تنويع أبسط.", "إدارة احترافية.", "وصول مريح لعدة أصول."],
+          image: {
+            src: "/assets/learn/ar/mutual-fund/why-investors-use-funds-ar.webp",
+            alt: "مزايا صناديق الاستثمار من تنويع وسهولة وإشراف احترافي",
+            caption: "يوفر الصندوق للمستثمر تنويعاً أسهل وإشرافاً احترافياً ووصولاً منظماً إلى عدة فئات من الأصول."
+          },
           visual: { title: "أهم المزايا", items: ["تنويع", "سهولة", "إدارة"] }
         },
         {
@@ -145,8 +165,8 @@ window.STARTA_LEARN_TOPICS = [
     slug: "how-nav-works",
     accent: "#8B5CF6",
     icon: "03",
-    coverImageEn: "/assets/learn/covers-v4/en/lesson-03-nav-en.png",
-    coverImageAr: "/assets/learn/covers-v4/ar/lesson-03-nav-ar.png",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-03-nav-en.webp",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-03-nav-ar.webp",
     en: {
       category: "Mutual Funds",
       title: "How NAV Works",
@@ -159,7 +179,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "A fund adds up the market value of everything it owns, subtracts expenses or liabilities, then divides by the number of outstanding units. The result is the value per unit.",
           bullets: ["Assets minus liabilities.", "Then divide by fund units.", "The result is NAV per unit."],
           image: {
-            src: "/assets/learn/nav/how-nav-works.jpg",
+            src: "/assets/learn/nav/how-nav-works.webp",
             alt: "How NAV works by moving from assets and liabilities to outstanding units and a final per-unit value",
             caption: "NAV per unit comes from total assets minus liabilities, divided by the number of units outstanding."
           },
@@ -170,7 +190,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "NAV moves when the underlying portfolio changes value, when income is distributed, or when expenses affect the fund. A rising NAV usually reflects stronger portfolio performance over time.",
           bullets: ["Portfolio gains can raise NAV.", "Distributions may affect the level.", "Costs also influence the result."],
           image: {
-            src: "/assets/learn/nav/what-changes-nav.jpg",
+            src: "/assets/learn/nav/what-changes-nav.webp",
             alt: "What changes NAV including market prices, income, expenses, and how to read NAV wisely",
             caption: "NAV changes as the portfolio value, income received, and fund expenses all move over time."
           },
@@ -195,12 +215,22 @@ window.STARTA_LEARN_TOPICS = [
           heading: "المعادلة الأساسية",
           body: "يجمع الصندوق القيمة السوقية لكل ما يملكه، ثم يطرح المصروفات والالتزامات، وبعدها يقسم الناتج على عدد الوثائق القائمة. الناتج هو قيمة الوثيقة الواحدة.",
           bullets: ["الأصول ناقص الالتزامات.", "ثم نقسم على عدد الوثائق.", "الناتج هو NAV لكل وثيقة."],
+          image: {
+            src: "/assets/learn/ar/nav/how-nav-works-ar.webp",
+            alt: "خطوات حساب صافي قيمة أصول الصندوق من الأصول والالتزامات حتى قيمة الوحدة",
+            caption: "صافي قيمة الوثيقة يساوي الأصول بعد خصم الالتزامات مقسوماً على عدد الوثائق القائمة."
+          },
           visual: { title: "معادلة NAV", items: ["الأصول", "الالتزامات", "الوثائق", "NAV"] }
         },
         {
           heading: "لماذا يتغير NAV؟",
           body: "يتحرك NAV عندما تتغير قيمة المحفظة الأساسية، أو عندما يتم توزيع دخل، أو عندما تؤثر المصروفات على الصندوق. ارتفاع NAV غالباً يعكس تحسناً في أداء المحفظة عبر الزمن.",
           bullets: ["ارتفاع الأصول يرفع NAV.", "التوزيعات قد تؤثر على المستوى.", "المصروفات تدخل في الحساب."],
+          image: {
+            src: "/assets/learn/ar/nav/what-changes-nav-ar.webp",
+            alt: "العوامل التي تغير صافي قيمة الأصول مثل أسعار السوق والدخل ومصروفات الصندوق",
+            caption: "يتغير NAV مع حركة قيمة الأصول والدخل المحقق والمصروفات التي يتحملها الصندوق."
+          },
           visual: { title: "ما الذي يغير NAV؟", items: ["الأسعار", "الدخل", "المصروفات"] }
         },
         {
@@ -216,8 +246,8 @@ window.STARTA_LEARN_TOPICS = [
     slug: "fund-types-explained",
     accent: "#F59E0B",
     icon: "04",
-    coverImageEn: "/assets/learn/covers-v4/en/lesson-04-fund-types-en.png",
-    coverImageAr: "/assets/learn/covers-v4/ar/lesson-04-fund-types-ar.png",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-04-fund-types-en.webp",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-04-fund-types-ar.webp",
     en: {
       category: "Mutual Funds",
       title: "Equity vs Money Market vs Fixed Income Funds",
@@ -230,7 +260,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Equity funds invest mainly in stocks and are usually used when investors want long-term growth. They can offer stronger upside, but they also come with higher short-term swings.",
           bullets: ["Higher growth potential.", "Higher volatility.", "Often better for longer horizons."],
           image: {
-            src: "/assets/learn/fund-types/fund-types-at-a-glance.jpg",
+            src: "/assets/learn/fund-types/fund-types-at-a-glance.webp",
             alt: "A visual overview of equity funds, money market funds, and fixed income funds at a glance",
             caption: "Each fund category serves a different goal, from long-term growth to liquidity and steadier income."
           },
@@ -241,7 +271,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Money market funds usually invest in short-duration, lower-risk instruments. They often suit investors who want liquidity, capital preservation, or a parking place for cash.",
           bullets: ["Liquidity focus.", "Lower risk profile.", "Often used for short-term cash management."],
           image: {
-            src: "/assets/learn/fund-types/which-fund-fits-your-goal.jpg",
+            src: "/assets/learn/fund-types/which-fund-fits-your-goal.webp",
             alt: "A visual guide showing which fund type fits different goals such as growth, liquidity, and income",
             caption: "The right fund type depends on what matters most to you: growth, liquidity, income, and how long you plan to stay invested."
           },
@@ -266,12 +296,22 @@ window.STARTA_LEARN_TOPICS = [
           heading: "صناديق الأسهم",
           body: "تستثمر صناديق الأسهم بشكل رئيسي في الأسهم، وغالباً ما تلائم من يبحث عن نمو طويل الأجل. قد تعطي فرصة صعود أعلى، لكنها تأتي أيضاً بتذبذب أكبر على المدى القصير.",
           bullets: ["إمكانية نمو أعلى.", "تذبذب أكبر.", "تناسب أفقاً زمنياً أطول."],
+          image: {
+            src: "/assets/learn/ar/fund-types/fund-types-at-a-glance-ar.webp",
+            alt: "نظرة سريعة على صناديق الأسهم وسوق المال والدخل الثابت",
+            caption: "تختلف عائلات الصناديق في هدفها الأساسي بين النمو والسيولة والدخل الأكثر استقراراً."
+          },
           visual: { title: "ملف صندوق الأسهم", items: ["نمو", "تعرض للأسهم", "تذبذب أعلى"] }
         },
         {
           heading: "صناديق النقدي",
           body: "تركز صناديق النقدي عادةً على أدوات قصيرة الأجل وأقل مخاطرة. وهي مناسبة غالباً لمن يريد سيولة أو الحفاظ على رأس المال أو مكاناً مؤقتاً للنقد.",
           bullets: ["التركيز على السيولة.", "مخاطر أقل.", "مناسبة لإدارة النقد قصير الأجل."],
+          image: {
+            src: "/assets/learn/ar/fund-types/which-fund-fits-your-goal-ar.webp",
+            alt: "دليل اختيار نوع الصندوق المناسب حسب النمو والسيولة والدخل وفترة الاستثمار",
+            caption: "يعتمد اختيار نوع الصندوق على هدفك: نمو طويل الأجل أو سيولة قريبة أو دخل وتوازن أكبر."
+          },
           visual: { title: "ملف صندوق النقدي", items: ["سيولة", "أجل قصير", "مخاطر أقل"] }
         },
         {
@@ -287,8 +327,8 @@ window.STARTA_LEARN_TOPICS = [
     slug: "risk-and-return-for-beginners",
     accent: "#EF4444",
     icon: "05",
-    coverImageEn: "/assets/learn/covers-v4/en/lesson-05-risk-return-en.png",
-    coverImageAr: "/assets/learn/covers-v4/ar/lesson-05-risk-return-ar.png",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-05-risk-return-en.webp",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-05-risk-return-ar.webp",
     en: {
       category: "Risk Basics",
       title: "Risk and Return for Beginners",
@@ -301,7 +341,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Risk is not just the chance of loss. It also includes uncertainty around outcomes, the size of fluctuations, and how long it may take to recover from a drawdown.",
           bullets: ["Volatility is one part of risk.", "Time matters when recovering losses.", "Liquidity can also be a risk factor."],
           image: {
-            src: "/assets/learn/risk-return/risk-and-return-at-a-glance.jpg",
+            src: "/assets/learn/risk-return/risk-and-return-at-a-glance.webp",
             alt: "Risk and return at a glance showing lower risk, higher risk, time horizon, and tradeoff",
             caption: "Higher return usually comes with more uncertainty, wider price swings, or a longer holding period."
           },
@@ -318,7 +358,7 @@ window.STARTA_LEARN_TOPICS = [
           body: "Start with your objective, liquidity needs, and comfort with temporary losses. A good allocation is one you can realistically hold through both calm and stressful market periods.",
           bullets: ["Define your goal first.", "Know how much volatility you can handle.", "Build a plan you can stick with."],
           image: {
-            src: "/assets/learn/risk-return/beginners-risk-checklist.jpg",
+            src: "/assets/learn/risk-return/beginners-risk-checklist.webp",
             alt: "A beginner risk checklist covering goal, time horizon, tolerance, and staying balanced",
             caption: "A strong beginner plan starts with the goal, matches the timeline, and stays within a level of risk you can actually hold."
           },
@@ -337,6 +377,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "ماذا تعني المخاطر فعلاً؟",
           body: "المخاطر ليست فقط احتمال الخسارة. بل تشمل أيضاً عدم اليقين حول النتائج، وحجم التذبذب، والوقت المطلوب للتعافي من أي هبوط.",
           bullets: ["التذبذب جزء من المخاطر.", "الوقت مهم في التعافي.", "السيولة قد تكون عامل مخاطرة أيضاً."],
+          image: {
+            src: "/assets/learn/ar/risk-return/risk-and-return-at-a-glance-ar.webp",
+            alt: "نظرة سريعة على العلاقة بين المخاطر والعائد والأفق الزمني",
+            caption: "غالباً ما يأتي العائد الأعلى مع تقلب وعدم يقين أكبر أو مع الحاجة إلى الاحتفاظ بالاستثمار لفترة أطول."
+          },
           visual: { title: "عدسة المخاطر", items: ["التذبذب", "الوقت", "السيولة"] }
         },
         {
@@ -349,6 +394,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "كيف يفكر المبتدئ بشكل صحيح؟",
           body: "ابدأ بالهدف واحتياجك للسيولة وقدرتك النفسية على تحمل الخسائر المؤقتة. التوزيع الجيد هو الذي يمكنك الالتزام به في الفترات الهادئة والمتقلبة معاً.",
           bullets: ["حدد هدفك أولاً.", "اعرف مقدار التذبذب المقبول لك.", "ابنِ خطة يمكن الالتزام بها."],
+          image: {
+            src: "/assets/learn/ar/risk-return/beginners-risk-checklist-ar.webp",
+            alt: "قائمة مخاطر للمبتدئين تبدأ بالهدف والأفق الزمني والتحمل والحفاظ على التوازن",
+            caption: "الخطة المناسبة تبدأ بهدف واضح، وتراعي الأفق الزمني، وتبقى ضمن مستوى مخاطرة تستطيع الالتزام به."
+          },
           visual: { title: "قائمة المبتدئ", items: ["الهدف", "الأفق", "التحمل"] }
         }
       ]
@@ -358,6 +408,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "diversification-made-simple",
     accent: "#22C55E",
     icon: "06",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-06-diversification-ar.webp",
     en: {
       category: "Portfolio Basics",
       title: "Diversification Made Simple",
@@ -396,6 +447,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "ممّ يحميك التنويع؟",
           body: "إذا ضعف أداء أحد المراكز، يمكن للتنويع أن يقلل أثره على المحفظة ككل. وهو يساعد على تجنب الاعتماد المفرط على فكرة واحدة أو قطاع واحد أو مدير واحد.",
           bullets: ["يقلل الاعتماد على مركز واحد.", "يخفف تذبذب المحفظة.", "يقلص مخاطر التركز."],
+          image: {
+            src: "/assets/learn/ar/diversification/diversification-made-simple-ar.webp",
+            alt: "توضيح عربي يبين توزيع المحفظة على عدة فئات أصول لتقليل التركز",
+            caption: "يعني التنويع توزيع المال على أكثر من فئة أصل لتخفيف الاعتماد على استثمار واحد وتحقيق توازن أفضل."
+          },
           visual: { title: "هدف التنويع", items: ["توزيع", "توازن", "تقليل التركز"] }
         },
         {
@@ -417,6 +473,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "read-a-fund-factsheet",
     accent: "#06B6D4",
     icon: "07",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-07-factsheet-ar.webp",
     en: {
       category: "Fund Research",
       title: "How to Read a Fund Factsheet",
@@ -455,6 +512,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "ابدأ بهدف الصندوق",
           body: "السؤال الأول بسيط: ماذا يحاول هذا الصندوق أن يحقق؟ الهدف وفئة الأصل والمؤشر المرجعي وسياسة الاستثمار كلها تعطيك صورة عن السلوك المتوقع للصندوق.",
           bullets: ["اقرأ الهدف أولاً.", "راجع فئة الأصل.", "افهم السياسة والمؤشر المرجعي."],
+          image: {
+            src: "/assets/learn/ar/factsheet/read-a-fund-factsheet-ar.webp",
+            alt: "دليل عربي بصري لقراءة نشرة الصندوق من الهدف والرسوم والمخاطر حتى الأداء",
+            caption: "ابدأ بهدف الصندوق، ثم راجع الرسوم والسيولة والمخاطر، واقرأ الأداء في سياقه قبل اتخاذ القرار."
+          },
           visual: { title: "القسم الأول", items: ["الهدف", "فئة الأصل", "المؤشر"] }
         },
         {
@@ -476,6 +538,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "what-are-dividends",
     accent: "#F97316",
     icon: "08",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-08-dividends-ar.webp",
     en: {
       category: "Income Basics",
       title: "What Are Dividends?",
@@ -514,6 +577,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "كيف تعمل التوزيعات؟",
           body: "تقرر الشركة ما إذا كانت ستوزع جزءاً من أرباحها. وإذا تم اعتماد القرار، يحصل المساهم المستحق في تاريخ الاستحقاق على التوزيع بحسب عدد الأسهم التي يملكها.",
           bullets: ["التوزيعات تأتي من أرباح قابلة للتوزيع.", "تواريخ الاعتماد والاستحقاق مهمة.", "عدد الأسهم يحدد قيمة ما تحصل عليه."],
+          image: {
+            src: "/assets/learn/ar/dividends/what-are-dividends-ar.webp",
+            alt: "شرح عربي لمسار التوزيعات النقدية من اعتماد الشركة إلى استحقاق المستثمر ودفع العائد",
+            caption: "تمر التوزيعات النقدية من اعتماد الشركة إلى الاستحقاق ثم الدفع، ويجب تقييم جودة العائد واستدامته."
+          },
           visual: { title: "مسار التوزيع", items: ["اعتماد", "استحقاق", "دفع"] }
         },
         {
@@ -535,6 +603,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "support-and-resistance-basics",
     accent: "#3B82F6",
     icon: "09",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-09-support-resistance-ar.webp",
     en: {
       category: "Technical Basics",
       title: "Support and Resistance Basics",
@@ -573,6 +642,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "ماذا يعني الدعم؟",
           body: "الدعم هو منطقة وجدت فيها الأسعار سابقاً اهتماماً شرائياً. لا يعني ذلك أن السعر سيرتد دائماً، لكنه يساعد على تصور المكان الذي قد يعود فيه المشترون للدفاع عن السعر.",
           bullets: ["الدعم منطقة وليس خطاً سحرياً واحداً.", "ردود الفعل السابقة مهمة.", "الدعم يمكن أن ينكسر."],
+          image: {
+            src: "/assets/learn/ar/support-resistance/support-and-resistance-ar.webp",
+            alt: "رسم عربي يوضح مستويي الدعم والمقاومة وحركة السعر والاختراق",
+            caption: "تساعد مناطق الدعم والمقاومة في قراءة رد الفعل المحتمل وتخطيط المخاطر، لكنها لا تضمن حركة السعر."
+          },
           visual: { title: "منطقة الدعم", items: ["طلب", "ارتداد", "تخطيط للمخاطرة"] }
         },
         {
@@ -594,6 +668,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "long-term-investing-vs-trading",
     accent: "#A855F7",
     icon: "10",
+    coverImageAr: "/assets/learn/covers-v5/ar/lesson-10-investing-trading-ar.webp",
     en: {
       category: "Strategy Basics",
       title: "Long-Term Investing vs Trading",
@@ -632,6 +707,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "كيف يعمل الاستثمار طويل الأجل؟",
           body: "يركز المستثمر طويل الأجل غالباً على جودة النشاط والتقييم والتراكم عبر السنوات. هو يهتم أكثر بالنمو الهيكلي وأقل بكل حركة سعر قصيرة الأجل.",
           bullets: ["أفق لسنوات متعددة.", "جودة الشركة هي الأساس.", "الصبر عنصر رئيسي."],
+          image: {
+            src: "/assets/learn/ar/investing-vs-trading/long-term-investing-vs-trading-ar.webp",
+            alt: "مقارنة عربية بين الاستثمار طويل الأجل والتداول من حيث الزمن والتقلب والانضباط",
+            caption: "يختلف الاستثمار طويل الأجل عن التداول في الأفق الزمني وطبيعة القرار ومستوى المتابعة المطلوبة."
+          },
           visual: { title: "عقلية المستثمر", items: ["الوقت", "التراكم", "الجودة"] }
         },
         {

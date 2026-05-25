@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="dark">
 <head>
+    <script src="/assets/starta-theme.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News Article | Starta Markets</title>
@@ -17,20 +18,31 @@
         <div class="nav-inner">
             <a class="brand" href="/"><span class="brand-mark display">S</span><span class="brand-name display">STARTA</span></a>
             <div class="nav-links">
-                <a href="/#brain" data-key="nav_features">FEATURES</a>
+                <a href="/" data-key="nav_home">HOME</a>
                 <a href="/Funds" data-key="nav_funds">MUTUAL FUNDS</a>
                 <a href="/Market-Pulse" data-key="nav_pulse">MARKET PULSE</a>
+                <a class="active" href="/News" data-key="nav_news">MARKET NEWS</a>
                 <a href="/Learn" data-key="nav_learn">LEARN</a>
-                <a class="active" href="/News" data-key="nav_news">NEWS</a>
+                <a href="/Portfolio" data-key="nav_portfolio">PORTFOLIO</a>
                 <a href="/#about" data-key="nav_about">ABOUT US</a>
-                <a href="/#pricing" data-key="nav_pricing">PRICING</a>
             </div>
-            <button id="langToggle" class="lang-toggle display" type="button">AR</button>
+            <div class="nav-controls" style="display: flex; align-items: center; gap: 0.55rem;">
+                <button id="themeToggle" class="control-btn" type="button" aria-label="Toggle theme">
+                    <svg class="dark-icon" style="width: 1.2rem; height: 1.2rem; position: absolute;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="light-icon" style="width: 1.2rem; height: 1.2rem; position: absolute;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+                <button id="langToggle" class="lang-toggle display" type="button">AR</button>
+            </div>
         </div>
     </nav>
     <main class="page">
         <div class="container" id="articleContent"></div>
     </main>
+    <script src="/assets/news-covers.js"></script>
     <script src="/assets/news-public.js"></script>
 </body>
 </html>

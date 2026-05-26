@@ -3,6 +3,8 @@
 ## Enterprise Financial Intelligence Platform
 **Made with ❤️ by Bhidy**
 
+> Working on the branded public website at `https://startamarkets.com`? Read [`docs/STARTAMARKETS_PUBLIC_SITE.md`](docs/STARTAMARKETS_PUBLIC_SITE.md) first. It identifies the correct source tree, URL-to-file rewrites, theme/language architecture, Learn content setup, and production deployment procedure.
+
 ---
 
 ## 🚀 Quick Start

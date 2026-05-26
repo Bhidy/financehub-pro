@@ -124,6 +124,7 @@ button, input, select { font: inherit; }
     text-transform: uppercase;
     transition: color 220ms ease;
 }
+html[dir="rtl"] .nav-links a { font-family: "IBM Plex Sans Arabic", sans-serif; font-size: 13px; letter-spacing: 0; }
 .nav-links a:hover, .nav-links a.active { color: var(--teal-dark); }
 .nav-links a.active::after {
     content: "";
@@ -215,11 +216,11 @@ html[dir="rtl"] .hero-subtitle { letter-spacing: 0; }
     box-shadow: 0 18px 42px rgba(100,116,139,.09);
 }
 .search-box {
-    flex: 0 0 auto;
-    width: clamp(200px, 24%, 280px);
+    flex: 1 1 0%;
 }
 /* ===== CATEGORY STRIP ===== */
 .cat-strip {
+    display: none !important;
     flex: 1 1 0;
     min-width: 0;
     display: flex;

@@ -90,7 +90,8 @@
         transactions.filter(function (t) { return t.type === 'buy' || t.type === 'sell'; })
             .sort(function (a, b) { return a.date.localeCompare(b.date); })
             .forEach(function (t) {
-                var sym = t.symbol;
+                var sym = String(t.symbol || '').trim().toUpperCase();
+                if (!sym) return;
                 if (!map[sym]) map[sym] = { symbol: sym, quantity: 0, totalCost: 0 };
                 if (t.type === 'buy') {
                     map[sym].totalCost += (t.quantity * t.price) + (t.commission || 0);
@@ -104,12 +105,74 @@
         return Object.values(map).filter(function (h) { return h.quantity > 0; });
     }
 
-    /* ─── Live prices (seeded demo prices) ────────────────────────────────── */
-    var PRICES = { COMI: 138.00, CIB: 95.20, HRHO: 17.85, SWDY: 24.80, TMGH: 58.20 };
-    var PREV_PRICES = { COMI: 136.55, CIB: 95.61, HRHO: 17.50, SWDY: 24.41, TMGH: 57.50 };
+    /* ─── Live prices ─────────────────────────────────────────────────────── */
+    // Seeded with a broad set of commonly-held EGX stocks.
+    // The async refreshPrices() call below overlays real API data on top.
+    var PRICES = {
+        COMI: 138.00, CIB: 95.20, HRHO: 17.85, SWDY: 24.80, TMGH: 58.20,
+        EAST: 22.50, VALU: 4.80, ETEL: 38.20, ADIB: 41.50, EGBE: 1.20,
+        // Extended seed — commonly held EGX mid-cap & large-cap symbols
+        ABUK: 20.02, OCPH: 343.00, AMES: 46.56, CLHO: 14.33, EIUD: 0.75,
+        MIPH: 649.50, RAYA: 6.86, MOSC: 288.10, PHTV: 201.10, ORWE: 11.25,
+        PHDC: 6.80, MNHD: 4.75, EGCH: 22.40, DCRC: 9.50, ESRS: 18.70,
+        ISPH: 8.30, SKPC: 12.10, ALCN: 29.50, UEGC: 3.90, JUHD: 6.70,
+        DOMT: 47.20, NCGC: 5.10, MCQE: 3.30, AMOC: 29.80, KABO: 6.40
+    };
+    var PREV_PRICES = {
+        COMI: 136.55, CIB: 95.61, HRHO: 17.50, SWDY: 24.41, TMGH: 57.50,
+        EAST: 22.00, VALU: 4.92, ETEL: 37.80, ADIB: 42.10, EGBE: 1.18,
+        ABUK: 20.02, OCPH: 339.80, AMES: 38.80, CLHO: 13.10, EIUD: 0.69,
+        MIPH: 596.30, RAYA: 6.31, MOSC: 265.30, PHTV: 188.80, ORWE: 10.80,
+        PHDC: 6.50, MNHD: 4.56, EGCH: 21.60, DCRC: 9.20, ESRS: 17.90,
+        ISPH: 7.95, SKPC: 11.60, ALCN: 28.40, UEGC: 3.75, JUHD: 6.40,
+        DOMT: 45.80, NCGC: 4.90, MCQE: 3.15, AMOC: 28.70, KABO: 6.10
+    };
+    var _pricesFetched = false;
 
-    function lastPrice(sym) { return PRICES[sym] || 0; }
-    function prevClose(sym) { return PREV_PRICES[sym] || lastPrice(sym); }
+    // Async: fetch live prices from the real EGX API and merge into PRICES map.
+    // Safe to call multiple times — skips if already fetched in this session.
+    function refreshPrices() {
+        if (_pricesFetched) return Promise.resolve();
+        return fetch('/api/v1/egx/stocks?limit=500', { cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (stocks) {
+                if (!Array.isArray(stocks)) return;
+                stocks.forEach(function (s) {
+                    if (!s || !s.symbol) return;
+                    var sym = String(s.symbol).trim().toUpperCase();
+                    var lp = parseFloat(s.last_price);
+                    var pp = parseFloat(s.prev_close || s.last_price);
+                    if (lp > 0) PRICES[sym] = lp;
+                    if (pp > 0) PREV_PRICES[sym] = pp;
+                });
+                _pricesFetched = true;
+            })
+            .catch(function () {}); // Silently fall back to seeded prices
+    }
+
+    // Start fetching immediately when the store loads
+    refreshPrices();
+
+    /**
+     * lastPrice — returns current price for a symbol.
+     * @param {string} sym - Stock symbol
+     * @param {number} [fallback] - Use this value if no live/seeded price exists (e.g. avgCost)
+     */
+    function lastPrice(sym, fallback) {
+        if (!sym) return (fallback && fallback > 0) ? fallback : 0;
+        var cleanSym = String(sym).trim().toUpperCase();
+        var p = PRICES[cleanSym];
+        if (p && p > 0) return p;
+        // Use caller-supplied fallback (e.g. avgCost) rather than 0
+        return (fallback && fallback > 0) ? fallback : 0;
+    }
+    function prevClose(sym, fallback) {
+        if (!sym) return lastPrice(sym, fallback);
+        var cleanSym = String(sym).trim().toUpperCase();
+        var p = PREV_PRICES[cleanSym];
+        if (p && p > 0) return p;
+        return lastPrice(cleanSym, fallback);
+    }
 
     /* ─── Metrics computation ──────────────────────────────────────────────── */
     function computeMetrics(portfolio) {
@@ -121,7 +184,7 @@
 
         holdings.forEach(function (h) {
             var avgCost = h.quantity ? h.totalCost / h.quantity : 0;
-            var price = lastPrice(h.symbol);
+            var price = lastPrice(h.symbol, avgCost);   // fallback to avgCost
             var mktVal = h.quantity * price;
             totalMarketValue += mktVal;
             totalCost += h.quantity * avgCost;
@@ -147,16 +210,17 @@
         // Today's P&L
         var todayGain = 0;
         holdings.forEach(function (h) {
-            todayGain += h.quantity * (lastPrice(h.symbol) - prevClose(h.symbol));
+            var avgCost = h.quantity ? h.totalCost / h.quantity : 0;
+            todayGain += h.quantity * (lastPrice(h.symbol, avgCost) - prevClose(h.symbol, avgCost));
         });
         var todayPct = totalValue > 0 ? (todayGain / (totalValue - todayGain)) * 100 : 0;
 
-        // Enrich holdings
+        // Enrich holdings — use avgCost as price fallback so values are always meaningful
         var enriched = holdings.map(function (h) {
             var meta = symMeta(h.symbol);
             var avgCost = h.quantity ? h.totalCost / h.quantity : 0;
-            var price = lastPrice(h.symbol);
-            var prev = prevClose(h.symbol);
+            var price = lastPrice(h.symbol, avgCost);     // never 0
+            var prev  = prevClose(h.symbol, avgCost);     // never 0
             var mktVal = h.quantity * price;
             var gain = mktVal - h.totalCost;
             var ret = h.totalCost > 0 ? (gain / h.totalCost) * 100 : 0;
@@ -312,7 +376,9 @@
         computeMetrics: computeMetrics,
         generateChartData: generateChartData,
         symMeta: symMeta, lastPrice: lastPrice,
-        fmt: fmt, SYMBOLS: SYMBOLS
+        refreshPrices: refreshPrices,
+        fmt: fmt, SYMBOLS: SYMBOLS,
+        PRICES: PRICES, PREV_PRICES: PREV_PRICES
     };
 
 }(window));

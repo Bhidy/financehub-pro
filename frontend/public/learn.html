@@ -65,6 +65,7 @@
 
         html[dir="rtl"] body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
         html[dir="rtl"] .font-display { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        html[dir="rtl"] nav .font-mono a { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 13px !important; letter-spacing: 0 !important; }
         body { background: var(--c-page); color: var(--c-text-main); font-family: 'Manrope', sans-serif; overflow-x: hidden; }
         .glass-premium { background: var(--c-panel); backdrop-filter: blur(22px); border: 1px solid var(--c-border); box-shadow: var(--shadow-premium); }
         .topic-card {
@@ -208,8 +209,8 @@
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
                     <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
                     <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
+                    <a href="/Portfolio" class="hover:text-starta-teal transition-colors" data-key="nav_portfolio">PORTFOLIO</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors text-starta-darkTeal" data-key="nav_learn">LEARN</a>
-                    <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -246,12 +247,12 @@
         gsap.registerPlugin(ScrollTrigger);
         const translations = {
             en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_about: "ABOUT US",
+                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "PORTFOLIO", nav_about: "ABOUT US",
                 hero_tag: "Starta Learn", hero_title: '<span class="block">Starta Academy: Build Your</span><span class="block">Investing Confidence</span>', hero_text: "Clear beginner lessons covering markets, mutual funds, risk, and portfolio basics.", open_topic: "Open topic"
             },
             ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_about: "معلومات عنا",
-                hero_tag: "أكاديمية ستارتا", hero_title: '<span class="block">أكاديمية ستارتا: ابنِ ثقتك</span><span class="block">في الاستثمار</span>', hero_text: "دروس واضحة للمبتدئين تغطي الأسواق والصناديق الاستثمارية والمخاطر وأساسيات المحفظة.", open_topic: "افتح الموضوع"
+                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "المحفظة", nav_about: "معلومات عنا",
+                hero_tag: "أكاديمية ستارتا", hero_title: '<span class="block">تعلّم الاستثمار بثقة</span><span class="block">خطوة بخطوة</span>', hero_text: "دروس مبسطة تساعدك على فهم الأسواق، الصناديق الاستثمارية، وبناء محفظة استثمارية بوعي.", open_topic: "افتح الموضوع"
             }
         };
         const state = { lang: 'en' };
@@ -287,7 +288,7 @@
                 const hasCover = Boolean(activeCover);
                 const lessonNumber = state.lang === 'ar'
                     ? `<span class="cover-art-number" aria-label="الدرس ${topic.icon}">${topic.icon}</span>`
-                    : '';
+                    : `<span class="cover-art-number" aria-label="Lesson ${topic.icon}">${topic.icon}</span>`;
                 const coverVisual = hasCover ? `
                     <div class="cover-art has-image rounded-[1.7rem]" style="--topic-accent:${topic.accent};">
                         ${lessonNumber}

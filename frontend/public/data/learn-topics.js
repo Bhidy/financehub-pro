@@ -408,6 +408,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "diversification-made-simple",
     accent: "#22C55E",
     icon: "06",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-06-diversification-en.webp",
     coverImageAr: "/assets/learn/covers-v5/ar/lesson-06-diversification-ar.webp",
     en: {
       category: "Portfolio Basics",
@@ -420,6 +421,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "What diversification protects against",
           body: "If one holding underperforms, diversification can reduce the damage to the overall portfolio. It helps avoid over-dependence on a single story, sector, or manager.",
           bullets: ["Reduces single-position dependence.", "Helps smooth portfolio behavior.", "Can lower concentration risk."],
+          image: {
+            src: "/assets/learn/en/diversification/diversification-made-simple-en.webp",
+            alt: "Diversified portfolio illustration spreading exposure across asset types, sectors, and strategies",
+            caption: "Diversification spreads exposure across assets and strategies to reduce concentration risk while preserving balance."
+          },
           visual: { title: "Diversification Goal", items: ["Spread", "Balance", "Reduce concentration"] }
         },
         {
@@ -473,6 +479,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "read-a-fund-factsheet",
     accent: "#06B6D4",
     icon: "07",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-07-factsheet-en.webp",
     coverImageAr: "/assets/learn/covers-v5/ar/lesson-07-factsheet-ar.webp",
     en: {
       category: "Fund Research",
@@ -485,6 +492,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "Start with the mandate",
           body: "The first question is simple: what is this fund trying to do? The objective, asset class, benchmark, and investment policy tell you what kind of behavior to expect from the fund.",
           bullets: ["Read the objective first.", "Check the asset class.", "Understand the policy and benchmark."],
+          image: {
+            src: "/assets/learn/en/factsheet/read-a-fund-factsheet-en.webp",
+            alt: "Fund factsheet dashboard showing performance, allocation, fees, liquidity, and a magnifying glass",
+            caption: "Begin with the fund mandate, then review fees, liquidity, allocation, and performance in context."
+          },
           visual: { title: "Top Section", items: ["Objective", "Asset class", "Benchmark"] }
         },
         {
@@ -538,6 +550,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "what-are-dividends",
     accent: "#F97316",
     icon: "08",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-08-dividends-en.webp",
     coverImageAr: "/assets/learn/covers-v5/ar/lesson-08-dividends-ar.webp",
     en: {
       category: "Income Basics",
@@ -550,6 +563,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "How dividends work",
           body: "A company decides whether to distribute part of its profits. If approved, shareholders eligible on the record date receive the dividend based on the number of shares they own.",
           bullets: ["Dividends come from distributable profits.", "Approval dates matter.", "Share count determines payout."],
+          image: {
+            src: "/assets/learn/en/dividends/what-are-dividends-en.webp",
+            alt: "Dividend flow illustration from company approval and record date to shareholder payment and yield",
+            caption: "A dividend passes from company approval to eligibility and payment; sustainable yield matters more than a headline number."
+          },
           visual: { title: "Dividend Timeline", items: ["Approval", "Record date", "Payment"] }
         },
         {
@@ -603,6 +621,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "support-and-resistance-basics",
     accent: "#3B82F6",
     icon: "09",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-09-support-resistance-en.webp",
     coverImageAr: "/assets/learn/covers-v5/ar/lesson-09-support-resistance-ar.webp",
     en: {
       category: "Technical Basics",
@@ -615,6 +634,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "What support means",
           body: "Support is a zone where price has historically found buying interest. It does not guarantee a bounce, but it helps frame where buyers may start defending the price again.",
           bullets: ["Support is a zone, not a single magic line.", "Past reactions matter.", "Support can fail."],
+          image: {
+            src: "/assets/learn/en/support-resistance/support-and-resistance-en.webp",
+            alt: "Candlestick chart marking support and resistance zones and a potential breakout",
+            caption: "Support and resistance are context zones for demand and supply; a breakout can change the trading picture."
+          },
           visual: { title: "Support Zone", items: ["Demand", "Reaction", "Risk planning"] }
         },
         {
@@ -668,6 +692,7 @@ window.STARTA_LEARN_TOPICS = [
     slug: "long-term-investing-vs-trading",
     accent: "#A855F7",
     icon: "10",
+    coverImageEn: "/assets/learn/covers-v5/en/lesson-10-investing-trading-en.webp",
     coverImageAr: "/assets/learn/covers-v5/ar/lesson-10-investing-trading-ar.webp",
     en: {
       category: "Strategy Basics",
@@ -680,6 +705,11 @@ window.STARTA_LEARN_TOPICS = [
           heading: "How long-term investing works",
           body: "Long-term investors usually focus on business quality, valuation, and multi-year compounding. They care more about structural growth and less about every short-term price swing.",
           bullets: ["Multi-year horizon.", "Business quality matters most.", "Patience is central."],
+          image: {
+            src: "/assets/learn/en/investing-vs-trading/long-term-investing-vs-trading-en.webp",
+            alt: "Side-by-side illustration comparing long-term investing growth and short-term trading charts",
+            caption: "Investing and trading use different time horizons and decision rhythms; both require research and discipline."
+          },
           visual: { title: "Investor Mindset", items: ["Time", "Compounding", "Quality"] }
         },
         {

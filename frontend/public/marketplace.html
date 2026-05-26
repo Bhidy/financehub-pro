@@ -103,6 +103,8 @@
             font-family: 'IBM Plex Sans Arabic', sans-serif;
         }
 
+        html[dir="rtl"] nav .font-mono a { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 13px !important; letter-spacing: 0 !important; }
+
         body {
             background: var(--c-page);
             color: var(--c-text-main);
@@ -579,8 +581,8 @@
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
                     <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
                     <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
+                    <a href="/Portfolio" class="hover:text-starta-teal transition-colors" data-key="nav_portfolio">PORTFOLIO</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
-                    <a href="/#about" class="hover:text-starta-teal transition-colors" data-key="nav_about">ABOUT US</a>
                 </div>
             </div>
 
@@ -608,10 +610,17 @@
             <section class="relative overflow-hidden rounded-[2.5rem] border border-border bg-panel px-6 py-10 sm:px-8 lg:px-12 lg:py-14 shadow-premium reveal-block">
                 <div class="absolute inset-y-0 right-0 w-[38%] hidden xl:block"
                     style="background: radial-gradient(circle at 20% 50%, rgba(20, 184, 166, 0.18), transparent 38%), radial-gradient(circle at 80% 10%, rgba(15, 118, 110, 0.1), transparent 28%);"></div>
-                <h1 class="relative mx-auto max-w-4xl text-center text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-[-0.04em] leading-[1] text-main"
-                    data-key="marketplace_title">
-                    Comprehensive coverage across every mutual fund.
-                </h1>
+                <div class="max-w-[62rem] relative z-10">
+                    <div class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-starta-darkTeal" data-key="marketplace_tag">Mutual Funds</div>
+                    <h1 class="hero-copy mt-4 text-[2.25rem] leading-[1.12] sm:text-[2.8rem] lg:text-[3.35rem] font-display font-bold tracking-[-0.05em] text-main"
+                        data-key="marketplace_title">
+                        Comprehensive coverage across every mutual fund.
+                    </h1>
+                    <p class="hero-copy mt-6 max-w-3xl text-base leading-relaxed sm:text-lg lg:text-xl text-muted"
+                        data-key="marketplace_subline">
+                        Accurate, up-to-date data to help you compare funds and make better investment decisions.
+                    </p>
+                </div>
             </section>
 
             <section id="filters" class="mt-8 reveal-block">
@@ -762,10 +771,12 @@
                 nav_mobile: "MUTUAL FUNDS",
                 nav_pulse: "MARKET PULSE",
                 nav_news: "MARKET NEWS",
+                nav_portfolio: "PORTFOLIO",
                 nav_about: "ABOUT US",
                 nav_cta: "TRY NOW",
-                marketplace_tag: "Investment hub",
+                marketplace_tag: "Mutual Funds",
                 marketplace_title: "Comprehensive coverage across every mutual fund.",
+                marketplace_subline: "Accurate, up-to-date data to help you compare funds and make better investment decisions.",
                 grid_view: "Grid",
                 table_view: "Table",
                 search_label: "Search fund",
@@ -833,10 +844,12 @@
                 nav_mobile: "الصناديق الاستثمارية",
                 nav_pulse: "نبض السوق",
                 nav_news: "أخبار السوق",
+                nav_portfolio: "المحفظة",
                 nav_about: "معلومات عنا",
                 nav_cta: "جرّب الآن",
-                marketplace_tag: "مركز الاستثمار",
-                marketplace_title: "تغطيه شاملة لكل الصناديق الاستثمارية",
+                marketplace_tag: "الصناديق الاستثمارية",
+                marketplace_title: "تغطيه شاملة للصناديق الاستثمارية",
+                marketplace_subline: "بيانات دقيقة ومحدثة تساعدك على مقارنة الصناديق واتخاذ قرارات استثمارية أفضل.",
                 grid_view: "بطاقات",
                 table_view: "جدول",
                 search_label: "ابحث عن صندوق",

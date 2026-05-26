@@ -2,13 +2,17 @@
 
 > **Purpose**: This document is the authoritative reference for deploying FinHub Pro to production. Provide this document to any AI model or developer to enable correct deployment without confusion.
 
+> [!IMPORTANT]
+> For branded public pages served at `https://startamarkets.com` (`/`, `/Funds`, `/Learn`, `/News`, `/Market-Pulse`, theme, or language work), read [`STARTAMARKETS_PUBLIC_SITE.md`](./STARTAMARKETS_PUBLIC_SITE.md) first. It records the actual static-page route map, shared theme/language systems, source-of-truth warning, and public-site deployment procedure.
+
 ---
 
 ## Quick Reference
 
 | Component | URL | Platform |
 |-----------|-----|----------|
-| **Frontend** | https://finhub-pro.vercel.app | Vercel |
+| **Branded Public Site** | https://startamarkets.com | Vercel (`finhub` project) |
+| **Vercel Project Hostname** | https://finhub-pro.vercel.app | Vercel |
 | **Backend API** | Hetzner VPS | Hetzner |
 
 ---
@@ -145,4 +149,3 @@ If CLI fails, use Vercel Dashboard:
 | Version | Date | Author |
 |---------|------|--------|
 | 1.0 | 2026-01-01 | AI Assistant |
-

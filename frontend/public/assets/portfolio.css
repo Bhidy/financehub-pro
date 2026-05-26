@@ -55,6 +55,10 @@
 .pf-btn--ghost:hover { background: var(--line); border-color: transparent; color: var(--ink); }
 .pf-btn--sm { padding: .35rem .75rem; font-size: .75rem; }
 .pf-btn--icon { padding: .45rem; width: 2.1rem; height: 2.1rem; justify-content: center; }
+.pf-btn--danger { background: var(--pf-red); border-color: var(--pf-red); color: #fff; }
+.pf-btn--danger:hover { background: #b91c1c; border-color: #b91c1c; color: #fff; box-shadow: 0 4px 18px rgba(239,68,68,.32); }
+.pf-btn--danger-ghost { color: var(--muted); }
+.pf-btn--danger-ghost:hover { color: var(--pf-red) !important; border-color: transparent !important; background: var(--pf-red-soft) !important; }
 
 /* ════════════════════════════════════════════════════════════════════
    PORTFOLIO LIST PAGE
@@ -101,6 +105,18 @@
     padding: .15rem .55rem; border-radius: 999px;
     border: 1px solid rgba(20,184,166,.25);
 }
+.pf-portfolio-card .card-name-left {
+    display: flex; align-items: center; gap: .45rem;
+    min-width: 0; overflow: hidden;
+}
+.pf-portfolio-card .card-name-left > span:first-child {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pf-portfolio-card .card-name-actions {
+    display: flex; align-items: center; gap: .15rem;
+    flex-shrink: 0; opacity: 0; transition: opacity 150ms;
+}
+.pf-portfolio-card:hover .card-name-actions { opacity: 1; }
 .pf-portfolio-card .card-value {
     font-family: var(--pf-mono); font-size: 1.6rem; font-weight: 600;
     letter-spacing: -.02em; line-height: 1;
@@ -675,4 +691,121 @@ html[dir="rtl"] .pf-table td.num { text-align: left; }
 html[dir="rtl"] .pf-selector {
     background-position: left .65rem center;
     padding: .45rem .75rem .45rem 2rem;
+}
+
+/* ─── Import Holdings UI ──────────────────────────────────────────── */
+.pf-import-zone {
+    margin: 0 0 1rem;
+    border: 1.5px solid rgba(20,184,166,.2);
+    border-radius: 1rem;
+    background: var(--surface-soft);
+    overflow: hidden;
+}
+.pf-import-header {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: 1rem 1.1rem .75rem;
+    border-bottom: 1px solid rgba(20,184,166,.12);
+}
+.pf-import-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: .7rem;
+    background: rgba(20,184,166,.12);
+    color: var(--teal-dark);
+    flex-shrink: 0;
+}
+.pf-import-icon svg { width: 1.15rem; height: 1.15rem; }
+.pf-import-title { font-size: .82rem; font-weight: 700; color: var(--ink); margin: 0 0 .15rem; }
+.pf-import-sub   { font-size: .7rem; color: var(--muted); margin: 0; }
+/* Drop Area */
+.pf-import-drop {
+    margin: .75rem 1rem .5rem;
+    border: 1.5px dashed rgba(20,184,166,.3);
+    border-radius: .75rem;
+    background: rgba(20,184,166,.035);
+    padding: 1.6rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+.pf-import-drop:hover,
+.pf-import-drop.drag-over {
+    background: rgba(20,184,166,.1);
+    border-color: rgba(20,184,166,.55);
+}
+.pf-import-drop-icon { width: 2.2rem; height: 2.2rem; color: var(--teal-dark); margin: 0 auto .5rem; opacity: .65; }
+.pf-import-drop-label { font-size: .75rem; font-weight: 600; color: var(--ink); margin: 0 0 .2rem; }
+.pf-import-drop-hint  { font-size: .65rem; color: var(--muted); margin: 0; }
+/* Action buttons row */
+.pf-import-actions {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .2rem 1rem .75rem;
+    flex-wrap: wrap;
+}
+.pf-import-or { font-size: .7rem; color: var(--muted); }
+.pf-btn--outline {
+    border: 1.5px solid rgba(20,184,166,.35);
+    background: transparent;
+    color: var(--teal-dark);
+}
+.pf-btn--outline:hover { background: rgba(20,184,166,.08); }
+/* Error */
+.pf-import-error {
+    margin: 0 1rem .65rem;
+    padding: .55rem .75rem;
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.25);
+    border-radius: .5rem;
+    color: #ef4444;
+    font-size: .72rem;
+}
+/* Preview table */
+.pf-import-preview-label {
+    padding: .45rem 1rem .3rem;
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--teal-dark);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+.pf-import-table-wrap {
+    padding: 0 1rem .85rem;
+    overflow-x: auto;
+}
+.pf-import-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .73rem;
+}
+.pf-import-table th {
+    padding: .35rem .6rem;
+    text-align: start;
+    font-weight: 700;
+    color: var(--muted);
+    font-size: .64rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid var(--line);
+}
+.pf-import-table td {
+    padding: .42rem .6rem;
+    border-bottom: 1px solid rgba(148,163,184,.08);
+    color: var(--ink);
+}
+.pf-sym-badge {
+    display: inline-block;
+    padding: .12rem .45rem;
+    border-radius: .35rem;
+    background: rgba(20,184,166,.12);
+    color: var(--teal-dark);
+    font-weight: 700;
+    font-size: .68rem;
+    letter-spacing: .03em;
 }

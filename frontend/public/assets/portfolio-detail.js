@@ -899,5 +899,10 @@
     applyNavLang(lang);
 
     load();
+    PFStore.refreshPrices().then(function () {
+        if (perfChart)  { perfChart.destroy();  perfChart  = null; }
+        if (allocChart) { allocChart.destroy(); allocChart = null; }
+        load();
+    });
 
 }());

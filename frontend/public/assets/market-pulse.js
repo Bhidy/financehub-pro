@@ -12,7 +12,9 @@
             company_overview: "Company overview", sector: "Sector", market_cap: "Market cap", pe: "P/E", pb: "P/B", market_overview: "Market Overview", top_gainers: "Top Gainers", top_losers: "Top Losers", market_news: "Market News", view_all: "View all",
             open_status: "Market open", closed_status: "Market closed", delay_note: "EGX 30 vendor feed delayed by approximately {minutes} minutes.", normal_note: "EGX 30 feed displayed at the available vendor update time.",
             positive_reading: "More listed EGX securities advanced than declined in the latest market snapshot.", negative_reading: "More listed EGX securities declined than advanced in the latest market snapshot.", balanced_reading: "Advancing and declining EGX securities are broadly balanced.",
-            no_match: "No company matched your search.", no_news: "No market news available at this time.", company_text: "{name} is listed on the Egyptian Exchange in the {sector} sector. The workspace displays its latest stored quote and available price history."
+            no_match: "No company matched your search.", no_news: "No market news available at this time.", company_text: "{name} is listed on the Egyptian Exchange in the {sector} sector. The workspace displays its latest stored quote and available price history.",
+            my_watchlist: "My Watchlist", empty_watchlist: "Your watchlist is empty. Click the + button to add your preferred stocks.",
+            add_stock: "Add Stock", add_stock_search: "Search EGX stocks...", added: "Added", add: "Add"
         },
         ar: {
             nav_home: "الرئيسية", nav_funds: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_learn: "تعلّم", nav_news: "أخبار السوق", nav_portfolio: "المحفظة", nav_about: "معلومات عنا",
@@ -24,7 +26,9 @@
             company_overview: "نظرة عامة على الشركة", sector: "القطاع", market_cap: "رأس المال السوقي", pe: "مضاعف الربحية", pb: "القيمة الدفترية", market_overview: "نظرة على السوق", top_gainers: "الأكثر صعودا", top_losers: "الأكثر هبوطا", market_news: "أخبار السوق", view_all: "عرض الكل",
             open_status: "السوق مفتوح", closed_status: "السوق مغلق", delay_note: "بيانات مؤشر EGX 30 متأخرة بنحو {minutes} دقيقة وفقا لمصدر البيانات.", normal_note: "يعرض مؤشر EGX 30 وفق أحدث توقيت متاح من مصدر البيانات.",
             positive_reading: "زاد عدد الأوراق المالية الصاعدة في EGX عن الهابطة في أحدث لقطة متاحة للسوق.", negative_reading: "زاد عدد الأوراق المالية الهابطة في EGX عن الصاعدة في أحدث لقطة متاحة للسوق.", balanced_reading: "أعداد الأوراق المالية الصاعدة والهابطة في EGX متقاربة.",
-            no_match: "لا توجد شركة مطابقة لبحثك.", no_news: "لا تتوفر أخبار سوق حاليا.", company_text: "{name} شركة مقيدة في البورصة المصرية ضمن قطاع {sector}. تعرض هذه الشاشة آخر سعر مخزن والسجل السعري المتاح."
+            no_match: "لا توجد شركة مطابقة لبحثك.", no_news: "لا تتوفر أخبار سوق حاليا.", company_text: "{name} شركة مقيدة في البورصة المصرية ضمن قطاع {sector}. تعرض هذه الشاشة آخر سعر مخزن والسجل السعري المتاح.",
+            my_watchlist: "قائمتي", empty_watchlist: "قائمة المتابعة الخاصة بك فارغة. انقر على زر + لإضافة أسهمك المفضلة.",
+            add_stock: "إضافة سهم", add_stock_search: "ابحث عن أسهم EGX...", added: "مُضاف", add: "إضافة"
         }
     };
 
@@ -34,6 +38,7 @@
         summary: null,
         index: null,
         news: [],
+        selectedNews: [],
         history: [],
         selected: "COMI",
         watchTab: "active",
@@ -125,7 +130,10 @@
             if (value) element.setAttribute("placeholder", value);
         });
         render();
-        if (refreshNews) loadNews();
+        if (refreshNews) {
+            loadNews();
+            loadSelectedSymbolNews();
+        }
     }
 
     function renderRibbon() {
@@ -159,19 +167,70 @@
         return rows.sort((a, b) => (number(b.volume) || 0) - (number(a.volume) || 0));
     }
 
+    function getCustomWatchlist() {
+        try {
+            const raw = localStorage.getItem("starta-watchlist");
+            if (raw) return JSON.parse(raw);
+        } catch (_) {}
+        const seed = ["COMI", "HRHO", "SWDY", "EAST"];
+        try {
+            localStorage.setItem("starta-watchlist", JSON.stringify(seed));
+        } catch (_) {}
+        return seed;
+    }
+
+    // SVG icons for the favourite bookmark button
+    const FAV_SVG_INACTIVE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+    const FAV_SVG_ACTIVE   = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+
+    function updateFavBtn(symbol) {
+        const favBtn = byId("favBtn");
+        if (!favBtn) return;
+        const active = getCustomWatchlist().includes(symbol);
+        favBtn.classList.toggle("active", active);
+        favBtn.innerHTML = active ? FAV_SVG_ACTIVE : FAV_SVG_INACTIVE;
+        favBtn.title = active
+            ? (state.lang === "ar" ? "إزالة من القائمة" : "Remove from watchlist")
+            : (state.lang === "ar" ? "إضافة إلى القائمة" : "Add to watchlist");
+    }
+
+    function toggleCustomWatchlist(symbol) {
+        if (!symbol) return;
+        const list = getCustomWatchlist();
+        const index = list.indexOf(symbol);
+        if (index > -1) { list.splice(index, 1); } else { list.push(symbol); }
+        try { localStorage.setItem("starta-watchlist", JSON.stringify(list)); } catch (_) {}
+        updateFavBtn(symbol);
+        if (state.watchTab === "custom") renderWatchlist();
+    }
+
     function renderWatchlist() {
-        let rows = sortedStocks(state.watchTab);
+        let rows;
+        if (state.watchTab === "custom") {
+            const list = getCustomWatchlist();
+            rows = state.stocks.filter((item) => list.includes(item.symbol));
+        } else {
+            rows = sortedStocks(state.watchTab);
+        }
         const query = state.query.trim().toLowerCase();
         if (query) rows = rows.filter((item) => `${item.symbol} ${item.name_en} ${item.name_ar || ""}`.toLowerCase().includes(query));
-        rows = rows.slice(0, 8);
+        const limit = state.watchTab === "custom" ? 30 : 8;
+        rows = rows.slice(0, limit);
         const container = byId("watchlistRows");
         if (!rows.length) {
-            container.innerHTML = `<div class="empty-inline">${escapeHtml(labels().no_match)}</div>`;
+            const msg = state.watchTab === "custom" ? labels().empty_watchlist : labels().no_match;
+            container.innerHTML = `<div class="empty-inline">${escapeHtml(msg)}</div>`;
             return;
         }
         container.innerHTML = rows.map((item) => `
             <button class="watch-row ${item.symbol === state.selected ? "active" : ""}" type="button" data-symbol="${escapeHtml(item.symbol)}">
-                <span class="stock-ident" style="display: flex; align-items: center; gap: 0.5rem;"><img src="/logos/${escapeHtml(item.symbol)}.svg" style="width: 1.35rem; height: 1.35rem; object-fit: contain; flex-shrink: 0;" onerror="this.style.display='none';"><span style="display: flex; flex-direction: column;"><strong>${escapeHtml(item.symbol)}</strong><small>${escapeHtml(stockName(item))}</small></span></span>
+                <span class="stock-ident">
+                    <img class="stock-ident-logo" src="/logos/${escapeHtml(item.symbol)}.svg" alt="" onerror="this.style.display='none';">
+                    <span class="stock-ident-text">
+                        <strong>${escapeHtml(item.symbol)}</strong>
+                        <small>${escapeHtml(stockName(item))}</small>
+                    </span>
+                </span>
                 <span class="price-cell tabular">${formatNumber(item.last_price)}</span>
                 <span class="change-cell tabular ${percentClass(item.change_percent)}">${percent(item.change_percent)}</span>
             </button>`).join("");
@@ -195,6 +254,9 @@
             logoFallback.style.display = "none";
             logoFallback.textContent = item.symbol.substring(0, 2);
         }
+
+        // Update Watchlist Toggle Button State
+        updateFavBtn(item.symbol);
 
         renderOverviewTab();
     }
@@ -287,26 +349,49 @@
             `;
         } else if (tab === "news") {
             const isAr = state.lang === "ar";
-            const filteredNews = state.news.filter(article => article.headline.toLowerCase().includes(item.symbol.toLowerCase()) || article.headline.toLowerCase().includes(item.name_en.toLowerCase()));
-            const displayNews = filteredNews.length > 0 ? filteredNews : state.news;
+            const displayNews = state.selectedNews || [];
             
             if (!displayNews.length) {
-                contentContainer.innerHTML = `<div class="empty-inline" style="grid-column: 1 / -1; width: 100%;">${escapeHtml(labels().no_news)}</div>`;
+                const msg = isAr 
+                    ? `لا توجد أخبار حديثة متاحة لـ ${item.symbol}.` 
+                    : `No recent news available for ${item.symbol}.`;
+                
+                contentContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; background: rgba(20, 184, 166, 0.02); border: 1px dashed rgba(20, 184, 166, 0.18); border-radius: 16px; text-align: center;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 2.5rem; height: 2.5rem; color: var(--teal-dark); opacity: 0.8; margin-bottom: 1rem;">
+                            <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 4v10a2 2 0 0 1-2 2H9" />
+                            <path d="M16 8h6M16 12h6M16 16h6" />
+                        </svg>
+                        <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 0.35rem;">
+                            ${isAr ? "لا توجد أخبار" : "No News Available"}
+                        </h3>
+                        <p style="color: var(--muted); font-size: 0.78rem; max-width: 280px; margin: 0; line-height: 1.5;">
+                            ${escapeHtml(msg)}
+                        </p>
+                    </div>
+                `;
                 return;
             }
             
             contentContainer.innerHTML = `
                 <div style="grid-column: 1 / -1; width: 100%;">
-                    <h2 class="display" style="margin-bottom: 1rem;">${isAr ? "آخر الأخبار المتعلقة" : "Latest Related News"}</h2>
-                    <div style="display: grid; gap: 1rem;">
+                    <h2 class="display" style="margin-bottom: 1.2rem;">${isAr ? `آخر أخبار ${item.symbol}` : `Latest ${item.symbol} News`}</h2>
+                    <div style="display: grid; gap: 1.2rem;">
                         ${displayNews.map((article) => {
-                            const image = article.image_url ? `<img alt="" loading="lazy" src="/api/v1/news-image?url=${encodeURIComponent(article.image_url)}" onerror="this.onerror=null; this.parentNode.innerHTML='<span>STARTA</span>';">` : `<span>STARTA</span>`;
+                            const coverUrl = getNewsCover(article);
                             return `
-                                <a class="news-card" href="/News/${encodeURIComponent(article.id)}" style="display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; align-items: start;">
-                                    <div class="news-media" style="width: 5.5rem; height: 4.5rem; border-radius: 8px; overflow: hidden; background: var(--teal-soft);">${image}</div>
-                                    <div class="news-copy" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-                                        <h3 style="font-size: 0.82rem; font-weight: 700; margin: 0 0 0.4rem; color: var(--ink); line-height: 1.45;">${escapeHtml(article.headline)}</h3>
-                                        <time style="color: var(--muted); font-size: 0.65rem;">${escapeHtml(formatDate(article.published_at))}</time>
+                                <a class="news-card" href="/News/${encodeURIComponent(article.id)}" style="display: grid; grid-template-columns: 6.5rem 1fr; gap: 1.2rem; border-bottom: 1px solid var(--line-soft, rgba(20, 184, 166, 0.08)); padding-bottom: 1.2rem; align-items: start; transition: transform 0.2s ease;">
+                                    <div class="news-media" style="width: 6.5rem; height: 5rem; border-radius: 12px; overflow: hidden; background: var(--teal-soft); position: relative; border: 1px solid var(--line-soft, rgba(20, 184, 166, 0.08));">
+                                        <img alt="" loading="lazy" src="${escapeHtml(coverUrl)}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
+                                    <div class="news-copy" style="display: flex; flex-direction: column; justify-content: space-between; height: 5rem;">
+                                        <h3 style="font-size: 0.88rem; font-weight: 700; margin: 0 0 0.5rem; color: var(--ink); line-height: 1.45; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHtml(article.headline)}</h3>
+                                        <time style="color: var(--muted); font-size: 0.68rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 0.72rem; height: 0.72rem; opacity: 0.7;">
+                                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                            </svg>
+                                            ${escapeHtml(formatDate(article.published_at))}
+                                        </time>
                                     </div>
                                 </a>
                             `;
@@ -496,8 +581,29 @@
 
     function renderMovers() {
         const rows = sortedStocks(state.moversTab).slice(0, 5);
-        byId("moverRows").innerHTML = rows.map((item) => `
-            <div class="mover-row"><span style="display: flex; align-items: center; gap: 0.4rem;"><img src="/logos/${escapeHtml(item.symbol)}.svg" style="width: 1.25rem; height: 1.25rem; object-fit: contain;" onerror="this.style.display='none';">${escapeHtml(item.symbol)}</span><span class="tabular">${formatNumber(item.last_price)}</span><strong class="tabular ${percentClass(item.change_percent)}">${percent(item.change_percent)}</strong></div>`).join("");
+        const container = byId("moverRows");
+        if (!container) return;
+        container.innerHTML = rows.map((item) => `
+            <button class="mover-row ${item.symbol === state.selected ? "active" : ""}" type="button" data-symbol="${escapeHtml(item.symbol)}">
+                <span style="display: flex; align-items: center; gap: 0.48rem; font-weight: 600; color: var(--ink);">
+                    <img src="/logos/${escapeHtml(item.symbol)}.svg" style="width: 1.25rem; height: 1.25rem; object-fit: contain;" onerror="this.style.display='none';">
+                    ${escapeHtml(item.symbol)}
+                </span>
+                <span class="tabular">${formatNumber(item.last_price)}</span>
+                <strong class="tabular ${percentClass(item.change_percent)}">${percent(item.change_percent)}</strong>
+            </button>`).join("");
+        
+        container.querySelectorAll("[data-symbol]").forEach((button) => {
+            button.addEventListener("click", () => selectStock(button.dataset.symbol));
+        });
+    }
+
+    function getNewsCover(item) {
+        if (window.StarTaNewsCovers) {
+            return window.StarTaNewsCovers.getUrl(item, state.lang);
+        }
+        const l = state.lang === 'ar' ? 'ar' : 'en';
+        return `/assets/news-covers/${l}-economy.webp`;
     }
 
     function renderNews() {
@@ -507,7 +613,8 @@
             return;
         }
         container.innerHTML = state.news.slice(0, 3).map((item) => {
-            const image = item.image_url ? `<img alt="" loading="lazy" src="/api/v1/news-image?url=${encodeURIComponent(item.image_url)}" onerror="this.onerror=null; this.parentNode.innerHTML='<span>STARTA</span>';">` : `<span>STARTA</span>`;
+            const coverUrl = getNewsCover(item);
+            const image = `<img alt="" loading="lazy" src="${escapeHtml(coverUrl)}">`;
             return `<a class="news-card" href="/News/${encodeURIComponent(item.id)}"><div class="news-media">${image}</div><div class="news-copy"><h3>${escapeHtml(item.headline)}</h3><time>${escapeHtml(formatDate(item.published_at))}</time></div></a>`;
         }).join("");
     }
@@ -553,11 +660,37 @@
         renderStockChart();
     }
 
+    async function loadSelectedSymbolNews() {
+        const symbol = state.selected;
+        if (!symbol) return;
+        
+        const contentContainer = document.querySelector(".overview-content");
+        if (contentContainer && state.overviewTab === "news") {
+            const isAr = state.lang === "ar";
+            contentContainer.innerHTML = `<div class="chart-message">${isAr ? "جاري تحميل الأخبار..." : "Loading news..."}</div>`;
+        }
+        
+        try {
+            const rows = await request(`/api/v1/news?symbol=${encodeURIComponent(symbol)}&language=${state.lang}&limit=10`);
+            state.selectedNews = Array.isArray(rows) ? rows : [];
+        } catch (_) {
+            state.selectedNews = [];
+        }
+        
+        if (state.overviewTab === "news" && state.selected === symbol) {
+            renderOverviewTab();
+        }
+    }
+
     async function selectStock(symbol) {
         if (!symbol || symbol === state.selected) return;
         state.selected = symbol;
         renderWatchlist();
-        await loadStockHistory();
+        renderMovers(); // Update active mover state immediately!
+        await Promise.all([
+            loadStockHistory(),
+            loadSelectedSymbolNews()
+        ]);
     }
 
     async function loadMarket() {
@@ -575,7 +708,10 @@
             state.marketLoading = false;
             if (!state.stocks.some((item) => item.symbol === state.selected) && state.stocks.length) state.selected = state.stocks[0].symbol;
             render();
-            await loadStockHistory();
+            await Promise.all([
+                loadStockHistory(),
+                loadSelectedSymbolNews()
+            ]);
         } catch (_) {
             render();
         }
@@ -613,6 +749,105 @@
             renderOverviewTab();
         }));
 
+    // ── Add-stock panel ──────────────────────────────────────────────────
+    function openAddStockPanel() {
+        const panel = byId("watchAddPanel");
+        const tabs  = byId("watchTabs");
+        const labels_div = document.querySelector(".table-labels");
+        const rows  = byId("watchlistRows");
+        if (!panel) return;
+        panel.style.display = "block";
+        if (tabs)       tabs.style.display       = "none";
+        if (labels_div) labels_div.style.display = "none";
+        if (rows)       rows.style.display       = "none";
+        const input = byId("watchAddSearch");
+        if (input) { input.value = ""; input.focus(); }
+        renderAddResults("");
+    }
+
+    function closeAddStockPanel() {
+        const panel = byId("watchAddPanel");
+        const tabs  = byId("watchTabs");
+        const labels_div = document.querySelector(".table-labels");
+        const rows  = byId("watchlistRows");
+        if (!panel) return;
+        panel.style.display = "none";
+        if (tabs)       tabs.style.display       = "";
+        if (labels_div) labels_div.style.display = "";
+        if (rows)       rows.style.display       = "";
+    }
+
+    function addStockToWatchlist(symbol) {
+        if (!symbol) return;
+        const list = getCustomWatchlist();
+        if (!list.includes(symbol)) {
+            list.push(symbol);
+            try { localStorage.setItem("starta-watchlist", JSON.stringify(list)); } catch (_) {}
+        }
+        // Switch to My Watchlist tab
+        state.watchTab = "custom";
+        byId("watchTabs").querySelectorAll("button").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.tab === "custom");
+        });
+        closeAddStockPanel();
+        renderWatchlist();
+        updateFavBtn(state.selected);
+        // Briefly animate the new row
+        setTimeout(() => {
+            const added = byId("watchlistRows").querySelector(`[data-symbol="${CSS.escape(symbol)}"]`);
+            if (added) { added.style.transition = "background 0ms"; added.style.background = "rgba(20,184,166,.18)"; setTimeout(() => { added.style.background = ""; added.style.transition = ""; }, 600); }
+        }, 50);
+    }
+
+    function renderAddResults(query) {
+        const container = byId("watchAddResults");
+        if (!container) return;
+        const currentList = getCustomWatchlist();
+        const q = (query || "").trim().toLowerCase();
+        let pool = state.stocks.slice();
+        if (q) pool = pool.filter((s) => `${s.symbol} ${s.name_en} ${s.name_ar || ""}`.toLowerCase().includes(q));
+        pool = pool.slice(0, 30);
+        if (!pool.length) {
+            container.innerHTML = `<div class="watch-add-empty">${escapeHtml(state.lang === "ar" ? "لا توجد نتائج" : "No stocks found")}</div>`;
+            return;
+        }
+        container.innerHTML = pool.map((s) => {
+            const inList = currentList.includes(s.symbol);
+            const name   = stockName(s);
+            const badge  = inList
+                ? `<span class="watch-add-row-badge">${escapeHtml(labels().added)}</span>`
+                : `<span class="watch-add-row-badge">${escapeHtml(labels().add)}</span>`;
+            return `<div class="watch-add-row${inList ? " watch-add-row--added" : ""}" data-add-symbol="${escapeHtml(s.symbol)}">
+                <img class="watch-add-row-logo" src="/logos/${escapeHtml(s.symbol)}.svg" alt="" onerror="this.style.display='none';">
+                <span class="watch-add-row-info"><strong>${escapeHtml(s.symbol)}</strong><small>${escapeHtml(name)}</small></span>
+                ${badge}
+            </div>`;
+        }).join("");
+        container.querySelectorAll("[data-add-symbol]:not(.watch-add-row--added)").forEach((row) => {
+            row.addEventListener("click", () => addStockToWatchlist(row.dataset.addSymbol));
+        });
+    }
+    // ────────────────────────────────────────────────────────────────────
+
+        // Wiring: add-stock button
+        const addStockBtn = byId("addStockBtn");
+        if (addStockBtn) addStockBtn.addEventListener("click", openAddStockPanel);
+
+        // Wiring: close add-stock panel
+        const watchAddClose = byId("watchAddClose");
+        if (watchAddClose) watchAddClose.addEventListener("click", closeAddStockPanel);
+
+        // Wiring: live search inside add-stock panel
+        const watchAddSearch = byId("watchAddSearch");
+        if (watchAddSearch) watchAddSearch.addEventListener("input", (e) => renderAddResults(e.target.value));
+
+        // Wiring: favourite bookmark button
+        const favBtn = byId("favBtn");
+        if (favBtn) {
+            favBtn.addEventListener("click", () => {
+                toggleCustomWatchlist(state.selected);
+            });
+        }
     }
 
     bind();

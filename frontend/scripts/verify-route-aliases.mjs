@@ -11,7 +11,7 @@ const publicPages = ["home", "marketplace", "fund-details", "fund-compare", "mar
 function hasCurrentPublicNav(text) {
   const nav = text.match(/<nav[\s\S]*?<\/nav>/i)?.[0] || "";
   const fundsKey = nav.includes('data-key="nav_mobile"') ? "nav_mobile" : "nav_funds";
-  const positions = ["nav_home", fundsKey, "nav_pulse", "nav_news", "nav_learn", "nav_about"]
+  const positions = ["nav_home", fundsKey, "nav_pulse", "nav_news", "nav_portfolio", "nav_learn"]
     .map((key) => nav.indexOf(`data-key="${key}"`));
 
   return positions.every((position) => position >= 0) &&

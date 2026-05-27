@@ -651,6 +651,49 @@
 .pf-method-text h4 { margin: 0 0 .25rem; font-size: .88rem; font-weight: 700; }
 .pf-method-text p  { margin: 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
 
+/* ── Method Context Badge (replaces 3-card selector in modal) ── */
+.pf-method-badge {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .85rem 1.1rem;
+    margin-bottom: 1.35rem;
+    border-radius: var(--pf-radius-sm);
+    border: 1px solid rgba(20,184,166,.28);
+    background: linear-gradient(135deg, rgba(20,184,166,.08) 0%, rgba(20,184,166,.03) 100%);
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+}
+.pf-method-badge::before {
+    content: '';
+    position: absolute; inset-inline-start: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--teal);
+    border-radius: 0 2px 2px 0;
+}
+.pf-method-badge-icon {
+    flex-shrink: 0;
+    width: 2.4rem; height: 2.4rem;
+    border-radius: .6rem;
+    background: rgba(20,184,166,.15);
+    color: var(--teal);
+    display: grid; place-items: center;
+    font-size: 1.2rem;
+    border: 1px solid rgba(20,184,166,.2);
+    box-shadow: 0 2px 8px rgba(20,184,166,.12);
+}
+.pf-method-badge-text {
+    display: flex; flex-direction: column; gap: .18rem;
+    min-width: 0;
+}
+.pf-method-badge-label {
+    font-size: .85rem; font-weight: 700; color: var(--ink);
+    letter-spacing: -.01em;
+}
+.pf-method-badge-desc {
+    font-size: .72rem; color: var(--muted); line-height: 1.45;
+}
+
 /* ─── Empty state ───────────────────────────────────────────────────── */
 .pf-empty {
     text-align: center; padding: 3rem 1.5rem;

@@ -219,72 +219,73 @@
 
     function renderModalBody() {
         var body = document.getElementById('createModalBody');
+
+        // ── Premium Method Context Badge ──────────────────────────────────
+        // Show a slim, non-interactive indicator so the user knows their selected method.
+        // No re-selection UI: the user already chose on the Portfolio page.
+        var methodMeta = {
+            manual:    { icon: '\u2726', labelKey: 'createManual',    descKey: 'createManualDesc' },
+            import:    { icon: '\u21ea', labelKey: 'createImport',    descKey: 'createImportDesc' },
+            watchlist: { icon: '\u25c8', labelKey: 'createWatchlist', descKey: 'createWatchlistDesc' }
+        };
+        var meta = methodMeta[selectedMethod] || methodMeta.manual;
+
         body.innerHTML =
-            '<div class="pf-modal-create-methods">' +
-                methodCard('manual',    '\u2726', t('createManual'),    t('createManualDesc')) +
-                methodCard('import',    '\u21ea', t('createImport'),    t('createImportDesc')) +
-                methodCard('watchlist', '\u25c8', t('createWatchlist'),  t('createWatchlistDesc')) +
-            '</div>' +
-            // ── Import Holdings Zone ──
-            '<div id="importZone" class="pf-import-zone">' +
-                '<div class="pf-import-header">' +
-                    '<div class="pf-import-icon">' +
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
-                    '</div>' +
-                    '<div>' +
-                        '<h4 class="pf-import-title">' + t('importTitle') + '</h4>' +
-                        '<p class="pf-import-sub">' + t('importSubtitle') + '</p>' +
-                    '</div>' +
-                '</div>' +
-                '<div id="importDropArea" class="pf-import-drop" role="button" tabindex="0" aria-label="' + t('importDrop') + '">' +
-                    '<svg class="pf-import-drop-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 32V16"/><polyline points="16 24 24 16 32 24"/><path d="M40 32v6a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4v-6"/></svg>' +
-                    '<p class="pf-import-drop-label">' + t('importDrop') + '</p>' +
-                    '<p class="pf-import-drop-hint">' + t('importRequired') + '</p>' +
-                    '<input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;">' +
-                '</div>' +
-                '<div class="pf-import-actions">' +
-                    '<button type="button" id="importBrowseBtn" class="pf-btn pf-btn--primary pf-btn--sm">' +
-                        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+            // ── Method Context Badge (slim, premium, non-interactive) ──
+            '<div class="pf-method-badge">'+
+                '<div class="pf-method-badge-icon">' + meta.icon + '</div>'+
+                '<div class="pf-method-badge-text">'+
+                    '<span class="pf-method-badge-label">' + t(meta.labelKey) + '</span>'+
+                    '<span class="pf-method-badge-desc">' + t(meta.descKey) + '</span>'+
+                '</div>'+
+            '</div>'+
+            // ── Import Holdings Zone (only shown when method === import) ──
+            '<div id="importZone" class="pf-import-zone" style="' + (selectedMethod === 'import' ? '' : 'display:none;') + '">'+
+                '<div class="pf-import-header">'+
+                    '<div class="pf-import-icon">'+
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+
+                    '</div>'+
+                    '<div>'+
+                        '<h4 class="pf-import-title">' + t('importTitle') + '</h4>'+
+                        '<p class="pf-import-sub">' + t('importSubtitle') + '</p>'+
+                    '</div>'+
+                '</div>'+
+                '<div id="importDropArea" class="pf-import-drop" role="button" tabindex="0" aria-label="' + t('importDrop') + '">'+
+                    '<svg class="pf-import-drop-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 32V16"/><polyline points="16 24 24 16 32 24"/><path d="M40 32v6a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4v-6"/></svg>'+
+                    '<p class="pf-import-drop-label">' + t('importDrop') + '</p>'+
+                    '<p class="pf-import-drop-hint">' + t('importRequired') + '</p>'+
+                    '<input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;">'+
+                '</div>'+
+                '<div class="pf-import-actions">'+
+                    '<button type="button" id="importBrowseBtn" class="pf-btn pf-btn--primary pf-btn--sm">'+
+                        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+
                         ' ' + t('importBrowse') +
-                    '</button>' +
-                    '<span class="pf-import-or">' + t('importOr') + '</span>' +
-                    '<button type="button" id="importTemplateBtn" class="pf-btn pf-btn--sm pf-btn--outline">' +
-                        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><line x1="12" y1="21" x2="12" y2="9"/></svg>' +
+                    '</button>'+
+                    '<span class="pf-import-or">' + t('importOr') + '</span>'+
+                    '<button type="button" id="importTemplateBtn" class="pf-btn pf-btn--sm pf-btn--outline">'+
+                        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><line x1="12" y1="21" x2="12" y2="9"/></svg>'+
                         ' ' + t('importTemplate') +
-                    '</button>' +
-                '</div>' +
-                '<div id="importError" class="pf-import-error" style="display:none;"></div>' +
-                '<div id="importPreview"></div>' +
-            '</div>' +
+                    '</button>'+
+                '</div>'+
+                '<div id="importError" class="pf-import-error" style="display:none;"></div>'+
+                '<div id="importPreview"></div>'+
+            '</div>'+
             // ── Portfolio Config Form ──
-            '<div class="pf-form" id="createForm">' +
-                '<div class="pf-form-row">' +
+            '<div class="pf-form" id="createForm">'+
+                '<div class="pf-form-row">'+
                     field('portfolioName', t('portfolioName'), '<input type="text" id="pfName" placeholder="e.g. My EGX Portfolio" required>') +
                     field('currency', t('portfolioCurrency'), '<select id="pfCurrency"><option value="EGP" selected>EGP \u2014 Egyptian Pound</option><option value="USD">USD \u2014 US Dollar</option><option value="SAR">SAR \u2014 Saudi Riyal</option></select>') +
-                '</div>' +
-                '<div class="pf-form-row">' +
+                '</div>'+
+                '<div class="pf-form-row">'+
                     field('benchmark', t('benchmarkLabel'), '<select id="pfBenchmark"><option value="EGX30" selected>EGX30</option><option value="EGX70">EGX70</option><option value="SP500">S&amp;P 500</option></select>') +
                     field('riskFree', t('riskFreeRate'), '<input type="number" id="pfRiskFree" value="25.5" step="0.1" min="0" max="100">') +
-                '</div>' +
+                '</div>'+
                 field('desc', t('description'), '<input type="text" id="pfDesc" placeholder="Optional description">') +
-                '<div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.5rem;">' +
-                    '<button class="pf-btn" id="cancelCreate">' + t('cancel') + '</button>' +
-                    '<button class="pf-btn pf-btn--primary" id="submitCreate">' + t('create') + '</button>' +
-                '</div>' +
+                '<div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.5rem;">'+
+                    '<button class="pf-btn" id="cancelCreate">' + t('cancel') + '</button>'+
+                    '<button class="pf-btn pf-btn--primary" id="submitCreate">' + t('create') + '</button>'+
+                '</div>'+
             '</div>';
-
-        // Wire method cards
-        body.querySelectorAll('.pf-method-card').forEach(function (c) {
-            c.addEventListener('click', function () {
-                body.querySelectorAll('.pf-method-card').forEach(function (x) { x.classList.remove('active'); });
-                c.classList.add('active');
-                selectedMethod = c.dataset.method;
-                // Show/hide the import zone
-                var importZone = body.querySelector('#importZone');
-                if (importZone) importZone.style.display = selectedMethod === 'import' ? '' : 'none';
-            });
-            if (c.dataset.method === selectedMethod) c.classList.add('active');
-        });
 
         body.querySelector('#cancelCreate').addEventListener('click', closeModal);
         body.querySelector('#submitCreate').addEventListener('click', submitCreate);

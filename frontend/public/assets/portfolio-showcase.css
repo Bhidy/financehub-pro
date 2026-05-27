@@ -861,7 +861,7 @@ html[dir="rtl"] .pf-showcase-sector-name {
     padding: 0.55rem 1.6rem;
     border: none;
     border-radius: 99px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #13b8a6 0%, #0d9488 100%);
     color: #ffffff !important;
     font-size: 0.8rem;
     font-weight: 800;
@@ -869,7 +869,7 @@ html[dir="rtl"] .pf-showcase-sector-name {
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 15px rgba(19, 184, 166, 0.4), 0 4px 15px rgba(0, 0, 0, 0.15);
     transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
     animation: pf-cta-glow 2s infinite ease-in-out;
     z-index: 10;
@@ -877,9 +877,9 @@ html[dir="rtl"] .pf-showcase-sector-name {
 }
 
 @keyframes pf-cta-glow {
-    0% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 4px 15px rgba(0, 0, 0, 0.15); }
-    50% { transform: scale(1.03); box-shadow: 0 0 25px rgba(16, 185, 129, 0.7), 0 6px 20px rgba(5, 150, 105, 0.3); }
-    100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 4px 15px rgba(0, 0, 0, 0.15); }
+    0% { transform: scale(1); box-shadow: 0 0 15px rgba(19, 184, 166, 0.4), 0 4px 15px rgba(0, 0, 0, 0.15); }
+    50% { transform: scale(1.03); box-shadow: 0 0 25px rgba(19, 184, 166, 0.7), 0 6px 20px rgba(13, 148, 136, 0.3); }
+    100% { transform: scale(1); box-shadow: 0 0 15px rgba(19, 184, 166, 0.4), 0 4px 15px rgba(0, 0, 0, 0.15); }
 }
 
 .pf-showcase-cta::after {
@@ -903,7 +903,7 @@ html[dir="rtl"] .pf-showcase-sector-name {
 .pf-showcase-cta:hover {
     transform: scale(1.06) translateY(-1px);
     filter: brightness(1.08);
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.9), 0 8px 25px rgba(5, 150, 105, 0.45);
+    box-shadow: 0 0 30px rgba(19, 184, 166, 0.9), 0 8px 25px rgba(13, 148, 136, 0.45);
 }
 
 .pf-showcase-cta:active {
@@ -911,8 +911,8 @@ html[dir="rtl"] .pf-showcase-sector-name {
 }
 
 [data-theme="dark"] .pf-showcase-cta {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 4px 15px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #0d9488 0%, #13b8a6 100%);
+    box-shadow: 0 0 15px rgba(19, 184, 166, 0.3), 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 html[dir="rtl"] .pf-showcase-cta {

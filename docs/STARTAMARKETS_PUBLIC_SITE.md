@@ -369,11 +369,33 @@ To prevent situations where production updates are not visible on the live `http
      ```bash
      # List all active aliases
      ./frontend/node_modules/.bin/vercel alias list
-     
+
      # Explicitly bind the live domains to the latest deployment URL
      ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> startamarkets.com
      ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> www.startamarkets.com
      ```
+
+> **MANDATORY POST-DEPLOY ALIAS STEP — Never skip this.**
+>
+> Every deployment (via `vercel deploy --prod` OR via `git push origin main`) produces a new unique URL like `finhub-xxxxxxx-bhidys-projects.vercel.app`. Unless this URL is explicitly aliased to `startamarkets.com`, the live custom domain silently keeps serving the **old deployment**.
+>
+> This is the most common root cause of "nothing changed on the site" even when the build succeeded.
+>
+> **Always run these commands after every deployment:**
+> ```bash
+> # 1. Get the latest deployment URL
+> ./frontend/node_modules/.bin/vercel ls --scope bhidys-projects 2>&1 | grep finhub | head -3
+>
+> # 2. Alias both domains to the newest URL
+> ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> startamarkets.com
+> ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> www.startamarkets.com
+> ```
+>
+> **Verify the alias is live:**
+> ```bash
+> curl -s "https://startamarkets.com/Market-Pulse" | grep "v=1.1.X"
+> ```
+> Replace `v=1.1.X` with the version tag deployed. If the grep returns output, the alias is working correctly.
 
 ## Do Not Confuse These Systems
 
@@ -387,11 +409,31 @@ To prevent situations where production updates are not visible on the live `http
 
 ## Last Confirmed Deployment
 
-On May 25, 2026 (second deployment), a production deployment to the Vercel `finhub` project completed successfully and was aliased to `https://startamarkets.com`. It included:
+### May 27, 2026 — Market Pulse Portfolio Tab & Movers Relocation (v1.1.6)
+
+Deployment URL: `https://finhub-muol8tt1n-bhidys-projects.vercel.app`
+Aliased to: `startamarkets.com` and `www.startamarkets.com` via `vercel alias set`.
+Commit: `224e53a` on `origin/main`.
+
+Changes included:
+- `My Portfolio` tab added to Watchlist panel with glassmorphic premium select dropdown
+- `Most Active` tab relocated from Watchlist to Movers panel (right rail) as the default tab
+- `+` button redirects to `/Portfolio` when `My Portfolio` tab is active
+- Portfolio holdings rendered as clickable rows from `localStorage` via `PFStore`
+- All assets versioned to `?v=1.1.6` for cache busting
+- `portfolio-store.js` added as explicit script dependency in `market-pulse.html`
+
+Post-deployment verification confirmed via `curl` that HTML contains `portfolioSelect`, `my_portfolio` tab, `portfolio-store.js?v=1.1.6`, and `market-pulse.js?v=1.1.6`.
+
+**Root cause note**: Deployment was initially invisible because `startamarkets.com` was still aliased to a 21-day-old deployment. Fixed by explicitly running `vercel alias set` after deployment. This step is now documented as mandatory in the Custom Domain Resolution section above.
+
+---
+
+### May 25, 2026 — Nav & Arabic Font Standardization
+
+Production deployment to the Vercel `finhub` project aliased to `https://startamarkets.com`. Included:
 
 - Portfolio link added to header nav on all pages that were missing it: `learn.html`, `learn-topic.html`, `marketplace.html`, `fund-details.html`, `fund-compare.html`.
-- Arabic nav font standardized to `IBM Plex Sans Arabic` at `13px` across all pages (`news-public.css`, `market-pulse.css`, and inline style blocks on Tailwind-based pages).
+- Arabic nav font standardized to `IBM Plex Sans Arabic` at `13px` across all pages.
 
-Deployment used a clean release directory (excluded unrelated dirty files `README.md`, `docs/DEPLOYMENT_REFERENCE.md`, `.DS_Store`, and untracked backend/scratch files).
-
-No post-deployment browser verification was performed; user to check production personally.
+Deployment used a clean release directory (excluded unrelated dirty files).

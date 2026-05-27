@@ -45,6 +45,7 @@
             maxDrawdown: 'Max Drawdown',
             divIncome: 'Dividend Income',
             ytdDividends: 'YTD Dividends',
+            cta: 'Start Now',
 
             // Status Values
             low: 'Low',
@@ -105,6 +106,7 @@
             maxDrawdown: 'أقصى تراجع',
             divIncome: 'دخل الأرباح',
             ytdDividends: 'الأرباح السنوية YTD',
+            cta: 'ابدأ الآن',
 
             // Status Values
             low: 'منخفض',
@@ -397,7 +399,10 @@
     function slideHeadHtml(title) {
         return '<div class="pf-showcase-slide-head">' +
             '<div class="pf-showcase-slide-title"><span class="indicator"></span>' + escHtml(title) + '</div>' +
-            '<span class="pf-badge-neu pf-num" style="font-weight:600; display:inline-flex; align-items:center; gap:0.25rem;"><span style="width:0.35rem; height:0.35rem; border-radius:50%; background:var(--pf-green); display:inline-block;"></span>' + t('live') + '</span>' +
+            '<div style="display:flex; align-items:center; gap:0.65rem;">' +
+                '<button class="pf-showcase-cta" type="button">' + t('cta') + ' ✨</button>' +
+                '<span class="pf-badge-neu pf-num" style="font-weight:600; display:inline-flex; align-items:center; gap:0.25rem;"><span style="width:0.35rem; height:0.35rem; border-radius:50%; background:var(--pf-green); display:inline-block;"></span>' + t('live') + '</span>' +
+            '</div>' +
         '</div>';
     }
 
@@ -513,6 +518,17 @@
                 }
             });
         }
+
+        // Wire CTA buttons to scroll smoothly down to #pfListRoot
+        document.querySelectorAll('.pf-showcase-cta').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                var target = document.getElementById('pfListRoot');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
 
         // Initialize simulations
         initSimulations();

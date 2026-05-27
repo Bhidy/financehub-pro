@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/market-pulse.css?v=1.1.5">
+    <link rel="stylesheet" href="/assets/market-pulse.css?v=1.1.6">
 </head>
 <body>
     <div class="grid-backdrop"></div>
@@ -81,9 +81,12 @@
                 <section class="panel watchlist">
                     <div class="panel-head">
                         <h2 class="display" data-key="watchlist">Watchlist</h2>
-                        <button id="addStockBtn" class="add-stock-btn" type="button" aria-label="Add stock to My Watchlist">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <select id="portfolioSelect" class="premium-select" style="display: none;"></select>
+                            <button id="addStockBtn" class="add-stock-btn" type="button" aria-label="Add stock to My Watchlist">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                        </div>
                     </div>
                     <div id="watchAddPanel" class="watch-add-panel" style="display:none;">
                         <div class="watch-add-header">
@@ -98,8 +101,8 @@
                         <div id="watchAddResults" class="watch-add-results"></div>
                     </div>
                     <div class="segmented" id="watchTabs" aria-label="Stock list view">
-                        <button class="active" type="button" data-tab="active" data-key="most_active">Most Active</button>
-                        <button type="button" data-tab="custom" data-key="my_watchlist">My Watchlist</button>
+                        <button class="active" type="button" data-tab="custom" data-key="my_watchlist">My Watchlist</button>
+                        <button type="button" data-tab="portfolio" data-key="my_portfolio">My Portfolio</button>
                     </div>
                     <div class="table-labels">
                         <span class="lbl-sym" data-key="symbol">Symbol</span>
@@ -191,7 +194,8 @@
 
                 <section class="panel movers">
                     <div class="segmented movers-toggle" id="moverTabs">
-                        <button class="active" type="button" data-tab="gainers" data-key="top_gainers">Top Gainers</button>
+                        <button class="active" type="button" data-tab="active" data-key="most_active">Most Active</button>
+                        <button type="button" data-tab="gainers" data-key="top_gainers">Top Gainers</button>
                         <button type="button" data-tab="losers" data-key="top_losers">Top Losers</button>
                     </div>
                     <div class="table-labels"><span data-key="symbol">Symbol</span><span data-key="last">Last</span><span data-key="change">Change</span></div>
@@ -216,7 +220,8 @@
         <div id="tickerTape" class="ticker-tape"></div>
         <span id="footerStatus" class="tape-status"></span>
     </footer>
-    <script src="/assets/news-covers.js?v=1.1.5"></script>
-    <script src="/assets/market-pulse.js?v=1.1.5"></script>
+    <script src="/assets/portfolio-store.js?v=1.1.6"></script>
+    <script src="/assets/news-covers.js?v=1.1.6"></script>
+    <script src="/assets/market-pulse.js?v=1.1.6"></script>
 </body>
 </html>

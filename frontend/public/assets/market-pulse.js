@@ -14,6 +14,7 @@
             positive_reading: "More listed EGX securities advanced than declined in the latest market snapshot.", negative_reading: "More listed EGX securities declined than advanced in the latest market snapshot.", balanced_reading: "Advancing and declining EGX securities are broadly balanced.",
             no_match: "No company matched your search.", no_news: "No market news available at this time.", company_text: "{name} is listed on the Egyptian Exchange in the {sector} sector. The workspace displays its latest stored quote and available price history.",
             my_watchlist: "My Watchlist", empty_watchlist: "Your watchlist is empty. Click the + button to add your preferred stocks.",
+            my_portfolio: "My Portfolio", empty_portfolio: "Selected portfolio is empty. Use the Portfolio page to manage it.",
             add_stock: "Add Stock", add_stock_search: "Search EGX stocks...", added: "Added", add: "Add"
         },
         ar: {
@@ -28,6 +29,7 @@
             positive_reading: "زاد عدد الأوراق المالية الصاعدة في EGX عن الهابطة في أحدث لقطة متاحة للسوق.", negative_reading: "زاد عدد الأوراق المالية الهابطة في EGX عن الصاعدة في أحدث لقطة متاحة للسوق.", balanced_reading: "أعداد الأوراق المالية الصاعدة والهابطة في EGX متقاربة.",
             no_match: "لا توجد شركة مطابقة لبحثك.", no_news: "لا تتوفر أخبار سوق حاليا.", company_text: "{name} شركة مقيدة في البورصة المصرية ضمن قطاع {sector}. تعرض هذه الشاشة آخر سعر مخزن والسجل السعري المتاح.",
             my_watchlist: "قائمتي", empty_watchlist: "قائمة المتابعة الخاصة بك فارغة. انقر على زر + لإضافة أسهمك المفضلة.",
+            my_portfolio: "محفظتي", empty_portfolio: "المحفظة المحددة فارغة. استخدم صفحة المحفظة لإدارتها.",
             add_stock: "إضافة سهم", add_stock_search: "ابحث عن أسهم EGX...", added: "مُضاف", add: "إضافة"
         }
     };
@@ -41,8 +43,8 @@
         selectedNews: [],
         history: [],
         selected: "COMI",
-        watchTab: "active",
-        moversTab: "gainers",
+        watchTab: "custom",
+        moversTab: "active",
         days: 90,
         query: "",
         marketLoading: true,
@@ -205,20 +207,35 @@
     }
 
     function renderWatchlist() {
-        let rows;
+        let rows = [];
         if (state.watchTab === "custom") {
             const list = getCustomWatchlist();
             rows = state.stocks.filter((item) => list.includes(item.symbol));
+        } else if (state.watchTab === "portfolio") {
+            const select = byId("portfolioSelect");
+            const portfolioId = select ? select.value : null;
+            if (portfolioId && window.PFStore) {
+                const portfolio = window.PFStore.get(portfolioId);
+                if (portfolio) {
+                    const metrics = window.PFStore.computeMetrics(portfolio);
+                    const holdingsSymbols = (metrics.holdings || []).map(h => h.symbol);
+                    rows = state.stocks.filter((item) => holdingsSymbols.includes(item.symbol));
+                }
+            }
         } else {
             rows = sortedStocks(state.watchTab);
         }
         const query = state.query.trim().toLowerCase();
         if (query) rows = rows.filter((item) => `${item.symbol} ${item.name_en} ${item.name_ar || ""}`.toLowerCase().includes(query));
-        const limit = state.watchTab === "custom" ? 30 : 8;
+        const limit = (state.watchTab === "custom" || state.watchTab === "portfolio") ? 30 : 8;
         rows = rows.slice(0, limit);
         const container = byId("watchlistRows");
         if (!rows.length) {
-            const msg = state.watchTab === "custom" ? labels().empty_watchlist : labels().no_match;
+            const msg = state.watchTab === "custom" 
+                ? labels().empty_watchlist 
+                : (state.watchTab === "portfolio" 
+                    ? labels().empty_portfolio 
+                    : labels().no_match);
             container.innerHTML = `<div class="empty-inline">${escapeHtml(msg)}</div>`;
             return;
         }
@@ -626,6 +643,15 @@
 
     function render() {
         renderRibbon();
+        if (state.watchTab === "portfolio") {
+            updatePortfolioDropdown();
+            const select = byId("portfolioSelect");
+            if (select) select.style.display = "inline-block";
+        } else {
+            const select = byId("portfolioSelect");
+            if (select) select.style.display = "none";
+        }
+        updateAddBtnTitle();
         renderWatchlist();
         renderSelected();
         renderStockChart();
@@ -717,6 +743,49 @@
         }
     }
 
+    function updateAddBtnTitle() {
+        const btn = byId("addStockBtn");
+        if (!btn) return;
+        if (state.watchTab === "portfolio") {
+            btn.title = state.lang === "ar" ? "إنشاء محفظة جديدة" : "Create new portfolio";
+            btn.setAttribute("aria-label", state.lang === "ar" ? "إنشاء محفظة جديدة" : "Create new portfolio");
+        } else {
+            btn.title = state.lang === "ar" ? "إضافة سهم لقائمتي" : "Add stock to My Watchlist";
+            btn.setAttribute("aria-label", state.lang === "ar" ? "إضافة سهم لقائمتي" : "Add stock to My Watchlist");
+        }
+    }
+
+    function updatePortfolioDropdown() {
+        const select = byId("portfolioSelect");
+        if (!select) return;
+        if (!window.PFStore) return;
+        
+        const portfolios = window.PFStore.getAll();
+        const isAr = state.lang === "ar";
+        
+        const selectedValue = select.value;
+        
+        select.innerHTML = portfolios.map(p => {
+            const name = isAr && p.nameAr ? p.nameAr : p.name;
+            const isSelected = selectedValue ? (p.id === selectedValue) : p.isDefault;
+            return `<option value="${escapeHtml(p.id)}" ${isSelected ? "selected" : ""}>${escapeHtml(name)}</option>`;
+        }).join("");
+    }
+
+    function onWatchTabChange() {
+        const select = byId("portfolioSelect");
+        if (select) {
+            if (state.watchTab === "portfolio") {
+                updatePortfolioDropdown();
+                select.style.display = "inline-block";
+            } else {
+                select.style.display = "none";
+            }
+        }
+        updateAddBtnTitle();
+        renderWatchlist();
+    }
+
     function bind() {
         byId("langToggle").addEventListener("click", () => setLanguage(state.lang === "ar" ? "en" : "ar", true));
         byId("companySearch").addEventListener("input", (event) => {
@@ -726,7 +795,7 @@
         byId("watchTabs").querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
             state.watchTab = button.dataset.tab;
             byId("watchTabs").querySelectorAll("button").forEach((tab) => tab.classList.toggle("active", tab === button));
-            renderWatchlist();
+            onWatchTabChange();
         }));
         byId("moverTabs").querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
             state.moversTab = button.dataset.tab;
@@ -831,7 +900,23 @@
 
         // Wiring: add-stock button
         const addStockBtn = byId("addStockBtn");
-        if (addStockBtn) addStockBtn.addEventListener("click", openAddStockPanel);
+        if (addStockBtn) {
+            addStockBtn.addEventListener("click", () => {
+                if (state.watchTab === "portfolio") {
+                    window.location.href = "/Portfolio";
+                } else {
+                    openAddStockPanel();
+                }
+            });
+        }
+
+        // Wiring: portfolio selector change
+        const portfolioSelect = byId("portfolioSelect");
+        if (portfolioSelect) {
+            portfolioSelect.addEventListener("change", () => {
+                renderWatchlist();
+            });
+        }
 
         // Wiring: close add-stock panel
         const watchAddClose = byId("watchAddClose");

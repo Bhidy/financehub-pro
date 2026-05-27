@@ -166,10 +166,10 @@
                 '<div class="pf-showcase-grid">' +
                     // Left Column (Feature Cards Selector)
                     '<div class="pf-showcase-features" id="showcaseFeatures">' +
-                        featureCardHtml(0, '✦', t('f1_title'), t('f1_desc')) +
-                        featureCardHtml(1, '📈', t('f2_title'), t('f2_desc')) +
-                        featureCardHtml(2, '📊', t('f3_title'), t('f3_desc')) +
-                        featureCardHtml(3, '🛡️', t('f4_title'), t('f4_desc')) +
+                        featureCardHtml(0, t('f1_title'), t('f1_desc')) +
+                        featureCardHtml(1, t('f2_title'), t('f2_desc')) +
+                        featureCardHtml(2, t('f3_title'), t('f3_desc')) +
+                        featureCardHtml(3, t('f4_title'), t('f4_desc')) +
                     '</div>' +
                     // Right Column (Dynamic Simulated Screen)
                     '<div class="pf-showcase-viewport" id="showcaseViewport">' +
@@ -310,28 +310,41 @@
                                     riskCardHtml(t('beta'), '0.92', lang === 'ar' ? 'مستقر مقابل مؤشر السوق' : 'Stable vs EGX30') +
                                     riskCardHtml(t('conRisk'), t('low'), lang === 'ar' ? 'تنويع أصول ممتاز' : 'Highly Diversified', 'var(--pf-green)') +
                                 '</div>' +
-                                '<div class="pf-mock-panel" style="flex:1; display:flex; flex-direction:column; gap:0.5rem; margin-top:0.25rem;">' +
-                                    '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-                                        '<div class="pf-mock-kpi-label">' + t('divIncome') + '</div>' +
-                                        '<div style="font-family:var(--pf-mono); font-size:0.85rem; font-weight:700; color:var(--ink);">' +
-                                            '<span style="font-size:0.65rem; color:var(--muted); font-weight:400; margin-inline-end:0.25rem;">' + t('ytdDividends') + '</span>' +
-                                            '<span id="showcaseDivTotal">EGP 26,580.75</span>' +
+                                '<div style="display:grid; grid-template-columns: 1.65fr 1.35fr; gap:0.75rem; flex:1; margin-top:0.15rem; min-height:0;">' +
+                                    // Left: Dividend chart
+                                    '<div class="pf-mock-panel" style="display:flex; flex-direction:column; gap:0.45rem;">' +
+                                        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                                            '<div class="pf-mock-kpi-label">' + t('divIncome') + '</div>' +
+                                            '<div style="font-family:var(--pf-mono); font-size:0.82rem; font-weight:700; color:var(--ink);">' +
+                                                '<span id="showcaseDivTotal">EGP 26,580.75</span>' +
+                                            '</div>' +
+                                        '</div>' +
+                                        '<div class="pf-div-chart-showcase" id="showcaseDivChart">' +
+                                            dividendBarHtml('Jan', 15) +
+                                            dividendBarHtml('Feb', 22) +
+                                            dividendBarHtml('Mar', 10) +
+                                            dividendBarHtml('Apr', 45, true) +
+                                            dividendBarHtml('May', 30) +
+                                            dividendBarHtml('Jun', 55) +
+                                            dividendBarHtml('Jul', 18) +
+                                            dividendBarHtml('Aug', 70) +
+                                            dividendBarHtml('Sep', 40) +
+                                            dividendBarHtml('Oct', 12) +
+                                            dividendBarHtml('Nov', 32) +
+                                            dividendBarHtml('Dec', 50) +
                                         '</div>' +
                                     '</div>' +
-                                    // Simulated bar chart
-                                    '<div class="pf-div-chart-showcase" id="showcaseDivChart">' +
-                                        dividendBarHtml('Jan', 15) +
-                                        dividendBarHtml('Feb', 22) +
-                                        dividendBarHtml('Mar', 10) +
-                                        dividendBarHtml('Apr', 45, true) + // Highlight April with active payout
-                                        dividendBarHtml('May', 30) +
-                                        dividendBarHtml('Jun', 55) +
-                                        dividendBarHtml('Jul', 18) +
-                                        dividendBarHtml('Aug', 70) +
-                                        dividendBarHtml('Sep', 40) +
-                                        dividendBarHtml('Oct', 12) +
-                                        dividendBarHtml('Nov', 32) +
-                                        dividendBarHtml('Dec', 50) +
+                                    // Right: Live Dividend Feed
+                                    '<div class="pf-mock-panel" style="display:flex; flex-direction:column; gap:0.45rem; overflow:hidden;">' +
+                                        '<div class="pf-mock-kpi-label">' + t('recentTx') + '</div>' +
+                                        '<div class="pf-mock-table-wrap" style="height:175px;">' +
+                                            '<table class="pf-mock-table">' +
+                                                '<thead>' +
+                                                    '<tr><th>' + (lang === 'ar' ? 'السهم' : 'Symbol') + '</th><th style="text-align:end;">' + (lang === 'ar' ? 'توزيع الأرباح' : 'Payout') + '</th></tr>' +
+                                                '</thead>' +
+                                                '<tbody id="showcaseDivFeedBody"></tbody>' +
+                                            '</table>' +
+                                        '</div>' +
                                     '</div>' +
                                 '</div>' +
                             '</div>' +
@@ -362,11 +375,18 @@
         initInteractiveShowcase();
     }
 
+    var ICONS = [
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>',
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>',
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>'
+    ];
+
     // Helper builders
-    function featureCardHtml(index, emoji, title, desc) {
+    function featureCardHtml(index, title, desc) {
         var cls = index === 0 ? 'active' : '';
         return '<div class="pf-feature-card ' + cls + '" data-index="' + index + '">' +
-            '<div class="pf-feature-icon">' + emoji + '</div>' +
+            '<div class="pf-feature-icon">' + ICONS[index] + '</div>' +
             '<div class="pf-feature-info">' +
                 '<h3><span>' + escHtml(title) + '</span><span class="pf-feature-checkmark">✓</span></h3>' +
                 '<p>' + escHtml(desc) + '</p>' +
@@ -783,14 +803,15 @@
         }, 2500);
         simulationTimers.push(chartTimer);
 
-        // 4. Slide 4: Risk & Dividend Accrual
+        // 4. Slide 4: Risk & Dividend Accrual & Scrolling Feed
         var divAccrualTimer = setInterval(function () {
             if (activeIndex !== 3) return; // Only execute on Slide 4
 
             // Fluctuate YTD dividends slightly as simulated payouts clear
-            var payout = (Math.random() > 0.72) ? 120.00 : 0.00;
+            var payout = (Math.random() > 0.65) ? (Math.floor(Math.random() * 8 + 2) * 50) : 0.00;
             if (payout > 0) {
                 var totalEl = document.getElementById('showcaseDivTotal');
+                var feedBody = document.getElementById('showcaseDivFeedBody');
                 if (totalEl) {
                     var cur = parseFloat(totalEl.textContent.replace(/[^\d.]/g, '')) || 26580.75;
                     var nextTotal = cur + payout;
@@ -800,6 +821,21 @@
                     totalEl.style.color = 'var(--pf-green)';
                     setTimeout(function () { totalEl.style.color = ''; }, 600);
 
+                    // Add row to Dividend Feed!
+                    if (feedBody) {
+                        var ticker = tickerPool[Math.floor(Math.random() * tickerPool.length)];
+                        var newTr = document.createElement('tr');
+                        newTr.className = 'pf-tx-row-new';
+                        newTr.innerHTML =
+                            '<td>' +
+                                '<div style="font-weight:700; font-family:var(--pf-mono);">' + ticker.sym + '</div>' +
+                                '<div style="font-size:0.58rem; color:var(--muted);">' + ticker.name + '</div>' +
+                            '</td>' +
+                            '<td class="num pf-pos">EGP ' + fmt(payout) + '</td>';
+                        feedBody.insertBefore(newTr, feedBody.firstChild);
+                        if (feedBody.children.length > 3) feedBody.removeChild(feedBody.lastChild);
+                    }
+
                     // Push a simulated activity log
                     var logMsg = lang === 'ar' 
                         ? 'تم إضافة توزيع أرباح EGP ' + fmt(payout) + ' لمحفظة الاستثمار بنجاح.'
@@ -807,13 +843,77 @@
                     appendLog('💰', logMsg);
                 }
             }
-        }, 5000);
+        }, 3500);
         simulationTimers.push(divAccrualTimer);
+
+        // 5. Allocation Fluctuations & SVG Donut Redraw (Slide 3)
+        var allocationWeights = [28.0, 25.4, 23.0, 15.3, 8.3];
+        var allocTimer = setInterval(function () {
+            if (activeIndex !== 2) return; // Only execute on Slide 3
+
+            // Fluctuate weights slightly
+            var totalFluct = 0;
+            var newWeights = allocationWeights.map(function (w, idx) {
+                if (idx === 4) return w; // HRHO absorbs balance
+                var change = (Math.random() - 0.5) * 0.4; // +/- 0.2%
+                var nextW = Math.max(w + change, 3.0); // minimum 3%
+                totalFluct += (nextW - w);
+                return parseFloat(nextW.toFixed(1));
+            });
+            // Adjust last weight to sum to exactly 100
+            newWeights[4] = parseFloat((100 - newWeights.slice(0, 4).reduce(function(a,b){return a+b;}, 0)).toFixed(1));
+            allocationWeights = newWeights;
+
+            // Update text nodes in Legend
+            var legendRows = document.querySelectorAll('.pf-showcase-legend-pct');
+            if (legendRows.length === 5) {
+                legendRows.forEach(function (pctEl, idx) {
+                    pctEl.textContent = allocationWeights[idx].toFixed(1) + '%';
+                });
+            }
+
+            // Redraw SVG Donut segments
+            var circ = 2 * Math.PI * 38; // 238.76
+            var offset = 0;
+            for (var i = 0; i < 5; i++) {
+                var seg = document.getElementById('donutSeg' + (i + 1));
+                if (seg) {
+                    var len = (allocationWeights[i] / 100) * circ;
+                    seg.setAttribute('stroke-dasharray', len.toFixed(2) + ' ' + (circ - len).toFixed(2));
+                    seg.setAttribute('stroke-dashoffset', offset.toFixed(2));
+                    offset -= len;
+                }
+            }
+
+            // Update Sector Allocation progress bars
+            var banksVal = allocationWeights[0] + allocationWeights[1];
+            var reVal = allocationWeights[3] + allocationWeights[4] + 0.2;
+            var energyVal = allocationWeights[2];
+
+            var bar1 = document.getElementById('sectorBar1');
+            var bar2 = document.getElementById('sectorBar2');
+            var bar3 = document.getElementById('sectorBar3');
+
+            if (bar1 && bar2 && bar3) {
+                bar1.style.width = banksVal.toFixed(1) + '%';
+                bar2.style.width = reVal.toFixed(1) + '%';
+                bar3.style.width = energyVal.toFixed(1) + '%';
+
+                var pctEls = document.querySelectorAll('.pf-showcase-sector-pct');
+                if (pctEls.length === 3) {
+                    pctEls[0].textContent = banksVal.toFixed(1) + '%';
+                    pctEls[1].textContent = reVal.toFixed(1) + '%';
+                    pctEls[2].textContent = energyVal.toFixed(1) + '%';
+                }
+            }
+        }, 2200);
+        simulationTimers.push(allocTimer);
     }
 
     function populateInitialMockData() {
         var tbody = document.getElementById('mockTxBody');
         var listEl = document.getElementById('mockLogList');
+        var divFeed = document.getElementById('showcaseDivFeedBody');
         if (!tbody || !listEl) return;
 
         // Init Transactions
@@ -842,6 +942,23 @@
             '<div class="pf-mock-log-item">🔄 ' + t('log1').replace('{n}', '12') + '</div>' +
             '<div class="pf-mock-log-item">⚙️ ' + t('log3').replace('{sym}', 'COMI') + '</div>' +
             '<div class="pf-mock-log-item">☁️ ' + t('log6') + '</div>';
+
+        // Init Dividend Feed (Slide 4)
+        if (divFeed) {
+            divFeed.innerHTML =
+                '<tr>' +
+                    '<td><div style="font-weight:700; font-family:var(--pf-mono);">COMI</div><div style="font-size:0.58rem; color:var(--muted);">Commercial Int Bank</div></td>' +
+                    '<td class="num pf-pos">EGP 14,800.00</td>' +
+                '</tr>' +
+                '<tr>' +
+                    '<td><div style="font-weight:700; font-family:var(--pf-mono);">HRHO</div><div style="font-size:0.58rem; color:var(--muted);">EFG Holding</div></td>' +
+                    '<td class="num pf-pos">EGP 6,450.00</td>' +
+                '</tr>' +
+                '<tr>' +
+                    '<td><div style="font-weight:700; font-family:var(--pf-mono);">SWDY</div><div style="font-size:0.58rem; color:var(--muted);">Elsewedy Electric</div></td>' +
+                    '<td class="num pf-pos">EGP 5,330.75</td>' +
+                '</tr>';
+        }
     }
 
     function appendLog(icon, text) {

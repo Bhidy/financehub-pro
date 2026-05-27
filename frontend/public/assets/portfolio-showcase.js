@@ -160,7 +160,6 @@
             '<div class="pf-showcase-container">' +
                 // Header
                 '<div class="pf-showcase-header">' +
-                    '<span class="pf-showcase-tag">' + t('tag') + '</span>' +
                     '<h2 class="pf-showcase-title display">' + t('title') + '</h2>' +
                     '<p class="pf-showcase-sub">' + t('sub') + '</p>' +
                 '</div>' +
@@ -174,8 +173,12 @@
                         featureCardHtml(3, t('f4_title'), t('f4_desc')) +
                     '</div>' +
                     // Right Column (Dynamic Simulated Screen)
-                    '<div class="pf-showcase-viewport" id="showcaseViewport">' +
-                        '<div class="pf-showcase-inner">' +
+                    '<div style="display:flex; flex-direction:column; gap:0.6rem; min-width:0;">' +
+                        '<div style="display:flex; justify-content:flex-end; align-items:center;">' +
+                            '<button class="pf-showcase-cta" type="button">' + t('cta') + '</button>' +
+                        '</div>' +
+                        '<div class="pf-showcase-viewport" id="showcaseViewport">' +
+                            '<div class="pf-showcase-inner">' +
                             // Slide 1: Create & Manage
                             '<div class="pf-showcase-slide active" data-slide="0">' +
                                 slideHeadHtml(t('f1_title')) +
@@ -368,6 +371,7 @@
                             '</button>' +
                         '</div>' +
                     '</div>' +
+                    '</div>' +
                 '</div>' +
             '</div>';
 
@@ -400,7 +404,6 @@
         return '<div class="pf-showcase-slide-head">' +
             '<div class="pf-showcase-slide-title"><span class="indicator"></span>' + escHtml(title) + '</div>' +
             '<div style="display:flex; align-items:center; gap:0.65rem;">' +
-                '<button class="pf-showcase-cta" type="button">' + t('cta') + ' ✨</button>' +
                 '<span class="pf-badge-neu pf-num" style="font-weight:600; display:inline-flex; align-items:center; gap:0.25rem;"><span style="width:0.35rem; height:0.35rem; border-radius:50%; background:var(--pf-green); display:inline-block;"></span>' + t('live') + '</span>' +
             '</div>' +
         '</div>';

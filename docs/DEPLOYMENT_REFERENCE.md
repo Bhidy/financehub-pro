@@ -12,7 +12,7 @@
 | Component | URL | Platform |
 |-----------|-----|----------|
 | **Branded Public Site** | https://startamarkets.com | Vercel (`finhub` project) |
-| **Vercel Project Hostname** | https://finhub-pro.vercel.app | Vercel |
+| **Vercel Project Hostname** | https://startamarkets.com | Vercel |
 | **Backend API** | Hetzner VPS | Hetzner |
 
 ---
@@ -28,7 +28,7 @@
 | **Org ID** | `team_Gqpf3K97tjrOCyIlEnGjWCOE` |
 | **Root Directory** | `frontend` (set in Vercel Dashboard) |
 | **Framework** | Next.js 16.1.1 |
-| **Production URL** | https://finhub-pro.vercel.app |
+| **Production URL** | https://startamarkets.com |
 
 ### Deployment Steps
 
@@ -60,7 +60,7 @@ The Vercel project has `frontend` configured as its **Root Directory** in the da
 
 ```bash
 # Check deployment is live
-curl -s -o /dev/null -w "%{http_code}" https://finhub-pro.vercel.app/
+curl -s -o /dev/null -w "%{http_code}" https://startamarkets.com/
 # Expected: 200
 ```
 

@@ -565,7 +565,10 @@ export default function SymbolDetailPage() {
         return latestAnnualStatement?.eps || 0;
     }, [stats, fundamentalsData, latestAnnualStatement]);
 
-    const forwardEps = useMemo(() => Number(stats.forward_pe ? (lastPrice / stats.forward_pe) : fundamentalsData.forward_eps || 0), [stats, fundamentalsData, stockData]);
+    const forwardEps = useMemo(() => {
+        const lp = Number(stockData?.last_price || 0);
+        return Number(stats.forward_pe ? (lp / stats.forward_pe) : fundamentalsData.forward_eps || 0);
+    }, [stats, fundamentalsData, stockData]);
     const bookValue = useMemo(() => Number(stats.bvps || stats.book_value || fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [stats, fundamentalsData, latestAnnualStatement]);
     const dividendRate = useMemo(() => Number(stats.dps || fundamentalsData.dividend_rate || 0), [stats, fundamentalsData]);
     const payoutRatio = useMemo(() => Number(stats.payout_ratio || fundamentalsData.payout_ratio || 0), [stats, fundamentalsData]);

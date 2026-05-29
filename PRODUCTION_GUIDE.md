@@ -37,7 +37,7 @@
 ### Frontend (Vercel)
 | Environment | URL | Status |
 |-------------|-----|--------|
-| **Production** | https://finhub-pro.vercel.app | ✅ LIVE |
+| **Production** | https://startamarkets.com | ✅ LIVE |
 | Deployment Method | Vercel CLI (`vercel --prod`) | Manual |
 
 ### Backend API (Hetzner VPS)
@@ -100,8 +100,7 @@ cd /Users/home/Documents/Info\ Site/mubasher-deep-extract/frontend
 npx vercel --prod
 
 # Expected output:
-# ✅ Production: https://frontend-xxxxx.vercel.app
-# 🔗 Aliased: https://finhub-pro.vercel.app
+# ✅ Production: https://startamarkets.com
 ```
 
 ### Backend Deployment (Hetzner VPS)
@@ -168,7 +167,7 @@ Set in `.env` file on Hetzner (managed via `deploy_to_hetzner.sh`):
 **Prevention:**
 1. ALWAYS deploy via `vercel --prod` from local machine
 2. NEVER rely on Vercel's "Redeploy" button (it uses cached code)
-3. Verify deployment with: `curl -s https://finhub-pro.vercel.app/ | grep "bhidy-financehub-api"`
+3. Verify deployment with: `curl -s https://startamarkets.com/ | grep "bhidy-financehub-api"`
 
 ### Issue 2: Backend API Returns 500 Errors
 
@@ -208,7 +207,7 @@ Set in `.env` file on Hetzner (managed via `deploy_to_hetzner.sh`):
 
 ```bash
 # Frontend Status
-curl -I https://finhub-pro.vercel.app/
+curl -I https://startamarkets.com/
 
 # Backend Health
 curl https://starta.46-224-223-172.sslip.io/health
@@ -243,7 +242,7 @@ curl https://starta.46-224-223-172.sslip.io/api/v1/dashboard/summary
 
 2. **Check Frontend:**
    ```bash
-   curl -I https://finhub-pro.vercel.app/
+   curl -I https://startamarkets.com/
    ```
    If failing → Check Vercel dashboard
 
@@ -279,7 +278,7 @@ curl https://starta.46-224-223-172.sslip.io/api/v1/dashboard/summary
 |------|---------------|
 | Infrastructure | Vercel (Frontend), Hetzner VPS (Backend), Supabase (DB) |
 | Repository | https://github.com/Bhidy/financehub-pro |
-| Primary Domain | https://finhub-pro.vercel.app |
+| Primary Domain | https://startamarkets.com |
 
 ---
 

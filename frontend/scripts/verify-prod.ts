@@ -1,4 +1,4 @@
-const PROD_URL = "https://finhub-pro.vercel.app";
+const PROD_URL = "https://startamarkets.com";
 
 async function verify() {
     console.log(`\x1b[36mRunning Production Verification against: ${PROD_URL}\x1b[0m`);

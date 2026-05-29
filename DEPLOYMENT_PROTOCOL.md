@@ -101,9 +101,9 @@ python3 scripts/verify_live_7layer.py
 
 ## 6. Multi-Domain Rules
 
-**CRITICAL RULE:** Do NOT hardcode `startamarkets.com` URLs (e.g., `https://starta.46-224-223-172.sslip.io`) inside the `finhub-pro.vercel.app` codebase.
-`finhub-pro` is a completely separate site/domain from `startamarkets.com`. It relies on the `NEXT_PUBLIC_API_URL` environment variable for routing all API requests (e.g., in `/app/api/v1/...` routes). 
-Hardcoding the other domain's backend can lead to cross-site issues or intermittent production breakages. Future AI modifications MUST respect this domain independence.
+**CRITICAL RULE:** Do NOT hardcode backend URLs (e.g., `https://starta.46-224-223-172.sslip.io`) inside the `startamarkets.com` codebase.
+`startamarkets.com` relies on the `NEXT_PUBLIC_API_URL` environment variable for routing all API requests (e.g., in `/app/api/v1/...` routes). 
+Hardcoding the backend can lead to cross-site issues or intermittent production breakages. Future AI modifications MUST respect this domain independence.
 
 ---
 

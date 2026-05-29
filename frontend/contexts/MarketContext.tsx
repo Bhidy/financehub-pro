@@ -51,9 +51,9 @@ const MarketContext = createContext<MarketContextType | undefined>(undefined);
 const STORAGE_KEY = 'selectedMarket';
 
 // Domains that should default to Egypt market
-// finhub-pro.vercel.app is the production analytics shell where EGX is the
+// startamarkets.com is our production domain where EGX is the
 // canonical default dataset for populated overview pages.
-const EGX_DOMAINS = ['startamarkets.com', 'www.startamarkets.com', 'finhub-pro.vercel.app'];
+const EGX_DOMAINS = ['startamarkets.com', 'www.startamarkets.com'];
 
 // Get default market based on hostname
 function getDefaultMarket(): Market {

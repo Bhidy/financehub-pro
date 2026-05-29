@@ -422,14 +422,21 @@ export default function SymbolDetailPage() {
     const chartStats = useMemo(() => {
         if (chartData.length < 2) return null;
         const current = chartData[chartData.length - 1];
+        const previous = chartData[chartData.length - 2];
         const first = chartData[0];
         const highs = chartData.map((d: any) => d.high).filter((h: number) => h > 0);
         const lows = chartData.map((d: any) => d.low).filter((l: number) => l > 0);
+        
+        const change = current.close - previous.close;
+        const changePercent = previous.close > 0 ? (change / previous.close) * 100 : 0;
+        
         return {
             high52: highs.length > 0 ? Math.max(...highs) : current.close,
             low52: lows.length > 0 ? Math.min(...lows) : current.close,
             periodReturn: ((current.close - first.close) / first.close) * 100,
-            current
+            current,
+            change,
+            changePercent
         };
     }, [chartData]);
 
@@ -662,10 +669,14 @@ export default function SymbolDetailPage() {
         );
     }
 
-    const isPositive = Number((stockData as any).change || 0) >= 0;
-    const lastPrice = Number((stockData as any).last_price || 0);
-    const change = Number((stockData as any).change || 0);
-    const changePercent = Number((stockData as any).change_percent || 0);
+    const rawLastPrice = Number((stockData as any).last_price || 0);
+    const rawChange = Number((stockData as any).change || 0);
+    const rawChangePercent = Number((stockData as any).change_percent || 0);
+
+    const lastPrice = chartStats?.current?.close && chartStats.current.close > 0 ? chartStats.current.close : rawLastPrice;
+    const change = chartStats ? chartStats.change : rawChange;
+    const changePercent = chartStats ? chartStats.changePercent : rawChangePercent;
+    const isPositive = change >= 0;
     const volume = Number((stockData as any)?.volume || 0);
     const loading = chartLoading;
     const relativeVolume = avgVolume20d > 0 ? volume / avgVolume20d : 0;

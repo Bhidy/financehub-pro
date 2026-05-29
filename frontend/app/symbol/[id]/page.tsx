@@ -278,6 +278,27 @@ function parseFinancialsRawData(rawData: any): Record<string, number> {
     } catch { return {}; }
 }
 
+function parseNumericFields(obj: any): any {
+    if (!obj) return {};
+    const parsed: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (value === null || value === undefined || value === "") {
+            parsed[key] = null;
+        } else if (typeof value === "string") {
+            const trimmed = value.trim();
+            if (trimmed === "") {
+                parsed[key] = null;
+            } else {
+                const num = Number(trimmed);
+                parsed[key] = isNaN(num) ? value : num;
+            }
+        } else {
+            parsed[key] = value;
+        }
+    }
+    return parsed;
+}
+
 function formatNumber(num: number | string | null | undefined): string {
     if (num === null || num === undefined || num === "") return "-";
     const n = typeof num === "string" ? parseFloat(num) : num;
@@ -388,7 +409,7 @@ export default function SymbolDetailPage() {
     const latestBreadth = marketBreadth[0];
 
     // Local DB Stats shortcut
-    const stats = useMemo(() => localProfile?.statistics || {}, [localProfile]);
+    const stats = useMemo(() => parseNumericFields(localProfile?.statistics), [localProfile]);
 
     // Context-Aware Banking sector resolver
     const isBank = useMemo(() => {

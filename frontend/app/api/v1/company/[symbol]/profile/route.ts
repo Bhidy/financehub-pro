@@ -10,19 +10,23 @@ export async function GET(
     const { symbol } = await params;
 
     // Resolve alias if needed (simple check)
-    const cleanSymbol = symbol.trim();
+    const cleanSymbol = symbol.trim().toUpperCase();
+    const symBase = cleanSymbol.replace('.CA', '');
+    const symCA = `${symBase}.CA`;
 
     try {
-        // Parallel fetch for speed: Profile + Ticker Data + Overview
-        const [profileRes, tickerRes] = await Promise.all([
-            db.query(`SELECT * FROM company_profiles WHERE symbol = $1`, [cleanSymbol]),
-            db.query(`SELECT * FROM market_tickers WHERE symbol = $1`, [cleanSymbol])
+        // Parallel fetch for speed: Profile + Ticker Data + Overview Statistics
+        const [profileRes, tickerRes, statsRes] = await Promise.all([
+            db.query(`SELECT * FROM company_profiles WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA]),
+            db.query(`SELECT * FROM market_tickers WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA]),
+            db.query(`SELECT * FROM stock_statistics WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA])
         ]);
 
         const profile = profileRes.rows[0] || {};
         const ticker = tickerRes.rows[0] || {};
+        const stats = statsRes.rows[0] || {};
 
-        if (!profile.symbol && !ticker.symbol) {
+        if (!profile.symbol && !ticker.symbol && !stats.symbol) {
             return NextResponse.json({ error: 'Company not found' }, { status: 404 });
         }
 
@@ -31,11 +35,12 @@ export async function GET(
             symbol: cleanSymbol,
             profile: {
                 ...profile,
-                name_en: ticker.name_en || profile.company_name,
-                sector: ticker.sector_name || profile.sector,
-                market_cap: ticker.market_cap,
+                name_en: ticker.name_en || profile.name_en || profile.company_name,
+                name_ar: ticker.name_ar || profile.name_ar,
+                sector: ticker.sector_name || profile.sector || stats.sector_name || stats.sector,
+                market_cap: ticker.market_cap || stats.market_cap,
                 website: profile.website,
-                description: profile.description || `Leading company in the ${ticker.sector_name} sector.`
+                description: profile.description || `Leading company in the ${ticker.sector_name || 'Egyptian'} sector.`
             },
             market_data: {
                 current_price: ticker.last_price,
@@ -43,10 +48,11 @@ export async function GET(
                 volume: ticker.volume,
                 high: ticker.high,
                 low: ticker.low,
-                pe_ratio: ticker.pe_ratio,
-                pb_ratio: ticker.pb_ratio,
-                dividend_yield: ticker.dividend_yield
-            }
+                pe_ratio: ticker.pe_ratio || stats.pe_ratio,
+                pb_ratio: ticker.pb_ratio || stats.pb_ratio,
+                dividend_yield: ticker.dividend_yield || stats.dividend_yield
+            },
+            statistics: stats
         };
 
         return NextResponse.json(data);
@@ -55,3 +61,4 @@ export async function GET(
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

@@ -1112,6 +1112,12 @@ export const fetchCompanyProfile = async (symbol: string) => {
     return data;
 };
 
+export const fetchLocalCompanyProfile = async (symbol: string) => {
+    const { data } = await localApi.get(`/company/${symbol}/profile`);
+    return data;
+};
+
+
 export const fetchCompanyFinancials = async (symbol: string) => {
     const { data } = await api.get(`/company/${symbol}/financials`);
     return data;

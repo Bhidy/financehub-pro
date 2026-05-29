@@ -7,33 +7,20 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '100');
 
     try {
-        // Try shareholders table first
         if (symbol) {
+            // Query major_shareholders table
             const result = await db.query(
                 `SELECT id, symbol, shareholder_name_en, shareholder_name AS shareholder_name_ar, 
-                        shareholder_type, ownership_percent, shares_held, change_percent, report_date
-                 FROM shareholders 
-                 WHERE symbol = $1 
+                        shareholder_type, ownership_percent, shares_held, report_date
+                 FROM major_shareholders 
+                 WHERE symbol = $1 OR symbol = $2
                  ORDER BY ownership_percent DESC NULLS LAST
-                 LIMIT $2`,
-                [symbol, limit]
+                 LIMIT $3`,
+                [symbol, `${symbol}.CA`, limit]
             );
 
             if (result.rows.length > 0) {
                 return NextResponse.json(result.rows);
-            }
-
-            // Fallback: Try to get from company major holders table if exists
-            try {
-                const fallback = await db.query(
-                    `SELECT * FROM major_holders WHERE symbol = $1 LIMIT $2`,
-                    [symbol, limit]
-                );
-                if (fallback.rows.length > 0) {
-                    return NextResponse.json(fallback.rows);
-                }
-            } catch (e) {
-                // major_holders table might not exist
             }
         }
 
@@ -41,7 +28,7 @@ export async function GET(request: Request) {
         const result = await db.query(
             `SELECT id, symbol, shareholder_name_en, shareholder_name AS shareholder_name_ar, 
                     shareholder_type, ownership_percent, shares_held, report_date
-             FROM shareholders 
+             FROM major_shareholders 
              ORDER BY report_date DESC, ownership_percent DESC NULLS LAST
              LIMIT $1`,
             [limit]

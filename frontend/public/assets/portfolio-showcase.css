@@ -768,7 +768,7 @@ html[dir="rtl"] .pf-feature-card.active::after { right: 0; }
 }
 
 /* ─── Responsive Media Queries ──────────────────────────────────────── */
-@media (max-width: 992px) {
+@media (max-width: 893px) {
     .pf-showcase-grid {
         grid-template-columns: 1fr;
         gap: 2.5rem;
@@ -778,7 +778,7 @@ html[dir="rtl"] .pf-feature-card.active::after { right: 0; }
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 518px) {
     .pf-showcase-container {
         padding-top: 2rem;
     }

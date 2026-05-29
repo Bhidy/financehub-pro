@@ -77,6 +77,13 @@ const config: Config = {
                     "conic-gradient(from 225deg, var(--color-brand-accent), var(--color-trust-blue), var(--color-brand-primary), var(--color-brand-accent-dark), var(--color-brand-accent))",
             },
         },
+        screens: {
+            sm: "576px",
+            md: "691px",
+            lg: "921px",
+            xl: "1152px",
+            "2xl": "1260px",
+        },
         container: {
             center: true,
             padding: {
@@ -85,11 +92,11 @@ const config: Config = {
                 xl: "3rem",      // Wide screen padding
             },
             screens: {
-                sm: "640px",
-                md: "768px",
-                lg: "1024px",
-                xl: "1280px",
-                "2xl": "1400px", // Brainwave usually caps around here
+                sm: "576px",
+                md: "691px",
+                lg: "921px",
+                xl: "1152px",
+                "2xl": "1260px",
             },
         },
     },

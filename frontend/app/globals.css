@@ -524,6 +524,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   width: 100%;
   overflow-x: hidden;
+  zoom: 0.9 !important;
 }
 
 /* ============================================================================

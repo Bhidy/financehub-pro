@@ -4053,15 +4053,35 @@
         const cursorDot = document.querySelector('.cursor-dot');
         const cursorRing = document.querySelector('.cursor-ring');
         const useCustomCursor = window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (useCustomCursor) {
-            document.body.style.cursor = 'none';
+        if (useCustomCursor && cursorDot && cursorRing) {
+            // Relocate cursor elements directly to documentElement (html element)
+            // This bypasses the body { zoom: 0.9 } coordinate scaling, preventing coordinate capping, lag, and double cursors at the screen boundaries!
+            document.documentElement.appendChild(cursorDot);
+            document.documentElement.appendChild(cursorRing);
+
+            // Hide native cursor everywhere, even on hoverable links/buttons, to solve double-cursor issues
+            const cursorStyle = document.createElement('style');
+            cursorStyle.textContent = `
+                * {
+                    cursor: none !important;
+                }
+                a, button, [role="button"], input, select, textarea, .cursor-pointer {
+                    cursor: none !important;
+                }
+            `;
+            document.head.appendChild(cursorStyle);
+
             window.addEventListener('mousemove', (e) => {
-                cursorDot.style.left = `${e.clientX}px`; cursorDot.style.top = `${e.clientY}px`;
-                cursorRing.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 250, fill: "forwards" });
+                // Since cursor elements are now children of <html>, they are not scaled by zoom: 0.9!
+                // Map coordinates 1:1 with screen/viewport physical pixels.
+                const x = e.clientX;
+                const y = e.clientY;
+                cursorDot.style.left = `${x}px`; cursorDot.style.top = `${y}px`;
+                cursorRing.animate({ left: `${x}px`, top: `${y}px` }, { duration: 250, fill: "forwards" });
             });
         } else {
-            cursorDot.style.display = 'none';
-            cursorRing.style.display = 'none';
+            if (cursorDot) cursorDot.style.display = 'none';
+            if (cursorRing) cursorRing.style.display = 'none';
         }
 
         const canvas = document.getElementById('stars');

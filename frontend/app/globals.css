@@ -392,6 +392,22 @@
   --card-bg: #FFFFFF;
   --card-border: #E2E8F0;
   color-scheme: light;
+
+  /* Starta Theme variables (Light Mode) */
+  --page: #f4f7fb;
+  --surface: #ffffff;
+  --surface-soft: rgba(255, 255, 255, .72);
+  --ink: #10182d;
+  --muted: #5c697e;
+  --faint: #94a3b8;
+  --line: rgba(143, 162, 184, .17);
+  --teal: #14b8a6;
+  --teal-dark: #0f766e;
+  --teal-soft: #e8f8f5;
+  --green: #079669;
+  --red: #df5361;
+  --shadow: 0 20px 50px rgba(44, 66, 91, .07);
+  --shadow-high: 0 26px 68px rgba(44, 66, 91, .1);
 }
 
 /* System Preference Detection */
@@ -402,6 +418,22 @@
     --card-bg: #24303F;
     --card-border: #2E3A47;
     color-scheme: dark;
+
+    /* Starta Theme variables (Dark Mode) */
+    --page: #0b0f19;
+    --surface: #101726;
+    --surface-soft: rgba(16, 23, 38, .76);
+    --ink: #f1f5f9;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --line: rgba(148, 163, 184, .14);
+    --teal: #14b8a6;
+    --teal-dark: #2dd4bf;
+    --teal-soft: rgba(20, 184, 166, 0.08);
+    --green: #10b981;
+    --red: #f43f5e;
+    --shadow: 0 20px 50px rgba(0, 0, 0, .3);
+    --shadow-high: 0 26px 68px rgba(0, 0, 0, .45);
   }
 }
 
@@ -412,6 +444,22 @@
   --card-bg: #24303F;
   --card-border: #2E3A47;
   color-scheme: dark !important;
+
+  /* Starta Theme variables (Dark Mode) */
+  --page: #0b0f19;
+  --surface: #101726;
+  --surface-soft: rgba(16, 23, 38, .76);
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --line: rgba(148, 163, 184, .14);
+  --teal: #14b8a6;
+  --teal-dark: #2dd4bf;
+  --teal-soft: rgba(20, 184, 166, 0.08);
+  --green: #10b981;
+  --red: #f43f5e;
+  --shadow: 0 20px 50px rgba(0, 0, 0, .3);
+  --shadow-high: 0 26px 68px rgba(0, 0, 0, .45);
 }
 
 /* Manual Light Mode Toggle */
@@ -421,6 +469,22 @@
   --card-bg: #FFFFFF;
   --card-border: #E2E8F0;
   color-scheme: light !important;
+
+  /* Starta Theme variables (Light Mode) */
+  --page: #f4f7fb;
+  --surface: #ffffff;
+  --surface-soft: rgba(255, 255, 255, .72);
+  --ink: #10182d;
+  --muted: #5c697e;
+  --faint: #94a3b8;
+  --line: rgba(143, 162, 184, .17);
+  --teal: #14b8a6;
+  --teal-dark: #0f766e;
+  --teal-soft: #e8f8f5;
+  --green: #079669;
+  --red: #df5361;
+  --shadow: 0 20px 50px rgba(44, 66, 91, .07);
+  --shadow-high: 0 26px 68px rgba(44, 66, 91, .1);
 
   /* Inverted Color Scale for Light Theme */
   --color-n-1: #1C2434;

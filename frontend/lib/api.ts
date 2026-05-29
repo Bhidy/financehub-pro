@@ -15,6 +15,12 @@ if (typeof window !== 'undefined') {
     console.log(`[FinanceHub Pro] API gateway: ${API_BASE_URL}`);
 }
 
+const LOCAL_API_BASE_URL = typeof window === "undefined" ? "http://localhost:3000/api/v1" : "/api/v1";
+export const localApi = axios.create({
+    baseURL: LOCAL_API_BASE_URL,
+    withCredentials: true,
+});
+
 export interface UpdateProfileData {
     full_name?: string;
     phone?: string;
@@ -691,23 +697,23 @@ export const fetchEgxDashboardSnapshot = async (): Promise<EgxDashboardSnapshot>
 };
 
 export const fetchTickers = async (): Promise<Ticker[]> => {
-    const { data } = await api.get("/tickers");
+    const { data } = await localApi.get("/tickers");
     // Zod Validation: If backend returns invalid data, this throws an error explanation
     return TickerResponseSchema.parse(data);
 };
 
 export const fetchHistory = async (symbol: string): Promise<OHLC[]> => {
-    const { data } = await api.get(`/history/${symbol}`);
+    const { data } = await localApi.get(`/history/${symbol}`);
     return data;
 };
 
 export const fetchOHLC = async (symbol: string, period: string = "1y"): Promise<OHLC[]> => {
-    const { data } = await api.get(`/ohlc/${symbol}`, { params: { period } });
+    const { data } = await localApi.get(`/ohlc/${symbol}`, { params: { period } });
     return data;
 };
 
 export const fetchFinancials = async (symbol: string) => {
-    const { data } = await api.get(`/financials/${symbol}`);
+    const { data } = await localApi.get(`/financials/${symbol}`);
     return data;
 };
 
@@ -872,7 +878,7 @@ export const fetchAIBriefing = async () => {
 export const fetchCorporateActions = async (symbol?: string) => {
     // Attempt to pass symbol as param, but also filter client-side just in case backend ignores it
     const params = symbol ? { symbol } : {};
-    const { data } = await api.get("/corporate-actions", { params });
+    const { data } = await localApi.get("/corporate-actions", { params });
 
     if (symbol && Array.isArray(data)) {
         return data.filter((a: any) => a.symbol === symbol);
@@ -902,22 +908,22 @@ export const fetchFundNav = async (fundId: string, limit: number = 3650) => {
 };
 
 export const fetchInsiderTrading = async (limit: number = 100) => {
-    const { data } = await api.get("/insider-trading", { params: { limit } });
+    const { data } = await localApi.get("/insider-trading", { params: { limit } });
     return data;
 };
 
 export const fetchAnalystRatings = async (limit: number = 100) => {
-    const { data } = await api.get("/analyst-ratings", { params: { limit } });
+    const { data } = await localApi.get("/analyst-ratings", { params: { limit } });
     return data;
 };
 
 export const fetchMarketBreadth = async (limit: number = 30) => {
-    const { data } = await api.get("/market-breadth", { params: { limit } });
+    const { data } = await localApi.get("/market-breadth", { params: { limit } });
     return data;
 };
 
 export const fetchMarketSummary = async () => {
-    const { data } = await api.get("/market-summary");
+    const { data } = await localApi.get("/market-summary");
     return data;
 };
 
@@ -926,7 +932,7 @@ export const fetchMarketSummary = async () => {
 // ============================================================================
 
 export const fetchRatios = async (symbol: string) => {
-    const { data } = await api.get(`/ratios`, { params: { symbol, limit: 1 } });
+    const { data } = await localApi.get(`/ratios`, { params: { symbol, limit: 1 } });
     // Keep it consistent with other array returns, or single object if logic dictates
     // Backend likely returns a list.
     return data;
@@ -1019,12 +1025,12 @@ export const fetchEarnings = async (symbol?: string, limit: number = 200) => {
 
 export const fetchShareholders = async (symbol?: string, limit: number = 200) => {
     const params = symbol ? { symbol, limit } : { limit };
-    const { data } = await api.get("/shareholders", { params });
+    const { data } = await localApi.get("/shareholders", { params });
     return data;
 };
 
 export const fetchIntraday = async (symbol: string, interval: string = "1m", limit: number = 300) => {
-    const { data } = await api.get(`/intraday/${symbol}`, { params: { interval, limit } });
+    const { data } = await localApi.get(`/intraday/${symbol}`, { params: { interval, limit } });
     return data;
 };
 

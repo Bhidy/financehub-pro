@@ -17,24 +17,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         // Check localStorage or System Preference on mount
         const savedTheme = localStorage.getItem("theme") as Theme | null;
-        if (savedTheme) {
-            setTheme(savedTheme);
-            if (savedTheme === "light") document.documentElement.classList.add("light");
-        } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-            // Default to Dark unless user explicitly prefers light OR saved light
-            // But user requested "Don't touch current", so default is Dark.
-            // If system is Light, we can auto-switch to Light?
-            // "Don't touch current dark version" implies Dark by default.
-            // But "Ultra Premium" implies respecting system pref.
-            // Let's safe-default to "dark" unless saved "light".
-            setTheme("dark");
+        const resolvedTheme = savedTheme || "dark";
+        
+        setTheme(resolvedTheme);
+        
+        // Sync DOM on mount
+        if (resolvedTheme === "light") {
+            document.documentElement.classList.add("light");
+            document.documentElement.classList.remove("dark");
+            document.documentElement.setAttribute("data-theme", "light");
+            document.documentElement.style.colorScheme = "light";
         } else {
-            setTheme("dark");
+            document.documentElement.classList.add("dark");
+            document.documentElement.classList.remove("light");
+            document.documentElement.setAttribute("data-theme", "dark");
+            document.documentElement.style.colorScheme = "dark";
         }
     }, []);
 
     const toggleTheme = () => {
-        // Source of Truth: React State
         const newTheme = theme === "dark" ? "light" : "dark";
 
         // 1. Update State (Trigger UI Re-render)
@@ -47,10 +48,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (newTheme === "light") {
             document.documentElement.classList.add("light");
             document.documentElement.classList.remove("dark");
+            document.documentElement.setAttribute("data-theme", "light");
+            document.documentElement.style.colorScheme = "light";
         } else {
-            document.documentElement.classList.remove("light");
             document.documentElement.classList.add("dark");
+            document.documentElement.classList.remove("light");
+            document.documentElement.setAttribute("data-theme", "dark");
+            document.documentElement.style.colorScheme = "dark";
         }
+        
+        // Dispatch custom event for vanilla JS compatibility
+        document.dispatchEvent(new CustomEvent("starta:themechange", { detail: { theme: newTheme } }));
     };
 
     return (

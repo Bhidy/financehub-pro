@@ -14,8 +14,10 @@ import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
     FileText, ArrowUpRight, ArrowDownRight, Star, Bell, Share2, Activity,
     Target, LineChart, CandlestickChart, Zap, PieChart, AlertCircle, Wallet,
-    Briefcase, Calendar, ArrowUp, ArrowDown, Clock, Globe, Award, Landmark, CheckCircle
+    Briefcase, Calendar, ArrowUp, ArrowDown, Clock, Globe, Award, Landmark, CheckCircle, ShieldAlert
 } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // FIELD TRANSLATIONS FOR ELEGANT BILINGUAL SUPPORT
 const TRANSLATIONS = {
@@ -26,6 +28,7 @@ const TRANSLATIONS = {
         nav_news: "MARKET NEWS",
         nav_portfolio: "PORTFOLIO",
         nav_learn: "LEARN",
+        nav_about: "ABOUT US",
         delayed: "Delayed 5 min",
         overview: "Overview",
         financials: "Financials",
@@ -73,7 +76,15 @@ const TRANSLATIONS = {
         price_chart: "Price History",
         chart_style: "Style",
         quarter: "Quarterly Ratios",
-        annual: "Annual Ratios"
+        annual: "Annual Ratios",
+        trading_info: "Trading Info",
+        market_breadth: "Market Breadth",
+        valuation_multiples: "Valuation Multiples",
+        profitability_margins: "Profitability & Margins",
+        liquidity_solvency: "Liquidity & Solvency",
+        dividends_risk: "Dividends & Risk",
+        analyst_ratings: "Analyst Target & Recommendations",
+        company_details: "Company Details"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -82,6 +93,7 @@ const TRANSLATIONS = {
         nav_news: "أخبار السوق",
         nav_portfolio: "المحفظة",
         nav_learn: "تعلم",
+        nav_about: "من نحن",
         delayed: "متأخر ٥ دقائق",
         overview: "نظرة عامة",
         financials: "القوائم المالية",
@@ -129,7 +141,15 @@ const TRANSLATIONS = {
         price_chart: "تاريخ حركة الأسعار",
         chart_style: "نمط الرسم",
         quarter: "المؤشرات الربعية",
-        annual: "المؤشرات السنوية"
+        annual: "المؤشرات السنوية",
+        trading_info: "بيانات التداول",
+        market_breadth: "اتساع السوق",
+        valuation_multiples: "مضاعفات التقييم",
+        profitability_margins: "الربحية وهامش الأرباح",
+        liquidity_solvency: "السيولة والملاءة المالية",
+        dividends_risk: "التوزيعات والمخاطر",
+        analyst_ratings: "أهداف المحللين والتوصيات",
+        company_details: "تفاصيل الشركة"
     }
 };
 
@@ -215,6 +235,22 @@ export default function SymbolDetailPage() {
         document.documentElement.dir = nextLang === "ar" ? "rtl" : "ltr";
     };
 
+    // Global theme integration
+    const { theme } = useTheme();
+    useEffect(() => {
+        if (theme === "light") {
+            document.documentElement.classList.add("light");
+            document.documentElement.classList.remove("dark");
+            document.documentElement.setAttribute("data-theme", "light");
+            document.documentElement.style.colorScheme = "light";
+        } else {
+            document.documentElement.classList.remove("light");
+            document.documentElement.classList.add("dark");
+            document.documentElement.setAttribute("data-theme", "dark");
+            document.documentElement.style.colorScheme = "dark";
+        }
+    }, [theme]);
+
     const [activeTab, setActiveTab] = useState<"overview" | "ratios" | "financials" | "ownership" | "analysts" | "insider" | "actions">("overview");
     const [chartPeriod, setChartPeriod] = useState("1y");
     const [chartStyle, setChartStyle] = useState<"candle" | "line" | "area">("area");
@@ -290,6 +326,49 @@ export default function SymbolDetailPage() {
         return { high52, low52, periodReturn, current };
     }, [chartData]);
 
+    // Resolved structures from the backend API's fail-safe structures
+    const profileData = useMemo(() => yahooProfile?.profile || {}, [yahooProfile]);
+    const fundamentalsData = useMemo(() => yahooProfile?.fundamentals || {}, [yahooProfile]);
+
+    const longBusinessSummary = useMemo(() => profileData.description || profileData.longBusinessSummary || stockData?.name_en || "", [profileData, stockData]);
+    const website = useMemo(() => profileData.website || "", [profileData]);
+    const industry = useMemo(() => profileData.industry || stockData?.sector_name || "", [profileData, stockData]);
+    const employees = useMemo(() => profileData.employees || null, [profileData]);
+    const city = useMemo(() => profileData.headquarters_city || profileData.city || "", [profileData]);
+    const country = useMemo(() => profileData.country || "", [profileData]);
+
+    const marketCap = useMemo(() => Number(profileData.market_cap || stockData?.market_cap || ratiosData?.marketCap || ratiosData?.market_cap || 0), [profileData, stockData, ratiosData]);
+    const peRatio = useMemo(() => Number(fundamentalsData.pe_ratio || stockData?.pe_ratio || ratiosData?.peRatio || ratiosData?.pe_ratio || 0), [fundamentalsData, stockData, ratiosData]);
+    const pbRatio = useMemo(() => Number(fundamentalsData.price_to_book || ratiosData?.pbRatio || ratiosData?.pb_ratio || ratiosData?.priceToBook || stockData?.pb_ratio || 0), [fundamentalsData, ratiosData, stockData]);
+    const dividendYield = useMemo(() => Number(fundamentalsData.dividend_yield || ratiosData?.dividendYield || ratiosData?.dividend_yield || stockData?.dividend_yield || 0), [fundamentalsData, ratiosData, stockData]);
+    const betaValue = useMemo(() => Number(fundamentalsData.beta || stockData?.beta || ratiosData?.beta || 0), [fundamentalsData, stockData, ratiosData]);
+    const sharesOutstanding = useMemo(() => Number(profileData.shares_outstanding || ratiosData?.sharesOutstanding || ratiosData?.shares_outstanding || 0), [profileData, ratiosData]);
+
+    const fcf = useMemo(() => Number(fundamentalsData.free_cash_flow || ratiosData?.freeCashFlow || ratiosData?.fcf || 0), [fundamentalsData, ratiosData]);
+    const profitMargin = useMemo(() => Number(fundamentalsData.profit_margin || ratiosData?.profitMargin || ratiosData?.profit_margin || 0), [fundamentalsData, ratiosData]);
+    const debtEquity = useMemo(() => Number(fundamentalsData.debt_to_equity || ratiosData?.debtToEquity || ratiosData?.debt_equity || 0), [fundamentalsData, ratiosData]);
+    const roe = useMemo(() => Number(fundamentalsData.return_on_equity || ratiosData?.returnOnEquity || ratiosData?.roe || 0), [fundamentalsData, ratiosData]);
+    const roa = useMemo(() => Number(fundamentalsData.return_on_assets || ratiosData?.returnOnAssets || ratiosData?.roa || 0), [fundamentalsData, ratiosData]);
+    const pegRatio = useMemo(() => Number(fundamentalsData.peg_ratio || ratiosData?.pegRatio || ratiosData?.peg_ratio || 0), [fundamentalsData, ratiosData]);
+    const currentRatio = useMemo(() => Number(fundamentalsData.current_ratio || ratiosData?.currentRatio || 0), [fundamentalsData, ratiosData]);
+    const quickRatio = useMemo(() => Number(fundamentalsData.quick_ratio || ratiosData?.quickRatio || 0), [fundamentalsData, ratiosData]);
+    const operatingMargin = useMemo(() => Number(fundamentalsData.operating_margin || 0), [fundamentalsData]);
+    const grossMargin = useMemo(() => Number(fundamentalsData.gross_margin || 0), [fundamentalsData]);
+    const enterpriseValue = useMemo(() => Number(fundamentalsData.enterprise_value || 0), [fundamentalsData]);
+    const evToRevenue = useMemo(() => Number(fundamentalsData.enterprise_to_revenue || 0), [fundamentalsData]);
+    const evToEbitda = useMemo(() => Number(fundamentalsData.enterprise_to_ebitda || 0), [fundamentalsData]);
+    const trailingEps = useMemo(() => Number(fundamentalsData.trailing_eps || 0), [fundamentalsData]);
+    const forwardEps = useMemo(() => Number(fundamentalsData.forward_eps || 0), [fundamentalsData]);
+    const bookValue = useMemo(() => Number(fundamentalsData.book_value || 0), [fundamentalsData]);
+    const dividendRate = useMemo(() => Number(fundamentalsData.dividend_rate || 0), [fundamentalsData]);
+    const payoutRatio = useMemo(() => Number(fundamentalsData.payout_ratio || 0), [fundamentalsData]);
+    const targetPrice = useMemo(() => Number(fundamentalsData.target_price || stockData?.target_price || 0), [fundamentalsData, stockData]);
+    const recommendation = useMemo(() => fundamentalsData.recommendation || "-", [fundamentalsData]);
+    const floatShares = useMemo(() => Number(profileData.float_shares || 0), [profileData]);
+    const shortRatio = useMemo(() => Number(profileData.short_ratio || 0), [profileData]);
+    const phone = useMemo(() => profileData.phone || "-", [profileData]);
+    const address = useMemo(() => profileData.address || "-", [profileData]);
+
     // Chart Effect
     useEffect(() => {
         if (activeTab !== "overview" || chartData.length === 0) return;
@@ -299,11 +378,11 @@ export default function SymbolDetailPage() {
             if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
 
             const chart = createChart(chartContainerRef.current, {
-                layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#94a3b8', fontFamily: "'Manrope', 'IBM Plex Sans Arabic', sans-serif" },
+                layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: theme === 'dark' ? '#94a3b8' : '#475569', fontFamily: "'Manrope', 'IBM Plex Sans Arabic', sans-serif" },
                 width: chartContainerRef.current.clientWidth, height: 400,
-                grid: { vertLines: { color: 'rgba(148, 163, 184, 0.05)' }, horzLines: { color: 'rgba(148, 163, 184, 0.05)' } },
-                timeScale: { timeVisible: true, borderColor: 'rgba(148, 163, 184, 0.1)' },
-                rightPriceScale: { borderColor: 'rgba(148, 163, 184, 0.1)' },
+                grid: { vertLines: { color: theme === 'dark' ? 'rgba(148, 163, 184, 0.03)' : 'rgba(148, 163, 184, 0.05)' }, horzLines: { color: theme === 'dark' ? 'rgba(148, 163, 184, 0.03)' : 'rgba(148, 163, 184, 0.05)' } },
+                timeScale: { timeVisible: true, borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.15)' },
+                rightPriceScale: { borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.15)' },
                 crosshair: { mode: CrosshairMode.Normal, vertLine: { color: 'rgba(20, 184, 166, 0.4)', width: 1, style: 2, labelBackgroundColor: '#0f766e' }, horzLine: { color: 'rgba(20, 184, 166, 0.4)', width: 1, style: 2, labelBackgroundColor: '#0f766e' } }
             });
             chartRef.current = chart;
@@ -316,7 +395,7 @@ export default function SymbolDetailPage() {
                     const series = chart.addSeries(LineSeries, { color: '#14b8a6', lineWidth: 3 });
                     series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
                 } else {
-                    const series = chart.addSeries(AreaSeries, { topColor: 'rgba(20, 184, 166, 0.35)', bottomColor: 'rgba(20, 184, 166, 0.01)', lineColor: '#14b8a6', lineWidth: 3 });
+                    const series = chart.addSeries(AreaSeries, { topColor: 'rgba(20, 184, 166, 0.3)', bottomColor: 'rgba(20, 184, 166, 0.0)', lineColor: '#14b8a6', lineWidth: 3 });
                     series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
                 }
                 const volumeSeries = chart.addSeries(HistogramSeries, { color: 'rgba(148,163,184,0.1)', priceFormat: { type: 'volume' }, priceScaleId: '' });
@@ -333,7 +412,7 @@ export default function SymbolDetailPage() {
             window.removeEventListener('resize', handleResize);
             if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
         };
-    }, [chartData, chartStyle, activeTab]);
+    }, [chartData, chartStyle, activeTab, theme]);
 
     if (tickersLoading) {
         return (
@@ -365,71 +444,39 @@ export default function SymbolDetailPage() {
     const volume = Number(stockData.volume || 0);
     const loading = isIntraday ? intradayLoading : chartLoading;
 
-    // Mixed API data resolution (combining StockAnalysis and Yahoo Finance)
-    const longBusinessSummary = yahooProfile?.longBusinessSummary || yahooProfile?.summary || "";
-    const website = yahooProfile?.website || yahooProfile?.website_url || "";
-    const industry = yahooProfile?.industry || stockData.sector_name || "";
-    const employees = yahooProfile?.fullTimeEmployees || yahooProfile?.employees || null;
-    const city = yahooProfile?.city || "";
-    const country = yahooProfile?.country || "";
-
-    const marketCap = Number(ratiosData?.marketCap || ratiosData?.market_cap || stockData.market_cap || 0);
-    const peRatio = Number(ratiosData?.peRatio || ratiosData?.pe_ratio || stockData.pe_ratio || 0);
-    const pbRatio = Number(ratiosData?.pbRatio || ratiosData?.pb_ratio || ratiosData?.priceToBook || 0);
-    const dividendYield = Number(ratiosData?.dividendYield || ratiosData?.dividend_yield || yahooProfile?.dividendYield || 0);
-    const betaValue = Number(ratiosData?.beta || yahooProfile?.beta || 0);
-    const sharesOutstanding = Number(ratiosData?.sharesOutstanding || ratiosData?.shares_outstanding || 0);
-
-    const fcf = Number(ratiosData?.freeCashFlow || ratiosData?.fcf || 0);
-    const profitMargin = Number(ratiosData?.profitMargin || ratiosData?.profit_margin || 0);
-    const debtEquity = Number(ratiosData?.debtToEquity || ratiosData?.debt_equity || 0);
-    const roe = Number(ratiosData?.returnOnEquity || ratiosData?.roe || 0);
-    const roa = Number(ratiosData?.returnOnAssets || ratiosData?.roa || 0);
-    const pegRatio = Number(ratiosData?.pegRatio || ratiosData?.peg_ratio || 0);
-    const currentRatio = Number(ratiosData?.currentRatio || 0);
-
     return (
-        <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#0b0f19] text-[#10182d] dark:text-[#f1f5f9] font-sans pb-16 relative overflow-x-hidden transition-colors duration-300">
+        <div className="min-h-screen text-[#10182d] dark:text-[#f1f5f9] font-sans pb-16 relative overflow-x-hidden transition-colors duration-300">
             {/* Atmos / Backdrop Gradients */}
             <div className="grid-backdrop" />
             <div className="atmosphere" />
 
-            {/* PRESET STATIC STYLING COMPATIBILITY */}
+            {/* BRANDED SPECIFICATIONS */}
             <style jsx global>{`
+                body {
+                    background: var(--page) !important;
+                    color: var(--ink) !important;
+                    transition: background 0.3s ease, color 0.3s ease;
+                }
                 .premium-glass {
-                    background: rgba(255, 255, 255, 0.72);
+                    background: var(--surface-soft);
                     backdrop-filter: blur(20px);
-                    border: 1px solid rgba(143, 162, 184, 0.17);
-                    box-shadow: 0 20px 50px rgba(44, 66, 91, 0.04);
-                    transition: transform 0.2s, box-shadow 0.2s;
+                    border: 1px solid var(--line);
+                    box-shadow: var(--shadow);
+                    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
                 }
-                html[data-theme="dark"] .premium-glass {
-                    background: rgba(16, 23, 38, 0.76);
-                    backdrop-filter: blur(20px);
-                    border: 1px solid rgba(148, 163, 184, 0.14);
-                    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-                }
-                .premium-glow-hover:hover {
-                    box-shadow: 0 12px 30px rgba(20, 184, 166, 0.08);
+                .premium-glass:hover {
+                    box-shadow: var(--shadow-high);
                     border-color: rgba(20, 184, 166, 0.25);
-                }
-                html[data-theme="dark"] .premium-glow-hover:hover {
-                    box-shadow: 0 12px 30px rgba(20, 184, 166, 0.15);
-                    border-color: rgba(20, 184, 166, 0.35);
                 }
                 .site-nav {
                     position: fixed;
                     inset: 0 0 auto;
                     z-index: 50;
                     height: 5rem;
-                    border-bottom: 1px solid rgba(143, 162, 184, 0.17);
-                    background: rgba(244, 247, 251, 0.86);
+                    border-bottom: 1px solid var(--line);
+                    background: var(--surface-soft);
                     backdrop-filter: blur(20px);
                     transition: background 0.3s, border-color 0.3s;
-                }
-                html[data-theme="dark"] .site-nav {
-                    background: rgba(11, 15, 25, 0.86);
-                    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
                 }
                 .nav-inner {
                     max-width: 1536px;
@@ -447,16 +494,17 @@ export default function SymbolDetailPage() {
                     width: 2.15rem;
                     height: 2.15rem;
                     border-radius: 0.62rem;
-                    background: #14b8a6;
+                    background: var(--teal);
                     color: #ffffff;
                     font-size: 1.35rem;
                     font-weight: 800;
                     font-family: Sora, sans-serif;
                 }
-                .brand-name { font-size: 1.1rem; letter-spacing: 0.17em; font-weight: 800; font-family: Sora, sans-serif; }
-                .nav-links { display: flex; gap: 2rem; align-items: center; }
+                .brand-name { font-size: 1.1rem; letter-spacing: 0.17em; font-weight: 800; font-family: Sora, sans-serif; color: var(--ink); }
+                .nav-links { display: flex; gap: clamp(1.05rem, 1.9vw, 2rem); align-items: center; }
                 .nav-links a {
-                    color: #5c697e;
+                    position: relative;
+                    color: var(--muted);
                     font-family: "IBM Plex Mono", monospace;
                     font-size: 0.68rem;
                     font-weight: 600;
@@ -464,25 +512,55 @@ export default function SymbolDetailPage() {
                     white-space: nowrap;
                     transition: color 180ms ease;
                 }
-                html[data-theme="dark"] .nav-links a { color: #94a3b8; }
                 html[dir="rtl"] .nav-links a { font-family: "IBM Plex Sans Arabic", sans-serif; font-size: 13px; letter-spacing: 0; }
-                .nav-links a:hover, .nav-links a.active { color: #14b8a6; }
+                .nav-links a:hover, .nav-links a.active { color: var(--teal-dark); }
+                .nav-links a.active::after {
+                    content: "";
+                    position: absolute;
+                    inset: auto 0 -0.72rem;
+                    height: 2px;
+                    border-radius: 2px;
+                    background: var(--teal);
+                }
                 .lang-toggle {
-                    border: 1px solid rgba(143, 162, 184, 0.17);
+                    border: 1px solid var(--line);
                     border-radius: 999px;
                     padding: 0.5rem 0.9rem;
-                    background: #ffffff;
+                    background: var(--surface);
                     font-weight: 700;
                     font-size: 0.8rem;
-                    color: #10182d;
+                    color: var(--ink);
                     transition: border-color 180ms ease, box-shadow 180ms ease;
                 }
-                html[data-theme="dark"] .lang-toggle {
-                    background: #101726;
-                    border: 1px solid rgba(148, 163, 184, 0.14);
-                    color: #f1f5f9;
-                }
                 .lang-toggle:hover { border-color: rgba(20,184,166,0.38); box-shadow: 0 12px 24px rgba(20,184,166,0.1); }
+                .grid-backdrop {
+                    position: fixed;
+                    inset: 0;
+                    z-index: -2;
+                    background-image:
+                        linear-gradient(rgba(15, 23, 42, .01) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(20, 184, 166, .015) 1px, transparent 1px);
+                    background-size: 42px 42px;
+                }
+                html[data-theme="dark"] .grid-backdrop {
+                    background-image:
+                        linear-gradient(rgba(148, 163, 184, .02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(20, 184, 166, .025) 1px, transparent 1px);
+                }
+                .atmosphere {
+                    position: fixed;
+                    inset: 0;
+                    z-index: -1;
+                    pointer-events: none;
+                    background:
+                        radial-gradient(circle at 1% 0%, rgba(20, 184, 166, .06), transparent 28%),
+                        radial-gradient(circle at 100% 4%, rgba(45, 212, 191, .04), transparent 26%);
+                }
+                html[data-theme="dark"] .atmosphere {
+                    background:
+                        radial-gradient(circle at 1% 0%, rgba(20, 184, 166, .12), transparent 28%),
+                        radial-gradient(circle at 100% 4%, rgba(45, 212, 191, .07), transparent 26%);
+                }
             `}</style>
 
             {/* BRANDED SITE NAVIGATION */}
@@ -490,17 +568,19 @@ export default function SymbolDetailPage() {
                 <div className="nav-inner">
                     <a className="brand" href="/">
                         <span className="brand-mark">S</span>
-                        <span className="brand-name text-slate-800 dark:text-white">STARTA</span>
+                        <span className="brand-name">STARTA</span>
                     </a>
                     <div className="nav-links hidden lg:flex">
                         <a href="/">{t.nav_home}</a>
                         <a href="/Funds">{t.nav_funds}</a>
                         <a className="active" href="/Market-Pulse">{t.nav_pulse}</a>
                         <a href="/News">{t.nav_news}</a>
-                        <a href="/Portfolio">{t.nav_portfolio}</a>
                         <a href="/Learn">{t.nav_learn}</a>
+                        <a href="/Portfolio">{t.nav_portfolio}</a>
+                        <a href="#about-us">{t.nav_about}</a>
                     </div>
                     <div className="flex items-center gap-3">
+                        <ThemeToggle />
                         <button onClick={handleLangToggle} className="lang-toggle" type="button">
                             {lang === "en" ? "AR" : "EN"}
                         </button>
@@ -510,7 +590,7 @@ export default function SymbolDetailPage() {
 
             {/* HERO HERO SECTION */}
             <div className="max-w-[1536px] mx-auto px-6 pt-28 pb-6">
-                <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                <div className="premium-glass rounded-3xl p-8 border relative overflow-hidden">
                     <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-[#14b8a6] to-[#0f766e] opacity-5 blur-3xl" />
                     
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
@@ -520,8 +600,8 @@ export default function SymbolDetailPage() {
                             </div>
                             <div>
                                 <div className="flex items-center gap-3 flex-wrap">
-                                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase">{symbol}</h1>
-                                    <span className="px-3 py-1 rounded-lg text-xs font-bold bg-[#14b8a6]/10 dark:bg-[#14b8a6]/20 text-[#14b8a6] dark:text-[#2dd4bf] tracking-wide uppercase">{stockData.sector_name || "Equity"}</span>
+                                    <h1 className="text-3xl font-black tracking-tight uppercase">{symbol}</h1>
+                                    <span className="px-3 py-1 rounded-lg text-xs font-bold bg-[#14b8a6]/10 dark:bg-[#14b8a6]/20 text-[#14b8a6] dark:text-[#2dd4bf] tracking-wide uppercase">{industry || "Equity"}</span>
                                 </div>
                                 <h2 className="text-slate-500 dark:text-slate-400 font-semibold text-lg mt-1.5">{lang === "ar" && stockData.name_ar ? stockData.name_ar : (stockData.name_en || symbol)}</h2>
                             </div>
@@ -530,7 +610,7 @@ export default function SymbolDetailPage() {
                         <div className="flex items-center gap-6 lg:text-right">
                             <div>
                                 <div className="flex items-baseline gap-2 justify-start lg:justify-end">
-                                    <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-white tabular">{lastPrice.toFixed(2)}</span>
+                                    <span className="text-5xl font-black tracking-tight tabular">{lastPrice.toFixed(2)}</span>
                                     <span className="text-slate-500 font-bold text-sm">{currency}</span>
                                 </div>
                                 <div className={`flex items-center gap-2 mt-2 font-bold text-sm justify-start lg:justify-end ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
@@ -556,13 +636,13 @@ export default function SymbolDetailPage() {
                         { l: t.market_cap, v: marketCap > 0 ? formatCurrency(marketCap, currency) : "-", icon: Landmark, color: "text-[#14b8a6]" },
                         { l: t.pe_ratio, v: peRatio > 0 ? peRatio.toFixed(2) : "-", icon: Target, color: "text-amber-500" }
                     ].map((card, i) => (
-                        <div key={i} className="premium-glass rounded-2xl p-5 border border-slate-200 dark:border-slate-800 flex items-center gap-4">
+                        <div key={i} className="premium-glass rounded-2xl p-5 flex items-center gap-4">
                             <div className="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
                                 <card.icon className={`w-5 h-5 ${card.color}`} />
                             </div>
                             <div>
                                 <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{card.l}</p>
-                                <p className="text-slate-800 dark:text-white font-extrabold text-lg mt-0.5 tabular">{card.v}</p>
+                                <p className="font-extrabold text-lg mt-0.5 tabular">{card.v}</p>
                             </div>
                         </div>
                     ))}
@@ -571,7 +651,7 @@ export default function SymbolDetailPage() {
 
             {/* TAB INTERFACE */}
             <div className="max-w-[1536px] mx-auto px-6 mb-8">
-                <div className="premium-glass rounded-2xl p-2 border border-slate-200 dark:border-slate-800 flex gap-2 overflow-x-auto shadow-sm">
+                <div className="premium-glass rounded-2xl p-2 flex gap-2 overflow-x-auto shadow-sm">
                     {[
                         { id: "overview", label: t.overview, icon: Activity },
                         { id: "ratios", label: t.ratios, icon: Target },
@@ -598,17 +678,17 @@ export default function SymbolDetailPage() {
                         {activeTab === "overview" && (
                             <>
                                 {/* CHART PANEL */}
-                                <div className="premium-glass rounded-3xl p-6 border border-slate-200 dark:border-slate-800 relative">
+                                <div className="premium-glass rounded-3xl p-6 relative">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                                        <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <h3 className="text-xl font-extrabold flex items-center gap-2">
                                             <Activity className="w-5 h-5 text-[#14b8a6]" /> {t.price_chart}
                                         </h3>
                                         <div className="flex items-center gap-3 flex-wrap">
                                             <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-                                                <button onClick={() => setIsIntraday(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isIntraday ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-400 hover:text-slate-700"}`}>1D</button>
+                                                <button onClick={() => setIsIntraday(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isIntraday ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-450 hover:text-slate-700"}`}>1D</button>
                                                 {["1m", "3m", "6m", "1y", "3y", "max"].map(tf => (
                                                     <button key={tf} onClick={() => { setIsIntraday(false); setChartPeriod(tf); }}
-                                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!isIntraday && chartPeriod === tf ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-400 hover:text-slate-700"}`}>
+                                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!isIntraday && chartPeriod === tf ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-450 hover:text-slate-700"}`}>
                                                         {tf.toUpperCase()}
                                                     </button>
                                                 ))}
@@ -616,7 +696,7 @@ export default function SymbolDetailPage() {
                                             <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
                                                 {["area", "candle", "line"].map(style => (
                                                     <button key={style} onClick={() => setChartStyle(style as any)}
-                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${chartStyle === style ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-400 hover:text-slate-700"}`}>
+                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${chartStyle === style ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-450 hover:text-slate-700"}`}>
                                                         {style === "area" && <Clock className="w-4 h-4" />}
                                                         {style === "candle" && <CandlestickChart className="w-4 h-4" />}
                                                         {style === "line" && <LineChart className="w-4 h-4" />}
@@ -639,73 +719,165 @@ export default function SymbolDetailPage() {
                                 </div>
 
                                 {/* COMPANY PROFILE SECTION */}
-                                <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-                                    <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-4">
+                                <div className="premium-glass rounded-3xl p-8">
+                                    <h3 className="text-xl font-extrabold flex items-center gap-2 mb-4">
                                         <Building2 className="w-5 h-5 text-[#14b8a6]" /> {t.profile}
                                     </h3>
                                     
-                                    <p className="text-slate-500 dark:text-slate-300 text-base leading-relaxed mb-6 font-medium">
+                                    <p className="text-slate-500 dark:text-slate-350 text-base leading-relaxed mb-6 font-medium">
                                         {longBusinessSummary || t.desc_not_found}
                                     </p>
 
+                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">{t.company_details}</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {[
-                                            { l: t.website, v: website ? <a href={website} target="_blank" rel="noopener noreferrer" className="text-[#14b8a6] hover:underline flex items-center gap-1 font-bold">{website.replace("https://", "").replace("http://", "")} <Globe className="w-4 h-4 inline" /></a> : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
+                                            { l: t.website, v: website ? <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[#14b8a6] hover:underline flex items-center gap-1 font-bold">{website.replace("https://", "").replace("http://", "")} <Globe className="w-4 h-4 inline" /></a> : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
                                             { l: t.industry, v: industry || "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
                                             { l: t.employees, v: employees ? employees.toLocaleString() : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
                                             { l: t.location, v: city ? `${city}${country ? `, ${country}` : ""}` : "-", bg: "bg-slate-50 dark:bg-slate-900/50" }
                                         ].map((item, i) => (
                                             <div key={i} className={`p-4 rounded-2xl ${item.bg} border border-slate-200/50 dark:border-slate-800/50`}>
                                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">{item.l}</p>
-                                                <div className="text-slate-800 dark:text-white font-extrabold text-sm truncate">{item.v}</div>
+                                                <div className="font-extrabold text-sm truncate">{item.v}</div>
                                             </div>
                                         ))}
                                     </div>
+                                    
+                                    {(phone !== "-" || address !== "-") && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50">
+                                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">{lang === "ar" ? "الهاتف" : "Phone"}</p>
+                                                <div className="font-extrabold text-sm">{phone}</div>
+                                            </div>
+                                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50">
+                                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">{lang === "ar" ? "العنوان" : "Address"}</p>
+                                                <div className="font-extrabold text-sm truncate">{address}</div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
 
                         {/* RATIOS TAB */}
                         {activeTab === "ratios" && (
-                            <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800 space-y-6">
-                                <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-2">
-                                    <Target className="w-5 h-5 text-[#14b8a6]" /> {t.metrics}
-                                </h3>
+                            <div className="space-y-6">
+                                {/* VALUATION CARD */}
+                                <div className="premium-glass rounded-3xl p-8">
+                                    <h3 className="text-lg font-black flex items-center gap-2 mb-6 text-slate-800 dark:text-white">
+                                        <Award className="w-5 h-5 text-amber-500" /> {t.valuation_multiples}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {[
+                                            { l: t.market_cap, v: marketCap > 0 ? formatCurrency(marketCap, currency) : "-", icon: Landmark, c: "text-[#14b8a6]" },
+                                            { l: lang === "ar" ? "قيمة المنشأة (EV)" : "Enterprise Value (EV)", v: enterpriseValue > 0 ? formatCurrency(enterpriseValue, currency) : "-", icon: Landmark, c: "text-[#14b8a6]" },
+                                            { l: t.pe_ratio, v: peRatio > 0 ? peRatio.toFixed(2) : "-", icon: Target, c: "text-amber-500" },
+                                            { l: t.pb_ratio, v: pbRatio > 0 ? pbRatio.toFixed(2) : "-", icon: FileText, c: "text-indigo-500" },
+                                            { l: lang === "ar" ? "مكرر المبيعات P/S" : "Price to Sales (P/S)", v: ratiosData?.priceToSales || ratiosData?.psRatio ? (ratiosData.priceToSales || ratiosData.psRatio).toFixed(2) : "-", icon: BarChart3, c: "text-cyan-500" },
+                                            { l: t.peg_ratio, v: pegRatio > 0 ? pegRatio.toFixed(2) : "-", icon: TrendingUp, c: "text-purple-500" },
+                                            { l: lang === "ar" ? "مكرر القيمة الدفترية" : "Book Value Per Share", v: bookValue > 0 ? formatCurrency(bookValue, currency) : "-", icon: Wallet, c: "text-blue-500" },
+                                            { l: lang === "ar" ? "ربحية السهم (EPS) المحققة" : "Earnings Per Share (EPS)", v: trailingEps !== 0 ? trailingEps.toFixed(2) : "-", icon: TrendingUp, c: "text-emerald-500" },
+                                            { l: lang === "ar" ? "مضاعف EV/Revenue" : "EV to Revenue", v: evToRevenue > 0 ? evToRevenue.toFixed(2) : "-", icon: Landmark, c: "text-orange-500" },
+                                            { l: lang === "ar" ? "مضاعف EV/EBITDA" : "EV to EBITDA", v: evToEbitda > 0 ? evToEbitda.toFixed(2) : "-", icon: Landmark, c: "text-indigo-600" }
+                                        ].map((metric, i) => (
+                                            <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
+                                                <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                                                    <metric.icon className={`w-5 h-5 ${metric.c}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
+                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {[
-                                        { l: t.market_cap, v: marketCap > 0 ? formatCurrency(marketCap, currency) : "-", icon: Landmark, c: "text-[#14b8a6]" },
-                                        { l: t.pe_ratio, v: peRatio > 0 ? peRatio.toFixed(2) : "-", icon: Target, c: "text-amber-500" },
-                                        { l: t.pb_ratio, v: pbRatio > 0 ? pbRatio.toFixed(2) : "-", icon: FileText, c: "text-indigo-500" },
-                                        { l: t.div_yield, v: dividendYield > 0 ? `${(dividendYield * 100).toFixed(2)}%` : "-", icon: Wallet, c: "text-emerald-500" },
-                                        { l: t.beta, v: betaValue > 0 ? betaValue.toFixed(2) : "-", icon: Activity, c: "text-rose-500" },
-                                        { l: t.outstanding, v: sharesOutstanding > 0 ? formatNumber(sharesOutstanding) : "-", icon: Users, c: "text-blue-500" },
-                                        { l: t.fcf, v: fcf > 0 ? formatCurrency(fcf, currency) : "-", icon: Briefcase, c: "text-teal-500" },
-                                        { l: t.profit_margin, v: profitMargin > 0 ? `${(profitMargin * 100).toFixed(2)}%` : "-", icon: Award, c: "text-yellow-500" },
-                                        { l: t.debt_equity, v: debtEquity > 0 ? debtEquity.toFixed(2) : "-", icon: TrendingDown, c: "text-red-500" },
-                                        { l: t.roe, v: roe > 0 ? `${(roe * 100).toFixed(2)}%` : "-", icon: CheckCircle, c: "text-emerald-500" },
-                                        { l: t.roa, v: roa > 0 ? `${(roa * 100).toFixed(2)}%` : "-", icon: Activity, c: "text-cyan-500" },
-                                        { l: t.peg_ratio, v: pegRatio > 0 ? pegRatio.toFixed(2) : "-", icon: TrendingUp, c: "text-purple-500" },
-                                        { l: t.current_ratio, v: currentRatio > 0 ? currentRatio.toFixed(2) : "-", icon: Wallet, c: "text-teal-500" }
-                                    ].map((metric, i) => (
-                                        <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
-                                            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
-                                                <metric.icon className={`w-5 h-5 ${metric.c}`} />
+                                {/* PROFITABILITY CARD */}
+                                <div className="premium-glass rounded-3xl p-8">
+                                    <h3 className="text-lg font-black flex items-center gap-2 mb-6 text-slate-800 dark:text-white">
+                                        <Zap className="w-5 h-5 text-emerald-500" /> {t.profitability_margins}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {[
+                                            { l: t.profit_margin, v: profitMargin !== 0 ? `${(profitMargin * (profitMargin < 1 ? 100 : 1)).toFixed(2)}%` : "-", icon: Award, c: "text-emerald-500" },
+                                            { l: lang === "ar" ? "هامش التشغيل" : "Operating Margin", v: operatingMargin !== 0 ? `${(operatingMargin * (operatingMargin < 1 ? 100 : 1)).toFixed(2)}%` : "-", icon: Activity, c: "text-blue-500" },
+                                            { l: lang === "ar" ? "هامش إجمالي الربح" : "Gross Margin", v: grossMargin !== 0 ? `${(grossMargin * (grossMargin < 1 ? 100 : 1)).toFixed(2)}%` : "-", icon: BarChart3, c: "text-indigo-500" },
+                                            { l: t.roe, v: roe !== 0 ? `${(roe * (roe < 1 ? 100 : 1)).toFixed(2)}%` : "-", icon: CheckCircle, c: "text-teal-500" },
+                                            { l: t.roa, v: roa !== 0 ? `${(roa * (roa < 1 ? 100 : 1)).toFixed(2)}%` : "-", icon: Activity, c: "text-purple-500" }
+                                        ].map((metric, i) => (
+                                            <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
+                                                <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                                                    <metric.icon className={`w-5 h-5 ${metric.c}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
+                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
-                                                <p className="text-slate-800 dark:text-white font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* FINANCIAL HEALTH & SOLVENCY */}
+                                <div className="premium-glass rounded-3xl p-8">
+                                    <h3 className="text-lg font-black flex items-center gap-2 mb-6 text-slate-800 dark:text-white">
+                                        <Wallet className="w-5 h-5 text-indigo-500" /> {t.liquidity_solvency}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {[
+                                            { l: t.debt_equity, v: debtEquity > 0 ? debtEquity.toFixed(2) : "-", icon: TrendingDown, c: "text-rose-500" },
+                                            { l: t.current_ratio, v: currentRatio > 0 ? currentRatio.toFixed(2) : "-", icon: Wallet, c: "text-teal-500" },
+                                            { l: lang === "ar" ? "النسبة السريعة" : "Quick Ratio", v: quickRatio > 0 ? quickRatio.toFixed(2) : "-", icon: Wallet, c: "text-cyan-500" },
+                                            { l: t.fcf, v: fcf !== 0 ? formatCurrency(fcf, currency) : "-", icon: Briefcase, c: "text-emerald-500" },
+                                            { l: lang === "ar" ? "التدفق النقدي من العمليات" : "Operating Cash Flow", v: fundamentalsData.operating_cash_flow ? formatCurrency(fundamentalsData.operating_cash_flow, currency) : "-", icon: Activity, c: "text-blue-500" }
+                                        ].map((metric, i) => (
+                                            <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
+                                                <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                                                    <metric.icon className={`w-5 h-5 ${metric.c}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
+                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* DIVIDENDS & RISK CARD */}
+                                <div className="premium-glass rounded-3xl p-8">
+                                    <h3 className="text-lg font-black flex items-center gap-2 mb-6 text-slate-800 dark:text-white">
+                                        <Briefcase className="w-5 h-5 text-purple-500" /> {t.dividends_risk}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {[
+                                            { l: t.div_yield, v: dividendYield > 0 ? `${(dividendYield * (dividendYield < 1 ? 100 : 1)).toFixed(2)}%` : "-", icon: Wallet, c: "text-emerald-500" },
+                                            { l: lang === "ar" ? "معدل التوزيعات للسهم" : "Dividend Rate", v: dividendRate > 0 ? formatCurrency(dividendRate, currency) : "-", icon: Wallet, c: "text-teal-500" },
+                                            { l: lang === "ar" ? "نسبة توزيع الأرباح" : "Payout Ratio", v: payoutRatio > 0 ? `${(payoutRatio * 100).toFixed(1)}%` : "-", icon: FileText, c: "text-amber-500" },
+                                            { l: t.beta, v: betaValue !== 0 ? betaValue.toFixed(2) : "-", icon: Activity, c: "text-rose-500" },
+                                            { l: t.outstanding, v: sharesOutstanding > 0 ? formatNumber(sharesOutstanding) : "-", icon: Users, c: "text-blue-500" },
+                                            { l: lang === "ar" ? "الأسهم الحرة" : "Float Shares", v: floatShares > 0 ? formatNumber(floatShares) : "-", icon: Users, c: "text-indigo-500" }
+                                        ].map((metric, i) => (
+                                            <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
+                                                <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                                                    <metric.icon className={`w-5 h-5 ${metric.c}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
+                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {/* FINANCIALS TAB */}
                         {activeTab === "financials" && (
-                            <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-                                <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-6">
+                            <div className="premium-glass rounded-3xl p-8">
+                                <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
                                     <FileText className="w-5 h-5 text-[#14b8a6]" /> {t.financials}
                                 </h3>
 
@@ -743,23 +915,28 @@ export default function SymbolDetailPage() {
 
                         {/* OWNERSHIP TAB */}
                         {activeTab === "ownership" && (
-                            <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-                                <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-6">
+                            <div className="premium-glass rounded-3xl p-8">
+                                <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
                                     <Users className="w-5 h-5 text-[#14b8a6]" /> {t.ownership}
                                 </h3>
 
                                 {shareholders.length > 0 ? (
                                     <div className="space-y-4">
                                         {shareholders.slice(0, 10).map((s: any, i: number) => (
-                                            <div key={i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center text-slate-800 dark:text-white font-extrabold">{i + 1}</div>
-                                                    <div>
-                                                        <p className="font-extrabold text-slate-800 dark:text-white text-base">{s.shareholder_name_en || s.shareholder_name}</p>
-                                                        <p className="text-xs text-slate-400 font-bold uppercase mt-0.5">{s.shareholder_type}</p>
+                                            <div key={i} className="p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
+                                                <div className="flex items-center justify-between gap-4 mb-3">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold shadow-sm">{i + 1}</div>
+                                                        <div>
+                                                            <p className="font-extrabold text-base">{s.shareholder_name_en || s.shareholder_name}</p>
+                                                            <p className="text-xs text-slate-400 font-bold uppercase mt-0.5">{s.shareholder_type || "Institution"}</p>
+                                                        </div>
                                                     </div>
+                                                    <span className="text-lg font-black text-slate-900 dark:text-white tabular">{Number(s.ownership_percent || 0).toFixed(2)}%</span>
                                                 </div>
-                                                <span className="text-lg font-black text-slate-900 dark:text-white tabular">{Number(s.ownership_percent || 0).toFixed(2)}%</span>
+                                                <div className="w-full bg-slate-200 dark:bg-slate-850 h-2.5 rounded-full overflow-hidden">
+                                                    <div className="bg-[#14b8a6] h-2.5 rounded-full" style={{ width: `${s.ownership_percent}%` }} />
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -774,31 +951,57 @@ export default function SymbolDetailPage() {
 
                         {/* ANALYSTS RATINGS TAB */}
                         {activeTab === "analysts" && (
-                            <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-                                <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-6">
+                            <div className="premium-glass rounded-3xl p-8">
+                                <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
                                     <Globe className="w-5 h-5 text-[#14b8a6]" /> {t.analysts}
                                 </h3>
 
-                                {analystRatings.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {analystRatings.map((r: any, i: number) => (
-                                            <div key={i} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                {analystRatings.length > 0 || targetPrice > 0 ? (
+                                    <div className="space-y-6">
+                                        {/* Analyst Summary Card */}
+                                        {targetPrice > 0 && (
+                                            <div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex flex-col md:flex-row justify-between items-center gap-4">
                                                 <div>
-                                                    <span className="font-extrabold text-slate-800 dark:text-white text-base">{r.analyst_firm || "Analyst"}</span>
-                                                    <p className="text-xs text-slate-400 font-bold uppercase mt-1">{r.rating_date}</p>
+                                                    <h4 className="text-lg font-black">{t.analyst_ratings}</h4>
+                                                    <p className="text-xs text-slate-400 uppercase font-bold mt-1">{lang === "ar" ? "الهدف المستهدف للأسعار من قبل المحللين" : "Target Mean Price by Wall Street / MENA analysts"}</p>
                                                 </div>
-                                                <div className="flex items-center gap-6">
-                                                    <div className="text-right">
-                                                        <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block mb-1">{t.target_price}</span>
-                                                        <span className="text-lg font-black text-[#14b8a6] tabular">{formatCurrency(r.price_target || r.target_price, currency)}</span>
+                                                <div className="flex gap-6 text-right">
+                                                    <div>
+                                                        <span className="text-slate-450 text-xs font-bold uppercase tracking-wider block mb-1">{t.target_price}</span>
+                                                        <span className="text-2xl font-black text-[#14b8a6] tabular">{formatCurrency(targetPrice, currency)}</span>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block mb-1">{t.recommendation}</span>
-                                                        <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold tracking-wide uppercase">{r.rating}</span>
-                                                    </div>
+                                                    {recommendation !== "-" && (
+                                                        <div>
+                                                            <span className="text-slate-450 text-xs font-bold uppercase tracking-wider block mb-1">{t.recommendation}</span>
+                                                            <span className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 text-sm font-extrabold uppercase tracking-wide inline-block">{recommendation}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
+
+                                        {analystRatings.length > 0 && (
+                                            <div className="space-y-4">
+                                                {analystRatings.map((r: any, i: number) => (
+                                                    <div key={i} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                        <div>
+                                                            <span className="font-extrabold text-slate-800 dark:text-white text-base">{r.analyst_firm || "Analyst"}</span>
+                                                            <p className="text-xs text-slate-400 font-bold uppercase mt-1">{r.rating_date}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-6">
+                                                            <div className="text-right">
+                                                                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block mb-1">{t.target_price}</span>
+                                                                <span className="text-lg font-black text-[#14b8a6] tabular">{formatCurrency(r.price_target || r.target_price, currency)}</span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block mb-1">{t.recommendation}</span>
+                                                                <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold tracking-wide uppercase">{r.rating}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center py-16 text-slate-400">
@@ -811,8 +1014,8 @@ export default function SymbolDetailPage() {
 
                         {/* INSIDER TRADING TAB */}
                         {activeTab === "insider" && (
-                            <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-                                <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-6">
+                            <div className="premium-glass rounded-3xl p-8">
+                                <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
                                     <Briefcase className="w-5 h-5 text-[#14b8a6]" /> {t.insider}
                                 </h3>
 
@@ -831,7 +1034,7 @@ export default function SymbolDetailPage() {
                                                 </div>
                                                 <div className="text-right">
                                                     <span className={`text-base font-black tracking-wide ${t.transaction_type === "BUY" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>{t.transaction_type}</span>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tabular">{t.shares.toLocaleString()} shares</p>
+                                                    <p className="text-xs text-slate-550 dark:text-slate-400 font-bold uppercase mt-1 tabular">{t.shares.toLocaleString()} shares</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -847,8 +1050,8 @@ export default function SymbolDetailPage() {
 
                         {/* CORPORATE ACTIONS TAB */}
                         {activeTab === "actions" && (
-                            <div className="premium-glass rounded-3xl p-8 border border-slate-200 dark:border-slate-800">
-                                <h3 className="text-xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mb-6">
+                            <div className="premium-glass rounded-3xl p-8">
+                                <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
                                     <Zap className="w-5 h-5 text-[#14b8a6]" /> {t.actions}
                                 </h3>
 
@@ -860,7 +1063,7 @@ export default function SymbolDetailPage() {
                                                     <span className="text-xs font-bold text-[#14b8a6] uppercase tracking-wider">{a.action_type}</span>
                                                     <span className="text-xs text-slate-400 font-bold uppercase">{a.ex_date}</span>
                                                 </div>
-                                                <p className="text-slate-800 dark:text-white font-extrabold text-sm">{a.description}</p>
+                                                <p className="font-extrabold text-sm">{a.description}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -877,18 +1080,18 @@ export default function SymbolDetailPage() {
                     {/* RIGHT COLUMN (SIDEBAR) */}
                     <div className="space-y-6">
                         {/* TRADING INFO SIDEBAR CARD */}
-                        <div className="premium-glass rounded-3xl p-6 border border-slate-200 dark:border-slate-800">
-                            <h4 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2 mb-5">
-                                <Wallet className="w-5 h-5 text-[#14b8a6]" /> {lang === "ar" ? "بيانات التداول" : "Trading Info"}
+                        <div className="premium-glass rounded-3xl p-6">
+                            <h4 className="text-lg font-black flex items-center gap-2 mb-5">
+                                <Wallet className="w-5 h-5 text-[#14b8a6]" /> {t.trading_info}
                             </h4>
                             <div className="space-y-4 font-bold text-sm">
                                 {[
                                     { l: lang === "ar" ? "آخر سعر" : "Last Price", v: formatCurrency(lastPrice, currency), c: "text-slate-800 dark:text-white" },
                                     { l: lang === "ar" ? "التغير اليومي" : "Daily Change", v: `${isPositive ? "+" : ""}${change.toFixed(2)} (${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
-                                    { l: lang === "ar" ? "حجم التداول" : "Trading Volume", v: volume.toLocaleString(), c: "text-slate-700 dark:text-slate-300" },
+                                    { l: lang === "ar" ? "حجم التداول" : "Trading Volume", v: volume.toLocaleString(), c: "text-slate-700 dark:text-slate-350" },
                                     { l: lang === "ar" ? "السوق المالي" : "Exchange Market", v: marketName.toUpperCase(), c: "text-[#14b8a6]" }
                                 ].map((item, i) => (
-                                    <div key={i} className="flex justify-between items-center py-3 border-b border-slate-200/50 dark:border-slate-850/50 last:border-0">
+                                    <div key={i} className="flex justify-between items-center py-3 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
                                         <span className="text-slate-400">{item.l}</span>
                                         <span className={`tabular ${item.c}`}>{item.v}</span>
                                     </div>
@@ -898,9 +1101,9 @@ export default function SymbolDetailPage() {
 
                         {/* VALUE COMPARISON WITH TADAWUL/EGX INDICES */}
                         {latestBreadth && (
-                            <div className="premium-glass rounded-3xl p-6 border border-slate-200 dark:border-slate-800">
-                                <h4 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2 mb-5">
-                                    <PieChart className="w-5 h-5 text-[#14b8a6]" /> {lang === "ar" ? "اتساع السوق" : "Market Breadth"}
+                            <div className="premium-glass rounded-3xl p-6">
+                                <h4 className="text-lg font-black flex items-center gap-2 mb-5">
+                                    <PieChart className="w-5 h-5 text-[#14b8a6]" /> {t.market_breadth}
                                 </h4>
                                 <div className="space-y-3 font-bold text-sm">
                                     <div className="flex justify-between p-3.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-2xl">

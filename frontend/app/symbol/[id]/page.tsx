@@ -211,7 +211,7 @@ export default function SymbolDetailPage() {
     const symbol = (params.id as string).toUpperCase();
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null);
-    const svgRef = useRef<SVGSVGElement>(null);
+    const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
 
     // Dynamic market and currency detection
     const isEgx = useMemo(() => symbol.match(/^[a-zA-Z]/) !== null, [symbol]);
@@ -502,7 +502,7 @@ export default function SymbolDetailPage() {
 
     // SVG Candlestick Chart Drawing Effect
     useEffect(() => {
-        if (activeTab !== "overview" || chartData.length === 0 || !svgRef.current) return;
+        if (activeTab !== "overview" || chartData.length === 0 || !svgElement) return;
 
         const width = 760;
         const height = 350;
@@ -588,8 +588,8 @@ export default function SymbolDetailPage() {
             return `<rect x="${barX.toFixed(2)}" y="0" width="${slot.toFixed(2)}" height="${height}" fill="transparent" class="hover-bar" onmouseover="window.showChartTooltip(event, '${title}', '${valueStr}')" onmousemove="window.moveChartTooltip(event)" onmouseout="window.hideChartTooltip()"/>`;
         }).join("");
 
-        svgRef.current.innerHTML = `${grid}${hasHistoricalVolume ? `<path d="M ${pad.left} ${priceBottom + 9} H ${width - pad.right}" class="chart-divider"/>` : ""}${marks}${dates}${hoverBars}`;
-    }, [chartData, activeTab, theme, lang]);
+        svgElement.innerHTML = `${grid}${hasHistoricalVolume ? `<path d="M ${pad.left} ${priceBottom + 9} H ${width - pad.right}" class="chart-divider"/>` : ""}${marks}${dates}${hoverBars}`;
+    }, [chartData, activeTab, theme, lang, svgElement]);
 
     if (tickersLoading) {
         return (
@@ -1025,7 +1025,7 @@ export default function SymbolDetailPage() {
                                                 <p className="text-sm font-semibold">{t.chart_unavailable}</p>
                                             </div>
                                         )}
-                                        <svg ref={svgRef} id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" className="w-full h-full block overflow-visible" />
+                                        <svg ref={setSvgElement} id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" className="w-full h-full block overflow-visible" />
                                     </figure>
                                 </div>
 

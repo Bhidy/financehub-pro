@@ -48,7 +48,10 @@
         days: 90,
         query: "",
         marketLoading: true,
-        historyLoading: true
+        historyLoading: true,
+        // Yahoo Finance enrichment cache: keyed by symbol
+        yahooProfiles: {},
+        yahooProfileLoading: false
     };
     const byId = (id) => document.getElementById(id);
 
@@ -278,6 +281,26 @@
         renderOverviewTab();
     }
 
+    // ── Real RSI-14 & SMA calculator from OHLC history ──────────────────
+    function calcSMA(closes, period) {
+        if (closes.length < period) return null;
+        const slice = closes.slice(-period);
+        return slice.reduce((a, b) => a + b, 0) / period;
+    }
+    function calcRSI(closes, period) {
+        if (closes.length < period + 1) return null;
+        const changes = closes.slice(1).map((c, i) => c - closes[i]);
+        const last = changes.slice(-period);
+        const gains = last.map(c => c > 0 ? c : 0);
+        const losses = last.map(c => c < 0 ? -c : 0);
+        const avgGain = gains.reduce((a, b) => a + b, 0) / period;
+        const avgLoss = losses.reduce((a, b) => a + b, 0) / period;
+        if (avgLoss === 0) return 100;
+        const rs = avgGain / avgLoss;
+        return 100 - (100 / (1 + rs));
+    }
+    // ────────────────────────────────────────────────────────────────────
+
     function renderOverviewTab() {
         const item = selectedStock();
         if (!item) return;
@@ -285,20 +308,71 @@
         if (!contentContainer) return;
         
         const tab = state.overviewTab || "overview";
+        const yp = state.yahooProfiles[state.selected] || {};
         
         if (tab === "overview") {
             const sector = sectorName(item.sector_name);
-            const description = labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
+            // Use Yahoo description if available, otherwise fall back to template
+            const description = yp.description
+                ? yp.description
+                : labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
+
+            // 52-Week Range bar
+            const yearHigh = number(yp.year_high || item.high_52w);
+            const yearLow  = number(yp.year_low  || item.low_52w);
+            const curPrice = number(yp.price     || item.last_price);
+            let rangeBar = "";
+            if (yearHigh && yearLow && yearHigh > yearLow) {
+                const pct = Math.min(100, Math.max(0, ((curPrice - yearLow) / (yearHigh - yearLow)) * 100));
+                rangeBar = `
+                    <div style="margin: 0.8rem 0 1.1rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:4px;">
+                            <span>52W Low: <strong class="tabular" style="color:var(--red)">${formatNumber(yearLow)}</strong></span>
+                            <span>52W High: <strong class="tabular" style="color:var(--green)">${formatNumber(yearHigh)}</strong></span>
+                        </div>
+                        <div style="height:5px;background:var(--surface);border-radius:8px;position:relative;">
+                            <div style="position:absolute;left:0;top:0;height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,var(--red),var(--teal-dark));border-radius:8px;"></div>
+                            <div style="position:absolute;left:${pct.toFixed(1)}%;top:-3px;width:11px;height:11px;border-radius:50%;background:var(--teal-dark);border:2px solid var(--bg);transform:translateX(-50%);box-shadow:0 0 6px rgba(20,184,166,.5);"></div>
+                        </div>
+                    </div>`;
+            }
+
+            // Website & extra meta badges
+            const websiteHtml = yp.website ? `<a href="${escapeHtml(yp.website)}" target="_blank" rel="noopener" style="color:var(--teal-dark);font-size:0.72rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-top:0.5rem;opacity:0.85;"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='width:0.8rem;height:0.8rem'><circle cx='12' cy='12' r='10'/><path d='M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/></svg>${escapeHtml(yp.website.replace(/https?:\/\/(www\.)?/, ""))}</a>` : "";
+            const industryBadge = yp.industry ? `<span style="background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.2);border-radius:20px;padding:2px 10px;font-size:0.68rem;font-weight:600;color:var(--teal-dark);display:inline-block;margin-top:0.35rem;">${escapeHtml(yp.industry)}</span>` : "";
+
+            // Stats to display — prefer Yahoo, fall back to DB
+            const mcap     = yp.market_cap    || item.market_cap;
+            const pe       = yp.pe_ratio      || item.pe_ratio;
+            const pb       = yp.price_to_book || item.pb_ratio;
+            const divYield = yp.dividend_yield;
+            const beta     = yp.beta;
+            const avgVol   = yp.avg_vol_10d;
+            const employees= yp.employees;
+
+            const facts = [
+                [labels().sector,     escapeHtml(sector)],
+                [labels().market_cap, `${compact(mcap)} ${labels().currency}`],
+                [labels().pe,         formatNumber(pe)],
+                [labels().pb,         formatNumber(pb)],
+            ];
+            if (divYield != null) facts.push([state.lang==="ar"?"عائد التوزيعات":"Dividend Yield", `${formatNumber(divYield)}%`]);
+            if (beta     != null) facts.push([state.lang==="ar"?"بيتا":"Beta",               formatNumber(beta)]);
+            if (avgVol   != null) facts.push([state.lang==="ar"?"متوسط الحجم 10 أيام":"Avg Vol (10D)", compact(avgVol)]);
+            if (employees!= null) facts.push([state.lang==="ar"?"عدد الموظفين":"Employees",      new Intl.NumberFormat("en-US").format(employees)]);
+
             contentContainer.innerHTML = `
-                <div>
-                    <h2 class="display">${escapeHtml(labels().company_overview)}</h2>
-                    <p id="companyDescription">${escapeHtml(description)}</p>
+                <div style="grid-column:1/-1;width:100%;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+                        <h2 class="display" style="margin:0;">${escapeHtml(labels().company_overview)}</h2>
+                        ${industryBadge}
+                    </div>
+                    <p id="companyDescription" style="font-size:0.82rem;line-height:1.6;color:var(--muted);margin:0.5rem 0 0.2rem;max-height:120px;overflow-y:auto;">${escapeHtml(description)}</p>
+                    ${websiteHtml}
+                    ${rangeBar}
                 </div>
                 <dl id="companyFacts" class="company-facts">
-                    <dt>${escapeHtml(labels().sector)}</dt><dd>${escapeHtml(sector)}</dd>
-                    <dt>${escapeHtml(labels().market_cap)}</dt><dd class="tabular">${compact(item.market_cap)} ${escapeHtml(labels().currency)}</dd>
-                    <dt>${escapeHtml(labels().pe)}</dt><dd class="tabular">${formatNumber(item.pe_ratio)}</dd>
-                    <dt>${escapeHtml(labels().pb)}</dt><dd class="tabular">${formatNumber(item.pb_ratio)}</dd>
+                    ${facts.map(([dt, dd]) => `<div><dt>${dt}</dt><dd class="tabular">${dd}</dd></div>`).join("")}
                 </dl>
             `;
         } else if (tab === "financials") {
@@ -334,33 +408,42 @@
         } else if (tab === "technicals") {
             const isAr = state.lang === "ar";
             const closes = state.history.map(day => number(day.close)).filter(c => c > 0);
-            const sma50 = closes.length >= 50 ? closes.slice(-50).reduce((a,b)=>a+b,0)/50 : item.last_price * 0.98;
-            const sma200 = closes.length >= 200 ? closes.slice(-200).reduce((a,b)=>a+b,0)/200 : item.last_price * 0.95;
-            const rsi = closes.length >= 14 ? 54.3 : 50.0;
             
-            const trend = item.last_price >= sma50 ? (isAr ? "صاعد (قوي)" : "Bullish (Strong)") : (isAr ? "هابط (ضعيف)" : "Bearish (Weak)");
+            // Real computed indicators (no more hardcoded values)
+            const sma50  = calcSMA(closes, 50)  || item.last_price;
+            const sma200 = calcSMA(closes, 200) || item.last_price;
+            const rsi14  = calcRSI(closes, 14);
+            const rsiDisplay = rsi14 != null ? formatNumber(rsi14) : "--";
+            
+            const rsiSignal = rsi14 != null
+                ? (rsi14 >= 70 ? (isAr ? "ذروة الشراء" : "Overbought") : rsi14 <= 30 ? (isAr ? "ذروة البيع" : "Oversold") : (isAr ? "محايد" : "Neutral"))
+                : "--";
+            const rsiColor = rsi14 != null ? (rsi14 >= 70 ? "var(--red)" : rsi14 <= 30 ? "var(--green)" : "var(--ink)") : "var(--muted)";
+            const trend = item.last_price >= sma50 ? (isAr ? "صاعد" : "Bullish") : (isAr ? "هابط" : "Bearish");
             const trendColor = item.last_price >= sma50 ? "var(--green)" : "var(--red)";
-            
+            const goldenCross = sma50 > sma200;
+            const crossText = goldenCross ? (isAr ? "تقاطع ذهبي" : "Golden Cross") : (isAr ? "تقاطع ميت" : "Death Cross");
+            const crossColor = goldenCross ? "var(--green)" : "var(--red)";
+            const dataQuality = closes.length >= 200 ? (isAr ? "بيانات كاملة" : "Full Data") : closes.length >= 50 ? (isAr ? "بيانات كافية" : "Sufficient") : (isAr ? "بيانات محدودة" : "Limited Data");
+
+            const card = (title, val, color="var(--ink)", sub="") => `
+                <div style="background:rgba(20,184,166,0.05);padding:15px;border-radius:12px;border:1px solid rgba(20,184,166,0.15);">
+                    <div style="color:var(--muted);font-size:0.72rem;font-weight:600;">${title}</div>
+                    <div style="font-size:1.15rem;font-weight:700;color:${color};margin-top:5px;" class="tabular">${val}</div>
+                    ${sub ? `<div style="font-size:0.65rem;color:var(--muted);margin-top:3px;">${sub}</div>` : ""}
+                </div>`;
+
             contentContainer.innerHTML = `
-                <div style="grid-column: 1 / -1; width: 100%;">
-                    <h2 class="display" style="margin-bottom: 1.2rem;">${isAr ? "التحليل الفني والمؤشرات" : "Technical Analysis & Indicators"}</h2>
-                    <div style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; display: grid;">
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">${isAr ? "الاتجاه العام" : "Overall Trend"}</div>
-                            <div style="font-size: 1.15rem; font-weight: 700; color: ${trendColor}; margin-top: 5px;">${trend}</div>
-                        </div>
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">SMA (50)</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-top: 5px;" class="tabular">${formatNumber(sma50)} ${labels().currency}</div>
-                        </div>
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">SMA (200)</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-top: 5px;" class="tabular">${formatNumber(sma200)} ${labels().currency}</div>
-                        </div>
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">RSI (14)</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-top: 5px;" class="tabular">${formatNumber(rsi)}</div>
-                        </div>
+                <div style="grid-column:1/-1;width:100%;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem;">
+                        <h2 class="display" style="margin:0;">${isAr ? "التحليل الفني" : "Technical Analysis"}</h2>
+                        <span style="font-size:0.65rem;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:2px 8px;">${isAr?"استناداً إلى":"Based on"} ${closes.length} ${isAr?"يوم من البيانات ·":"days ·"} ${dataQuality}</span>
+                    </div>
+                    <div style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem;display:grid;">
+                        ${card(isAr?"الاتجاه العام":"Trend", trend, trendColor, `vs SMA50: ${formatNumber(sma50)}`)}
+                        ${card("SMA (50)",  formatNumber(sma50)  + " " + labels().currency, "var(--ink)")}
+                        ${card("SMA (200)", formatNumber(sma200) + " " + labels().currency, "var(--ink)", `50/200 ${crossText}`)}
+                        ${card("RSI (14)",  rsiDisplay, rsiColor, rsiSignal)}
                     </div>
                 </div>
             `;
@@ -659,6 +742,13 @@
         renderMovers();
         renderNews();
         renderTape();
+
+        // Repopulate drawer if open to refresh language/translation
+        const drawer = byId("companyDrawer");
+        if (drawer && drawer.classList.contains("active")) {
+            populateDrawer();
+            renderDrawerChart();
+        }
     }
 
     async function loadNews() {
@@ -676,7 +766,9 @@
         message.textContent = labels().loading_chart;
         message.classList.remove("hidden");
         try {
-            const rows = await request(`/api/v1/egx/ohlc/${encodeURIComponent(state.selected)}?limit=365`);
+            // Yahoo Finance endpoint — returns up to 15+ years of daily OHLC
+            // We always fetch "max" so all period buttons work from the same data
+            const rows = await request(`/api/v1/egx/history/${encodeURIComponent(state.selected)}?period=max`);
             state.history = Array.isArray(rows) ? rows : [];
         } catch (_) {
             state.history = [];
@@ -687,6 +779,7 @@
     }
 
     async function loadSelectedSymbolNews() {
+
         const symbol = state.selected;
         if (!symbol) return;
         
@@ -708,6 +801,46 @@
         }
     }
 
+    async function loadYahooProfile(symbol) {
+        // Cache check — avoid refetching on every tab switch
+        if (state.yahooProfiles[symbol]) return;
+        state.yahooProfileLoading = true;
+        try {
+            const raw = await request(`/api/v1/yahoo/stock/${encodeURIComponent(symbol)}`);
+            if (raw && (raw.profile || raw.fundamentals)) {
+                const p = raw.profile   || {};
+                const f = raw.fundamentals || {};
+                state.yahooProfiles[symbol] = {
+                    description:    p.description,
+                    website:        p.website,
+                    industry:       p.industry,
+                    employees:      p.employees,
+                    headquarters:   p.headquarters_city,
+                    // Prices & ranges — prefer Yahoo live, fall back to what DB had
+                    price:          p.price,
+                    year_high:      p.year_high,
+                    year_low:       p.year_low,
+                    market_cap:     p.market_cap,
+                    avg_vol_10d:    p.avg_vol_10d,
+                    // Fundamentals
+                    pe_ratio:       f.pe_ratio,
+                    price_to_book:  f.price_to_book,
+                    dividend_yield: f.dividend_yield,
+                    beta:           f.beta,
+                    // Extra metrics for the Drawer
+                    eps:            f.trailing_eps,
+                    roe:            f.return_on_equity,
+                    raw:            raw
+                };
+                // Re-render Overview if currently viewing this stock
+                if (state.selected === symbol) renderOverviewTab();
+            }
+        } catch (_) {
+            // Non-critical — silently fail; DB data still shows
+        }
+        state.yahooProfileLoading = false;
+    }
+
     async function selectStock(symbol) {
         if (!symbol || symbol === state.selected) return;
         state.selected = symbol;
@@ -715,7 +848,8 @@
         renderMovers(); // Update active mover state immediately!
         await Promise.all([
             loadStockHistory(),
-            loadSelectedSymbolNews()
+            loadSelectedSymbolNews(),
+            loadYahooProfile(symbol)
         ]);
     }
 
@@ -736,8 +870,10 @@
             render();
             await Promise.all([
                 loadStockHistory(),
-                loadSelectedSymbolNews()
+                loadSelectedSymbolNews(),
+                loadYahooProfile(state.selected)
             ]);
+
         } catch (_) {
             render();
         }
@@ -786,7 +922,270 @@
         renderWatchlist();
     }
 
+    // ── Slide-in Drawer Logic ──────────────────────────────────────────
+    function initDrawer() {
+        const drawer = byId("companyDrawer");
+        const closeBtn = byId("drawerCloseBtn");
+        const actionBtn = byId("companyAction");
+        
+        if (!drawer || !closeBtn) return;
+        
+        if (actionBtn) {
+            actionBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                openDrawer();
+            });
+        }
+        
+        closeBtn.addEventListener("click", closeDrawer);
+        
+        const backdrop = drawer.querySelector(".drawer-backdrop");
+        if (backdrop) {
+            backdrop.addEventListener("click", closeDrawer);
+        }
+        
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && drawer.classList.contains("active")) {
+                closeDrawer();
+            }
+        });
+        
+        // Drawer Tab switching
+        const tabButtons = drawer.querySelectorAll(".drawer-tabs button");
+        tabButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const targetTab = btn.dataset.drawerTab;
+                tabButtons.forEach(b => b.classList.toggle("active", b === btn));
+                
+                drawer.querySelectorAll(".drawer-tab-pane").forEach(pane => {
+                    pane.classList.remove("active");
+                });
+                
+                if (targetTab === "profile") byId("drawerTabProfile").classList.add("active");
+                else if (targetTab === "metrics") byId("drawerTabMetrics").classList.add("active");
+                else if (targetTab === "chart-tab") {
+                    byId("drawerTabChart").classList.add("active");
+                    renderDrawerChart();
+                }
+                else if (targetTab === "news-tab") byId("drawerTabNews").classList.add("active");
+            });
+        });
+
+        // Drawer Chart period buttons
+        const periodButtons = byId("drawerChartPeriodControls").querySelectorAll("button");
+        periodButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                state.drawerDays = Number(btn.dataset.days);
+                periodButtons.forEach(b => b.classList.toggle("active", b === btn));
+                renderDrawerChart();
+            });
+        });
+    }
+
+    function openDrawer() {
+        const drawer = byId("companyDrawer");
+        if (!drawer) return;
+        
+        const tabButtons = drawer.querySelectorAll(".drawer-tabs button");
+        tabButtons.forEach((btn, index) => btn.classList.toggle("active", index === 0));
+        
+        drawer.querySelectorAll(".drawer-tab-pane").forEach((pane, index) => {
+            pane.classList.toggle("active", index === 0);
+        });
+
+        state.drawerDays = 90;
+        const periodButtons = byId("drawerChartPeriodControls").querySelectorAll("button");
+        periodButtons.forEach((btn, index) => btn.classList.toggle("active", index === 1)); // 3M is active by default
+        
+        populateDrawer();
+        drawer.classList.add("active");
+        drawer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDrawer() {
+        const drawer = byId("companyDrawer");
+        if (!drawer) return;
+        drawer.classList.remove("active");
+        drawer.setAttribute("aria-hidden", "true");
+    }
+
+    function populateDrawer() {
+        const item = selectedStock();
+        if (!item) return;
+        
+        const yp = state.yahooProfiles[state.selected] || {};
+        
+        setText("drawerTitle", item.symbol);
+        setText("drawerSubtitle", stockName(item));
+        
+        const drawerLogo = byId("drawerLogo");
+        const fallback = document.querySelector(".drawer-logo-fallback");
+        if (drawerLogo && fallback) {
+            drawerLogo.src = `/logos/${item.symbol}.svg`;
+            drawerLogo.style.display = "block";
+            fallback.style.display = "none";
+            fallback.textContent = item.symbol.substring(0, 2);
+        }
+        
+        const curPrice = yp.price || item.last_price;
+        const changePct = yp.raw && yp.raw.profile && yp.raw.profile.change_pct != null ? yp.raw.profile.change_pct : item.change_percent;
+        setText("drawerPrice", formatNumber(curPrice));
+        setText("drawerChange", percent(changePct), `tabular drawer-change-value ${percentClass(changePct)}`);
+        
+        const yearHigh = number(yp.year_high || item.high_52w);
+        const yearLow  = number(yp.year_low  || item.low_52w);
+        const rangeContainer = byId("drawerRangeBarContainer");
+        if (rangeContainer) {
+            if (yearHigh && yearLow && yearHigh > yearLow) {
+                const pct = Math.min(100, Math.max(0, ((number(curPrice) - yearLow) / (yearHigh - yearLow)) * 100));
+                rangeContainer.innerHTML = `
+                    <div style="margin: 0.8rem 0 0;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-bottom:4px;">
+                            <span>52W Low: <strong class="tabular" style="color:var(--red)">${formatNumber(yearLow)}</strong></span>
+                            <span>52W High: <strong class="tabular" style="color:var(--green)">${formatNumber(yearHigh)}</strong></span>
+                        </div>
+                        <div style="height:5px;background:var(--page);border-radius:8px;position:relative;">
+                            <div style="position:absolute;left:0;top:0;height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,var(--red),var(--teal-dark));border-radius:8px;"></div>
+                            <div style="position:absolute;left:${pct.toFixed(1)}%;top:-3px;width:11px;height:11px;border-radius:50%;background:var(--teal-dark);border:2px solid var(--surface);transform:translateX(-50%);box-shadow:0 0 6px rgba(20,184,166,.5);"></div>
+                        </div>
+                    </div>`;
+            } else {
+                rangeContainer.innerHTML = "";
+            }
+        }
+        
+        const sector = sectorName(item.sector_name);
+        const desc = yp.description || labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
+        setText("drawerDescription", desc);
+        
+        const websiteLink = byId("drawerWebsiteLink");
+        if (websiteLink) {
+            if (yp.website) {
+                websiteLink.href = yp.website;
+                websiteLink.style.display = "inline-flex";
+                websiteLink.querySelector("span").textContent = yp.website.replace(/https?:\/\/(www\.)?/, "");
+            } else {
+                websiteLink.style.display = "none";
+            }
+        }
+        
+        setText("drawerIndustryBadge", yp.industry || sectorName(item.sector_name));
+        
+        const factsGrid = byId("drawerProfileFacts");
+        if (factsGrid) {
+            const mcap = yp.market_cap || item.market_cap;
+            const avgVol = yp.avg_vol_10d;
+            const employees = yp.employees;
+            const hq = yp.headquarters;
+            
+            const facts = [
+                [labels().sector, sector],
+                [labels().market_cap, `${compact(mcap)} ${labels().currency}`],
+            ];
+            if (avgVol != null) facts.push([state.lang === "ar" ? "متوسط الحجم (10أيام)" : "Avg Vol (10D)", compact(avgVol)]);
+            if (employees != null) facts.push([state.lang === "ar" ? "عدد الموظفين" : "Employees", new Intl.NumberFormat("en-US").format(employees)]);
+            if (hq) facts.push([state.lang === "ar" ? "المقر الرئيسي" : "Headquarters", hq]);
+            
+            factsGrid.innerHTML = facts.map(([title, val]) => `
+                <div>
+                    <dt>${escapeHtml(title)}</dt>
+                    <dd>${escapeHtml(val)}</dd>
+                </div>
+            `).join("");
+        }
+        
+        const metricsGrid = byId("drawerMetricsGrid");
+        if (metricsGrid) {
+            const isAr = state.lang === "ar";
+            const pe = yp.pe_ratio || item.pe_ratio;
+            const pb = yp.price_to_book || item.pb_ratio;
+            const eps = yp.eps;
+            const roe = yp.roe;
+            const divYield = yp.dividend_yield;
+            const beta = yp.beta;
+            
+            const metrics = [
+                [isAr ? "مضاعف الربحية (P/E)" : "P/E Ratio", formatNumber(pe)],
+                [isAr ? "مضاعف القيمة الدفترية (P/B)" : "P/B Ratio", formatNumber(pb)],
+                [isAr ? "ربحية السهم (EPS)" : "Earnings Per Share (EPS)", formatNumber(eps)],
+                [isAr ? "العائد على حقوق المساهمين (ROE)" : "Return on Equity (ROE)", roe != null ? `${formatNumber(roe * 100)}%` : "--"],
+                [isAr ? "عائد التوزيعات" : "Dividend Yield", divYield != null ? `${formatNumber(divYield)}%` : "--"],
+                [isAr ? "معامل بيتا (التقلب)" : "Beta Value", formatNumber(beta)],
+                [isAr ? "الإيرادات" : "Revenue", `${compact(item.revenue)} EGP`],
+                [isAr ? "صافي الدخل" : "Net Income", `${compact(item.net_income)} EGP`]
+            ];
+            
+            metricsGrid.innerHTML = metrics.map(([title, val]) => `
+                <div class="drawer-metric-card">
+                    <div class="title">${escapeHtml(title)}</div>
+                    <div class="value tabular">${escapeHtml(val)}</div>
+                </div>
+            `).join("");
+        }
+        
+        const newsRows = byId("drawerNewsRows");
+        if (newsRows) {
+            const displayNews = state.selectedNews || [];
+            if (!displayNews.length) {
+                newsRows.innerHTML = `<div class="empty-inline">${escapeHtml(state.lang === "ar" ? "لا تتوفر أخبار حالياً" : "No news available")}</div>`;
+            } else {
+                newsRows.innerHTML = displayNews.map((article) => {
+                    const coverUrl = getNewsCover(article);
+                    return `
+                        <a class="drawer-news-card" href="/News/${encodeURIComponent(article.id)}">
+                            <div class="drawer-news-media">
+                                <img alt="" loading="lazy" src="${escapeHtml(coverUrl)}">
+                            </div>
+                            <div class="drawer-news-copy">
+                                <h4>${escapeHtml(article.headline)}</h4>
+                                <time>${escapeHtml(formatDate(article.published_at))}</time>
+                            </div>
+                        </a>
+                    `;
+                }).join("");
+            }
+        }
+    }
+
+    function renderDrawerChart() {
+        const svg = byId("drawerChartSvg");
+        const message = byId("drawerChartMessage");
+        if (!svg || !message) return;
+        
+        if (state.historyLoading) {
+            message.textContent = labels().loading_chart;
+            message.classList.remove("hidden");
+            svg.innerHTML = "";
+            return;
+        }
+        
+        const sorted = state.history.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        const cleanRows = sorted.filter(item => {
+            const o = number(item.open);
+            const h = number(item.high);
+            const l = number(item.low);
+            const c = number(item.close);
+            return o > 0 && h > 0 && l > 0 && c > 0;
+        });
+        
+        const days = state.drawerDays || 90;
+        const cutoff = Date.now() - days * 86400000;
+        const periodRows = cleanRows.filter((item) => new Date(item.date).getTime() >= cutoff);
+        const rows = periodRows.length >= 2 ? periodRows : cleanRows.slice(-Math.min(cleanRows.length, 90));
+        
+        if (!rows.length) {
+            message.textContent = labels().chart_unavailable;
+            message.classList.remove("hidden");
+            svg.innerHTML = "";
+            return;
+        }
+        
+        message.classList.add("hidden");
+        candlestickChart(svg, rows);
+    }
+
     function bind() {
+        initDrawer();
         byId("langToggle").addEventListener("click", () => setLanguage(state.lang === "ar" ? "en" : "ar", true));
         byId("companySearch").addEventListener("input", (event) => {
             state.query = event.target.value;

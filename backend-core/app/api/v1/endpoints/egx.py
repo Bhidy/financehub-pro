@@ -7,8 +7,18 @@ Provides access to all 223 EGX stocks with full data coverage.
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from app.db.session import db
+import asyncio
+import time
 
 router = APIRouter()
+
+# ──────────────────────────────────────────────────────────────
+# In-memory TTL cache for Yahoo Finance history responses.
+# Key: "SYMBOL_period"  Value: (timestamp, list[dict])
+# Cache lifetime: 4 hours (14400 seconds) — history rarely changes
+# ──────────────────────────────────────────────────────────────
+_yf_history_cache: dict = {}
+_YF_CACHE_TTL = 14400  # 4 hours
 
 
 @router.get("/egx/stocks", response_model=List[dict])
@@ -130,8 +140,129 @@ async def get_egx_ohlc(symbol: str, period: str = "1y", limit: int = 500):
         return []
 
 
+@router.get("/egx/history/{symbol}", response_model=List[dict])
+async def get_egx_yahoo_history(
+    symbol: str,
+    period: str = Query(
+        "1y",
+        enum=["1m", "3m", "6m", "1y", "3y", "5y", "max"],
+        description="History period: 1m=30 days, 3m=90 days … max=all available (~15+ years for EGX)"
+    )
+):
+    """
+    Yahoo Finance historical OHLCV for any EGX stock.
+
+    Replaces the StockAnalysis scraper for the Market Pulse chart panel.
+    Returns daily bars oldest-first, cached 4 hours to avoid rate limits.
+
+    Period mapping (matches yfinance API):
+        1m  → 1mo   (~30 trading days)
+        3m  → 3mo   (~90 trading days)
+        6m  → 6mo   (~180 trading days)
+        1y  → 1y    (~365 trading days)
+        3y  → 3y    (~3 years of daily bars)
+        5y  → 5y    (~5 years of daily bars)
+        max → max   (full history, 15+ years for EGX .CA stocks)
+    """
+    # 1. Normalise symbol: strip any .CA suffix, then re-add for Yahoo
+    clean = symbol.upper().replace(".CA", "").strip()
+    yahoo_sym = f"{clean}.CA"
+    cache_key = f"{yahoo_sym}_{period}"
+
+    # 2. Cache check
+    now = time.time()
+    if cache_key in _yf_history_cache:
+        ts, cached_rows = _yf_history_cache[cache_key]
+        if now - ts < _YF_CACHE_TTL:
+            return cached_rows
+
+    # 3. Map our period names → yfinance period strings
+    period_map = {
+        "1m": "1mo",
+        "3m": "3mo",
+        "6m": "6mo",
+        "1y": "1y",
+        "3y": "3y",
+        "5y": "5y",
+        "max": "max",
+    }
+    yf_period = period_map.get(period, "1y")
+
+    # 4. Fetch via yfinance (blocking) inside a thread executor
+    def _fetch_sync(yahoo_symbol: str, yf_per: str):
+        try:
+            import yfinance as yf
+            import pandas as pd
+
+            ticker = yf.Ticker(yahoo_symbol)
+            df = ticker.history(period=yf_per, interval="1d", auto_adjust=True)
+
+            if df is None or df.empty:
+                return []
+
+            df = df.reset_index()
+            # Normalise column names to lowercase
+            df.columns = [c.lower() for c in df.columns]
+
+            rows = []
+            for _, row in df.iterrows():
+                # Date column may be 'date' or 'datetime'
+                raw_date = row.get("date") or row.get("datetime")
+                if raw_date is None:
+                    continue
+                # Convert pandas Timestamp → ISO date string
+                if hasattr(raw_date, "strftime"):
+                    date_str = raw_date.strftime("%Y-%m-%d")
+                else:
+                    date_str = str(raw_date)[:10]
+
+                open_v  = float(row.get("open")  or 0)
+                high_v  = float(row.get("high")  or 0)
+                low_v   = float(row.get("low")   or 0)
+                close_v = float(row.get("close") or 0)
+                vol_v   = int(row.get("volume")  or 0)
+
+                # Skip clearly invalid rows (Yahoo sometimes returns zeros)
+                if close_v <= 0:
+                    continue
+
+                rows.append({
+                    "date":   date_str,
+                    "open":   round(open_v, 4),
+                    "high":   round(high_v, 4),
+                    "low":    round(low_v, 4),
+                    "close":  round(close_v, 4),
+                    "volume": vol_v,
+                })
+
+            # Ensure oldest-first order (Yahoo sometimes returns descending)
+            rows.sort(key=lambda r: r["date"])
+            return rows
+
+        except Exception as ex:
+            print(f"[Yahoo History] Error fetching {yahoo_symbol} period={yf_per}: {ex}")
+            return []
+
+    try:
+        loop = asyncio.get_running_loop()
+        rows = await asyncio.wait_for(
+            loop.run_in_executor(None, _fetch_sync, yahoo_sym, yf_period),
+            timeout=20.0
+        )
+    except asyncio.TimeoutError:
+        print(f"[Yahoo History] Timeout for {yahoo_sym} period={yf_period}")
+        rows = []
+    except Exception as e:
+        print(f"[Yahoo History] Unexpected error for {yahoo_sym}: {e}")
+        rows = []
+
+    # 5. Cache successful (non-empty) responses; cache empty too to avoid thundering herd
+    _yf_history_cache[cache_key] = (now, rows)
+    return rows
+
 @router.get("/egx/sectors", response_model=List[dict])
 async def get_egx_sectors():
+
     """Get sector breakdown for EGX stocks"""
     rows = await db.fetch_all("""
         SELECT sector_name, 

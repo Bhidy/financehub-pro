@@ -493,8 +493,36 @@ class SchedulerService:
             
             if proc.returncode == 0:
                 logger.info("✅ Egypt Yahoo daily sync completed successfully.")
+                
+                # Parse pipeline stats
+                processed = "?"
+                saved = "?"
+                errors = "?"
+                duration = "?"
+                
+                for line in out.splitlines():
+                    if "Stocks Processed" in line:
+                        processed = line.split(":")[-1].strip()
+                    elif "Candles Saved" in line:
+                        saved = line.split(":")[-1].strip()
+                    elif "Errors/Warnings" in line:
+                        errors = line.split(":")[-1].strip()
+                    elif "Duration" in line:
+                        duration = line.split(":")[-1].strip()
+                
+                msg = (f"✅ **Egypt Yahoo Daily Sync Success**\n"
+                       f"🏦 Stocks Synced  : **{processed}**\n"
+                       f"📊 Candles Saved   : **{saved}**\n"
+                       f"❌ Errors/Warnings : **{errors}**\n"
+                       f"⏱️ Duration       : **{duration}**")
+                notification_service.send_discord(msg, is_error=False)
             else:
                 logger.error(f"❌ Egypt Yahoo daily sync failed with exit code {proc.returncode}: {err}")
+                error_tail = (err or out)[-800:] if (err or out) else f"Exit: {proc.returncode}"
+                notification_service.send_discord(
+                    f"❌ **Egypt Yahoo Daily Sync Failed**\nExit: {proc.returncode}\n```{error_tail}```",
+                    is_error=True
+                )
         except Exception as e:
             logger.error(f"Egypt Yahoo sync job error: {e}")
 

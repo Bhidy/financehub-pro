@@ -1,6 +1,17 @@
 (function () {
     "use strict";
 
+    // Global 10% down-scaling layout reduction (entire body content)
+    (function() {
+        var style = document.createElement("style");
+        style.textContent = "body { zoom: 0.9 !important; }";
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            document.documentElement.appendChild(style);
+        }
+    })();
+
     var STORAGE_KEY = "theme";
     var DEFAULT_THEME = "dark";
 

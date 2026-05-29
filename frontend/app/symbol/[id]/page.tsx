@@ -466,124 +466,131 @@ export default function SymbolDetailPage() {
         return marketCap > 0 && rev > 0 ? (marketCap / rev) : 0;
     }, [fundamentalsData, marketCap, latestAnnualStatement]);
 
-    // Chart Effect
+    // Dynamic tooltip helpers setup
     useEffect(() => {
-        if (activeTab !== "overview" || chartData.length === 0) return;
+        let tooltipDiv = document.getElementById("chartTooltip");
+        if (!tooltipDiv) {
+            tooltipDiv = document.createElement("div");
+            tooltipDiv.id = "chartTooltip";
+            tooltipDiv.className = "chart-tooltip";
+            document.body.appendChild(tooltipDiv);
+        }
 
-        const timeoutId = setTimeout(() => {
-            if (!chartContainerRef.current) return;
-            if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
-
-            const chart = createChart(chartContainerRef.current, {
-                layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: theme === 'dark' ? '#94a3b8' : '#475569', fontFamily: "'Manrope', 'IBM Plex Sans Arabic', sans-serif" },
-                width: chartContainerRef.current.clientWidth, height: 400,
-                grid: { vertLines: { color: theme === 'dark' ? 'rgba(148, 163, 184, 0.03)' : 'rgba(148, 163, 184, 0.05)' }, horzLines: { color: theme === 'dark' ? 'rgba(148, 163, 184, 0.03)' : 'rgba(148, 163, 184, 0.05)' } },
-                timeScale: { timeVisible: true, borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.15)' },
-                rightPriceScale: { borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.15)' },
-                crosshair: { mode: CrosshairMode.Normal, vertLine: { color: 'rgba(20, 184, 166, 0.4)', width: 1, style: 2, labelBackgroundColor: '#0f766e' }, horzLine: { color: 'rgba(20, 184, 166, 0.4)', width: 1, style: 2, labelBackgroundColor: '#0f766e' } }
-            });
-            chartRef.current = chart;
-
-            // Legend Overlay Element
-            let legendEl = document.getElementById('chart-legend-overlay');
-            if (!legendEl) {
-                legendEl = document.createElement('div');
-                legendEl.id = 'chart-legend-overlay';
-                legendEl.className = 'absolute top-4 left-4 z-10 p-3 rounded-xl bg-slate-900/85 backdrop-blur border border-slate-800 text-[10px] sm:text-xs font-bold font-mono text-slate-300 pointer-events-none flex flex-wrap gap-x-4 gap-y-1 shadow-lg transition-opacity duration-200';
-                chartContainerRef.current.appendChild(legendEl);
-            }
-
-            try {
-                let series: any;
-                if (chartStyle === "candle") {
-                    series = chart.addSeries(CandlestickSeries, { 
-                        upColor: '#10b981', 
-                        downColor: '#f43f5e', 
-                        borderUpColor: '#10b981', 
-                        borderDownColor: '#f43f5e', 
-                        wickUpColor: '#10b981', 
-                        wickDownColor: '#f43f5e' 
-                    });
-                    series.setData(chartData);
-                } else if (chartStyle === "line") {
-                    series = chart.addSeries(LineSeries, { color: '#14b8a6', lineWidth: 3 });
-                    series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
-                } else {
-                    series = chart.addSeries(AreaSeries, { 
-                        topColor: 'rgba(20, 184, 166, 0.28)', 
-                        bottomColor: 'rgba(20, 184, 166, 0.0)', 
-                        lineColor: '#14b8a6', 
-                        lineWidth: 3 
-                    });
-                    series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
-                }
-                const volumeSeries = chart.addSeries(HistogramSeries, { color: 'rgba(148,163,184,0.06)', priceFormat: { type: 'volume' }, priceScaleId: '' });
-                volumeSeries.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
-                volumeSeries.setData(chartData.map((d: any) => ({ 
-                    time: d.time, 
-                    value: d.volume, 
-                    color: d.close >= d.open ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)' 
-                })));
-
-                // Initial Legend Setup
-                const latest = chartData[chartData.length - 1];
-                if (latest && legendEl) {
-                    legendEl.innerHTML = `
-                        <span class="text-[#14b8a6] font-extrabold uppercase mr-1">${symbol}</span>
-                        <span>O: <span class="text-white font-semibold">${latest.open.toFixed(2)}</span></span>
-                        <span>H: <span class="text-[#10b981] font-semibold">${latest.high.toFixed(2)}</span></span>
-                        <span>L: <span class="text-[#f43f5e] font-semibold">${latest.low.toFixed(2)}</span></span>
-                        <span>C: <span class="text-white font-semibold">${latest.close.toFixed(2)}</span></span>
-                        <span>V: <span class="text-slate-400 font-semibold">${formatNumber(latest.volume)}</span></span>
-                    `;
-                }
-
-                // Dynamic Crosshair Interaction
-                chart.subscribeCrosshairMove((param: any) => {
-                    if (legendEl) {
-                        if (param.time && param.point) {
-                            const data = param.seriesData.get(series);
-                            const volData = param.seriesData.get(volumeSeries);
-                            if (data) {
-                                const o = data.open !== undefined ? data.open : data.value;
-                                const h = data.high !== undefined ? data.high : data.value;
-                                const l = data.low !== undefined ? data.low : data.value;
-                                const c = data.close !== undefined ? data.close : data.value;
-                                const v = volData ? volData.value : 0;
-                                legendEl.innerHTML = `
-                                    <span class="text-[#14b8a6] font-extrabold uppercase mr-1">${symbol}</span>
-                                    <span>O: <span class="text-white font-semibold">${o.toFixed(2)}</span></span>
-                                    <span>H: <span class="text-[#10b981] font-semibold">${h.toFixed(2)}</span></span>
-                                    <span>L: <span class="text-[#f43f5e] font-semibold">${l.toFixed(2)}</span></span>
-                                    <span>C: <span class="text-white font-semibold">${c.toFixed(2)}</span></span>
-                                    <span>V: <span class="text-slate-400 font-semibold">${formatNumber(v)}</span></span>
-                                `;
-                            }
-                        } else if (latest) {
-                            legendEl.innerHTML = `
-                                <span class="text-[#14b8a6] font-extrabold uppercase mr-1">${symbol}</span>
-                                <span>O: <span class="text-white font-semibold">${latest.open.toFixed(2)}</span></span>
-                                <span>H: <span class="text-[#10b981] font-semibold">${latest.high.toFixed(2)}</span></span>
-                                <span>L: <span class="text-[#f43f5e] font-semibold">${latest.low.toFixed(2)}</span></span>
-                                <span>C: <span class="text-white font-semibold">${latest.close.toFixed(2)}</span></span>
-                                <span>V: <span class="text-slate-400 font-semibold">${formatNumber(latest.volume)}</span></span>
-                            `;
-                        }
-                    }
-                });
-
-                chart.timeScale().fitContent();
-            } catch (err) { console.error("Chart error:", err); }
-        }, 80);
-
-        const handleResize = () => { if (chartContainerRef.current && chartRef.current) chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth }); };
-        window.addEventListener('resize', handleResize);
-        return () => {
-            clearTimeout(timeoutId);
-            window.removeEventListener('resize', handleResize);
-            if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
+        (window as any).showChartTooltip = (event: any, title: string, value: string) => {
+            if (!tooltipDiv) return;
+            tooltipDiv.style.display = "block";
+            tooltipDiv.innerHTML = `<span>${title}</span><strong>${value}</strong>`;
+            (window as any).moveChartTooltip(event);
         };
-    }, [chartData, chartStyle, activeTab, theme]);
+        (window as any).moveChartTooltip = (event: any) => {
+            if (!tooltipDiv) return;
+            const x = event.pageX + 15;
+            const y = event.pageY - 40;
+            tooltipDiv.style.left = `${x}px`;
+            tooltipDiv.style.top = `${y}px`;
+        };
+        (window as any).hideChartTooltip = () => {
+            if (!tooltipDiv) return;
+            tooltipDiv.style.display = "none";
+        };
+
+        return () => {
+            delete (window as any).showChartTooltip;
+            delete (window as any).moveChartTooltip;
+            delete (window as any).hideChartTooltip;
+        };
+    }, []);
+
+    // SVG Candlestick Chart Drawing Effect
+    useEffect(() => {
+        if (activeTab !== "overview" || chartData.length === 0 || !svgRef.current) return;
+
+        const width = 760;
+        const height = 350;
+        const pad = { top: 18, right: 48, bottom: 25, left: 8 };
+        const plotWidth = width - pad.left - pad.right;
+        const maxCandles = 96;
+
+        const cleanRows = chartData.filter((item: any) => {
+            const o = Number(item.open);
+            const h = Number(item.high);
+            const l = Number(item.low);
+            const c = Number(item.close);
+            return o > 0 && h > 0 && l > 0 && c > 0;
+        });
+
+        if (cleanRows.length < 2) return;
+
+        const groupSize = Math.max(1, Math.ceil(cleanRows.length / maxCandles));
+        const candles = [];
+        for (let index = 0; index < cleanRows.length; index += groupSize) {
+            const group = cleanRows.slice(index, index + groupSize);
+            candles.push({
+                date: group[group.length - 1].time as string,
+                open: Number(group[0].open),
+                high: Math.max(...group.map((item) => Number(item.high))),
+                low: Math.min(...group.map((item) => Number(item.low))),
+                close: Number(group[group.length - 1].close),
+                volume: group.reduce((sum, item) => sum + (Number(item.volume) || 0), 0)
+            });
+        }
+
+        const hasHistoricalVolume = candles.some((item) => item.volume > 0);
+        const volumeHeight = hasHistoricalVolume ? 54 : 0;
+        const dividerGap = hasHistoricalVolume ? 16 : 0;
+        const priceBottom = height - pad.bottom - volumeHeight - dividerGap;
+        const priceHeight = priceBottom - pad.top;
+
+        const highs = candles.map((item) => item.high);
+        const lows = candles.map((item) => item.low);
+        let maximum = Math.max(...highs);
+        let minimum = Math.min(...lows);
+        const range = maximum - minimum || 1;
+        maximum += range * .02;
+        minimum -= range * .02;
+
+        const y = (value: number) => pad.top + ((maximum - value) / (maximum - minimum)) * priceHeight;
+        const slot = plotWidth / candles.length;
+        const candleWidth = Math.max(2, Math.min(8, slot * .58));
+        const maxVolume = Math.max(1, ...candles.map((item) => item.volume));
+
+        const localeStr = lang === "ar" ? "ar-EG" : "en-US";
+        const grid = [0, .25, .5, .75, 1].map((ratio) => {
+            const axisY = pad.top + ratio * priceHeight;
+            const value = maximum - ratio * (maximum - minimum);
+            return `<path d="M ${pad.left} ${axisY} H ${width - pad.right}" class="gridline"/><text x="${width - pad.right + 7}" y="${axisY + 4}" class="axis">${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}</text>`;
+        }).join("");
+
+        const marks = candles.map((item, idx) => {
+            const x = pad.left + slot * idx + slot / 2;
+            const rising = item.close >= item.open;
+            const classSuffix = rising ? "up" : "down";
+            const bodyTop = Math.min(y(item.open), y(item.close));
+            const bodyHeight = Math.max(1.5, Math.abs(y(item.close) - y(item.open)));
+            const volumeBarHeight = hasHistoricalVolume ? (item.volume / maxVolume) * volumeHeight : 0;
+            return `
+                <line x1="${x}" x2="${x}" y1="${y(item.high)}" y2="${y(item.low)}" class="candle-${classSuffix} wick"/>
+                <rect x="${x - candleWidth / 2}" y="${bodyTop}" width="${candleWidth}" height="${bodyHeight}" rx="1" class="candle-${classSuffix}"/>
+                ${hasHistoricalVolume ? `<rect x="${x - candleWidth / 2}" y="${height - pad.bottom - volumeBarHeight}" width="${candleWidth}" height="${volumeBarHeight}" rx="1" class="volume-${classSuffix}"/>` : ""}`;
+        }).join("");
+
+        const dateIndexes = [0, Math.floor((candles.length - 1) / 2), candles.length - 1];
+        const dates = dateIndexes.map((index) => {
+            const x = pad.left + slot * index + slot / 2;
+            const anchor = index === 0 ? "start" : index === candles.length - 1 ? "end" : "middle";
+            const label = new Intl.DateTimeFormat(localeStr, { month: "short", day: "numeric" }).format(new Date(candles[index].date));
+            return `<text x="${x}" y="${height - 7}" text-anchor="${anchor}" class="axis">${label}</text>`;
+        }).join("");
+
+        const hoverBars = candles.map((item, index) => {
+            const barX = pad.left + slot * index;
+            const title = new Intl.DateTimeFormat(localeStr, { day: "numeric", month: "short", year: "numeric" }).format(new Date(item.date));
+            const valueStr = `O: ${item.open.toFixed(2)} | H: ${item.high.toFixed(2)} | L: ${item.low.toFixed(2)} | C: ${item.close.toFixed(2)}`;
+            return `<rect x="${barX.toFixed(2)}" y="0" width="${slot.toFixed(2)}" height="${height}" fill="transparent" class="hover-bar" onmouseover="window.showChartTooltip(event, '${title}', '${valueStr}')" onmousemove="window.moveChartTooltip(event)" onmouseout="window.hideChartTooltip()"/>`;
+        }).join("");
+
+        svgRef.current.innerHTML = `${grid}${hasHistoricalVolume ? `<path d="M ${pad.left} ${priceBottom + 9} H ${width - pad.right}" class="chart-divider"/>` : ""}${marks}${dates}${hoverBars}`;
+    }, [chartData, activeTab, theme, lang]);
 
     if (tickersLoading) {
         return (
@@ -627,6 +634,102 @@ export default function SymbolDetailPage() {
                     background: var(--page) !important;
                     color: var(--ink) !important;
                     transition: background 0.3s ease, color 0.3s ease;
+                }
+                /* Unified SVG Candlestick Chart Styles */
+                .ohlc-metrics {
+                    min-height: 2.9rem;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 1.1rem;
+                }
+                .ohlc-metrics div { display: grid; gap: .18rem; }
+                .ohlc-metrics span { color: var(--faint); font-size: .61rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+                .ohlc-metrics strong { font-size: .72rem; font-weight: 700; }
+                .period-controls button {
+                    transition: background-color 0.2s, color 0.2s;
+                }
+                .price-figure { position: relative; width: 100%; height: 350px; overflow: visible; }
+                #stockChart { display: block; width: 100%; height: 100%; overflow: visible; }
+                .gridline {
+                    fill: none;
+                    stroke: rgba(148, 163, 184, .16);
+                    stroke-width: 1;
+                    vector-effect: non-scaling-stroke;
+                }
+                .axis {
+                    fill: var(--faint);
+                    font: 10px "IBM Plex Mono", ui-monospace, monospace;
+                    font-weight: 700;
+                }
+                .candle-up { fill: var(--green); stroke: var(--green); }
+                .candle-down { fill: var(--red); stroke: var(--red); }
+                .wick { stroke-width: 1.3; vector-effect: non-scaling-stroke; }
+                .volume-up { fill: rgba(7, 150, 105, .33); }
+                .volume-down { fill: rgba(223, 83, 97, .3); }
+                .chart-divider { stroke: rgba(148, 163, 184, .18); stroke-width: 1; vector-effect: non-scaling-stroke; }
+                .chart-message {
+                    position: absolute;
+                    inset: 0;
+                    display: grid;
+                    place-items: center;
+                    color: var(--muted);
+                    font-size: .78rem;
+                }
+                .chart-tooltip {
+                    position: absolute;
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    font-size: 0.72rem;
+                    pointer-events: none;
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    z-index: 1000;
+                    transition: opacity 120ms ease;
+                    display: none;
+                    text-align: left;
+                }
+                .chart-tooltip strong {
+                    display: block;
+                    font-size: 0.85rem;
+                    margin-top: 4px;
+                    font-family: "IBM Plex Mono", ui-monospace, monospace;
+                    font-weight: 600;
+                }
+                .chart-tooltip span {
+                    font-size: 0.65rem;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                }
+                html[data-theme="dark"] .chart-tooltip {
+                    background: rgba(16, 24, 45, 0.93);
+                    border: 1px solid rgba(20, 184, 166, 0.45);
+                    color: #f8fafc;
+                    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25);
+                }
+                html[data-theme="dark"] .chart-tooltip span {
+                    color: #94a3b8;
+                }
+                html[data-theme="dark"] .chart-tooltip strong {
+                    color: #14b8a6;
+                }
+                html[data-theme="light"] .chart-tooltip {
+                    background: rgba(255, 255, 255, 0.93);
+                    border: 1px solid rgba(20, 184, 166, 0.35);
+                    color: #0f172a;
+                    box-shadow: 0 16px 36px rgba(148, 163, 184, 0.18);
+                }
+                html[data-theme="light"] .chart-tooltip span {
+                    color: #64748b;
+                }
+                html[data-theme="light"] .chart-tooltip strong {
+                    color: #0d9488;
+                }
+                .hover-bar {
+                    cursor: pointer;
+                }
+                .hover-bar:hover {
+                    fill: rgba(20, 184, 166, 0.055) !important;
                 }
                 .premium-glass {
                     background: var(--surface-soft);
@@ -850,43 +953,81 @@ export default function SymbolDetailPage() {
                             <>
                                 {/* CHART PANEL */}
                                 <div className="premium-glass rounded-3xl p-6 relative">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                                        <h3 className="text-xl font-extrabold flex items-center gap-2">
-                                            <Activity className="w-5 h-5 text-[#14b8a6]" /> {t.price_chart}
-                                        </h3>
-                                        <div className="flex items-center gap-3 flex-wrap">
-                                            <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-                                                <button onClick={() => setIsIntraday(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isIntraday ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-450 hover:text-slate-700"}`}>1D</button>
-                                                {["1m", "3m", "6m", "1y", "3y", "max"].map(tf => (
-                                                    <button key={tf} onClick={() => { setIsIntraday(false); setChartPeriod(tf); }}
-                                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!isIntraday && chartPeriod === tf ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-450 hover:text-slate-700"}`}>
-                                                        {tf.toUpperCase()}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl">
-                                                {["area", "candle", "line"].map(style => (
-                                                    <button key={style} onClick={() => setChartStyle(style as any)}
-                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${chartStyle === style ? "bg-white dark:bg-slate-800 text-[#14b8a6] shadow-md" : "text-slate-450 hover:text-slate-700"}`}>
-                                                        {style === "area" && <Clock className="w-4 h-4" />}
-                                                        {style === "candle" && <CandlestickChart className="w-4 h-4" />}
-                                                        {style === "line" && <LineChart className="w-4 h-4" />}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                    {/* OHLC Metrics Row */}
+                                    <div className="ohlc-metrics mb-4 border-b border-slate-200/10 pb-4">
+                                        <div>
+                                            <span>{lang === "ar" ? "سعر الفتح" : "Open"}</span>
+                                            <strong className="tabular">{chartData[chartData.length - 1]?.open ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(chartData[chartData.length - 1].open) : "--"}</strong>
+                                        </div>
+                                        <div>
+                                            <span>{lang === "ar" ? "أعلى سعر" : "High"}</span>
+                                            <strong className="tabular">{chartData[chartData.length - 1]?.high ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(chartData[chartData.length - 1].high) : "--"}</strong>
+                                        </div>
+                                        <div>
+                                            <span>{lang === "ar" ? "أدنى سعر" : "Low"}</span>
+                                            <strong className="tabular">{chartData[chartData.length - 1]?.low ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(chartData[chartData.length - 1].low) : "--"}</strong>
+                                        </div>
+                                        <div>
+                                            <span>{lang === "ar" ? "سعر الإغلاق" : "Close"}</span>
+                                            <strong className="tabular text-emerald-500 dark:text-emerald-450">{chartData[chartData.length - 1]?.close ? new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(chartData[chartData.length - 1].close) : "--"}</strong>
+                                        </div>
+                                        <div>
+                                            <span>{lang === "ar" ? "حجم التداول" : "Volume"}</span>
+                                            <strong className="tabular">
+                                                {stockData?.volume
+                                                    ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(Number(stockData.volume))
+                                                    : chartData[chartData.length - 1]?.volume
+                                                        ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(chartData[chartData.length - 1].volume)
+                                                        : "--"}
+                                            </strong>
                                         </div>
                                     </div>
 
-                                    <div className="relative rounded-2xl overflow-hidden">
-                                        {loading && <div className="absolute inset-0 flex items-center justify-center bg-white/5 backdrop-blur-sm z-10"><div className="w-12 h-12 border-4 border-[#14b8a6]/20 border-t-[#14b8a6] rounded-full animate-spin" /></div>}
-                                        {chartData.length === 0 && !loading && (
-                                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                                                <AlertCircle className="w-12 h-12 mb-3 text-slate-400" />
-                                                <p className="text-sm font-semibold">{t.empty_state}</p>
+                                    {/* Chart Controls Bar */}
+                                    <div className="chart-controls flex items-center justify-between mb-4 border-b border-slate-200/10 pb-4">
+                                        <div className="period-controls flex gap-1 p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-xl">
+                                            {[
+                                                { id: "1m", label: "1M" },
+                                                { id: "3m", label: "3M" },
+                                                { id: "6m", label: "6M" },
+                                                { id: "1y", label: "1Y" },
+                                                { id: "3y", label: "3Y" },
+                                                { id: "max", label: "MAX" }
+                                            ].map((tf) => (
+                                                <button
+                                                    key={tf.id}
+                                                    type="button"
+                                                    onClick={() => setChartPeriod(tf.id)}
+                                                    className={`min-w-[2.65rem] border-0 rounded-lg py-1.5 px-3 font-bold text-xs transition-all ${
+                                                        chartPeriod === tf.id
+                                                            ? "bg-[#14b8a6]/10 text-[#14b8a6]"
+                                                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                                    }`}
+                                                >
+                                                    {tf.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <span className="subtle text-xs text-slate-400 font-bold">
+                                            {t.historical_prices}
+                                        </span>
+                                    </div>
+
+                                    {/* SVG Candlestick Canvas */}
+                                    <figure className="price-figure relative w-full h-[350px]">
+                                        {loading && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-white/5 backdrop-blur-sm z-10">
+                                                <div className="w-12 h-12 border-4 border-[#14b8a6]/20 border-t-[#14b8a6] rounded-full animate-spin" />
                                             </div>
                                         )}
-                                        <div ref={chartContainerRef} className="w-full h-[400px]" />
-                                    </div>
+                                        {chartData.length === 0 && !loading && (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center py-20 text-slate-400 z-10">
+                                                <AlertCircle className="w-12 h-12 mb-3 text-slate-400" />
+                                                <p className="text-sm font-semibold">{t.chart_unavailable}</p>
+                                            </div>
+                                        )}
+                                        <svg ref={svgRef} id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" className="w-full h-full block overflow-visible" />
+                                    </figure>
                                 </div>
 
                                 {/* COMPANY PROFILE SECTION */}

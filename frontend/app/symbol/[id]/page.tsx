@@ -789,7 +789,6 @@ export default function SymbolDetailPage() {
                             <div>
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <h1 className="text-3xl font-black tracking-tight uppercase">{symbol}</h1>
-                                    <span className="px-3 py-1 rounded-lg text-xs font-bold bg-[#14b8a6]/10 dark:bg-[#14b8a6]/20 text-[#14b8a6] dark:text-[#2dd4bf] tracking-wide uppercase">{industry || "Equity"}</span>
                                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">{marketName}</span>
                                 </div>
                                 <h2 className="text-slate-500 dark:text-slate-400 font-semibold text-lg mt-1.5">

@@ -7,14 +7,15 @@ import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchAnalystRatings, fetchInsiderTrading,
     fetchEarnings, fetchFairValues, fetchMarketBreadth, fetchIntraday, 
-    fetchRatios, fetchYahooProfile, Ticker
+    fetchRatios, fetchYahooProfile, fetchLocalCompanyProfile, Ticker
 } from "@/lib/api";
 
 import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
     FileText, ArrowUpRight, ArrowDownRight, Star, Bell, Share2, Activity,
     Target, LineChart, CandlestickChart, Zap, PieChart, AlertCircle, Wallet,
-    Briefcase, Calendar, ArrowUp, ArrowDown, Clock, Globe, Award, Landmark, CheckCircle, ShieldAlert
+    Briefcase, Calendar, ArrowUp, ArrowDown, Clock, Globe, Award, Landmark, CheckCircle, ShieldAlert,
+    ChevronDown, DollarSign
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -86,7 +87,51 @@ const TRANSLATIONS = {
         analyst_ratings: "Analyst Target & Recommendations",
         company_details: "Company Details",
         historical_prices: "Historical Prices",
-        chart_unavailable: "Chart data is currently unavailable for this symbol."
+        chart_unavailable: "Chart data is currently unavailable for this symbol.",
+        
+        // UPGRADED BILINGUAL TRANSLATION KEYS
+        total_interest_income: "Total Interest Income",
+        interest_expense: "Interest Expense",
+        net_interest_income: "Net Interest Income",
+        provision_credit_losses: "Loan Loss Provisions",
+        trading_income: "Trading Income",
+        fee_income: "Fee Income",
+        salaries_benefits: "Salaries & Benefits",
+        deposits: "Customer Deposits",
+        gross_loans: "Gross Loans",
+        allowance_loans: "Allowance for Loan Losses",
+        net_loans: "Net Loans",
+        investment_securities: "Investment Securities",
+        cash_equivalents: "Cash & Cash Equivalents",
+        total_investments: "Total Investments",
+        property_ppe: "Property, Plant & Equipment",
+        goodwill_intangibles: "Goodwill & Intangibles",
+        short_term_debt: "Short Term Debt",
+        long_term_debt: "Long Term Debt",
+        total_current_liabilities: "Total Current Liabilities",
+        total_current_assets: "Total Current Assets",
+        working_capital: "Working Capital",
+        fcf_yield: "FCF Yield",
+        earnings_yield: "Earnings Yield",
+        piotroski_score: "Piotroski F-Score",
+        altman_z_score: "Altman Z-Score",
+        institutional_ownership: "Institutional Ownership",
+        insider_ownership: "Insider Ownership",
+        tangible_book: "Tangible Book Value (P/TBV)",
+        technical_momentum: "Technical Momentum",
+        moving_averages: "Moving Averages",
+        ma_50d: "50-Day Moving Average",
+        ma_200d: "200-Day Moving Average",
+        rsi_14: "Relative Strength Index (RSI-14)",
+        management_officers: "Management & Leadership",
+        annual_view: "Annual View",
+        quarterly_view: "Quarterly View",
+        income_statement: "Income Statement",
+        balance_sheet: "Balance Sheet",
+        cash_flow: "Cash Flow Statement",
+        toggle_period: "Period Type",
+        financial_statement: "Financial Statements Ledger",
+        ex_board: "Executive Officers"
     },
     ar: {
         nav_home: "الرئيسية",
@@ -153,7 +198,51 @@ const TRANSLATIONS = {
         analyst_ratings: "أهداف المحللين والتوصيات",
         company_details: "تفاصيل الشركة",
         historical_prices: "حركة الأسعار التاريخية",
-        chart_unavailable: "بيانات الرسم البياني غير متوفرة حالياً لهذا السهم."
+        chart_unavailable: "بيانات الرسم البياني غير متوفرة حالياً لهذا السهم.",
+        
+        // UPGRADED BILINGUAL TRANSLATION KEYS (ARABIC)
+        total_interest_income: "إجمالي عائدات الفوائد",
+        interest_expense: "مصروفات الفوائد",
+        net_interest_income: "صافي عائدات الفوائد",
+        provision_credit_losses: "مخصصات خسائر القروض",
+        trading_income: "أرباح التداول",
+        fee_income: "إيرادات الرسوم والعمولات",
+        salaries_benefits: "الرواتب والمزايا",
+        deposits: "ودائع العملاء",
+        gross_loans: "إجمالي القروض",
+        allowance_loans: "مخصص خسائر الائتمان",
+        net_loans: "صافي القروض",
+        investment_securities: "الأوراق المالية الاستثمارية",
+        cash_equivalents: "النقد وما في حكمه",
+        total_investments: "إجمالي الاستثمارات",
+        property_ppe: "العقارات والآلات والمعدات",
+        goodwill_intangibles: "الشهرة والأصول غير الملموسة",
+        short_term_debt: "ديون قصيرة الأجل",
+        long_term_debt: "ديون طويلة الأجل",
+        total_current_liabilities: "إجمالي الالتزامات المتداولة",
+        total_current_assets: "إجمالي الأصول المتداولة",
+        working_capital: "رأس المال العامل",
+        fcf_yield: "عائد التدفق النقدي الحر",
+        earnings_yield: "عائد الأرباح",
+        piotroski_score: "مؤشر بيوتروسكي F-Score",
+        altman_z_score: "مؤشر التنبؤ بالتعثر Altman Z",
+        institutional_ownership: "ملكية المؤسسات",
+        insider_ownership: "ملكية المطلعين",
+        tangible_book: "مضاعف القيمة الدفترية الملموسة P/TBV",
+        technical_momentum: "التحليل الفني والزخم",
+        moving_averages: "المتوسطات المتحركة",
+        ma_50d: "متوسط متحرك ٥٠ يوم",
+        ma_200d: "متوسط متحرك ٢٠٠ يوم",
+        rsi_14: "مؤشر القوة النسبية RSI-14",
+        management_officers: "الهيئة الإدارية والقيادة التنفيذية",
+        annual_view: "القوائم المالية السنوية",
+        quarterly_view: "القوائم المالية الربعية",
+        income_statement: "قائمة الدخل",
+        balance_sheet: "الميزانية العمومية",
+        cash_flow: "قائمة التدفقات النقدية",
+        toggle_period: "نوع القائمة",
+        financial_statement: "سجل التقارير المالية المتكامل",
+        ex_board: "المدراء التنفيذيون"
     }
 };
 
@@ -259,16 +348,32 @@ export default function SymbolDetailPage() {
     const [activeTab, setActiveTab] = useState<"overview" | "ratios" | "financials" | "ownership" | "analysts" | "insider" | "actions">("overview");
     const [chartPeriod, setChartPeriod] = useState("3m");
 
+    // NEW FINANCIAL STATEMENT ENGINE STATES
+    const [financialPeriod, setFinancialPeriod] = useState<"annual" | "quarterly">("annual");
+    const [financialSubTab, setFinancialSubTab] = useState<"income" | "balance" | "cashflow">("income");
+
     // Queries
     const { data: tickers = [], isLoading: tickersLoading } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers, staleTime: 30000 });
     const stockData = useMemo(() => tickers.find((t: Ticker) => t.symbol === symbol), [tickers, symbol]);
     
-    // Core data queries mixing StockAnalysis + Yahoo APIs
+    // NEW LOCAL SUPABASE POSTGRES DB MULTI-DATAPOINT SERVICE QUERY
+    const { data: localProfile } = useQuery({ 
+        queryKey: ["local-profile", symbol], 
+        queryFn: () => fetchLocalCompanyProfile(symbol), 
+        enabled: !!symbol 
+    });
+
     const { data: yahooProfile } = useQuery({ queryKey: ["yahoo-profile", symbol], queryFn: () => fetchYahooProfile(symbol), enabled: !!symbol });
     const { data: ratiosList = [] } = useQuery({ queryKey: ["stock-ratios", symbol], queryFn: () => fetchRatios(symbol), enabled: !!symbol });
     const ratiosData = useMemo(() => Array.isArray(ratiosList) && ratiosList.length > 0 ? ratiosList[0] : (ratiosList || {}), [ratiosList]);
 
-    const { data: ohlcData = [], isLoading: chartLoading } = useQuery({ queryKey: ["ohlc", symbol, chartPeriod], queryFn: () => fetchOHLC(symbol, chartPeriod), enabled: !!symbol });
+    // Intraday 1D Chart Toggle Logic
+    const { data: ohlcData = [], isLoading: chartLoading } = useQuery({ 
+        queryKey: ["ohlc", symbol, chartPeriod], 
+        queryFn: () => chartPeriod === "1D" ? fetchIntraday(symbol, "5m", 300) : fetchOHLC(symbol, chartPeriod), 
+        enabled: !!symbol 
+    });
+
     const { data: financials = [] } = useQuery({ queryKey: ["financials", symbol], queryFn: () => fetchFinancials(symbol), enabled: !!symbol });
     const { data: shareholders = [] } = useQuery({ queryKey: ["shareholders", symbol], queryFn: () => fetchShareholders(symbol), enabled: !!symbol });
     const { data: allAnalystRatings = [] } = useQuery({ queryKey: ["analyst-ratings"], queryFn: () => fetchAnalystRatings(), enabled: !!symbol });
@@ -281,6 +386,24 @@ export default function SymbolDetailPage() {
     const insiderTrades = useMemo(() => allInsiderTrading.filter((t: any) => t.symbol === symbol), [allInsiderTrading, symbol]);
     const fairValue = useMemo(() => allFairValues.find((f: any) => f.symbol === symbol), [allFairValues, symbol]);
     const latestBreadth = marketBreadth[0];
+
+    // Local DB Stats shortcut
+    const stats = useMemo(() => localProfile?.statistics || {}, [localProfile]);
+
+    // Context-Aware Banking sector resolver
+    const isBank = useMemo(() => {
+        const sec = (localProfile?.profile?.sector || stockData?.sector_name || "").toLowerCase();
+        return sec.includes("bank") || sec.includes("financial services") || symbol === "COMI";
+    }, [localProfile, stockData, symbol]);
+
+    // Parse Executives Board safely
+    const officers = useMemo(() => {
+        const raw = localProfile?.profile?.officers;
+        if (!raw) return [];
+        try {
+            return typeof raw === "string" ? JSON.parse(raw) : raw;
+        } catch { return []; }
+    }, [localProfile]);
 
     const parsedFinancials = useMemo(() => financials.map((f: any) => {
         const rp = parseFinancialsRawData(f.raw_data);
@@ -295,6 +418,10 @@ export default function SymbolDetailPage() {
         };
     }), [financials]);
 
+    const filteredFinancials = useMemo(() => {
+        return parsedFinancials.filter((f: any) => f.period_type === financialPeriod);
+    }, [parsedFinancials, financialPeriod]);
+
     const chartData = useMemo(() => {
         if (!ohlcData || ohlcData.length === 0) return [];
         return [...ohlcData].sort((a: any, b: any) => {
@@ -303,7 +430,9 @@ export default function SymbolDetailPage() {
             return dateA.getTime() - dateB.getTime();
         }).map((item: any) => {
             const dateValue = item.time || item.date || item.timestamp;
-            const timeValue = new Date(dateValue).toISOString().split('T')[0];
+            const timeValue = chartPeriod === "1D"
+                ? new Date(dateValue).toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: false })
+                : new Date(dateValue).toISOString().split('T')[0];
             return {
                 time: timeValue,
                 open: Number(item.open),
@@ -313,157 +442,152 @@ export default function SymbolDetailPage() {
                 volume: Number(item.volume)
             };
         });
-    }, [ohlcData]);
+    }, [ohlcData, chartPeriod, lang]);
 
     const chartStats = useMemo(() => {
         if (chartData.length < 2) return null;
         const current = chartData[chartData.length - 1];
         const first = chartData[0];
-        const high52 = Math.max(...chartData.map((d: any) => d.high));
-        const low52 = Math.min(...chartData.map((d: any) => d.low));
+        const highs = chartData.map((d: any) => d.high).filter(h => h > 0);
+        const lows = chartData.map((d: any) => d.low).filter(l => l > 0);
+        const high52 = highs.length > 0 ? Math.max(...highs) : current.close;
+        const low52 = lows.length > 0 ? Math.min(...lows) : current.close;
         const periodReturn = ((current.close - first.close) / first.close) * 100;
         return { high52, low52, periodReturn, current };
     }, [chartData]);
 
-    // Resolved structures from the backend API's fail-safe structures
     const latestAnnualStatement = useMemo(() => {
         if (!parsedFinancials || parsedFinancials.length === 0) return null;
         return parsedFinancials.find((f: any) => f.period_type === "annual") || parsedFinancials[0];
     }, [parsedFinancials]);
 
-    const profileData = useMemo(() => yahooProfile?.profile || {}, [yahooProfile]);
+    const profileData = useMemo(() => localProfile?.profile || yahooProfile?.profile || {}, [localProfile, yahooProfile]);
     const fundamentalsData = useMemo(() => yahooProfile?.fundamentals || {}, [yahooProfile]);
 
     const longBusinessSummary = useMemo(() => profileData.description || profileData.longBusinessSummary || stockData?.name_en || "", [profileData, stockData]);
     const website = useMemo(() => profileData.website || "", [profileData]);
     const industry = useMemo(() => profileData.industry || stockData?.sector_name || "", [profileData, stockData]);
     const employees = useMemo(() => profileData.employees || null, [profileData]);
-    const city = useMemo(() => profileData.headquarters_city || profileData.city || "", [profileData]);
+    const city = useMemo(() => profileData.headquarters_city || profileData.city || profileData.headquarters || "", [profileData]);
     const country = useMemo(() => profileData.country || "", [profileData]);
 
+    // Local DB Statistics fallback mappings
     const marketCap = useMemo(() => {
-        const val = Number(profileData.market_cap || stockData?.market_cap || 0);
-        if (val > 0) return val;
-        if (latestAnnualStatement?.revenue > 0) return latestAnnualStatement.revenue * 3;
-        return 0;
-    }, [profileData, stockData, latestAnnualStatement]);
+        return Number(stats.market_cap || profileData.market_cap || stockData?.market_cap || 0);
+    }, [stats, profileData, stockData]);
 
-    const peRatio = useMemo(() => Number(fundamentalsData.pe_ratio || stockData?.pe_ratio || 0), [fundamentalsData, stockData]);
-    const pbRatio = useMemo(() => Number(fundamentalsData.price_to_book || (stockData as any)?.pb_ratio || 0), [fundamentalsData, stockData]);
-    const dividendYield = useMemo(() => Number(fundamentalsData.dividend_yield || (stockData as any)?.dividend_yield || 0), [fundamentalsData, stockData]);
-    const betaValue = useMemo(() => Number(fundamentalsData.beta || (stockData as any)?.beta || 0), [fundamentalsData, stockData]);
+    const peRatio = useMemo(() => Number(stats.pe_ratio || fundamentalsData.pe_ratio || stockData?.pe_ratio || 0), [stats, fundamentalsData, stockData]);
+    const pbRatio = useMemo(() => Number(stats.pb_ratio || fundamentalsData.price_to_book || (stockData as any)?.pb_ratio || 0), [stats, fundamentalsData, stockData]);
+    const dividendYield = useMemo(() => Number(stats.dividend_yield || fundamentalsData.dividend_yield || (stockData as any)?.dividend_yield || 0), [stats, fundamentalsData, stockData]);
+    const betaValue = useMemo(() => Number(stats.beta_5y || fundamentalsData.beta || (stockData as any)?.beta || 0), [stats, fundamentalsData, stockData]);
 
     const sharesOutstanding = useMemo(() => {
-        const val = Number(profileData.shares_outstanding || latestAnnualStatement?.shares_outstanding || 0);
-        if (val > 0) return val;
-        if (symbol === "COMI") return 3380000000;
-        return 0;
-    }, [profileData, latestAnnualStatement, symbol]);
+        return Number(stats.shares_outstanding || profileData.shares_outstanding || latestAnnualStatement?.shares_outstanding || 0);
+    }, [stats, profileData, latestAnnualStatement]);
 
-    const totalCash = useMemo(() => Number(fundamentalsData.total_cash || latestAnnualStatement?.cash || 0), [fundamentalsData, latestAnnualStatement]);
-    const totalDebt = useMemo(() => Number(fundamentalsData.total_debt || latestAnnualStatement?.long_term_debt || 0), [fundamentalsData, latestAnnualStatement]);
+    const totalCash = useMemo(() => Number(stats.cash_ttm || fundamentalsData.total_cash || latestAnnualStatement?.cash || 0), [stats, fundamentalsData, latestAnnualStatement]);
+    const totalDebt = useMemo(() => Number(stats.total_debt || fundamentalsData.total_debt || latestAnnualStatement?.long_term_debt || 0), [stats, fundamentalsData, latestAnnualStatement]);
 
     const enterpriseValue = useMemo(() => {
-        const val = Number(fundamentalsData.enterprise_value || 0);
+        const val = Number(stats.enterprise_value || fundamentalsData.enterprise_value || 0);
         if (val > 0) return val;
         return marketCap > 0 ? (marketCap + totalDebt - totalCash) : 0;
-    }, [fundamentalsData, marketCap, totalDebt, totalCash]);
+    }, [stats, fundamentalsData, marketCap, totalDebt, totalCash]);
 
-    const fcf = useMemo(() => Number(fundamentalsData.free_cash_flow || latestAnnualStatement?.free_cashflow || 0), [fundamentalsData, latestAnnualStatement]);
+    const fcf = useMemo(() => Number(stats.fcf_ttm || fundamentalsData.free_cash_flow || latestAnnualStatement?.free_cashflow || 0), [stats, fundamentalsData, latestAnnualStatement]);
     
     const profitMargin = useMemo(() => {
-        const val = Number(fundamentalsData.profit_margin || 0);
+        const val = Number(stats.profit_margin || fundamentalsData.profit_margin || 0);
         if (val > 0) return val;
         if (latestAnnualStatement?.net_income && latestAnnualStatement?.revenue) {
             return latestAnnualStatement.net_income / latestAnnualStatement.revenue;
         }
         return 0;
-    }, [fundamentalsData, latestAnnualStatement]);
+    }, [stats, fundamentalsData, latestAnnualStatement]);
 
     const debtEquity = useMemo(() => {
-        const val = Number(fundamentalsData.debt_to_equity || 0);
+        const val = Number(stats.debt_equity || fundamentalsData.debt_to_equity || 0);
         if (val > 0) return val;
         const equity = latestAnnualStatement?.total_equity || 0;
         return totalDebt > 0 && equity > 0 ? (totalDebt / equity) : 0;
-    }, [fundamentalsData, totalDebt, latestAnnualStatement]);
+    }, [stats, fundamentalsData, totalDebt, latestAnnualStatement]);
 
     const roe = useMemo(() => {
-        const val = Number(fundamentalsData.return_on_equity || 0);
+        const val = Number(stats.roe || fundamentalsData.return_on_equity || 0);
         if (val > 0) return val;
         const equity = latestAnnualStatement?.total_equity || 0;
         const income = latestAnnualStatement?.net_income || 0;
         return income !== 0 && equity > 0 ? (income / equity) : 0;
-    }, [fundamentalsData, latestAnnualStatement]);
+    }, [stats, fundamentalsData, latestAnnualStatement]);
 
     const roa = useMemo(() => {
-        const val = Number(fundamentalsData.return_on_assets || 0);
+        const val = Number(stats.roa || fundamentalsData.return_on_assets || 0);
         if (val > 0) return val;
         const assets = latestAnnualStatement?.total_assets || 0;
         const income = latestAnnualStatement?.net_income || 0;
         return income !== 0 && assets > 0 ? (income / assets) : 0;
-    }, [fundamentalsData, latestAnnualStatement]);
+    }, [stats, fundamentalsData, latestAnnualStatement]);
 
-    const pegRatio = useMemo(() => Number(fundamentalsData.peg_ratio || 0), [fundamentalsData]);
-    const currentRatio = useMemo(() => Number(fundamentalsData.current_ratio || 0), [fundamentalsData]);
-    const quickRatio = useMemo(() => Number(fundamentalsData.quick_ratio || 0), [fundamentalsData]);
+    const pegRatio = useMemo(() => Number(stats.peg_ratio || fundamentalsData.peg_ratio || 0), [stats, fundamentalsData]);
+    const currentRatio = useMemo(() => Number(stats.current_ratio || fundamentalsData.current_ratio || 0), [stats, fundamentalsData]);
+    const quickRatio = useMemo(() => Number(stats.quick_ratio || fundamentalsData.quick_ratio || 0), [stats, fundamentalsData]);
     
     const operatingMargin = useMemo(() => {
-        const val = Number(fundamentalsData.operating_margin || 0);
+        const val = Number(stats.operating_margin || fundamentalsData.operating_margin || 0);
         if (val > 0) return val;
         if (latestAnnualStatement?.operating_income && latestAnnualStatement?.revenue) {
             return latestAnnualStatement.operating_income / latestAnnualStatement.revenue;
         }
         return 0;
-    }, [fundamentalsData, latestAnnualStatement]);
+    }, [stats, fundamentalsData, latestAnnualStatement]);
 
     const grossMargin = useMemo(() => {
-        const val = Number(fundamentalsData.gross_margin || 0);
+        const val = Number(stats.gross_margin || fundamentalsData.gross_margin || 0);
         if (val > 0) return val;
         if (latestAnnualStatement?.gross_profit && latestAnnualStatement?.revenue) {
             return latestAnnualStatement.gross_profit / latestAnnualStatement.revenue;
         }
         return 0;
-    }, [fundamentalsData, latestAnnualStatement]);
+    }, [stats, fundamentalsData, latestAnnualStatement]);
 
     const evToRevenue = useMemo(() => {
-        const val = Number(fundamentalsData.enterprise_to_revenue || 0);
+        const val = Number(stats.ev_revenue || fundamentalsData.enterprise_to_revenue || 0);
         if (val > 0) return val;
         const rev = latestAnnualStatement?.revenue || 0;
         return enterpriseValue > 0 && rev > 0 ? (enterpriseValue / rev) : 0;
-    }, [fundamentalsData, enterpriseValue, latestAnnualStatement]);
+    }, [stats, fundamentalsData, enterpriseValue, latestAnnualStatement]);
 
-    const evToEbitda = useMemo(() => Number(fundamentalsData.enterprise_to_ebitda || 0), [fundamentalsData]);
+    const evToEbitda = useMemo(() => Number(stats.ev_ebitda || fundamentalsData.enterprise_to_ebitda || 0), [stats, fundamentalsData]);
     
     const trailingEps = useMemo(() => {
-        const val = Number(fundamentalsData.trailing_eps || 0);
+        const val = Number(stats.eps_ttm || fundamentalsData.trailing_eps || 0);
         if (val !== 0) return val;
         return latestAnnualStatement?.eps || 0;
-    }, [fundamentalsData, latestAnnualStatement]);
+    }, [stats, fundamentalsData, latestAnnualStatement]);
 
-    const forwardEps = useMemo(() => Number(fundamentalsData.forward_eps || 0), [fundamentalsData]);
-    const bookValue = useMemo(() => Number(fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [fundamentalsData, latestAnnualStatement]);
-    const dividendRate = useMemo(() => Number(fundamentalsData.dividend_rate || 0), [fundamentalsData]);
-    const payoutRatio = useMemo(() => Number(fundamentalsData.payout_ratio || 0), [fundamentalsData]);
-    const targetPrice = useMemo(() => Number(fundamentalsData.target_price || (stockData as any)?.target_price || 0), [fundamentalsData, stockData]);
-    const recommendation = useMemo(() => fundamentalsData.recommendation || "-", [fundamentalsData]);
+    const forwardEps = useMemo(() => Number(stats.forward_pe ? (lastPrice / stats.forward_pe) : fundamentalsData.forward_eps || 0), [stats, fundamentalsData, stockData]);
+    const bookValue = useMemo(() => Number(stats.bvps || stats.book_value || fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [stats, fundamentalsData, latestAnnualStatement]);
+    const dividendRate = useMemo(() => Number(stats.dps || fundamentalsData.dividend_rate || 0), [stats, fundamentalsData]);
+    const payoutRatio = useMemo(() => Number(stats.payout_ratio || fundamentalsData.payout_ratio || 0), [stats, fundamentalsData]);
+    const targetPrice = useMemo(() => Number(stats.target_price || fundamentalsData.target_price || (stockData as any)?.target_price || 0), [stats, fundamentalsData, stockData]);
+    const recommendation = useMemo(() => stats.recommendation_key || fundamentalsData.recommendation || "-", [stats, fundamentalsData]);
     
     const floatShares = useMemo(() => {
-        const val = Number(profileData.float_shares || 0);
+        const val = Number(stats.float_shares || profileData.float_shares || 0);
         if (val > 0) return val;
         if (symbol === "COMI") return 2680000000;
         return 0;
-    }, [profileData, symbol]);
+    }, [stats, profileData, symbol]);
 
-    const shortRatio = useMemo(() => Number(profileData.short_ratio || 0), [profileData]);
     const phone = useMemo(() => profileData.phone || "-", [profileData]);
     const address = useMemo(() => profileData.address || "-", [profileData]);
 
     const priceToSales = useMemo(() => {
-        const val = Number(fundamentalsData.price_to_sales || 0);
+        const val = Number(stats.ps_ratio || fundamentalsData.price_to_sales || 0);
         if (val > 0) return val;
         const rev = latestAnnualStatement?.revenue || 0;
         return marketCap > 0 && rev > 0 ? (marketCap / rev) : 0;
-    }, [fundamentalsData, marketCap, latestAnnualStatement]);
+    }, [stats, fundamentalsData, marketCap, latestAnnualStatement]);
 
     // Dynamic tooltip helpers setup
     useEffect(() => {
@@ -515,7 +639,7 @@ export default function SymbolDetailPage() {
             const h = Number(item.high);
             const l = Number(item.low);
             const c = Number(item.close);
-            return o > 0 && h > 0 && l > 0 && c > 0;
+            return o >= 0 && h >= 0 && l >= 0 && c >= 0;
         });
 
         if (cleanRows.length < 2) return;
@@ -526,6 +650,7 @@ export default function SymbolDetailPage() {
             const group = cleanRows.slice(index, index + groupSize);
             candles.push({
                 date: group[group.length - 1].time as string,
+                time: group[group.length - 1].time as string,
                 open: Number(group[0].open),
                 high: Math.max(...group.map((item) => Number(item.high))),
                 low: Math.min(...group.map((item) => Number(item.low))),
@@ -540,10 +665,10 @@ export default function SymbolDetailPage() {
         const priceBottom = height - pad.bottom - volumeHeight - dividerGap;
         const priceHeight = priceBottom - pad.top;
 
-        const highs = candles.map((item) => item.high);
-        const lows = candles.map((item) => item.low);
-        let maximum = Math.max(...highs);
-        let minimum = Math.min(...lows);
+        const highs = candles.map((item) => item.high).filter(h => h > 0);
+        const lows = candles.map((item) => item.low).filter(l => l > 0);
+        let maximum = highs.length > 0 ? Math.max(...highs) : 100;
+        let minimum = lows.length > 0 ? Math.min(...lows) : 0;
         const range = maximum - minimum || 1;
         maximum += range * .02;
         minimum -= range * .02;
@@ -575,21 +700,26 @@ export default function SymbolDetailPage() {
 
         const dateIndexes = [0, Math.floor((candles.length - 1) / 2), candles.length - 1];
         const dates = dateIndexes.map((index) => {
+            if (index >= candles.length) return "";
             const x = pad.left + slot * index + slot / 2;
             const anchor = index === 0 ? "start" : index === candles.length - 1 ? "end" : "middle";
-            const label = new Intl.DateTimeFormat(localeStr, { month: "short", day: "numeric" }).format(new Date(candles[index].date));
+            const label = chartPeriod === "1D"
+                ? candles[index].time
+                : new Intl.DateTimeFormat(localeStr, { month: "short", day: "numeric" }).format(new Date(candles[index].date));
             return `<text x="${x}" y="${height - 7}" text-anchor="${anchor}" class="axis">${label}</text>`;
         }).join("");
 
         const hoverBars = candles.map((item, index) => {
             const barX = pad.left + slot * index;
-            const title = new Intl.DateTimeFormat(localeStr, { day: "numeric", month: "short", year: "numeric" }).format(new Date(item.date));
+            const title = chartPeriod === "1D"
+                ? item.time
+                : new Intl.DateTimeFormat(localeStr, { day: "numeric", month: "short", year: "numeric" }).format(new Date(item.date));
             const valueStr = `O: ${item.open.toFixed(2)} | H: ${item.high.toFixed(2)} | L: ${item.low.toFixed(2)} | C: ${item.close.toFixed(2)}`;
             return `<rect x="${barX.toFixed(2)}" y="0" width="${slot.toFixed(2)}" height="${height}" fill="transparent" class="hover-bar" onmouseover="window.showChartTooltip(event, '${title}', '${valueStr}')" onmousemove="window.moveChartTooltip(event)" onmouseout="window.hideChartTooltip()"/>`;
         }).join("");
 
         svgElement.innerHTML = `${grid}${hasHistoricalVolume ? `<path d="M ${pad.left} ${priceBottom + 9} H ${width - pad.right}" class="chart-divider"/>` : ""}${marks}${dates}${hoverBars}`;
-    }, [chartData, activeTab, theme, lang, svgElement]);
+    }, [chartData, activeTab, theme, lang, svgElement, chartPeriod]);
 
     if (tickersLoading) {
         return (
@@ -605,10 +735,10 @@ export default function SymbolDetailPage() {
         return (
             <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#0b0f19] flex items-center justify-center p-6 text-center">
                 <div className="premium-glass max-w-md p-10 rounded-3xl border border-red-500/10">
-                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Symbol Not Found</h2>
-                    <p className="text-slate-500 dark:text-slate-400 mb-6 font-medium">The requested EGX stock "{symbol}" could not be located in our production indices.</p>
-                    <button onClick={() => router.push("/Market-Pulse")} className="px-6 py-2.5 bg-[#14b8a6] text-white font-bold rounded-xl shadow-lg hover:bg-[#14b8a6]/90 transition-all">Return to Dashboard</button>
+                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                     <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Symbol Not Found</h2>
+                     <p className="text-slate-500 dark:text-slate-400 mb-6 font-medium">The requested EGX stock "{symbol}" could not be located in our production indices.</p>
+                     <button onClick={() => router.push("/Market-Pulse")} className="px-6 py-2.5 bg-[#14b8a6] text-white font-bold rounded-xl shadow-lg hover:bg-[#14b8a6]/90 transition-all">Return to Dashboard</button>
                 </div>
             </div>
         );
@@ -986,6 +1116,7 @@ export default function SymbolDetailPage() {
                                     <div className="chart-controls flex items-center justify-between mb-4 border-b border-slate-200/10 pb-4">
                                         <div className="period-controls flex gap-1 p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-xl">
                                             {[
+                                                { id: "1d", label: "1D" },
                                                 { id: "1m", label: "1M" },
                                                 { id: "3m", label: "3M" },
                                                 { id: "6m", label: "6M" },
@@ -996,9 +1127,9 @@ export default function SymbolDetailPage() {
                                                 <button
                                                     key={tf.id}
                                                     type="button"
-                                                    onClick={() => setChartPeriod(tf.id)}
+                                                    onClick={() => setChartPeriod(tf.id === "1d" ? "1D" : tf.id)}
                                                     className={`min-w-[2.65rem] border-0 rounded-lg py-1.5 px-3 font-bold text-xs transition-all ${
-                                                        chartPeriod === tf.id
+                                                        (chartPeriod === tf.id || (chartPeriod === "1D" && tf.id === "1d"))
                                                             ? "bg-[#14b8a6]/10 text-[#14b8a6]"
                                                             : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                                                     }`}
@@ -1028,6 +1159,33 @@ export default function SymbolDetailPage() {
                                         <svg ref={setSvgElement} id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" className="w-full h-full block overflow-visible" />
                                     </figure>
                                 </div>
+
+                                {/* TECHNICAL MOMENTUM CARD OVERLAY */}
+                                {stats && (stats.ma_50d || stats.ma_200d || stats.rsi_14) && (
+                                    <div className="premium-glass rounded-3xl p-8">
+                                        <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
+                                            <Activity className="w-5 h-5 text-[#14b8a6]" /> {t.technical_momentum}
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            {[
+                                                { l: t.ma_50d, v: stats.ma_50d ? formatCurrency(stats.ma_50d, currency) : "-", icon: TrendingUp, c: "text-[#14b8a6]" },
+                                                { l: t.ma_200d, v: stats.ma_200d ? formatCurrency(stats.ma_200d, currency) : "-", icon: TrendingUp, c: "text-blue-500" },
+                                                { l: t.rsi_14, v: stats.rsi_14 ? `${stats.rsi_14.toFixed(1)}` : "-", icon: Target, c: stats.rsi_14 > 70 ? "text-rose-500" : stats.rsi_14 < 30 ? "text-emerald-500" : "text-amber-500" },
+                                                { l: "52W Return", v: stats.price_change_52w ? `${stats.price_change_52w >= 0 ? "+" : ""}${(stats.price_change_52w * 100).toFixed(1)}%` : "-", icon: Activity, c: stats.price_change_52w >= 0 ? "text-emerald-500" : "text-rose-500" }
+                                            ].map((m, i) => (
+                                                <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
+                                                    <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+                                                        <m.icon className={`w-5 h-5 ${m.c}`} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{m.l}</p>
+                                                        <p className="font-extrabold text-base mt-0.5 tabular">{m.v}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* COMPANY PROFILE SECTION */}
                                 <div className="premium-glass rounded-3xl p-8">
@@ -1067,6 +1225,28 @@ export default function SymbolDetailPage() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* PREMIUM MANAGEMENT / CORPORATE LEADERSHIP OFFICERS GRID */}
+                                {officers && officers.length > 0 && (
+                                    <div className="premium-glass rounded-3xl p-8">
+                                        <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
+                                            <Users className="w-5 h-5 text-[#14b8a6]" /> {t.management_officers}
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {officers.map((officer: any, idx: number) => (
+                                                <div key={idx} className="p-5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl flex items-center gap-4 hover:border-[#14b8a6]/40 transition-all duration-300">
+                                                    <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border flex items-center justify-center text-[#14b8a6] shadow-sm font-bold">
+                                                        {officer.name.slice(0, 1)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-extrabold text-base">{officer.name}</p>
+                                                        <p className="text-xs text-slate-400 font-bold uppercase mt-0.5">{officer.position || t.ex_board}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
 
@@ -1086,10 +1266,11 @@ export default function SymbolDetailPage() {
                                             { l: t.pb_ratio, v: pbRatio > 0 ? pbRatio.toFixed(2) : "-", icon: FileText, c: "text-indigo-500" },
                                             { l: lang === "ar" ? "مكرر المبيعات P/S" : "Price to Sales (P/S)", v: priceToSales > 0 ? priceToSales.toFixed(2) : "-", icon: BarChart3, c: "text-cyan-500" },
                                             { l: t.peg_ratio, v: pegRatio > 0 ? pegRatio.toFixed(2) : "-", icon: TrendingUp, c: "text-purple-500" },
-                                            { l: lang === "ar" ? "مكرر القيمة الدفترية" : "Book Value Per Share", v: bookValue > 0 ? formatCurrency(bookValue, currency) : "-", icon: Wallet, c: "text-blue-500" },
-                                            { l: lang === "ar" ? "ربحية السهم (EPS) المحققة" : "Earnings Per Share (EPS)", v: trailingEps !== 0 ? trailingEps.toFixed(2) : "-", icon: TrendingUp, c: "text-emerald-500" },
                                             { l: lang === "ar" ? "مضاعف EV/Revenue" : "EV to Revenue", v: evToRevenue > 0 ? evToRevenue.toFixed(2) : "-", icon: Landmark, c: "text-orange-500" },
-                                            { l: lang === "ar" ? "مضاعف EV/EBITDA" : "EV to EBITDA", v: evToEbitda > 0 ? evToEbitda.toFixed(2) : "-", icon: Landmark, c: "text-indigo-600" }
+                                            { l: lang === "ar" ? "مضاعف EV/EBITDA" : "EV to EBITDA", v: evToEbitda > 0 ? evToEbitda.toFixed(2) : "-", icon: Landmark, c: "text-indigo-600" },
+                                            { l: t.tangible_book, v: stats.p_tbv ? stats.p_tbv.toFixed(2) : pbRatio > 0 ? pbRatio.toFixed(2) : "-", icon: Wallet, c: "text-blue-500" },
+                                            { l: t.earnings_yield, v: stats.earnings_yield ? `${(stats.earnings_yield * 100).toFixed(1)}%` : "-", icon: Target, c: "text-emerald-500" },
+                                            { l: lang === "ar" ? "ربحية السهم (EPS) المحققة" : "Earnings Per Share (EPS)", v: trailingEps !== 0 ? trailingEps.toFixed(2) : "-", icon: TrendingUp, c: "text-emerald-500" }
                                         ].map((metric, i) => (
                                             <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
                                                 <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
@@ -1097,12 +1278,49 @@ export default function SymbolDetailPage() {
                                                 </div>
                                                 <div>
                                                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
-                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                    <p className="font-extrabold text-base mt-0.5 tabular">{metric.v}</p>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* INVESTMENT QUALITY CORES CARD */}
+                                {stats && (stats.piotroski_f_score !== undefined || stats.altman_z_score !== undefined) && (
+                                    <div className="premium-glass rounded-3xl p-8">
+                                        <h3 className="text-lg font-black flex items-center gap-2 mb-6 text-slate-800 dark:text-white">
+                                            <ShieldAlert className="w-5 h-5 text-teal-500" /> Quality Core Financial Scores
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {stats.piotroski_f_score !== undefined && (
+                                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex justify-between items-center">
+                                                    <div>
+                                                        <p className="font-extrabold text-base">{t.piotroski_score}</p>
+                                                        <p className="text-xs text-slate-400 font-bold mt-1">Identifies overall accounting quality status</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-4 py-2 rounded-xl text-lg font-black ${stats.piotroski_f_score >= 6 ? "bg-emerald-500/10 text-emerald-400" : stats.piotroski_f_score <= 3 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
+                                                            {stats.piotroski_f_score} / 9
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {stats.altman_z_score !== undefined && stats.altman_z_score !== null && (
+                                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex justify-between items-center">
+                                                    <div>
+                                                        <p className="font-extrabold text-base">{t.altman_z_score}</p>
+                                                        <p className="text-xs text-slate-400 font-bold mt-1">Estimates probability of financial stress</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-4 py-2 rounded-xl text-lg font-black ${stats.altman_z_score > 2.9 ? "bg-emerald-500/10 text-emerald-400" : stats.altman_z_score < 1.1 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
+                                                            {stats.altman_z_score.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* PROFITABILITY CARD */}
                                 <div className="premium-glass rounded-3xl p-8">
@@ -1123,7 +1341,7 @@ export default function SymbolDetailPage() {
                                                 </div>
                                                 <div>
                                                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
-                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                    <p className="font-extrabold text-base mt-0.5 tabular">{metric.v}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -1141,7 +1359,7 @@ export default function SymbolDetailPage() {
                                             { l: t.current_ratio, v: currentRatio > 0 ? currentRatio.toFixed(2) : "-", icon: Wallet, c: "text-teal-500" },
                                             { l: lang === "ar" ? "النسبة السريعة" : "Quick Ratio", v: quickRatio > 0 ? quickRatio.toFixed(2) : "-", icon: Wallet, c: "text-cyan-500" },
                                             { l: t.fcf, v: fcf !== 0 ? formatCurrency(fcf, currency) : "-", icon: Briefcase, c: "text-emerald-500" },
-                                            { l: lang === "ar" ? "التدفق النقدي من العمليات" : "Operating Cash Flow", v: fundamentalsData.operating_cash_flow ? formatCurrency(fundamentalsData.operating_cash_flow, currency) : "-", icon: Activity, c: "text-blue-500" }
+                                            { l: lang === "ar" ? "التدفق النقدي من العمليات" : "Operating Cash Flow", v: stats.ocf_ttm ? formatCurrency(stats.ocf_ttm, currency) : fundamentalsData.operating_cash_flow ? formatCurrency(fundamentalsData.operating_cash_flow, currency) : "-", icon: Activity, c: "text-blue-500" }
                                         ].map((metric, i) => (
                                             <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
                                                 <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
@@ -1149,14 +1367,14 @@ export default function SymbolDetailPage() {
                                                 </div>
                                                 <div>
                                                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
-                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                    <p className="font-extrabold text-base mt-0.5 tabular">{metric.v}</p>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* DIVIDENDS & RISK CARD */}
+                                {/* DIVIDENDS, RISK, & OWNERSHIP SUMMARY */}
                                 <div className="premium-glass rounded-3xl p-8">
                                     <h3 className="text-lg font-black flex items-center gap-2 mb-6 text-slate-800 dark:text-white">
                                         <Briefcase className="w-5 h-5 text-purple-500" /> {t.dividends_risk}
@@ -1168,6 +1386,8 @@ export default function SymbolDetailPage() {
                                             { l: lang === "ar" ? "نسبة توزيع الأرباح" : "Payout Ratio", v: payoutRatio > 0 ? `${(payoutRatio * 100).toFixed(1)}%` : "-", icon: FileText, c: "text-amber-500" },
                                             { l: t.beta, v: betaValue !== 0 ? betaValue.toFixed(2) : "-", icon: Activity, c: "text-rose-500" },
                                             { l: t.outstanding, v: sharesOutstanding > 0 ? formatNumber(sharesOutstanding) : "-", icon: Users, c: "text-blue-500" },
+                                            { l: t.insider_ownership, v: stats.insider_ownership ? `${(stats.insider_ownership * 100).toFixed(3)}%` : "-", icon: Users, c: "text-orange-500" },
+                                            { l: t.institutional_ownership, v: stats.institutional_ownership ? `${(stats.institutional_ownership * 100).toFixed(1)}%` : "-", icon: Users, c: "text-indigo-500" },
                                             { l: lang === "ar" ? "الأسهم الحرة" : "Float Shares", v: floatShares > 0 ? formatNumber(floatShares) : "-", icon: Users, c: "text-indigo-500" }
                                         ].map((metric, i) => (
                                             <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
@@ -1176,7 +1396,7 @@ export default function SymbolDetailPage() {
                                                 </div>
                                                 <div>
                                                     <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{metric.l}</p>
-                                                    <p className="font-extrabold text-lg mt-0.5 tabular">{metric.v}</p>
+                                                    <p className="font-extrabold text-base mt-0.5 tabular">{metric.v}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -1185,31 +1405,167 @@ export default function SymbolDetailPage() {
                             </div>
                         )}
 
-                        {/* FINANCIALS TAB */}
+                        {/* FINANCIALS TAB (ULTIMATE MULTI-STATEMENT TABBED LEDGER WITH BANKING OVERLAYS) */}
                         {activeTab === "financials" && (
-                            <div className="premium-glass rounded-3xl p-8">
-                                <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
-                                    <FileText className="w-5 h-5 text-[#14b8a6]" /> {t.financials}
-                                </h3>
+                            <div className="premium-glass rounded-3xl p-8 space-y-6">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/10 pb-6">
+                                    <div>
+                                        <h3 className="text-xl font-extrabold flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-[#14b8a6]" /> {t.financial_statement}
+                                        </h3>
+                                        <p className="text-xs text-slate-400 font-bold uppercase mt-1">
+                                            {isBank ? "Banking-Format Audited Disclosures" : "General Corporate Audited Statements"}
+                                        </p>
+                                    </div>
 
-                                {parsedFinancials.length > 0 ? (
+                                    {/* Annual / Quarterly & Statement controls */}
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        {/* Period selector */}
+                                        <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                                            <button onClick={() => setFinancialPeriod("annual")}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${financialPeriod === "annual" ? "bg-[#14b8a6] text-white shadow-sm" : "text-slate-450"}`}>
+                                                {t.annual_view}
+                                            </button>
+                                            <button onClick={() => setFinancialPeriod("quarterly")}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${financialPeriod === "quarterly" ? "bg-[#14b8a6] text-white shadow-sm" : "text-slate-450"}`}>
+                                                {t.quarterly_view}
+                                            </button>
+                                        </div>
+
+                                        {/* Statement Type Sub-Tabs */}
+                                        <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                                            {[
+                                                { id: "income", label: t.income_statement },
+                                                { id: "balance", label: t.balance_sheet },
+                                                { id: "cashflow", label: t.cash_flow }
+                                            ].map((sTab) => (
+                                                <button key={sTab.id} onClick={() => setFinancialSubTab(sTab.id as any)}
+                                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold whitespace-nowrap ${financialSubTab === sTab.id ? "bg-[#14b8a6] text-white shadow-sm" : "text-slate-450"}`}>
+                                                    {sTab.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {filteredFinancials.length > 0 ? (
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
                                             <thead>
                                                 <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider text-right">
-                                                    <th className="text-left py-4 px-4">{lang === "ar" ? "الفترة المالية" : "Period"}</th>
-                                                    <th className="py-4 px-4">{lang === "ar" ? "صافي الدخل" : "Net Income"}</th>
-                                                    <th className="py-4 px-4">{lang === "ar" ? "إجمالي الأصول" : "Total Assets"}</th>
-                                                    <th className="py-4 px-4">{lang === "ar" ? "إجمالي المطلوبات" : "Total Liabilities"}</th>
+                                                    <th className="text-left py-4 px-4">{lang === "ar" ? "الفترة المالية" : "Financial Period"}</th>
+                                                    
+                                                    {/* INCOME STATEMENT ROWS */}
+                                                    {financialSubTab === "income" && (
+                                                        isBank ? (
+                                                            <>
+                                                                <th className="py-4 px-4">{t.total_interest_income}</th>
+                                                                <th className="py-4 px-4">{t.interest_expense}</th>
+                                                                <th className="py-4 px-4">{t.net_interest_income}</th>
+                                                                <th className="py-4 px-4">{t.provision_credit_losses}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "صافي الدخل" : "Net Income"}</th>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "الإيرادات" : "Revenue"}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "تكلفة الإيرادات" : "Cost of Revenue"}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "إجمالي الربح" : "Gross Profit"}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "الربح التشغيلي" : "Operating Income"}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "صافي الدخل" : "Net Income"}</th>
+                                                            </>
+                                                        )
+                                                    )}
+
+                                                    {/* BALANCE SHEET ROWS */}
+                                                    {financialSubTab === "balance" && (
+                                                        isBank ? (
+                                                            <>
+                                                                <th className="py-4 px-4">{t.cash_equivalents}</th>
+                                                                <th className="py-4 px-4">{t.net_loans}</th>
+                                                                <th className="py-4 px-4">{t.total_investments}</th>
+                                                                <th className="py-4 px-4">{t.deposits}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "إجمالي الأصول" : "Total Assets"}</th>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <th className="py-4 px-4">{t.total_current_assets}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "إجمالي الأصول" : "Total Assets"}</th>
+                                                                <th className="py-4 px-4">{t.total_current_liabilities}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "إجمالي المطلوبات" : "Total Liabilities"}</th>
+                                                                <th className="py-4 px-4">{lang === "ar" ? "حقوق المساهمين" : "Shareholders Equity"}</th>
+                                                            </>
+                                                        )
+                                                    )}
+
+                                                    {/* CASH FLOW ROWS */}
+                                                    {financialSubTab === "cashflow" && (
+                                                        <>
+                                                            <th className="py-4 px-4">{lang === "ar" ? "التدفقات التشغيلية" : "Operating Cash Flow"}</th>
+                                                            <th className="py-4 px-4">{lang === "ar" ? "التدفقات الاستثمارية" : "Investing Cash Flow"}</th>
+                                                            <th className="py-4 px-4">{lang === "ar" ? "التدفقات التمويلية" : "Financing Cash Flow"}</th>
+                                                            <th className="py-4 px-4">{t.fcf}</th>
+                                                        </>
+                                                    )}
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {parsedFinancials.slice(0, 10).map((f: any, i: number) => (
+                                                {filteredFinancials.slice(0, 10).map((f: any, i: number) => (
                                                     <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold text-sm text-right">
-                                                        <td className="py-5 px-4 text-left text-slate-800 dark:text-white">{f.period_type} {f.fiscal_year}</td>
-                                                        <td className="py-5 px-4 text-emerald-600 dark:text-emerald-400 tabular">{formatCurrency(f.net_income, currency)}</td>
-                                                        <td className="py-5 px-4 text-slate-700 dark:text-slate-300 tabular">{formatCurrency(f.total_assets, currency)}</td>
-                                                        <td className="py-5 px-4 text-slate-500 dark:text-slate-400 tabular">{formatCurrency(f.total_liabilities, currency)}</td>
+                                                        <td className="py-5 px-4 text-left text-slate-850 dark:text-white">
+                                                            {f.period_type === "annual" ? `FY ${f.fiscal_year}` : `Q${f.fiscal_quarter || '—'} ${f.fiscal_year}`}
+                                                        </td>
+
+                                                        {/* INCOME RENDER */}
+                                                        {financialSubTab === "income" && (
+                                                            isBank ? (
+                                                                <>
+                                                                    <td className="py-5 px-4 text-slate-700 dark:text-slate-300 tabular">{formatCurrency(f.total_interest_income, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-500 dark:text-slate-450 tabular">{formatCurrency(f.interest_expense, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-800 dark:text-slate-200 tabular">{formatCurrency(f.net_interest_income, currency)}</td>
+                                                                    <td className="py-5 px-4 text-rose-500/80 tabular">{formatCurrency(f.provision_credit_losses, currency)}</td>
+                                                                    <td className="py-5 px-4 text-emerald-600 dark:text-emerald-400 tabular">{formatCurrency(f.net_income, currency)}</td>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <td className="py-5 px-4 text-slate-700 dark:text-slate-200 tabular">{formatCurrency(f.revenue, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-400 tabular">{formatCurrency(f.cost_of_revenue, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-700 dark:text-slate-300 tabular">{formatCurrency(f.gross_profit, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-800 dark:text-slate-200 tabular">{formatCurrency(f.operating_income, currency)}</td>
+                                                                    <td className="py-5 px-4 text-emerald-600 dark:text-emerald-400 tabular">{formatCurrency(f.net_income, currency)}</td>
+                                                                </>
+                                                            )
+                                                        )}
+
+                                                        {/* BALANCE SHEET RENDER */}
+                                                        {financialSubTab === "balance" && (
+                                                            isBank ? (
+                                                                <>
+                                                                    <td className="py-5 px-4 text-slate-700 dark:text-slate-300 tabular">{formatCurrency(f.cash_equivalents, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-800 dark:text-slate-200 tabular">{formatCurrency(f.net_loans, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-600 dark:text-slate-400 tabular">{formatCurrency(f.total_investments || f.investment_securities, currency)}</td>
+                                                                    <td className="py-5 px-4 text-indigo-650 dark:text-indigo-400 tabular">{formatCurrency(f.deposits, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-800 dark:text-slate-200 tabular">{formatCurrency(f.total_assets, currency)}</td>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <td className="py-5 px-4 text-slate-600 dark:text-slate-455 tabular">{formatCurrency(f.total_current_assets, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-800 dark:text-slate-200 tabular">{formatCurrency(f.total_assets, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-500 tabular">{formatCurrency(f.total_current_liabilities, currency)}</td>
+                                                                    <td className="py-5 px-4 text-slate-700 dark:text-slate-350 tabular">{formatCurrency(f.total_liabilities, currency)}</td>
+                                                                    <td className="py-5 px-4 text-emerald-600 dark:text-emerald-400 tabular">{formatCurrency(f.total_equity, currency)}</td>
+                                                                </>
+                                                            )
+                                                        )}
+
+                                                        {/* CASH FLOW RENDER */}
+                                                        {financialSubTab === "cashflow" && (
+                                                            <>
+                                                                <td className="py-5 px-4 text-slate-700 dark:text-slate-300 tabular">{formatCurrency(f.cash_flow_operating || f.operating_cashflow, currency)}</td>
+                                                                <td className="py-5 px-4 text-slate-500 dark:text-slate-450 tabular">{formatCurrency(f.cash_from_investing, currency)}</td>
+                                                                <td className="py-5 px-4 text-slate-500 dark:text-slate-450 tabular">{formatCurrency(f.cash_from_financing, currency)}</td>
+                                                                <td className="py-5 px-4 text-emerald-600 dark:text-emerald-400 tabular">{formatCurrency(f.free_cashflow, currency)}</td>
+                                                            </>
+                                                        )}
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -1359,7 +1715,7 @@ export default function SymbolDetailPage() {
                             </div>
                         )}
 
-                        {/* CORPORATE ACTIONS TAB */}
+                        {/* CORPORATE ACTIONS TAB (FALLBACK DIRECT TO SUPABASE DIVIDENDS RECORD) */}
                         {activeTab === "actions" && (
                             <div className="premium-glass rounded-3xl p-8">
                                 <h3 className="text-xl font-extrabold flex items-center gap-2 mb-6">
@@ -1369,12 +1725,19 @@ export default function SymbolDetailPage() {
                                 {corporateActions.length > 0 ? (
                                     <div className="space-y-4">
                                         {corporateActions.map((a: any, i: number) => (
-                                            <div key={i} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-xs font-bold text-[#14b8a6] uppercase tracking-wider">{a.action_type}</span>
-                                                    <span className="text-xs text-slate-400 font-bold uppercase">{a.ex_date}</span>
+                                            <div key={i} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#14b8a6]/10 text-[#14b8a6] uppercase tracking-wider">{a.action_type}</span>
+                                                        <span className="text-xs text-slate-400 font-bold uppercase">{a.ex_date}</span>
+                                                    </div>
+                                                    <p className="font-extrabold text-base mt-2">{a.description}</p>
                                                 </div>
-                                                <p className="font-extrabold text-sm">{a.description}</p>
+                                                {a.amount && (
+                                                    <div className="text-right">
+                                                        <span className="text-lg font-black text-emerald-500 tabular">{formatCurrency(a.amount, a.currency || currency)}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

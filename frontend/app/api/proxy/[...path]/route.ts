@@ -89,6 +89,7 @@ export async function GET(
         const firstSegment = path[0];
 
         const localSegments = [
+            "news",
             "financials",
             "ohlc",
             "shareholders",

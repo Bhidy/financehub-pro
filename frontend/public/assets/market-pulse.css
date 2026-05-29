@@ -776,13 +776,13 @@ html[dir="rtl"] .premium-select {
 }
 .tape-status::before { content: ""; width: .43rem; height: .43rem; border-radius: 50%; background: var(--teal); }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-@media (max-width: 1280px) {
+@media (max-width: 1152px) {
     .market-banner { grid-template-columns: 11.7rem 1fr; }
     .company-search { grid-column: 1 / -1; padding: .3rem .25rem; }
     .workspace { grid-template-columns: minmax(16.5rem, 18rem) 1fr; }
     .right-rail { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); }
 }
-@media (max-width: 940px) {
+@media (max-width: 846px) {
     .nav-links { display: none; }
     .nav-inner { padding-inline: 1.15rem; }
     .pulse-page { width: min(100% - 1.25rem, 1488px); padding-top: 5.8rem; }
@@ -799,7 +799,7 @@ html[dir="rtl"] .premium-select {
     .outline-action { grid-column: 1 / -1; }
     .overview-content { grid-template-columns: 1fr; gap: 1.1rem; }
 }
-@media (max-width: 620px) {
+@media (max-width: 558px) {
     .market-tape { display: none; }
     .pulse-page { padding-bottom: 1.2rem; }
     .banner-metrics { grid-template-columns: 1fr; }

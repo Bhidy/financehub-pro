@@ -257,13 +257,50 @@
         container.querySelectorAll("[data-symbol]").forEach((button) => button.addEventListener("click", () => selectStock(button.dataset.symbol)));
     }
 
+    function getHistoricalCloseData() {
+        if (!state.history || !state.history.length) return null;
+        const sorted = state.history.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        const cleanRows = sorted.filter(item => {
+            const o = number(item.open);
+            const h = number(item.high);
+            const l = number(item.low);
+            const c = number(item.close);
+            return o > 0 && h > 0 && l > 0 && c > 0;
+        });
+        if (!cleanRows.length) return null;
+        const latest = cleanRows[cleanRows.length - 1];
+        let change = 0;
+        let changePercent = 0;
+        if (cleanRows.length >= 2) {
+            const previous = cleanRows[cleanRows.length - 2];
+            change = latest.close - previous.close;
+            changePercent = (change / previous.close) * 100;
+        }
+        return {
+            close: latest.close,
+            change: change,
+            changePercent: changePercent
+        };
+    }
+
     function renderSelected() {
         const item = selectedStock();
         if (!item) return;
         setText("selectedSymbol", item.symbol);
         setText("selectedName", stockName(item));
-        setText("selectedPrice", formatNumber(item.last_price));
-        setText("selectedChange", percent(item.change_percent), `tabular ${percentClass(item.change_percent)}`);
+        let priceVal = item.last_price;
+        let changePct = item.change_percent;
+
+        const hist = getHistoricalCloseData();
+        if (hist) {
+            priceVal = hist.close;
+        } else if (state.historyLoading) {
+            priceVal = null;
+            changePct = null;
+        }
+
+        setText("selectedPrice", priceVal !== null ? formatNumber(priceVal) : "...");
+        setText("selectedChange", changePct !== null ? percent(changePct) : "...", `tabular ${percentClass(changePct)}`);
         
         // Stock Header Logo Integration
         const logoImg = byId("selectedLogo");
@@ -872,9 +909,19 @@
             state.news = results[3].status === "fulfilled" && Array.isArray(results[3].value) ? results[3].value : [];
             state.marketLoading = false;
             if (!state.stocks.some((item) => item.symbol === state.selected) && state.stocks.length) state.selected = state.stocks[0].symbol;
+
+            // Pre-fetch stock history so it is available before first render!
+            state.historyLoading = true;
+            try {
+                const rows = await request(`/api/v1/egx/history/${encodeURIComponent(state.selected)}?period=max`);
+                state.history = Array.isArray(rows) ? rows : [];
+            } catch (_) {
+                state.history = [];
+            }
+            state.historyLoading = false;
+
             render();
             await Promise.all([
-                loadStockHistory(),
                 loadSelectedSymbolNews(),
                 loadYahooProfile(state.selected)
             ]);
@@ -1032,10 +1079,19 @@
             fallback.textContent = item.symbol.substring(0, 2);
         }
         
-        const curPrice = yp.price || item.last_price;
-        const changePct = yp.raw && yp.raw.profile && yp.raw.profile.change_pct != null ? yp.raw.profile.change_pct : item.change_percent;
-        setText("drawerPrice", formatNumber(curPrice));
-        setText("drawerChange", percent(changePct), `tabular drawer-change-value ${percentClass(changePct)}`);
+        let curPrice = yp.price || item.last_price;
+        let changePct = yp.raw && yp.raw.profile && yp.raw.profile.change_pct != null ? yp.raw.profile.change_pct : item.change_percent;
+
+        const hist = getHistoricalCloseData();
+        if (hist) {
+            curPrice = hist.close;
+        } else if (state.historyLoading) {
+            curPrice = null;
+            changePct = null;
+        }
+
+        setText("drawerPrice", curPrice !== null ? formatNumber(curPrice) : "...");
+        setText("drawerChange", changePct !== null ? percent(changePct) : "...", `tabular drawer-change-value ${percentClass(changePct)}`);
         
         const yearHigh = number(yp.year_high || item.high_52w);
         const yearLow  = number(yp.year_low  || item.low_52w);

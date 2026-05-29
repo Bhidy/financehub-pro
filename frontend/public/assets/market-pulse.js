@@ -278,6 +278,11 @@
         // Update Watchlist Toggle Button State
         updateFavBtn(item.symbol);
 
+        const actionBtn = byId("companyAction");
+        if (actionBtn) {
+            actionBtn.href = `/symbol/${item.symbol}`;
+        }
+
         renderOverviewTab();
     }
 
@@ -926,12 +931,12 @@
     function initDrawer() {
         const drawer = byId("companyDrawer");
         const closeBtn = byId("drawerCloseBtn");
-        const actionBtn = byId("companyAction");
+        const quickBtn = byId("quickViewBtn");
         
         if (!drawer || !closeBtn) return;
         
-        if (actionBtn) {
-            actionBtn.addEventListener("click", (e) => {
+        if (quickBtn) {
+            quickBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 openDrawer();
             });
@@ -1067,6 +1072,12 @@
             } else {
                 websiteLink.style.display = "none";
             }
+        }
+        
+        const profileLink = byId("drawerFullProfileLink");
+        if (profileLink) {
+            profileLink.href = `/symbol/${item.symbol}`;
+            profileLink.style.display = "block";
         }
         
         setText("drawerIndustryBadge", yp.industry || sectorName(item.sector_name));

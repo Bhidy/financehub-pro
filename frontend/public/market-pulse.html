@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/market-pulse.css?v=1.1.6">
+    <link rel="stylesheet" href="/assets/market-pulse.css?v=1.2.0">
 </head>
 <body>
     <div class="grid-backdrop"></div>
@@ -141,7 +141,10 @@
                             <strong id="selectedPrice" class="display tabular">--</strong><span class="unit">EGP</span>
                             <small id="selectedChange" class="tabular">--</small>
                         </div>
-                        <a id="companyAction" class="outline-action" href="/symbol/COMI" data-key="view_company">View company</a>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <a id="companyAction" class="outline-action" href="/symbol/COMI" data-key="view_company">View company</a>
+                            <button id="quickViewBtn" class="quick-view-btn" type="button" data-key="quick_view">Quick View</button>
+                        </div>
                     </header>
                     <div id="ohlcMetrics" class="ohlc-metrics"></div>
                     <div class="chart-controls">
@@ -283,6 +286,7 @@
                         <dl class="drawer-facts-grid" id="drawerProfileFacts">
                             <!-- Populated dynamically -->
                         </dl>
+                        <a id="drawerFullProfileLink" class="outline-action" href="" style="width: 100%; text-align: center; margin-top: 1.25rem; display: none; background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: white; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3); border-radius: 4px; padding: 0.6rem 1rem;" data-key="view_full_profile">View Full Profile</a>
                     </div>
 
                     <!-- Metrics Tab -->
@@ -321,8 +325,8 @@
         </div>
     </div>
 
-    <script src="/assets/portfolio-store.js?v=1.1.6"></script>
-    <script src="/assets/news-covers.js?v=1.1.6"></script>
-    <script src="/assets/market-pulse.js?v=1.1.6"></script>
+    <script src="/assets/portfolio-store.js?v=1.2.0"></script>
+    <script src="/assets/news-covers.js?v=1.2.0"></script>
+    <script src="/assets/market-pulse.js?v=1.2.0"></script>
 </body>
 </html>

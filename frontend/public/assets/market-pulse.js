@@ -106,11 +106,36 @@
     const sectorName = (sector) => state.lang === "ar" ? (sectorTranslations[sector] || sector || "--") : (sector || "--");
     const selectedStock = () => state.stocks.find((stock) => stock.symbol === state.selected) || state.stocks[0];
 
-    async function request(url) {
-        const response = await fetch(url, { cache: "no-store" });
+    async function request(url, fetchOptions) {
+        const response = await fetch(url, fetchOptions || { cache: "no-store" });
         if (!response.ok) throw new Error(`Request failed: ${response.status}`);
         return response.json();
     }
+
+    // ── Session cache: zero-flash revisits (5-min TTL) ───────────────────
+    const CACHE_KEY = "starta-mp-v1";
+    const CACHE_TTL = 5 * 60 * 1000;
+    function saveToCache(data) {
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch (_) {}
+    }
+    function loadFromCache() {
+        try {
+            const raw = sessionStorage.getItem(CACHE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (Date.now() - parsed.ts > CACHE_TTL) return null;
+            return parsed.data;
+        } catch (_) { return null; }
+    }
+
+    // ── Hover prefetch: warm history before user clicks ──────────────────
+    const _prefetched = new Set();
+    function prefetchHistory(symbol) {
+        if (!symbol || _prefetched.has(symbol) || symbol === state.selected) return;
+        _prefetched.add(symbol);
+        fetch(`/api/v1/egx/history/${encodeURIComponent(symbol)}?period=max`, { cache: "default", priority: "low" }).catch(() => {});
+    }
+    // ────────────────────────────────────────────────────────────────────
 
     function setText(id, value, className) {
         const target = byId(id);
@@ -254,7 +279,10 @@
                 <span class="price-cell tabular">${formatNumber(item.last_price)}</span>
                 <span class="change-cell tabular ${percentClass(item.change_percent)}">${percent(item.change_percent)}</span>
             </button>`).join("");
-        container.querySelectorAll("[data-symbol]").forEach((button) => button.addEventListener("click", () => selectStock(button.dataset.symbol)));
+        container.querySelectorAll("[data-symbol]").forEach((button) => {
+            button.addEventListener("click", () => selectStock(button.dataset.symbol));
+            button.addEventListener("pointerenter", () => prefetchHistory(button.dataset.symbol), { passive: true });
+        });
     }
 
     function getHistoricalCloseData() {
@@ -805,12 +833,10 @@
     async function loadStockHistory() {
         const message = byId("chartMessage");
         state.historyLoading = true;
-        message.textContent = labels().loading_chart;
-        message.classList.remove("hidden");
+        if (message) { message.textContent = labels().loading_chart; message.classList.remove("hidden"); }
         try {
-            // Yahoo Finance endpoint — returns up to 15+ years of daily OHLC
-            // We always fetch "max" so all period buttons work from the same data
-            const rows = await request(`/api/v1/egx/history/${encodeURIComponent(state.selected)}?period=max`);
+            // Use browser HTTP cache — avoids redundant round-trips on same session
+            const rows = await request(`/api/v1/egx/history/${encodeURIComponent(state.selected)}?period=max`, { cache: "default" });
             state.history = Array.isArray(rows) ? rows : [];
         } catch (_) {
             state.history = [];
@@ -896,39 +922,65 @@
     }
 
     async function loadMarket() {
-        try {
-            const results = await Promise.allSettled([
+        // ── Phase 0: Instant paint from session cache (0 ms) ─────────────
+        const cached = loadFromCache();
+        if (cached) {
+            state.stocks   = cached.stocks  || [];
+            state.summary  = cached.summary || null;
+            state.index    = cached.index   || null;
+            state.news     = cached.news    || [];
+            state.history  = cached.history || [];
+            state.marketLoading  = false;
+            state.historyLoading = false;
+            if (!state.stocks.some(s => s.symbol === state.selected) && state.stocks.length)
+                state.selected = state.stocks[0].symbol;
+            render(); // instant — no network wait
+        }
+
+        // ── Phase 1: Fire market data + history IN PARALLEL ──────────────
+        // History used to be sequential (blocking render by 800-1500ms)
+        // Now it races alongside the market fetch — whichever finishes first wins
+        const [marketRes, historyRes] = await Promise.allSettled([
+            Promise.allSettled([
                 request("/api/v1/egx/stocks?limit=300"),
                 request("/api/v1/market-summary"),
                 request("/api/v1/egx30/index"),
                 request(`/api/v1/news?source_country=EG&language=${state.lang}&days=90&limit=3`)
-            ]);
-            state.stocks = results[0].status === "fulfilled" && Array.isArray(results[0].value) ? results[0].value : [];
-            state.summary = results[1].status === "fulfilled" ? results[1].value : null;
-            state.index = results[2].status === "fulfilled" ? results[2].value : null;
-            state.news = results[3].status === "fulfilled" && Array.isArray(results[3].value) ? results[3].value : [];
+            ]),
+            request(`/api/v1/egx/history/${encodeURIComponent(state.selected)}?period=max`, { cache: "default" })
+        ]);
+
+        // ── Phase 2: Apply fresh market data ─────────────────────────────
+        if (marketRes.status === "fulfilled") {
+            const r = marketRes.value;
+            state.stocks  = r[0].status === "fulfilled" && Array.isArray(r[0].value) ? r[0].value : state.stocks;
+            state.summary = r[1].status === "fulfilled" ? r[1].value : state.summary;
+            state.index   = r[2].status === "fulfilled" ? r[2].value : state.index;
+            state.news    = r[3].status === "fulfilled" && Array.isArray(r[3].value) ? r[3].value : state.news;
             state.marketLoading = false;
-            if (!state.stocks.some((item) => item.symbol === state.selected) && state.stocks.length) state.selected = state.stocks[0].symbol;
-
-            // Pre-fetch stock history so it is available before first render!
-            state.historyLoading = true;
-            try {
-                const rows = await request(`/api/v1/egx/history/${encodeURIComponent(state.selected)}?period=max`);
-                state.history = Array.isArray(rows) ? rows : [];
-            } catch (_) {
-                state.history = [];
-            }
-            state.historyLoading = false;
-
-            render();
-            await Promise.all([
-                loadSelectedSymbolNews(),
-                loadYahooProfile(state.selected)
-            ]);
-
-        } catch (_) {
-            render();
+            if (!state.stocks.some(s => s.symbol === state.selected) && state.stocks.length)
+                state.selected = state.stocks[0].symbol;
         }
+
+        // ── Phase 3: Apply history (arrived in parallel, not after) ───────
+        if (historyRes.status === "fulfilled" && Array.isArray(historyRes.value)) {
+            state.history = historyRes.value;
+        } else if (!state.history.length) {
+            state.history = [];
+        }
+        state.historyLoading = false;
+
+        // ── Phase 4: Full render with live data ──────────────────────────
+        render();
+
+        // ── Phase 5: Persist to session cache for instant next visit ─────
+        saveToCache({ stocks: state.stocks, summary: state.summary, index: state.index, news: state.news, history: state.history });
+
+        // ── Phase 6: Non-critical enrichment in background ────────────────
+        Promise.all([
+            loadSelectedSymbolNews(),
+            loadYahooProfile(state.selected)
+        ]);
     }
 
     function updateAddBtnTitle() {

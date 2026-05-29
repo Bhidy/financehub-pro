@@ -551,8 +551,8 @@
                             const coverUrl = getNewsCover(article);
                             return `
                                 <a class="news-card" href="/News/${encodeURIComponent(article.id)}" style="display: grid; grid-template-columns: 6.5rem 1fr; gap: 1.2rem; border-bottom: 1px solid var(--line-soft, rgba(20, 184, 166, 0.08)); padding-bottom: 1.2rem; align-items: start; transition: transform 0.2s ease;">
-                                    <div class="news-media" style="width: 6.5rem; height: 5rem; border-radius: 12px; overflow: hidden; background: var(--teal-soft); position: relative; border: 1px solid var(--line-soft, rgba(20, 184, 166, 0.08));">
-                                        <img alt="" loading="lazy" src="${escapeHtml(coverUrl)}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="news-media" style="width: 6.5rem; height: 5rem; border-radius: 12px; overflow: hidden; background: #ffffff; position: relative; border: 1px solid var(--line-soft, rgba(20, 184, 166, 0.08));">
+                                        <img alt="" loading="lazy" src="${escapeHtml(coverUrl)}" style="width: 100%; height: 100%; object-fit: contain;">
                                     </div>
                                     <div class="news-copy" style="display: flex; flex-direction: column; justify-content: space-between; height: 5rem;">
                                         <h3 style="font-size: 0.88rem; font-weight: 700; margin: 0 0 0.5rem; color: var(--ink); line-height: 1.45; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${escapeHtml(article.headline)}</h3>

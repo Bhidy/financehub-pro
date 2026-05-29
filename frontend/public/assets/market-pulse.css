@@ -717,9 +717,9 @@ html[dir="rtl"] .premium-select {
     height: 3rem;
     border-radius: .48rem;
     overflow: hidden;
-    background: var(--teal-soft);
+    background: #ffffff;
 }
-.news-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.news-media img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .news-media span { display: grid; width: 100%; height: 100%; place-items: center; color: var(--teal-dark); font-size: .68rem; font-weight: 700; }
 .news-copy h3 {
     display: -webkit-box;
@@ -1244,13 +1244,13 @@ html[dir="rtl"] .drawer-change-value {
     height: 3.5rem;
     border-radius: 8px;
     overflow: hidden;
-    background: var(--teal-soft);
+    background: #ffffff;
     border: 1px solid var(--line);
 }
 .drawer-news-media img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 .drawer-news-copy h4 {
     margin: 0 0 4px;

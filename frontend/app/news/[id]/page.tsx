@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { useParams } from "next/navigation";
@@ -18,6 +19,7 @@ import {
     resolveNewsImageSrc,
     sanitizeNewsText,
     splitNewsParagraphs,
+    getNewsBrandedCover,
 } from "@/lib/news-display";
 
 async function fetchNewsArticleById(id: number): Promise<MarketNewsItem | null> {
@@ -48,6 +50,12 @@ export default function NewsArticlePage() {
     const articleId = Number(params?.id);
     const validId = Number.isInteger(articleId) && articleId > 0;
 
+    const [lang, setLang] = useState<"en" | "ar">("en");
+    useEffect(() => {
+        const savedLang = localStorage.getItem("starta-lang") || localStorage.getItem("lang") || "en";
+        setLang(savedLang as "en" | "ar");
+    }, []);
+
     const { data: article, isLoading, isError } = useQuery({
         queryKey: ["news-article", articleId],
         queryFn: async () => fetchNewsArticleById(articleId),
@@ -56,7 +64,8 @@ export default function NewsArticlePage() {
 
     const title = sanitizeNewsText(article?.headline);
     const bodyParagraphs = splitNewsParagraphs(article?.article_body);
-    const imageSrc = resolveNewsImageSrc(article?.image_url);
+    const articleLang = article?.source_section?.endsWith("/ar") ? "ar" : lang;
+    const imageSrc = getNewsBrandedCover(article || {}, articleLang);
     const readingMinutes = estimateReadingMinutes(bodyParagraphs);
     const highlightSource = bodyParagraphs.find((paragraph) => paragraph.trim().length > 0) ?? "";
     const highlightParagraph = highlightSource
@@ -128,20 +137,9 @@ export default function NewsArticlePage() {
                     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
                         <div className="space-y-6">
                             <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_26px_70px_-48px_rgba(15,23,42,0.5)] dark:border-white/10 dark:bg-[#081326] dark:shadow-[0_30px_70px_-44px_rgba(6,182,212,0.4)]">
-                                {imageSrc ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={imageSrc} alt={title} className="h-auto w-full object-cover" />
-                                ) : (
-                                    <div className="relative flex aspect-[16/9] items-center justify-center bg-[radial-gradient(circle_at_top,#14b8a6_0%,#dbeafe_45%,#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,#0ea5e9_0%,#0f1d36_45%,#060f1f_100%)]">
-                                        <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.22)_1px,transparent_1px)] [background-size:32px_32px]" />
-                                        <div className="relative text-center">
-                                            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/70 text-cyan-700 shadow-lg dark:bg-white/10 dark:text-cyan-200">
-                                                <Newspaper className="h-7 w-7" />
-                                            </div>
-                                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{article.symbol || "EGX News"}</p>
-                                        </div>
-                                    </div>
-                                )}
+                                <div className="overflow-hidden bg-white dark:bg-white flex items-center justify-center aspect-[16/9]">
+                                    <img src={imageSrc} alt="" className="h-full w-full object-contain" />
+                                </div>
                             </div>
 
                             <article className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_-46px_rgba(15,23,42,0.46)] dark:border-white/10 dark:bg-gradient-to-b dark:from-[#09152a] dark:to-[#060f1f] dark:shadow-[0_28px_68px_-44px_rgba(6,182,212,0.36)] md:p-8">

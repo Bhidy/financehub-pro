@@ -351,8 +351,8 @@ export default function SymbolDetailPage() {
     });
 
     const { data: newsData = [] } = useQuery({
-        queryKey: ["news", symbol],
-        queryFn: () => fetchNews({ symbol, limit: 20 } as any),
+        queryKey: ["news", symbol, lang],
+        queryFn: () => fetchNews({ symbol, limit: 20, language: lang } as any),
         enabled: !!symbol
     });
 
@@ -1452,13 +1452,13 @@ export default function SymbolDetailPage() {
                                                 <div key={i} className="news-card p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50">
                                                     <div className="flex items-start gap-5">
                                                         {/* Premium Visual Fallback & Proxied Image Cover */}
-                                                        <div className="w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 hidden md:flex items-center justify-center relative bg-slate-200/50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 shadow-inner">
+                                                        <div className="w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 hidden md:flex items-center justify-center relative bg-white dark:bg-white border border-slate-200 dark:border-slate-800 shadow-inner">
                                                             {resolvedImg ? (
                                                                 // eslint-disable-next-line @next/next/no-img-element
                                                                 <img
                                                                     src={resolvedImg}
                                                                     alt=""
-                                                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                                                    className="w-full h-full object-contain transition-transform duration-500 hover:scale-102"
                                                                     onError={(e) => {
                                                                         (e.currentTarget as HTMLElement).style.display = "none";
                                                                         const parent = e.currentTarget.parentElement;

@@ -333,14 +333,14 @@ html[dir="rtl"] .search-box input { padding: 0 2.8rem 0 1rem; }
     background: var(--surface);
     box-shadow: 0 26px 62px rgba(100,116,139,.12);
 }
-.feature-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--page); }
+.feature-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #ffffff; }
 .feature-media img, .story-media img, .article-image img {
     position: absolute;
     inset: 0;
     z-index: 1;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 600ms cubic-bezier(.22,.61,.36,1);
 }
 .feature:hover img, .story-card:hover img { transform: scale(1.045); }
@@ -419,7 +419,7 @@ html[dir="rtl"] .feature:hover .read-more span, html[dir="rtl"] .story-card:hove
     position: relative;
     aspect-ratio: 16 / 10;
     overflow: hidden;
-    background: var(--page);
+    background: #ffffff;
 }
 .media-fallback {
     position: absolute;
@@ -533,7 +533,7 @@ html[dir="rtl"] .article-title {
     aspect-ratio: 1.38 / 1;
     border-radius: 1.72rem;
     border: 1px solid rgba(148,163,184,.18);
-    background: var(--surface);
+    background: #ffffff;
     box-shadow:
         0 18px 42px rgba(45,64,87,.09),
         inset 0 1px 0 rgba(255,255,255,.85);

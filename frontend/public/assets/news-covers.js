@@ -182,12 +182,7 @@
      */
     function getUrl(item, lang) {
         var l = (lang === 'ar') ? 'ar' : 'en';
-        for (var i = 0; i < MATCHERS.length; i++) {
-            if (MATCHERS[i].test(item)) {
-                return BASE + l + '-' + MATCHERS[i].id + '.webp';
-            }
-        }
-        return BASE + l + '-economy.webp'; // unreachable (economy is catch-all)
+        return BASE + l + '-generic.webp';
     }
 
     global.StarTaNewsCovers = { getUrl: getUrl };

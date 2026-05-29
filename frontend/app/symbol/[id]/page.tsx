@@ -12,7 +12,8 @@ import {
 import {
     sanitizeNewsText,
     resolveNewsImageSrc,
-    buildNewsSnippet
+    buildNewsSnippet,
+    getNewsBrandedCover
 } from "@/lib/news-display";
 
 import {
@@ -799,10 +800,14 @@ export default function SymbolDetailPage() {
                                     <span className="text-5xl font-black tracking-tight tabular">{lastPrice.toFixed(2)}</span>
                                     <span className="text-slate-500 font-bold text-sm">{currency}</span>
                                 </div>
+                                <div className="text-[10px] text-slate-400 font-extrabold mt-1 justify-start lg:justify-end flex">
+                                    {lang === "ar" ? "(سعر الإغلاق)" : "(Closing Price)"}
+                                </div>
                                 <div className={`flex items-center gap-2 mt-2 font-bold text-sm justify-start lg:justify-end ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                                     {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
                                     <span className={`px-2.5 py-1 rounded-lg ${isPositive ? "bg-emerald-50 dark:bg-emerald-500/10" : "bg-rose-50 dark:bg-rose-500/10"}`}>
-                                        {isPositive ? "+" : ""}{change.toFixed(2)} ({isPositive ? "+" : ""}{changePercent.toFixed(2)}%)
+                                        {Math.abs(change) >= 0.005 ? `${isPositive ? "+" : ""}${change.toFixed(2)} ` : ""}
+                                        ({isPositive ? "+" : ""}{changePercent.toFixed(2)}%)
                                     </span>
                                 </div>
                             </div>
@@ -1431,7 +1436,7 @@ export default function SymbolDetailPage() {
                                             // Sanitize headlines and summaries to prevent external brand exposure
                                             const cleanHeadline = sanitizeNewsText(article.headline);
                                             const cleanBody = sanitizeNewsText(article.article_body);
-                                            const resolvedImg = resolveNewsImageSrc(article.image_url);
+                                            const resolvedImg = getNewsBrandedCover(article, lang, symbol);
 
                                             return (
                                                 <div key={i} className="news-card p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50">
@@ -1579,8 +1584,8 @@ export default function SymbolDetailPage() {
                             </h4>
                             <div className="space-y-3 font-bold text-sm">
                                 {[
-                                    { l: lang === "ar" ? "آخر سعر" : "Last Price", v: formatCurrency(lastPrice, currency), c: "text-slate-800 dark:text-white" },
-                                    { l: lang === "ar" ? "التغير اليومي" : "Daily Change", v: `${isPositive ? "+" : ""}${change.toFixed(2)} (${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
+                                    { l: lang === "ar" ? "سعر الإغلاق" : "Closing Price", v: formatCurrency(lastPrice, currency), c: "text-slate-800 dark:text-white" },
+                                    { l: lang === "ar" ? "التغير اليومي" : "Daily Change", v: Math.abs(change) >= 0.005 ? `${isPositive ? "+" : ""}${change.toFixed(2)} (${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)` : `(${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
                                     { l: lang === "ar" ? "حجم التداول" : "Volume", v: volume.toLocaleString(), c: "text-slate-700 dark:text-slate-350" },
                                     { l: lang === "ar" ? "متوسط الحجم ٢٠ي" : "Avg Vol 20D", v: avgVolume20d > 0 ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(avgVolume20d) : "-", c: "text-slate-600 dark:text-slate-400" },
                                     { l: lang === "ar" ? "أعلى ٥٢ أسبوع" : "52W High", v: chartStats?.high52 ? `${currency} ${chartStats.high52.toFixed(2)}` : "-", c: "text-emerald-600 dark:text-emerald-400" },

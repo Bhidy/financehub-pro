@@ -58,7 +58,7 @@ export function RevenueBreakdown({ title, data, language = "en" }: RevenueBreakd
         }));
     }
 
-    const options: ApexCharts.ApexOptions = {
+    const options: any = {
         chart: {
             type: 'bar',
             fontFamily: 'inherit',
@@ -100,7 +100,7 @@ export function RevenueBreakdown({ title, data, language = "en" }: RevenueBreakd
         yaxis: {
             labels: {
                 style: { colors: '#94a3b8', fontWeight: 500 },
-                formatter: (val) => {
+                formatter: (val: any) => {
                     if (val >= 1000000000) return (val / 1000000000).toFixed(1) + 'B';
                     if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
                     if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
@@ -126,7 +126,7 @@ export function RevenueBreakdown({ title, data, language = "en" }: RevenueBreakd
         tooltip: {
             theme: 'light',
             y: {
-                formatter: (val) => formatNumber(val) + " " + data.currency
+                formatter: (val: any) => formatNumber(val) + " " + data.currency
             }
         }
     };

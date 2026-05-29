@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import {
     formatNewsRelative,
     resolveNewsImageSrc,
     sanitizeNewsText,
+    getNewsBrandedCover,
 } from "@/lib/news-display";
 
 const DAY_WINDOWS = [7, 30, 90];
@@ -20,15 +21,22 @@ export default function MarketNewsPage() {
     const [search, setSearch] = useState("");
     const [windowDays, setWindowDays] = useState(30);
     const [symbolFilter, setSymbolFilter] = useState("ALL");
+    const [lang, setLang] = useState<"en" | "ar">("en");
+
+    useEffect(() => {
+        const savedLang = localStorage.getItem("starta-lang") || localStorage.getItem("lang") || "en";
+        setLang(savedLang as "en" | "ar");
+    }, []);
 
     const { data: news = [], isLoading } = useQuery<MarketNewsItem[]>({
-        queryKey: ["market-news-egx", windowDays],
+        queryKey: ["market-news-egx", windowDays, lang],
         queryFn: async () =>
             fetchNews({
                 limit: 600,
                 source_country: "EG",
                 days: windowDays,
-            }),
+                language: lang,
+            } as any),
         refetchInterval: 1000 * 60 * 10,
     });
 
@@ -174,19 +182,12 @@ export default function MarketNewsPage() {
                                     key={item.id}
                                     className="group flex flex-col overflow-hidden premium-glass rounded-2xl premium-glow-hover"
                                 >
-                                    <Link href={`/news/${item.id}`} className="block relative aspect-[16/9] overflow-hidden bg-[#F1F5F9] dark:bg-[#1A222C]">
-                                        {resolveNewsImageSrc(item.image_url) ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={resolveNewsImageSrc(item.image_url) || undefined}
-                                                alt={sanitizeNewsText(item.headline)}
-                                                className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                                            />
-                                        ) : (
-                                            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-                                                <Newspaper className="w-12 h-12 text-slate-300 dark:text-slate-700" />
-                                            </div>
-                                        )}
+                                    <Link href={`/news/${item.id}`} className="block relative aspect-[16/9] overflow-hidden bg-white dark:bg-white border-b border-slate-200/50">
+                                        <img
+                                            src={getNewsBrandedCover(item, lang)}
+                                            alt=""
+                                            className="h-full w-full object-contain transition duration-700 group-hover:scale-102"
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent" />
 
                                         {/* Image Overlay Tokens */}

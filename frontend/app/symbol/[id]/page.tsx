@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
@@ -8,6 +9,11 @@ import {
     fetchCorporateActions, fetchFairValues, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker
 } from "@/lib/api";
+import {
+    sanitizeNewsText,
+    resolveNewsImageSrc,
+    buildNewsSnippet
+} from "@/lib/news-display";
 
 import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
@@ -1421,48 +1427,77 @@ export default function SymbolDetailPage() {
                                             const sentimentLabel = score > 0.3 ? t.positive : score < -0.3 ? t.negative : t.neutral;
                                             const sentimentClass = score > 0.3 ? "sentiment-positive" : score < -0.3 ? "sentiment-negative" : "sentiment-neutral";
                                             const isExpanded = expandedNews.has(i);
+                                            
+                                            // Sanitize headlines and summaries to prevent external brand exposure
+                                            const cleanHeadline = sanitizeNewsText(article.headline);
+                                            const cleanBody = sanitizeNewsText(article.article_body);
+                                            const resolvedImg = resolveNewsImageSrc(article.image_url);
+
                                             return (
                                                 <div key={i} className="news-card p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50">
-                                                    <div className="flex items-start gap-4">
-                                                        {article.image_url && (
-                                                            <img
-                                                                src={article.image_url}
-                                                                alt=""
-                                                                className="w-20 h-16 rounded-xl object-cover flex-shrink-0 hidden md:block"
-                                                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                                                            />
-                                                        )}
+                                                    <div className="flex items-start gap-5">
+                                                        {/* Premium Visual Fallback & Proxied Image Cover */}
+                                                        <div className="w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 hidden md:flex items-center justify-center relative bg-slate-200/50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 shadow-inner">
+                                                            {resolvedImg ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img
+                                                                    src={resolvedImg}
+                                                                    alt=""
+                                                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                                                    onError={(e) => {
+                                                                        (e.currentTarget as HTMLElement).style.display = "none";
+                                                                        const parent = e.currentTarget.parentElement;
+                                                                        if (parent) {
+                                                                            const placeholder = parent.querySelector(".news-fallback-placeholder") as HTMLElement;
+                                                                            if (placeholder) placeholder.style.display = "flex";
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            ) : null}
+                                                            <div
+                                                                className="news-fallback-placeholder absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#14b8a6]/20 to-[#0f766e]/20 text-[#14b8a6]"
+                                                                style={{ display: resolvedImg ? "none" : "flex" }}
+                                                            >
+                                                                <Newspaper className="w-5 h-5 opacity-70 mb-1" />
+                                                                <span className="text-[9px] font-black uppercase tracking-wider">{symbol}</span>
+                                                            </div>
+                                                        </div>
+
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap mb-2">
                                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${sentimentClass}`}>{sentimentLabel}</span>
-                                                                {article.source_section && (
-                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase">{article.source_section.split("/")[0]}</span>
-                                                                )}
-                                                                <span className="text-xs text-slate-400 font-medium">
+                                                                <span className="text-xs text-slate-400 font-semibold tracking-wide">
                                                                     {article.published_at ? new Date(article.published_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" }) : ""}
                                                                 </span>
                                                             </div>
-                                                            <a href={article.url} target="_blank" rel="noopener noreferrer"
-                                                                className="font-extrabold text-base text-slate-900 dark:text-white hover:text-[#14b8a6] dark:hover:text-[#14b8a6] transition-colors leading-snug block mb-2 flex items-start gap-1 group">
-                                                                {article.headline}
-                                                                <ExternalLink className="w-3 h-3 flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                            </a>
-                                                            {article.article_body && (
+
+                                                            {/* Internal Route Link ONLY - Absolutely no external URL exposed */}
+                                                            <Link href={`/news/${article.id}`}
+                                                                className="font-extrabold text-base text-slate-900 dark:text-white hover:text-[#14b8a6] dark:hover:text-[#14b8a6] transition-colors leading-snug block mb-2">
+                                                                {cleanHeadline}
+                                                            </Link>
+
+                                                            {cleanBody && (
                                                                 <>
                                                                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                                                                        {isExpanded ? article.article_body : `${article.article_body.slice(0, 250)}${article.article_body.length > 250 ? "..." : ""}`}
+                                                                        {isExpanded ? cleanBody : `${cleanBody.slice(0, 250)}${cleanBody.length > 250 ? "..." : ""}`}
                                                                     </p>
-                                                                    {article.article_body.length > 250 && (
-                                                                        <button
-                                                                            onClick={() => setExpandedNews(prev => {
-                                                                                const next = new Set(prev);
-                                                                                if (next.has(i)) next.delete(i); else next.add(i);
-                                                                                return next;
-                                                                            })}
-                                                                            className="text-[#14b8a6] text-xs font-bold mt-1 hover:underline">
-                                                                            {isExpanded ? (lang === "ar" ? "إخفاء" : "Show less") : t.read_more}
-                                                                        </button>
-                                                                    )}
+                                                                    <div className="flex items-center gap-4 mt-2">
+                                                                        {cleanBody.length > 250 && (
+                                                                            <button
+                                                                                onClick={() => setExpandedNews(prev => {
+                                                                                    const next = new Set(prev);
+                                                                                    if (next.has(i)) next.delete(i); else next.add(i);
+                                                                                    return next;
+                                                                                })}
+                                                                                className="text-[#14b8a6] text-xs font-bold hover:underline">
+                                                                                {isExpanded ? (lang === "ar" ? "إخفاء" : "Show less") : t.read_more}
+                                                                            </button>
+                                                                        )}
+                                                                        <Link href={`/news/${article.id}`} className="text-slate-400 dark:text-slate-500 text-xs font-bold hover:text-[#14b8a6] dark:hover:text-[#14b8a6] transition-colors flex items-center gap-1">
+                                                                            {lang === "ar" ? "عرض المقال كاملاً ←" : "Read Full Article →"}
+                                                                        </Link>
+                                                                    </div>
                                                                 </>
                                                             )}
                                                         </div>

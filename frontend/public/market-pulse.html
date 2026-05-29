@@ -150,6 +150,8 @@
                             <button class="active" type="button" data-period="3m" data-days="90">3M</button>
                             <button type="button" data-period="6m" data-days="180">6M</button>
                             <button type="button" data-period="1y" data-days="365">1Y</button>
+                            <button type="button" data-period="3y" data-days="1095">3Y</button>
+                            <button type="button" data-period="max" data-days="9999">MAX</button>
                         </div>
                         <span id="historyCaption" class="subtle" data-key="historical_prices">Historical close prices</span>
                     </div>
@@ -184,6 +186,8 @@
                             <button class="active" type="button" data-period="3m" data-days="90">3M</button>
                             <button type="button" data-period="6m" data-days="180">6M</button>
                             <button type="button" data-period="1y" data-days="365">1Y</button>
+                            <button type="button" data-period="3y" data-days="1095">3Y</button>
+                            <button type="button" data-period="max" data-days="9999">MAX</button>
                         </div>
                     </div>
                     <figure class="index-figure">
@@ -220,6 +224,103 @@
         <div id="tickerTape" class="ticker-tape"></div>
         <span id="footerStatus" class="tape-status"></span>
     </footer>
+
+    <!-- Company Profile Drawer -->
+    <div id="companyDrawer" class="drawer-overlay" aria-hidden="true">
+        <div class="drawer-backdrop"></div>
+        <div class="drawer-panel" role="dialog" aria-labelledby="drawerTitle">
+            <header class="drawer-header">
+                <div class="drawer-brand">
+                    <div class="drawer-logo-container">
+                        <img id="drawerLogo" src="" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span class="logo-fallback drawer-logo-fallback display">--</span>
+                    </div>
+                    <div>
+                        <h2 id="drawerTitle" class="display">--</h2>
+                        <span id="drawerSubtitle" class="subtle">--</span>
+                    </div>
+                </div>
+                <button id="drawerCloseBtn" class="drawer-close" aria-label="Close drawer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </header>
+            
+            <div class="drawer-body">
+                <!-- Live Price block -->
+                <section class="drawer-section drawer-price-section">
+                    <div class="drawer-price-row">
+                        <div>
+                            <span id="drawerPrice" class="display tabular drawer-price-value">--</span>
+                            <span class="unit" style="margin-left: 0.25rem;">EGP</span>
+                            <span id="drawerChange" class="tabular drawer-change-value">--</span>
+                        </div>
+                    </div>
+                    <!-- 52W Range Bar -->
+                    <div id="drawerRangeBarContainer"></div>
+                </section>
+
+                <!-- Navigation Tabs inside Drawer -->
+                <nav class="drawer-tabs">
+                    <button class="active" data-drawer-tab="profile" data-key="overview">Overview</button>
+                    <button data-drawer-tab="metrics" data-key="financials">Financials</button>
+                    <button data-drawer-tab="chart-tab">Chart</button>
+                    <button data-drawer-tab="news-tab" data-key="news">News</button>
+                </nav>
+
+                <div class="drawer-tab-content">
+                    <!-- Profile Tab -->
+                    <div id="drawerTabProfile" class="drawer-tab-pane active">
+                        <div class="drawer-profile-info">
+                            <p id="drawerDescription" class="drawer-description"></p>
+                            <div class="drawer-meta-badges">
+                                <span id="drawerIndustryBadge" class="drawer-badge">--</span>
+                                <a id="drawerWebsiteLink" href="" target="_blank" rel="noopener" class="drawer-link-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:0.8rem;height:0.8rem"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                    <span>--</span>
+                                </a>
+                            </div>
+                        </div>
+                        <dl class="drawer-facts-grid" id="drawerProfileFacts">
+                            <!-- Populated dynamically -->
+                        </dl>
+                    </div>
+
+                    <!-- Metrics Tab -->
+                    <div id="drawerTabMetrics" class="drawer-tab-pane">
+                        <div class="drawer-metrics-grid" id="drawerMetricsGrid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Chart Tab -->
+                    <div id="drawerTabChart" class="drawer-tab-pane">
+                        <div class="drawer-chart-controls">
+                            <div class="period-controls" id="drawerChartPeriodControls" style="margin-bottom: 0.75rem;">
+                                <button type="button" data-period="1m" data-days="30">1M</button>
+                                <button class="active" type="button" data-period="3m" data-days="90">3M</button>
+                                <button type="button" data-period="6m" data-days="180">6M</button>
+                                <button type="button" data-period="1y" data-days="365">1Y</button>
+                                <button type="button" data-period="3y" data-days="1095">3Y</button>
+                                <button type="button" data-period="max" data-days="9999">MAX</button>
+                            </div>
+                        </div>
+                        <div class="drawer-chart-container" style="position: relative; height: 260px; margin-top: 0.5rem;">
+                            <svg id="drawerChartSvg" viewBox="0 0 760 350" preserveAspectRatio="none" style="display: block; width: 100%; height: 100%; overflow: visible;"></svg>
+                            <div id="drawerChartMessage" class="chart-message">Loading chart data...</div>
+                        </div>
+                    </div>
+
+                    <!-- News Tab -->
+                    <div id="drawerTabNews" class="drawer-tab-pane">
+                        <div id="drawerNewsRows" class="drawer-news-rows">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/assets/portfolio-store.js?v=1.1.6"></script>
     <script src="/assets/news-covers.js?v=1.1.6"></script>
     <script src="/assets/market-pulse.js?v=1.1.6"></script>

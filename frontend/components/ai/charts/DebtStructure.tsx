@@ -47,7 +47,7 @@ export function DebtStructure({ title, data, language = "en" }: DebtStructurePro
     const latestTotalDebt = totalDebtData?.raw[0] || 0;
     const latestNetCash = netCashData?.raw[0] || 0;
 
-    const options: ApexCharts.ApexOptions = {
+    const options: any = {
         chart: {
             type: 'bar',
             stacked: true,
@@ -82,7 +82,7 @@ export function DebtStructure({ title, data, language = "en" }: DebtStructurePro
             categories: categories,
             labels: {
                 style: { colors: '#94a3b8', fontWeight: 600 },
-                formatter: (val) => {
+                formatter: (val: any) => {
                     const num = Number(val);
                     if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
                     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
@@ -114,7 +114,7 @@ export function DebtStructure({ title, data, language = "en" }: DebtStructurePro
         tooltip: {
             theme: 'light',
             y: {
-                formatter: (val) => formatNumber(val) + " " + data.currency
+                formatter: (val: any) => formatNumber(val) + " " + data.currency
             }
         }
     };

@@ -51,7 +51,7 @@ export function RatioHistoryChart({ title, data, language = "en" }: RatioHistory
         return val.toFixed(2);
     };
 
-    const options: ApexCharts.ApexOptions = {
+    const options: any = {
         chart: {
             type: 'line',
             fontFamily: 'inherit',
@@ -96,7 +96,7 @@ export function RatioHistoryChart({ title, data, language = "en" }: RatioHistory
         yaxis: {
             labels: {
                 style: { colors: '#94a3b8', fontWeight: 500 },
-                formatter: (val) => formatAxisValue(val, primaryFormat)
+                formatter: (val: any) => formatAxisValue(val, primaryFormat)
             },
         },
         grid: {
@@ -116,7 +116,7 @@ export function RatioHistoryChart({ title, data, language = "en" }: RatioHistory
         tooltip: {
             theme: 'light',
             y: {
-                formatter: function (val, { seriesIndex }) {
+                formatter: function (val: any, { seriesIndex }: any) {
                     const fmt = series[seriesIndex].format;
                     if (fmt === 'currency') return formatNumber(val) + " " + data.currency;
                     return formatAxisValue(val, fmt);

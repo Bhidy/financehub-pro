@@ -10,8 +10,8 @@ const ThemeToggle = () => {
         <button
             onClick={toggleTheme}
             className={`
-                relative z-50 cursor-pointer flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-300
-                ${theme === "dark" ? "bg-n-6 hover:bg-n-5" : "bg-n-2/20 hover:bg-n-2/40"}
+                relative z-50 cursor-pointer flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300
+                bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-800/50
             `}
             aria-label="Toggle Theme"
         >

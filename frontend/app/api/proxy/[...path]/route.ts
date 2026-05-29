@@ -84,6 +84,46 @@ export async function GET(
         const language = req.headers.get("x-language");
         const forwardedFor = req.headers.get("x-forwarded-for") || "";
         
+        const { path } = await params;
+        const pathString = path.join("/");
+        const firstSegment = path[0];
+
+        const localSegments = [
+            "financials",
+            "ohlc",
+            "shareholders",
+            "ratios",
+            "tickers",
+            "analyst-ratings",
+            "insider-trading",
+            "corporate-actions",
+            "market-breadth",
+            "market-summary",
+            "intraday"
+        ];
+
+        if (localSegments.includes(firstSegment)) {
+            const origin = req.nextUrl.origin;
+            const localUrl = `${origin}/api/v1/${pathString}${req.nextUrl.search}`;
+            console.log(`[Proxy Router] Routing locally: ${pathString} -> ${localUrl}`);
+            
+            const localRes = await fetch(localUrl, {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                next: { revalidate: 0 }
+            });
+
+            const localData = await readUpstreamPayload(localRes);
+            return NextResponse.json(localData, {
+                status: localRes.status,
+                headers: {
+                    "Cache-Control": "no-store, must-revalidate",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            });
+        }
+
         const url = await resolveUpstreamUrl(req, params);
 
         // SECURITY: Do not cache authenticated requests (user data). Cache public data (tickers, news).

@@ -31,7 +31,7 @@ export function AssetsBreakdown({ title, data, language = "en" }: AssetsBreakdow
     const series = data.composition.map(c => c.value);
     const labels = data.composition.map(c => c.label);
 
-    const options: ApexCharts.ApexOptions = {
+    const options: any = {
         chart: {
             type: 'donut',
             fontFamily: 'inherit',
@@ -62,7 +62,7 @@ export function AssetsBreakdown({ title, data, language = "en" }: AssetsBreakdow
                             fontFamily: 'inherit',
                             fontWeight: 900,
                             color: '#0f172a',
-                            formatter: (val) => {
+                            formatter: (val: any) => {
                                 const num = Number(val);
                                 if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
                                 if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
@@ -77,7 +77,7 @@ export function AssetsBreakdown({ title, data, language = "en" }: AssetsBreakdow
                             fontFamily: 'inherit',
                             fontWeight: 800,
                             color: '#94a3b8',
-                            formatter: function (w) {
+                            formatter: function (w: any) {
                                 const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
                                 if (total >= 1000000000) return (total / 1000000000).toFixed(1) + 'B';
                                 if (total >= 1000000) return (total / 1000000).toFixed(1) + 'M';
@@ -107,7 +107,7 @@ export function AssetsBreakdown({ title, data, language = "en" }: AssetsBreakdow
         tooltip: {
             theme: 'light',
             y: {
-                formatter: (val) => formatNumber(val) + " " + data.currency
+                formatter: (val: any) => formatNumber(val) + " " + data.currency
             }
         }
     };

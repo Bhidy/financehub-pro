@@ -9,7 +9,7 @@ import {
     fetchEarnings, fetchFairValues, fetchMarketBreadth, fetchIntraday, 
     fetchRatios, fetchYahooProfile, Ticker
 } from "@/lib/api";
-import { createChart, ColorType, CrosshairMode, CandlestickSeries, LineSeries, HistogramSeries, AreaSeries, Time } from "lightweight-charts";
+
 import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
     FileText, ArrowUpRight, ArrowDownRight, Star, Bell, Share2, Activity,
@@ -84,7 +84,9 @@ const TRANSLATIONS = {
         liquidity_solvency: "Liquidity & Solvency",
         dividends_risk: "Dividends & Risk",
         analyst_ratings: "Analyst Target & Recommendations",
-        company_details: "Company Details"
+        company_details: "Company Details",
+        historical_prices: "Historical Prices",
+        chart_unavailable: "Chart data is currently unavailable for this symbol."
     },
     ar: {
         nav_home: "الرئيسية",
@@ -149,7 +151,9 @@ const TRANSLATIONS = {
         liquidity_solvency: "السيولة والملاءة المالية",
         dividends_risk: "التوزيعات والمخاطر",
         analyst_ratings: "أهداف المحللين والتوصيات",
-        company_details: "تفاصيل الشركة"
+        company_details: "تفاصيل الشركة",
+        historical_prices: "حركة الأسعار التاريخية",
+        chart_unavailable: "بيانات الرسم البياني غير متوفرة حالياً لهذا السهم."
     }
 };
 
@@ -207,6 +211,7 @@ export default function SymbolDetailPage() {
     const symbol = (params.id as string).toUpperCase();
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
 
     // Dynamic market and currency detection
     const isEgx = useMemo(() => symbol.match(/^[a-zA-Z]/) !== null, [symbol]);
@@ -252,9 +257,7 @@ export default function SymbolDetailPage() {
     }, [theme]);
 
     const [activeTab, setActiveTab] = useState<"overview" | "ratios" | "financials" | "ownership" | "analysts" | "insider" | "actions">("overview");
-    const [chartPeriod, setChartPeriod] = useState("1y");
-    const [chartStyle, setChartStyle] = useState<"candle" | "line" | "area">("area");
-    const [isIntraday, setIsIntraday] = useState(false);
+    const [chartPeriod, setChartPeriod] = useState("3m");
 
     // Queries
     const { data: tickers = [], isLoading: tickersLoading } = useQuery({ queryKey: ["tickers"], queryFn: fetchTickers, staleTime: 30000 });
@@ -265,8 +268,7 @@ export default function SymbolDetailPage() {
     const { data: ratiosList = [] } = useQuery({ queryKey: ["stock-ratios", symbol], queryFn: () => fetchRatios(symbol), enabled: !!symbol });
     const ratiosData = useMemo(() => Array.isArray(ratiosList) && ratiosList.length > 0 ? ratiosList[0] : (ratiosList || {}), [ratiosList]);
 
-    const { data: ohlcData = [], isLoading: chartLoading } = useQuery({ queryKey: ["ohlc", symbol, chartPeriod], queryFn: () => fetchOHLC(symbol, chartPeriod), enabled: !!symbol && !isIntraday });
-    const { data: intradayData = [], isLoading: intradayLoading } = useQuery({ queryKey: ["intraday", symbol], queryFn: () => fetchIntraday(symbol, "1h", 100), enabled: !!symbol && isIntraday });
+    const { data: ohlcData = [], isLoading: chartLoading } = useQuery({ queryKey: ["ohlc", symbol, chartPeriod], queryFn: () => fetchOHLC(symbol, chartPeriod), enabled: !!symbol });
     const { data: financials = [] } = useQuery({ queryKey: ["financials", symbol], queryFn: () => fetchFinancials(symbol), enabled: !!symbol });
     const { data: shareholders = [] } = useQuery({ queryKey: ["shareholders", symbol], queryFn: () => fetchShareholders(symbol), enabled: !!symbol });
     const { data: allAnalystRatings = [] } = useQuery({ queryKey: ["analyst-ratings"], queryFn: () => fetchAnalystRatings(), enabled: !!symbol });
@@ -293,20 +295,17 @@ export default function SymbolDetailPage() {
         };
     }), [financials]);
 
-    const rawData = isIntraday ? intradayData : ohlcData;
     const chartData = useMemo(() => {
-        if (!rawData || rawData.length === 0) return [];
-        return [...rawData].sort((a: any, b: any) => {
+        if (!ohlcData || ohlcData.length === 0) return [];
+        return [...ohlcData].sort((a: any, b: any) => {
             const dateA = new Date(a.time || a.date || a.timestamp);
             const dateB = new Date(b.time || b.date || b.timestamp);
             return dateA.getTime() - dateB.getTime();
         }).map((item: any) => {
             const dateValue = item.time || item.date || item.timestamp;
-            const timeValue = isIntraday
-                ? Math.floor(new Date(dateValue).getTime() / 1000)
-                : new Date(dateValue).toISOString().split('T')[0];
+            const timeValue = new Date(dateValue).toISOString().split('T')[0];
             return {
-                time: timeValue as Time,
+                time: timeValue,
                 open: Number(item.open),
                 high: Number(item.high),
                 low: Number(item.low),
@@ -314,7 +313,7 @@ export default function SymbolDetailPage() {
                 volume: Number(item.volume)
             };
         });
-    }, [rawData, isIntraday]);
+    }, [ohlcData]);
 
     const chartStats = useMemo(() => {
         if (chartData.length < 2) return null;
@@ -350,9 +349,9 @@ export default function SymbolDetailPage() {
     }, [profileData, stockData, latestAnnualStatement]);
 
     const peRatio = useMemo(() => Number(fundamentalsData.pe_ratio || stockData?.pe_ratio || 0), [fundamentalsData, stockData]);
-    const pbRatio = useMemo(() => Number(fundamentalsData.price_to_book || stockData?.pb_ratio || 0), [fundamentalsData, stockData]);
-    const dividendYield = useMemo(() => Number(fundamentalsData.dividend_yield || stockData?.dividend_yield || 0), [fundamentalsData, stockData]);
-    const betaValue = useMemo(() => Number(fundamentalsData.beta || stockData?.beta || 0), [fundamentalsData, stockData]);
+    const pbRatio = useMemo(() => Number(fundamentalsData.price_to_book || (stockData as any)?.pb_ratio || 0), [fundamentalsData, stockData]);
+    const dividendYield = useMemo(() => Number(fundamentalsData.dividend_yield || (stockData as any)?.dividend_yield || 0), [fundamentalsData, stockData]);
+    const betaValue = useMemo(() => Number(fundamentalsData.beta || (stockData as any)?.beta || 0), [fundamentalsData, stockData]);
 
     const sharesOutstanding = useMemo(() => {
         const val = Number(profileData.shares_outstanding || latestAnnualStatement?.shares_outstanding || 0);
@@ -445,7 +444,7 @@ export default function SymbolDetailPage() {
     const bookValue = useMemo(() => Number(fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [fundamentalsData, latestAnnualStatement]);
     const dividendRate = useMemo(() => Number(fundamentalsData.dividend_rate || 0), [fundamentalsData]);
     const payoutRatio = useMemo(() => Number(fundamentalsData.payout_ratio || 0), [fundamentalsData]);
-    const targetPrice = useMemo(() => Number(fundamentalsData.target_price || stockData?.target_price || 0), [fundamentalsData, stockData]);
+    const targetPrice = useMemo(() => Number(fundamentalsData.target_price || (stockData as any)?.target_price || 0), [fundamentalsData, stockData]);
     const recommendation = useMemo(() => fundamentalsData.recommendation || "-", [fundamentalsData]);
     
     const floatShares = useMemo(() => {
@@ -522,7 +521,7 @@ export default function SymbolDetailPage() {
         if (cleanRows.length < 2) return;
 
         const groupSize = Math.max(1, Math.ceil(cleanRows.length / maxCandles));
-        const candles = [];
+        const candles: any[] = [];
         for (let index = 0; index < cleanRows.length; index += groupSize) {
             const group = cleanRows.slice(index, index + groupSize);
             candles.push({
@@ -619,8 +618,8 @@ export default function SymbolDetailPage() {
     const lastPrice = Number(stockData.last_price || 0);
     const change = Number(stockData.change || 0);
     const changePercent = Number(stockData.change_percent || 0);
-    const volume = Number(stockData.volume || 0);
-    const loading = isIntraday ? intradayLoading : chartLoading;
+    const volume = Number(stockData?.volume || 0);
+    const loading = chartLoading;
 
     return (
         <div className="min-h-screen text-[#10182d] dark:text-[#f1f5f9] font-sans pb-16 relative overflow-x-hidden transition-colors duration-300">

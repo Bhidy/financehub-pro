@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" dir="ltr" data-theme="dark">
+
+<head>
+    <script src="/assets/starta-theme.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | Starta Markets</title>
+    <meta name="description" content="Starta Markets Terms of Service. Understand our AI financial research disclaimers, usage policies, and compliance framework under the Egyptian regulatory authorities.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        page: 'var(--c-page)',
+                        surface: 'var(--c-surface)',
+                        panel: 'var(--c-panel)',
+                        main: 'var(--c-text-main)',
+                        muted: 'var(--c-text-muted)',
+                        border: 'var(--c-border)',
+                        starta: { teal: '#14B8A6', darkTeal: '#0F766E' }
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        premium: 'var(--shadow-premium)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --c-page: #f4f7fb;
+            --c-surface: #ffffff;
+            --c-panel: rgba(255, 255, 255, 0.88);
+            --c-text-main: #0f172a;
+            --c-text-muted: #5b6677;
+            --c-border: rgba(148, 163, 184, 0.18);
+            --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.16);
+        }
+
+        [data-theme="dark"] {
+            --c-page: #010101;
+            --c-surface: #0b0c0d;
+            --c-panel: rgba(18, 19, 20, 0.62);
+            --c-text-main: #eef2f6;
+            --c-text-muted: #9ca6b5;
+            --c-border: rgba(255, 255, 255, 0.08);
+            --shadow-premium: 0 24px 70px rgba(0, 0, 0, 0.5);
+        }
+
+        html[dir="rtl"] body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        html[dir="rtl"] .font-display { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        html[dir="rtl"] nav .font-mono a { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 13px !important; letter-spacing: 0 !important; }
+        body { background: var(--c-page); color: var(--c-text-main); font-family: 'Manrope', sans-serif; overflow-x: hidden; }
+        .glass-premium { background: var(--c-panel); backdrop-filter: blur(22px); border: 1px solid var(--c-border); box-shadow: var(--shadow-premium); }
+        .nav-pill { border: 1px solid var(--c-border); background: var(--c-panel); color: var(--c-text-main); }
+        .btn-primary { background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%); transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(20, 184, 166, 0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(20, 184, 166, 0.4); }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-starta-teal selection:text-white">
+    <div class="fixed inset-0 z-[-3]" style="background: var(--c-page);"></div>
+    <div class="fixed inset-0 z-[-2] pointer-events-none opacity-80" style="background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px); background-size: 42px 42px;"></div>
+    <div class="fixed inset-0 z-[-1] pointer-events-none" style="background: radial-gradient(circle at top left, rgba(20, 184, 166, 0.16), transparent 28%), radial-gradient(circle at top right, rgba(45, 212, 191, 0.08), transparent 24%);"></div>
+
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl">
+        <div class="max-w-screen-2xl mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-8 h-8 bg-starta-teal rounded-lg flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                <span class="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+            </div>
+            <div class="hidden lg:flex items-center gap-10">
+                <div class="flex gap-10 text-xs font-mono text-muted tracking-widest uppercase">
+                    <a href="/" class="hover:text-starta-teal transition-colors" data-key="nav_home">HOME</a>
+                    <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
+                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
+                    <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
+                    <a href="/Portfolio" class="hover:text-starta-teal transition-colors" data-key="nav_portfolio">PORTFOLIO</a>
+                    <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="themeToggle" class="nav-pill rounded-full p-2.5 flex items-center justify-center relative w-10 h-10" type="button" aria-label="Toggle theme">
+                    <svg class="dark-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="light-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+                <button id="langToggle" class="nav-pill rounded-full px-4 py-2 text-sm font-display font-semibold">AR</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-28 pb-20 min-h-screen">
+        <div class="max-w-5xl mx-auto px-6">
+            <!-- Header Section -->
+            <section class="glass-premium rounded-[2.5rem] p-8 sm:p-12 mb-10 text-center reveal-block relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#14B8A6 1px, transparent 1px); background-size: 24px 24px;"></div>
+                <div class="relative z-10">
+                    <span class="text-xs font-bold tracking-[0.2em] text-starta-teal uppercase" data-key="sub_title">PLATFORM COMPLIANCE & RULES</span>
+                    <h1 class="text-3xl sm:text-5xl font-display font-bold text-main mt-4 tracking-tight leading-tight" data-key="main_title">Terms of Service</h1>
+                    <p class="text-muted mt-4 max-w-2xl mx-auto text-base sm:text-lg" data-key="main_desc">Clear agreements for a professional partnership. Review the guidelines and compliance structures governing our financial technology terminal.</p>
+                    <div class="mt-6 text-xs font-mono text-starta-teal" data-key="last_updated">Last Updated: May 29, 2026</div>
+                </div>
+            </section>
+
+            <!-- Content Cards -->
+            <div class="space-y-6 animate-y-container mb-24" id="termsContent">
+                <!-- Dynamic Content injected via JS based on selected language -->
+            </div>
+        </div>
+    </main>
+
+    <!-- ULTRA-PREMIUM PROFESSIONAL FOOTER -->
+    <footer class="relative bg-surface border-t border-border overflow-hidden pt-24 pb-12 section-premium">
+        <!-- Ambient background glows -->
+        <div class="absolute inset-0 pointer-events-none opacity-40 dark:opacity-80" aria-hidden="true">
+            <div class="absolute bottom-0 right-10 w-[450px] h-[300px] bg-starta-teal/5 dark:bg-starta-teal/10 rounded-full blur-[100px]"></div>
+            <div class="absolute top-12 left-10 w-[300px] h-[200px] bg-violet-600/3 dark:bg-violet-600/5 rounded-full blur-[80px]"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <!-- Top Section: Logo & Newsletter -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pb-16 border-b border-border mb-16">
+                <div class="space-y-4 max-w-md text-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-starta-teal rounded-xl flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                        <span class="text-xl font-display font-bold text-main tracking-widest">STARTA</span>
+                    </div>
+                    <p class="text-sm text-muted leading-relaxed" data-key="footer_desc">
+                        Next-generation financial intelligence platform. Empowering Egyptian market investors with unified data, institutional-grade AI analytics, and responsive portfolio tools.
+                    </p>
+                </div>
+                <!-- Premium Status & Newsletter/CTA -->
+                <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
+                    <a href="https://startamarkets.com/AiChat" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
+                        <span data-key="footer_cta_btn">Launch Starta AI</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-16 text-start">
+                <!-- Col 1: Platform -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold" data-key="footer_col1_title">PLATFORM</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="/" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_home">Home</a></li>
+                        <li><a href="/Funds" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_funds">Mutual Funds</a></li>
+                        <li><a href="/Market-Pulse" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_pulse">Market Pulse</a></li>
+                    </ul>
+                </div>
+                <!-- Col 2: Research -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold" data-key="footer_col2_title">RESEARCH</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="/News" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_news">Market News</a></li>
+                        <li><a href="/Learn" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_learn">Learn Catalog</a></li>
+                        <li><a href="/Portfolio" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_portfolio">Smart Portfolio</a></li>
+                    </ul>
+                </div>
+                <!-- Col 3: Resources -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold" data-key="footer_col3_title">RESOURCES</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="https://startamarkets.com/AiChat" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_chat">AI Assistant</a></li>
+                        <li><a href="https://startamarkets.com/register" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_account">Create Account</a></li>
+                        <li><a href="https://startamarkets.com/login" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_login">Sign In</a></li>
+                    </ul>
+                </div>
+                <!-- Col 4: Legal & Contact -->
+                <div class="space-y-4">
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="mailto:support@startamarkets.com" class="text-muted hover:text-starta-teal transition-colors font-medium">support@startamarkets.com</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Regulatory Disclaimer / Disclosures (Essential for Institutional Brand) -->
+            <div class="p-6 rounded-2xl bg-panel/30 border border-border mb-12 text-start">
+                <h5 class="text-xs font-mono text-main tracking-widest uppercase font-semibold mb-2.5" data-key="footer_disc_title">Regulatory Disclaimer</h5>
+                <p class="text-[11px] text-muted leading-relaxed" data-key="footer_disclaimer">
+                    Starta Markets is a financial data and technology platform. All content, tools, and AI analyses provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.
+                </p>
+            </div>
+
+            <!-- Bottom Section: Copyright & Legal Links -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted font-mono pt-4 border-t border-border/80">
+                <div data-key="footer_copy">
+                    &copy; 2026 Starta Markets. All Rights Reserved.
+                </div>
+                <div class="flex gap-6">
+                    <a href="/privacy" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_privacy">Privacy Policy</a>
+                    <a href="/terms" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_terms">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const translations = {
+            en: {
+                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "PORTFOLIO",
+                sub_title: "PLATFORM COMPLIANCE & RULES",
+                main_title: "Terms of Service",
+                main_desc: "Clear agreements for a professional partnership. Review the guidelines and compliance structures governing our financial technology terminal.",
+                last_updated: "Last Updated: May 29, 2026",
+                footer_desc: "Next-generation financial intelligence platform. Empowering Egyptian market investors with unified data, institutional-grade AI analytics, and responsive portfolio tools.",
+                footer_cta_btn: "Launch Starta AI",
+                footer_col1_title: "PLATFORM",
+                footer_col2_title: "RESEARCH",
+                footer_col3_title: "RESOURCES",
+                footer_lnk_home: "Home",
+                footer_lnk_funds: "Mutual Funds",
+                footer_lnk_pulse: "Market Pulse",
+                footer_lnk_news: "Market News",
+                footer_lnk_learn: "Learn Catalog",
+                footer_lnk_portfolio: "Smart Portfolio",
+                footer_lnk_chat: "AI Assistant",
+                footer_lnk_account: "Create Account",
+                footer_lnk_login: "Sign In",
+                footer_disc_title: "Regulatory Disclaimer",
+                footer_disclaimer: "Starta Markets is a financial data and technology platform. All content, tools, and AI analyses provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.",
+                footer_copy: "&copy; 2026 Starta Markets. All Rights Reserved.",
+                footer_lnk_privacy: "Privacy Policy",
+                footer_lnk_terms: "Terms of Service",
+                terms: [
+                    {
+                        title: "1. Acceptance of Terms",
+                        desc: "By accessing or using the website, data feeds, automated savings calculators, portfolio dashboards, or our proprietary AI Analyst (collectively, the 'Services') provided at startamarkets.com, you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, you are prohibited from utilizing our platform."
+                    },
+                    {
+                        title: "2. Absolute Financial Advice Disclaimer",
+                        desc: "Starta Markets is a financial data technology terminal. <strong>We are not a licensed financial advisor, broker-dealer, or asset management firm.</strong> All AI-generated analyses, model calculations (e.g., DCF, Fair Value estimation, Piotroski score, Sharpe ratio), data visualizations, and responses generated by our AI chatbot are supplied strictly for educational and informational support. No contents should be interpreted as financial advice or an endorsement to execute trades or allocate capital. Investors are solely responsible for conducting their own deterministic due diligence before committing real assets."
+                    },
+                    {
+                        title: "3. Accuracy of Feeds & Determinisim",
+                        desc: "While our platform features a hybrid deterministic engine that synchronizes AI commentary with audited EGX feeds and official mutual fund pricing, we make no absolute guarantees of real-time accuracy, completeness, or uninterrupted accessibility of external APIs. Starta Markets is not liable for trade losses or portfolio tracking discrepancies resulting from third-party feed latencies."
+                    },
+                    {
+                        title: "4. Subscription Billing & Analyst Plan",
+                        desc: "Certain high-capacity services (such as unlimited AI Analyst inquiries, Excel exports, or detailed balance sheet histories) are isolated under 'The Analyst' premium plan. Subscriptions are billed on a recurring monthly or annual basis. You may cancel at any point via your workspace account. Fees paid are non-refundable except where explicitly required under regional consumer laws."
+                    },
+                    {
+                        title: "5. Intellectual Property Rights",
+                        desc: "All source code, design systems, algorithms, models, learning material texts, and compiled datasets on startamarkets.com are the exclusive property of Starta Markets and its licensors. Unauthorized scraping, systematic reverse-engineering, or mirroring of our platform's outputs for commercial use is strictly prohibited."
+                    },
+                    {
+                        title: "6. Limitation of Liability",
+                        desc: "Under no circumstances shall Starta Markets, its directors, partners, or affiliates be liable for direct, indirect, or consequential damages (including loss of investment returns, trading capital, or data) arising from the use or inability to utilize our financial terminal interfaces."
+                    },
+                    {
+                        title: "7. Governing Law & Jurisdiction",
+                        desc: "These terms are governed by and construed in accordance with the laws of the Arab Republic of Egypt, under the regulatory standards of the Financial Regulatory Authority (FRA) where applicable. Any disputes arising from these Services shall be subject to the exclusive jurisdiction of the competent courts in Cairo, Egypt."
+                    }
+                ]
+            },
+            ar: {
+                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "المحفظة",
+                sub_title: "تنظيم المنصة والامتثال",
+                main_title: "شروط الخدمة",
+                main_desc: "اتفاقيات واضحة لشراكة احترافية ممتازة. راجع الإرشادات والأطر التنظيمية الحاكمة لتجربة استخدام منصتنا المالية الذكية.",
+                last_updated: "آخر تحديث: 29 مايو 2026",
+                footer_desc: "منصة الجيل القادم للتحليل المالي الذكي. نمكّن مستثمري السوق المصري ببيانات موحدة، تحليلات ذكاء اصطناعي بمستوى مؤسسي، وأدوات متطورة لإدارة المحفظة.",
+                footer_cta_btn: "ابدأ مع مساعد ستارتا",
+                footer_col1_title: "المنصة",
+                footer_col2_title: "الأبحاث",
+                footer_col3_title: "المصادر",
+                footer_lnk_home: "الرئيسية",
+                footer_lnk_funds: "الصناديق الاستثمارية",
+                footer_lnk_pulse: "نبض السوق",
+                footer_lnk_news: "أخبار السوق",
+                footer_lnk_learn: "أكاديمية ستارتا",
+                footer_lnk_portfolio: "المحفظة الذكية",
+                footer_lnk_chat: "المساعد الذكي",
+                footer_lnk_account: "إنشاء حساب",
+                footer_lnk_login: "تسجيل الدخول",
+                footer_disc_title: "إخلاء المسؤولية القانونية",
+                footer_disclaimer: "منصة ستارتا ماركتس هي منصة للبيانات والتقنيات المالية. جميع المحتويات والأدوات والتحليلات المدعومة بالذكاء الاصطناعي هي لأغراض معلوماتية وتعليمية فقط، ولا ينبغي تفسيرها كاستشارات استثمارية أو توصيات بالشراء أو البيع لأي ورقة مالية أو صندوق استثماري. أسواق المال تنطوي على مخاطر وتذبذبات عالية؛ ويتحمل كل مستثمر المسؤولية الكاملة عن قراراته بعد الدراسة والدقة.",
+                footer_copy: "&copy; ٢٠٢٦ ستارتا ماركتس. جميع الحقوق محفوظة.",
+                footer_lnk_privacy: "سياسة الخصوصية",
+                footer_lnk_terms: "شروط الخدمة",
+                terms: [
+                    {
+                        title: "١. قبول الشروط",
+                        desc: "باستخدامك لمنصتنا، وخلاصات البيانات، وحاسبات الادخار، ولوحات تحكم المحفظة، أو المحلل الذكي (الشارح المالي) المتوفر على موقع startamarkets.com، فإنك توافق على الامتثال والالتزام التام بشروط الخدمة هذه. إذا كنت لا توافق على هذه البنود، يرجى التوقف عن استخدام المنصة."
+                    },
+                    {
+                        title: "٢. إخلاء مسؤولية مطلق عن الاستشارة المالية",
+                        desc: "ستارتا ماركتس هي منصة تكنولوجية لعرض وتحليل البيانات المالية فقط. <strong>نحن لسنا مستشاراً مالياً مرخصاً، أو وسيطاً، أو شركة لإدارة الأصول.</strong> جميع التحليلات الصادرة عن الذكاء الاصطناعي، والتقييمات الرقمية المستنتجة (مثل حساب القيمة العادلة DCF، ومؤشر بيوتروسكي، وننسب شارب)، والاستجابات التفاعلية هي لغرض التثقيف والدعم المعرفي فقط. لا يجب تفسير أي محتوى كدعوة لشراء أو بيع الأوراق المالية أو توجيه المدخرات. يتحمل المستثمر وحده كامل المسؤولية عن إجراء الدراسات الكافية قبل اتخاذ أي قرار استثماري حقيقي."
+                    },
+                    {
+                        title: "٣. دقة البيانات والخلاصات",
+                        desc: "بالرغم من دمج تقنيات التحليل اللغوي الذكي مع خلاصات بورصة مصر وأسعار الصناديق الرسمية بشكل صارم ومباشر، فإننا لا نقدم ضمانات مطلقة بخلو البيانات الخارجية من الأخطاء، أو عدم انقطاع الخدمة بسبب المصادر. لا تتحمل ستارتا ماركتس أي مسؤولية عن خسائر التداول الناتجة عن تأخر تحديث خلاصات الأطراف الثالثة."
+                    },
+                    {
+                        title: "٤. الاشتراكات والفوترة لخطة المحلل",
+                        desc: "الخدمات عالية السعة (مثل المحادثات المفتوحة مع المحلل الذكي، وتصدير ملفات إكسل، والوصول لكامل التاريخ المالي) تقع تحت فئة خطة 'The Analyst' المدفوعة. يتم احتساب قيمة الاشتراكات بشكل دوري شهري أو سنوي. يمكنك إلغاء الاشتراك في أي وقت من لوحة التحكم، وتعتبر الرسوم المدفوعة غير قابلة للاسترداد إلا في الحالات المقررة قانونًا لحماية المستهلك."
+                    },
+                    {
+                        title: "٥. حقوق الملكية الفكرية",
+                        desc: "تعتبر كافة الأكواد، وأنظمة التصميم، والخوارزميات، والبيانات المجمعة، والمواد التعليمية على موقع startamarkets.com ملكاً فكرياً حصرياً لستارتا ماركتس. يُمنع منعاً باتاً القيام بعمليات استخراج البيانات آليًا (Scraping)، أو الهندسة العكسية، أو إعادة توزيع التحليلات لأغراض تجارية دون إذن كتابي مسبق."
+                    },
+                    {
+                        title: "٦. تحديد المسؤولية",
+                        desc: "لا تتحمل ستارتا ماركتس، أو مدرائها، أو شركاؤها بأي حال من الأحوال المسؤولية عن أي أضرار مباشرة أو غير مباشرة أو تبعية (بما في ذلك خسائر أرباح الاستثمار، رأس مال التداول، أو فقدان البيانات) الناتجة عن استخدام أو عدم القدرة على استخدام خدمات المنصة."
+                    },
+                    {
+                        title: "٧. القانون الواجب التطبيق والاختصاص",
+                        desc: "تخضع هذه الشروط وتفسر وفقاً للقوانين المعمول بها في جمهورية مصر العربية، وبالتوافق مع الضوابط التنظيمية للهيئة العامة للرقابة المالية (FRA) حيث ينطبق ذلك. ويخضع أي نزاع قد ينشأ عن استخدام هذه الخدمات للاختصاص الحصري للمحاكم المختصة في القاهرة، مصر."
+                    }
+                ]
+            }
+        };
+
+        const state = { lang: 'en' };
+
+        function getStoredLanguage() {
+            const stored = localStorage.getItem('starta-lang') || localStorage.getItem('lang');
+            return stored === 'ar' ? 'ar' : 'en';
+        }
+
+        function setLanguage(lang) {
+            state.lang = lang === 'ar' ? 'ar' : 'en';
+            localStorage.setItem('starta-lang', state.lang);
+            localStorage.setItem('lang', state.lang);
+            document.documentElement.lang = state.lang;
+            document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('langToggle').textContent = state.lang === 'ar' ? 'EN' : 'AR';
+            
+            // Translate header/footer and title
+            document.querySelectorAll('[data-key]').forEach((el) => {
+                const key = el.getAttribute('data-key');
+                if (translations[state.lang][key]) el.innerHTML = translations[state.lang][key];
+            });
+
+            renderTerms();
+            revealSections();
+        }
+
+        function renderTerms() {
+            const container = document.getElementById('termsContent');
+            const data = translations[state.lang].terms;
+
+            container.innerHTML = data.map((item, index) => `
+                <article class="glass-premium rounded-3xl p-6 sm:p-8 reveal-block hover:border-starta-teal/30 transition-all duration-300">
+                    <h2 class="text-xl sm:text-2xl font-display font-bold text-main tracking-tight flex items-center gap-3">
+                        <span class="text-xs font-mono px-2.5 py-1 rounded bg-starta-teal/10 text-starta-teal">0${index + 1}</span>
+                        ${item.title}
+                    </h2>
+                    <p class="text-muted mt-4 text-sm sm:text-base leading-relaxed font-normal">${item.desc}</p>
+                </article>
+            `).join('');
+        }
+
+        function revealSections() {
+            document.querySelectorAll('.reveal-block').forEach((element) => {
+                gsap.fromTo(element, { y: 20, opacity: 0 }, {
+                    y: 0, opacity: 1, duration: 0.6, ease: 'power3.out',
+                    scrollTrigger: { trigger: element, start: 'top 90%' }
+                });
+            });
+        }
+
+        document.getElementById('langToggle').addEventListener('click', () => setLanguage(state.lang === 'en' ? 'ar' : 'en'));
+        setLanguage(getStoredLanguage());
+    </script>
+</body>
+
+</html>

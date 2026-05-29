@@ -11,7 +11,7 @@ export async function GET(request: Request) {
             // Query major_shareholders table
             const result = await db.query(
                 `SELECT id, symbol, shareholder_name_en, shareholder_name AS shareholder_name_ar, 
-                        shareholder_type, ownership_percent, shares_held, report_date
+                        shareholder_type, ownership_percent, shares_held, as_of_date AS report_date
                  FROM major_shareholders 
                  WHERE symbol = $1 OR symbol = $2
                  ORDER BY ownership_percent DESC NULLS LAST
@@ -27,9 +27,9 @@ export async function GET(request: Request) {
         // All shareholders (no symbol filter)
         const result = await db.query(
             `SELECT id, symbol, shareholder_name_en, shareholder_name AS shareholder_name_ar, 
-                    shareholder_type, ownership_percent, shares_held, report_date
+                    shareholder_type, ownership_percent, shares_held, as_of_date AS report_date
              FROM major_shareholders 
-             ORDER BY report_date DESC, ownership_percent DESC NULLS LAST
+             ORDER BY as_of_date DESC, ownership_percent DESC NULLS LAST
              LIMIT $1`,
             [limit]
         );

@@ -1270,68 +1270,6 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.earnings_yield} value={earningsYield !== 0 ? pct(earningsYield) : "-"} icon={Target} color="text-emerald-500" />
                                     </div>
                                 </div>
-
-                                {/* Financial Quality Scores */}
-                                {stats && (stats.piotroski_f_score !== undefined || stats.altman_z_score !== null) && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={ShieldAlert} title={lang === "ar" ? "مؤشرات الجودة المالية" : "Financial Quality Scores"} color="text-teal-500" />
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {stats.piotroski_f_score !== undefined && (
-                                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-extrabold text-base">{t.piotroski_score}</p>
-                                                        <p className="text-xs text-slate-400 font-bold mt-1">{lang === "ar" ? "يحدد جودة المحاسبة الإجمالية" : "Identifies overall accounting quality"}</p>
-                                                        <p className="text-xs text-slate-400 mt-0.5">{stats.piotroski_f_score >= 6 ? "Strong" : stats.piotroski_f_score <= 3 ? "Weak" : "Moderate"}</p>
-                                                    </div>
-                                                    <span className={`px-4 py-2 rounded-xl text-lg font-black ${stats.piotroski_f_score >= 6 ? "bg-emerald-500/10 text-emerald-400" : stats.piotroski_f_score <= 3 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
-                                                        {stats.piotroski_f_score} / 9
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {stats.altman_z_score !== undefined && stats.altman_z_score !== null && (
-                                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-extrabold text-base">{t.altman_z_score}</p>
-                                                        <p className="text-xs text-slate-400 font-bold mt-1">{lang === "ar" ? "يقدر احتمالية الضائقة المالية" : "Estimates financial distress probability"}</p>
-                                                    </div>
-                                                    <span className={`px-4 py-2 rounded-xl text-lg font-black ${stats.altman_z_score > 2.9 ? "bg-emerald-500/10 text-emerald-400" : stats.altman_z_score < 1.1 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
-                                                        {Number(stats.altman_z_score).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Growth Metrics (conditional) */}
-                                {(revenueGrowth !== null || epsGrowth !== null || profitGrowth !== null) && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={TrendingUp} title={t.growth_metrics} color="text-teal-500" />
-                                        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 flex items-center gap-3 mb-4">
-                                            <Info className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                                            <p className="text-xs text-amber-700 dark:text-amber-400 font-bold">
-                                                {lang === "ar" ? "يُنصح بالتحقق من بيانات النمو مع المصادر الرسمية." : "Growth figures are system-computed. Verify with official filings before trading."}
-                                            </p>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            {revenueGrowth !== null && (
-                                                <MetricCard label={lang === "ar" ? "نمو الإيرادات (سنوي)" : "Revenue Growth (YoY)"}
-                                                    value={`${revenueGrowth >= 0 ? "+" : ""}${(revenueGrowth * 100).toFixed(1)}%`}
-                                                    icon={BarChart3} color={revenueGrowth >= 0 ? "text-emerald-500" : "text-rose-500"} />
-                                            )}
-                                            {epsGrowth !== null && (
-                                                <MetricCard label={lang === "ar" ? "نمو ربحية السهم" : "EPS Growth (YoY)"}
-                                                    value={`${epsGrowth >= 0 ? "+" : ""}${(epsGrowth * 100).toFixed(1)}%`}
-                                                    icon={DollarSign} color={epsGrowth >= 0 ? "text-emerald-500" : "text-rose-500"} />
-                                            )}
-                                            {profitGrowth !== null && (
-                                                <MetricCard label={lang === "ar" ? "نمو الأرباح" : "Profit Growth (YoY)"}
-                                                    value={`${profitGrowth >= 0 ? "+" : ""}${(profitGrowth * 100).toFixed(1)}%`}
-                                                    icon={Award} color={profitGrowth >= 0 ? "text-emerald-500" : "text-rose-500"} />
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
 
@@ -1737,6 +1675,85 @@ export default function SymbolDetailPage() {
                                     )}
                                 </div>
                             </div>
+                        )}
+                        {/* Financial Quality Scores & Growth Metrics (shown only on Ratios & Risk tab) */}
+                        {activeTab === "ratios" && (
+                            <>
+                                {/* Financial Quality Scores Card */}
+                                {stats && (stats.piotroski_f_score !== undefined || stats.altman_z_score !== null) && (
+                                    <div className="premium-glass rounded-3xl p-6">
+                                        <h4 className="text-lg font-black flex items-center gap-2 mb-4">
+                                            <ShieldAlert className="w-5 h-5 text-teal-500" /> {lang === "ar" ? "مؤشرات الجودة المالية" : "Financial Quality Scores"}
+                                        </h4>
+                                        <div className="space-y-3 font-bold text-sm">
+                                            {stats.piotroski_f_score !== undefined && (
+                                                <div className="py-2.5 border-b border-slate-200/50 dark:border-slate-800/50">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-slate-400 text-xs">{t.piotroski_score}</span>
+                                                        <span className={`tabular text-xs font-black px-2 py-0.5 rounded-md ${stats.piotroski_f_score >= 6 ? "bg-emerald-500/10 text-emerald-400" : stats.piotroski_f_score <= 3 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
+                                                            {stats.piotroski_f_score} / 9
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-400 font-medium">
+                                                        {stats.piotroski_f_score >= 6 ? "Strong" : stats.piotroski_f_score <= 3 ? "Weak" : "Moderate"} • {lang === "ar" ? "جودة المحاسبة الإجمالية" : "Overall accounting quality"}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {stats.altman_z_score !== undefined && stats.altman_z_score !== null && (
+                                                <div className="py-2.5 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-slate-400 text-xs">{t.altman_z_score}</span>
+                                                        <span className={`tabular text-xs font-black px-2 py-0.5 rounded-md ${stats.altman_z_score > 2.9 ? "bg-emerald-500/10 text-emerald-400" : stats.altman_z_score < 1.1 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
+                                                            {Number(stats.altman_z_score).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-400 font-medium">
+                                                        {stats.altman_z_score > 2.9 ? "Safe Zone" : stats.altman_z_score < 1.1 ? "Distress Zone" : "Grey Zone"} • {lang === "ar" ? "احتمالية الضائقة المالية" : "Distress probability"}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Growth Metrics Card */}
+                                {(revenueGrowth !== null || epsGrowth !== null || profitGrowth !== null) && (
+                                    <div className="premium-glass rounded-3xl p-6">
+                                        <h4 className="text-lg font-black flex items-center gap-2 mb-4">
+                                            <TrendingUp className="w-5 h-5 text-teal-500" /> {t.growth_metrics}
+                                        </h4>
+                                        <div className="p-3 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-xl mb-4 text-[10px] font-bold text-amber-750 dark:text-amber-400">
+                                            {lang === "ar" ? "بيانات النمو محتسبة برمجياً." : "Figures system-computed. Verify with filings."}
+                                        </div>
+                                        <div className="space-y-3 font-bold text-sm">
+                                            {revenueGrowth !== null && (
+                                                <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
+                                                    <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو الإيرادات (سنوي)" : "Revenue Growth (YoY)"}</span>
+                                                    <span className={`tabular text-xs font-black ${revenueGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                                        {revenueGrowth >= 0 ? "+" : ""}{(revenueGrowth * 100).toFixed(1)}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {epsGrowth !== null && (
+                                                <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
+                                                    <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو ربحية السهم" : "EPS Growth (YoY)"}</span>
+                                                    <span className={`tabular text-xs font-black ${epsGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                                        {epsGrowth >= 0 ? "+" : ""}{(epsGrowth * 100).toFixed(1)}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {profitGrowth !== null && (
+                                                <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
+                                                    <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو الأرباح" : "Profit Growth (YoY)"}</span>
+                                                    <span className={`tabular text-xs font-black ${profitGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                                        {profitGrowth >= 0 ? "+" : ""}{(profitGrowth * 100).toFixed(1)}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

@@ -349,6 +349,12 @@ export default function SymbolDetailPage() {
         enabled: !!symbol
     });
 
+    const { data: shareholders = [] } = useQuery({
+        queryKey: ["shareholders", symbol],
+        queryFn: () => fetchShareholders(symbol),
+        enabled: !!symbol
+    });
+
     const fairValues = useMemo(() =>
         Array.isArray(allFairValues) ? allFairValues.filter((f: any) => f.symbol === symbol) : [],
         [allFairValues, symbol]);
@@ -854,9 +860,9 @@ export default function SymbolDetailPage() {
 
             {/* MAIN GRID */}
             <div className="max-w-[1536px] mx-auto px-6">
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
                     {/* LEFT COL */}
-                    <div className="xl:col-span-2 space-y-8">
+                    <div className="xl:col-span-3 space-y-8">
 
                         {/* ═══════════════════════ OVERVIEW TAB ═══════════════════════ */}
                         {activeTab === "overview" && (
@@ -1667,7 +1673,7 @@ export default function SymbolDetailPage() {
                         )}
 
                         {/* Ownership Quick Card */}
-                        {(institutionalOwnership > 0 || insiderOwnership > 0) && (
+                        {(institutionalOwnership > 0 || insiderOwnership > 0 || (Array.isArray(shareholders) && shareholders.length > 0)) && (
                             <div className="premium-glass rounded-3xl p-6">
                                 <h4 className="text-lg font-black flex items-center gap-2 mb-5">
                                     <PieChart className="w-5 h-5 text-indigo-500" /> {lang === "ar" ? "ملاك الأسهم" : "Share Ownership"}
@@ -1692,9 +1698,41 @@ export default function SymbolDetailPage() {
                                         </div>
                                     )}
                                     {insiderOwnership > 0 && (
-                                        <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-b-0">
                                             <span className="text-slate-400 text-xs">{t.insider_ownership}</span>
                                             <span className="tabular text-xs font-black text-orange-500">{(insiderOwnership * 100).toFixed(3)}%</span>
+                                        </div>
+                                    )}
+
+                                    {/* Detailed Ownership Structure (Top Shareholders) */}
+                                    {Array.isArray(shareholders) && shareholders.length > 0 && (
+                                        <div className="mt-5 pt-5 border-t border-slate-200/50 dark:border-slate-800/50">
+                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">
+                                                {lang === "ar" ? "هيكل الملكية (كبار المساهمين)" : "Ownership Structure"}
+                                            </p>
+                                            <div className="space-y-4">
+                                                {shareholders.map((sh: any, i: number) => {
+                                                    const percent = Number(sh.ownership_percent || 0);
+                                                    const shares = Number(sh.shares_held || 0);
+                                                    const name = lang === "ar" && sh.shareholder_name_ar ? sh.shareholder_name_ar : sh.shareholder_name_en;
+                                                    return (
+                                                        <div key={i} className="space-y-1 font-bold">
+                                                            <div className="flex justify-between items-center text-xs font-bold gap-2">
+                                                                <span className="text-slate-700 dark:text-slate-350 truncate text-[11px] leading-tight" title={name}>{name}</span>
+                                                                <span className="tabular text-indigo-600 dark:text-indigo-400 font-black text-[11px] flex-shrink-0">{percent.toFixed(2)}%</span>
+                                                            </div>
+                                                            {shares > 0 && (
+                                                                <p className="text-[10px] text-slate-400 font-medium">
+                                                                    {formatNumber(shares)} {lang === "ar" ? "سهم" : "shares"}
+                                                                </p>
+                                                            )}
+                                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" style={{ width: `${Math.min(percent, 100)}%` }}></div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     )}
                                 </div>

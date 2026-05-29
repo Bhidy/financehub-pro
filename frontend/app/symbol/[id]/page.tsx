@@ -73,9 +73,9 @@ function formatNumber(num: number | string | null | undefined): string {
     return n.toFixed(2);
 }
 
-function formatCurrency(num: number | string | null | undefined): string {
+function formatCurrency(num: number | string | null | undefined, curr: string = "EGP"): string {
     if (num === null || num === undefined || num === "") return "-";
-    return `SAR ${formatNumber(num)}`;
+    return `${curr} ${formatNumber(num)}`;
 }
 
 // Loading Skeleton with animations
@@ -120,7 +120,7 @@ function StatCard({ label, value, icon: Icon, trend, color = "blue", delay = 0 }
                 <div className="flex items-center justify-between mb-3">
                     <span className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">{label}</span>
                     {Icon && (
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-[#F1F5F9] dark:bg-white/5 text-[#3C50E0] dark:text-[#3C50E0] dark:text-white`}>
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-[#F1F5F9] dark:bg-white/5 text-[#14b8a6] dark:text-[#14b8a6] dark:text-white`}>
                             <Icon className="w-4 h-4 text-white" />
                         </div>
                     )}
@@ -180,9 +180,16 @@ function EmptyState({ message }: { message: string }) {
 // Main Page
 export default function SymbolDetailPage() {
     const params = useParams();
-    const symbol = params.id as string;
+    const symbol = (params.id as string).toUpperCase();
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<any>(null);
+
+    // Dynamic market and currency detection based on symbol
+    const isEgx = useMemo(() => {
+        return symbol.match(/^[a-zA-Z]/) !== null;
+    }, [symbol]);
+    const currency = isEgx ? "EGP" : "SAR";
+    const marketName = isEgx ? "EGX" : "Tadawul";
 
     const [activeTab, setActiveTab] = useState<"overview" | "financials" | "ownership" | "analysts" | "earnings" | "insider" | "deep-dive">("overview");
     const [chartPeriod, setChartPeriod] = useState("1m");
@@ -294,17 +301,17 @@ export default function SymbolDetailPage() {
                 grid: { vertLines: { color: 'rgba(148, 163, 184, 0.1)' }, horzLines: { color: 'rgba(148, 163, 184, 0.1)' } },
                 timeScale: { timeVisible: true, secondsVisible: false, borderColor: 'rgba(148, 163, 184, 0.2)', rightOffset: 5 },
                 rightPriceScale: { borderColor: 'rgba(148, 163, 184, 0.2)' },
-                crosshair: { mode: CrosshairMode.Normal, vertLine: { color: 'rgba(99, 102, 241, 0.5)', width: 1, style: 2, labelBackgroundColor: '#6366f1' }, horzLine: { color: 'rgba(99, 102, 241, 0.5)', width: 1, style: 2, labelBackgroundColor: '#6366f1' } }
+                crosshair: { mode: CrosshairMode.Normal, vertLine: { color: 'rgba(20, 184, 166, 0.4)', width: 1, style: 2, labelBackgroundColor: '#0f766e' }, horzLine: { color: 'rgba(20, 184, 166, 0.4)', width: 1, style: 2, labelBackgroundColor: '#0f766e' } }
             });
             chartRef.current = chart;
 
             chartRef.current = chart;
             try {
                 if (chartStyle === "candle") {
-                    const series = chart.addSeries(CandlestickSeries, { upColor: '#10b981', downColor: '#ef4444', borderUpColor: '#10b981', borderDownColor: '#ef4444', wickUpColor: '#10b981', wickDownColor: '#ef4444' });
+                    const series = chart.addSeries(CandlestickSeries, { upColor: 'var(--teal)', downColor: '#ef4444', borderUpColor: 'var(--teal)', borderDownColor: '#ef4444', wickUpColor: 'var(--teal)', wickDownColor: '#ef4444' });
                     series.setData(chartData);
                 } else if (chartStyle === "line") {
-                    const series = chart.addSeries(LineSeries, { color: '#14b8a6', lineWidth: 3 });
+                    const series = chart.addSeries(LineSeries, { color: 'var(--teal)', lineWidth: 3 });
                     series.setData(chartData.map((d: any) => ({ time: d.time, value: d.close })));
                 } else {
                     const series = chart.addSeries(AreaSeries, { topColor: 'rgba(20, 184, 166, 0.4)', bottomColor: 'rgba(20, 184, 166, 0.02)', lineColor: '#14b8a6', lineWidth: 3 });
@@ -332,7 +339,7 @@ export default function SymbolDetailPage() {
             <div className="text-center bg-white dark:bg-[#24303F] p-12 rounded-md shadow-sm border border-slate-200 dark:border-[#2E3A47] animate-fade-in">
                 <div className="relative inline-block"><div className="absolute inset-0 bg-red-500/20 rounded-full blur-xl animate-pulse" /><AlertCircle className="w-20 h-20 text-red-400 relative" /></div>
                 <h2 className="text-3xl font-black text-slate-800 dark:text-white mt-6 mb-2">Stock Not Found</h2>
-                <p className="text-slate-500 dark:text-slate-400">Symbol: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{symbol}</span></p>
+                <p className="text-slate-500 dark:text-slate-400">Symbol: <span className="font-mono font-bold text-teal-600 dark:text-teal-400 dark:text-indigo-400">{symbol}</span></p>
             </div>
         </div>
     );
@@ -367,7 +374,7 @@ export default function SymbolDetailPage() {
                             <div>
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{symbol}</h1>
-                                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-[#3C50E0]/10 text-[#3C50E0] dark:bg-[#3C50E0]/20 dark:text-[#3C50E0] shadow-sm">{stockData.sector_name || "EQUITY"}</span>
+                                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-[#14b8a6]/10 text-[#14b8a6] dark:bg-[#14b8a6]/20 dark:text-[#14b8a6] shadow-sm">{stockData.sector_name || "EQUITY"}</span>
                                 </div>
                                 <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">{stockData.name_en || stockData.name_ar || symbol}</p>
                             </div>
@@ -377,7 +384,7 @@ export default function SymbolDetailPage() {
                             <div className="text-right">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-4xl font-bold text-slate-900 dark:text-white">{lastPrice.toFixed(2)}</span>
-                                    <span className="text-slate-500 text-sm font-medium">SAR</span>
+                                    <span className="text-slate-500 text-sm font-medium">{currency}</span>
                                 </div>
                                 <div className={`flex items-center justify-end gap-2 mt-2 ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
                                     {isPositive ? <ArrowUpRight className="w-6 h-6 animate-bounce" /> : <ArrowDownRight className="w-6 h-6 animate-bounce" />}
@@ -395,7 +402,7 @@ export default function SymbolDetailPage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3 mt-6">
-                        <button className="group flex items-center gap-2 px-4 py-2 bg-[#3C50E0] text-white rounded-md font-medium hover:bg-[#3C50E0]/90 transition-all duration-300">
+                        <button className="group flex items-center gap-2 px-4 py-2 bg-[#14b8a6] text-white rounded-md font-medium hover:bg-[#14b8a6]/90 transition-all duration-300">
                             <Star className="w-5 h-5 group-hover:rotate-12 transition-transform" /> Watchlist
                         </button>
                         <button className="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#24303F] text-slate-700 dark:text-white rounded-md font-medium border border-slate-200 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all duration-300">
@@ -424,7 +431,7 @@ export default function SymbolDetailPage() {
                 <div className="flex items-center gap-2 premium-glass rounded-2xl p-2 mb-8 overflow-x-auto shadow-sm">
                     {[
                         { id: "overview", label: "Overview", icon: Activity, color: "from-teal-600 to-emerald-600" },
-                        { id: "deep-dive", label: "Deep Dive", icon: Sparkles, color: "from-indigo-600 to-violet-600" },
+                        { id: "deep-dive", label: "Deep Dive", icon: Sparkles, color: "from-teal-600 to-violet-600" },
                         { id: "financials", label: "Financials", icon: FileText, color: "from-teal-600 to-emerald-600" },
                         { id: "ownership", label: "Ownership", icon: Users, color: "from-orange-500 to-amber-500" },
                         { id: "analysts", label: "Analysts", icon: Target, color: "from-cyan-500 to-blue-500" },
@@ -452,33 +459,33 @@ export default function SymbolDetailPage() {
                                             <SectionHeader title="Price Chart" icon={Sparkles} color="emerald" />
                                             <div className="flex items-center gap-3 flex-wrap">
                                                 <div className="flex items-center gap-1 p-1 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md">
-                                                    <button onClick={() => setIsIntraday(true)} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${isIntraday ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}>
+                                                    <button onClick={() => setIsIntraday(true)} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${isIntraday ? "bg-white dark:bg-[#24303F] text-[#14b8a6] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}>
                                                         <Clock className="w-4 h-4 inline mr-1" />1D
                                                     </button>
                                                     {["1w", "1m", "3m", "6m", "1y", "5y"].map(tf => (
                                                         <button key={tf} onClick={() => { setIsIntraday(false); setChartPeriod(tf); }}
-                                                            className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${!isIntraday && chartPeriod === tf ? "bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}>
+                                                            className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${!isIntraday && chartPeriod === tf ? "bg-white dark:bg-[#24303F] text-[#14b8a6] shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}>
                                                             {tf.toUpperCase()}
                                                         </button>
                                                     ))}
                                                 </div>
                                                 <div className="flex items-center gap-1 p-1 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md">
-                                                    <button onClick={() => setChartStyle("area")} className={`p-1.5 rounded-md transition-all ${chartStyle === "area" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#3C50E0]" : "text-slate-500"}`}><AreaChart className="w-4 h-4" /></button>
-                                                    <button onClick={() => setChartStyle("candle")} className={`p-1.5 rounded-md transition-all ${chartStyle === "candle" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#3C50E0]" : "text-slate-500"}`}><CandlestickChart className="w-4 h-4" /></button>
-                                                    <button onClick={() => setChartStyle("line")} className={`p-1.5 rounded-md transition-all ${chartStyle === "line" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#3C50E0]" : "text-slate-500"}`}><LineChart className="w-4 h-4" /></button>
+                                                    <button onClick={() => setChartStyle("area")} className={`p-1.5 rounded-md transition-all ${chartStyle === "area" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#14b8a6]" : "text-slate-500"}`}><AreaChart className="w-4 h-4" /></button>
+                                                    <button onClick={() => setChartStyle("candle")} className={`p-1.5 rounded-md transition-all ${chartStyle === "candle" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#14b8a6]" : "text-slate-500"}`}><CandlestickChart className="w-4 h-4" /></button>
+                                                    <button onClick={() => setChartStyle("line")} className={`p-1.5 rounded-md transition-all ${chartStyle === "line" ? "bg-white dark:bg-[#24303F] shadow-sm text-[#14b8a6]" : "text-slate-500"}`}><LineChart className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="relative rounded-2xl overflow-hidden">
-                                            {loading && <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10"><div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin" /></div>}
+                                            {loading && <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-10"><div className="w-12 h-12 border-4 border-teal-100 border-t-teal-500 rounded-full animate-spin" /></div>}
                                             {chartData.length === 0 && !loading && <EmptyState message="No chart data available" />}
                                             <div ref={chartContainerRef} className="w-full h-[420px]" />
                                         </div>
 
                                         {stats && (
                                             <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200 dark:border-[#2E3A47]">
-                                                {[{ l: "Open", v: stats.current.open, c: "slate", bg: "bg-slate-50 dark:bg-white/5" }, { l: "High", v: stats.current.high, c: "emerald", bg: "bg-emerald-50 dark:bg-emerald-500/10" }, { l: "Low", v: stats.current.low, c: "red", bg: "bg-red-50 dark:bg-red-500/10" }, { l: "Close", v: stats.current.close, c: "indigo", bg: "bg-indigo-50 dark:bg-indigo-500/10" }].map((i, idx) => (
+                                                {[{ l: "Open", v: stats.current.open, c: "slate", bg: "bg-slate-50 dark:bg-white/5" }, { l: "High", v: stats.current.high, c: "emerald", bg: "bg-emerald-50 dark:bg-emerald-500/10" }, { l: "Low", v: stats.current.low, c: "red", bg: "bg-red-50 dark:bg-red-500/10" }, { l: "Close", v: stats.current.close, c: "indigo", bg: "bg-teal-50 dark:bg-teal-500/10 dark:bg-teal-50 dark:bg-teal-500/100/10" }].map((i, idx) => (
                                                     <div key={idx} className={`text-center p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md`}>
                                                         <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold mb-2">{i.l}</div>
                                                         <div className={`text-xl font-bold text-slate-900 dark:text-white`}>{i.v.toFixed(2)}</div>
@@ -492,7 +499,7 @@ export default function SymbolDetailPage() {
                                 <PremiumCard gradient>
                                     <SectionHeader title="Stock Information" icon={Building2} color="emerald" />
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        {[{ l: "Name", v: stockData.name_en || symbol, icon: Award }, { l: "Sector", v: stockData.sector_name || "N/A", icon: PieChart }, { l: "Market", v: "Tadawul", icon: Globe }, { l: "Currency", v: "SAR", icon: Wallet }].map((i, idx) => (
+                                        {[{ l: "Name", v: stockData.name_en || symbol, icon: Award }, { l: "Sector", v: stockData.sector_name || "N/A", icon: PieChart }, { l: "Market", v: marketName, icon: Globe }, { l: "Currency", v: currency, icon: Wallet }].map((i, idx) => (
                                             <div key={idx} className="relative overflow-hidden p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47] hover:shadow-sm transition-all group">
                                                 <div className="hidden">
                                                     <i.icon className="w-6 h-6 text-slate-300 dark:text-slate-500" />
@@ -535,7 +542,7 @@ export default function SymbolDetailPage() {
                                                 {parsedFinancials.slice(0, 10).map((f: any, i: number) => (
                                                     <tr key={i} className="border-b border-slate-100 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                                         <td className="py-5 px-4 font-bold text-slate-800 dark:text-white">{f.period_type} {f.fiscal_year}</td>
-                                                        <td className="py-5 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">{formatCurrency(f.net_income)}</td>
+                                                        <td className="py-5 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">{formatCurrency(f.net_income, currency)}</td>
                                                         <td className="py-5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatCurrency(f.total_assets)}</td>
                                                         <td className="py-5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatCurrency(f.total_equity)}</td>
                                                     </tr>
@@ -608,8 +615,8 @@ export default function SymbolDetailPage() {
                                                     {quarterlyData.slice(0, 8).map((f: any, i: number) => (
                                                         <tr key={i} className="border-b border-slate-100 dark:border-[#2E3A47] hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-all">
                                                             <td className="py-5 px-4 font-bold text-slate-800 dark:text-white">{f.period_type} {f.fiscal_year}</td>
-                                                            <td className="py-5 px-4 text-right font-mono font-bold text-pink-600 dark:text-pink-400">{formatCurrency(f.net_income)}</td>
-                                                            <td className="py-5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatCurrency(f.gross_profit)}</td>
+                                                            <td className="py-5 px-4 text-right font-mono font-bold text-pink-600 dark:text-pink-400">{formatCurrency(f.net_income, currency)}</td>
+                                                            <td className="py-5 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatCurrency(f.gross_profit, currency)}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -650,9 +657,9 @@ export default function SymbolDetailPage() {
                         {/* Trading Info - Colorful Gradient */}
                         <div className="premium-glass rounded-2xl p-6">
                             <div className="relative">
-                                <div className="flex items-center gap-3 mb-5"><div className="p-2.5 rounded-md bg-[#F1F5F9] dark:bg-white/5"><Wallet className="w-5 h-5 text-[#3C50E0] dark:text-white" /></div><h3 className="text-lg font-bold text-slate-900 dark:text-white">Trading Info</h3></div>
+                                <div className="flex items-center gap-3 mb-5"><div className="p-2.5 rounded-md bg-[#F1F5F9] dark:bg-white/5"><Wallet className="w-5 h-5 text-[#14b8a6] dark:text-white" /></div><h3 className="text-lg font-bold text-slate-900 dark:text-white">Trading Info</h3></div>
                                 <div className="space-y-4">
-                                    {[{ l: "Last Price", v: `SAR ${lastPrice.toFixed(2)}` }, { l: "Change", v: `${isPositive ? "+" : ""}${change.toFixed(2)} (${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-red-600 dark:text-red-500" }, { l: "Volume", v: volume.toLocaleString() }, { l: "Market", v: "TADAWUL" }].map((i, idx) => (
+                                    {[{ l: "Last Price", v: `${currency} ${lastPrice.toFixed(2)}` }, { l: "Change", v: `${isPositive ? "+" : ""}${change.toFixed(2)} (${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-red-600 dark:text-red-500" }, { l: "Volume", v: volume.toLocaleString() }, { l: "Market", v: marketName.toUpperCase() }].map((i, idx) => (
                                         <div key={idx} className="flex justify-between items-center py-3 border-b border-slate-200 dark:border-[#2E3A47] last:border-0">
                                             <span className="text-slate-500 dark:text-slate-400 font-medium text-sm">{i.l}</span><span className={`font-bold text-sm ${i.c || "text-slate-900 dark:text-white"}`}>{i.v}</span>
                                         </div>
@@ -680,7 +687,7 @@ export default function SymbolDetailPage() {
                                 <div className="space-y-3">
                                     {corporateActions.slice(0, 4).map((a: any, i: number) => (
                                         <div key={i} className="p-4 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md border border-slate-200 dark:border-[#2E3A47]">
-                                            <div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-[#3C50E0] dark:text-[#3C50E0] uppercase tracking-wider">{a.action_type}</span><span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{a.ex_date}</span></div>
+                                            <div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-[#14b8a6] dark:text-[#14b8a6] uppercase tracking-wider">{a.action_type}</span><span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{a.ex_date}</span></div>
                                             <p className="text-sm text-slate-700 dark:text-slate-300">{a.description}</p>
                                         </div>
                                     ))}

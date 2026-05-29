@@ -50,6 +50,16 @@ class SchedulerService:
                 replace_existing=True
             )
 
+            # --- TIER 1C: Egypt Yahoo Daily Sync (Daily 16:30 Cairo) ---
+            self.scheduler.add_job(
+                self.run_egypt_yahoo_sync_job,
+                CronTrigger(day_of_week='sun,mon,tue,wed,thu', hour=16, minute=30, timezone='Africa/Cairo'),
+                id='tier1c_egypt_yahoo_sync',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+
             # --- TIER 2: Weekly Sweep (Friday 00:00) ---
             self.scheduler.add_job(
                 self.run_maintenance_job,
@@ -465,6 +475,28 @@ class SchedulerService:
                      notification_service.send_discord(f"✅ **Watchlist Backup**\nStocks: {count}", is_error=False)
         except Exception as e:
             logger.error(f"Rubix job error: {e}")
+
+    async def run_egypt_yahoo_sync_job(self):
+        """Runs the Egypt Yahoo Daily incremental sync every trading day at 16:30 Cairo."""
+        try:
+            from app.services.notification_service import notification_service
+            backend_core_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            script_path = os.path.join(backend_core_dir, 'data_pipeline', 'egypt_yahoo_loader.py')
+            
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, script_path, '--daily',
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await proc.communicate()
+            out = (stdout or b'').decode(errors='ignore')
+            err = (stderr or b'').decode(errors='ignore')
+            
+            if proc.returncode == 0:
+                logger.info("✅ Egypt Yahoo daily sync completed successfully.")
+            else:
+                logger.error(f"❌ Egypt Yahoo daily sync failed with exit code {proc.returncode}: {err}")
+        except Exception as e:
+            logger.error(f"Egypt Yahoo sync job error: {e}")
 
     async def run_weekly_backup_job(self):
         """Weekly database backup job (runs every Thursday 03:00 Cairo)."""

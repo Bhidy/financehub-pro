@@ -109,15 +109,16 @@ class EgyptYahooLoader:
     async def sync_symbol(self, symbol: str, period: str = "max", mode: str = "daily") -> bool:
         """Fetch and upsert Yahoo Finance OHLC history for a specific EGX symbol. Returns True on success."""
         symbol_upper = symbol.upper()
-        # EGX stocks require the `.CA` suffix in Yahoo Finance
+        # Clean up double suffixes if present
+        if symbol_upper.endswith(".CA"):
+            symbol_upper = symbol_upper[:-3]
         yahoo_symbol = f"{symbol_upper}.CA"
         
         logger.info(f"⏳ Syncing {symbol_upper} ({yahoo_symbol}) with period={period}...")
         
         try:
-            # 1. Create a clean session with rotated user agent
-            session = self._get_configured_session()
-            ticker = yf.Ticker(yahoo_symbol, session=session)
+            # yfinance internally uses advanced curl_cffi for Cloudflare evasion. Stop passing custom standard requests session.
+            ticker = yf.Ticker(yahoo_symbol)
             
             # Run yfinance blocking call inside a thread to prevent FastAPI event loop freezing
             loop = asyncio.get_running_loop()

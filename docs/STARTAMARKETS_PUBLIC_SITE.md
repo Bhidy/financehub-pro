@@ -411,7 +411,7 @@ To prevent situations where production updates are not visible on the live `http
 
 ### May 27, 2026 — Market Pulse Portfolio Tab & Movers Relocation (v1.1.6)
 
-Deployment URL: `https://finhub-muol8tt1n-bhidys-projects.vercel.app`
+Deployment URL: `https://startamarkets.com`
 Aliased to: `startamarkets.com` and `www.startamarkets.com` via `vercel alias set`.
 Commit: `224e53a` on `origin/main`.
 

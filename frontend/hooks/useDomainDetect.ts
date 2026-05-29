@@ -9,8 +9,8 @@
  *   const { isStartaMarkets, isFinhubPro } = useDomainDetect();
  *   
  * CRITICAL:
- * - startamarkets.com → New responsive desktop/mobile experience
- * - finhub-pro.vercel.app → Original mobile experience (UNCHANGED)
+ * - startamarkets.com → Production responsive experience
+ * - *.vercel.app → Dev/preview subdomains (fallback mobile experience)
  * 
  * ============================================================================
  */

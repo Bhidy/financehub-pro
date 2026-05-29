@@ -26,9 +26,9 @@
 - **Automated Health Checks**: Daily reports on data quality sent to administrators.
 
 ## 🔗 Quick Links
-- **Production Site**: [https://finhub-pro.vercel.app](https://finhub-pro.vercel.app)
-- **Watchlists**: [https://finhub-pro.vercel.app/watchlist](https://finhub-pro.vercel.app/watchlist)
-- **Intraday Desk**: [https://finhub-pro.vercel.app/intraday](https://finhub-pro.vercel.app/intraday)
+- **Production Site**: [https://startamarkets.com](https://startamarkets.com)
+- **Watchlists**: [https://startamarkets.com/watchlist](https://startamarkets.com/watchlist)
+- **Intraday Desk**: [https://startamarkets.com/intraday](https://startamarkets.com/intraday)
 
 ## 🛠️ Deployment Status
 - **Backend**: Deployed to Hugging Face Spaces (Stable)

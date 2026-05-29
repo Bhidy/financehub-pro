@@ -86,19 +86,41 @@ async def get_history(symbol: str, limit: int = 100):
 
 @router.get("/ohlc/{symbol}", response_model=List[dict])
 async def get_ohlc(symbol: str, period: str = "1y"):
-    """Get OHLC data from ohlc_history table (production data)"""
+    """Get OHLC data from ohlc_data or ohlc_history table (production data)"""
     limit_map = {"1m": 30, "3m": 90, "6m": 180, "1y": 365, "3y": 1095, "5y": 1825, "max": 10000}
     limit = limit_map.get(period, 365)
     
-    # Use ohlc_history table (has data), with 'time' column instead of 'date'
-    query = """
+    clean_sym = symbol.upper().replace(".CA", "")
+    
+    # Try querying ohlc_data first (audited, rich EGX data)
+    query_data = """
+        SELECT date, open, high, low, close, volume 
+        FROM ohlc_data 
+        WHERE symbol = $1 OR symbol = $2
+        ORDER BY date DESC 
+        LIMIT $3
+    """
+    try:
+        rows = await db.fetch_all(query_data, clean_sym, f"{clean_sym}.CA", limit)
+        if rows:
+            return [dict(r) for r in rows]
+    except Exception as e:
+        print(f"Error querying ohlc_data in get_ohlc: {e}")
+
+    # Fallback to ohlc_history (Saudi market or legacy)
+    query_history = """
         SELECT time as date, open, high, low, close, volume 
         FROM ohlc_history 
-        WHERE symbol = $1 
+        WHERE symbol = $1 OR symbol = $2
         ORDER BY time DESC 
-        LIMIT $2
+        LIMIT $3
     """
-    return await db.fetch_all(query, symbol, limit)
+    try:
+        rows = await db.fetch_all(query_history, clean_sym, f"{clean_sym}.CA", limit)
+        return [dict(r) for r in rows]
+    except Exception as e:
+        print(f"Error querying ohlc_history in get_ohlc: {e}")
+        return []
 
 @router.get("/stats")
 async def get_stats():

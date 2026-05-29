@@ -566,6 +566,23 @@ html[dir="rtl"] .premium-select {
     transition: transform 160ms ease, background 160ms ease;
 }
 .outline-action:hover { background: #10a998; transform: translateY(-1px); }
+.quick-view-btn {
+    border: 1px solid var(--teal);
+    border-radius: .62rem;
+    padding: .68rem .95rem;
+    background: transparent;
+    color: var(--teal-dark);
+    font-size: .7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+    cursor: pointer;
+}
+.quick-view-btn:hover {
+    background: var(--teal);
+    color: #faffff;
+    transform: translateY(-1px);
+}
 .ohlc-metrics {
     min-height: 2.9rem;
     display: flex;

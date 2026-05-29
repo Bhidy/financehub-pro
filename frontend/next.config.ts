@@ -157,6 +157,24 @@ const nextConfig = {
         ],
       },
       {
+        source: '/Market-Pulse',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+        ],
+      },
+      {
+        source: '/market-pulse.html',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {

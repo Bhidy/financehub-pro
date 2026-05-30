@@ -324,7 +324,11 @@
                 risk_high: "High",
                 risk_unclassified: "Unclassified",
                 type_unclassified: "Investment fund",
-                manager_unavailable: "Manager unavailable"
+                manager_unavailable: "Manager unavailable",
+                fee_sub: "Subscription Fee",
+                fee_red: "Redemption Fee",
+                fee_mgmt: "Management Fee",
+                fee_free: "Free"
             },
             ar: {
                 nav_home: "الرئيسية",
@@ -362,7 +366,11 @@
                 risk_high: "مرتفعة",
                 risk_unclassified: "غير مصنفة",
                 type_unclassified: "صندوق استثمار",
-                manager_unavailable: "المدير غير متاح"
+                manager_unavailable: "المدير غير متاح",
+                fee_sub: "رسوم الاكتتاب",
+                fee_red: "رسوم الاسترداد",
+                fee_mgmt: "رسوم الإدارة",
+                fee_free: "مجاني"
             }
         };
 
@@ -380,6 +388,14 @@
             const num = Number(value);
             return Number.isFinite(num) ? num : null;
         };
+
+        function formatFee(value) {
+            if (value === null || value === undefined || value === '') return '—';
+            const num = Number(value);
+            if (Number.isNaN(num)) return '—';
+            if (num === 0) return getLabels().fee_free || 'Free';
+            return `${num.toFixed(2)}%`;
+        }
 
         const escapeHtml = (value) => String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -538,6 +554,9 @@
                 { label: getLabels().metric_type, get: (fund) => getFundTypeName(fund) },
                 { label: getLabels().metric_risk, get: (fund) => getRiskLabel(deriveRisk(fund)) },
                 { label: getLabels().metric_nav, get: (fund) => `${fund.currency || 'EGP'} ${formatNumber(fund.latest_nav)}`, numeric: (fund) => safeNumber(fund.latest_nav) },
+                { label: getLabels().fee_sub || "Subscription Fee", get: (fund) => formatFee(fund.fee_subscription), numeric: (fund) => safeNumber(fund.fee_subscription), minimize: true },
+                { label: getLabels().fee_red || "Redemption Fee", get: (fund) => formatFee(fund.fee_redemption), numeric: (fund) => safeNumber(fund.fee_redemption), minimize: true },
+                { label: getLabels().fee_mgmt || "Management Fee", get: (fund) => formatFee(fund.fee_management), numeric: (fund) => safeNumber(fund.fee_management), minimize: true },
                 { label: getLabels().metric_ytd, get: (fund) => formatPercent(getReturnForPeriod(fund, 'ytd')), numeric: (fund) => getReturnForPeriod(fund, 'ytd') },
                 { label: getLabels().metric_3m, get: (fund) => formatPercent(getReturnForPeriod(fund, '3m')), numeric: (fund) => getReturnForPeriod(fund, '3m') },
                 { label: getLabels().metric_1y, get: (fund) => formatPercent(getReturnForPeriod(fund, '1y')), numeric: (fund) => getReturnForPeriod(fund, '1y') },
@@ -549,14 +568,17 @@
 
             const body = document.getElementById('compareTableBody');
             body.innerHTML = metrics.map((metric) => {
-                const values = state.funds.map((fund) => metric.numeric ? metric.numeric(fund) : null);
-                const max = metric.numeric ? Math.max(...values.filter((value) => value !== null)) : null;
+                const values = state.funds.map((fund) => metric.numeric ? metric.numeric(fund) : null).filter((value) => value !== null);
+                let bestValue = null;
+                if (metric.numeric && values.length > 0) {
+                    bestValue = metric.minimize ? Math.min(...values) : Math.max(...values);
+                }
                 return `
                     <tr>
                         <th class="px-6 py-4 text-left text-sm font-semibold text-main">${escapeHtml(metric.label)}</th>
                         ${state.funds.map((fund, index) => {
                             const numeric = metric.numeric ? metric.numeric(fund) : null;
-                            const isBest = max !== null && numeric !== null && numeric === max;
+                            const isBest = bestValue !== null && numeric !== null && numeric === bestValue;
                             return `<td class="px-6 py-4 ${isBest ? 'metric-best' : 'text-main'}">${escapeHtml(metric.get(fund))}</td>`;
                         }).join('')}
                     </tr>

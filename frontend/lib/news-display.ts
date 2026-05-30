@@ -2,6 +2,8 @@ const LEADING_CITY_RE = /^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[
 const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\s*[-–—:]\s*/i;
 const BLOCKED_SOURCE_RE = /\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\b/gi;
 const BLOCKED_SOURCE_AR_RE = /(مباشر|عرب\s*فاينانس|زاوية|إنتربرايز|انتربرايز)/g;
+const SYNDIGATE_RE = /\s*(?:©|\(c\))?\s*(?:\d{4})?\s*All\s+Rights\s+Reserved\s+(?:For\s+Information\s+Technology\s+)?Provided\s+by\s+SyndiGate\s+Media\s+Inc\.\s*\(\s*Syndigate\.info\s*\)\.?/gi;
+const SYNDIGATE_SIMPLE_RE = /\b(?:SyndiGate\s+Media\s+Inc\.|Syndigate\.info)\b/gi;
 
 function stripBlockedSources(value: string): string {
     let text = value;
@@ -19,6 +21,8 @@ function stripBlockedSources(value: string): string {
     return text
         .replace(BLOCKED_SOURCE_RE, "")
         .replace(BLOCKED_SOURCE_AR_RE, "")
+        .replace(SYNDIGATE_RE, "")
+        .replace(SYNDIGATE_SIMPLE_RE, "")
         .replace(/[ \t]+([,.;:!?])/g, "$1");
 }
 

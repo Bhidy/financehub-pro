@@ -22,7 +22,10 @@
             error_text: "Please refresh the page shortly.",
             unavailable: "This story is unavailable.",
             unavailable_text: "Return to News to browse the latest market stories.",
-            minute_read: "min read"
+            minute_read: "min read",
+            prev: "Previous",
+            next: "Next",
+            page: "Page"
         },
         ar: {
             nav_home: "الرئيسية",
@@ -46,7 +49,10 @@
             error_text: "يرجى تحديث الصفحة بعد قليل.",
             unavailable: "هذا الخبر غير متاح.",
             unavailable_text: "عُد إلى الأخبار لتصفح آخر تطورات السوق.",
-            minute_read: "دقيقة قراءة"
+            minute_read: "دقيقة قراءة",
+            prev: "السابق",
+            next: "التالي",
+            page: "صفحة"
         }
     };
 
@@ -141,7 +147,9 @@
         days: 30,
         query: "",
         category: "all",
-        items: []
+        items: [],
+        page: 1,
+        limit: 12
     };
     let listingController = null;
     let searchTimer = null;
@@ -286,6 +294,65 @@
         `;
     }
 
+    function renderPagination(filteredCount) {
+        const bar = document.getElementById("paginationBar");
+        if (!bar) return;
+        const text = translations[state.lang];
+
+        if (state.items.length === 0 && state.page === 1) {
+            bar.innerHTML = "";
+            return;
+        }
+
+        // Show pagination only if page > 1 OR we fetched a full batch (meaning there could be a page 2)
+        if (state.page === 1 && state.items.length < state.limit) {
+            bar.innerHTML = "";
+            return;
+        }
+
+        const isNextDisabled = state.items.length < state.limit;
+        const alignStyle = state.lang === "ar" ? "flex-direction: row-reverse;" : "";
+
+        bar.innerHTML = `
+            <div class="pagination-inner" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; ${alignStyle}">
+                <button type="button" id="prevPageBtn" class="control-btn" ${state.page === 1 ? "disabled" : ""} style="padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                    ${state.lang === "ar" ? "←" : ""} ${text.prev}
+                </button>
+                <span class="page-num display" style="font-size: 0.9rem; font-weight: 700; opacity: 0.85;">
+                    ${text.page} ${state.page}
+                </span>
+                <button type="button" id="nextPageBtn" class="control-btn" ${isNextDisabled ? "disabled" : ""} style="padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                    ${text.next} ${state.lang === "ar" ? "" : "→"}
+                </button>
+            </div>
+        `;
+
+        const prevBtn = document.getElementById("prevPageBtn");
+        const nextBtn = document.getElementById("nextPageBtn");
+
+        if (prevBtn) {
+            prevBtn.addEventListener("click", () => {
+                if (state.page > 1) {
+                    state.page -= 1;
+                    loadListing().then(() => {
+                        const toolbar = document.querySelector(".toolbar");
+                        if (toolbar) toolbar.scrollIntoView({ behavior: "smooth" });
+                    });
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener("click", () => {
+                state.page += 1;
+                loadListing().then(() => {
+                    const toolbar = document.querySelector(".toolbar");
+                    if (toolbar) toolbar.scrollIntoView({ behavior: "smooth" });
+                });
+            });
+        }
+    }
+
     function renderListing() {
         const text = translations[state.lang];
         const query = state.query.toLowerCase().trim();
@@ -302,6 +369,7 @@
         if (!filtered.length) {
             featured.innerHTML = "";
             grid.innerHTML = `<div class="message"><h2 class="display">${text.no_results}</h2><p>${text.no_results_text}</p></div>`;
+            renderPagination(0);
             return;
         }
         const item = filtered[0];
@@ -318,19 +386,22 @@
                 </div>
             </article>`;
         grid.innerHTML = filtered.slice(1).map(storyCard).join("");
+        renderPagination(filtered.length);
     }
 
     async function loadListing() {
         const text = translations[state.lang];
         const featured = document.getElementById("featuredStory");
         const grid = document.getElementById("newsGrid");
+        const pagBar = document.getElementById("paginationBar");
         if (listingController) listingController.abort();
         listingController = new AbortController();
         const queryParam = state.query.trim() ? `&q=${encodeURIComponent(state.query.trim())}` : "";
         featured.innerHTML = "";
+        if (pagBar) pagBar.innerHTML = "";
         grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
         try {
-            const response = await fetch(`/api/v1/news?source_country=EG&language=${state.lang}&days=${state.days}&limit=36${queryParam}`, {
+            const response = await fetch(`/api/v1/news?source_country=EG&language=${state.lang}&days=${state.days}&limit=${state.limit}&page=${state.page}${queryParam}`, {
                 cache: "no-store",
                 signal: listingController.signal
             });
@@ -404,11 +475,13 @@
         if (document.body.dataset.page === "listing") {
             document.getElementById("newsSearch").addEventListener("input", (event) => {
                 state.query = event.target.value;
+                state.page = 1;
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(loadListing, 180);
             });
             document.querySelectorAll("[data-days]").forEach((button) => button.addEventListener("click", () => {
                 state.days = Number(button.dataset.days);
+                state.page = 1;
                 document.querySelectorAll("[data-days]").forEach((target) => target.classList.toggle("active", target === button));
                 loadListing();
             }));

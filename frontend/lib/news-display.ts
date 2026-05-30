@@ -1,7 +1,7 @@
 const LEADING_CITY_RE = /^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i;
-const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\s*[-–—:]\s*/i;
-const BLOCKED_SOURCE_RE = /\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\b/gi;
-const BLOCKED_SOURCE_AR_RE = /(مباشر|عرب\s*فاينانس|زاوية)/g;
+const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\s*[-–—:]\s*/i;
+const BLOCKED_SOURCE_RE = /\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\b/gi;
+const BLOCKED_SOURCE_AR_RE = /(مباشر|عرب\s*فاينانس|زاوية|إنتربرايز|انتربرايز)/g;
 
 function stripBlockedSources(value: string): string {
     let text = value;

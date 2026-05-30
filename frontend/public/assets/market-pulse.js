@@ -447,31 +447,96 @@
             `;
         } else if (tab === "financials") {
             const isAr = state.lang === "ar";
+            
+            // Labels
             const revLabel = isAr ? "الإيرادات" : "Revenue";
             const netLabel = isAr ? "صافي الدخل" : "Net Income";
+            const peLabel = isAr ? "مضاعف الربحية (P/E)" : "P/E Ratio";
+            const pbLabel = isAr ? "مضاعف القيمة الدفترية (P/B)" : "P/B Ratio";
             const divLabel = isAr ? "عائد التوزيعات" : "Dividend Yield";
-            const peLabel = isAr ? "مضاعف الربحية" : "P/E Ratio";
+            const opLabel = isAr ? "هامش التشغيل" : "Operating Margin";
+            const viewMoreLabel = isAr ? "عرض المزيد من البيانات المالية" : "View More Financials";
+            
+            // Check if loading and cache is empty
+            const isLoading = state.yahooProfileLoading && !yp.total_revenue;
+            
+            if (isLoading) {
+                // Return beautiful pulsing shimmer cards
+                contentContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; width: 100%;">
+                        <h2 class="display" style="margin-bottom: 1.2rem;">${isAr ? "البيانات المالية الأساسية" : "Key Financial Indicators"}</h2>
+                        <div style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; display: grid; margin-bottom: 1.5rem;">
+                            ${Array(6).fill(`<div style="height: 90px; border-radius: 12px; border: 1px solid var(--line); background: linear-gradient(95deg, var(--surface-soft), var(--surface), var(--surface-soft)); background-size: 220% 100%; animation: shimmer 1.5s linear infinite;"></div>`).join("")}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Extract Values with Robust Fallbacks
+            const revenueVal = yp.total_revenue != null ? yp.total_revenue : item.revenue;
+            const profitMargin = yp.profit_margin != null ? yp.profit_margin : null;
+            
+            let netIncomeVal = null;
+            if (revenueVal != null && profitMargin != null) {
+                netIncomeVal = revenueVal * profitMargin;
+            } else {
+                netIncomeVal = item.net_income;
+            }
+            
+            const peVal = yp.pe_ratio != null ? yp.pe_ratio : item.pe_ratio;
+            const pbVal = yp.price_to_book != null ? yp.price_to_book : item.pb_ratio;
+            const opMarginVal = yp.operating_margin != null ? yp.operating_margin : null;
+            
+            // Format Dividend Yield
+            let divYieldVal = "--";
+            if (yp.dividend_yield != null) {
+                let dy = yp.dividend_yield;
+                if (dy > 0 && dy < 1) dy = dy * 100;
+                divYieldVal = formatNumber(dy, 2) + "%";
+            } else if (item.dividend_yield != null) {
+                let dy = item.dividend_yield;
+                if (dy > 0 && dy < 1) dy = dy * 100;
+                divYieldVal = formatNumber(dy, 2) + "%";
+            }
+            
+            const formattedRevenue = revenueVal != null ? `${compact(revenueVal)} ${labels().currency}` : "--";
+            const formattedNetIncome = netIncomeVal != null ? `${compact(netIncomeVal)} ${labels().currency}` : "--";
+            const netIncomeColor = netIncomeVal != null ? (number(netIncomeVal) >= 0 ? "var(--green)" : "var(--red)") : "var(--ink)";
+            
+            const formattedPe = peVal != null ? formatNumber(peVal, 2) : "--";
+            const formattedPb = pbVal != null ? formatNumber(pbVal, 2) : "--";
+            const formattedOpMargin = opMarginVal != null ? `${formatNumber(opMarginVal * 100, 2)}%` : "--";
+            
+            const cards = [
+                { title: revLabel, value: formattedRevenue, color: "var(--ink)" },
+                { title: netLabel, value: formattedNetIncome, color: netIncomeColor },
+                { title: peLabel, value: formattedPe, color: "var(--ink)" },
+                { title: pbLabel, value: formattedPb, color: "var(--ink)" },
+                { title: divLabel, value: divYieldVal, color: "var(--ink)" },
+                { title: opLabel, value: formattedOpMargin, color: "var(--ink)" }
+            ];
+            
+            const cardHtml = (title, val, color="var(--ink)") => `
+                <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15); transition: all 0.2s ease;">
+                    <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">${title}</div>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: ${color}; margin-top: 5px;" class="tabular">${val}</div>
+                </div>`;
             
             contentContainer.innerHTML = `
                 <div style="grid-column: 1 / -1; width: 100%;">
                     <h2 class="display" style="margin-bottom: 1.2rem;">${isAr ? "البيانات المالية الأساسية" : "Key Financial Indicators"}</h2>
-                    <div style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; display: grid;">
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">${revLabel}</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-top: 5px;" class="tabular">${compact(item.revenue)} ${labels().currency}</div>
-                        </div>
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">${netLabel}</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: ${number(item.net_income) >= 0 ? "var(--green)" : "var(--red)"}; margin-top: 5px;" class="tabular">${compact(item.net_income)} ${labels().currency}</div>
-                        </div>
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">${divLabel}</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-top: 5px;" class="tabular">${item.dividend_yield ? formatNumber(item.dividend_yield) + "%" : "--"}</div>
-                        </div>
-                        <div style="background: rgba(20, 184, 166, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(20, 184, 166, 0.15);">
-                            <div style="color: var(--muted); font-size: 0.72rem; font-weight: 600;">${peLabel}</div>
-                            <div style="font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-top: 5px;" class="tabular">${formatNumber(item.pe_ratio)}</div>
-                        </div>
+                    <div style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; display: grid; margin-bottom: 1.8rem;">
+                        ${cards.map(c => cardHtml(c.title, c.value, c.color)).join("")}
+                    </div>
+                    <div style="display: flex; justify-content: center; width: 100%;">
+                        <a href="/symbol/${encodeURIComponent(item.symbol)}?tab=financials" class="quick-view-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px;">
+                            ${viewMoreLabel}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 0.9rem; height: 0.9rem; transform: ${isAr ? "rotate(180deg)" : "none"}">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
                     </div>
                 </div>
             `;
@@ -873,6 +938,12 @@
         // Cache check — avoid refetching on every tab switch
         if (state.yahooProfiles[symbol]) return;
         state.yahooProfileLoading = true;
+        
+        // Render skeletons immediately if we are looking at this stock and on the financials tab
+        if (state.selected === symbol && state.overviewTab === "financials") {
+            renderOverviewTab();
+        }
+        
         try {
             const raw = await request(`/api/v1/yahoo/stock/${encodeURIComponent(symbol)}`);
             if (raw && (raw.profile || raw.fundamentals)) {
@@ -898,6 +969,12 @@
                     // Extra metrics for the Drawer
                     eps:            f.trailing_eps,
                     roe:            f.return_on_equity,
+                    // Add standard financial metrics for the 6 cards
+                    total_revenue:  f.total_revenue,
+                    profit_margin:  f.profit_margin,
+                    operating_margin: f.operating_margin,
+                    total_cash:     f.total_cash,
+                    total_debt:     f.total_debt,
                     raw:            raw
                 };
                 // Re-render Overview if currently viewing this stock
@@ -907,6 +984,10 @@
             // Non-critical — silently fail; DB data still shows
         }
         state.yahooProfileLoading = false;
+        // Final fallback update in case loading finished
+        if (state.selected === symbol && state.overviewTab === "financials") {
+            renderOverviewTab();
+        }
     }
 
     async function selectStock(symbol) {

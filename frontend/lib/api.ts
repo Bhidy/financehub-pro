@@ -723,6 +723,8 @@ export interface FetchNewsParams {
     source_country?: string;
     source_section?: string;
     days?: number;
+    language?: string;
+    page?: number;
 }
 
 export const fetchNews = async (params: FetchNewsParams = {}): Promise<MarketNewsItem[]> => {

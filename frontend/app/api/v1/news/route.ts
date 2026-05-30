@@ -13,6 +13,9 @@ export async function GET(request: Request) {
         const language = searchParams.get('language'); // 'ar' | 'en' — filters by source_section suffix
         const days = parseInt(searchParams.get('days') || '0');
         const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '100'), 1), 1000);
+        const page = Math.max(parseInt(searchParams.get('page') || '1'), 1);
+        const offset = (page - 1) * limit;
+        const searchQuery = searchParams.get('q');
         const newsId = idParam ? parseInt(idParam, 10) : null;
 
         if (idParam && (!Number.isInteger(newsId) || (newsId ?? 0) <= 0)) {
@@ -46,12 +49,24 @@ export async function GET(request: Request) {
             params.push('%/ar');
             filters.push(`(source_section NOT LIKE $${params.length} OR source_section IS NULL)`);
         }
+        if (searchQuery && searchQuery.trim() !== '') {
+            params.push(`%${searchQuery.trim().toLowerCase()}%`);
+            filters.push(`(LOWER(headline) LIKE $${params.length} OR LOWER(article_body) LIKE $${params.length} OR LOWER(symbol) LIKE $${params.length})`);
+        }
         if (days > 0) {
             params.push(days);
             filters.push(`published_at >= NOW() - ($${params.length} * INTERVAL '1 day')`);
         }
 
         params.push(limit);
+        const limitIndex = params.length;
+
+        let offsetClause = '';
+        if (offset > 0) {
+            params.push(offset);
+            offsetClause = `OFFSET $${params.length}`;
+        }
+
         const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
 
         const result = await db.query(`
@@ -60,7 +75,8 @@ export async function GET(request: Request) {
             FROM market_news
             ${whereClause}
             ORDER BY published_at DESC
-            LIMIT $${params.length}
+            LIMIT $${limitIndex}
+            ${offsetClause}
         `, params);
 
         const sanitizedRows = result.rows.map((row) => ({

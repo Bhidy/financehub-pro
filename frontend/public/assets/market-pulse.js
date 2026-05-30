@@ -387,22 +387,29 @@
                 ? yp.description
                 : labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
 
-            // 52-Week Range bar
+            // 52-Week Range bar - revamped with ultra-premium styling
             const yearHigh = number(yp.year_high || item.high_52w);
             const yearLow  = number(yp.year_low  || item.low_52w);
             const curPrice = number(yp.price     || item.last_price);
             let rangeBar = "";
             if (yearHigh && yearLow && yearHigh > yearLow) {
                 const pct = Math.min(100, Math.max(0, ((curPrice - yearLow) / (yearHigh - yearLow)) * 100));
+                const rangeLabelLow = state.lang === "ar" ? "أدنى ٥٢ أسبوع" : "52W Low";
+                const rangeLabelHigh = state.lang === "ar" ? "أعلى ٥٢ أسبوع" : "52W High";
+                const currentLabel = state.lang === "ar" ? "السعر الحالي عند" : "Current price is at";
+                const rangePctLabel = state.lang === "ar" ? "من النطاق" : "of the 52W range";
                 rangeBar = `
-                    <div style="margin: 0.8rem 0 1.1rem;">
-                        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:4px;">
-                            <span>52W Low: <strong class="tabular" style="color:var(--red)">${formatNumber(yearLow)}</strong></span>
-                            <span>52W High: <strong class="tabular" style="color:var(--green)">${formatNumber(yearHigh)}</strong></span>
+                    <div style="margin: 1.4rem 0 1.2rem; background: rgba(20, 184, 166, 0.02); padding: 16px 20px; border-radius: 16px; border: 1px solid rgba(20, 184, 166, 0.08);">
+                        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-bottom:8px;font-weight:600;">
+                            <span>${rangeLabelLow}: <strong class="tabular" style="color:var(--red);font-size:0.82rem;font-weight:700;margin-inline-start:4px;">${formatNumber(yearLow)}</strong></span>
+                            <span>${rangeLabelHigh}: <strong class="tabular" style="color:var(--green);font-size:0.82rem;font-weight:700;margin-inline-start:4px;">${formatNumber(yearHigh)}</strong></span>
                         </div>
-                        <div style="height:5px;background:var(--surface);border-radius:8px;position:relative;">
+                        <div style="height:6px;background:var(--surface);border-radius:8px;position:relative;margin:8px 0;">
                             <div style="position:absolute;left:0;top:0;height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,var(--red),var(--teal-dark));border-radius:8px;"></div>
-                            <div style="position:absolute;left:${pct.toFixed(1)}%;top:-3px;width:11px;height:11px;border-radius:50%;background:var(--teal-dark);border:2px solid var(--bg);transform:translateX(-50%);box-shadow:0 0 6px rgba(20,184,166,.5);"></div>
+                            <div style="position:absolute;left:${pct.toFixed(1)}%;top:-4px;width:14px;height:14px;border-radius:50%;background:var(--teal);border:3px solid var(--bg);transform:translateX(-50%);box-shadow:0 0 8px var(--teal);transition: left 0.3s ease;"></div>
+                        </div>
+                        <div style="text-align:center;font-size:0.68rem;color:var(--muted);font-weight:600;margin-top:6px;">
+                            ${currentLabel} <strong class="tabular" style="color:var(--teal-dark);font-size:0.75rem;">${pct.toFixed(1)}%</strong> ${rangePctLabel}
                         </div>
                     </div>`;
             }
@@ -431,19 +438,58 @@
             if (avgVol   != null) facts.push([state.lang==="ar"?"متوسط الحجم 10 أيام":"Avg Vol (10D)", compact(avgVol)]);
             if (employees!= null) facts.push([state.lang==="ar"?"عدد الموظفين":"Employees",      new Intl.NumberFormat("en-US").format(employees)]);
 
+            function getFactIcon(key) {
+                const k = key.toLowerCase();
+                if (k.includes("sector") || k.includes("القطاع")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="16"></line><line x1="15" y1="22" x2="15" y2="16"></line><line x1="9" y1="16" x2="15" y2="16"></line><path d="M9 8h.01"></path><path d="M15 8h.01"></path><path d="M9 12h.01"></path><path d="M15 12h.01"></path></svg>`;
+                }
+                if (k.includes("cap") || k.includes("سوقية")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`;
+                }
+                if (k.includes("p/e") || k.includes("ربحية")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`;
+                }
+                if (k.includes("p/b") || k.includes("دفترية")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+                }
+                if (k.includes("dividend") || k.includes("عائد")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`;
+                }
+                if (k.includes("beta") || k.includes("بيتا")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>`;
+                }
+                if (k.includes("vol") || k.includes("حجم")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`;
+                }
+                if (k.includes("employee") || k.includes("موظف")) {
+                    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`;
+                }
+                return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+            }
+
             contentContainer.innerHTML = `
                 <div style="grid-column:1/-1;width:100%;">
                     <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-                        <h2 class="display" style="margin:0;">${escapeHtml(labels().company_overview)}</h2>
+                        <h2 class="display" style="margin:0;font-size:1.05rem;">${escapeHtml(labels().company_overview)}</h2>
                         ${industryBadge}
                     </div>
-                    <p id="companyDescription" style="font-size:0.82rem;line-height:1.6;color:var(--muted);margin:0.5rem 0 0.2rem;max-height:120px;overflow-y:auto;">${escapeHtml(description)}</p>
+                    <p id="companyDescription" style="font-size:0.82rem;line-height:1.6;color:var(--muted);margin:0.5rem 0 0.2rem;max-height:120px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(20,184,166,0.2) transparent;">${escapeHtml(description)}</p>
                     ${websiteHtml}
                     ${rangeBar}
                 </div>
-                <dl id="companyFacts" class="company-facts">
-                    ${facts.map(([dt, dd]) => `<div><dt>${dt}</dt><dd class="tabular">${dd}</dd></div>`).join("")}
-                </dl>
+                <div class="company-facts-grid" style="grid-column:1/-1;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:0.8rem;">
+                    ${facts.map(([dt, dd]) => `
+                        <div class="fact-card" style="background:rgba(20,184,166,0.03);border:1px solid rgba(20,184,166,0.1);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;transition:all 0.2s ease;">
+                            <div style="background:rgba(20,184,166,0.08);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--teal-dark);">
+                                ${getFactIcon(dt)}
+                            </div>
+                            <div style="min-w-0;flex-grow:1;">
+                                <div style="color:var(--muted);font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${dt}</div>
+                                <div class="tabular" style="margin:0;color:var(--ink);font-size:0.92rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${dd}</div>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
             `;
         } else if (tab === "financials") {
             const isAr = state.lang === "ar";

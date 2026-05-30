@@ -323,11 +323,15 @@ export default function SymbolDetailPage() {
     const { data: tickers = [], isLoading: tickersLoading } = useQuery({
         queryKey: ["tickers"], queryFn: fetchTickers, staleTime: 30000
     });
-    const stockData = useMemo(() => tickers.find((t: Ticker) => t.symbol === symbol), [tickers, symbol]);
+    const stockData = useMemo(() => {
+        const arr = Array.isArray(tickers) ? tickers : [];
+        return arr.find((t: Ticker) => t.symbol === symbol);
+    }, [tickers, symbol]);
 
     // logo: use screener logo_url field if available from tickers
     const logoUrl = useMemo(() => {
-        const td = tickers.find((t: Ticker) => t.symbol === symbol) as any;
+        const arr = Array.isArray(tickers) ? tickers : [];
+        const td = arr.find((t: Ticker) => t.symbol === symbol) as any;
         return td?.logo_url || `https://startamarkets.com/logos/${symbol}.svg`;
     }, [tickers, symbol]);
 
@@ -377,13 +381,15 @@ export default function SymbolDetailPage() {
         Array.isArray(allFairValues) ? allFairValues.filter((f: any) => f.symbol === symbol) : [],
         [allFairValues, symbol]);
 
-    const dividendActions = useMemo(() =>
-        corporateActions.filter((a: any) => a.action_type === "Dividend"),
-        [corporateActions]);
+    const dividendActions = useMemo(() => {
+        const arr = Array.isArray(corporateActions) ? corporateActions : [];
+        return arr.filter((a: any) => a.action_type === "Dividend");
+    }, [corporateActions]);
 
-    const otherActions = useMemo(() =>
-        corporateActions.filter((a: any) => a.action_type !== "Dividend"),
-        [corporateActions]);
+    const otherActions = useMemo(() => {
+        const arr = Array.isArray(corporateActions) ? corporateActions : [];
+        return arr.filter((a: any) => a.action_type !== "Dividend");
+    }, [corporateActions]);
 
     const stats = useMemo(() => parseNumericFields(localProfile?.statistics), [localProfile]);
 
@@ -399,26 +405,31 @@ export default function SymbolDetailPage() {
         catch { return []; }
     }, [localProfile]);
 
-    const parsedFinancials = useMemo(() => financials.map((f: any) => {
-        const rp = parseFinancialsRawData(f.raw_data);
-        return {
-            ...f,
-            net_income: f.net_income || rp.net_income,
-            total_assets: f.total_assets || rp.total_assets,
-            total_equity: f.total_equity || rp.total_equity,
-            gross_profit: f.gross_profit || rp.gross_profit,
-            total_liabilities: f.total_liabilities || rp.total_liabilities,
-            operating_cashflow: f.operating_cashflow || rp.operating_cashflow,
-        };
-    }), [financials]);
+    const parsedFinancials = useMemo(() => {
+        const arr = Array.isArray(financials) ? financials : [];
+        return arr.map((f: any) => {
+            const rp = parseFinancialsRawData(f.raw_data);
+            return {
+                ...f,
+                net_income: f.net_income || rp.net_income,
+                total_assets: f.total_assets || rp.total_assets,
+                total_equity: f.total_equity || rp.total_equity,
+                gross_profit: f.gross_profit || rp.gross_profit,
+                total_liabilities: f.total_liabilities || rp.total_liabilities,
+                operating_cashflow: f.operating_cashflow || rp.operating_cashflow,
+            };
+        });
+    }, [financials]);
 
-    const filteredFinancials = useMemo(() =>
-        parsedFinancials.filter((f: any) => f.period_type === financialPeriod),
-        [parsedFinancials, financialPeriod]);
+    const filteredFinancials = useMemo(() => {
+        const arr = Array.isArray(parsedFinancials) ? parsedFinancials : [];
+        return arr.filter((f: any) => f.period_type === financialPeriod);
+    }, [parsedFinancials, financialPeriod]);
 
     const chartData = useMemo(() => {
-        if (!ohlcData || ohlcData.length === 0) return [];
-        return [...ohlcData].sort((a: any, b: any) =>
+        const arr = Array.isArray(ohlcData) ? ohlcData : [];
+        if (arr.length === 0) return [];
+        return [...arr].sort((a: any, b: any) =>
             new Date(a.time || a.date || a.timestamp).getTime() -
             new Date(b.time || b.date || b.timestamp).getTime()
         ).map((item: any) => {
@@ -1446,9 +1457,9 @@ export default function SymbolDetailPage() {
                         {activeTab === "news" && (
                             <div className="premium-glass rounded-3xl p-8">
                                 <SectionHeader icon={Newspaper} title={t.news_sentiment} color="text-blue-500" />
-                                {(newsData as any[]).length > 0 ? (
+                                {Array.isArray(newsData) && newsData.length > 0 ? (
                                     <div className="space-y-4">
-                                        {(newsData as any[]).map((article: any, i: number) => {
+                                        {newsData.map((article: any, i: number) => {
                                             const score = Number(article.sentiment_score || 0);
                                             const sentimentLabel = score > 0.3 ? t.positive : score < -0.3 ? t.negative : t.neutral;
                                             const sentimentClass = score > 0.3 ? "sentiment-positive" : score < -0.3 ? "sentiment-negative" : "sentiment-neutral";

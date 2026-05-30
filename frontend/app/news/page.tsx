@@ -15,7 +15,7 @@ import {
     getNewsBrandedCover,
 } from "@/lib/news-display";
 
-const DAY_WINDOWS = [7, 30, 90];
+const DAY_WINDOWS = [7, 30, 90, 0];
 
 const EGX_ACTIVE_SYMBOLS = [
     "ALL", "ABUK", "AMER", "CCAP", "CIB", "COMI", "EAST", "EGAL", "EGBE", "EKHO", 
@@ -139,7 +139,7 @@ export default function MarketNewsPage() {
                                         : "text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1A222C]"
                                 )}
                             >
-                                {days}D
+                                {days === 0 ? (lang === "ar" ? "الكل" : "All") : `${days}D`}
                             </button>
                         ))}
                     </div>

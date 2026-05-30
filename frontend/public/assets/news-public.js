@@ -25,7 +25,8 @@
             minute_read: "min read",
             prev: "Previous",
             next: "Next",
-            page: "Page"
+            page: "Page",
+            all_time: "All"
         },
         ar: {
             nav_home: "الرئيسية",
@@ -52,7 +53,8 @@
             minute_read: "دقيقة قراءة",
             prev: "السابق",
             next: "التالي",
-            page: "صفحة"
+            page: "صفحة",
+            all_time: "الكل"
         }
     };
 

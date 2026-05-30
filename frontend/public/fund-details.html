@@ -451,6 +451,76 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div id="faqSection" class="glass-premium rounded-[2.2rem] p-6 sm:p-7" style="display: none;">
+                        <span class="section-tag" data-key="faq_tag">Fund FAQ & Insights</span>
+                        <h4 class="text-lg font-semibold text-main mt-4" data-key="faq_title">Frequently Asked Questions</h4>
+                        <div id="faqContent" class="mt-4 space-y-4"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- New Rich Profile Sections (Asset Allocation, Portfolio Managers, Distributors, Prospectus) -->
+            <section id="azimutSection" class="mt-8 space-y-8" style="display: none;">
+                <!-- 1. Asset Allocation -->
+                <div id="allocationBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-8 lg:p-10 reveal-block">
+                    <span class="section-tag" data-key="allocation_tag">Asset holdings</span>
+                    <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="allocation_title">Portfolio Asset Allocation</h3>
+                    <div class="mt-6 grid gap-8 lg:grid-cols-2">
+                        <!-- Allocations visual bars -->
+                        <div id="allocationBars" class="space-y-4 flex flex-col justify-center"></div>
+                        <!-- Allocation rules/cards -->
+                        <div id="allocationRules" class="bg-surface/40 rounded-3xl p-5 border border-border flex flex-col gap-4 justify-center"></div>
+                    </div>
+                </div>
+
+                <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)]">
+                    <!-- 2. Portfolio Managers -->
+                    <div id="managersBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
+                        <span class="section-tag" data-key="managers_tag">Leadership</span>
+                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="managers_title">Meet the Portfolio Managers</h3>
+                        <div id="managersGrid" class="mt-6 grid gap-4 sm:grid-cols-2"></div>
+                    </div>
+
+                    <!-- 4. Prospectus & Downloads -->
+                    <div id="docsBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
+                        <span class="section-tag" data-key="docs_tag">Downloads</span>
+                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="docs_title">Factsheets & Prospectus Documents</h3>
+                        <div id="docsGrid" class="mt-6 flex flex-col gap-3"></div>
+                    </div>
+                </div>
+
+                <!-- 3. Distributors -->
+                <div id="distributorsBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-8 lg:p-10 reveal-block">
+                    <span class="section-tag" data-key="distributors_tag">Purchase channels</span>
+                    <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="distributors_title">Official Distributors & Partners</h3>
+                    <div id="distributorsGrid" class="mt-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                </div>
+            </section>
+
+            <!-- Thndr Rich Profile Sections (Trading Rules, Investment Guidelines, Risks) -->
+            <section id="thndrSection" class="mt-8 space-y-8" style="display: none;">
+                <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)]">
+                    <!-- 1. Investment Guidelines -->
+                    <div id="thndrGuidelinesBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
+                        <span class="section-tag" data-key="guidelines_tag">Limits & Policy</span>
+                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="guidelines_title">Investment Guidelines</h3>
+                        <div id="thndrGuidelinesList" class="mt-6 space-y-3.5 flex flex-col justify-center"></div>
+                    </div>
+
+                    <!-- 2. Trading Rules / Subscription schedule -->
+                    <div id="thndrTradingBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
+                        <span class="section-tag" data-key="trading_tag">Trading Schedule</span>
+                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="trading_title">Buying & Selling Rules</h3>
+                        <div id="thndrTradingContent" class="mt-6 bg-surface/30 rounded-3xl p-5 border border-border space-y-4 flex flex-col justify-center"></div>
+                    </div>
+                </div>
+
+                <!-- 3. Risk Disclosures -->
+                <div id="thndrRisksBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-8 lg:p-10 reveal-block">
+                    <span class="section-tag" data-key="risks_tag">Risk factors</span>
+                    <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="risks_title">Fund Risk Disclosures</h3>
+                    <div id="thndrRisksGrid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></div>
                 </div>
             </section>
 
@@ -543,7 +613,28 @@
                 returns_1y: "1Y return",
                 returns_3y: "3Y return",
                 returns_5y: "5Y return",
-                manager_unavailable: "Manager unavailable"
+                manager_unavailable: "Manager unavailable",
+                faq_tag: "Fund FAQ & Insights",
+                faq_title: "Frequently Asked Questions",
+                allocation_tag: "Asset holdings",
+                allocation_title: "Portfolio Asset Allocation",
+                managers_tag: "Leadership",
+                managers_title: "Meet the Portfolio Managers",
+                distributors_tag: "Purchase channels",
+                distributors_title: "Official Distributors & Partners",
+                docs_tag: "Downloads",
+                docs_title: "Factsheets & Prospectus Documents",
+                download: "Download",
+                view_pdf: "View PDF",
+                joined_year: "Joined",
+                origin: "Origin",
+                par_value: "Nominal value",
+                guidelines_tag: "Limits & Policy",
+                guidelines_title: "Investment Guidelines",
+                trading_tag: "Trading Schedule",
+                trading_title: "Buying & Selling Rules",
+                risks_tag: "Risk factors",
+                risks_title: "Fund Risk Disclosures"
             },
             ar: {
                 nav_home: "الرئيسية",
@@ -614,13 +705,35 @@
                 returns_1y: "عائد سنة",
                 returns_3y: "عائد 3 سنوات",
                 returns_5y: "عائد 5 سنوات",
-                manager_unavailable: "المدير غير متاح"
+                manager_unavailable: "المدير غير متاح",
+                faq_tag: "الأسئلة الشائعة والمعلومات",
+                faq_title: "الأسئلة الأكثر شيوعاً",
+                allocation_tag: "أصول المحفظة",
+                allocation_title: "توزيع أصول المحفظة الاستثمارية",
+                managers_tag: "القيادة الإدارية",
+                managers_title: "تعرف على مديري المحفظة",
+                distributors_tag: "قنوات الشراء",
+                distributors_title: "الموزعون والشركاء الرسميون",
+                docs_tag: "التحميلات",
+                docs_title: "نشرات الاكتتاب والتقارير الدورية",
+                download: "تحميل",
+                view_pdf: "عرض PDF",
+                joined_year: "انضم عام",
+                origin: "الجنسية",
+                par_value: "القيمة الاسمية",
+                guidelines_tag: "الحدود والسياسات",
+                guidelines_title: "الحدود الاستثمارية للصندوق",
+                trading_tag: "مواعيد التداول",
+                trading_title: "قواعد وشروط الشراء والاسترداد",
+                risks_tag: "عوامل الخطورة",
+                risks_title: "إفصاحات ومخاطر الصندوق"
             }
         };
 
         const detailFields = [
             'currency',
             'inception',
+            'par_value',
             'manager',
             'type',
             'liquidity',
@@ -968,31 +1081,86 @@
             const labels = getLabels();
             if (key === 'is_shariah') return value ? labels.yes : labels.no;
             if (key === 'last_update_date' || key === 'inception') return formatDate(value);
-            if (['aum_millions', 'minimum_investment'].includes(key)) return `${state.fund?.currency || 'EGP'} ${formatNumber(value)}`;
-            if (['expense_ratio', 'fee_subscription', 'fee_redemption', 'fee_management', 'fee_custodian', 'fee_performance'].includes(key)) return `${Number(value).toFixed(2)}%`;
+            if (['aum_millions', 'minimum_investment', 'par_value'].includes(key)) {
+                if (typeof value === 'string' && (value.includes('Unit') || value.includes('unit') || value.includes('وثيق') || value.includes('وحدات') || value.includes('سهم'))) {
+                    return value;
+                }
+                return `${state.fund?.currency || 'EGP'} ${formatNumber(value)}`;
+            }
+            if (['expense_ratio', 'fee_subscription', 'fee_redemption', 'fee_management', 'fee_custodian', 'fee_performance'].includes(key)) {
+                if (typeof value === 'string') return value;
+                return `${Number(value).toFixed(2)}%`;
+            }
             return escapeHtml(value);
         }
 
         function renderProfileDetails(fund) {
             const grid = document.getElementById('fundDetailsGrid');
             const labels = getLabels();
+            const isAr = state.lang === 'ar';
+            
+            // Extract rich profile details fallback
+            let profile = null;
+            if (fund.rich_profile) {
+                try {
+                    profile = typeof fund.rich_profile === 'string' ? JSON.parse(fund.rich_profile) : fund.rich_profile;
+                } catch(e) {}
+            }
+            const az = profile?.azimut;
+            
+            // Fallback for Inception
+            let inceptionVal = fund.establishment_date || fund.inception_date;
+            if (!inceptionVal && az?.details) {
+                const launchObj = az.details.find(d => d.key_en === 'Launch Date');
+                if (launchObj) inceptionVal = isAr ? launchObj.value_ar : launchObj.value_en;
+            }
+            
+            // Fallback for Min Investment
+            let minInvestVal = fund.minimum_investment;
+            if ((minInvestVal === null || minInvestVal === undefined || minInvestVal === '') && az?.details) {
+                const minObj = az.details.find(d => d.key_en === 'Min. Initial');
+                if (minObj) minInvestVal = isAr ? minObj.value_ar : minObj.value_en;
+            }
+            
+            // Fallback for Subscription fee
+            let feeSub = fund.fee_subscription;
+            if ((feeSub === null || feeSub === undefined) && az?.details) {
+                const subFeeObj = az.details.find(d => d.key_en === 'Subscription Fees' || d.key_en === 'Subscription Fee');
+                if (subFeeObj) feeSub = subFeeObj.value_en;
+            }
+
+            // Fallback for Redemption fee
+            let feeRed = fund.fee_redemption;
+            if ((feeRed === null || feeRed === undefined) && az?.details) {
+                const redFeeObj = az.details.find(d => d.key_en === 'Redemption Fees' || d.key_en === 'Redemption Fee');
+                if (redFeeObj) feeRed = redFeeObj.value_en;
+            }
+
+            // Fallback for Management fee
+            let feeMgmt = fund.fee_management;
+            if ((feeMgmt === null || feeMgmt === undefined) && az?.details) {
+                const mgmtFeeObj = az.details.find(d => d.key_en === 'Management Fees' || d.key_en === 'Management Fee');
+                if (mgmtFeeObj) feeMgmt = mgmtFeeObj.value_en;
+            }
+
             const values = {
                 currency: fund.currency,
-                inception: fund.establishment_date,
+                inception: inceptionVal,
+                par_value: fund.par_value,
                 manager: getManagerName(fund),
                 type: getFundTypeName(fund),
                 liquidity: getLocalizedField(fund, 'nav_frequency') || '—',
                 benchmark: getLocalizedField(fund, 'benchmark'),
                 eligibility: getLocalizedField(fund, 'eligibility'),
                 isin: fund.isin,
-                owner_name: state.lang === 'ar' ? (fund.owner_name || fund.owner_name_en) : (fund.owner_name_en || fund.owner_name),
+                owner_name: isAr ? (fund.owner_name || fund.owner_name_en) : (fund.owner_name_en || fund.owner_name),
                 issuer: getLocalizedField(fund, 'issuer'),
                 aum_millions: fund.aum_millions,
-                minimum_investment: fund.minimum_investment,
+                minimum_investment: minInvestVal,
                 expense_ratio: fund.expense_ratio,
-                fee_subscription: fund.fee_subscription,
-                fee_redemption: fund.fee_redemption,
-                fee_management: fund.fee_management,
+                fee_subscription: feeSub,
+                fee_redemption: feeRed,
+                fee_management: feeMgmt,
                 fee_custodian: fund.fee_custodian,
                 fee_performance: fund.fee_performance,
                 last_update_date: fund.last_update_date,
@@ -1007,6 +1175,53 @@
                         <div class="mt-3 text-sm font-semibold text-main break-words">${formatDetailValue(key, values[key])}</div>
                     </div>
                 `).join('');
+        }
+
+        function extractThndrSection(content, sectionName) {
+            if (!content) return [];
+            const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+            let sectionLines = [];
+            let inSection = false;
+            
+            const isSectionHeader = (line) => {
+                const lower = line.toLowerCase();
+                if (sectionName === 'guidelines') {
+                    return lower.includes('investment guidelines') || lower.includes('guidelines') || lower.includes('الحدود الاستثمارية') || lower.includes('سياسات الاستثمار') || lower.includes('إرشادات الاستثمار');
+                }
+                if (sectionName === 'trading') {
+                    return lower.includes('buying and selling') || lower.includes('buying & selling') || lower.includes('الشراء والاسترداد') || lower.includes('الشراء والبيع');
+                }
+                if (sectionName === 'risks') {
+                    return lower.includes('what are the risks') || lower.includes('risks') || lower.includes('key risks') || lower.includes('المخاطر') || lower.includes('عوامل الخطورة') || lower.includes('ما هي المخاطر');
+                }
+                return false;
+            };
+            
+            const isAnyHeader = (line) => {
+                const lower = line.toLowerCase();
+                return line.endsWith('?') || line.endsWith('؟') ||
+                       lower.startsWith('what ') || lower.startsWith('how ') ||
+                       lower.startsWith('why ') || lower.startsWith('who ') ||
+                       lower.startsWith('هل ') || lower.startsWith('ما ') ||
+                       lower.startsWith('كيف ') || lower.startsWith('لماذا ') ||
+                       lower.includes('table of contents') ||
+                       ['buying and selling', 'buying & selling', 'fees', 'risks', 'disclaimer', 'الشراء والاسترداد', 'المخاطر', 'الرسوم', 'الشراء والبيع'].some(h => lower.includes(h));
+            };
+
+            for (const line of lines) {
+                if (isSectionHeader(line)) {
+                    inSection = true;
+                    continue;
+                }
+                if (inSection) {
+                    if (isSectionHeader(line)) continue;
+                    if (isAnyHeader(line)) {
+                        break;
+                    }
+                    sectionLines.push(line);
+                }
+            }
+            return sectionLines;
         }
 
         function renderSimilar() {
@@ -1072,6 +1287,309 @@
             document.getElementById('perf5y').textContent = formatPercent(safeNumber(fund.returns_5y ?? fund.five_year_return));
 
             renderProfileDetails(fund);
+            
+            // Render Rich Profile FAQ
+            const faqSection = document.getElementById('faqSection');
+            if (faqSection) {
+                if (fund.rich_profile) {
+                    try {
+                        const profile = typeof fund.rich_profile === 'string' ? JSON.parse(fund.rich_profile) : fund.rich_profile;
+                        const langData = state.lang === 'ar' ? profile.ar : profile.en;
+                        if (langData && langData.content) {
+                            faqSection.style.display = 'block';
+                            const faqContent = document.getElementById('faqContent');
+                            
+                            // Parse clean Q&As from raw text
+                            const lines = langData.content.split('\n').map(l => l.trim()).filter(Boolean);
+                            let html = '';
+                            let currentQuestion = '';
+                            let currentAnswer = [];
+                            
+                            const isQuestion = (text) => {
+                                const lower = text.toLowerCase();
+                                return text.endsWith('?') || text.endsWith('؟') || 
+                                       lower.startsWith('what ') || lower.startsWith('how ') || 
+                                       lower.startsWith('why ') || lower.startsWith('can ') || 
+                                       lower.startsWith('is ') || lower.startsWith('are ') ||
+                                       text.startsWith('هل ') || text.startsWith('ما ') || 
+                                       text.startsWith('كيف ') || text.startsWith('لماذا ') ||
+                                       text.startsWith('من ');
+                            };
+                            
+                            for (const line of lines) {
+                                if (isQuestion(line)) {
+                                    if (currentQuestion && currentAnswer.length) {
+                                        html += `
+                                            <div class="border-b border-border pb-4 last:border-0 last:pb-0">
+                                                <h5 class="text-base font-bold text-main">${escapeHtml(currentQuestion)}</h5>
+                                                <p class="mt-2 text-sm leading-relaxed text-muted">${escapeHtml(currentAnswer.join(' '))}</p>
+                                            </div>
+                                        `;
+                                    }
+                                    currentQuestion = line;
+                                    currentAnswer = [];
+                                } else {
+                                    if (currentQuestion) {
+                                        currentAnswer.push(line);
+                                    } else {
+                                        html += `<p class="text-sm leading-relaxed text-muted mb-4">${escapeHtml(line)}</p>`;
+                                    }
+                                }
+                            }
+                            if (currentQuestion && currentAnswer.length) {
+                                html += `
+                                    <div class="border-b border-border pb-4 last:border-0 last:pb-0">
+                                        <h5 class="text-base font-bold text-main">${escapeHtml(currentQuestion)}</h5>
+                                        <p class="mt-2 text-sm leading-relaxed text-muted">${escapeHtml(currentAnswer.join(' '))}</p>
+                                    </div>
+                                `;
+                            }
+                            
+                            faqContent.innerHTML = html || `<p class="text-sm leading-relaxed text-muted">${escapeHtml(langData.content)}</p>`;
+                        } else {
+                            faqSection.style.display = 'none';
+                        }
+                    } catch (e) {
+                        console.error("Error parsing rich_profile FAQ:", e);
+                        faqSection.style.display = 'none';
+                    }
+                } else {
+                    faqSection.style.display = 'none';
+                }
+            }
+
+            // Render Azimut Rich Profile elements
+            const azimutSection = document.getElementById('azimutSection');
+            if (azimutSection) {
+                let profile = null;
+                if (fund.rich_profile) {
+                    try {
+                        profile = typeof fund.rich_profile === 'string' ? JSON.parse(fund.rich_profile) : fund.rich_profile;
+                    } catch (e) {
+                        console.error("Error parsing rich_profile for Azimut details:", e);
+                    }
+                }
+                
+                const az = profile?.azimut;
+                if (az) {
+                    azimutSection.style.display = 'block';
+                    
+                    // 1. Render Allocation
+                    const allocBars = document.getElementById('allocationBars');
+                    const allocRules = document.getElementById('allocationRules');
+                    const isAr = state.lang === 'ar';
+                    
+                    // Render Bars
+                    const assets = az.allocation?.assets || [];
+                    if (assets.length) {
+                        document.getElementById('allocationBlock').style.display = 'block';
+                        const premiumColors = ['#14B8A6', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981'];
+                        allocBars.innerHTML = assets.map((a, idx) => {
+                            const barColor = (a.color && a.color !== '#000000' && a.color !== '#ffffff') ? a.color : premiumColors[idx % premiumColors.length];
+                            return `
+                                <div>
+                                    <div class="flex justify-between items-center text-sm font-semibold text-main mb-2">
+                                        <span class="${isAr ? 'font-arabic' : ''}">${escapeHtml(isAr ? a.key_ar : a.key_en)}</span>
+                                        <span class="font-display font-semibold">${a.value}%</span>
+                                    </div>
+                                    <div class="h-3 w-full bg-border rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full transition-all duration-500" style="width: ${a.value}%; background-color: ${barColor}"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        document.getElementById('allocationBlock').style.display = 'none';
+                    }
+                    
+                    // Render Allocation Rules/Disclosures
+                    const details = az.details || [];
+                    const rulesList = details.filter(d => d.key_en && (d.key_en.includes('Fee') || d.key_en.includes('Fees') || d.key_en.includes('Frequency')));
+                    if (rulesList.length) {
+                        allocRules.innerHTML = rulesList.map(r => `
+                            <div class="flex justify-between items-center py-2.5 border-b border-border last:border-0">
+                                <span class="text-xs uppercase tracking-wider text-muted font-semibold ${isAr ? 'font-arabic' : ''}">${escapeHtml(isAr ? r.key_ar : r.key_en)}</span>
+                                <span class="text-sm font-bold text-main">${escapeHtml(isAr ? r.value_ar : r.value_en)}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        allocRules.innerHTML = `<p class="text-sm text-muted text-center py-4">${isAr ? 'تطبق الشروط والأحكام الاستثمارية للمحفظة.' : 'Standard investment rules and conditions apply.'}</p>`;
+                    }
+                    
+                    // 2. Render Portfolio Managers
+                    const managersGrid = document.getElementById('managersGrid');
+                    const managers = az.managers || [];
+                    if (managers.length) {
+                        document.getElementById('managersBlock').style.display = 'block';
+                        managersGrid.innerHTML = managers.map(m => `
+                            <div class="flex items-center gap-4 bg-surface/30 rounded-3xl p-4 border border-border transition-transform hover:-translate-y-0.5">
+                                <div class="h-16 w-16 overflow-hidden rounded-2xl border border-border bg-surface p-0.5 shadow-sm shrink-0">
+                                    <img src="${escapeHtml(m.img || '/assets/funds/starta-fund-placeholder.svg')}" alt="${escapeHtml(isAr ? m.name_ar : m.name_en)}" class="h-full w-full rounded-xl object-cover">
+                                </div>
+                                <div>
+                                    <h4 class="text-sm sm:text-base font-bold text-main leading-tight">${escapeHtml(isAr ? m.name_ar : m.name_en)}</h4>
+                                    <p class="text-xs text-starta-teal font-semibold mt-1">${escapeHtml(isAr ? m.title_ar : m.title_en)}</p>
+                                    <p class="text-[0.68rem] tracking-wider text-muted font-medium mt-1 uppercase ${isAr ? 'font-arabic' : ''}">
+                                        ${getLabels().origin}: ${escapeHtml(isAr ? m.origin_ar : m.origin_en)} • ${getLabels().joined_year}: ${m.joined}
+                                    </p>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        document.getElementById('managersBlock').style.display = 'none';
+                    }
+                    
+                    // 3. Render Distributors
+                    const distGrid = document.getElementById('distributorsGrid');
+                    const distributors = az.distributors || [];
+                    if (distributors.length) {
+                        document.getElementById('distributorsBlock').style.display = 'block';
+                        distGrid.innerHTML = distributors.map(d => `
+                            <a href="${escapeHtml(d.link)}" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center justify-center bg-surface/40 hover:bg-surface/80 rounded-3xl p-4 border border-border transition-all hover:-translate-y-1 hover:shadow-premium group">
+                                <div class="h-12 w-full flex items-center justify-center overflow-hidden mb-2">
+                                    <img src="${escapeHtml(d.logo)}" alt="${escapeHtml(isAr ? d.name_ar : d.name_en)}" class="max-h-full max-w-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300">
+                                </div>
+                                <span class="text-xs font-bold text-muted group-hover:text-starta-teal transition-colors text-center break-words max-w-full">${escapeHtml(isAr ? d.name_ar : d.name_en)}</span>
+                            </a>
+                        `).join('');
+                    } else {
+                        document.getElementById('distributorsBlock').style.display = 'none';
+                    }
+                    
+                    // 4. Render Factsheets & Prospectus
+                    const docsGrid = document.getElementById('docsGrid');
+                    const rawDocs = isAr 
+                        ? ((az.documents_ar && az.documents_ar.length) ? az.documents_ar : (az.documents || []))
+                        : ((az.documents && az.documents.length) ? az.documents : (az.documents_ar || []));
+                    const docs = rawDocs.filter(doc => doc && doc.url && doc.url !== '[' && doc.url !== ']');
+                    if (docs.length) {
+                        document.getElementById('docsBlock').style.display = 'block';
+                        docsGrid.innerHTML = docs.map(doc => `
+                            <a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between bg-surface/30 hover:bg-surface/70 rounded-2xl px-4 py-3 border border-border transition-all hover:border-starta-teal/30 hover:shadow-sm group shrink-0">
+                                <div class="flex items-center gap-3 overflow-hidden min-w-0">
+                                    <svg class="w-5 h-5 text-muted group-hover:text-starta-teal transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span class="text-xs sm:text-sm font-semibold text-main truncate">${escapeHtml(isAr ? doc.name_ar : doc.name_en)}</span>
+                                </div>
+                                <span class="text-[0.68rem] bg-starta-teal/10 text-starta-teal font-bold px-2 py-0.5 rounded-full uppercase shrink-0">${getLabels().download}</span>
+                            </a>
+                        `).join('');
+                    } else {
+                        document.getElementById('docsBlock').style.display = 'none';
+                    }
+                    
+                } else {
+                    azimutSection.style.display = 'none';
+                }
+            }
+
+            // Render Thndr Rich Profile elements
+            const thndrSection = document.getElementById('thndrSection');
+            if (thndrSection) {
+                let profile = null;
+                if (fund.rich_profile) {
+                    try {
+                        profile = typeof fund.rich_profile === 'string' ? JSON.parse(fund.rich_profile) : fund.rich_profile;
+                    } catch (e) {
+                        console.error("Error parsing rich_profile for Thndr details:", e);
+                    }
+                }
+                
+                const langData = state.lang === 'ar' ? profile?.ar : profile?.en;
+                if (profile && (profile.source === 'thndr' || (profile.ar && profile.en)) && langData && langData.content) {
+                    const content = langData.content;
+                    const isAr = state.lang === 'ar';
+                    
+                    const guidelines = extractThndrSection(content, 'guidelines');
+                    const trading = extractThndrSection(content, 'trading');
+                    const risks = extractThndrSection(content, 'risks');
+                    
+                    let hasThndrVisuals = false;
+                    
+                    // 1. Render Guidelines
+                    const thndrGuidelinesBlock = document.getElementById('thndrGuidelinesBlock');
+                    const thndrGuidelinesList = document.getElementById('thndrGuidelinesList');
+                    if (guidelines.length) {
+                        thndrGuidelinesBlock.style.display = 'block';
+                        thndrGuidelinesList.innerHTML = guidelines.map(g => `
+                            <div class="flex items-start gap-3 py-1">
+                                <svg class="w-5 h-5 text-starta-teal shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-sm text-main leading-relaxed">${escapeHtml(g)}</span>
+                            </div>
+                        `).join('');
+                        hasThndrVisuals = true;
+                    } else {
+                        thndrGuidelinesBlock.style.display = 'none';
+                    }
+                    
+                    // 2. Render Trading Rules
+                    const thndrTradingBlock = document.getElementById('thndrTradingBlock');
+                    const thndrTradingContent = document.getElementById('thndrTradingContent');
+                    if (trading.length) {
+                        thndrTradingBlock.style.display = 'block';
+                        thndrTradingContent.innerHTML = `
+                            <div class="flex items-center gap-3 border-b border-border pb-3 mb-3">
+                                <svg class="w-6 h-6 text-starta-teal shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-sm font-bold text-main">${isAr ? 'مواعيد التنفيذ وتقديم الطلبات' : 'Order Execution & Processing'}</span>
+                            </div>
+                            <div class="space-y-3">
+                                ${trading.map(t => `<p class="text-xs sm:text-sm leading-relaxed text-muted">${escapeHtml(t)}</p>`).join('')}
+                            </div>
+                        `;
+                        hasThndrVisuals = true;
+                    } else {
+                        thndrTradingBlock.style.display = 'none';
+                    }
+                    
+                    // 3. Render Risks Disclosures
+                    const thndrRisksBlock = document.getElementById('thndrRisksBlock');
+                    const thndrRisksGrid = document.getElementById('thndrRisksGrid');
+                    if (risks.length) {
+                        thndrRisksBlock.style.display = 'block';
+                        thndrRisksGrid.innerHTML = risks.map(r => {
+                            const parts = r.split(':');
+                            if (parts.length >= 2) {
+                                const title = parts[0].trim();
+                                const desc = parts.slice(1).join(':').trim();
+                                return `
+                                    <div class="summary-card rounded-[1.5rem] p-5 border border-border">
+                                        <div class="flex items-center gap-2 text-red-500 font-bold text-sm">
+                                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            <span>${escapeHtml(title)}</span>
+                                        </div>
+                                        <p class="mt-3 text-xs sm:text-sm leading-relaxed text-muted">${escapeHtml(desc)}</p>
+                                    </div>
+                                `;
+                            }
+                            return `
+                                <div class="summary-card rounded-[1.5rem] p-5 border border-border">
+                                    <p class="text-xs sm:text-sm leading-relaxed text-muted">${escapeHtml(r)}</p>
+                                </div>
+                            `;
+                        }).join('');
+                        hasThndrVisuals = true;
+                    } else {
+                        thndrRisksBlock.style.display = 'none';
+                    }
+                    
+                    if (hasThndrVisuals) {
+                        thndrSection.style.display = 'block';
+                    } else {
+                        thndrSection.style.display = 'none';
+                    }
+                    
+                } else {
+                    thndrSection.style.display = 'none';
+                }
+            }
+
             renderSimilar();
             renderChart();
         }

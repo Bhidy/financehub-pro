@@ -308,6 +308,17 @@ export default function SymbolDetailPage() {
     const [financialSubTab, setFinancialSubTab] = useState<"income" | "balance" | "cashflow">("income");
     const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
 
+    // ─── QUERY PARAMETER TAB INITIALIZATION ──────────────────────────────
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const tabParam = params.get("tab");
+            if (tabParam && ["overview", "financials", "ratios", "dividends", "news", "profile"].includes(tabParam)) {
+                setActiveTab(tabParam as TabId);
+            }
+        }
+    }, []);
+
     // ─── DATA QUERIES ──────────────────────────────────────────────────────
     const { data: tickers = [], isLoading: tickersLoading } = useQuery({
         queryKey: ["tickers"], queryFn: fetchTickers, staleTime: 30000

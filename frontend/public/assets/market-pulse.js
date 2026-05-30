@@ -608,11 +608,15 @@
                 return;
             }
             
+            // Limit to max 3 news
+            const slicedNews = displayNews.slice(0, 3);
+            const viewMoreLabel = isAr ? "عرض المزيد من الأخبار" : "View More News";
+            
             contentContainer.innerHTML = `
                 <div style="grid-column: 1 / -1; width: 100%;">
                     <h2 class="display" style="margin-bottom: 1.2rem;">${isAr ? `آخر أخبار ${item.symbol}` : `Latest ${item.symbol} News`}</h2>
-                    <div style="display: grid; gap: 1.2rem;">
-                        ${displayNews.map((article) => {
+                    <div style="display: grid; gap: 1.2rem; margin-bottom: 1.8rem;">
+                        ${slicedNews.map((article) => {
                             const coverUrl = getNewsCover(article);
                             return `
                                 <a class="news-card" href="/News/${encodeURIComponent(article.id)}" style="display: grid; grid-template-columns: 6.5rem 1fr; gap: 1.2rem; border-bottom: 1px solid var(--line-soft, rgba(20, 184, 166, 0.08)); padding-bottom: 1.2rem; align-items: start; transition: transform 0.2s ease;">
@@ -631,6 +635,15 @@
                                 </a>
                             `;
                         }).join("")}
+                    </div>
+                    <div style="display: flex; justify-content: center; width: 100%;">
+                        <a href="/symbol/${encodeURIComponent(item.symbol)}?tab=news" class="quick-view-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px;">
+                            ${viewMoreLabel}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 0.9rem; height: 0.9rem; transform: ${isAr ? "rotate(180deg)" : "none"}">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
                     </div>
                 </div>
             `;

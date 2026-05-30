@@ -1286,3 +1286,23 @@ html[data-theme="dark"] .drawer-price-section {
     background: rgba(20, 184, 166, 0.12);
 }
 
+/* Premium Revamped Company Facts Grid */
+.fact-card {
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+}
+.fact-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(20, 184, 166, 0.35) !important;
+    background: rgba(20, 184, 166, 0.06) !important;
+    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.08) !important;
+}
+html[data-theme="dark"] .fact-card {
+    background: rgba(20, 184, 166, 0.04) !important;
+    border: 1px solid rgba(20, 184, 166, 0.12) !important;
+}
+html[data-theme="dark"] .fact-card:hover {
+    background: rgba(20, 184, 166, 0.08) !important;
+    border-color: rgba(20, 184, 166, 0.45) !important;
+    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.12) !important;
+}

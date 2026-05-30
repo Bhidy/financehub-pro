@@ -31,8 +31,10 @@ SOURCE_JOBS = [
     SourceJob(name="Mubasher EN", script_name="scrape_mubasher_egx_news_scrapling.py", language="en"),
     SourceJob(name="Zawya EN", script_name="scrape_zawya_egx_news_scrapling.py", language="en"),
     SourceJob(name="ArabFinance EN", script_name="scrape_arabfinance_egx_news_scrapling.py", language="en"),
+    SourceJob(name="Enterprise EN", script_name="scrape_enterprise_egx_news_scrapling.py", language="en"),
     SourceJob(name="Mubasher AR", script_name="scrape_mubasher_egx_news_scrapling.py", language="ar"),
     SourceJob(name="ArabFinance AR", script_name="scrape_arabfinance_egx_news_scrapling.py", language="ar"),
+    SourceJob(name="Enterprise AR", script_name="scrape_enterprise_egx_news_scrapling.py", language="ar"),
 ]
 
 

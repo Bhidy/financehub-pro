@@ -40,3 +40,12 @@ __pycache__/
 /implementation_plans/
 # Local DB dumps (source of truth is the cloud database)
 *.sql
+# Agent tooling / skill caches — never belong in the product repo
+/.agent/
+/.shared/
+# Secrets must never be committed (expect scripts, key dumps, env backups)
+*.exp
+.env.backup_critical
+# macOS / debug artifacts
+.DS_Store
+debug_*.json

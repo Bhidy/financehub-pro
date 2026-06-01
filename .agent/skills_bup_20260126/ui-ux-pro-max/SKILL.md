@@ -25,4 +25,4 @@ Invoke the skill when performing any UI/UX related task.
 python3 .shared/ui-ux-pro-max/scripts/search.py "fintech banking dark" --design-system
 ```
 
-Refer to [.agent/workflows/ui-ux-pro-max.md](file:///Users/home/Documents/Info Site/mubasher-deep-extract/.agent/workflows/ui-ux-pro-max.md) for full workflow details.
+Refer to [.agent/workflows/ui-ux-pro-max.md](file:///Users/home/Documents/startamarkets/.agent/workflows/ui-ux-pro-max.md) for full workflow details.

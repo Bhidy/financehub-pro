@@ -62,7 +62,7 @@ curl https://bhidy-financehub-api.hf.space/api/v1/dashboard/summary
 ### 5. File Locations
 
 ```
-/Users/home/Documents/Info Site/mubasher-deep-extract/
+/Users/home/Documents/startamarkets/
 ├── frontend/          # Next.js app → Deploy to Vercel
 ├── hf-space/          # FastAPI app → Deploy to HuggingFace
 ├── backend/           # ❌ LEGACY - DO NOT USE

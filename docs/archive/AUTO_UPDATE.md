@@ -36,7 +36,7 @@ The FinanceHub Pro auto-update system ensures your database and frontend stay sy
 
 ### Option 1: Run Scheduler Manually
 ```bash
-cd "/Users/home/Documents/Info Site/mubasher-deep-extract"
+cd "/Users/home/Documents/startamarkets"
 python3 scheduler.py
 ```
 

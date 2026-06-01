@@ -3,8 +3,8 @@
 ## Cron Job Setup
 
 ### Location
-- **Script:** `/Users/home/Documents/Info Site/mubasher-deep-extract/scripts/egx_daily_update.sh`
-- **Log Dir:** `/Users/home/Documents/Info Site/mubasher-deep-extract/logs/`
+- **Script:** `/Users/home/Documents/startamarkets/scripts/egx_daily_update.sh`
+- **Log Dir:** `/Users/home/Documents/startamarkets/logs/`
 
 ### Installation
 

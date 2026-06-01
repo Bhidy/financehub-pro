@@ -6,7 +6,7 @@ import asyncpg
 from pathlib import Path
 
 # Paths
-BASE_DIR = Path("/Users/home/Documents/Info Site/mubasher-deep-extract")
+BASE_DIR = Path("/Users/home/Documents/startamarkets")
 SOURCE_DIR = BASE_DIR / "EGX Logos"
 DEST_DIR = BASE_DIR / "frontend/public/logos"
 DB_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:54322/postgres") # Local Dev Port

@@ -20,5 +20,23 @@ debug_*.png
 !package.json
 !package-lock.json
 !tsconfig.json
-!testsprite_tests/**/*.json
 system_backup_*
+
+# --- repo hygiene (2026-06 cleanup) ---
+# Python build cache (never commit)
+__pycache__/
+*.pyc
+*.pyo
+# Process id + log artifacts
+*.pid
+# Quarantined / archived trees — keep them out of the repo
+/backend_archive_legacy/
+/external-tools/
+/db_export/
+/testsprite_tests/
+/scratch/
+/Issues/
+/launchingfinaltouches/
+/implementation_plans/
+# Local DB dumps (source of truth is the cloud database)
+*.sql

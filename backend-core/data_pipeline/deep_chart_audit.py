@@ -247,7 +247,7 @@ class ChartAuditor:
         await self.close()
 
     async def generate_report(self):
-        report_path = "/Users/home/Documents/Info Site/mubasher-deep-extract/docs/CHART_DATA_AUDIT_REPORT.md"
+        report_path = "/Users/home/Documents/startamarkets/docs/CHART_DATA_AUDIT_REPORT.md"
         os.makedirs(os.path.dirname(report_path), exist_ok=True)
         
         with open(report_path, "w", encoding="utf-8") as f:

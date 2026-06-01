@@ -8,11 +8,11 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Users/home/Documents/Info Site/mubasher-deep-extract/scheduler.py</string>
+        <string>/Users/home/Documents/startamarkets/scheduler.py</string>
     </array>
     
     <key>WorkingDirectory</key>
-    <string>/Users/home/Documents/Info Site/mubasher-deep-extract</string>
+    <string>/Users/home/Documents/startamarkets</string>
     
     <key>RunAtLoad</key>
     <true/>
@@ -21,10 +21,10 @@
     <true/>
     
     <key>StandardOutPath</key>
-    <string>/Users/home/Documents/Info Site/mubasher-deep-extract/logs/scheduler_stdout.log</string>
+    <string>/Users/home/Documents/startamarkets/logs/scheduler_stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/Users/home/Documents/Info Site/mubasher-deep-extract/logs/scheduler_stderr.log</string>
+    <string>/Users/home/Documents/startamarkets/logs/scheduler_stderr.log</string>
     
     <key>EnvironmentVariables</key>
     <dict>

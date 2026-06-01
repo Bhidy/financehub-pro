@@ -33,7 +33,7 @@ Key packages:
 
 Important runtime note:
 - `python3` runtime has full required modules installed and working.
-- Shared venv at `/Users/home/Documents/Info Site/.venv` was missing `bs4` during verification.
+- The active project runtime is `python3` from `/Users/home/Documents/startamarkets`; do not rely on old workspace virtualenv paths.
 
 ## 3) Main Scraper Components
 
@@ -111,7 +111,6 @@ Recommended commands:
 - Live run:
   - `python3 backend-core/scripts/scrape_egx_multisource_news.py --days 30`
 
-If using `/Users/home/Documents/Info Site/.venv` specifically, ensure:
-- `pip install beautifulsoup4`
-- or install full requirements from `backend-core/requirements.txt`
-
+If creating a project virtualenv for this repository, install:
+- `backend-core/requirements.txt`
+- source-specific scraper requirements when a task calls for them

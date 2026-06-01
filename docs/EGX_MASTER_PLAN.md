@@ -212,7 +212,7 @@ Market Hours: Sunday-Thursday, 10:00-14:30 (UTC+2)
 
 ### Run Enterprise Extraction
 ```bash
-cd /path/to/mubasher-deep-extract
+cd /Users/home/Documents/startamarkets
 backend/venv/bin/python scripts/egx_enterprise_extractor.py
 ```
 

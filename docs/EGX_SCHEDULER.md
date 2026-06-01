@@ -12,16 +12,16 @@ Add to your crontab with `crontab -e`:
 
 ```bash
 # EGX Daily Update - 5 AM Egypt Time (UTC+2 = 3 AM UTC)
-0 3 * * * /Users/home/Documents/Info\ Site/mubasher-deep-extract/scripts/egx_daily_update.sh
+0 3 * * * /Users/home/Documents/startamarkets/scripts/egx_daily_update.sh
 
 # Alternative: 5 AM Cairo Time (during EET, winter)
-# 0 3 * * * /Users/home/Documents/Info\ Site/mubasher-deep-extract/scripts/egx_daily_update.sh
+# 0 3 * * * /Users/home/Documents/startamarkets/scripts/egx_daily_update.sh
 ```
 
 ### Manual Trigger
 
 ```bash
-cd /Users/home/Documents/Info\ Site/mubasher-deep-extract
+cd /Users/home/Documents/startamarkets
 ./scripts/egx_daily_update.sh
 ```
 

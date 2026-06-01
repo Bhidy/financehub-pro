@@ -11,7 +11,7 @@ The production public site lives in:
 /Users/home/Documents/startamarkets/frontend
 ```
 
-Do **not** assume that `/Users/home/Documents/Info Site/finhub-pro/startamarkets` is the source for `startamarkets.com`. It is a separate code tree and its Market Pulse implementation does not match the branded public production pages.
+Do **not** assume that any legacy or separate Starta checkout is the source for `startamarkets.com`. This repository is the active source for the branded public production pages.
 
 The live public pages are mostly static HTML pages under `frontend/public/`, served through Next.js rewrites. They are not the similarly named React App Router screens under `frontend/app/`.
 
@@ -56,7 +56,7 @@ When investigating a public-page bug, start with the served HTML file above and 
 ## Source Layout
 
 ```text
-mubasher-deep-extract/
+startamarkets/
 ├── index.html                         # Duplicate of public/home.html; must stay identical
 ├── docs/
 │   └── STARTAMARKETS_PUBLIC_SITE.md   # This guide
@@ -401,10 +401,10 @@ To prevent situations where production updates are not visible on the live `http
 
 | Looking for | Correct location |
 | --- | --- |
-| `startamarkets.com/Market-Pulse` public branded page | `mubasher-deep-extract/frontend/public/market-pulse.html` |
-| `startamarkets.com/Learn` public branded page | `mubasher-deep-extract/frontend/public/learn.html` |
-| Public route wiring | `mubasher-deep-extract/frontend/next.config.ts` |
-| Public Vercel deployment | `mubasher-deep-extract`, deploying its `frontend/` root setting |
+| `startamarkets.com/Market-Pulse` public branded page | `startamarkets/frontend/public/market-pulse.html` |
+| `startamarkets.com/Learn` public branded page | `startamarkets/frontend/public/learn.html` |
+| Public route wiring | `startamarkets/frontend/next.config.ts` |
+| Public Vercel deployment | `startamarkets`, deploying its `frontend/` root setting |
 | Separate/legacy similarly named project | `finhub-pro/startamarkets` - do not edit for these public URLs |
 
 ## Last Confirmed Deployment

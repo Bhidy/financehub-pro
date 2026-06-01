@@ -41,22 +41,22 @@ Build and operate a stable pipeline that ingests Mubasher Egypt market news for 
 ## Runbook
 1. Install:
    ```bash
-   /Users/home/Documents/Info\ Site/.venv/bin/pip install -r scripts/requirements_mubasher_news.txt
+   python3 -m pip install -r scripts/requirements_mubasher_news.txt
    ```
 2. Dry run:
    ```bash
-   /Users/home/Documents/Info\ Site/.venv/bin/python backend-core/scripts/scrape_mubasher_egx_news_scrapling.py --days 30 --dry-run
+   python3 backend-core/scripts/scrape_mubasher_egx_news_scrapling.py --days 30 --dry-run
    ```
 3. Live run:
    ```bash
-   /Users/home/Documents/Info\ Site/.venv/bin/python backend-core/scripts/scrape_mubasher_egx_news_scrapling.py --days 30
+   python3 backend-core/scripts/scrape_mubasher_egx_news_scrapling.py --days 30
    ```
 
 ## Scheduling
 - Frequency: every 2 hours via APScheduler (`tier4c_egx_mubasher_news_2h`) in `backend-core/app/services/scheduler.py`.
 - Suggested command:
   ```bash
-  /Users/home/Documents/Info\ Site/.venv/bin/python /Users/home/Documents/Info\ Site/mubasher-deep-extract/backend-core/scripts/scrape_mubasher_egx_news_scrapling.py --days 30
+  cd /Users/home/Documents/startamarkets && python3 backend-core/scripts/scrape_mubasher_egx_news_scrapling.py --days 30
   ```
 
 ## Monitoring & Alerts

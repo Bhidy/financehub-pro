@@ -63,3 +63,13 @@ During the June 2026 restructure, several things that used to sit beside this re
 2. Public-page changes go in `frontend/public/`, not React components.
 3. Never commit/deploy the decoy in quarantine.
 4. After any frontend deploy, run the Vercel alias step or the live domain silently serves stale content.
+
+## Governance — rules to keep this clean (added after the 2026-06 cleanup)
+
+- **One of everything.** One repo, one Vercel project (`finhub` → startamarkets.com), one domain. Never create extra Vercel projects or `vercel deploy` from copies — that's how 5 duplicate public clones of the site appeared. If `vercel project ls` ever shows a Starta clone, delete it.
+- **Never run `vercel` from inside `frontend/`.** It auto-creates a stray project + `.vercel` link. Always run Vercel commands from the **repo root** (the project's Root Directory setting is `frontend`).
+- **Never commit secrets.** No `.env`, API keys, tokens, passwords, `*.exp`, or key-bearing docs. `.gitignore` enforces this — do not override it. Secrets live only in Hetzner backend `.env`, Vercel env vars, and your local `.env` (all gitignored). If a secret ever lands in a commit, it is compromised: rotate it and purge history.
+- **Keep the repo lean.** Ship only the app: `frontend/`, `backend-core/{app,scripts,data_pipeline}`, `docs/`, deploy configs, `index.html`. No scratch scripts, debug dumps, backups, `__pycache__`, archives, agent tooling (`.agent/`), or DB dumps.
+- **Don't duplicate the folder to "try something."** Branch in git. Drifted folder copies were the root of the entire mess.
+- **The AI chatbot lives in `backend-core/app/chat/`** and is protected — never bulk-edit or delete it. Backend deploys from `backend-core/{app,scripts,data_pipeline}` (see `Dockerfile`).
+- Full audit + secret-rotation runbook: `~/Documents/STARTAMARKETS_AUDIT_2026-06.md`.

@@ -37,7 +37,7 @@
 
 ```bash
 # Step 1: Navigate to repository root
-cd /Users/home/Documents/Info\ Site/mubasher-deep-extract
+cd /Users/home/Documents/startamarkets
 
 # Step 2: Install dependencies (from frontend directory)
 cd frontend && npm install && cd ..
@@ -69,7 +69,7 @@ curl -s -o /dev/null -w "%{http_code}" https://startamarkets.com/
 ## Repository Structure
 
 ```
-mubasher-deep-extract/           ← DEPLOY FROM HERE
+startamarkets/                   ← DEPLOY FROM HERE
 ├── .vercel/                     ← Vercel config (linked to finhub project)
 │   └── project.json
 ├── frontend/                    ← Next.js application
@@ -89,14 +89,14 @@ mubasher-deep-extract/           ← DEPLOY FROM HERE
 
 **Error Message:**
 ```
-Error: The provided path "~/Documents/Info Site/mubasher-deep-extract/frontend/frontend" does not exist
+Error: The provided path "~/Documents/startamarkets/frontend/frontend" does not exist
 ```
 
 **Cause**: Running `vercel` from inside the `frontend` directory.
 
 **Solution**: Navigate to repository root and deploy from there:
 ```bash
-cd /Users/home/Documents/Info\ Site/mubasher-deep-extract
+cd /Users/home/Documents/startamarkets
 npx vercel --prod --yes
 ```
 

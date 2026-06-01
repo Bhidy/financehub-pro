@@ -11,7 +11,13 @@ ARG CACHEBUST=1
 
 # Copy Application Code (The only thing that changes frequently)
 COPY backend-core/app ./app
-COPY backend-core/engine ./engine
+# NOTE (2026-06): backend-core/engine is not in the repo. The only import
+# (app/main.py -> engine.scheduler) runs in DEV only and is try/except-guarded;
+# production disables the in-process scheduler (data extraction runs via GitHub
+# Actions). The base image already creates an empty /app/engine. Copying a
+# non-existent source fails the build, so this line is disabled. Re-enable only
+# if backend-core/engine is restored to the repo.
+# COPY backend-core/engine ./engine
 COPY backend-core/scripts ./scripts
 COPY backend-core/data_pipeline ./data_pipeline
 

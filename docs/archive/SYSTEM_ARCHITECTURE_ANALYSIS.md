@@ -93,7 +93,7 @@ FinanceHub Pro (branded as **Starta**) is an enterprise-grade financial intellig
 ## 📁 Directory Structure
 
 ```
-mubasher-deep-extract/
+startamarkets/
 ├── frontend/                    # Next.js Application (Vercel)
 │   ├── app/                     # App Router Pages
 │   │   ├── AiChat/              # Canonical AI Chat

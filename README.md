@@ -1,172 +1,82 @@
-# FinanceHub Pro
+# Starta Markets
 
-## Enterprise Financial Intelligence Platform
-**Made with ❤️ by Bhidy**
+**Bilingual (AR/EN) financial-intelligence platform for the Egyptian Exchange (EGX).**
+Real-time market data, mutual-fund NAV & performance, market news, an educational "Learn" academy, portfolios, and an AI chatbot.
 
-> Working on the branded public website at `https://startamarkets.com`? Read [`docs/STARTAMARKETS_PUBLIC_SITE.md`](docs/STARTAMARKETS_PUBLIC_SITE.md) first. It identifies the correct source tree, URL-to-file rewrites, theme/language architecture, Learn content setup, and production deployment procedure.
+> **New here? Read [`START_HERE.md`](START_HERE.md) first.** It is the single orientation doc — what this is, where it deploys, and what *not* to touch.
+
+| | |
+|---|---|
+| **Public site** | https://startamarkets.com |
+| **Internal / Vercel project name** | `finhub` (a.k.a. "FinanceHub Pro" in older docs) |
+| **Frontend** | Next.js (App Router) — hosted on **Vercel** |
+| **Backend** | FastAPI (Python 3.11, Docker) — hosted on **Hetzner VPS** |
+| **Database** | PostgreSQL — **Supabase** (cloud, source of truth) |
+| **Repo** | `github.com/Bhidy/financehub-pro` (private) |
+
+> "Starta Markets", "FinanceHub Pro", and the Vercel project "finhub" are **three names for one product**. There is no separate finhub app.
 
 ---
 
-## 🚀 Quick Start
+## Canonical docs
 
-### Option 1: Unified Startup (Recommended)
+| Topic | Doc |
+|---|---|
+| Orientation + governance rules | [`START_HERE.md`](START_HERE.md) |
+| Architecture, data flow, AI chatbot, DB schema | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Deploy procedure (incl. **mandatory alias step**) | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Secret management + rotation runbook | [`docs/SECURITY.md`](docs/SECURITY.md) |
+| Public website source tree & routing | [`docs/STARTAMARKETS_PUBLIC_SITE.md`](docs/STARTAMARKETS_PUBLIC_SITE.md) |
+| What changed in the 2026-06 restructure | [`docs/archive/2026-06-RESTRUCTURE.md`](docs/archive/2026-06-RESTRUCTURE.md) |
+
+---
+
+## Project structure (current)
+
+```
+startamarkets/
+├── frontend/              # Next.js app → Vercel
+│   ├── app/               # App Router pages (incl. /admin/analytics, /admin/users)
+│   ├── components/        # React components
+│   ├── lib/               # API client, auth
+│   ├── public/            # Static branded public site (home.html, market-pulse.html, ...)
+│   └── middleware.ts      # canonical-host redirect + legacy route redirects
+├── backend-core/          # FastAPI backend → Hetzner (Docker)
+│   ├── app/               # main.py, api/v1/, chat/ (AI), services/, db/, core/
+│   ├── scripts/           # data extraction / ops scripts
+│   └── data_pipeline/     # loaders
+├── docs/                  # canonical documentation (+ docs/archive/ for history)
+├── index.html             # duplicate of frontend/public/home.html (must stay identical)
+├── Dockerfile             # backend image
+└── start_all.sh / stop_all.sh
+```
+
+---
+
+## Local development
+
+**Prerequisites:** Node.js 18+, Python 3.11+, and access to the Supabase database (connection string in your local `.env`).
+
 ```bash
-./start_all.sh
-```
-This starts both the backend API and frontend automatically.
+# Frontend (http://localhost:3000)
+cd frontend && npm install && npm run dev
 
-### Option 2: Manual Startup (Development Only)
-```bash
-# Terminal 1 - Backend API
-cd backend
-python3 -m uvicorn api:app --host 0.0.0.0 --port 8000
-
-# Terminal 2 - Frontend
-cd frontend
-npm run dev
+# Backend (FastAPI)
+cd backend-core && pip install -r requirements.txt
+python3 -m uvicorn app.main:app --host 0.0.0.0 --port 7860
+# API docs at http://localhost:7860/docs
 ```
+
+> ⚠️ **Do not run automated data-extraction scripts locally** — they can cause IP bans or conflict with the production server. Data ingestion runs in the cloud (GitHub Actions + the backend on Hetzner).
 
 ---
 
-## 🛑 Stop All Services
-```bash
-./stop_all.sh
-```
+## Deploying
+
+- **Frontend:** `git push origin main` → Vercel builds → **then run the mandatory alias step** (`vercel alias set <new-deploy-url> startamarkets.com` + `www`). Without the alias, the live domain keeps serving the old build. Full procedure: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+- **Backend:** rebuild/redeploy the Docker image on Hetzner (see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
+- **Never run `vercel` from inside `frontend/`** — always from the repo root (Vercel Root Directory is `frontend`).
 
 ---
 
-## 📊 Access Points
-
-| Service | URL |
-|---------|-----|
-| **Frontend** | http://localhost:3000 |
-| **Command Center** | http://localhost:3000/command-center |
-| **Backend API** | http://localhost:8000 |
-| **API Docs** | http://localhost:8000/docs |
-
----
-
-## 🔧 Prerequisites
-
-Before running the application, ensure you have:
-
-1. **PostgreSQL** - Running with `mubasher_db` database
-2. **Node.js** - v18+ recommended
-3. **Python 3.10+** - With pip
-
-### Install Backend Dependencies
-```bash
-cd backend
-pip3 install -r requirements-api.txt
-```
-
-### Install Frontend Dependencies
-```bash
-cd frontend
-npm install
-```
-
----
-
-## 📁 Project Structure
-
-```
-mubasher-deep-extract/
-├── frontend/           # Next.js Frontend (Port 3000)
-│   ├── app/            # App Router pages
-│   ├── components/     # React components
-│   └── lib/            # API client
-├── backend/            # FastAPI Backend (Port 8000)
-│   ├── api.py          # Main API endpoints
-│   ├── database.py     # PostgreSQL connection
-│   └── extractors/     # Data extraction scripts
-├── logs/               # Application logs
-├── start_all.sh        # Unified startup script
-└── stop_all.sh         # Stop all services
-```
-
----
-
-## ⚠️ Troubleshooting
-
-### "Loading data..." but nothing appears
-**Cause:** Backend API is not running.
-**Solution:** 
-```bash
-./start_all.sh
-# Or manually:
-cd backend && python3 -m uvicorn api:app --port 8000
-```
-
-### Port already in use
-```bash
-# Kill process on port
-lsof -ti:8000 | xargs kill -9
-lsof -ti:3000 | xargs kill -9
-```
-
-### Database connection error
-```bash
-# Ensure PostgreSQL is running
-pg_isready
-# If not, start it:
-brew services start postgresql  # macOS
-```
-
----
-
-## 📊 Database Tables
-
-| Table | Description | Rows |
-|-------|-------------|------|
-| market_tickers | Stock tickers | 453 |
-| ohlc_data | Historical OHLC | 140K+ |
-| intraday_data | Intraday bars | 36K+ |
-| financial_statements | Quarterly/Annual financials | 5K+ |
-| mutual_funds | Fund metadata | 582 |
-| nav_history | Fund NAV history | 615K+ |
-| major_shareholders | Ownership data | 900+ |
-| earnings_calendar | EPS announcements | 2.5K+ |
-
----
-
-## ☁️ Cloud Automation Architecture
-
-The system is designed to run **100% autonomously** on the cloud.
-
-### 1. Internal Scheduler (Hetzner)
-- **Location**: `backend-core/app/services/scheduler.py`
-- **Function**: Runs continuously on the VPS.
-- **Tasks**: Intraday prices, Fund NAVs, Weekly sweeps.
-
-### 2. External Watchdog (GitHub Actions)
-- **Location**: `.github/workflows/enterprise-data-update.yml`
-- **Function**: External triggers to ensure reliability.
-- **Tasks**: Redundant health checks and heavy batch triggers.
-- **Protocol**: **Synchronous Polling**. Triggers API -> Waits for "Success" signal. NEVER fire-and-forget.
-
-**⚠️ NOTE: DO NOT RUN AUTOMATED EXTRACTION SCRIPTS LOCALLY.**
-Local execution may cause IP bans or data conflict with the production server.
-
----
-
-## 🔒 Health Monitoring
-
-The application includes a built-in health check indicator (bottom-right corner) that monitors:
-- ✅ Backend API status
-- ✅ Database connection
-- ✅ Real-time latency
-
-If services go offline, the indicator turns red with instructions to restart.
-
----
-
-## 📞 Support
-
-For issues or questions, check the logs:
-```bash
-tail -f logs/api.log       # Backend logs
-tail -f logs/frontend.log  # Frontend logs
-```
-
-## System Status: Online (Verified)
+## Status: Online ✅  ·  Public site: https://startamarkets.com

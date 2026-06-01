@@ -3,7 +3,7 @@ import sys
 import os
 
 # Add backend-core to path
-sys.path.append('/Users/home/Documents/Info Site/mubasher-deep-extract/backend-core')
+sys.path.append('/Users/home/Documents/startamarkets/backend-core')
 
 from app.chat.intent_router import create_router
 from app.chat.schemas import Intent

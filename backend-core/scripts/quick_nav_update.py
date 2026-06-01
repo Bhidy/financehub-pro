@@ -12,7 +12,7 @@ from playwright.async_api import async_playwright
 from pathlib import Path
 
 # Load env manually
-env_path = Path("/Users/home/Documents/Info Site/mubasher-deep-extract/.env")
+env_path = Path("/Users/home/Documents/startamarkets/.env")
 for line in env_path.read_text().splitlines():
     if line.strip() and not line.startswith('#') and '=' in line:
         key, val = line.split('=', 1)

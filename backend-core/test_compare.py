@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 # Load explicitly from backend-core/.env
-load_dotenv(dotenv_path="/Users/home/Documents/Info Site/mubasher-deep-extract/backend-core/.env")
+load_dotenv(dotenv_path="/Users/home/Documents/startamarkets/backend-core/.env")
 
 from app.chat.handlers.compare_handler import handle_compare_stocks
 import asyncpg

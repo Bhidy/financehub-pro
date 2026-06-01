@@ -8,7 +8,7 @@
 The production public site lives in:
 
 ```text
-/Users/home/Documents/Info Site/mubasher-deep-extract/frontend
+/Users/home/Documents/startamarkets/frontend
 ```
 
 Do **not** assume that `/Users/home/Documents/Info Site/finhub-pro/startamarkets` is the source for `startamarkets.com`. It is a separate code tree and its Market Pulse implementation does not match the branded public production pages.
@@ -266,7 +266,7 @@ For changes to public site pages:
 From the frontend directory:
 
 ```bash
-cd "/Users/home/Documents/Info Site/mubasher-deep-extract/frontend"
+cd "/Users/home/Documents/startamarkets/frontend"
 npm run verify:routes
 npm run build
 ```
@@ -282,7 +282,7 @@ node --check public/data/learn-topics.js
 Also run from the repository root:
 
 ```bash
-cd "/Users/home/Documents/Info Site/mubasher-deep-extract"
+cd "/Users/home/Documents/startamarkets"
 git diff --check
 git status --short
 ```
@@ -295,8 +295,8 @@ Before deploying, read `git status --short`. This workspace often contains unrel
 
 Vercel is configured with `frontend` as the project Root Directory. Therefore deployment input must contain a `frontend/` directory.
 
-- Correct deployment root: `/Users/home/Documents/Info Site/mubasher-deep-extract`
-- Incorrect deployment root: `/Users/home/Documents/Info Site/mubasher-deep-extract/frontend`
+- Correct deployment root: `/Users/home/Documents/startamarkets`
+- Incorrect deployment root: `/Users/home/Documents/startamarkets/frontend`
 
 Deploying from inside `frontend` causes Vercel to look for `frontend/frontend` and fail with a missing-path error.
 
@@ -305,7 +305,7 @@ Deploying from inside `frontend` causes Vercel to look for `frontend/frontend` a
 Only use this when the repository root contains exactly the intended release content:
 
 ```bash
-cd "/Users/home/Documents/Info Site/mubasher-deep-extract"
+cd "/Users/home/Documents/startamarkets"
 
 # If the repository root has not yet been linked locally, link it to the
 # existing Vercel project "finhub" first. The generated .vercel directory is ignored.

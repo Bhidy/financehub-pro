@@ -102,7 +102,7 @@ jobs:
           env.HAS_DISCORD != ''
         run: |
           DATE=$(date +'%A, %d %B %Y')
-          jq -n --arg d "$DATE" '{content: ("📰 **EGX Morning Brief Ready** — " + $d + "\nMarket opens in ~30 minutes (10:00 Cairo Time)\n\n📊 Visit: https://startamarkets.com\n💬 Ask the AI: \"Give me today’s morning brief\"")}' \
+          jq -n --arg d "$DATE" '{content: ("📰 **EGX Morning Brief Ready** — " + $d + "\nMarket opens in ~30 minutes (10:00 Cairo Time)\n\n📊 Visit: https://startamarkets.com\n💬 Ask the AI for today: Give me the morning brief")}' \
             | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-
 
       # ── Step 5: Notify on failure ────────────────────────────────────────────

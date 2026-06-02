@@ -32,6 +32,13 @@ on:
 env:
   FINHUB_API_BASE: https://starta.46-224-223-172.sslip.io/api/v1/admin
 
+# Serialize all runs of this workflow. The 5-min price cron and the long daily/
+# funds/ingestion jobs share ONE backend refresh lock; overlapping runs were the
+# cause of the 50m/58m poll-timeout failures. Queue instead of colliding.
+concurrency:
+  group: enterprise-data-update
+  cancel-in-progress: false
+
 jobs:
   # ============================================================
   # UNIFIED WATCHDOG - Single Job, All Updates via Backend API
@@ -71,10 +78,19 @@ jobs:
             UPDATED=$(echo "$STATUS_JSON" | jq -r '.tickers_updated')
             
             echo "Status: $LAST_STATUS | Running: $IS_RUNNING | Updated: $UPDATED"
-            
+
             if [ "$IS_RUNNING" == "false" ]; then
-              echo "✅ Job Completed!"
-              break
+              echo "Job finished. last_status=$LAST_STATUS | tickers_updated=$UPDATED"
+              # REAL success requires data to have actually flowed. Previously a run
+              # that updated 0 tickers (broken screener) reported green — silently
+              # freezing the whole platform. Treat 0 updates as a hard failure.
+              if [ "${UPDATED:-0}" -gt 0 ] 2>/dev/null; then
+                echo "✅ Price refresh updated $UPDATED tickers"
+                break
+              else
+                echo "::error::Price refresh updated 0 tickers (status=$LAST_STATUS). Errors: $(echo "$STATUS_JSON" | jq -c '.errors')"
+                exit 1
+              fi
             fi
             sleep 5
             if [ $(($(date +%s) - START_TIME)) -gt 300 ]; then echo "❌ Timeout"; exit 1; fi

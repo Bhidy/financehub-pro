@@ -24,10 +24,19 @@ on:
         required: false
         default: 'EGX'
 
+concurrency:
+  group: morning-brief
+  cancel-in-progress: false
+
 jobs:
   morning-brief:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # NOTE: `secrets` is NOT allowed in a step-level `if:` — using it there makes the
+    # whole workflow un-compilable (0s failure on every trigger, no logs). Expose the
+    # secret as an env var and gate the notify steps on `env.HAS_DISCORD` instead.
+    env:
+      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
     steps:
       # ── Step 1: Check day is actually a trading day ─────────────────────────
@@ -90,7 +99,7 @@ jobs:
         if: >
           steps.check_day.outputs.is_trading_day == 'true' &&
           steps.generate_brief.outputs.status == 'true' &&
-          secrets.DISCORD_WEBHOOK_URL != ''
+          env.HAS_DISCORD != ''
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -106,7 +115,7 @@ jobs:
         if: >
           steps.check_day.outputs.is_trading_day == 'true' &&
           failure() &&
-          secrets.DISCORD_WEBHOOK_URL != ''
+          env.HAS_DISCORD != ''
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}

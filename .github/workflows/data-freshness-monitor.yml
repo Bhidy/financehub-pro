@@ -1,0 +1,81 @@
+name: Data Freshness Monitor
+
+# ============================================================
+# The alarm that was MISSING during the June 2026 freeze.
+# production_watchdog.yml only checks "is the server up" (200 /health),
+# so prices stayed frozen for hours while every check was green.
+# This watches DATA freshness, not server liveness, during market hours.
+# ============================================================
+
+on:
+  schedule:
+    # Every 15 min during EGX/KSA market hours (07-14 UTC = 09-16 Cairo/Riyadh), Sun-Thu
+    - cron: '*/15 7-14 * * 0,1,2,3,4'
+  workflow_dispatch:
+
+concurrency:
+  group: data-freshness-monitor
+  cancel-in-progress: true
+
+env:
+  API: https://starta.46-224-223-172.sslip.io
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    name: Check price freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - name: Set up jq
+        run: sudo apt-get install -y jq
+
+      - name: Probe freshness + refresh status
+        id: check
+        run: |
+          FR=$(curl -s --max-time 20 "$API/api/v1/admin/data/freshness" || echo '{}')
+          ST=$(curl -s --max-time 20 "$API/api/v1/admin/refresh/status" || echo '{}')
+          echo "Freshness: $FR"
+          echo "Status:    $ST"
+
+          AGE=$(echo "$FR" | jq -r '.age_hours // empty')
+          COUNT=$(echo "$FR" | jq -r '.ticker_count // 0')
+          LAST_STATUS=$(echo "$ST" | jq -r '.last_status // "unknown"')
+          UPDATED=$(echo "$ST" | jq -r '.tickers_updated // 0')
+
+          echo "age=$AGE"                 >> "$GITHUB_OUTPUT"
+          echo "last_status=$LAST_STATUS" >> "$GITHUB_OUTPUT"
+          echo "updated=$UPDATED"         >> "$GITHUB_OUTPUT"
+
+          STALE=0
+          REASON=""
+          # No data / endpoint unreachable
+          if [ -z "$AGE" ] || [ "$COUNT" = "0" ]; then STALE=1; REASON="no freshness data (count=$COUNT)"; fi
+          # Prices older than 1h during market hours = frozen pipeline
+          if [ -n "$AGE" ] && awk "BEGIN{exit !($AGE > 1.0)}"; then STALE=1; REASON="prices ${AGE}h old"; fi
+          # Backend explicitly reported a failure
+          case "$LAST_STATUS" in
+            *error*|*partial_failure*) STALE=1; REASON="backend status=$LAST_STATUS";;
+          esac
+
+          if [ "$STALE" = "1" ]; then
+            echo "::error::DATA STALE — $REASON (age=${AGE}h, count=$COUNT, last_status=$LAST_STATUS, updated=$UPDATED)"
+            echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "✅ Prices fresh — age=${AGE}h, count=$COUNT, last_status=$LAST_STATUS"
+
+      - name: Alert Discord on stale data
+        if: failure() && env.HAS_DISCORD != ''
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: |
+            🟠 **DATA FRESHNESS ALERT** — prices may be frozen on startamarkets.com
+            • reason: `${{ steps.check.outputs.reason }}`
+            • age_hours: `${{ steps.check.outputs.age }}` | last_status: `${{ steps.check.outputs.last_status }}` | updated: `${{ steps.check.outputs.updated }}`
+            • Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

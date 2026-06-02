@@ -38,6 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run actionlint
+        env:
+          # Keep CI focused on real problems: report shellcheck warnings+errors
+          # but drop info/style noise (e.g. SC2086 word-splitting on $GITHUB_OUTPUT).
+          # actionlint's own checks (incl. `secrets` in step-level `if:`) still fail.
+          SHELLCHECK_OPTS: -S warning
         run: |
           # Pinned official installer (supply-chain: pin the script to a release tag)
           bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7

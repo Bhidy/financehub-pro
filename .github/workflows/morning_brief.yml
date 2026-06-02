@@ -100,15 +100,10 @@ jobs:
           steps.check_day.outputs.is_trading_day == 'true' &&
           steps.generate_brief.outputs.status == 'true' &&
           env.HAS_DISCORD != ''
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: |
-            📰 **EGX Morning Brief Ready** — $(date +'%A, %d %B %Y')
-            Market opens in ~30 minutes (10:00 Cairo Time)
-            
-            📊 Visit: https://startamarkets.com
-            💬 Ask the AI: "Give me today's morning brief"
+        run: |
+          DATE=$(date +'%A, %d %B %Y')
+          jq -n --arg d "$DATE" '{content: ("📰 **EGX Morning Brief Ready** — " + $d + "\nMarket opens in ~30 minutes (10:00 Cairo Time)\n\n📊 Visit: https://startamarkets.com\n💬 Ask the AI: \"Give me today’s morning brief\"")}' \
+            | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-
 
       # ── Step 5: Notify on failure ────────────────────────────────────────────
       - name: Notify Discord — Brief Failed
@@ -116,10 +111,7 @@ jobs:
           steps.check_day.outputs.is_trading_day == 'true' &&
           failure() &&
           env.HAS_DISCORD != ''
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: |
-            ⚠️ **Morning Brief Generation Failed** — $(date +'%A, %d %B %Y')
-            The automated morning brief did not complete successfully.
-            Check GitHub Actions logs for details.
+        run: |
+          DATE=$(date +'%A, %d %B %Y')
+          jq -n --arg d "$DATE" '{content: ("⚠️ **Morning Brief Generation Failed** — " + $d + "\nThe automated morning brief did not complete successfully.\nCheck GitHub Actions logs for details.")}' \
+            | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

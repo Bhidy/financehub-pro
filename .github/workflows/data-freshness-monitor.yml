@@ -82,21 +82,21 @@ jobs:
             echo "age_min=$AGE_MIN"
             echo "last_status=$LAST_STATUS"
             echo "reason=$REASON"
+            echo "stale=$STALE"
           } >> "$GITHUB_OUTPUT"
 
+          # Signal hygiene: stale DATA is paged via Discord below, but the run stays
+          # GREEN — a RED run on this monitor now unambiguously means the MONITOR
+          # itself broke (API unreachable, jq error), not merely stale prices.
           if [ "$STALE" = "1" ]; then
-            echo "::error::DATA STALE — $REASON (age=${AGE_MIN}m, last_status=$LAST_STATUS)"
-            exit 1
+            echo "::warning::DATA STALE — $REASON (age=${AGE_MIN}m, last_status=$LAST_STATUS) — paging Discord"
+          else
+            echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS"
           fi
-          echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS"
 
       - name: Alert Discord on stale data
-        if: failure() && env.HAS_DISCORD != ''
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: |
-            🟠 **DATA FRESHNESS ALERT** — prices may be frozen on startamarkets.com
-            • reason: `${{ steps.check.outputs.reason }}`
-            • price age: `${{ steps.check.outputs.age_min }} min` | last_status: `${{ steps.check.outputs.last_status }}`
-            • Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        if: steps.check.outputs.stale == '1' && env.HAS_DISCORD != ''
+        run: |
+          MSG=$(printf '🟠 **DATA FRESHNESS ALERT** — prices may be frozen on startamarkets.com\n• reason: `%s`\n• price age: `%s min` | last_status: `%s`\n• Run: https://github.com/%s/actions/runs/%s' \
+            "${{ steps.check.outputs.reason }}" "${{ steps.check.outputs.age_min }}" "${{ steps.check.outputs.last_status }}" "${{ github.repository }}" "${{ github.run_id }}")
+          jq -n --arg c "$MSG" '{content: $c}' | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

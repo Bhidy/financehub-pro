@@ -76,24 +76,34 @@ jobs:
             IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
             LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
             UPDATED=$(echo "$STATUS_JSON" | jq -r '.tickers_updated')
-            
+
             echo "Status: $LAST_STATUS | Running: $IS_RUNNING | Updated: $UPDATED"
 
             if [ "$IS_RUNNING" == "false" ]; then
               echo "Job finished. last_status=$LAST_STATUS | tickers_updated=$UPDATED"
-              # REAL success requires data to have actually flowed. Previously a run
-              # that updated 0 tickers (broken screener) reported green — silently
-              # freezing the whole platform. Treat 0 updates as a hard failure.
+              # A backend-side error is the only hard failure here.
+              case "$LAST_STATUS" in
+                *error*|*FAILED*|*failed*)
+                  echo "::error::Price refresh errored (status=$LAST_STATUS). Errors: $(echo "$STATUS_JSON" | jq -c '.errors')"
+                  exit 1;;
+              esac
               if [ "${UPDATED:-0}" -gt 0 ] 2>/dev/null; then
                 echo "✅ Price refresh updated $UPDATED tickers"
-                break
               else
-                echo "::error::Price refresh updated 0 tickers (status=$LAST_STATUS). Errors: $(echo "$STATUS_JSON" | jq -c '.errors')"
-                exit 1
+                # 0 updates is suspicious but transient (one bad screener cycle). The
+                # Data Freshness Monitor is the authoritative alarm if prices actually
+                # stay stale — so warn, don't page every 5 minutes.
+                echo "::warning::Price refresh updated 0 tickers (status=$LAST_STATUS). Freshness monitor will escalate if this persists."
               fi
+              break
             fi
             sleep 5
-            if [ $(($(date +%s) - START_TIME)) -gt 300 ]; then echo "❌ Timeout"; exit 1; fi
+            # Still running at the cap: backend continues in the background; do NOT
+            # mark the run failed (that was the recurring false-red alert).
+            if [ $(($(date +%s) - START_TIME)) -gt 240 ]; then
+              echo "::warning::Price refresh still running after 240s ($LAST_STATUS). Backend continues; not failing the run."
+              break
+            fi
           done
 
       # ============================================================
@@ -115,15 +125,22 @@ jobs:
             STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
             IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
             LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
-            
+
             echo "Status: $LAST_STATUS"
-            
+
             if [ "$IS_RUNNING" == "false" ]; then
-              echo "✅ Daily Sync Completed!"
-              break
+              case "$LAST_STATUS" in
+                *error*|*FAILED*|*failed*) echo "::error::Daily Sync errored: $LAST_STATUS"; exit 1;;
+                *) echo "✅ Daily Sync Completed! ($LAST_STATUS)"; break;;
+              esac
             fi
             sleep 10
-            if [ $(($(date +%s) - START_TIME)) -gt 3000 ]; then echo "❌ Timeout"; exit 1; fi
+            # Daily EOD legitimately runs 50+ min; if it's still progressing at the
+            # cap, the backend finishes on its own — don't false-fail the run.
+            if [ $(($(date +%s) - START_TIME)) -gt 3000 ]; then
+              echo "::warning::Daily Sync still running after 3000s ($LAST_STATUS). Backend continues; not failing the run."
+              break
+            fi
           done
 
       # ============================================================
@@ -143,10 +160,21 @@ jobs:
           while true; do
             STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
             IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
-            echo "Running: $IS_RUNNING"
-            if [ "$IS_RUNNING" == "false" ]; then echo "✅ Done"; break; fi
+            LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
+            echo "Running: $IS_RUNNING | Status: $LAST_STATUS"
+            if [ "$IS_RUNNING" == "false" ]; then
+              case "$LAST_STATUS" in
+                *error*|*FAILED*|*failed*) echo "::error::Egypt Funds errored: $LAST_STATUS"; exit 1;;
+                *) echo "✅ Egypt Funds Done ($LAST_STATUS)"; break;;
+              esac
+            fi
             sleep 10
-            if [ $(($(date +%s) - START_TIME)) -gt 600 ]; then echo "❌ Timeout"; exit 1; fi
+            # tls_client NAV scrape can be slow/Cloudflare-throttled; if still running
+            # at the cap the backend finishes on its own — don't false-fail.
+            if [ $(($(date +%s) - START_TIME)) -gt 600 ]; then
+              echo "::warning::Egypt Funds still running after 600s ($LAST_STATUS). Backend continues; not failing the run."
+              break
+            fi
           done
 
       # ============================================================
@@ -168,16 +196,20 @@ jobs:
             STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
             IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
             LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
-            
-            # Print nice status line
+
             echo "Status: $LAST_STATUS"
-            
+
             if [ "$IS_RUNNING" == "false" ]; then
-              echo "✅ AI Ingestion Completed!"
-              break
+              case "$LAST_STATUS" in
+                *error*|*FAILED*|*failed*) echo "::error::AI Ingestion errored: $LAST_STATUS"; exit 1;;
+                *) echo "✅ AI Ingestion Completed! ($LAST_STATUS)"; break;;
+              esac
             fi
             sleep 10
-            if [ $(($(date +%s) - START_TIME)) -gt 3500 ]; then echo "❌ Timeout"; exit 1; fi
+            if [ $(($(date +%s) - START_TIME)) -gt 3500 ]; then
+              echo "::warning::AI Ingestion still running after 3500s ($LAST_STATUS). Backend continues; not failing the run."
+              break
+            fi
           done
 
       # ============================================================
@@ -195,9 +227,17 @@ jobs:
             IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
             LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
             echo "$LAST_STATUS"
-            if [ "$IS_RUNNING" == "false" ]; then echo "✅ Done"; break; fi
+            if [ "$IS_RUNNING" == "false" ]; then
+              case "$LAST_STATUS" in
+                *error*|*FAILED*|*failed*) echo "::error::Backfill errored: $LAST_STATUS"; exit 1;;
+                *) echo "✅ Backfill Done ($LAST_STATUS)"; break;;
+              esac
+            fi
             sleep 10
-            if [ $(($(date +%s) - START_TIME)) -gt 3500 ]; then echo "❌ Timeout"; exit 1; fi
+            if [ $(($(date +%s) - START_TIME)) -gt 3500 ]; then
+              echo "::warning::Backfill still running after 3500s ($LAST_STATUS). Backend continues; not failing the run."
+              break
+            fi
           done
 
       # ============================================================

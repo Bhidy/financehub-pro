@@ -24,7 +24,7 @@ jobs:
 
       - name: Notify Discord on Failure
         if: failure()
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: "🚨 **CRITICAL ALERT**\nFinanceHub API is DOWN!\nURL: https://starta.46-224-223-172.sslip.io\nCheck Hetzner VPS immediately."
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"content": "🚨 **CRITICAL ALERT**\nFinanceHub API is DOWN!\nURL: https://starta.46-224-223-172.sslip.io\nCheck Hetzner VPS immediately."}'

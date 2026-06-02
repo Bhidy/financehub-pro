@@ -56,6 +56,35 @@ def _safe_dumps(obj):
     """json.dumps with NaN sanitization + a hard guard (allow_nan=False)."""
     return json.dumps(_sanitize_json(obj), allow_nan=False, default=str)
 
+
+def _num(x):
+    """Coerce to a finite float, else None (drops NaN/Inf/garbage)."""
+    if x is None:
+        return None
+    try:
+        f = float(x)
+        return None if (math.isnan(f) or math.isinf(f)) else f
+    except (TypeError, ValueError):
+        return None
+
+
+def _hist_to_ohlc_rows(symbol, hist):
+    """Build (symbol, date, o, h, l, c, adj_close, volume) rows for the ohlc_data table.
+    The Market-Pulse chart reads ohlc_data, NOT yahoo_cache — so the reservoir must
+    keep BOTH in sync or charts silently freeze while the cache looks fresh."""
+    rows = []
+    for b in hist or []:
+        try:
+            d = str(b.get("date", ""))[:10]
+            o, h, l, c = _num(b.get("open")), _num(b.get("high")), _num(b.get("low")), _num(b.get("close"))
+            if not d or None in (o, h, l, c) or c <= 0:
+                continue
+            v = int(_num(b.get("volume")) or 0)
+            rows.append((symbol, d, o, h, l, c, c, v))
+        except Exception:
+            continue
+    return rows
+
 # Robust Session Factory (Chrome Impersonation)
 def get_yahoo_session():
     try:
@@ -229,8 +258,19 @@ async def main():
                 SET profile_data=$2, financial_data=$3, history_data=$4, last_updated=NOW()
             """, clean_sym, _safe_dumps(final_prof), _safe_dumps(final_fund), _safe_dumps(final_hist))
 
+            # Keep ohlc_data (the table the public chart reads) in sync with the cache.
+            ohlc_rows = _hist_to_ohlc_rows(clean_sym, final_hist)
+            if ohlc_rows:
+                await conn.executemany("""
+                    INSERT INTO ohlc_data (symbol, date, open, high, low, close, adj_close, volume)
+                    VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8)
+                    ON CONFLICT (symbol, date) DO UPDATE SET
+                        open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
+                        close=EXCLUDED.close, adj_close=EXCLUDED.adj_close, volume=EXCLUDED.volume
+                """, ohlc_rows)
+
             saved += 1
-            logger.info(f"[{idx}/{total}] SAVED {clean_sym} in {time.time()-start_t:.2f}s")
+            logger.info(f"[{idx}/{total}] SAVED {clean_sym} ({len(ohlc_rows)} bars) in {time.time()-start_t:.2f}s")
 
         except Exception as e:
             # Isolate per-symbol failures — never let one symbol kill the whole run.

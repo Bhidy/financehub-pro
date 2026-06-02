@@ -5,6 +5,10 @@ name: Data Freshness Monitor
 # production_watchdog.yml only checks "is the server up" (200 /health),
 # so prices stayed frozen for hours while every check was green.
 # This watches DATA freshness, not server liveness, during market hours.
+#
+# Freshness source: /api/v1/admin/data/freshness returns
+#   { "prices": <ISO ts of newest market_tickers row>, "system_time": <ISO now> }
+# Age = system_time - prices (uses the server's own clock, no runner skew).
 # ============================================================
 
 on:
@@ -34,7 +38,7 @@ jobs:
       - name: Set up jq
         run: sudo apt-get install -y jq
 
-      - name: Probe freshness + refresh status
+      - name: Probe price freshness
         id: check
         run: |
           FR=$(curl -s --max-time 20 "$API/api/v1/admin/data/freshness" || echo '{}')
@@ -42,32 +46,49 @@ jobs:
           echo "Freshness: $FR"
           echo "Status:    $ST"
 
-          AGE=$(echo "$FR" | jq -r '.age_hours // empty')
-          COUNT=$(echo "$FR" | jq -r '.ticker_count // 0')
+          PRICES=$(echo "$FR" | jq -r '.prices // empty')
+          SYS=$(echo "$FR" | jq -r '.system_time // empty')
           LAST_STATUS=$(echo "$ST" | jq -r '.last_status // "unknown"')
-          UPDATED=$(echo "$ST" | jq -r '.tickers_updated // 0')
-
-          echo "age=$AGE"                 >> "$GITHUB_OUTPUT"
-          echo "last_status=$LAST_STATUS" >> "$GITHUB_OUTPUT"
-          echo "updated=$UPDATED"         >> "$GITHUB_OUTPUT"
 
           STALE=0
           REASON=""
-          # No data / endpoint unreachable
-          if [ -z "$AGE" ] || [ "$COUNT" = "0" ]; then STALE=1; REASON="no freshness data (count=$COUNT)"; fi
-          # Prices older than 1h during market hours = frozen pipeline
-          if [ -n "$AGE" ] && awk "BEGIN{exit !($AGE > 1.0)}"; then STALE=1; REASON="prices ${AGE}h old"; fi
-          # Backend explicitly reported a failure
+          AGE_MIN="n/a"
+
+          if [ -z "$PRICES" ]; then
+            STALE=1
+            REASON="no price timestamp from API"
+          else
+            # Strip sub-seconds for portable GNU date parsing
+            P_CLEAN=$(echo "$PRICES" | sed -E 's/\.[0-9]+//')
+            S_CLEAN=$(echo "$SYS"    | sed -E 's/\.[0-9]+//')
+            P_EPOCH=$(date -d "$P_CLEAN" +%s 2>/dev/null || echo 0)
+            NOW_EPOCH=$(date -d "$S_CLEAN" +%s 2>/dev/null || date -u +%s)
+            if [ "$P_EPOCH" -gt 0 ]; then
+              AGE_MIN=$(( (NOW_EPOCH - P_EPOCH) / 60 ))
+              # During market hours a 5-min refresh should keep this well under 1h
+              if [ "$AGE_MIN" -gt 60 ]; then STALE=1; REASON="prices ${AGE_MIN}m old"; fi
+            else
+              STALE=1; REASON="unparseable price timestamp ($PRICES)"
+            fi
+          fi
+
+          # Backend self-reported failure (with the yfinance fallback in place, a
+          # healthy run is "success"; partial_failure/error means real trouble).
           case "$LAST_STATUS" in
-            *error*|*partial_failure*) STALE=1; REASON="backend status=$LAST_STATUS";;
+            *error*|*partial_failure*) STALE=1; REASON="${REASON:+$REASON; }backend status=$LAST_STATUS";;
           esac
 
+          {
+            echo "age_min=$AGE_MIN"
+            echo "last_status=$LAST_STATUS"
+            echo "reason=$REASON"
+          } >> "$GITHUB_OUTPUT"
+
           if [ "$STALE" = "1" ]; then
-            echo "::error::DATA STALE — $REASON (age=${AGE}h, count=$COUNT, last_status=$LAST_STATUS, updated=$UPDATED)"
-            echo "reason=$REASON" >> "$GITHUB_OUTPUT"
+            echo "::error::DATA STALE — $REASON (age=${AGE_MIN}m, last_status=$LAST_STATUS)"
             exit 1
           fi
-          echo "✅ Prices fresh — age=${AGE}h, count=$COUNT, last_status=$LAST_STATUS"
+          echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS"
 
       - name: Alert Discord on stale data
         if: failure() && env.HAS_DISCORD != ''
@@ -77,5 +98,5 @@ jobs:
           content: |
             🟠 **DATA FRESHNESS ALERT** — prices may be frozen on startamarkets.com
             • reason: `${{ steps.check.outputs.reason }}`
-            • age_hours: `${{ steps.check.outputs.age }}` | last_status: `${{ steps.check.outputs.last_status }}` | updated: `${{ steps.check.outputs.updated }}`
+            • price age: `${{ steps.check.outputs.age_min }} min` | last_status: `${{ steps.check.outputs.last_status }}`
             • Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

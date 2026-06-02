@@ -77,36 +77,49 @@ class StockAnalysisClient:
                 None,
                 lambda: self.session.get(url, headers=self.headers)
             )
-            
+
             if resp.status_code != 200:
-                logger.error(f"Failed to fetch stocks: {resp.status_code}")
+                # Surface WHY (Cloudflare challenge, rate-limit, geo-block...) for fast diagnosis
+                body_snip = (getattr(resp, "text", "") or "")[:300].replace("\n", " ")
+                logger.error(f"EGX screener HTTP {resp.status_code}. Body: {body_snip}")
                 return []
-                
+
             data = resp.json()
+            rows = []
+            if isinstance(data, dict) and isinstance(data.get('data'), dict):
+                rows = data['data'].get('data') or []
+
+            if not rows:
+                # 200 but no rows => API shape changed or empty filter result.
+                # Log the structure so we can adapt the parser quickly.
+                shape = list(data.keys()) if isinstance(data, dict) else type(data).__name__
+                logger.error(f"EGX screener returned 0 rows (HTTP 200). Top-level shape: {shape}")
+                return []
+
             stocks = []
-            if 'data' in data and 'data' in data['data']:
-                for row in data['data']['data']:
-                    symbol_raw = row.get('s', '')
-                    symbol = symbol_raw.split('/')[-1] if '/' in symbol_raw else symbol_raw
-                    
-                    stocks.append({
-                        'symbol': symbol,
-                        'name_en': row.get('n', ''),
-                        'market_cap': row.get('marketCap'),
-                        'last_price': row.get('price'),
-                        'change_percent': row.get('change'),
-                        'volume': row.get('volume'),
-                        'revenue': row.get('revenue'),
-                        'net_income': row.get('netIncome'),
-                        'pe_ratio': row.get('peRatio'),
-                        'dividend_yield': row.get('dividendYield'),
-                        'sector_name': row.get('sector', ''),
-                        'market_code': 'EGX',
-                        'currency': 'EGP'
-                    })
+            for row in rows:
+                symbol_raw = row.get('s', '')
+                symbol = symbol_raw.split('/')[-1] if '/' in symbol_raw else symbol_raw
+
+                stocks.append({
+                    'symbol': symbol,
+                    'name_en': row.get('n', ''),
+                    'market_cap': row.get('marketCap'),
+                    'last_price': row.get('price'),
+                    'change_percent': row.get('change'),
+                    'volume': row.get('volume'),
+                    'revenue': row.get('revenue'),
+                    'net_income': row.get('netIncome'),
+                    'pe_ratio': row.get('peRatio'),
+                    'dividend_yield': row.get('dividendYield'),
+                    'sector_name': row.get('sector', ''),
+                    'market_code': 'EGX',
+                    'currency': 'EGP'
+                })
+            logger.info(f"EGX screener returned {len(stocks)} stocks")
             return stocks
         except Exception as e:
-            logger.error(f"Error parsing stocks: {e}")
+            logger.error(f"Error parsing EGX screener: {type(e).__name__}: {e}")
             return []
 
     async def get_stock_history(self, symbol: str) -> List[Dict]:

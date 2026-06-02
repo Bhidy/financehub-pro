@@ -38,10 +38,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger('EgyptYahooLoader')
 
-DATABASE_URL = os.environ.get(
-    'DATABASE_URL', 
-    'postgres://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require'
-)
+# SECURITY: never embed DB credentials in code. Provided via env (GH Actions
+# secret / backend /opt/starta/.env). The previously hardcoded password is in
+# git history and MUST be rotated.
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 # List of premium browser User-Agents for clean rotation
 USER_AGENTS = [

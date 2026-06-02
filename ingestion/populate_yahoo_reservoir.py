@@ -1,5 +1,7 @@
 import asyncio
 import os
+import sys
+import math
 import time
 import json
 import logging
@@ -21,6 +23,38 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+
+def _sanitize_json(obj):
+    """
+    Recursively convert values that PostgreSQL JSON rejects into safe ones.
+    - NaN / Infinity  -> None   (Postgres: `Token "NaN" is invalid`)
+    - numpy scalars   -> native Python int/float (json can't serialize np types)
+    A single un-sanitized NaN previously crashed the ENTIRE 227-symbol batch.
+    """
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    try:
+        import numpy as _np
+        if isinstance(obj, _np.floating):
+            f = float(obj)
+            return None if (math.isnan(f) or math.isinf(f)) else f
+        if isinstance(obj, _np.integer):
+            return int(obj)
+        if isinstance(obj, _np.bool_):
+            return bool(obj)
+    except Exception:
+        pass
+    return obj
+
+
+def _safe_dumps(obj):
+    """json.dumps with NaN sanitization + a hard guard (allow_nan=False)."""
+    return json.dumps(_sanitize_json(obj), allow_nan=False, default=str)
 
 # Robust Session Factory (Chrome Impersonation)
 def get_yahoo_session():
@@ -139,70 +173,84 @@ async def main():
     if not symbols:
         symbols = ["COMI", "SWDY", "ETEL", "EAST", "HRHO", "MNHD", "TMGH", "EKHO", "ADIB", "HDBK"]
         
-    logger.info(f"Starting ingestion for {len(symbols)} symbols...")
-    
-    for sym in symbols:
+    total = len(symbols)
+    logger.info(f"Starting ingestion for {total} symbols...")
+
+    saved = 0
+    no_data = []   # Yahoo returned nothing
+    failed = []    # raised an exception (isolated, does not abort the run)
+
+    for idx, sym in enumerate(symbols, 1):
         clean_sym = sym.replace(".CA", "")
-        
-        # Check if recently updated (prevent spamming if re-running)
-        # cache_row = await conn.fetchrow("SELECT last_updated FROM yahoo_cache WHERE symbol=$1", clean_sym)
-        # if cache_row:
-        #    ... logic to skip ...
-        
         start_t = time.time()
-        res = await asyncio.to_thread(fetch_yfinance_data, clean_sym)
-        
-        if res:
+
+        try:
+            res = await asyncio.to_thread(fetch_yfinance_data, clean_sym)
+
+            if not res:
+                logger.warning(f"[{idx}/{total}] NO DATA {clean_sym}")
+                no_data.append(clean_sym)
+                continue
+
             prof, fund, hist = res
-            
+
             # MERGE LOGIC: Read existing to prevent overwriting StockAnalysis data
-            existing = await conn.fetchrow("SELECT profile_data, financial_data, history_data FROM yahoo_cache WHERE symbol=$1", clean_sym)
-            
+            existing = await conn.fetchrow(
+                "SELECT profile_data, financial_data, history_data FROM yahoo_cache WHERE symbol=$1",
+                clean_sym,
+            )
+
             final_prof = prof
             final_fund = fund
             final_hist = hist
-            
+
             if existing:
-                # Merge Profile
+                # Overlay Yahoo on top of existing, but never overwrite valid data with None
                 if existing['profile_data']:
                     existing_prof = json.loads(existing['profile_data'])
-                    # We prefer Yahoo for Price/Vol, but StockAnalysis for Desc/Sector if Yahoo is missing
-                    # Actually, let's overlay Yahoo ON TOP of valid existing data, but don't overwrite valid data with None
                     for k, v in existing_prof.items():
                         if k not in final_prof or final_prof[k] is None:
                             final_prof[k] = v
-                            
-                # Merge Financials
+                # Preserve StockAnalysis financials if Yahoo is None
                 if existing['financial_data']:
                     existing_fund = json.loads(existing['financial_data'])
                     for k, v in existing_fund.items():
-                        # Preserve StockAnalysis margins if Yahoo is None
                         if k not in final_fund or final_fund[k] is None:
                             final_fund[k] = v
-                
-                # History: Yahoo is usually the source of truth for history, so we overwrite or append?
-                # Overwriting history is usually safer to avoid gaps/dupes, assuming Yahoo fetch was successful.
-                # If Yahoo fetch failed (hist empty), keep existing.
+                # Keep existing history if Yahoo fetch returned nothing
                 if not final_hist and existing['history_data']:
                     final_hist = json.loads(existing['history_data'])
 
-            # Upsert
+            # Upsert — NaN-safe serialization (a single NaN used to abort all 227 symbols)
             await conn.execute("""
                 INSERT INTO yahoo_cache (symbol, profile_data, financial_data, history_data, last_updated)
                 VALUES ($1, $2, $3, $4, NOW())
-                ON CONFLICT (symbol) DO UPDATE 
+                ON CONFLICT (symbol) DO UPDATE
                 SET profile_data=$2, financial_data=$3, history_data=$4, last_updated=NOW()
-            """, clean_sym, json.dumps(final_prof), json.dumps(final_fund), json.dumps(final_hist))
-            
-            logger.info(f"SAVED {clean_sym} in {time.time()-start_t:.2f}s")
-        else:
-            logger.warning(f"FAILED {clean_sym}")
-        
+            """, clean_sym, _safe_dumps(final_prof), _safe_dumps(final_fund), _safe_dumps(final_hist))
+
+            saved += 1
+            logger.info(f"[{idx}/{total}] SAVED {clean_sym} in {time.time()-start_t:.2f}s")
+
+        except Exception as e:
+            # Isolate per-symbol failures — never let one symbol kill the whole run.
+            failed.append(clean_sym)
+            logger.error(f"[{idx}/{total}] ERROR {clean_sym}: {type(e).__name__}: {e}")
+
         # Respectful Sleep
-        time.sleep(1.5) 
+        time.sleep(1.5)
 
     await conn.close()
-    logger.info("Ingestion Complete.")
+    logger.info(
+        f"Ingestion Complete. saved={saved}/{total} | no_data={len(no_data)} | errors={len(failed)}"
+    )
+    if failed:
+        logger.warning(f"Symbols with errors: {', '.join(failed[:50])}")
+
+    # Fail the job ONLY on a total wipeout, so partial runs still let gap-fill proceed.
+    if saved == 0 and total > 0:
+        logger.error("FATAL: 0 symbols saved — failing the job.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     import argparse

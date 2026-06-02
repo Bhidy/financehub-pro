@@ -148,6 +148,7 @@ async def debug_reset_status():
 
 refresh_status = {
     "is_running": False,
+    "started_at": None,
     "last_run": None,
     "last_status": "idle",
     "tickers_updated": 0,
@@ -155,6 +156,39 @@ refresh_status = {
     "errors": [],
     "data_source": "Yahoo Finance"
 }
+
+# Any single refresh job must finish within this window. Past it we assume the
+# job died (process restart / crash / overlap) and auto-release the lock so the
+# pipeline can never wedge itself permanently in "is_running": true.
+MAX_REFRESH_AGE_SECONDS = 1800  # 30 minutes
+
+
+def _lock_refresh():
+    """Acquire the global refresh lock and stamp the start time."""
+    refresh_status.update({"is_running": True, "started_at": datetime.now().isoformat()})
+
+
+def _is_locked() -> bool:
+    """
+    True only if a refresh is genuinely running. Auto-releases a stale lock so a
+    crashed job (which never hit its `finally`) cannot block all future refreshes.
+    """
+    if not refresh_status.get("is_running"):
+        return False
+    started = refresh_status.get("started_at")
+    if started:
+        try:
+            age = (datetime.now() - datetime.fromisoformat(started)).total_seconds()
+            if age > MAX_REFRESH_AGE_SECONDS:
+                logger.warning(
+                    f"Auto-releasing STALE refresh lock (age {age:.0f}s > {MAX_REFRESH_AGE_SECONDS}s)"
+                )
+                refresh_status["is_running"] = False
+                refresh_status["last_status"] = "auto_released_stale_lock"
+                return False
+        except Exception:
+            pass
+    return True
 
 # ============================================================
 # YFINANCE PRICE EXTRACTION (Primary for real-time prices)
@@ -244,6 +278,70 @@ async def fetch_prices_yfinance(symbols: List[str]) -> Dict:
 
 
 
+
+
+async def fetch_egx_prices_yfinance(symbols: List[str]) -> Dict:
+    """
+    FALLBACK price source for EGX when the StockAnalysis screener is unavailable.
+    Uses yfinance with the `.CA` suffix — the same engine that powers KSA prices,
+    proven to work from the production host. Non-blocking + batched/rate-limited.
+    """
+    import yfinance as yf
+
+    def _get_info_sync(yahoo_symbol: str) -> dict:
+        try:
+            return yf.Ticker(yahoo_symbol).info or {}
+        except Exception as e:
+            logger.warning(f"yfinance(.CA) error for {yahoo_symbol}: {e}")
+            return {}
+
+    results: Dict = {}
+    errors: List[str] = []
+    batch_size = 20
+    batches = [symbols[i:i + batch_size] for i in range(0, len(symbols), batch_size)]
+    logger.info(f"[EGX fallback] Fetching {len(symbols)} EGX stocks via yfinance(.CA) in {len(batches)} batches...")
+
+    for batch_idx, batch in enumerate(batches):
+        for symbol in batch:
+            try:
+                clean = symbol.replace('.CA', '')
+                info = await asyncio.to_thread(_get_info_sync, f"{clean}.CA")
+                if not info:
+                    errors.append(f"{symbol}: no data")
+                    continue
+
+                last_price = info.get('currentPrice') or info.get('regularMarketPrice')
+                prev = info.get('previousClose') or info.get('regularMarketPreviousClose')
+                if not last_price:
+                    errors.append(f"{symbol}: no price")
+                    continue
+
+                change = round(last_price - prev, 4) if (last_price and prev) else None
+                change_pct = round(((last_price / prev) - 1) * 100, 2) if (last_price and prev) else None
+
+                results[clean] = {
+                    'symbol': clean,
+                    'name_en': info.get('shortName') or info.get('longName'),
+                    'sector': info.get('sector'),
+                    'last_price': last_price,
+                    'change': change,
+                    'change_percent': change_pct,
+                    'volume': info.get('volume') or info.get('regularMarketVolume') or 0,
+                    'open_price': info.get('open') or info.get('regularMarketOpen'),
+                    'high': info.get('dayHigh'),
+                    'low': info.get('dayLow'),
+                    'prev_close': prev,
+                }
+                await asyncio.sleep(0.15)
+            except Exception as e:
+                errors.append(f"{symbol}: {str(e)[:50]}")
+                logger.warning(f"[EGX fallback] error for {symbol}: {e}")
+
+        if batch_idx < len(batches) - 1:
+            await asyncio.sleep(3)
+
+    logger.info(f"[EGX fallback] yfinance(.CA) updated {len(results)} EGX stocks")
+    return {"results": results, "errors": errors}
 
 
 async def fetch_historical_ohlc(symbol: str, period: str = "max") -> List[Dict]:
@@ -668,7 +766,7 @@ async def refresh_all_prices():
     """
     global refresh_status
     
-    refresh_status["is_running"] = True
+    _lock_refresh()
     refresh_status["errors"] = []
     refresh_status["tickers_updated"] = 0
     
@@ -702,39 +800,58 @@ async def refresh_all_prices():
                 return 0, [f"KSA Critical: {e}"]
 
         async def process_egx():
-            # Check if we should run Egypt update
-            # Use egypt_symbols as a flag that EGX is enabled/present in DB
+            # egypt_symbols doubles as a flag that EGX is present/enabled in the DB
             if not egypt_symbols: return 0, []
-            
+
+            egx_notes = []
+
+            # --- SOURCE 1 (primary): StockAnalysis screener ---
             try:
-                # FAST PATH via Screener
-                # We need to fetch the screener data first!
                 from data_pipeline.market_loader import EGXProductionLoader
                 loader = EGXProductionLoader()
                 egypt_stocks = await loader.client.get_egx_stocks()
-                
-                if not egypt_stocks:
-                    logger.warning("Screener returned 0 stocks.")
-                    return 0, ["Screener returned 0 stocks"]
 
-                logger.info(f"Refreshing {len(egypt_stocks)} Egypt stocks via Screener...")
-                egx_updates = {}
-                for stock in egypt_stocks:
-                    egx_updates[stock['symbol']] = {
-                        'symbol': stock['symbol'],
-                        'name_en': stock.get('name_en'),
-                        'sector': stock.get('sector_name'),
-                        'last_price': float(stock['last_price']) if stock.get('last_price') else 0.0,
-                        'change': float(stock.get('change') or 0.0),
-                        'change_percent': float(stock.get('change_percent') or 0.0),
-                        'volume': int(stock.get('volume') or 0),
-                        'last_updated': datetime.now().isoformat()
-                    }
-                await update_market_tickers(egx_updates)
-                return len(egx_updates), []
+                if egypt_stocks:
+                    logger.info(f"Refreshing {len(egypt_stocks)} Egypt stocks via Screener...")
+                    egx_updates = {}
+                    for stock in egypt_stocks:
+                        # Skip rows without a real price — never zero out a live stock
+                        if not stock.get('last_price'):
+                            continue
+                        egx_updates[stock['symbol']] = {
+                            'symbol': stock['symbol'],
+                            'name_en': stock.get('name_en'),
+                            'sector': stock.get('sector_name'),
+                            'last_price': float(stock['last_price']),
+                            'change': float(stock.get('change') or 0.0),
+                            'change_percent': float(stock.get('change_percent') or 0.0),
+                            'volume': int(stock.get('volume') or 0),
+                        }
+                    if egx_updates:
+                        await update_market_tickers(egx_updates)
+                        return len(egx_updates), []
+                    egx_notes.append("Screener returned rows but no usable prices")
+                else:
+                    egx_notes.append("Screener returned 0 stocks")
+                logger.warning(f"EGX primary source unusable ({egx_notes[-1]}) — using yfinance(.CA) fallback")
             except Exception as e:
-                logger.error(f"EGX Update Failed: {e}")
-                return 0, [f"EGX Critical: {e}"]
+                logger.error(f"EGX screener failed: {e} — using yfinance(.CA) fallback")
+                egx_notes.append(f"Screener error: {str(e)[:80]}")
+
+            # --- SOURCE 2 (fallback): yfinance (.CA), same engine as KSA ---
+            try:
+                egx_data = await asyncio.wait_for(
+                    fetch_egx_prices_yfinance(egypt_symbols), timeout=180.0
+                )
+                fb = egx_data["results"]
+                if fb:
+                    await update_market_tickers(fb)
+                    logger.info(f"EGX fallback updated {len(fb)} stocks via yfinance(.CA)")
+                    return len(fb), egx_notes  # data flowed; note that primary was degraded
+                return 0, egx_notes + ["yfinance(.CA) fallback returned 0"]
+            except Exception as e:
+                logger.error(f"EGX yfinance fallback failed: {e}")
+                return 0, egx_notes + [f"yfinance fallback error: {str(e)[:80]}"]
 
         # Execute in parallel
         results = await asyncio.gather(process_ksa(), process_egx(), return_exceptions=True)
@@ -776,7 +893,7 @@ async def refresh_daily_data():
     """
     global refresh_status
     
-    refresh_status["is_running"] = True
+    _lock_refresh()
     refresh_status["errors"] = []
     
     try:
@@ -855,7 +972,7 @@ async def backfill_historical_data(symbol: str = None):
     global refresh_status
     import yfinance as yf
     
-    refresh_status["is_running"] = True
+    _lock_refresh()
     refresh_status["errors"] = []
     
     stats = {
@@ -1039,7 +1156,7 @@ async def trigger_price_refresh(background_tasks: BackgroundTasks):
     5-MINUTE REFRESH: Quick price update using yfinance
     Safe to run every 5 minutes during market hours
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {"status": "already_running", "message": "A refresh is already in progress"}
     
     background_tasks.add_task(refresh_all_prices)
@@ -1058,7 +1175,7 @@ async def sync_data_now():
     SYNCHRONOUS PRICE REFRESH: For scheduled tasks
     Returns after completion
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {"status": "already_running"}
     
     result = await refresh_all_prices()
@@ -1078,7 +1195,7 @@ async def trigger_daily_sync(background_tasks: BackgroundTasks):
     DAILY EOD SYNC: Full data refresh after market close
     Includes: OHLC history, analyst ratings
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {"status": "already_running"}
     
     background_tasks.add_task(refresh_daily_data)
@@ -1099,14 +1216,14 @@ async def trigger_backfill(symbol: Optional[str] = None):
     
     Monitor progress at: /api/v1/admin/refresh/status
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {
             "status": "already_running", 
             "message": "A backfill is already in progress. Check status at /api/v1/admin/refresh/status"
         }
     
     # Mark as running IMMEDIATELY
-    refresh_status["is_running"] = True
+    _lock_refresh()
     refresh_status["errors"] = []
     refresh_status["last_status"] = "starting backfill..."
     refresh_status["stats"] = {"stocks_done": 0, "total_records": 0}
@@ -1176,12 +1293,12 @@ async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
     EGYPT FUNDS SYNC: Update NAVs for all funds
     Uses tls_client to bypass Cloudflare
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {"status": "already_running"}
     
     async def _run_funds():
         global refresh_status
-        refresh_status["is_running"] = True
+        _lock_refresh()
         refresh_status["last_status"] = "Updating Egypt Funds..."
         try:
             await egypt_market_service.update_all_navs()
@@ -1215,12 +1332,12 @@ async def trigger_indices_refresh(background_tasks: BackgroundTasks):
     """
     INDICES REFRESH: Update TASI and EGX30
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {"status": "already_running"}
     
     async def _run_indices():
         global refresh_status
-        refresh_status["is_running"] = True
+        _lock_refresh()
         try:
             data = await fetch_indices()
             await save_indices_data(data["results"])
@@ -1245,7 +1362,7 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
     """
     CHATBOT DATA INGESTION: Run StockAnalysis pipeline
     """
-    if refresh_status["is_running"]:
+    if _is_locked():
         return {"status": "already_running"}
         
     if not run_ingestion_job:
@@ -1253,7 +1370,7 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
 
     async def _run_wrapper():
         global refresh_status
-        refresh_status["is_running"] = True
+        _lock_refresh()
         async def _progress_cb(data):
              refresh_status["last_status"] = f"Ingesting {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
              refresh_status["stats"] = data

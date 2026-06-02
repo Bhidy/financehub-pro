@@ -149,6 +149,7 @@ async def debug_reset_status():
 refresh_status = {
     "is_running": False,
     "started_at": None,
+    "heartbeat_at": None,
     "last_run": None,
     "last_status": "idle",
     "tickers_updated": 0,
@@ -157,31 +158,42 @@ refresh_status = {
     "data_source": "Yahoo Finance"
 }
 
-# Any single refresh job must finish within this window. Past it we assume the
-# job died (process restart / crash / overlap) and auto-release the lock so the
-# pipeline can never wedge itself permanently in "is_running": true.
-MAX_REFRESH_AGE_SECONDS = 1800  # 30 minutes
+# Liveness is measured by INACTIVITY, not total runtime. A healthy long job (the
+# daily EOD sync legitimately runs 50+ min) heartbeats every symbol, so its lock
+# is never released mid-run. A job that makes NO progress for this window is
+# assumed dead (crash / process restart / hung scrape) and its lock is released
+# so the pipeline can never wedge itself permanently in "is_running": true.
+# NOTE: must stay >= the slowest single opaque step (Egypt funds tls_client scrape).
+MAX_INACTIVITY_SECONDS = 900  # 15 minutes with zero progress = dead
+
+
+def _heartbeat():
+    """Mark forward progress so an actively-running job is never seen as stale."""
+    refresh_status["heartbeat_at"] = datetime.now().isoformat()
 
 
 def _lock_refresh():
-    """Acquire the global refresh lock and stamp the start time."""
-    refresh_status.update({"is_running": True, "started_at": datetime.now().isoformat()})
+    """Acquire the global refresh lock and stamp the start + first heartbeat."""
+    now = datetime.now().isoformat()
+    refresh_status.update({"is_running": True, "started_at": now, "heartbeat_at": now})
 
 
 def _is_locked() -> bool:
     """
-    True only if a refresh is genuinely running. Auto-releases a stale lock so a
-    crashed job (which never hit its `finally`) cannot block all future refreshes.
+    True only if a refresh is genuinely making progress. Auto-releases a lock that
+    has gone silent (no heartbeat within MAX_INACTIVITY_SECONDS) so a crashed or
+    hung job cannot block all future refreshes — without ever releasing a healthy
+    long-running job that is still heartbeating.
     """
     if not refresh_status.get("is_running"):
         return False
-    started = refresh_status.get("started_at")
-    if started:
+    marker = refresh_status.get("heartbeat_at") or refresh_status.get("started_at")
+    if marker:
         try:
-            age = (datetime.now() - datetime.fromisoformat(started)).total_seconds()
-            if age > MAX_REFRESH_AGE_SECONDS:
+            age = (datetime.now() - datetime.fromisoformat(marker)).total_seconds()
+            if age > MAX_INACTIVITY_SECONDS:
                 logger.warning(
-                    f"Auto-releasing STALE refresh lock (age {age:.0f}s > {MAX_REFRESH_AGE_SECONDS}s)"
+                    f"Auto-releasing STALE refresh lock (no progress for {age:.0f}s > {MAX_INACTIVITY_SECONDS}s)"
                 )
                 refresh_status["is_running"] = False
                 refresh_status["last_status"] = "auto_released_stale_lock"
@@ -283,64 +295,86 @@ async def fetch_prices_yfinance(symbols: List[str]) -> Dict:
 async def fetch_egx_prices_yfinance(symbols: List[str]) -> Dict:
     """
     FALLBACK price source for EGX when the StockAnalysis screener is unavailable.
-    Uses yfinance with the `.CA` suffix — the same engine that powers KSA prices,
-    proven to work from the production host. Non-blocking + batched/rate-limited.
+
+    Uses yfinance's BATCHED `download()` (the chart API) with the `.CA` suffix —
+    one HTTP request per chunk of symbols instead of a per-symbol `.info` call.
+    The old per-symbol `.info` path took >5 min for the full EGX universe, so the
+    5-min price cron could never finish and prices went stale; this batched path
+    fetches the whole universe in seconds and is also less rate-limited.
+
+    Name/sector are intentionally NOT fetched here (they're static and preserved
+    by the COALESCE upsert in update_market_tickers) — only live price fields.
     """
     import yfinance as yf
 
-    def _get_info_sync(yahoo_symbol: str) -> dict:
-        try:
-            return yf.Ticker(yahoo_symbol).info or {}
-        except Exception as e:
-            logger.warning(f"yfinance(.CA) error for {yahoo_symbol}: {e}")
-            return {}
-
     results: Dict = {}
     errors: List[str] = []
-    batch_size = 20
-    batches = [symbols[i:i + batch_size] for i in range(0, len(symbols), batch_size)]
-    logger.info(f"[EGX fallback] Fetching {len(symbols)} EGX stocks via yfinance(.CA) in {len(batches)} batches...")
 
-    for batch_idx, batch in enumerate(batches):
-        for symbol in batch:
+    # Map "<clean>.CA" -> clean so we can read columns back per ticker.
+    sym_map = {f"{s.replace('.CA', '')}.CA": s.replace('.CA', '') for s in symbols}
+    yahoo_syms = list(sym_map.keys())
+    chunk_size = 50
+    chunks = [yahoo_syms[i:i + chunk_size] for i in range(0, len(yahoo_syms), chunk_size)]
+    logger.info(f"[EGX fallback] Batch-downloading {len(yahoo_syms)} EGX stocks via yfinance(.CA) in {len(chunks)} chunk(s)...")
+
+    def _download(tickers: List[str]):
+        # period=5d/interval=1d guarantees today + a prior close even across weekends/holidays.
+        return yf.download(
+            tickers, period="5d", interval="1d", group_by="ticker",
+            auto_adjust=False, threads=True, progress=False,
+        )
+
+    for ci, chunk in enumerate(chunks):
+        try:
+            df = await asyncio.to_thread(_download, chunk)
+        except Exception as e:
+            errors.append(f"chunk {ci}: {str(e)[:60]}")
+            logger.warning(f"[EGX fallback] chunk {ci} download failed: {e}")
+            continue
+
+        if df is None or df.empty:
+            errors.append(f"chunk {ci}: empty")
+            continue
+
+        for ysym in chunk:
+            clean = sym_map[ysym]
             try:
-                clean = symbol.replace('.CA', '')
-                info = await asyncio.to_thread(_get_info_sync, f"{clean}.CA")
-                if not info:
-                    errors.append(f"{symbol}: no data")
+                # With group_by='ticker' a multi-ticker frame has columns (ticker, field);
+                # a single-ticker frame has just field columns.
+                sub = df[ysym] if isinstance(df.columns, pd.MultiIndex) else df
+                sub = sub.dropna(subset=["Close"])
+                if sub is None or sub.empty:
+                    errors.append(f"{clean}: no data")
                     continue
 
-                last_price = info.get('currentPrice') or info.get('regularMarketPrice')
-                prev = info.get('previousClose') or info.get('regularMarketPreviousClose')
+                last_price = float(sub["Close"].iloc[-1])
+                prev = float(sub["Close"].iloc[-2]) if len(sub) >= 2 else None
                 if not last_price:
-                    errors.append(f"{symbol}: no price")
+                    errors.append(f"{clean}: no price")
                     continue
 
-                change = round(last_price - prev, 4) if (last_price and prev) else None
-                change_pct = round(((last_price / prev) - 1) * 100, 2) if (last_price and prev) else None
+                change = round(last_price - prev, 4) if prev else None
+                change_pct = round(((last_price / prev) - 1) * 100, 2) if prev else None
+                vol = sub["Volume"].iloc[-1]
 
                 results[clean] = {
                     'symbol': clean,
-                    'name_en': info.get('shortName') or info.get('longName'),
-                    'sector': info.get('sector'),
                     'last_price': last_price,
                     'change': change,
                     'change_percent': change_pct,
-                    'volume': info.get('volume') or info.get('regularMarketVolume') or 0,
-                    'open_price': info.get('open') or info.get('regularMarketOpen'),
-                    'high': info.get('dayHigh'),
-                    'low': info.get('dayLow'),
+                    'volume': int(vol) if pd.notna(vol) else 0,
+                    'open_price': float(sub["Open"].iloc[-1]) if pd.notna(sub["Open"].iloc[-1]) else None,
+                    'high': float(sub["High"].iloc[-1]) if pd.notna(sub["High"].iloc[-1]) else None,
+                    'low': float(sub["Low"].iloc[-1]) if pd.notna(sub["Low"].iloc[-1]) else None,
                     'prev_close': prev,
                 }
-                await asyncio.sleep(0.15)
             except Exception as e:
-                errors.append(f"{symbol}: {str(e)[:50]}")
-                logger.warning(f"[EGX fallback] error for {symbol}: {e}")
+                errors.append(f"{clean}: {str(e)[:50]}")
 
-        if batch_idx < len(batches) - 1:
-            await asyncio.sleep(3)
+        if ci < len(chunks) - 1:
+            await asyncio.sleep(1)
 
-    logger.info(f"[EGX fallback] yfinance(.CA) updated {len(results)} EGX stocks")
+    logger.info(f"[EGX fallback] yfinance(.CA) batch updated {len(results)} EGX stocks")
     return {"results": results, "errors": errors}
 
 
@@ -937,6 +971,7 @@ async def refresh_daily_data():
                 # Define callback for visibility
                 async def _ingest_cb(data):
                     refresh_status["last_status"] = f"Daily Sync: Egypt {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
+                    _heartbeat()
                 
                 # run_ingestion_job handles its own DB connection and iteration
                 ingest_result = await run_ingestion_job(status_callback=_ingest_cb)
@@ -1374,6 +1409,7 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
         async def _progress_cb(data):
              refresh_status["last_status"] = f"Ingesting {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
              refresh_status["stats"] = data
+             _heartbeat()
 
         try:
             await run_ingestion_job(status_callback=_progress_cb)
@@ -1451,6 +1487,7 @@ async def run_robust_backfill(symbol: str = None):
                 
                 # Update live status
                 refresh_status["last_status"] = f"processing {idx+1}/{total_stocks}: {sym}"
+                _heartbeat()
                 logger.info(f"[{idx+1}/{total_stocks}] Starting {sym}...")
                 
                 # 1. Daily OHLC (max history) - NON-BLOCKING

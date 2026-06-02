@@ -1,0 +1,62 @@
+name: CI Guard
+
+# ============================================================
+# Prevention layer (added after the June 2026 freeze).
+# - actionlint validates EVERY workflow. It catches the exact bug that broke
+#   morning_brief.yml (a `secrets.*` reference inside a step-level `if:`),
+#   which failed silently at 0s on every push for days.
+# - py_compile validates the ingestion + backend code so a syntax error can
+#   never reach main and break the data pipeline.
+# ============================================================
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - 'ingestion/**'
+      - 'backend-core/**'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'ingestion/**'
+      - 'backend-core/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-workflows:
+    name: Validate workflows (actionlint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run actionlint
+        run: |
+          # Pinned official installer (supply-chain: pin the script to a release tag)
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
+          ./actionlint -color
+
+  python-smoke:
+    name: Python syntax check
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile ingestion + backend (no import/network — syntax only)
+        run: |
+          python -m compileall -q \
+            -x '(chat_backup|__pycache__|\.venv)' \
+            ingestion \
+            backend-core/app \
+            backend-core/data_pipeline
+          echo "✅ Python sources compile cleanly"

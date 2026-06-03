@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# ==========================================================================
+# pre-push guard — prevents the two deployment failures we hit on 2026-06-03:
+#
+#  1. Vercel "no git user associated with the commit" BLOCK (Hobby plan):
+#     commits pushed to main whose AUTHOR email is not linked to the Vercel/
+#     GitHub account are silently BLOCKED (never built). The live site then
+#     keeps serving an OLD deployment while every push "fails".
+#
+#  2. Pushing the whole dirty worktree: the repo carries unrelated in-flight
+#     work; a bad commit can ship half-finished frontend.
+#
+# Enable once (committed config):  git config core.hooksPath scripts/git-hooks
+# ==========================================================================
+set -euo pipefail
+
+REQUIRED_EMAIL="mohamedbhidy@gmail.com"   # the Vercel-account-linked email
+Z40="0000000000000000000000000000000000000000"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$remote_ref" in
+        refs/heads/main)
+            if [ "$remote_sha" = "$Z40" ]; then
+                range="$local_sha"
+            else
+                range="${remote_sha}..${local_sha}"
+            fi
+            bad=$(git log --format='%ae' "$range" 2>/dev/null | grep -v "^${REQUIRED_EMAIL}$" | sort -u || true)
+            if [ -n "$bad" ]; then
+                echo "❌ pre-push BLOCKED — commit author email must be ${REQUIRED_EMAIL} for main."
+                echo "   Vercel (Hobby) BLOCKS deploys whose author email is not account-linked,"
+                echo "   so the live site would silently keep serving the old build."
+                echo "   Offending author email(s):"
+                echo "${bad}" | sed 's/^/     - /'
+                echo "   Fix:  git config user.email \"${REQUIRED_EMAIL}\""
+                echo "         git commit --amend --reset-author --no-edit   # for the latest commit"
+                exit 1
+            fi
+            ;;
+    esac
+done
+exit 0

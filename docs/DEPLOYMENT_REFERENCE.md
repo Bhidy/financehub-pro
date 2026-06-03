@@ -158,6 +158,33 @@ Alternatively, add the other email as a *verified* email on the GitHub `Bhidy` a
 
 **To recover a stuck state**: make any commit authored by the linked email (even `git commit --allow-empty`) and push — it builds. Then run the mandatory alias step (below).
 
+### 🛡️ PREVENTION (so this never recurs)
+
+1. **Repo-local git identity** (set — verify with `git config user.email`):
+   ```bash
+   git config user.email "mohamedbhidy@gmail.com"
+   git config user.name  "Mohamed Bhidy"
+   ```
+2. **Pre-push guard (committed)** — `scripts/git-hooks/pre-push` blocks any push to
+   `main` whose commit-author email is not the linked one. **Enable once per clone:**
+   ```bash
+   git config core.hooksPath scripts/git-hooks
+   ```
+   It refuses the push *before* it reaches GitHub, with the exact fix command — so a
+   BLOCKED Vercel deploy can never happen again from a wrong-author commit.
+3. **Pre-deploy checklist** (every release):
+   - [ ] `git config user.email` → `mohamedbhidy@gmail.com`
+   - [ ] `git status --short` reviewed — only intended files staged (repo carries unrelated in-flight work; never `git add -A`)
+   - [ ] `cd frontend && npm run build` passes locally
+   - [ ] push → poll Vercel until `readyState: READY` (not BLOCKED/ERROR)
+   - [ ] **alias** the new deployment URL to `startamarkets.com` + `www` (below) — **never skip**
+   - [ ] verify live: `curl -s -o /dev/null -w "%{http_code}" https://startamarkets.com/` → 200
+4. **How to detect a BLOCK fast** (if a deploy "did nothing"):
+   ```bash
+   ./frontend/node_modules/.bin/vercel inspect <deployment-url>   # look for: BLOCKED
+   # or via API: GET api.vercel.com/v6/deployments?projectId=...&limit=1  → readyState
+   ```
+
 **Mandatory after EVERY deploy** (git push *or* `vercel deploy`): alias the new deployment URL to the domains, or the live site keeps serving the old build:
 ```bash
 ./frontend/node_modules/.bin/vercel alias set <new-deployment-url> startamarkets.com

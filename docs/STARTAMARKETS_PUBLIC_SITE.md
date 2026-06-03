@@ -407,7 +407,25 @@ To prevent situations where production updates are not visible on the live `http
 | Public Vercel deployment | `startamarkets`, deploying its `frontend/` root setting |
 | Separate/legacy similarly named project | `finhub-pro/startamarkets` - do not edit for these public URLs |
 
+> **⚠️ Vercel deploys silently BLOCKED?** If pushes to `main` stop deploying and
+> `vercel inspect` shows `readyState: BLOCKED` ("no git user associated with the
+> commit"), the commit-author email isn't linked to the Vercel account. See the
+> **PREVENTION** section in [`DEPLOYMENT_REFERENCE.md`](./DEPLOYMENT_REFERENCE.md)
+> — commit as `mohamedbhidy@gmail.com` and enable the pre-push guard
+> (`git config core.hooksPath scripts/git-hooks`).
+
 ## Last Confirmed Deployment
+
+### June 3, 2026 — TradingView EGX data layer + analytics tabs
+Live on `https://startamarkets.com`. EGX prices corrected (were 30–650% wrong via
+yfinance `.CA`; now TradingView-primary with yfinance fallback). Symbol page gained
+**Technicals**, **Forecasts**, **20-year Financials**, and **TradingView Dividends**
+(forward ex/payment calendar) tabs, plus an Overview signal strip. New API routes
+under `/api/v1/egx/{technicals,estimates,financials-tv,dividends-tv,news-tv}`.
+**Root cause fixed**: Vercel deploys had been silently BLOCKED since ~May 27 due to a
+commit-author/account email mismatch (see DEPLOYMENT_REFERENCE PREVENTION). See
+`docs/TRADINGVIEW_EGX_RUNBOOK.md`.
+
 
 ### May 27, 2026 — Market Pulse Portfolio Tab & Movers Relocation (v1.1.6)
 

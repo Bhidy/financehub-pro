@@ -1,0 +1,66 @@
+name: TradingView EGX Harvester
+
+# Auxiliary TradingView cycles (technicals / news / estimates / symbol-map).
+# The 1-min intraday PRICE path runs on the backend (admin refresh, EGX_PRIMARY_TV=1),
+# not here - GitHub cron cannot do reliable 1-min. This handles the slower cycles.
+# NOTE: requires repo secret DATABASE_URL. Disabled-by-default until that is set.
+
+on:
+  schedule:
+    - cron: '*/15 6-13 * * 0-4'   # technicals, market hours (UTC), Sun-Thu
+    - cron: '*/30 6-14 * * 0-4'   # news
+    - cron: '0 15 * * 0-4'        # estimates + dividends, post-close
+    - cron: '0 2 * * 5'           # symbol-map + logos, weekly (Fri 02:00 UTC)
+  workflow_dispatch:
+    inputs:
+      cycle:
+        description: 'Cycle to run'
+        required: true
+        default: 'technicals'
+        type: choice
+        options: [technicals, news, estimates, symbolmap, all]
+
+concurrency:
+  group: tv-egx-harvester
+  cancel-in-progress: false
+
+jobs:
+  qa-gate:
+    # Resilience suite needs no DB - proves never-fail before any write job runs.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install httpx asyncpg
+      - name: Chaos / resilience audit
+        run: python qa/egx_audit.py --suite resilience
+
+  harvest:
+    needs: qa-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install httpx asyncpg yfinance
+      - name: Select cycle
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "cycle=${{ github.event.inputs.cycle }}" >> "$GITHUB_OUTPUT"
+          else
+            case "${{ github.event.schedule }}" in
+              "*/15 6-13 * * 0-4") echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;
+              "*/30 6-14 * * 0-4") echo "cycle=news" >> "$GITHUB_OUTPUT" ;;
+              "0 15 * * 0-4")      echo "cycle=estimates" >> "$GITHUB_OUTPUT" ;;
+              "0 2 * * 5")         echo "cycle=symbolmap" >> "$GITHUB_OUTPUT" ;;
+              *)                   echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+      - name: Run harvester
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/tv_egx_harvester.py --cycle "${{ steps.pick.outputs.cycle }}"

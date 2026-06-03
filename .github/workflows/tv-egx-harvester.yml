@@ -9,7 +9,8 @@ on:
   schedule:
     - cron: '*/15 6-13 * * 0-4'   # technicals, market hours (UTC), Sun-Thu
     - cron: '*/30 6-14 * * 0-4'   # news
-    - cron: '0 15 * * 0-4'        # estimates + dividends, post-close
+    - cron: '0 15 * * 0-4'        # estimates, post-close
+    - cron: '30 15 * * 0-4'       # dividends, post-close
     - cron: '0 2 * * 5'           # symbol-map + logos, weekly (Fri 02:00 UTC)
     - cron: '0 3 * * 5'           # financials (20yr statements), weekly (Fri 03:00 UTC)
   workflow_dispatch:
@@ -19,7 +20,7 @@ on:
         required: true
         default: 'technicals'
         type: choice
-        options: [technicals, news, estimates, symbolmap, financials, all]
+        options: [technicals, news, estimates, dividends, symbolmap, financials, all]
 
 concurrency:
   group: tv-egx-harvester
@@ -57,6 +58,7 @@ jobs:
               "*/15 6-13 * * 0-4") echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;
               "*/30 6-14 * * 0-4") echo "cycle=news" >> "$GITHUB_OUTPUT" ;;
               "0 15 * * 0-4")      echo "cycle=estimates" >> "$GITHUB_OUTPUT" ;;
+              "30 15 * * 0-4")     echo "cycle=dividends" >> "$GITHUB_OUTPUT" ;;
               "0 2 * * 5")         echo "cycle=symbolmap" >> "$GITHUB_OUTPUT" ;;
               "0 3 * * 5")         echo "cycle=financials" >> "$GITHUB_OUTPUT" ;;
               *)                   echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;

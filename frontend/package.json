@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "pull-env": "vercel env pull .env.local",
     "verify": "npx tsx scripts/verify-prod.ts",
-    "verify:routes": "node scripts/verify-route-aliases.mjs"
+    "verify:routes": "node scripts/verify-route-aliases.mjs",
+    "sync:mobile-public": "node scripts/sync-mobile-public.mjs",
+    "build:mobile": "node scripts/sync-mobile-public.mjs && vite build --config vite.mobile.config.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

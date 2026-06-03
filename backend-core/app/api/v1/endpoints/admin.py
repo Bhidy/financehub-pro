@@ -861,6 +861,13 @@ async def refresh_all_prices():
                         }
                     if tv_updates:
                         await update_market_tickers(tv_updates)
+                        try:  # best-effort provenance/freshness; never blocks the price update
+                            await db.execute(
+                                "UPDATE market_tickers SET source='tradingview', updated_at=NOW() "
+                                "WHERE market_code='EGX' AND symbol = ANY($1::text[])",
+                                list(tv_updates.keys()))
+                        except Exception as _src_e:
+                            logger.warning(f"source tagging skipped: {_src_e}")
                         logger.info(f"EGX primary=TradingView updated {len(tv_updates)} stocks")
                         return len(tv_updates), []
                     egx_notes.append("TradingView returned no usable prices")

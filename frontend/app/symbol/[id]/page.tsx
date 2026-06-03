@@ -8,7 +8,7 @@ import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchFairValues, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
-    fetchEgxTechnicals, fetchEgxEstimates
+    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV
 } from "@/lib/api";
 import {
     sanitizeNewsText,
@@ -415,6 +415,47 @@ function RecommendationDistribution({ buy, over, hold, under, sell, total, lang 
     );
 }
 
+// 20-year financial history bar chart (pure SVG, TV-style)
+function MiniBarChart({ title, data, color, currency, lang }: {
+    title: string; color: string; currency: string; lang: "en" | "ar";
+    data: { year: number; value: number | null }[];
+}) {
+    const pts = data.filter((d) => d.value != null) as { year: number; value: number }[];
+    if (pts.length < 2) return null;
+    const vals = pts.map((p) => p.value);
+    const max = Math.max(...vals, 0), min = Math.min(...vals, 0);
+    const range = max - min || 1;
+    const fmt = (v: number) => {
+        const a = Math.abs(v);
+        if (a >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
+        if (a >= 1e6) return `${(v / 1e6).toFixed(0)}M`;
+        return v.toFixed(1);
+    };
+    const last = pts[pts.length - 1], prev = pts[pts.length - 2];
+    const growth = prev && prev.value !== 0 ? ((last.value - prev.value) / Math.abs(prev.value)) * 100 : null;
+    return (
+        <div className="premium-glass rounded-3xl p-6">
+            <div className="flex items-baseline justify-between mb-1">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{title}</p>
+                {growth != null && <span className={`text-xs font-extrabold ${growth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>{growth >= 0 ? "+" : ""}{growth.toFixed(1)}% YoY</span>}
+            </div>
+            <p className="text-2xl font-extrabold mb-3" style={{ color }}>{currency} {fmt(last.value)}</p>
+            <div className="flex items-end gap-[3px] h-24" dir="ltr">
+                {pts.slice(-12).map((p, i, a) => {
+                    const h = ((p.value - min) / range) * 100;
+                    const isLast = i === a.length - 1;
+                    return (
+                        <div key={p.year} className="flex-1 flex flex-col items-center justify-end group relative">
+                            <div className="w-full rounded-t transition-all" style={{ height: `${Math.max(h, 3)}%`, background: isLast ? color : `${color}66` }} title={`${p.year}: ${fmt(p.value)}`} />
+                            <span className="text-[8px] text-slate-400 mt-1 font-bold">{`'${String(p.year).slice(2)}`}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 // ─── MAIN PAGE COMPONENT ─────────────────────────────────────────────────────
 export default function SymbolDetailPage() {
     const params = useParams();
@@ -546,6 +587,11 @@ export default function SymbolDetailPage() {
         queryKey: ["egx-estimates", symbol],
         queryFn: () => fetchEgxEstimates(symbol),
         enabled: !!symbol && isEgx, staleTime: 300000
+    });
+    const { data: tvFinancials } = useQuery({
+        queryKey: ["egx-financials-tv", symbol],
+        queryFn: () => fetchEgxFinancialsTV(symbol),
+        enabled: !!symbol && isEgx, staleTime: 600000
     });
     const [techTf, setTechTf] = useState<"60" | "240" | "1D" | "1W">("1D");
 
@@ -1225,6 +1271,17 @@ export default function SymbolDetailPage() {
 
                         {/* ═══════════════════════ FINANCIALS TAB ═══════════════════════ */}
                         {activeTab === "financials" && (
+                            <div className="space-y-6">
+                                {Array.isArray(tvFinancials?.years) && tvFinancials.years.length >= 2 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <MiniBarChart title={lang === "ar" ? "الإيرادات · ٢٠ سنة" : "Revenue · 20Y"} color="#14b8a6" currency={currency} lang={lang}
+                                            data={tvFinancials.years.map((y: any) => ({ year: y.fiscal_year, value: y.revenue != null ? Number(y.revenue) : null }))} />
+                                        <MiniBarChart title={lang === "ar" ? "صافي الدخل · ٢٠ سنة" : "Net Income · 20Y"} color="#10b981" currency={currency} lang={lang}
+                                            data={tvFinancials.years.map((y: any) => ({ year: y.fiscal_year, value: y.net_income != null ? Number(y.net_income) : null }))} />
+                                        <MiniBarChart title={lang === "ar" ? "إجمالي الأصول · ٢٠ سنة" : "Total Assets · 20Y"} color="#6366f1" currency={currency} lang={lang}
+                                            data={tvFinancials.years.map((y: any) => ({ year: y.fiscal_year, value: y.total_assets != null ? Number(y.total_assets) : null }))} />
+                                    </div>
+                                )}
                             <div className="premium-glass rounded-3xl p-8 space-y-6">
                                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/10 pb-6">
                                     <div>
@@ -1403,6 +1460,7 @@ export default function SymbolDetailPage() {
                                         <p className="text-sm font-semibold">{t.empty_state}</p>
                                     </div>
                                 )}
+                            </div>
                             </div>
                         )}
 

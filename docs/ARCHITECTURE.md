@@ -92,18 +92,23 @@ The DB is kept fresh by extraction jobs (cloud-scheduled via GitHub Actions; **n
 
 | Source | Role |
 |---|---|
+| **TradingView** (`scanner.tradingview.com`) | 🟢 **PRIMARY EGX feed** — live prices (`EGX_PRIMARY_TV=1`), technicals, 20yr statements, estimates, dividends, news, ISIN/logos. Drop-in `SOURCE-0` in `admin.process_egx()` via `EGXFeedRouter` (TV→yfinance fallback). Harvested by `scripts/tv_egx_harvester.py` (workflow `tv-egx-harvester.yml`). See `docs/TRADINGVIEW_EGX_RUNBOOK.md`. |
+| Yahoo / yfinance | EGX **fallback** + OHLCV chart history (reservoir `populate_yahoo_reservoir.py` → `ohlc_data`); KSA prices |
 | **Mubasher** (`mubasher.info`) | external provider — Egypt/Saudi prices & data (`run_mubasher_job`, daily ~06:00) |
-| Yahoo | backup metrics/financials |
 | Decypha | Egypt funds / NAV |
-| StockAnalysis | company profiles / fallback |
+| StockAnalysis | 🔴 deprecated (Cloudflare-blocked; superseded by TradingView) |
 
 > "Mubasher" is an **external data source**, not the product brand. The product is **Starta Markets**.
+>
+> **EGX feed note (2026-06-03):** the prior live-price path (yfinance `.CA` quote) returned values 30–650% wrong; TradingView is now primary and correct. The `_h` 20-year statement arrays feed `egx_financials`; the symbol page renders Technicals/Forecasts/20yr-Financials tabs.
 
 ---
 
 ## 6. Database (Supabase PostgreSQL — source of truth)
 
 Representative tables: `market_tickers`, `ohlc_data`, intraday tables, `financial_*`, `valuation_history`, `earnings_*`, `dividend_history`, `mutual_funds`, `nav_history`, `major_shareholders`, plus portfolio tables (`portfolios`, `portfolio_holdings`, `portfolio_snapshots`, `portfolio_transactions`) and users/auth.
+
+**TradingView EGX tables (2026-06-03):** `symbol_map` (ISIN-keyed identity), `egx_technicals` (symbol×timeframe), `egx_estimates` (analyst targets/ratings), `egx_news`, `egx_financials` (20yr annual statements), `egx_ingest_deadletter`. `market_tickers` gained `isin/logo_url/source/updated_at/recommend_all/beta`. Every table has a DB-enforced UNIQUE natural key (zero-duplicate guarantee). **Supabase Realtime** enabled on `market_tickers/ohlc_data/egx_technicals` (mobile app subscribes; web via ISR/poll).
 
 `DATABASE_URL` is configured in **both** the Hetzner backend `.env` **and** Vercel (the frontend serverless routes connect too). Keep them in sync.
 

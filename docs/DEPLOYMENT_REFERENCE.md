@@ -144,8 +144,29 @@ If CLI fails, use Vercel Dashboard:
 
 ---
 
+## ⚠️ CRITICAL: Vercel git-author block (Hobby plan)
+
+> **Symptom**: Every git push to `main` produces a Vercel deployment that never goes live; `vercel inspect` shows `readyState: BLOCKED`, reason **"The Deployment was blocked because there was no git user associated with the commit."** The live site keeps serving an old deployment. This looks like a "broken build" but the build never runs.
+
+**Root cause**: On the Hobby plan, Vercel only builds git deployments whose **commit-author email is linked to the Vercel/GitHub account** (`mohamedbhidy@gmail.com` / GitHub `Bhidy`). Commits authored with an unlinked email (e.g. `m.mostafa@mubasher.net`) are blocked.
+
+**Fix (already applied repo-locally)**:
+```bash
+git config user.email "mohamedbhidy@gmail.com"   # repo-local; future commits deploy
+```
+Alternatively, add the other email as a *verified* email on the GitHub `Bhidy` account.
+
+**To recover a stuck state**: make any commit authored by the linked email (even `git commit --allow-empty`) and push — it builds. Then run the mandatory alias step (below).
+
+**Mandatory after EVERY deploy** (git push *or* `vercel deploy`): alias the new deployment URL to the domains, or the live site keeps serving the old build:
+```bash
+./frontend/node_modules/.bin/vercel alias set <new-deployment-url> startamarkets.com
+./frontend/node_modules/.bin/vercel alias set <new-deployment-url> www.startamarkets.com
+```
+
 ## Document Version
 
 | Version | Date | Author |
 |---------|------|--------|
 | 1.0 | 2026-01-01 | AI Assistant |
+| 1.1 | 2026-06-03 | Added Vercel git-author block fix + mandatory alias step |

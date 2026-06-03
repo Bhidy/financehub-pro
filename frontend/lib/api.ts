@@ -733,6 +733,11 @@ export const fetchEgxFinancialsTV = async (symbol: string) => {
     return data;
 };
 
+export const fetchEgxDividendsTV = async (symbol: string) => {
+    const { data } = await localApi.get(`/egx/dividends-tv/${symbol}`);
+    return data;
+};
+
 export interface FetchNewsParams {
     symbol?: string;
     limit?: number;

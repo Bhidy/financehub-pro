@@ -1,0 +1,12 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Starta Markets">
+  <defs>
+    <linearGradient id="st-stroke" x1="32" y1="24" x2="97" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2AF0D2"></stop>
+      <stop offset="0.52" stop-color="#00D2B4"></stop>
+      <stop offset="1" stop-color="#058375"></stop>
+    </linearGradient>
+  </defs>
+  <path d="M72 46 C72 36 61 31 50 32 C38 33 33 41 36 49 C38 55 47 58 56 61 C67 64 73 70 70 79 C67 88 53 90 42 86" fill="none" stroke="url(#st-stroke)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M72 46 L86 32" stroke="url(#st-stroke)" stroke-width="11" stroke-linecap="round"></path>
+  <path d="M99 19 L79 25 L93 39 Z" fill="url(#st-stroke)"></path>
+</svg>

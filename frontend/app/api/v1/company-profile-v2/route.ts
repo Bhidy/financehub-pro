@@ -31,27 +31,32 @@ export async function GET(request: Request) {
         const symbolParam = searchParams.get("symbol");
         const symbol = symbolParam?.trim().toUpperCase() || null;
 
-        let profileResult;
-        if (symbol) {
-            profileResult = await db.query(
+        // A blank/missing symbol must NOT fall back to "the most recently
+        // scraped company" — that silently returns a real, unrelated company
+        // (e.g. EFG Holding) as if it were the one requested. Require a symbol.
+        if (!symbol) {
+            const symbolsResult = await db.query(
                 `
-                SELECT *
+                SELECT symbol, company_name, extracted_at
                 FROM egx_company_profile_v2
-                WHERE symbol = $1
-                LIMIT 1
-                `,
-                [symbol]
+                ORDER BY symbol ASC
+                `
             );
-        } else {
-            profileResult = await db.query(
-                `
-                SELECT *
-                FROM egx_company_profile_v2
-                ORDER BY extracted_at DESC
-                LIMIT 1
-                `
+            return NextResponse.json(
+                { error: "A 'symbol' query parameter is required.", available_symbols: symbolsResult.rows },
+                { status: 400 }
             );
         }
+
+        const profileResult = await db.query(
+            `
+            SELECT *
+            FROM egx_company_profile_v2
+            WHERE symbol = $1
+            LIMIT 1
+            `,
+            [symbol]
+        );
 
         const row = profileResult.rows[0] as ProfileRow | undefined;
         if (!row) {

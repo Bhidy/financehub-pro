@@ -216,8 +216,53 @@ async def cycle_symbolmap(conn):
                 n, len(universe), len(tracked), len(tv_syms), collisions)
 
 
+async def cycle_financials(conn):
+    """20-year annual statement history from TV `_h` arrays into egx_financials.
+    Explodes each symbol's aligned arrays into per-(symbol,year) rows. Sector-aware
+    nulls preserved (a bank's EBITDA stays NULL)."""
+    client = TradingViewEGXClient()
+    syms = await _symbols(conn)
+    total = 0
+    # batch the per-symbol _h pull to keep payloads sane
+    for i in range(0, len(syms), 40):
+        batch = syms[i:i + 40]
+        try:
+            rows = await client.get_statements(batch)
+        except Exception as e:
+            for s in batch:
+                await _deadletter(conn, "financials", s, {}, e)
+            continue
+        for d in rows:
+            sym = d.get("symbol")
+            years = d.get("fiscal_period_fy_h") or []
+            def col(name):
+                v = d.get(name)
+                return v if isinstance(v, list) else []
+            rev, gp, eb = col("total_revenue_fy_h"), col("gross_profit_fy_h"), col("ebitda_fy_h")
+            ni, eps, fcf = col("net_income_fy_h"), col("earnings_per_share_diluted_fy_h"), col("free_cash_flow_fy_h")
+            ta, td, dps = col("total_assets_fy_h"), col("total_debt_fy_h"), col("dps_common_stock_prim_issue_fy_h")
+            g = lambda arr, j: (arr[j] if j < len(arr) else None)
+            for j, yr in enumerate(years):
+                try:
+                    await conn.execute("""
+                        INSERT INTO egx_financials (symbol,period_type,fiscal_year,revenue,gross_profit,ebitda,
+                            net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
+                        VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
+                        ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
+                            revenue=EXCLUDED.revenue, gross_profit=EXCLUDED.gross_profit, ebitda=EXCLUDED.ebitda,
+                            net_income=EXCLUDED.net_income, eps_diluted=EXCLUDED.eps_diluted,
+                            free_cash_flow=EXCLUDED.free_cash_flow, total_assets=EXCLUDED.total_assets,
+                            total_debt=EXCLUDED.total_debt, dps=EXCLUDED.dps, updated_at=now()
+                    """, sym, int(yr), g(rev, j), g(gp, j), g(eb, j), g(ni, j), g(eps, j),
+                        g(fcf, j), g(ta, j), g(td, j), g(dps, j))
+                    total += 1
+                except Exception as e:
+                    await _deadletter(conn, "financials", sym, {"year": yr}, e)
+    logger.info("financials: upserted %d (symbol,year) rows for %d symbols", total, len(syms))
+
+
 CYCLES = {"prices": cycle_prices, "technicals": cycle_technicals, "estimates": cycle_estimates,
-          "news": cycle_news, "symbolmap": cycle_symbolmap}
+          "news": cycle_news, "symbolmap": cycle_symbolmap, "financials": cycle_financials}
 
 
 async def main(cycle: str):

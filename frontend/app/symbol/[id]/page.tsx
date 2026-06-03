@@ -1130,6 +1130,34 @@ export default function SymbolDetailPage() {
                         {/* ═══════════════════════ OVERVIEW TAB ═══════════════════════ */}
                         {activeTab === "overview" && (
                             <>
+                                {/* TradingView signal strip */}
+                                {isEgx && (() => {
+                                    const dt = Array.isArray(tvTechnicals?.timeframes) ? tvTechnicals.timeframes.find((x: any) => x.timeframe === "1D") : null;
+                                    const hasT = dt && dt.recommend_all != null;
+                                    const hasE = tvEstimates?.covered && Number(tvEstimates.target_average) > 0;
+                                    if (!hasT && !hasE) return null;
+                                    const m = recMeta(dt?.recommend_all);
+                                    const up = hasE && lastPrice > 0 ? ((Number(tvEstimates.target_average) - lastPrice) / lastPrice) * 100 : null;
+                                    return (
+                                        <div className="premium-glass rounded-3xl p-5 flex flex-wrap items-center gap-x-8 gap-y-3">
+                                            {hasT && (
+                                                <button onClick={() => setActiveTab("technicals")} className="flex items-center gap-3 group">
+                                                    <Gauge className="w-5 h-5" style={{ color: m.color }} />
+                                                    <div className="text-left rtl:text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{lang === "ar" ? "التقييم الفني" : "Technical Rating"}</p>
+                                                        <p className="font-extrabold group-hover:underline" style={{ color: m.color }}>{lang === "ar" ? m.labelAr : m.label}</p></div>
+                                                </button>
+                                            )}
+                                            {hasE && (
+                                                <button onClick={() => setActiveTab("forecasts")} className="flex items-center gap-3 group">
+                                                    <Crosshair className="w-5 h-5 text-[#14b8a6]" />
+                                                    <div className="text-left rtl:text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{lang === "ar" ? "هدف المحللين" : "Analyst Target"}</p>
+                                                        <p className="font-extrabold group-hover:underline">{currency} {Number(tvEstimates.target_average).toFixed(2)} {up != null && <span className={up >= 0 ? "text-emerald-500" : "text-rose-500"}>({up >= 0 ? "+" : ""}{up.toFixed(1)}%)</span>}</p></div>
+                                                </button>
+                                            )}
+                                            <span className="text-[10px] font-bold text-slate-400 ml-auto rtl:ml-0 rtl:mr-auto">TradingView · {lang === "ar" ? "مؤجل ١٥ د" : "15-min delayed"}</span>
+                                        </div>
+                                    );
+                                })()}
                                 {/* Chart */}
                                 <div className="premium-glass rounded-3xl p-6 relative">
                                     <div className="ohlc-metrics mb-4 border-b border-slate-200/10 pb-4">

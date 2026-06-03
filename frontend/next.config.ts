@@ -175,6 +175,19 @@ const nextConfig = {
         ],
       },
       {
+        // CORS for the bundled mobile app (origin capacitor://localhost) and any
+        // cross-origin API client. CapacitorHttp is the primary native fix; this
+        // is a defensive backup so browser/WKWebView fetches are not blocked.
+        // No credentials are used (bearer-token auth), so '*' is safe here.
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,PATCH,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {

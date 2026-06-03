@@ -9,7 +9,7 @@ const TV_WS_URL = "wss://data.tradingview.com/socket.io/websocket";
 const TV_ORIGIN = "https://www.tradingview.com";
 const TV_USER_AGENT = "Mozilla/5.0 (compatible; FinhubPro/1.0; +https://finhub-pro.vercel.app)";
 const TV_HISTORY_BARS = 420;
-const WS_TIMEOUT_MS = 12_000;
+const WS_TIMEOUT_MS = 7_000;
 const CACHE_TTL_MS = 30_000;
 
 type TvQuoteMap = Record<string, unknown>;
@@ -52,6 +52,11 @@ type EgxIndexResponse = {
 
 let cachedPayload: EgxIndexResponse | null = null;
 let cachedAt = 0;
+// Last successful payload (any age). Served as a graceful, marked-stale fallback
+// when BOTH the websocket and the scanner fail, so the Home hero never collapses
+// to an empty chart within a warm instance. NOTE: this is per-lambda only; the
+// durable fix is to harvest EGX30 index history into the DB and serve DB-first.
+let lastGoodPayload: EgxIndexResponse | null = null;
 
 const asNumber = (value: unknown): number | null => {
     const n = typeof value === "number" ? value : Number(value);
@@ -424,9 +429,19 @@ export async function GET() {
 
         cachedPayload = payload;
         cachedAt = Date.now();
+        if (payload.available) lastGoodPayload = payload;
         return NextResponse.json(payload);
     } catch (error: any) {
         console.error("[API /egx30/index ERROR]", error?.message || error);
+        // Graceful degradation: prefer the last good payload over an empty hero.
+        if (lastGoodPayload) {
+            return NextResponse.json({
+                ...lastGoodPayload,
+                source: "last-known-good",
+                note: "Live EGX30 feed is temporarily unavailable; showing the last confirmed values.",
+                fetchedAt: new Date().toISOString(),
+            });
+        }
         return NextResponse.json(
             {
                 available: false,

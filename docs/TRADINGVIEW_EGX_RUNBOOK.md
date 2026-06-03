@@ -30,8 +30,8 @@ fixed that and added a deep analytics layer.
 ### Supabase tables (TV-sourced)
 `market_tickers` (enriched: `isin,logo_url,source,updated_at,recommend_all,beta`) ·
 `egx_technicals` (symbol×timeframe) · `egx_estimates` · `egx_news` · `egx_financials` (20yr) ·
-`symbol_map` (ISIN-keyed identity) · `egx_ingest_deadletter`. Realtime enabled on
-`market_tickers/ohlc_data/egx_technicals`.
+`egx_dividends` (snapshot + forward calendar) · `symbol_map` (ISIN-keyed identity) ·
+`egx_ingest_deadletter`. Realtime enabled on `market_tickers/ohlc_data/egx_technicals`.
 
 ### Frontend (symbol page `frontend/app/symbol/[id]/page.tsx`)
 | Route | Tab/UI |
@@ -39,6 +39,7 @@ fixed that and added a deep analytics layer.
 | `/api/v1/egx/technicals/[symbol]` | **Technicals tab** — multi-TF gauges + oscillator/MA signal tables |
 | `/api/v1/egx/estimates/[symbol]` | **Forecasts tab** — analyst target bar + rating distribution + EPS/rev forecasts |
 | `/api/v1/egx/financials-tv/[symbol]` | **Financials tab** — 20-year Revenue/NetIncome/Assets bar charts |
+| `/api/v1/egx/dividends-tv/[symbol]` | **Dividends tab** — yield, last dividend (ex-date), payout, growth streak + Upcoming Dividend strip (forward ex/payment date) |
 | `/api/v1/egx/news-tv/[symbol]` | News (TV headlines) |
 | `/api/v1/egx/stock/[symbol]` | +`isin,logo_url,source` |
 | (overview) | TV signal strip (Technical Rating + Analyst Target) |

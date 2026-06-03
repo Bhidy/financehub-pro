@@ -24,8 +24,11 @@ export async function GET(
                 sector_name,
                 market_code,
                 currency,
+                isin,
+                logo_url,
+                source,
                 last_updated
-             FROM market_tickers 
+             FROM market_tickers
              WHERE UPPER(symbol) = $1`,
             [symbol.toUpperCase()]
         );

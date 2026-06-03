@@ -261,8 +261,47 @@ async def cycle_financials(conn):
     logger.info("financials: upserted %d (symbol,year) rows for %d symbols", total, len(syms))
 
 
+async def cycle_dividends(conn):
+    """Dividend snapshot incl. forward ex-date / payment-date calendar into
+    egx_dividends. One row per symbol (upsert by PK)."""
+    rows = await TradingViewEGXClient().get_dividends()
+    n = 0
+    for d in rows:
+        try:
+            freq = d.get("dividends_frequency")
+            freq = str(freq) if freq is not None else None
+            await conn.execute("""
+                INSERT INTO egx_dividends (symbol,div_yield,amount_recent,ex_date_recent,payment_date_recent,
+                    amount_upcoming,ex_date_upcoming,payment_date_upcoming,frequency,payout_ratio_ttm,continuous_growth,updated_at)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
+                ON CONFLICT (symbol) DO UPDATE SET
+                    div_yield=EXCLUDED.div_yield, amount_recent=EXCLUDED.amount_recent,
+                    ex_date_recent=EXCLUDED.ex_date_recent, payment_date_recent=EXCLUDED.payment_date_recent,
+                    amount_upcoming=EXCLUDED.amount_upcoming, ex_date_upcoming=EXCLUDED.ex_date_upcoming,
+                    payment_date_upcoming=EXCLUDED.payment_date_upcoming, frequency=EXCLUDED.frequency,
+                    payout_ratio_ttm=EXCLUDED.payout_ratio_ttm, continuous_growth=EXCLUDED.continuous_growth,
+                    updated_at=now()
+            """, d["symbol"], d.get("dividends_yield"), d.get("dividend_amount_recent"),
+                _i(d.get("dividend_ex_date_recent")), _i(d.get("dividend_payment_date_recent")),
+                d.get("dividend_amount_upcoming"), _i(d.get("dividend_ex_date_upcoming")),
+                _i(d.get("dividend_payment_date_upcoming")), freq,
+                d.get("dividend_payout_ratio_ttm"), d.get("continuous_dividend_growth"))
+            n += 1
+        except Exception as e:
+            await _deadletter(conn, "dividends", d.get("symbol"), d, e)
+    logger.info("dividends: upserted %d symbols", n)
+
+
+def _i(v):
+    try:
+        return int(v) if v is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
 CYCLES = {"prices": cycle_prices, "technicals": cycle_technicals, "estimates": cycle_estimates,
-          "news": cycle_news, "symbolmap": cycle_symbolmap, "financials": cycle_financials}
+          "news": cycle_news, "symbolmap": cycle_symbolmap, "financials": cycle_financials,
+          "dividends": cycle_dividends}
 
 
 async def main(cycle: str):

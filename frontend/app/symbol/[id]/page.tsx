@@ -8,7 +8,7 @@ import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchFairValues, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
-    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV
+    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV
 } from "@/lib/api";
 import {
     sanitizeNewsText,
@@ -592,6 +592,11 @@ export default function SymbolDetailPage() {
         queryKey: ["egx-financials-tv", symbol],
         queryFn: () => fetchEgxFinancialsTV(symbol),
         enabled: !!symbol && isEgx, staleTime: 600000
+    });
+    const { data: tvDividends } = useQuery({
+        queryKey: ["egx-dividends-tv", symbol],
+        queryFn: () => fetchEgxDividendsTV(symbol),
+        enabled: !!symbol && isEgx, staleTime: 300000
     });
     const [techTf, setTechTf] = useState<"60" | "240" | "1D" | "1W">("1D");
 
@@ -1676,6 +1681,30 @@ export default function SymbolDetailPage() {
                         {/* ═══════════════════════ DIVIDENDS & ACTIONS TAB ═══════════════════════ */}
                         {activeTab === "dividends" && (
                             <div className="space-y-8">
+                                {/* TradingView dividend snapshot + forward calendar */}
+                                {isEgx && tvDividends?.pays_dividend && (() => {
+                                    const fmtD = (u: number | null) => u ? new Date(u * 1000).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-";
+                                    const dv = tvDividends;
+                                    return (
+                                        <div className="premium-glass rounded-3xl p-6 md:p-8">
+                                            <SectionHeader icon={Calendar} title={lang === "ar" ? "التوزيعات (TradingView)" : "Dividends (TradingView)"} color="text-[#14b8a6]" />
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                                <MetricCard label={lang === "ar" ? "عائد التوزيع" : "Dividend Yield"} value={dv.div_yield != null ? `${Number(dv.div_yield).toFixed(2)}%` : "-"} icon={TrendingUp} color="text-[#14b8a6]" />
+                                                <MetricCard label={lang === "ar" ? "آخر توزيع" : "Last Dividend"} value={dv.amount_recent != null ? `${currency} ${Number(dv.amount_recent).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" subtitle={lang === "ar" ? `تاريخ الاستحقاق ${fmtD(dv.ex_date_recent)}` : `Ex-date ${fmtD(dv.ex_date_recent)}`} />
+                                                <MetricCard label={lang === "ar" ? "نسبة التوزيع" : "Payout Ratio"} value={dv.payout_ratio_ttm != null && Number(dv.payout_ratio_ttm) > 0 ? `${Number(dv.payout_ratio_ttm).toFixed(1)}%` : "-"} icon={PieChart} color="text-amber-500" />
+                                                <MetricCard label={lang === "ar" ? "سنوات النمو" : "Growth Streak"} value={dv.continuous_growth != null && Number(dv.continuous_growth) > 0 ? `${Number(dv.continuous_growth)} ${lang === "ar" ? "سنة" : "yrs"}` : "-"} icon={Award} color="text-indigo-500" />
+                                            </div>
+                                            {(dv.ex_date_upcoming || dv.payment_date_upcoming) && (
+                                                <div className="mt-4 p-4 rounded-2xl bg-[#14b8a6]/8 border border-[#14b8a6]/20 flex flex-wrap items-center gap-x-8 gap-y-2">
+                                                    <span className="text-xs font-extrabold uppercase tracking-wider text-[#14b8a6]">{lang === "ar" ? "التوزيع القادم" : "Upcoming Dividend"}</span>
+                                                    {dv.amount_upcoming != null && <span className="text-sm font-bold">{currency} {Number(dv.amount_upcoming).toFixed(2)}</span>}
+                                                    {dv.ex_date_upcoming && <span className="text-sm font-bold text-slate-500 dark:text-slate-300">{lang === "ar" ? "الاستحقاق" : "Ex-date"}: {fmtD(dv.ex_date_upcoming)}</span>}
+                                                    {dv.payment_date_upcoming && <span className="text-sm font-bold text-slate-500 dark:text-slate-300">{lang === "ar" ? "الدفع" : "Payment"}: {fmtD(dv.payment_date_upcoming)}</span>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                                 {/* Dividend History */}
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Calendar} title={t.dividend_history} color="text-emerald-500" />

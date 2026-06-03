@@ -717,6 +717,22 @@ export const fetchFinancials = async (symbol: string) => {
     return data;
 };
 
+// ─── TradingView-sourced EGX data (technicals, estimates, statements) ────────
+export const fetchEgxTechnicals = async (symbol: string) => {
+    const { data } = await localApi.get(`/egx/technicals/${symbol}`);
+    return data;
+};
+
+export const fetchEgxEstimates = async (symbol: string) => {
+    const { data } = await localApi.get(`/egx/estimates/${symbol}`);
+    return data;
+};
+
+export const fetchEgxFinancialsTV = async (symbol: string) => {
+    const { data } = await localApi.get(`/egx/financials-tv/${symbol}`);
+    return data;
+};
+
 export interface FetchNewsParams {
     symbol?: string;
     limit?: number;

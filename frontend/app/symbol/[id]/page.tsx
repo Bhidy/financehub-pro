@@ -7,7 +7,8 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchFairValues, fetchIntraday,
-    fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker
+    fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
+    fetchEgxTechnicals, fetchEgxEstimates
 } from "@/lib/api";
 import {
     sanitizeNewsText,
@@ -22,7 +23,7 @@ import {
     Target, Zap, PieChart, AlertCircle, Wallet,
     Briefcase, Calendar, ArrowUp, ArrowDown, Globe, Award, Landmark, CheckCircle, ShieldAlert,
     DollarSign, Newspaper, ChevronRight, TrendingDown as TrendDown, Info,
-    ExternalLink, BookOpen, Star
+    ExternalLink, BookOpen, Star, Gauge, Crosshair, Minus
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -36,6 +37,12 @@ const TRANSLATIONS = {
         tab_overview: "Overview", tab_financials: "Financials",
         tab_ratios: "Ratios & Risk", tab_dividends: "Dividends & Actions",
         tab_news: "News", tab_profile: "Profile",
+        tab_technicals: "Technicals", tab_forecasts: "Forecasts",
+        tech_summary: "Technical Summary", tech_oscillators: "Oscillators", tech_mas: "Moving Averages",
+        tech_no_data: "Technical signals are not available for this stock.",
+        fc_no_coverage: "No analyst coverage for this stock yet.",
+        fc_eps_next: "EPS Forecast (Next Q)", fc_rev_next: "Revenue Forecast (Next Q)", fc_eps_y: "EPS Forecast (Next Y)",
+        tf_1h: "1H", tf_4h: "4H", tf_1d: "1D", tf_1w: "1W",
         stock_info: "Stock Information", name: "Name", sector: "Sector",
         market: "Market", currency: "Currency",
         profile: "Company Profile", desc_not_found: "Company description is currently being synchronized.",
@@ -102,6 +109,12 @@ const TRANSLATIONS = {
         tab_overview: "نظرة عامة", tab_financials: "القوائم المالية",
         tab_ratios: "المؤشرات والمخاطر", tab_dividends: "التوزيعات والإجراءات",
         tab_news: "الأخبار", tab_profile: "ملف الشركة",
+        tab_technicals: "التحليل الفني", tab_forecasts: "التوقعات",
+        tech_summary: "الملخص الفني", tech_oscillators: "المذبذبات", tech_mas: "المتوسطات المتحركة",
+        tech_no_data: "المؤشرات الفنية غير متوفرة لهذا السهم.",
+        fc_no_coverage: "لا توجد تغطية من المحللين لهذا السهم بعد.",
+        fc_eps_next: "توقع ربحية السهم (الربع القادم)", fc_rev_next: "توقع الإيرادات (الربع القادم)", fc_eps_y: "توقع ربحية السهم (العام القادم)",
+        tf_1h: "ساعة", tf_4h: "٤ ساعات", tf_1d: "يوم", tf_1w: "أسبوع",
         stock_info: "بيانات السهم", name: "الاسم", sector: "القطاع",
         market: "السوق", currency: "العملة",
         profile: "الملف التعريفي", desc_not_found: "الملف التعريفي قيد المزامنة حالياً.",
@@ -256,6 +269,152 @@ function SectionHeader({ icon: Icon, title, color = "text-[#14b8a6]" }: { icon: 
     );
 }
 
+// ─── TRADINGVIEW-STYLE TECHNICAL / FORECAST COMPONENTS ──────────────────────
+type RecMeta = { label: string; labelAr: string; color: string; ring: string };
+function recMeta(v: number | null | undefined): RecMeta {
+    if (v == null) return { label: "No Data", labelAr: "لا تتوفر", color: "#94a3b8", ring: "#94a3b8" };
+    if (v >= 0.5) return { label: "Strong Buy", labelAr: "شراء قوي", color: "#059669", ring: "#10b981" };
+    if (v >= 0.1) return { label: "Buy", labelAr: "شراء", color: "#16a34a", ring: "#22c55e" };
+    if (v <= -0.5) return { label: "Strong Sell", labelAr: "بيع قوي", color: "#dc2626", ring: "#ef4444" };
+    if (v <= -0.1) return { label: "Sell", labelAr: "بيع", color: "#e11d48", ring: "#f43f5e" };
+    return { label: "Neutral", labelAr: "محايد", color: "#d97706", ring: "#f59e0b" };
+}
+
+// Semicircular TV-style recommendation gauge (−1..+1)
+function RecommendationGauge({ value, title, lang }: { value: number | null; title: string; lang: "en" | "ar" }) {
+    const m = recMeta(value);
+    const v = Math.max(-1, Math.min(1, value ?? 0));
+    const angle = -90 + (v + 1) * 90; // -90 (sell) .. +90 (buy)
+    const r = 78, cx = 100, cy = 96;
+    const arc = (start: number, end: number, color: string) => {
+        const p = (a: number) => [cx + r * Math.cos((a * Math.PI) / 180), cy + r * Math.sin((a * Math.PI) / 180)];
+        const [x1, y1] = p(start), [x2, y2] = p(end);
+        return <path d={`M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`} stroke={color} strokeWidth="13" fill="none" strokeLinecap="round" />;
+    };
+    const needle = [cx + (r - 14) * Math.cos((angle * Math.PI) / 180), cy + (r - 14) * Math.sin((angle * Math.PI) / 180)];
+    return (
+        <div className="flex flex-col items-center justify-center">
+            <svg viewBox="0 0 200 116" className="w-full max-w-[260px]">
+                {arc(180, 240, "#ef4444")}
+                {arc(240, 300, "#f59e0b")}
+                {arc(300, 360, "#10b981")}
+                {value != null && (
+                    <>
+                        <line x1={cx} y1={cy} x2={needle[0]} y2={needle[1]} stroke={m.color} strokeWidth="4" strokeLinecap="round" />
+                        <circle cx={cx} cy={cy} r="7" fill={m.color} />
+                    </>
+                )}
+            </svg>
+            <div className="text-center -mt-3">
+                <p className="text-lg font-extrabold" style={{ color: m.color }}>{lang === "ar" ? m.labelAr : m.label}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">{title}</p>
+            </div>
+        </div>
+    );
+}
+
+// Buy/Neutral/Sell pill for indicator rows
+function SignalPill({ v, kind, lang }: { v: number | null; kind: "osc" | "ma"; lang: "en" | "ar" }) {
+    // crude per-indicator signal from raw value where useful; falls back to neutral
+    let sig: "buy" | "sell" | "neutral" = "neutral";
+    if (v != null) {
+        if (kind === "osc") sig = "neutral";
+    }
+    const map = {
+        buy: { en: "Buy", ar: "شراء", c: "#16a34a", bg: "rgba(34,197,94,0.12)" },
+        sell: { en: "Sell", ar: "بيع", c: "#e11d48", bg: "rgba(244,63,94,0.12)" },
+        neutral: { en: "Neutral", ar: "محايد", c: "#d97706", bg: "rgba(245,158,11,0.12)" },
+    }[sig];
+    return <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ color: map.c, background: map.bg }}>{lang === "ar" ? map.ar : map.en}</span>;
+}
+
+function IndicatorTable({ title, icon: Icon, color, rows, lang }: {
+    title: string; icon: any; color: string; lang: "en" | "ar";
+    rows: { name: string; value: number | null; signal?: "buy" | "sell" | "neutral" }[];
+}) {
+    const sigMeta = (s?: string) => s === "buy" ? { t: lang === "ar" ? "شراء" : "Buy", c: "#16a34a", bg: "rgba(34,197,94,0.12)" }
+        : s === "sell" ? { t: lang === "ar" ? "بيع" : "Sell", c: "#e11d48", bg: "rgba(244,63,94,0.12)" }
+            : { t: lang === "ar" ? "محايد" : "Neutral", c: "#d97706", bg: "rgba(245,158,11,0.12)" };
+    return (
+        <div className="premium-glass rounded-3xl p-6 md:p-8">
+            <SectionHeader icon={Icon} title={title} color={color} />
+            <div className="divide-y divide-slate-200/40 dark:divide-slate-800/40">
+                {rows.map((r, i) => {
+                    const sm = sigMeta(r.signal);
+                    return (
+                        <div key={i} className="flex items-center justify-between py-3">
+                            <span className="text-sm font-bold text-slate-500 dark:text-slate-300">{r.name}</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm font-extrabold tabular">{r.value == null ? "-" : r.value.toFixed(2)}</span>
+                                {r.signal && <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold w-[64px] text-center" style={{ color: sm.c, background: sm.bg }}>{sm.t}</span>}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+// Analyst price-target range bar with current marker
+function AnalystTargetBar({ low, avg, high, current, currency, lang }: {
+    low: number; avg: number; high: number; current: number; currency: string; lang: "en" | "ar";
+}) {
+    const min = Math.min(low, current) * 0.97, max = Math.max(high, current) * 1.03;
+    const pos = (x: number) => `${((x - min) / (max - min)) * 100}%`;
+    const upside = current > 0 ? ((avg - current) / current) * 100 : 0;
+    return (
+        <div className="premium-glass rounded-3xl p-6 md:p-8">
+            <SectionHeader icon={Crosshair} title={lang === "ar" ? "السعر المستهدف للمحللين" : "Analyst Price Target"} color="text-[#14b8a6]" />
+            <div className="flex items-end justify-between mb-2">
+                <div><p className="text-xs font-bold text-slate-400 uppercase">{lang === "ar" ? "المتوسط" : "Average"}</p><p className="text-2xl font-extrabold text-[#14b8a6]">{currency} {avg.toFixed(2)}</p></div>
+                <div className="text-right"><p className="text-xs font-bold text-slate-400 uppercase">{lang === "ar" ? "الإمكانية" : "Upside"}</p><p className={`text-2xl font-extrabold ${upside >= 0 ? "text-emerald-500" : "text-rose-500"}`}>{upside >= 0 ? "+" : ""}{upside.toFixed(1)}%</p></div>
+            </div>
+            <div className="relative h-3 rounded-full mt-6 mb-8" style={{ background: "linear-gradient(90deg,#f43f5e,#f59e0b,#10b981)" }}>
+                {[{ x: low, l: lang === "ar" ? "أدنى" : "Low" }, { x: avg, l: lang === "ar" ? "متوسط" : "Avg" }, { x: high, l: lang === "ar" ? "أعلى" : "High" }].map((p, i) => (
+                    <div key={i} className="absolute -top-1.5 -translate-x-1/2" style={{ left: pos(p.x) }}>
+                        <div className="w-1.5 h-6 bg-white dark:bg-slate-900 border-2 border-slate-400 rounded-full" />
+                        <p className="text-[10px] font-bold text-slate-400 mt-1 text-center whitespace-nowrap">{p.l}<br />{p.x.toFixed(1)}</p>
+                    </div>
+                ))}
+                <div className="absolute -bottom-9 -translate-x-1/2 flex flex-col items-center" style={{ left: pos(current) }}>
+                    <p className="text-[10px] font-extrabold text-[#0ea5e9] whitespace-nowrap mb-0.5">{lang === "ar" ? "الحالي" : "Current"} {current.toFixed(1)}</p>
+                    <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-b-[8px] border-l-transparent border-r-transparent border-b-[#0ea5e9]" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Analyst recommendation distribution (stacked horizontal bar)
+function RecommendationDistribution({ buy, over, hold, under, sell, total, lang }: {
+    buy: number; over: number; hold: number; under: number; sell: number; total: number; lang: "en" | "ar";
+}) {
+    const segs = [
+        { n: lang === "ar" ? "شراء قوي" : "Strong Buy", v: buy, c: "#059669" },
+        { n: lang === "ar" ? "شراء" : "Buy", v: over, c: "#22c55e" },
+        { n: lang === "ar" ? "احتفاظ" : "Hold", v: hold, c: "#f59e0b" },
+        { n: lang === "ar" ? "بيع" : "Sell", v: under, c: "#fb7185" },
+        { n: lang === "ar" ? "بيع قوي" : "Strong Sell", v: sell, c: "#dc2626" },
+    ];
+    return (
+        <div className="premium-glass rounded-3xl p-6 md:p-8">
+            <SectionHeader icon={Users} title={lang === "ar" ? `توصيات المحللين (${total})` : `Analyst Ratings (${total})`} color="text-indigo-500" />
+            <div className="flex h-4 rounded-full overflow-hidden mb-5">
+                {segs.map((s, i) => s.v > 0 && <div key={i} style={{ width: `${(s.v / Math.max(total, 1)) * 100}%`, background: s.c }} title={`${s.n}: ${s.v}`} />)}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {segs.map((s, i) => (
+                    <div key={i} className="text-center">
+                        <p className="text-2xl font-extrabold" style={{ color: s.c }}>{s.v || 0}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{s.n}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // ─── MAIN PAGE COMPONENT ─────────────────────────────────────────────────────
 export default function SymbolDetailPage() {
     const params = useParams();
@@ -301,7 +460,7 @@ export default function SymbolDetailPage() {
         }
     }, [theme]);
 
-    type TabId = "overview" | "financials" | "ratios" | "dividends" | "news" | "profile";
+    type TabId = "overview" | "financials" | "technicals" | "forecasts" | "ratios" | "dividends" | "news" | "profile";
     const [activeTab, setActiveTab] = useState<TabId>("overview");
     const [chartPeriod, setChartPeriod] = useState("3m");
     const [financialPeriod, setFinancialPeriod] = useState<"annual" | "quarterly">("annual");
@@ -376,6 +535,19 @@ export default function SymbolDetailPage() {
         queryFn: () => fetchShareholders(symbol),
         enabled: !!symbol
     });
+
+    // TradingView technicals (multi-timeframe) + analyst estimates
+    const { data: tvTechnicals } = useQuery({
+        queryKey: ["egx-technicals", symbol],
+        queryFn: () => fetchEgxTechnicals(symbol),
+        enabled: !!symbol && isEgx, staleTime: 60000
+    });
+    const { data: tvEstimates } = useQuery({
+        queryKey: ["egx-estimates", symbol],
+        queryFn: () => fetchEgxEstimates(symbol),
+        enabled: !!symbol && isEgx, staleTime: 300000
+    });
+    const [techTf, setTechTf] = useState<"60" | "240" | "1D" | "1W">("1D");
 
     const fairValues = useMemo(() =>
         Array.isArray(allFairValues) ? allFairValues.filter((f: any) => f.symbol === symbol) : [],
@@ -706,6 +878,8 @@ export default function SymbolDetailPage() {
     const TABS: { id: TabId; label: string; icon: any }[] = [
         { id: "overview", label: t.tab_overview, icon: Activity },
         { id: "financials", label: t.tab_financials, icon: FileText },
+        { id: "technicals", label: t.tab_technicals, icon: Gauge },
+        { id: "forecasts", label: t.tab_forecasts, icon: Crosshair },
         { id: "ratios", label: t.tab_ratios, icon: Target },
         { id: "dividends", label: t.tab_dividends, icon: Calendar },
         { id: "news", label: t.tab_news, icon: Newspaper },
@@ -1228,6 +1402,103 @@ export default function SymbolDetailPage() {
                                         <AlertCircle className="w-12 h-12 mb-3" />
                                         <p className="text-sm font-semibold">{t.empty_state}</p>
                                     </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ═══════════════════════ TECHNICALS TAB ═══════════════════════ */}
+                        {activeTab === "technicals" && (() => {
+                            const tfs = Array.isArray(tvTechnicals?.timeframes) ? tvTechnicals.timeframes : [];
+                            const tf = tfs.find((x: any) => x.timeframe === techTf) || tfs.find((x: any) => x.timeframe === "1D") || tfs[0];
+                            if (!tf) {
+                                return (
+                                    <div className="premium-glass rounded-3xl p-12 text-center">
+                                        <Gauge className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                        <p className="text-slate-400 font-bold">{t.tech_no_data}</p>
+                                    </div>
+                                );
+                            }
+                            const sig = (cond: boolean | null, inv = false): "buy" | "sell" | "neutral" =>
+                                cond == null ? "neutral" : (cond !== inv ? "buy" : "sell");
+                            const rsiSig = tf.rsi == null ? "neutral" : tf.rsi > 70 ? "sell" : tf.rsi < 30 ? "buy" : "neutral";
+                            const stochSig = tf.stoch_k == null ? "neutral" : tf.stoch_k > 80 ? "sell" : tf.stoch_k < 20 ? "buy" : "neutral";
+                            const cciSig = tf.cci20 == null ? "neutral" : tf.cci20 > 100 ? "buy" : tf.cci20 < -100 ? "sell" : "neutral";
+                            const macdSig = (tf.macd_macd == null || tf.macd_signal == null) ? "neutral" : sig(tf.macd_macd > tf.macd_signal);
+                            const momSig = tf.mom == null ? "neutral" : sig(tf.mom > 0);
+                            const maSig = (ma: number | null) => ma == null || !lastPrice ? "neutral" as const : sig(lastPrice > ma);
+                            const TF_BTNS: { id: typeof techTf; label: string }[] = [
+                                { id: "60", label: t.tf_1h }, { id: "240", label: t.tf_4h }, { id: "1D", label: t.tf_1d }, { id: "1W", label: t.tf_1w },
+                            ];
+                            return (
+                                <div className="space-y-6">
+                                    {/* timeframe selector */}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {TF_BTNS.map((b) => (
+                                            <button key={b.id} onClick={() => setTechTf(b.id)}
+                                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${techTf === b.id ? "bg-[#14b8a6] text-white shadow-lg shadow-[#14b8a6]/20" : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-[#14b8a6]"}`}>
+                                                {b.label}
+                                            </button>
+                                        ))}
+                                        <span className="text-[11px] font-bold text-slate-400 ml-auto">{lang === "ar" ? "مصدر: TradingView · مؤجل ١٥ دقيقة" : "Source: TradingView · 15-min delayed"}</span>
+                                    </div>
+                                    {/* gauges */}
+                                    <div className="premium-glass rounded-3xl p-6 md:p-8">
+                                        <SectionHeader icon={Gauge} title={t.tech_summary} color="text-[#14b8a6]" />
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <RecommendationGauge value={tf.recommend_other} title={t.tech_oscillators} lang={lang} />
+                                            <RecommendationGauge value={tf.recommend_all} title={lang === "ar" ? "الملخص" : "Summary"} lang={lang} />
+                                            <RecommendationGauge value={tf.recommend_ma} title={t.tech_mas} lang={lang} />
+                                        </div>
+                                    </div>
+                                    {/* indicator tables */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <IndicatorTable title={t.tech_oscillators} icon={Activity} color="text-amber-500" lang={lang} rows={[
+                                            { name: "RSI (14)", value: tf.rsi, signal: rsiSig },
+                                            { name: "Stochastic %K", value: tf.stoch_k, signal: stochSig },
+                                            { name: "Stochastic %D", value: tf.stoch_d, signal: "neutral" },
+                                            { name: "CCI (20)", value: tf.cci20, signal: cciSig },
+                                            { name: "MACD", value: tf.macd_macd, signal: macdSig },
+                                            { name: "ADX (14)", value: tf.adx, signal: "neutral" },
+                                            { name: "Momentum", value: tf.mom, signal: momSig },
+                                        ]} />
+                                        <IndicatorTable title={t.tech_mas} icon={TrendingUp} color="text-indigo-500" lang={lang} rows={[
+                                            { name: "EMA 50", value: tf.ema50, signal: maSig(tf.ema50) },
+                                            { name: "EMA 200", value: tf.ema200, signal: maSig(tf.ema200) },
+                                            { name: "SMA 50", value: tf.sma50, signal: maSig(tf.sma50) },
+                                            { name: "SMA 200", value: tf.sma200, signal: maSig(tf.sma200) },
+                                        ]} />
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* ═══════════════════════ FORECASTS TAB ═══════════════════════ */}
+                        {activeTab === "forecasts" && (
+                            <div className="space-y-6">
+                                {(!tvEstimates || tvEstimates.covered === false) ? (
+                                    <div className="premium-glass rounded-3xl p-12 text-center">
+                                        <Crosshair className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                        <p className="text-slate-400 font-bold">{t.fc_no_coverage}</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {tvEstimates.target_average > 0 && lastPrice > 0 && (
+                                            <AnalystTargetBar low={Number(tvEstimates.target_low) || Number(tvEstimates.target_average)}
+                                                avg={Number(tvEstimates.target_average)} high={Number(tvEstimates.target_high) || Number(tvEstimates.target_average)}
+                                                current={lastPrice} currency={currency} lang={lang} />
+                                        )}
+                                        <RecommendationDistribution buy={Number(tvEstimates.rec_buy) || 0} over={Number(tvEstimates.rec_over) || 0}
+                                            hold={Number(tvEstimates.rec_hold) || 0} under={Number(tvEstimates.rec_under) || 0} sell={Number(tvEstimates.rec_sell) || 0}
+                                            total={Number(tvEstimates.rec_total) || 0} lang={lang} />
+                                        <div className="premium-glass rounded-3xl p-6 md:p-8">
+                                            <SectionHeader icon={TrendingUp} title={lang === "ar" ? "توقعات الأرباح" : "Earnings Forecasts"} color="text-emerald-500" />
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <MetricCard label={t.fc_eps_next} value={tvEstimates.eps_fcst_next_fq ? `${currency} ${Number(tvEstimates.eps_fcst_next_fq).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                                <MetricCard label={t.fc_rev_next} value={tvEstimates.rev_fcst_next_fq ? formatCurrency(Number(tvEstimates.rev_fcst_next_fq), currency) : "-"} icon={BarChart3} color="text-[#14b8a6]" />
+                                                <MetricCard label={t.fc_eps_y} value={tvEstimates.eps_fcst_next_fy ? `${currency} ${Number(tvEstimates.eps_fcst_next_fy).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-400" />
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}

@@ -108,7 +108,7 @@ The DB is kept fresh by extraction jobs (cloud-scheduled via GitHub Actions; **n
 
 Representative tables: `market_tickers`, `ohlc_data`, intraday tables, `financial_*`, `valuation_history`, `earnings_*`, `dividend_history`, `mutual_funds`, `nav_history`, `major_shareholders`, plus portfolio tables (`portfolios`, `portfolio_holdings`, `portfolio_snapshots`, `portfolio_transactions`) and users/auth.
 
-**TradingView EGX tables (2026-06-03):** `symbol_map` (ISIN-keyed identity), `egx_technicals` (symbol×timeframe), `egx_estimates` (analyst targets/ratings), `egx_news`, `egx_financials` (20yr annual statements), `egx_ingest_deadletter`. `market_tickers` gained `isin/logo_url/source/updated_at/recommend_all/beta`. Every table has a DB-enforced UNIQUE natural key (zero-duplicate guarantee). **Supabase Realtime** enabled on `market_tickers/ohlc_data/egx_technicals` (mobile app subscribes; web via ISR/poll).
+**TradingView EGX tables (2026-06-03):** `symbol_map` (ISIN-keyed identity), `egx_technicals` (symbol×timeframe), `egx_estimates` (analyst targets/ratings), `egx_news`, `egx_financials` (20yr annual statements), `egx_dividends` (snapshot + forward ex/payment calendar), `egx_ingest_deadletter`. `market_tickers` gained `isin/logo_url/source/updated_at/recommend_all/beta`. Every table has a DB-enforced UNIQUE natural key (zero-duplicate guarantee). **Supabase Realtime** enabled on `market_tickers/ohlc_data/egx_technicals` (mobile app subscribes; web via ISR/poll).
 
 `DATABASE_URL` is configured in **both** the Hetzner backend `.env` **and** Vercel (the frontend serverless routes connect too). Keep them in sync.
 

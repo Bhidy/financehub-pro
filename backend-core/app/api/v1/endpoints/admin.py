@@ -839,6 +839,35 @@ async def refresh_all_prices():
 
             egx_notes = []
 
+            # --- SOURCE 0 (primary, FLAG-GATED): TradingView nuclear feed ---
+            # Enable by setting env EGX_PRIMARY_TV=1. Default OFF = no behaviour change.
+            # On any failure it falls through to the existing StockAnalysis/yfinance chain.
+            if os.environ.get("EGX_PRIMARY_TV", "").lower() in ("1", "true", "yes", "on"):
+                try:
+                    from data_pipeline.egx_feed_router import EGXFeedRouter
+                    tv_stocks = await EGXFeedRouter(fallback_symbols=egypt_symbols).get_egx_stocks()
+                    tv_updates = {}
+                    for stock in tv_stocks:
+                        if not stock.get('last_price'):
+                            continue  # never zero out a live stock
+                        tv_updates[stock['symbol']] = {
+                            'symbol': stock['symbol'],
+                            'name_en': stock.get('name_en'),
+                            'sector': stock.get('sector_name'),
+                            'last_price': float(stock['last_price']),
+                            'change': float(stock.get('change') or 0.0),
+                            'change_percent': float(stock.get('change_percent') or 0.0),
+                            'volume': int(stock.get('volume') or 0),
+                        }
+                    if tv_updates:
+                        await update_market_tickers(tv_updates)
+                        logger.info(f"EGX primary=TradingView updated {len(tv_updates)} stocks")
+                        return len(tv_updates), []
+                    egx_notes.append("TradingView returned no usable prices")
+                except Exception as e:
+                    logger.warning(f"TradingView primary failed: {e} — falling through to StockAnalysis/yfinance")
+                    egx_notes.append(f"TV error: {str(e)[:80]}")
+
             # --- SOURCE 1 (primary): StockAnalysis screener ---
             try:
                 from data_pipeline.market_loader import EGXProductionLoader

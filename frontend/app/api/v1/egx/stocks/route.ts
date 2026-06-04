@@ -1,25 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
+import { db } from '@/lib/db-server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
+// Single source of truth: read EGX stocks straight from Supabase (market_tickers,
+// the live TradingView-updated quote table) — same as every other stock/fund read.
+// Previously this route proxied to the Hetzner backend, the one stock endpoint that
+// did, leaving the stock list on a different read path than tickers/ohlc/etc.
+const SORTABLE = new Set(['symbol', 'name_en', 'change_percent', 'volume', 'market_cap', 'last_price']);
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get('limit') || '300';
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '500', 10) || 500, 1), 1000);
+    const sector = searchParams.get('sector');
+    const sortByRaw = searchParams.get('sort_by') || 'symbol';
+    const sortBy = SORTABLE.has(sortByRaw) ? sortByRaw : 'symbol';
+    const order = (searchParams.get('order') || 'asc').toLowerCase() === 'desc' ? 'DESC' : 'ASC';
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/egx/stocks?limit=${limit}`, {
-            headers: { 'Accept': 'application/json' },
-            next: { revalidate: 60 } // Cache for 60 seconds
-        });
-
-        if (!response.ok) {
-            return NextResponse.json({ error: 'Failed to fetch' }, { status: response.status });
+        const params: string[] = [];
+        let whereClause = `WHERE market_code = 'EGX'`;
+        if (sector) {
+            params.push(sector);
+            whereClause += ` AND sector_name = $${params.length}`;
         }
 
-        const data = await response.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error('EGX stocks error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        const query = `
+            SELECT symbol, name_en, name_ar, sector_name, last_price, change, change_percent,
+                   volume, market_cap, pe_ratio, pb_ratio, high, low, open_price, prev_close
+            FROM market_tickers
+            ${whereClause}
+            ORDER BY ${sortBy} ${order} NULLS LAST
+            LIMIT ${limit}
+        `;
+
+        const result = await db.query(query, params);
+        return NextResponse.json(result.rows);
+    } catch (error: any) {
+        console.error('[API] /egx/stocks error:', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

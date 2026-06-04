@@ -262,9 +262,9 @@ async def handle_deep_efficiency(conn: asyncpg.Connection, symbol: str, market: 
 async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str, lang: str = 'en') -> ChatResponse:
     """Analyze Growth (CAGR, Future Potential)."""
     row = await conn.fetchrow("""
-        SELECT 
+        SELECT
             s.revenue_growth, s.profit_growth, s.eps_growth, s.peg_ratio,
-            s.revenue_ttm, s.net_income, s.eps,
+            s.revenue_ttm, s.net_income_ttm, s.eps_ttm,
             m.name_en, m.name_ar, m.currency
         FROM stock_statistics s
         JOIN market_tickers m ON s.symbol = m.symbol
@@ -326,7 +326,7 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
         title="Growth Trajectory",
         data=[
             {"label": "Revenue", "value": float(row['revenue_ttm'] or 0)},
-            {"label": "Net Income", "value": float(row['net_income'] or 0)}
+            {"label": "Net Income", "value": float(row['net_income_ttm'] or 0)}
         ],
         range="1Y"
     )

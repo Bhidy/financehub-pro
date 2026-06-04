@@ -40,7 +40,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
 
     <!-- Mobile navigation (shared ultra-premium burger menu) -->
-    <script src="/assets/starta-mobile-nav.js?v=1.0.2" defer></script>
+    <script src="/assets/starta-mobile-nav.js?v=1.0.3" defer></script>
 
     <script>
         tailwind.config = {
@@ -3536,6 +3536,11 @@
     <script>
         gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
+        // Fix: body{zoom:0.9} from starta-theme.js shifts rendered positions vs. scrollY.
+        // normalizeScroll anchors GSAP to visual coordinates; refresh() after load recalculates.
+        ScrollTrigger.config({ ignoreMobileResize: true });
+        window.addEventListener('load', function() { ScrollTrigger.refresh(); });
+
         // --- TRANSLATION ENGINE ---
         const translations = {
             en: {
@@ -4018,20 +4023,20 @@
             gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
             gsap.to(line, {
                 strokeDashoffset: 0,
-                duration: 2,
+                duration: 1.6,
                 ease: 'power2.out',
-                scrollTrigger: { trigger: line, start: 'top 90%' }
+                scrollTrigger: { trigger: line, start: 'top 108%', once: true }
             });
         });
         const texts = document.querySelectorAll('.reveal-text');
         texts.forEach(text => {
-            gsap.fromTo(text, { y: 32, opacity: 0 }, { y: 0, opacity: 1, duration: 1.15, ease: 'power3.out', scrollTrigger: { trigger: text, start: 'top 82%' } });
+            gsap.fromTo(text, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', scrollTrigger: { trigger: text, start: 'top 108%', once: true } });
         });
         gsap.utils.toArray('.section-tag').forEach(tag => {
-            gsap.fromTo(tag, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out', scrollTrigger: { trigger: tag, start: 'top 90%' } });
+            gsap.fromTo(tag, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out', scrollTrigger: { trigger: tag, start: 'top 108%', once: true } });
         });
         gsap.utils.toArray('.premium-hover').forEach(card => {
-            gsap.fromTo(card, { y: 24, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: card, start: 'top 90%' } });
+            gsap.fromTo(card, { y: 14, opacity: 0, scale: 0.99 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out', scrollTrigger: { trigger: card, start: 'top 108%', once: true } });
         });
         gsap.to('.hero-orb-a', { x: 80, y: 50, duration: 8.5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         gsap.to('.hero-orb-b', { x: -70, y: -45, duration: 10, repeat: -1, yoyo: true, ease: 'sine.inOut' });
@@ -4116,11 +4121,11 @@
         counterElements.forEach(el => {
             const targetVal = parseFloat(el.dataset.value);
             const prefix = el.dataset.prefix || ''; const suffix = el.dataset.suffix || '';
-            ScrollTrigger.create({ trigger: el, start: "top 85%", onEnter: () => { gsap.to(el, { innerHTML: targetVal, duration: 2, snap: { innerHTML: 0.1 }, onUpdate: function () { el.innerHTML = prefix + parseFloat(this.targets()[0].innerHTML).toFixed(1) + suffix + (el.innerText.includes('Flow') ? ' Flow' : ''); } }); } });
+            ScrollTrigger.create({ trigger: el, start: "top 108%", once: true, onEnter: () => { gsap.to(el, { innerHTML: targetVal, duration: 2, snap: { innerHTML: 0.1 }, onUpdate: function () { el.innerHTML = prefix + parseFloat(this.targets()[0].innerHTML).toFixed(1) + suffix + (el.innerText.includes('Flow') ? ' Flow' : ''); } }); } });
         });
 
         const barElements = document.querySelectorAll('.bar-anim');
-        barElements.forEach(el => { const width = el.dataset.width; ScrollTrigger.create({ trigger: el, start: "top 85%", onEnter: () => { el.style.width = width; } }); });
+        barElements.forEach(el => { const width = el.dataset.width; ScrollTrigger.create({ trigger: el, start: "top 108%", once: true, onEnter: () => { el.style.width = width; } }); });
 
         // --- CALCULATOR LOGIC ---
         const goalAmountInput = document.getElementById('goal-amount-input');
@@ -4404,12 +4409,12 @@
             if (statusEl) { statusEl.textContent = 'OPEN'; statusEl.style.color = '#22c55e'; }
 
             gsap.from('#hp-pulse-section .hp-terminal', {
-                opacity: 0, y: 28, duration: 0.7, ease: 'power2.out',
-                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 78%', once: true }
+                opacity: 0, y: 14, duration: 0.55, ease: 'power2.out',
+                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 108%', once: true }
             });
             gsap.from('#hp-pulse-section .hp-stat-box', {
-                opacity: 0, y: 18, duration: 0.5, stagger: 0.1, ease: 'power2.out',
-                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 80%', once: true }
+                opacity: 0, y: 10, duration: 0.4, stagger: 0.08, ease: 'power2.out',
+                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 108%', once: true }
             });
         })();
 
@@ -4504,8 +4509,8 @@
                 </a>`;
 
                 gsap.from(heroWrap.firstElementChild, {
-                    opacity: 0, scale: 0.97, y: 20, duration: 0.7, ease: 'power3.out',
-                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 80%', once: true }
+                    opacity: 0, scale: 0.99, y: 12, duration: 0.55, ease: 'power3.out',
+                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 108%', once: true }
                 });
             }
 
@@ -4534,9 +4539,9 @@
                 }).join('');
 
                 gsap.from('#hn2-side .hn2-item', {
-                    opacity: 0, x: lang === 'ar' ? -16 : 16, duration: 0.45,
-                    stagger: 0.09, ease: 'power2.out',
-                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 78%', once: true }
+                    opacity: 0, x: lang === 'ar' ? -10 : 10, duration: 0.38,
+                    stagger: 0.07, ease: 'power2.out',
+                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 108%', once: true }
                 });
             }
 
@@ -4646,8 +4651,8 @@
 
             if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
                 gsap.from('#hp-academy-grid > article', {
-                    opacity: 0, y: 28, duration: 0.6, stagger: 0.09, ease: 'power3.out',
-                    scrollTrigger: { trigger: '#hp-academy-grid', start: 'top 82%', once: true }
+                    opacity: 0, y: 14, duration: 0.5, stagger: 0.07, ease: 'power3.out',
+                    scrollTrigger: { trigger: '#hp-academy-grid', start: 'top 108%', once: true }
                 });
             }
         }

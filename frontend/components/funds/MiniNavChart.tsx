@@ -15,9 +15,13 @@ export default function MiniNavChart({ fundId, ytdReturn }: { fundId: string; yt
         queryKey: ["fund-nav-mini", fundId],
         queryFn: async () => {
             const data = await fetchFundNav(fundId, 30);
-            return Array.isArray(data) ? data.reverse() : [];
+            if (!Array.isArray(data)) return [];
+            // Sort chronologically instead of a blind .reverse() so the newest
+            // point is always last regardless of the API's sort order (the API
+            // returns DESC for small limits, ASC for full history).
+            return [...data].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
         },
-        staleTime: 5 * 60 * 1000,
+        staleTime: 60 * 1000,
     });
 
     // Generate simulated sparkline data based on YTD return when no NAV history

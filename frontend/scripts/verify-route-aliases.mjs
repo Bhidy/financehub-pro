@@ -71,8 +71,8 @@ const checks = [
     name: `${page} uses the shared persistent theme controller`,
     file: `public/${page}.html`,
     assert: (text) =>
-      /<html[^>]*data-theme=["']dark["']/i.test(text) &&
-      /<script src=["']\/assets\/starta-theme\.js["']><\/script>/.test(text),
+      /<html[^>]*data-theme=["']light["']/i.test(text) &&
+      /<script src=["']\/assets\/starta-theme\.js(?:\?[^"']*)?["']><\/script>/.test(text),
   })),
   ...publicPages.map((page) => ({
     name: `${page} uses the current public header navigation`,

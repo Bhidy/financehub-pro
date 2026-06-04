@@ -1,0 +1,76 @@
+name: Funds NAV Update
+
+# ============================================================
+# PRIMARY mutual-fund NAV auto-update (the layer that replaces the dead
+# /refresh/egypt-funds chart-API path, which returned HTTP 500 and reported
+# false "egypt_funds_success" while NAVs silently froze for weeks).
+#
+# Engine: backend-core/scripts/funds_nav_updater.py
+#   Layer 1 (primary)  static CSV  static.mubasher.info/.../priceChartFund_{id}.csv
+#                      (no auth, fresh, full history) -> ~176 numeric-id funds
+#   Layer 2 (fallback) english.mubasher.info JSON chart API (defensive)
+#   Layer 3 (preserve) idempotent ON CONFLICT upsert -> never wipes a NAV
+# Writes straight to Supabase (DATABASE_URL secret) -> no Hetzner/backend-lock
+# dependency, so a backend outage cannot block funds updates.
+#
+# NEVER-FALSE-GREEN: the updater exits NON-ZERO when fewer than --min-updated
+# funds update, so a broken source turns this run RED instead of lying green.
+# Funds with no CSV (newer 64xx ids) are covered by the Playwright scraper
+# (backend scheduler 06:00 Cairo) — a separate, redundant layer.
+#
+# Requires repo secret DATABASE_URL (already configured for tv-egx-harvester).
+# ============================================================
+
+on:
+  schedule:
+    - cron: '0 5 * * 0-4'    # 08:00 Cairo, Sun-Thu (morning, after overnight CSV publish)
+    - cron: '0 16 * * 0-4'   # 19:00 Cairo, Sun-Thu (evening, post-close redundancy)
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Universe to update'
+        required: true
+        default: 'numeric'
+        type: choice
+        options: [numeric, all]
+
+concurrency:
+  group: funds-nav-update
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: Update fund NAVs (Mubasher CSV)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install httpx asyncpg
+
+      - name: Run funds NAV updater
+        id: run
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          SCOPE="${{ github.event.inputs.scope }}"
+          EXTRA=""
+          if [ "$SCOPE" = "all" ]; then EXTRA="--all"; fi
+          # --min-updated 100: with ~176 CSV-backed funds, a healthy run updates
+          # well over 100; fewer => source/pipeline trouble => exit 2 (RED).
+          python backend-core/scripts/funds_nav_updater.py \
+            --concurrency 10 --min-updated 100 $EXTRA
+
+      - name: Alert Discord on failure
+        if: failure() && env.HAS_DISCORD != ''
+        run: |
+          MSG=$(printf '🔴 **FUNDS NAV UPDATE FAILED** on startamarkets.com\n• fewer than 100 funds updated, or the run errored\n• Run: https://github.com/%s/actions/runs/%s' \
+            "${{ github.repository }}" "${{ github.run_id }}")
+          jq -n --arg c "$MSG" '{content: $c}' | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

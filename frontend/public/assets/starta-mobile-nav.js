@@ -64,14 +64,14 @@
         /* drawer */
         .smn-drawer{
             position:absolute; top:0; right:0; height:100%;
-            width:min(88vw,392px); display:flex; flex-direction:column;
+            width:min(88vw,392px); box-sizing:border-box; display:flex; flex-direction:column;
             padding:1.55rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom,0px));
             background:var(--smn-surface);
             backdrop-filter:blur(26px) saturate(1.3); -webkit-backdrop-filter:blur(26px) saturate(1.3);
             border-left:1px solid var(--smn-border-strong);
             box-shadow:var(--smn-shadow);
             transform:translateX(105%); transition:transform .5s cubic-bezier(.16,1,.3,1);
-            overflow-y:auto; overscroll-behavior:contain;
+            overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
         }
         .smn-root.is-open .smn-drawer{ transform:translateX(0); }
         html[dir="rtl"] .smn-drawer{ right:auto; left:0; border-left:0; border-right:1px solid var(--smn-border-strong); transform:translateX(-105%); }

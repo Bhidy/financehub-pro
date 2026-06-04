@@ -88,7 +88,17 @@ async def handle_dividends(
         # Sum last year's dividends
         if ex_date and amount and (datetime.now().date() - ex_date).days <= 365:
             total_annual += amount
-    
+
+    # If the trailing-12m sum is 0 but the stock clearly pays a dividend (positive
+    # current yield), the stored history is simply stale/incomplete. Fall back to a
+    # yield-implied annual figure so we NEVER present a misleading "0.00" for a
+    # dividend-paying stock (which also prevents the narrative layer from
+    # mis-reporting the yield as 0%).
+    annual_is_estimated = False
+    if (not total_annual) and current_yield and last_price:
+        total_annual = (current_yield / 100.0) * last_price
+        annual_is_estimated = True
+
     # Build premium message
     if dividends:
         # Has dividend history
@@ -99,7 +109,11 @@ async def handle_dividends(
              lines = [f"💵 **سجل التوزيعات لـ {name}** ({symbol})\n"]
              lines.append("📊 **الملخص:**")
              if current_yield: lines.append(f"• عائد التوزيعات الحالي: {current_yield:.2f}%")
-             if total_str: lines.append(f"• إجمالي التوزيعات (آخر سنة): {total_str} {currency}")
+             if total_str:
+                 if annual_is_estimated:
+                     lines.append(f"• التوزيعات السنوية المقدرة: ~{total_str} {currency}")
+                 else:
+                     lines.append(f"• إجمالي التوزيعات (آخر سنة): {total_str} {currency}")
              lines.append(f"• عدد التوزيعات المسجلة: {len(dividends)}")
              if price_str: lines.append(f"• السعر الحالي: {price_str} {currency}")
              message = "\n".join(lines)
@@ -107,7 +121,11 @@ async def handle_dividends(
              lines = [f"💵 **Dividend History for {name}** ({symbol})\n"]
              lines.append("📊 **Summary:**")
              if current_yield: lines.append(f"• Current Dividend Yield: {current_yield:.2f}%")
-             if total_str: lines.append(f"• Total Dividends (Last Year): {total_str} {currency}")
+             if total_str:
+                 if annual_is_estimated:
+                     lines.append(f"• Est. Annual Dividend: ~{total_str} {currency}")
+                 else:
+                     lines.append(f"• Total Dividends (Last Year): {total_str} {currency}")
              lines.append(f"• Number of Distributions: {len(dividends)}")
              if price_str: lines.append(f"• Current Price: {price_str} {currency}")
              message = "\n".join(lines)

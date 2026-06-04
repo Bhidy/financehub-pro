@@ -4010,15 +4010,109 @@ function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summ
   );
 }
 
+// ---- Premium AI card rendering — parity with web /AiChat (type-aware, ALL cards) ----
+const AI_METRIC_LABELS: Record<string, [string, string]> = {
+  pe_ratio: ["P/E Ratio", "مكرر الربحية"], forward_pe: ["Forward P/E", "م. الربحية الآجل"],
+  pb_ratio: ["P/B Ratio", "السعر/القيمة الدفترية"], ps_ratio: ["P/S Ratio", "السعر/المبيعات"],
+  peg_ratio: ["PEG", "PEG"], dividend_yield: ["Dividend Yield", "عائد التوزيعات"],
+  roe: ["ROE", "العائد على حقوق الملكية"], roa: ["ROA", "العائد على الأصول"], roic: ["ROIC", "ROIC"],
+  beta: ["Beta", "بيتا"], beta_5y: ["Beta (5Y)", "بيتا (5س)"], rsi_14: ["RSI (14)", "مؤشر RSI"],
+  ma_50d: ["MA 50D", "متوسط 50ي"], ma_200d: ["MA 200D", "متوسط 200ي"], market_cap: ["Market Cap", "القيمة السوقية"],
+  gross_margin: ["Gross Margin", "الهامش الإجمالي"], operating_margin: ["Operating Margin", "هامش التشغيل"],
+  profit_margin: ["Profit Margin", "هامش الربح"], ebitda_margin: ["EBITDA Margin", "هامش EBITDA"],
+  eps_ttm: ["EPS (TTM)", "ربحية السهم"], revenue_ttm: ["Revenue (TTM)", "الإيرادات"],
+  net_income_ttm: ["Net Income (TTM)", "صافي الدخل"], revenue_growth: ["Revenue Growth", "نمو الإيرادات"],
+  profit_growth: ["Profit Growth", "نمو الأرباح"], eps_growth: ["EPS Growth", "نمو ربحية السهم"],
+  current_ratio: ["Current Ratio", "نسبة التداول"], debt_equity: ["Debt/Equity", "الدين/حقوق الملكية"],
+};
+function aiMetricLabel(key: string, lang: Lang): string {
+  const m = AI_METRIC_LABELS[key];
+  if (m) return lang === "ar" ? m[1] : m[0];
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+function aiFmtVal(key: string, val: unknown): string {
+  if (val === null || val === undefined || val === "") return "—";
+  if (typeof val === "boolean") return val ? "Yes" : "No";
+  const n = typeof val === "number" ? val : (typeof val === "string" && val.trim() !== "" && !isNaN(Number(val)) ? Number(val) : NaN);
+  if (Number.isFinite(n)) {
+    const abs = Math.abs(n);
+    if (/market_cap|revenue|net_income|volume|turnover|aum/i.test(key)) {
+      if (abs >= 1e9) return (n / 1e9).toFixed(2) + "B";
+      if (abs >= 1e6) return (n / 1e6).toFixed(1) + "M";
+    }
+    if (abs >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    return Number.isInteger(n) ? String(n) : n.toFixed(2);
+  }
+  return cleanUiText(String(val));
+}
+const AI_SKIP_KEYS = new Set(["type", "title", "label", "variant", "symbol", "name", "market_code", "currency", "sector"]);
+const AI_HEADER = new Set(["stock_header", "snapshot", "fund_nav", "header"]);
+const AI_METRICS = new Set(["stats", "statistics", "metric", "advanced_stats", "ratios", "deep_health", "deep_valuation", "valuation_score", "deep_efficiency", "deep_growth", "technicals", "ownership", "macro_context", "macro_score", "fund_overview", "fair_value"]);
+const AI_NARRATIVE = new Set(["my_framework", "bull_case", "bear_case", "insight", "market_timing", "thesis", "bullet_list", "discovery_list"]);
+const AI_TABLE = new Set(["compare_table", "compare", "comparison_table", "dividends_table", "movers_table", "movers", "fund_list", "fund_movers"]);
+const AI_TEXT = new Set(["educational", "define_term", "definition", "example", "learning", "disclaimer", "disclaimer_card"]);
+
+function AiCardView({ card, lang }: { card: AiCard; lang: Lang }) {
+  const c = card as Record<string, unknown>;
+  const type = String(c.type || "");
+  const data = (c.data && typeof c.data === "object" ? c.data : c) as Record<string, unknown>;
+  const title = cleanUiText(firstString(c, ["title", "label"], "")) || cleanUiText(firstString(data, ["title", "label"], ""));
+  const Title = title ? <div className={styles.aiCardTitle}>{title}</div> : null;
+
+  // Header: symbol + name + sector
+  if (AI_HEADER.has(type)) {
+    const sym = firstString(data, ["symbol", "name"], "");
+    const nm = firstString(data, ["name", "fund_name", "symbol"], "");
+    const sector = firstString(data, ["sector", "sector_name", "market_code"], "");
+    return <div className={styles.aiCard}><div className={styles.aiCardHead}><b>{cleanUiText(sym)}</b>{nm && nm !== sym ? <span>{cleanUiText(nm)}</span> : null}</div>{sector ? <small>{cleanUiText(sector)}</small> : null}</div>;
+  }
+
+  // Narrative: bullet points (bull = green, bear = red)
+  if (AI_NARRATIVE.has(type)) {
+    const pts = (Array.isArray(data.points) ? data.points : Array.isArray(data.items) ? data.items : Array.isArray((c as any).points) ? (c as any).points : [])
+      .map((p: unknown) => (typeof p === "string" ? p : firstString(p as Record<string, unknown>, ["text", "point", "title", "label"], ""))).filter(Boolean);
+    if (!pts.length) return null;
+    const tone = type === "bull_case" ? "var(--c-up, #10b981)" : type === "bear_case" ? "var(--c-down, #ef4444)" : "var(--c-brand, #10b981)";
+    return <div className={styles.aiCard}>{Title}<ul className={styles.aiBullets}>{pts.map((p: string, i: number) => <li key={i}><i style={{ background: tone }} />{cleanUiText(p)}</li>)}</ul></div>;
+  }
+
+  // Table: rows + optional columns
+  if (AI_TABLE.has(type) && Array.isArray(data.rows)) {
+    const cols = Array.isArray(data.columns) ? (data.columns as unknown[]).map((x) => String(x)) : null;
+    const rows = (data.rows as unknown[]).slice(0, 12);
+    return <div className={styles.aiCard}>{Title}<div className={styles.aiGridTable}>{rows.map((r: any, i: number) => {
+      const cells = Array.isArray(r) ? r : (cols ? cols.map((k) => r[k]) : Object.values(r));
+      return <div key={i} className={styles.aiGridRow}>{cells.slice(0, 4).map((cell: unknown, j: number) => <span key={j}>{aiFmtVal(cols?.[j] || "", cell)}</span>)}</div>;
+    })}</div></div>;
+  }
+
+  // Educational / definition / disclaimer: text body
+  if (AI_TEXT.has(type)) {
+    const body = firstString(data, ["body", "text", "content", "description", "definition", "summary"], "");
+    if (!body) return null;
+    const muted = type.includes("disclaimer");
+    return <div className={styles.aiCard}>{Title}<p className={muted ? styles.aiDisclaimer : styles.aiCardBody}>{cleanUiText(body)}</p></div>;
+  }
+
+  // Metric grid (default for stats/ratios/deep_*/fair_value/etc.) — also the generic fallback
+  const metricsObj = (data.metrics && typeof data.metrics === "object" ? data.metrics : data) as Record<string, unknown>;
+  const entries = Object.entries(metricsObj)
+    .filter(([k, v]) => !AI_SKIP_KEYS.has(k) && v !== null && v !== undefined && v !== "" && typeof v !== "object")
+    .slice(0, 12);
+  if (entries.length) {
+    return <div className={styles.aiCard}>{Title}<div className={styles.aiMetricGrid}>{entries.map(([k, v]) => <div key={k} className={styles.aiMetric}><span>{aiMetricLabel(k, lang)}</span><strong>{aiFmtVal(k, v)}</strong></div>)}</div></div>;
+  }
+  // last-resort: a single value/summary line
+  const v = firstString(data, ["value", "price", "summary", "description"], "");
+  if (title || v) return <div className={styles.aiCard}>{Title}{v ? <p className={styles.aiCardBody}>{cleanUiText(v)}</p> : null}</div>;
+  return null;
+}
+
 function AiStructured({ kind, cards, stocks, funds, lang }: { kind?: AiMessage["kind"]; cards?: AiCard[]; stocks: Stock[]; funds: Fund[]; lang: Lang }) {
   if (cards?.length) {
-    const rows = cards.slice(0, 4).map((card, i) => ({
-      title: cleanUiText(firstString(card, ["title", "label", "symbol", "name"], lang === "ar" ? `بطاقة ${i + 1}` : `Card ${i + 1}`)),
-      value: cleanUiText(firstString(card, ["value", "price", "metric", "subtitle", "description"], "")),
-      detail: cleanUiText(firstString(card, ["detail", "change", "summary", "body"], "")),
-    })).filter((row) => row.value || row.detail);
-    if (!rows.length) return null;
-    return <div className={styles.aiTable}>{rows.map((row, i) => <div key={i}><span>{row.title}</span><strong>{row.value || "—"}</strong>{row.detail ? <small>{row.detail}</small> : null}</div>)}</div>;
+    const rendered = cards.map((card, i) => <AiCardView key={i} card={card} lang={lang} />).filter(Boolean);
+    if (rendered.length) return <div className={styles.aiCardStack}>{rendered}</div>;
+    // fall through to local fallbacks if no card rendered anything
   }
   if (kind === "api") return null;
   if (kind === "comparison") {

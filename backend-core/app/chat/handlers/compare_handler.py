@@ -155,6 +155,10 @@ async def handle_compare_stocks(
     Handle COMPARE_STOCKS intent.
     """
     symbols = _dedupe_symbol_inputs(symbols)
+    # Track the user's EXPLICITLY-requested symbols (captured BEFORE any auto-peer
+    # expansion) so the sector-matching filter below never drops a stock the user
+    # named on purpose — e.g. "compare COMI (Banks) and HRHO (Financial Services)".
+    user_provided_canon = {_canonical_symbol(s) for s in symbols}
     logger.info(f"[COMPARE] ▶▶▶ handle_compare_stocks called with {len(symbols)} symbols: {symbols}")
 
     # AUTO-PEER LOGIC: If only 1 symbol, find a competitor in same sector
@@ -369,22 +373,26 @@ async def handle_compare_stocks(
         market_code = stocks_data[0].get('market_code', 'EGX')
         primary_canon = _canonical_symbol(stocks_data[0]['symbol'])
         
-        # 1. Enforce strict sector matching for any user-provided stocks
+        # 1. Sector matching applies ONLY to auto-discovered peers, never to the
+        #    stocks the user explicitly named. A cross-sector comparison the user
+        #    asked for (e.g. COMI vs HRHO) must be honored exactly.
         if primary_sector and _is_valid_sector(primary_sector):
             same_sector = [stocks_data[0]] # Always keep primary
-            
+
             for s in stocks_data[1:]:
                 s_sector = str(s.get('sector_name', '')).strip().upper()
                 p_sector = str(primary_sector).strip().upper()
-                if s_sector == p_sector:
+                if s_sector == p_sector or _canonical_symbol(s.get('symbol', '')) in user_provided_canon:
                     same_sector.append(s)
                 else:
-                    logger.warning(f"[COMPARE] ⚠️ SECTOR MISMATCH: Dropping {s['symbol']} (Sector: {s_sector} vs Primary: {p_sector})")
-                    
+                    logger.warning(f"[COMPARE] ⚠️ SECTOR MISMATCH: Dropping auto-peer {s['symbol']} (Sector: {s_sector} vs Primary: {p_sector})")
+
             stocks_data = same_sector
-            
-            # 2. Fill missing slots to ensure EXACTLY 3 stocks from the same sector
-            if len(stocks_data) < 3:
+
+            # 2. Fill missing slots with same-sector peers ONLY when the user
+            #    under-specified (named fewer than 2 stocks). If the user explicitly
+            #    named 2+ stocks, compare exactly those — do not pad with peers.
+            if len(stocks_data) < 3 and len(user_provided_canon) < 2:
                 needed = 3 - len(stocks_data)
                 existing_canons = {_canonical_symbol(d['symbol']) for d in stocks_data}
                 

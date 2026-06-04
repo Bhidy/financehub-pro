@@ -136,7 +136,7 @@
         .smn-cta{
             position:relative; z-index:1; margin-top:1.35rem; display:flex; align-items:center; justify-content:center; gap:.6rem;
             padding:1rem 1.25rem; border-radius:.85rem; text-decoration:none; font-weight:700; font-size:.95rem; letter-spacing:.02em;
-            color:#04201c; background:linear-gradient(135deg,var(--smn-teal),var(--smn-teal-deep));
+            color:#ffffff; background:linear-gradient(135deg,var(--smn-teal),var(--smn-teal-deep));
             box-shadow:0 18px 38px -14px rgba(20,184,166,.65); overflow:hidden;
             transition:transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease;
         }

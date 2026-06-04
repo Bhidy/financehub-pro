@@ -31,62 +31,18 @@ import tls_client
 
 async def fetch_ohlc_live(symbol: str, limit: int = 200) -> Optional[List[Dict]]:
     """
-    Fetch OHLC data directly from StockAnalysis.com Internal API.
-    Bypasses Cloudflare and HTML limit (returns ~128+ rows instead of 50).
+    DEPRECATED / DISABLED — stockanalysis.com dependency removed.
+
+    This previously fetched chart history from stockanalysis.com, which is now
+    Cloudflare-blocked and deprecated as a data source. The local `ohlc_data`
+    table holds full multi-year daily history for every EGX symbol (refreshed
+    daily by the pipeline) and is the single source of truth for charts.
+
+    Kept as a no-op so any lingering caller degrades gracefully (returns None)
+    instead of reaching out to the retired external source.
     """
-    url = f"https://stockanalysis.com/api/symbol/a/EGX-{symbol}/history?type=full"
-    
-    try:
-        # Use tls_client to mimic a real browser to bypass protection
-        session = tls_client.Session(
-            client_identifier="chrome_120",
-            random_tls_extension_order=True
-        )
-        
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Referer": f"https://stockanalysis.com/quote/egx/{symbol.lower()}/history/",
-            "Accept": "application/json"
-        }
-        
-        # Run blocking request in executor
-        loop = asyncio.get_running_loop()
-        resp = await loop.run_in_executor(
-            None,
-            lambda: session.get(url, headers=headers)
-        )
-        
-        if resp.status_code != 200:
-            logger.warning(f"[CHART LIVE] API HTTP {resp.status_code} for {symbol}")
-            return None
-            
-        data = resp.json()
-        history = []
-        
-        if 'data' in data and 'data' in data['data']:
-            for row in data['data']['data']:
-                try:
-                    history.append({
-                        "time": row.get('t'), # Format YYYY-MM-DD
-                        "open": float(row.get('o', 0)),
-                        "high": float(row.get('h', 0)),
-                        "low": float(row.get('l', 0)),
-                        "close": float(row.get('c', 0)),
-                        "volume": int(row.get('v', 0))
-                    })
-                except Exception as e:
-                    continue
-        
-        # API returns oldest first, no reverse needed usually, but let's verify sorting
-        # Sort by date just to be safe
-        history.sort(key=lambda x: x['time'])
-        
-        logger.info(f"[CHART LIVE] API Fetched {len(history)} points for {symbol}")
-        return history
-            
-    except Exception as e:
-        logger.error(f"[CHART LIVE] Error fetching {symbol}: {e}")
-        return None
+    logger.debug(f"[CHART] fetch_ohlc_live is disabled (stockanalysis removed) — symbol={symbol}")
+    return None
 
 
 async def handle_stock_chart(
@@ -151,32 +107,15 @@ async def handle_stock_chart(
                 'volume': int(row['volume']) if row['volume'] else 0
             })
     
-    # If no data in DB, try live fallback for EGX stocks
+    # ── SINGLE SOURCE OF TRUTH: ohlc_data ──
+    # ohlc_data holds full multi-year daily history for every EGX symbol
+    # (e.g. COMI: 6,400+ daily bars back to 2000), refreshed daily by the pipeline.
+    # The prior stockanalysis.com live fallback has been REMOVED: that source is
+    # Cloudflare-blocked/deprecated, and the local table now exceeds its depth for
+    # every supported range (1D…MAX). The DB is the sole authoritative source.
     market_code = name_row['market_code']
     is_egx = market_code == 'EGX'
-    
-    # If requesting 3M (90 days) or 6M (180 days), DB (approx 50 days) is insufficient.
-    # Force live fetch if requested days > database depth (approx 50).
-    is_long_range = days > 55
-    is_sparse_db = not chart_data or len(chart_data) < (days * 0.7) # If we have less than 70% of requested days
 
-    if is_egx and (is_sparse_db or is_long_range):
-        logger.info(f"[CHART] Triggering Live Fetch (Req: {days}d, DB: {len(chart_data)}pts)")
-        
-        # Determine strict limit based on days requested
-        # 3M = 90 days, 6M = 180 days. Using days directly ensures we ask for enough.
-        limit_req = max(days + 30, 150) # Buffer added
-        live_data = await fetch_ohlc_live(symbol, limit=limit_req)
-        
-        if live_data and len(live_data) > 0:
-            # Filter by date range
-            chart_data = [
-                point for point in live_data 
-                if datetime.strptime(point['time'], '%Y-%m-%d').date() >= start_date.date()
-            ]
-            data_source = "live"
-            logger.info(f"[CHART] Using LIVE data for {symbol}: {len(chart_data)} points")
-    
     if not chart_data:
         return {
             'success': False,

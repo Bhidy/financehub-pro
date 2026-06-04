@@ -12,12 +12,23 @@ async def handle_fund_nav(conn: asyncpg.Connection, fund_id: str, language: str 
     
     # Try to resolve fund_id from name if not numeric
     if not fund_id.isdigit():
-        # Search by name
+        # Resolve by name with RELEVANCE RANKING. (Was: `LIKE '%term%' LIMIT 1` with no
+        # ORDER BY -> arbitrary match among duplicate funds, e.g. "Maashy" could return
+        # a wrong fund's NAV. The funds table has numeric Mubasher IDs AND alphanumeric
+        # Decypha duplicates for the same fund.) Priority: exact name > prefix > canonical
+        # numeric (Mubasher) ID > most NAV history (the real, tradable record).
+        term = fund_id.lower().strip()
         row = await conn.fetchrow("""
-            SELECT fund_id FROM mutual_funds 
+            SELECT fund_id FROM mutual_funds
             WHERE LOWER(fund_name) LIKE $1 OR LOWER(fund_name_en) LIKE $1
+            ORDER BY
+                CASE WHEN LOWER(fund_name_en) = $2 OR LOWER(fund_name) = $2 THEN 0
+                     WHEN LOWER(fund_name_en) LIKE $3 OR LOWER(fund_name) LIKE $3 THEN 1
+                     ELSE 2 END,
+                CASE WHEN fund_id ~ '^[0-9]+$' THEN 0 ELSE 1 END,
+                (SELECT COUNT(*) FROM nav_history WHERE fund_id = mutual_funds.fund_id) DESC
             LIMIT 1
-        """, f"%{fund_id.lower()}%")
+        """, f"%{term}%", term, f"{term}%")
         if row:
             fund_id = str(row['fund_id'])
         else:

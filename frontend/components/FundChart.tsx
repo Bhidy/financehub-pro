@@ -25,7 +25,7 @@ export default function FundChart({ data, period, colorId, dateRangeOrLabel }: F
     return (
         <>
             <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
+                <AreaChart data={data} margin={{ top: 20, right: 16, left: 0, bottom: 0 }}>
                     <defs>
                         <linearGradient id={colorId} x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />
@@ -72,7 +72,7 @@ export default function FundChart({ data, period, colorId, dateRangeOrLabel }: F
                         }}
                         itemStyle={{ color: '#0f172a', fontWeight: 'bold', fontSize: '14px' }}
                         labelStyle={{ color: '#64748b', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}
-                        formatter={(val: any) => [`SAR ${Number(val).toFixed(4)}`, "NAV"]}
+                        formatter={(val: any) => [`EGP ${Number(val).toFixed(4)}`, "NAV"]}
                         labelFormatter={(l) => {
                             const d = new Date(l);
                             return isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { dateStyle: 'full' });

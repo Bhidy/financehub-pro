@@ -1,35 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
+import { db } from '@/lib/db-server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
-
+// Single source of truth: read dividend_history directly from Supabase
+// (was proxying to the Hetzner backend). Same query/output as the backend.
 export async function GET(
-    request: NextRequest,
+    request: Request,
     { params }: { params: Promise<{ symbol: string }> }
 ) {
-    const resolvedParams = await params;
-    const symbol = resolvedParams.symbol?.toUpperCase();
-
-    if (!symbol) {
-        return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
-    }
+    const { symbol } = await params;
+    const sym = symbol?.toUpperCase();
+    if (!sym) return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/egx/dividends/${symbol}`, {
-            headers: { 'Accept': 'application/json' },
-            next: { revalidate: 600 } // Cache for 10 minutes
-        });
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                return NextResponse.json({ error: 'Dividends not found', dividends: [] }, { status: 200 });
-            }
-            return NextResponse.json({ error: 'Failed to fetch dividends' }, { status: response.status });
-        }
-
-        const data = await response.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error('EGX dividends error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        const result = await db.query(
+            `SELECT * FROM dividend_history WHERE symbol = $1 ORDER BY ex_date DESC`,
+            [sym]
+        );
+        return NextResponse.json(result.rows);
+    } catch (error: any) {
+        console.error('[API] /egx/dividends error:', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

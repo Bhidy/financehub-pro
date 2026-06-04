@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
 
 export async function GET(
     request: NextRequest,
@@ -43,18 +42,10 @@ export async function GET(
             return NextResponse.json(formattedData);
         }
 
-        // 2. Fallback: Proxy to yfinance FastAPI backend
-        console.warn(`[EGX History] Symbol ${symbol} not found in ohlc_data, falling back to yfinance backend...`);
-        const response = await fetch(`${BACKEND_URL}/api/v1/egx/history/${symbol}?period=${period}`, {
-            headers: { 'Accept': 'application/json' }
-        });
-
-        if (!response.ok) {
-            return NextResponse.json([], { status: 200 }); // Return empty array gracefully
-        }
-
-        const data = await response.json();
-        return NextResponse.json(data);
+        // ohlc_data is the single source of truth for charts (100% EGX coverage).
+        // No rows -> empty (the yfinance reservoir backfills new listings); no
+        // backend fallback, so chart reads never leave Supabase.
+        return NextResponse.json([]);
 
     } catch (error: any) {
         console.error('[API /egx/history ERROR]', error.message);

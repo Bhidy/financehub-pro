@@ -1086,7 +1086,10 @@
                 latestNav,
                 latestNavDisplay: latestNav,
                 aumValue: aum,
-                lastUpdated: fund.last_update_date || fund.last_updated || null,
+                // Prefer the ACTUAL latest NAV date (MAX nav_history date) so the
+                // card "Updated" label matches the sparkline's last point. The
+                // `last_update_date` metadata can run ahead of the saved history.
+                lastUpdated: fund.last_nav_date || fund.last_update_date || fund.last_updated || null,
                 isShariah: Boolean(fund.is_shariah),
                 currency: fund.currency || 'EGP',
                 logo_url: fund.logo_url || DEFAULT_LOGO,

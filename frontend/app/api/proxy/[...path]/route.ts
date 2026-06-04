@@ -88,6 +88,11 @@ export async function GET(
         const pathString = path.join("/");
         const firstSegment = path[0];
 
+        // Single source of truth: these read directly from Supabase via the local
+        // /api/v1 handlers (NOT the Hetzner backend). Funds were missing here, which
+        // is why the React app's fund pages hit the broken backend get_fund_details
+        // (HTTP 500). Keeping every read path on the same local handlers guarantees
+        // all surfaces (static site, React app, mobile) show identical, consistent data.
         const localSegments = [
             "news",
             "financials",
@@ -100,7 +105,11 @@ export async function GET(
             "corporate-actions",
             "market-breadth",
             "market-summary",
-            "intraday"
+            "intraday",
+            "funds",
+            "fund-sparklines",
+            "sparklines",
+            "etfs"
         ];
 
         if (localSegments.includes(firstSegment)) {

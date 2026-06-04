@@ -1,22 +1,38 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
+import { db } from '@/lib/db-server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
-
+// Single source of truth: compute EGX market stats directly from Supabase
+// (was proxying to the Hetzner backend). Same output keys as the backend.
 export async function GET() {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/egx/stats`, {
-            headers: { 'Accept': 'application/json' },
-            next: { revalidate: 60 }
+        const summary = await db.query(`
+            SELECT
+                COUNT(*) AS total_stocks,
+                COUNT(CASE WHEN change_percent > 0 THEN 1 END) AS gainers,
+                COUNT(CASE WHEN change_percent < 0 THEN 1 END) AS losers,
+                COUNT(CASE WHEN change_percent = 0 THEN 1 END) AS unchanged,
+                COALESCE(SUM(volume), 0) AS total_volume
+            FROM market_tickers WHERE market_code = 'EGX'
+        `);
+        const ohlc = await db.query(
+            `SELECT COUNT(*) AS c FROM ohlc_data
+             WHERE symbol IN (SELECT symbol FROM market_tickers WHERE market_code = 'EGX')`);
+        const fin = await db.query(
+            `SELECT COUNT(*) AS c FROM financial_statements WHERE symbol ~ '^[A-Z]+$'`);
+
+        const s = summary.rows[0] || {};
+        return NextResponse.json({
+            total_stocks: Number(s.total_stocks) || 0,
+            total_ohlc: Number(ohlc.rows[0]?.c) || 0,
+            total_financials: Number(fin.rows[0]?.c) || 0,
+            gainers: Number(s.gainers) || 0,
+            losers: Number(s.losers) || 0,
+            unchanged: Number(s.unchanged) || 0,
+            total_volume: Number(s.total_volume) || 0,
         });
-
-        if (!response.ok) {
-            return NextResponse.json({ error: 'Failed to fetch' }, { status: response.status });
-        }
-
-        const data = await response.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error('EGX stats error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    } catch (error: any) {
+        console.error('[API] /egx/stats error:', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

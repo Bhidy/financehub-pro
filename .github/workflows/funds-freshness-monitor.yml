@@ -1,0 +1,58 @@
+name: Funds Freshness Monitor
+
+# ============================================================
+# The alarm that was MISSING during the funds freeze: data-freshness-monitor.yml
+# watches PRICES only, so mutual-fund NAVs rotted for weeks (most funds 2026-05-20
+# or older; a cohort frozen at 2026-01-07) while every check stayed green.
+#
+# This watches FUND DATA freshness directly in Supabase (no backend dependency):
+#   * newest fund NAV across numeric ids must be recent (daily money-market funds
+#     publish every business day) — alert if older than 5 days
+#   * a healthy baseline keeps ~80-110 funds fresh within 10 days — alert if it
+#     collapses below 30
+#
+# Signal hygiene (mirrors the price monitor): stale DATA pages Discord but the run
+# stays GREEN. A RED run here means the MONITOR itself broke (DB unreachable).
+# Requires repo secret DATABASE_URL.
+# ============================================================
+
+on:
+  schedule:
+    # Daily after each scheduled update window, Sun-Thu
+    - cron: '0 7 * * 0-4'    # ~10:00 Cairo (after the 08:00 update)
+    - cron: '0 18 * * 0-4'   # ~21:00 Cairo (after the 19:00 update)
+  workflow_dispatch:
+
+concurrency:
+  group: funds-freshness-monitor
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    name: Check fund NAV freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install asyncpg
+
+      - name: Probe fund freshness
+        id: check
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend-core/scripts/funds_nav_updater.py --monitor --stale-days 5
+
+      - name: Alert Discord on stale funds
+        if: steps.check.outputs.stale == '1' && env.HAS_DISCORD != ''
+        run: |
+          MSG=$(printf '🟠 **FUNDS FRESHNESS ALERT** — mutual-fund NAVs may be frozen on startamarkets.com\n• reason: `%s`\n• newest NAV: `%s` (`%s` days old) | funds fresh within 10d: `%s`\n• Run: https://github.com/%s/actions/runs/%s' \
+            "${{ steps.check.outputs.reason }}" "${{ steps.check.outputs.newest }}" "${{ steps.check.outputs.age_days }}" "${{ steps.check.outputs.fresh10 }}" "${{ github.repository }}" "${{ github.run_id }}")
+          jq -n --arg c "$MSG" '{content: $c}' | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

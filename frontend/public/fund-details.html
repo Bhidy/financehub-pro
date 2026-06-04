@@ -982,6 +982,9 @@
                     borderColor: 'rgba(148, 163, 184, 0.16)',
                     timeVisible: true,
                     secondsVisible: false,
+                    // Small gap after the last bar so the most-recent NAV point is
+                    // reachable/hoverable (it was flush against the right edge).
+                    rightOffset: 4,
                 },
                 grid: {
                     vertLines: { color: 'rgba(148, 163, 184, 0.08)' },
@@ -1074,6 +1077,21 @@
             chartEmpty.style.display = 'none';
             state.chartSeries.setData(chartData);
             state.chart.timeScale().fitContent();
+
+            // Keep the headline NAV + "last update" date IN SYNC WITH THE CHART.
+            // The metadata field `last_update_date` can run AHEAD of the actual NAV
+            // history (e.g. a list-page scrape records a newer date than the saved
+            // chart), which made the header show "Jun 3" above a chart ending mid-May.
+            // The chart's own latest point is the single source of truth.
+            const latestPoint = state.history[state.history.length - 1];
+            if (latestPoint) {
+                const lbls = getLabels();
+                const cur = state.fund?.currency || 'EGP';
+                document.getElementById('fundNavValue').textContent = `${cur} ${formatNumber(latestPoint.nav)}`;
+                document.getElementById('fundNavMeta').textContent = `${lbls.latest} • ${formatDate(latestPoint.date)}`;
+                const su = document.getElementById('summaryUpdate');
+                if (su) su.textContent = formatDate(latestPoint.date);
+            }
         }
 
         function formatDetailValue(key, value) {
@@ -1163,7 +1181,7 @@
                 fee_management: feeMgmt,
                 fee_custodian: fund.fee_custodian,
                 fee_performance: fund.fee_performance,
-                last_update_date: fund.last_update_date,
+                last_update_date: fund.last_nav_date || fund.last_update_date,
                 is_shariah: fund.is_shariah
             };
 
@@ -1266,13 +1284,13 @@
             document.getElementById('fundLogo').style.transformOrigin = 'center center';
             document.getElementById('fundManagerLine').textContent = getManagerName(fund);
             document.getElementById('fundNavValue').textContent = `${fund.currency || 'EGP'} ${formatNumber(fund.latest_nav)}`;
-            document.getElementById('fundNavMeta').textContent = `${labels.latest} • ${formatDate(fund.last_update_date)}`;
+            document.getElementById('fundNavMeta').textContent = `${labels.latest} • ${formatDate(fund.last_nav_date || fund.last_update_date)}`;
             document.getElementById('fundShortDesc').textContent = description;
             document.getElementById('fundStrategy').textContent = getLocalizedField(fund, 'investment_strategy') || labels.no_strategy;
             document.getElementById('fundObjective').textContent = getLocalizedField(fund, 'objective') || labels.no_objective;
             document.getElementById('summaryAum').textContent = fund.aum_millions ? `${fund.currency || 'EGP'} ${formatNumber(fund.aum_millions)}` : '—';
             document.getElementById('summaryRisk').textContent = deriveRisk(fund);
-            document.getElementById('summaryUpdate').textContent = formatDate(fund.last_update_date);
+            document.getElementById('summaryUpdate').textContent = formatDate(fund.last_nav_date || fund.last_update_date);
 
             const chips = [];
             chips.push(`<span class="chip">${escapeHtml(getFundTypeName(fund))}</span>`);

@@ -1372,8 +1372,19 @@ async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
         _lock_refresh()
         refresh_status["last_status"] = "Updating Egypt Funds..."
         try:
-            await egypt_market_service.update_all_navs()
-            refresh_status["last_status"] = "egypt_funds_success"
+            stats = await egypt_market_service.update_all_navs()
+            updated = (stats or {}).get("funds_updated", 0)
+            points = (stats or {}).get("points_saved", 0)
+            refresh_status["funds_updated"] = updated
+            refresh_status["funds_points_saved"] = points
+            if updated <= 0:
+                # No fund received new NAV data => source/pipeline failure.
+                # Surface as an error so CI/monitoring goes RED instead of
+                # false-greening (the bug that hid the multi-week funds freeze).
+                refresh_status["last_status"] = "egypt_funds_error: 0 funds updated"
+            else:
+                refresh_status["last_status"] = (
+                    f"egypt_funds_success: {updated} funds, {points} points")
         except Exception as e:
             logger.error(f"Egypt Funds Sync failed: {e}")
             refresh_status["last_status"] = f"egypt_funds_error: {e}"

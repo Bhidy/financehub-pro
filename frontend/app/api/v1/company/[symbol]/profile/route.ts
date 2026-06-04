@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 
 // Handle requests for /api/v1/company/[symbol]/profile
@@ -19,7 +20,7 @@ export async function GET(
         const [profileRes, tickerRes, statsRes] = await Promise.all([
             db.query(`SELECT * FROM company_profiles WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA]),
             db.query(`SELECT * FROM market_tickers WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA]),
-            db.query(`SELECT * FROM stock_statistics WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA])
+            db.query(`SELECT * FROM stock_stats_view WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA])
         ]);
 
         const profile = profileRes.rows[0] || {};

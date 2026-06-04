@@ -1,0 +1,49 @@
+name: Stocks Freshness Monitor
+
+# Completeness + chart-freshness alarm for EGX stocks, complementing
+# data-freshness-monitor.yml (which watches live PRICE age). This watches that
+# every ticker has a price AND that the EOD ohlc_data charts are fresh + complete,
+# reading Supabase directly (no backend dependency).
+#
+# Signal hygiene (like the funds/price monitors): stale DATA pages Discord but the
+# run stays GREEN; a RED run means the MONITOR itself broke. Requires DATABASE_URL.
+
+on:
+  schedule:
+    - cron: '0 8 * * 0-4'    # ~11:00 Cairo (after morning price updates)
+    - cron: '0 18 * * 0-4'   # ~21:00 Cairo (after EOD)
+  workflow_dispatch:
+
+concurrency:
+  group: stocks-freshness-monitor
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    name: Check stock data freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install asyncpg
+
+      - name: Probe stock freshness
+        id: check
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend-core/scripts/reconcile_stocks_source.py --monitor
+
+      - name: Alert Discord on stale stocks
+        if: steps.check.outputs.stale == '1' && env.HAS_DISCORD != ''
+        run: |
+          MSG=$(printf '🟠 **STOCKS FRESHNESS ALERT** — EGX stock data may be stale on startamarkets.com\n• reason: `%s`\n• price age: `%s min` | newest ohlc: `%s` (`%s` days)\n• Run: https://github.com/%s/actions/runs/%s' \
+            "${{ steps.check.outputs.reason }}" "${{ steps.check.outputs.price_age_min }}" "${{ steps.check.outputs.ohlc_newest }}" "${{ steps.check.outputs.ohlc_age_days }}" "${{ github.repository }}" "${{ github.run_id }}")
+          jq -n --arg c "$MSG" '{content: $c}' | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

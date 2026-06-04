@@ -185,11 +185,20 @@ class DecyphaProvider:
             
             if existing:
                 fid = existing['fund_id']
+                # freshest-wins / fill-don't-null: a blank/None field from one export
+                # must never wipe a value another source already populated.
                 await db.execute("""
-                    UPDATE mutual_funds SET 
-                        market_code = 'EGX', 
-                        currency = $2, returns_3m = $3, returns_1y = $4, returns_ytd = $5,
-                        fund_type = $6, manager = $7, issuer = $8, aum_millions = $9, is_shariah = $10,
+                    UPDATE mutual_funds SET
+                        market_code = 'EGX',
+                        currency = COALESCE(NULLIF($2,''), currency),
+                        returns_3m = COALESCE($3, returns_3m),
+                        returns_1y = COALESCE($4, returns_1y),
+                        returns_ytd = COALESCE($5, returns_ytd),
+                        fund_type = COALESCE(NULLIF($6,''), fund_type),
+                        manager = COALESCE(NULLIF($7,''), manager),
+                        issuer = COALESCE(NULLIF($8,''), issuer),
+                        aum_millions = COALESCE($9, aum_millions),
+                        is_shariah = COALESCE($10, is_shariah),
                         last_updated = NOW()
                     WHERE fund_id = $1
                 """, fid, curr, r3m, r1y, rytd, ftype, manager, issuer, aum, is_shariah)

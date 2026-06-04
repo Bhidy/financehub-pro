@@ -10,6 +10,7 @@ import io
 import csv
 import logging
 import json
+import math
 import re
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
@@ -127,8 +128,84 @@ class EgyptMarketService:
                 pass
         return None
 
+    # Mubasher publishes a clean, NO-AUTH per-fund NAV CSV that stays fresh to
+    # ~2 days. This is the reliable PRIMARY source — the chart API below now
+    # returns HTTP 500 and the funds list page is JS-rendered.
+    CSV_URL = ("https://static.mubasher.info/File.MubasherCharts/"
+               "File.Mutual_Fund_Charts_Dir/priceChartFund_{fund_id}.csv")
+
+    def fetch_nav_csv(self, fund_id: str):
+        """PRIMARY: fetch+validate the static Mubasher NAV CSV.
+
+        Returns a sorted list[(date, float)] or None. Drops NaN/Inf/<=0/absurd
+        NAVs and out-of-range dates so a malformed row can never poison the DB.
+        """
+        try:
+            if not self.session:
+                self.create_session()
+            resp = self.session.get(self.CSV_URL.format(fund_id=fund_id), headers=self.get_headers())
+            if resp.status_code != 200 or not resp.text or len(resp.text) < 50:
+                return None
+            out = {}
+            today = datetime.now().date()
+            for line in resp.text.splitlines():
+                parts = line.split(',')
+                if len(parts) < 2:
+                    continue
+                head = parts[0].strip()
+                d = None
+                for fmt in ('%Y/%m/%d/%H:%M:%S', '%Y/%m/%d', '%Y-%m-%d'):
+                    try:
+                        d = datetime.strptime(head, fmt).date()
+                        break
+                    except ValueError:
+                        continue
+                if not d or d.year < 1990 or d > today:
+                    continue
+                try:
+                    nav = float(parts[1].replace(',', '').strip())
+                except ValueError:
+                    continue
+                if not math.isfinite(nav) or nav <= 0 or nav > 1e9:
+                    continue
+                out[d] = round(nav, 6)  # last value wins on duplicate date
+            return sorted(out.items()) if out else None
+        except Exception as e:
+            logger.debug(f"CSV fetch failed for {fund_id}: {e}")
+            return None
+
+    async def _reconcile_latest_nav(self, fund_id: str):
+        """Keep mutual_funds.latest_nav in sync with the freshest nav_history row."""
+        try:
+            await db.execute("""
+                UPDATE mutual_funds f SET
+                    latest_nav = nh.nav, last_update_date = nh.date, updated_at = NOW()
+                FROM (SELECT nav, date FROM nav_history WHERE fund_id = $1 ORDER BY date DESC LIMIT 1) nh
+                WHERE f.fund_id = $1
+            """, fund_id)
+        except Exception:
+            pass
+
     async def update_fund_nav_history(self, fund_id: str, fund_name: str) -> int:
-        """Update NAV history for a single fund"""
+        """Update NAV history for a single fund (CSV-primary, layered fallback)."""
+        # Method 0: Static CSV (PRIMARY — no auth, fresh, reliable)
+        csv_points = self.fetch_nav_csv(fund_id)
+        if csv_points:
+            inserted = 0
+            for d, nav in csv_points:
+                try:
+                    await db.execute("""
+                        INSERT INTO nav_history (fund_id, date, nav)
+                        VALUES ($1, $2, $3)
+                        ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav
+                    """, fund_id, d, nav)
+                    inserted += 1
+                except Exception:
+                    pass
+            if inserted:
+                await self._reconcile_latest_nav(fund_id)
+                return inserted
+
         if not self.session:
             self.create_session()
             # Visit main page to establish cookies
@@ -139,7 +216,7 @@ class EgyptMarketService:
                 pass
 
         chart_data = None
-        
+
         # Method 1: Scrape Page
         try:
             url = f"https://english.mubasher.info/markets/EGX/funds/{fund_id}"
@@ -184,29 +261,36 @@ class EgyptMarketService:
                     inserted += 1
                 except Exception:
                     pass
-        
+            if inserted:
+                await self._reconcile_latest_nav(fund_id)
+
         return inserted
 
     async def update_all_navs(self, limit: int = None):
-        """Update NAVs for all funds"""
+        """Update NAVs for all funds. Returns stats with funds_updated so callers
+        can detect a silent failure (0 funds updated) instead of false-greening."""
         funds = await self.get_all_funds()
         if limit:
             funds = funds[:limit]
-        
-        stats = {"processed": 0, "points_saved": 0, "errors": []}
-        
+
+        stats = {"processed": 0, "funds_updated": 0, "points_saved": 0, "errors": []}
+
         for i, fund in enumerate(funds):
             try:
                 count = await self.update_fund_nav_history(fund['fund_id'], fund['fund_name'])
                 stats["processed"] += 1
                 stats["points_saved"] += count
+                if count > 0:
+                    stats["funds_updated"] += 1
                 logger.info(f"Updated {fund['fund_name']}: {count} points")
-                
+
                 # Rate limit
                 await asyncio.sleep(1)
             except Exception as e:
                 stats["errors"].append(f"{fund['fund_id']}: {str(e)}")
-                
+
+        logger.info(f"update_all_navs done: {stats['funds_updated']}/{stats['processed']} "
+                    f"funds updated, {stats['points_saved']} points")
         return stats
 
 egypt_market_service = EgyptMarketService()

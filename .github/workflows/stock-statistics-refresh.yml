@@ -1,0 +1,36 @@
+name: Stock Statistics Refresh (TV+Yahoo)
+
+# Keeps the stock_statistics table FRESH from TradingView + Yahoo, replacing the
+# dead stockanalysis.com scraper (Cloudflare-blocked since May-2026). The AI chat
+# reads stock_statistics 15x, so this keeps chat technicals/valuation fresh WITHOUT
+# any backend redeploy (the table data is swapped under the existing queries).
+# Unit-safe: only refreshes raw technicals (1D RSI/MA) + valuation + % yield.
+# Also refreshes stock_stats_view (frontend statistics) to the 1D timeframe.
+
+on:
+  schedule:
+    - cron: '0 9 * * 0-4'    # ~12:00 Cairo (after TV intraday)
+    - cron: '0 16 * * 0-4'   # ~19:00 Cairo (post-close)
+  workflow_dispatch:
+
+concurrency:
+  group: stock-statistics-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install asyncpg
+      - name: Refresh stock_statistics from TradingView + Yahoo
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend-core/scripts/refresh_stock_statistics.py

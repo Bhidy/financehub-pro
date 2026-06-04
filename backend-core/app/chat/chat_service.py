@@ -4941,6 +4941,51 @@ class ChatService:
                 cleaned_compare_symbols.append(token)
             compare_symbols = self._dedupe_symbols(cleaned_compare_symbols)
 
+            # ── A3 FIX: DB-validated supplementary symbol extraction ──
+            # extract_potential_symbols() only matches UPPERCASE ticker patterns,
+            # so a lowercase ticker ("compare comi and hrho") is silently dropped →
+            # the handler's auto-peer logic then fills the empty slot with same-sector
+            # peers, producing "X is not present in the provided data context".
+            # Here we scan the raw message case-insensitively for 3-6 letter tokens
+            # and keep ONLY those confirmed as real symbols in market_tickers.
+            # DB validation guarantees zero false positives (a coincidental English
+            # word is only added if it is literally a tradable ticker).
+            if len(compare_symbols) < 3:
+                try:
+                    raw_tokens = {
+                        t.upper()
+                        for t in re.findall(r'\b[A-Za-z]{3,6}\b', str(message or ''))
+                        if t.upper() not in NOISE_COMPARE_TOKENS
+                    }
+                    existing_canon = {self._canonical_symbol(s) for s in compare_symbols}
+                    raw_tokens = {
+                        t for t in raw_tokens
+                        if self._canonical_symbol(t) not in existing_canon
+                    }
+                    if raw_tokens:
+                        if market_code:
+                            valid_rows = await self.conn.fetch(
+                                "SELECT symbol FROM market_tickers "
+                                "WHERE UPPER(symbol) = ANY($1::text[]) AND market_code = $2",
+                                list(raw_tokens), market_code,
+                            )
+                        else:
+                            valid_rows = await self.conn.fetch(
+                                "SELECT symbol FROM market_tickers "
+                                "WHERE UPPER(symbol) = ANY($1::text[])",
+                                list(raw_tokens),
+                            )
+                        for vr in valid_rows:
+                            canon = self._canonical_symbol(vr['symbol'])
+                            if canon not in existing_canon:
+                                compare_symbols.append(vr['symbol'])
+                                existing_canon.add(canon)
+                        compare_symbols = self._dedupe_symbols(compare_symbols)
+                        if valid_rows:
+                            print(f"[ChatService] 🛡️ A3 supplementary tickers added: {[r['symbol'] for r in valid_rows]} → {compare_symbols}")
+                except Exception as _e_suppl:
+                    print(f"[COMPARE] Supplementary symbol validation skipped: {_e_suppl}")
+
             # Always anchor comparison on current symbol if available.
             if symbol:
                 symbol_up = str(symbol).upper()

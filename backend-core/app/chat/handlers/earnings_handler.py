@@ -40,14 +40,22 @@ async def handle_earnings_analysis(
     currency = get_ticker_currency(ticker)
 
     # ── 2. Pull latest 2 years of financials for YoY comparison ─────────────
+    # SINGLE SOURCE OF TRUTH: income_statements (+ balance_sheets) — the fresh
+    # canonical financials (TradingView/Yahoo, updated to the latest quarter).
+    # The legacy `financial_statements` table is stockanalysis-era and froze at
+    # Q3-2025, so the chat was reporting financials 2 quarters stale. We JOIN the
+    # balance-sheet totals on (symbol, period_ending, period_type) and compute
+    # period-over-period growth chronologically by period_ending.
     fin_rows = await conn.fetch("""
-        SELECT fiscal_year, period_type, revenue, net_income, eps, gross_profit,
-               operating_income, total_assets, total_equity,
-               (revenue - LAG(revenue) OVER (ORDER BY fiscal_year)) / NULLIF(LAG(revenue) OVER (ORDER BY fiscal_year), 0) AS revenue_growth_yoy,
-               (net_income - LAG(net_income) OVER (ORDER BY fiscal_year)) / NULLIF(ABS(LAG(net_income) OVER (ORDER BY fiscal_year)), 0) AS ni_growth_yoy
-        FROM financial_statements
-        WHERE symbol = $1 AND period_type = $2
-        ORDER BY fiscal_year DESC
+        SELECT i.fiscal_year, i.period_type, i.revenue, i.net_income, i.eps, i.gross_profit,
+               i.operating_income, b.total_assets, b.total_equity,
+               (i.revenue - LAG(i.revenue) OVER (ORDER BY i.period_ending)) / NULLIF(LAG(i.revenue) OVER (ORDER BY i.period_ending), 0) AS revenue_growth_yoy,
+               (i.net_income - LAG(i.net_income) OVER (ORDER BY i.period_ending)) / NULLIF(ABS(LAG(i.net_income) OVER (ORDER BY i.period_ending)), 0) AS ni_growth_yoy
+        FROM income_statements i
+        LEFT JOIN balance_sheets b
+          ON b.symbol = i.symbol AND b.period_ending = i.period_ending AND b.period_type = i.period_type
+        WHERE i.symbol = $1 AND i.period_type = $2
+        ORDER BY i.period_ending DESC
         LIMIT 4
     """, symbol, period)
 
@@ -76,9 +84,10 @@ async def handle_earnings_analysis(
         latest = dict(fin_rows[0])
         prior = dict(fin_rows[1]) if len(fin_rows) > 1 else {}
 
-        # Revenue YoY
-        rev_yoy = latest.get("revenue_growth_yoy")
-        ni_yoy = latest.get("ni_growth_yoy")
+        # Revenue YoY — coerce to float (asyncpg returns numeric columns as
+        # Decimal; mixing Decimal with the float thresholds below raises TypeError).
+        rev_yoy = _safe_float(latest.get("revenue_growth_yoy"))
+        ni_yoy = _safe_float(latest.get("ni_growth_yoy"))
 
         # Earnings Quality Assessment (from equity-research/earnings-analysis pattern)
         quality = "neutral"
@@ -297,7 +306,7 @@ async def handle_earnings_analysis(
         "message": message,
         "cards": cards,
         "actions": actions,
-        "source_tables": ["financial_statements", "stock_statistics"],
+        "source_tables": ["income_statements", "balance_sheets", "stock_statistics"],
     }
 
 

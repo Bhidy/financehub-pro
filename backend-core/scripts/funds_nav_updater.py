@@ -236,17 +236,26 @@ async def write_one(conn, fund_id, pts) -> int:
         records,
     )
     # Reconcile latest_nav / last_update_date from the freshest row we now hold.
+    # Uses only core columns that always exist, so this can never fail on a
+    # minimal schema and wrongly mark a healthy fund as un-updated.
     await conn.execute(
         """UPDATE mutual_funds f SET
                latest_nav       = nh.nav,
                last_update_date = nh.date,
-               updated_at       = NOW(),
-               source           = 'mubasher_csv'
+               updated_at       = NOW()
            FROM (SELECT nav, date FROM nav_history
                  WHERE fund_id = $1 ORDER BY date DESC LIMIT 1) nh
            WHERE f.fund_id = $1""",
         fund_id,
     )
+    # Best-effort provenance tag. `source` is absent in minimal/migration-only
+    # schemas; a failure here must NOT count the fund as un-updated (that would
+    # wrongly trip the --min-updated gate and red every run). Isolate it.
+    try:
+        await conn.execute(
+            "UPDATE mutual_funds SET source = 'mubasher_csv' WHERE fund_id = $1", fund_id)
+    except Exception:  # noqa: BLE001 - provenance is cosmetic; never fail the write
+        pass
     return len(records)
 
 

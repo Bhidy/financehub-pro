@@ -132,7 +132,9 @@ export default function FundDetailPage() {
             }
         },
         enabled: !!fundId,
-        staleTime: 1000 * 60 * 60,
+        // 1 min — fund NAVs update daily; long cache left charts weeks stale.
+        staleTime: 1000 * 60,
+        refetchOnMount: "always",
     });
 
     // 3. Filter and Memoize Chart Data
@@ -170,7 +172,9 @@ export default function FundDetailPage() {
         return chartData;
     }, [history, chartPeriod]);
 
-    const latestNav = safeNumber(fund?.latest_nav) ?? 0;
+    // Derive the headline NAV from the chart history's last point (single source
+    // of truth) so it can never disagree with the chart; fall back to metadata.
+    const latestNav = safeNumber(history?.[history.length - 1]?.nav) ?? safeNumber(fund?.latest_nav) ?? 0;
 
     // Performance Calculations
     const getReturn = (months: number) => {

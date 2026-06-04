@@ -6,8 +6,11 @@ from cachetools import TTLCache
 import asyncio
 import html
 import re
+import logging
 from datetime import datetime
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 # Cache for 1 minute (60 seconds)
 intraday_cache = TTLCache(maxsize=500, ttl=60)
@@ -408,14 +411,24 @@ async def get_fund_details(fund_id: str):
     # Ensure ID is correct for subsequent queries
     real_fund_id = fund['fund_id']
 
-    # Fetch Peers
-    peers_query = "SELECT * FROM fund_peers WHERE fund_id = $1 ORDER BY ranking"
-    peers = await db.fetch_all(peers_query, real_fund_id)
-    
-    # Fetch Actions
-    actions_query = "SELECT * FROM fund_actions WHERE fund_id = $1 ORDER BY action_date DESC"
-    actions = await db.fetch_all(actions_query, real_fund_id)
-    
+    # Fetch Peers + Actions DEFENSIVELY. This endpoint was returning HTTP 500 for
+    # EVERY fund because the peers query used ORDER BY "ranking" while the column
+    # is "peer_rank" (UndefinedColumn). A side-table issue must never 500 the core
+    # fund metadata, so each is isolated and degrades to an empty list.
+    try:
+        peers = await db.fetch_all(
+            "SELECT * FROM fund_peers WHERE fund_id = $1 ORDER BY peer_rank", real_fund_id)
+    except Exception as e:
+        logger.warning(f"fund_peers query failed for {real_fund_id}: {e}")
+        peers = []
+
+    try:
+        actions = await db.fetch_all(
+            "SELECT * FROM fund_actions WHERE fund_id = $1 ORDER BY action_date DESC", real_fund_id)
+    except Exception as e:
+        logger.warning(f"fund_actions query failed for {real_fund_id}: {e}")
+        actions = []
+
     # Merge into response
     return {
         **dict(fund),

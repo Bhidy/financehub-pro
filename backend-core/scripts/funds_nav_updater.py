@@ -56,7 +56,10 @@ import sys
 from datetime import date, datetime, timezone
 
 import asyncpg
-import httpx
+try:
+    import httpx  # needed only for the updater (fetch) path; --monitor runs without it
+except ModuleNotFoundError:  # pragma: no cover
+    httpx = None
 
 CSV_URL = ("https://static.mubasher.info/File.MubasherCharts/"
            "File.Mutual_Fund_Charts_Dir/priceChartFund_{fund_id}.csv")

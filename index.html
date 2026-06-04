@@ -40,7 +40,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
 
     <!-- Mobile navigation (shared ultra-premium burger menu) -->
-    <script src="/assets/starta-mobile-nav.js?v=1.0.3" defer></script>
+    <script src="/assets/starta-mobile-nav.js?v=1.0.4" defer></script>
 
     <script>
         tailwind.config = {
@@ -3536,10 +3536,49 @@
     <script>
         gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
-        // Fix: body{zoom:0.9} from starta-theme.js shifts rendered positions vs. scrollY.
-        // normalizeScroll anchors GSAP to visual coordinates; refresh() after load recalculates.
-        ScrollTrigger.config({ ignoreMobileResize: true });
-        window.addEventListener('load', function() { ScrollTrigger.refresh(); });
+        // SCROLL REVEALS — IntersectionObserver (viewport-native, zoom-proof).
+        // body{zoom:0.9} makes window.scrollY (CSS px) and getBoundingClientRect() (visual px)
+        // live in different coordinate systems. GSAP ScrollTrigger percentage math drifts on
+        // iOS/Android, causing late reveals regardless of the % value.
+        // IntersectionObserver is built into the browser's rendering pipeline: no scroll math,
+        // no zoom mismatch, fires the instant the element crosses the viewport edge.
+        (function setupRevealObserver() {
+            var io = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting) return;
+                    var el = entry.target;
+                    io.unobserve(el);
+                    var type = el.dataset.smReveal;
+                    if (type === 'text')
+                        gsap.to(el, { y: 0, opacity: 1, duration: 0.65, ease: 'power3.out', overwrite: true });
+                    else if (type === 'tag')
+                        gsap.to(el, { y: 0, opacity: 1, duration: 0.42, ease: 'power2.out', overwrite: true });
+                    else if (type === 'card')
+                        gsap.to(el, { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: 'power3.out', overwrite: true });
+                });
+            }, {
+                threshold: 0,
+                // 80px pre-fire margin: trigger 80px before element edge hits viewport bottom.
+                // Works correctly on all zoom levels and dynamic mobile viewports.
+                rootMargin: '0px 0px 80px 0px'
+            });
+
+            document.querySelectorAll('.reveal-text').forEach(function(el) {
+                gsap.set(el, { y: 16, opacity: 0 });
+                el.dataset.smReveal = 'text';
+                io.observe(el);
+            });
+            document.querySelectorAll('.section-tag').forEach(function(el) {
+                gsap.set(el, { y: 10, opacity: 0 });
+                el.dataset.smReveal = 'tag';
+                io.observe(el);
+            });
+            document.querySelectorAll('.premium-hover').forEach(function(el) {
+                gsap.set(el, { y: 14, opacity: 0, scale: 0.99 });
+                el.dataset.smReveal = 'card';
+                io.observe(el);
+            });
+        })();
 
         // --- TRANSLATION ENGINE ---
         const translations = {
@@ -4017,26 +4056,14 @@
         })();
 
 
-        // Animations
-        gsap.utils.toArray('.chart-line').forEach(line => {
-            const length = line.getTotalLength();
+        // Chart-line SVG stroke animation (ScrollTrigger OK here — no layout drift on SVG).
+        gsap.utils.toArray('.chart-line').forEach(function(line) {
+            var length = line.getTotalLength();
             gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
             gsap.to(line, {
-                strokeDashoffset: 0,
-                duration: 1.6,
-                ease: 'power2.out',
-                scrollTrigger: { trigger: line, start: 'top 108%', once: true }
+                strokeDashoffset: 0, duration: 1.6, ease: 'power2.out',
+                scrollTrigger: { trigger: line, start: 'top bottom', once: true }
             });
-        });
-        const texts = document.querySelectorAll('.reveal-text');
-        texts.forEach(text => {
-            gsap.fromTo(text, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', scrollTrigger: { trigger: text, start: 'top 108%', once: true } });
-        });
-        gsap.utils.toArray('.section-tag').forEach(tag => {
-            gsap.fromTo(tag, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out', scrollTrigger: { trigger: tag, start: 'top 108%', once: true } });
-        });
-        gsap.utils.toArray('.premium-hover').forEach(card => {
-            gsap.fromTo(card, { y: 14, opacity: 0, scale: 0.99 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out', scrollTrigger: { trigger: card, start: 'top 108%', once: true } });
         });
         gsap.to('.hero-orb-a', { x: 80, y: 50, duration: 8.5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         gsap.to('.hero-orb-b', { x: -70, y: -45, duration: 10, repeat: -1, yoyo: true, ease: 'sine.inOut' });
@@ -4121,11 +4148,11 @@
         counterElements.forEach(el => {
             const targetVal = parseFloat(el.dataset.value);
             const prefix = el.dataset.prefix || ''; const suffix = el.dataset.suffix || '';
-            ScrollTrigger.create({ trigger: el, start: "top 108%", once: true, onEnter: () => { gsap.to(el, { innerHTML: targetVal, duration: 2, snap: { innerHTML: 0.1 }, onUpdate: function () { el.innerHTML = prefix + parseFloat(this.targets()[0].innerHTML).toFixed(1) + suffix + (el.innerText.includes('Flow') ? ' Flow' : ''); } }); } });
+            ScrollTrigger.create({ trigger: el, start: "top bottom", once: true, onEnter: () => { gsap.to(el, { innerHTML: targetVal, duration: 2, snap: { innerHTML: 0.1 }, onUpdate: function () { el.innerHTML = prefix + parseFloat(this.targets()[0].innerHTML).toFixed(1) + suffix + (el.innerText.includes('Flow') ? ' Flow' : ''); } }); } });
         });
 
         const barElements = document.querySelectorAll('.bar-anim');
-        barElements.forEach(el => { const width = el.dataset.width; ScrollTrigger.create({ trigger: el, start: "top 108%", once: true, onEnter: () => { el.style.width = width; } }); });
+        barElements.forEach(el => { const width = el.dataset.width; ScrollTrigger.create({ trigger: el, start: "top bottom", once: true, onEnter: () => { el.style.width = width; } }); });
 
         // --- CALCULATOR LOGIC ---
         const goalAmountInput = document.getElementById('goal-amount-input');
@@ -4410,11 +4437,11 @@
 
             gsap.from('#hp-pulse-section .hp-terminal', {
                 opacity: 0, y: 14, duration: 0.55, ease: 'power2.out',
-                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 108%', once: true }
+                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top bottom', once: true }
             });
             gsap.from('#hp-pulse-section .hp-stat-box', {
                 opacity: 0, y: 10, duration: 0.4, stagger: 0.08, ease: 'power2.out',
-                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top 108%', once: true }
+                scrollTrigger: { trigger: '#hp-pulse-section', start: 'top bottom', once: true }
             });
         })();
 
@@ -4510,8 +4537,10 @@
 
                 gsap.from(heroWrap.firstElementChild, {
                     opacity: 0, scale: 0.99, y: 12, duration: 0.55, ease: 'power3.out',
-                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 108%', once: true }
+                    scrollTrigger: { trigger: '#hp-news-section', start: 'top bottom', once: true }
                 });
+                // Refresh: async content just changed page height — recalculate all trigger positions.
+                requestAnimationFrame(function(){ ScrollTrigger.refresh(); });
             }
 
             function buildSide(items) {
@@ -4541,7 +4570,7 @@
                 gsap.from('#hn2-side .hn2-item', {
                     opacity: 0, x: lang === 'ar' ? -10 : 10, duration: 0.38,
                     stagger: 0.07, ease: 'power2.out',
-                    scrollTrigger: { trigger: '#hp-news-section', start: 'top 108%', once: true }
+                    scrollTrigger: { trigger: '#hp-news-section', start: 'top bottom', once: true }
                 });
             }
 
@@ -4652,8 +4681,9 @@
             if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
                 gsap.from('#hp-academy-grid > article', {
                     opacity: 0, y: 14, duration: 0.5, stagger: 0.07, ease: 'power3.out',
-                    scrollTrigger: { trigger: '#hp-academy-grid', start: 'top 108%', once: true }
+                    scrollTrigger: { trigger: '#hp-academy-grid', start: 'top bottom', once: true }
                 });
+                requestAnimationFrame(function(){ ScrollTrigger.refresh(); });
             }
         }
 

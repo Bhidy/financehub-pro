@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 
-// Single source of truth: read stock_statistics + market_tickers directly from
-// Supabase (was proxying to the Hetzner backend). Same query/output as the backend.
+// Key statistics from the FRESH single source: stock_stats_view derives everything
+// live from TradingView (market_tickers + egx_technicals) + Yahoo (income_statements,
+// balance_sheets). Replaces the stale stockanalysis.com `stock_statistics` table.
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ symbol: string }> }
@@ -14,10 +15,7 @@ export async function GET(
 
     try {
         const result = await db.query(
-            `SELECT ss.*, mt.name_en, mt.name_ar, mt.last_price, mt.currency, mt.market_cap, mt.sector_name
-             FROM stock_statistics ss
-             LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol AND mt.market_code = 'EGX'
-             WHERE ss.symbol = $1`,
+            `SELECT * FROM stock_stats_view WHERE symbol = $1`,
             [sym]
         );
         if (result.rows.length === 0) {

@@ -56,12 +56,17 @@ export async function GET() {
                 WHERE last_price IS NOT NULL
                   AND market_code = 'EGX'
             `),
+            // Breadth computed LIVE from market_tickers (TradingView). Was reading the
+            // stale `market_breadth` table (frozen since 2025-12). new_highs/lows use
+            // 52w bounds where TradingView provides them.
             db.query(`
-                SELECT date, advancing, declining, unchanged, new_highs, new_lows,
-                       advance_volume, decline_volume
-                FROM market_breadth
-                ORDER BY date DESC
-                LIMIT 1
+                SELECT
+                    SUM(CASE WHEN change_percent > 0 THEN volume ELSE 0 END) as advance_volume,
+                    SUM(CASE WHEN change_percent < 0 THEN volume ELSE 0 END) as decline_volume,
+                    COUNT(CASE WHEN high_52w IS NOT NULL AND last_price >= high_52w * 0.98 THEN 1 END) as new_highs,
+                    COUNT(CASE WHEN low_52w IS NOT NULL AND last_price <= low_52w * 1.02 THEN 1 END) as new_lows
+                FROM market_tickers
+                WHERE last_price IS NOT NULL AND market_code = 'EGX'
             `),
             db.query(`
                 SELECT

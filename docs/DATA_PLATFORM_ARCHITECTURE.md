@@ -91,7 +91,33 @@ SELECT t.*, o.last_ohlc_date
 FROM market_tickers t
 LEFT JOIN (SELECT symbol, MAX(date) AS last_ohlc_date FROM ohlc_data GROUP BY symbol) o
        ON o.symbol = t.symbol;
+
+-- stock KEY STATISTICS derived FRESH from TradingView + Yahoo, replacing the
+-- stale stockanalysis.com `stock_statistics` table. Maps to the same field names
+-- (rsi_14, ma_50d, pe_ratio, roe, ...) so consumers don't change. ROE/ROA computed
+-- live from income_statements + balance_sheets. (beta_5y is NULL — TV gap.)
+CREATE OR REPLACE VIEW stock_stats_view AS
+SELECT mt.symbol, mt.market_code, mt.name_en, mt.name_ar, mt.sector_name, mt.currency,
+       mt.last_price, mt.pe_ratio, mt.pb_ratio, mt.dividend_yield, mt.market_cap,
+       mt.beta AS beta_5y, t.rsi AS rsi_14, t.sma50 AS ma_50d, t.sma200 AS ma_200d,
+       i.gross_margin, i.operating_margin, i.net_margin AS profit_margin,
+       i.revenue_growth, i.net_income_growth AS profit_growth, i.eps_growth,
+       i.eps AS eps_ttm, i.net_income AS net_income_ttm,
+       CASE WHEN b.total_equity>0 THEN ROUND((i.net_income/b.total_equity*100)::numeric,2) END AS roe,
+       CASE WHEN b.total_assets>0 THEN ROUND((i.net_income/b.total_assets*100)::numeric,2) END AS roa,
+       'tradingview+yahoo' AS source
+FROM market_tickers mt
+LEFT JOIN LATERAL (SELECT rsi,sma50,sma200,updated_at FROM egx_technicals WHERE symbol=mt.symbol ORDER BY updated_at DESC LIMIT 1) t ON true
+LEFT JOIN LATERAL (SELECT * FROM income_statements WHERE symbol=mt.symbol AND period_type='annual' ORDER BY fiscal_year DESC LIMIT 1) i ON true
+LEFT JOIN LATERAL (SELECT total_equity,total_assets,total_debt FROM balance_sheets WHERE symbol=mt.symbol AND period_type='annual' ORDER BY fiscal_year DESC LIMIT 1) b ON true
+WHERE mt.market_code='EGX';
 ```
+
+**stockanalysis.com is fully removed from frontend reads** (it was Cloudflare-blocked/stale):
+`egx/statistics` + `company/profile` now read `stock_stats_view`; `ratios` reads it too;
+`market-summary` computes breadth live from `market_tickers`. The stale `stock_statistics`,
+`financial_statements`, `dividend_history`, `market_breadth`, `financial_ratios` tables are
+no longer read by any live frontend path.
 
 API routes select from the views and expose the canonical `latest_nav` =
 `COALESCE(live_latest_nav, NULLIF(latest_nav,0))` and `last_nav_date`.

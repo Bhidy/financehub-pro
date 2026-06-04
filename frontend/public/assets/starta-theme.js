@@ -13,7 +13,7 @@
     })();
 
     var STORAGE_KEY = "theme";
-    var DEFAULT_THEME = "dark";
+    var DEFAULT_THEME = "light";
 
     function normalize(theme) {
         return theme === "light" || theme === "dark" ? theme : DEFAULT_THEME;

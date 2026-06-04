@@ -14,7 +14,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>("dark"); // Default to dark as per original design
+    const [theme, setTheme] = useState<Theme>("light"); // Default to light (dark is opt-in via toggle)
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
 
@@ -23,8 +23,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         // Check local storage or system preference
         const savedTheme = localStorage.getItem("theme") as Theme;
 
-        // Mobile version defaults to light, others dark
-        let defaultTheme: Theme = "dark";
+        // Light is the global default across the platform; dark is opt-in via toggle.
+        let defaultTheme: Theme = "light";
         if (pathname?.startsWith("/AiChat")) {
             defaultTheme = "light";
         }

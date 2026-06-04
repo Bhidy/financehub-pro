@@ -169,8 +169,14 @@ false-green).
 ## 8. Migration status & transition rule
 
 - **Funds:** migrated to the single source + LIVE + reconciliation PASS (191/191 complete).
-- **Stocks:** mostly direct already; `egx/stocks` rewired to direct Supabase; stocks
-  reconciliation/monitor TODO.
+- **Stocks:** ALL reads on Supabase — `egx/stocks`, `egx/statistics`, `egx/dividends`,
+  `egx/financials-data`, `egx/stats`, `egx/history` rewired from backend-proxy to direct
+  Supabase; stocks reconciliation gate + freshness monitor live (227/227 PASS).
+- **Only remaining backend dependencies (by design):** `yahoo/stock` (`fetchYahooProfile`)
+  fetches LIVE external yfinance company profiles — external enrichment, not our canonical
+  data, so it legitimately stays on the backend. `app/api/egx/[...path]` catch-all is
+  UNUSED/legacy (no frontend caller) and can be deleted. Everything that reads OUR
+  prices/charts/NAVs/metadata now reads Supabase.
 - **Transition rule:** keep ALL legacy sources running. Retire a legacy writer/endpoint
   ONLY after: (a) reconciliation gate green, (b) Web+App verified, (c) owner sign-off.
 

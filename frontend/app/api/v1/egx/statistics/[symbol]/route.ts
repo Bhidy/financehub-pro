@@ -1,35 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
+import { db } from '@/lib/db-server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
-
+// Single source of truth: read stock_statistics + market_tickers directly from
+// Supabase (was proxying to the Hetzner backend). Same query/output as the backend.
 export async function GET(
-    request: NextRequest,
+    request: Request,
     { params }: { params: Promise<{ symbol: string }> }
 ) {
-    const resolvedParams = await params;
-    const symbol = resolvedParams.symbol?.toUpperCase();
-
-    if (!symbol) {
-        return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
-    }
+    const { symbol } = await params;
+    const sym = symbol?.toUpperCase();
+    if (!sym) return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
 
     try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/egx/statistics/${symbol}`, {
-            headers: { 'Accept': 'application/json' },
-            next: { revalidate: 300 } // Cache for 5 minutes
-        });
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                return NextResponse.json({ error: 'Statistics not found' }, { status: 404 });
-            }
-            return NextResponse.json({ error: 'Failed to fetch statistics' }, { status: response.status });
+        const result = await db.query(
+            `SELECT ss.*, mt.name_en, mt.name_ar, mt.last_price, mt.currency, mt.market_cap, mt.sector_name
+             FROM stock_statistics ss
+             LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol AND mt.market_code = 'EGX'
+             WHERE ss.symbol = $1`,
+            [sym]
+        );
+        if (result.rows.length === 0) {
+            return NextResponse.json({ error: 'Statistics not found' }, { status: 404 });
         }
-
-        const data = await response.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error('EGX statistics error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json(result.rows[0]);
+    } catch (error: any) {
+        console.error('[API] /egx/statistics error:', error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

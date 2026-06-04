@@ -252,11 +252,14 @@ async def save_fund_data(conn, fund, history, profile_data):
         INSERT INTO mutual_funds (fund_id, fund_name, market, manager_name, owner, latest_nav, last_update_date, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
         ON CONFLICT (fund_id) DO UPDATE SET
-            latest_nav = EXCLUDED.latest_nav,
-            last_update_date = EXCLUDED.last_update_date,
-            market = EXCLUDED.market,
-            manager_name = EXCLUDED.manager_name,
-            owner = EXCLUDED.owner,
+            -- freshest-wins / fill-don't-null: never overwrite a populated metadata
+            -- field with a blank scrape, and never regress the NAV date.
+            latest_nav = COALESCE(EXCLUDED.latest_nav, mutual_funds.latest_nav),
+            last_update_date = GREATEST(mutual_funds.last_update_date, EXCLUDED.last_update_date),
+            market = COALESCE(NULLIF(EXCLUDED.market, ''), mutual_funds.market),
+            manager_name = COALESCE(NULLIF(EXCLUDED.manager_name, ''), mutual_funds.manager_name),
+            owner = COALESCE(NULLIF(EXCLUDED.owner, ''), mutual_funds.owner),
+            fund_name = COALESCE(NULLIF(EXCLUDED.fund_name, ''), mutual_funds.fund_name),
             updated_at = NOW()
     ''', fund['fund_id'], fund['name'], fund['market'], fund['manager'], fund['owner'], fund['latest_nav'], fund['last_update_date'])
     

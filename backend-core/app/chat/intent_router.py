@@ -749,6 +749,37 @@ class IntentRouter:
                  entities=entities,
                  missing_fields=[]
              )
+
+        # 2c. Cash-flow Override -> Financial Explorer (cashflow), but ONLY with a
+        #     stock context, so a bare "what is cash flow" still gets a definition.
+        if "cash flow" in merged_text or "cashflow" in merged_text or "تدفق" in text or "التدفقات" in text:
+             cf_symbol = entities.get('symbol') or (context and context.get('last_symbol'))
+             if not cf_symbol:
+                 _m = re.search(r'\b[A-Z0-9]{3,5}\b', text)
+                 if _m:
+                     cf_symbol = _m.group(0).upper()
+                     entities.setdefault('symbol', cf_symbol)
+             if cf_symbol:
+                 entities['statement_type'] = 'cashflow'
+                 return IntentResult(intent=Intent.FINANCIALS, confidence=0.9,
+                                     entities=entities, missing_fields=[])
+
+        # 2d. Dividend-leaders Override (market-wide "top/best/highest dividend or yield stocks").
+        if (any(w in merged_text for w in ["top dividend", "best dividend", "highest dividend",
+                                            "highest yield", "best yield", "top yield",
+                                            "dividend stocks", "dividend leaders", "dividend payers",
+                                            "high dividend", "highest dividend yield"])
+                or ("dividend" in merged_text and any(w in merged_text for w in
+                        ["top ", "best ", "highest ", "leaders", "which stocks", "stocks with"]))):
+             return IntentResult(intent=Intent.SCREENER_INCOME, confidence=0.95,
+                                 entities=entities, missing_fields=[])
+
+        # 2e. Fund-movers Override (top / best / performing funds).
+        if "fund" in merged_text and any(w in merged_text for w in
+                ["top", "best", "performing", "performance", "movers", "gainers",
+                 "leaders", "highest return", "winners"]):
+             return IntentResult(intent=Intent.FUND_MOVERS, confidence=0.95,
+                                 entities=entities, missing_fields=[])
         #      return IntentResult(
         #         intent=Intent.FUND_NAV,
         #         confidence=1.0,

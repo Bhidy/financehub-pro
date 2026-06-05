@@ -524,7 +524,11 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   width: 100%;
   overflow-x: hidden;
-  zoom: 0.9 !important;
+  /* NOTE: do NOT re-add `zoom` here. `zoom` scales 100dvh/100vh/h-screen layouts
+     below the real viewport, leaving an empty/clipped strip at the bottom of the
+     screen (this broke /AiChat — the h-[100dvh] shell only filled 90% of the
+     viewport). If a more compact density is ever wanted, use rem-based font-size
+     scaling instead (see the finhub-pro-domain block below), never `zoom`. */
 }
 
 /* ============================================================================

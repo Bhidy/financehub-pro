@@ -360,7 +360,7 @@ export default function EnterpriseStockProfile() {
                 // e.g. COMI 81.20/267.9B instead of 132.50/466.2B).
                 try {
                     const tickers = await fetchTickers();
-                    const tick = (tickers || []).find((t: any) =>
+                    const tick: any = (tickers || []).find((t: any) =>
                         t.symbol === symbol || t.symbol === `${symbol}.CA` ||
                         String(t.symbol || '').split('.')[0] === symbol);
                     if (tick) {

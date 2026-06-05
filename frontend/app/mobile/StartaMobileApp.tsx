@@ -2930,11 +2930,6 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
             {tools.map((item) => <MoreCard key={item.label} item={item} lang={lang} />)}
           </div>
 
-          {secLabel(lang === "ar" ? "التفضيلات" : "Preferences")}
-          <div className={styles.moreGrid}>
-            {prefs.map((item) => <MoreCard key={item.sub} item={item} lang={lang} />)}
-          </div>
-
           {secLabel(lang === "ar" ? "المنصة" : "About & legal")}
           <div className={styles.moreFooter}>
             {footer.map((item) => (

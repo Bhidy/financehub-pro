@@ -184,6 +184,12 @@
     flex-wrap: nowrap; overflow-x: auto;
 }
 
+/* Header action buttons group */
+.pf-header-actions {
+    display: flex; align-items: center; gap: .5rem;
+    flex-shrink: 0; margin-inline-start: auto;
+}
+
 /* Portfolio selector */
 .pf-selector-wrap { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
 .pf-selector {
@@ -851,4 +857,213 @@ html[dir="rtl"] .pf-selector {
     font-weight: 700;
     font-size: .68rem;
     letter-spacing: .03em;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Add Portfolio Modal — ultra-premium portfolio picker + creator
+   ════════════════════════════════════════════════════════════════ */
+
+/* Wider modal for the portfolio picker */
+.pf-addpf-modal {
+    max-width: 660px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+}
+.pf-addpf-modal::-webkit-scrollbar { width: 4px; }
+.pf-addpf-modal::-webkit-scrollbar-track { background: transparent; }
+.pf-addpf-modal::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+/* Title group with icon */
+.pf-addpf-modal-title-group {
+    display: flex; align-items: center; gap: .6rem;
+}
+.pf-addpf-modal-icon {
+    display: grid; place-items: center;
+    width: 2rem; height: 2rem;
+    border-radius: .55rem;
+    background: rgba(20,184,166,.1);
+    color: var(--teal);
+    flex-shrink: 0;
+}
+.pf-addpf-modal-heading {
+    margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--ink);
+}
+
+/* Section label inside the modal */
+.pf-addpf-section-label {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted);
+    margin: 0 0 .85rem;
+}
+.pf-addpf-section-label::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--line);
+}
+
+/* Divider between sections */
+.pf-addpf-divider {
+    border: none; border-top: 1px solid var(--line);
+    margin: 1.25rem 0;
+}
+
+/* ── Compact portfolio picker cards ─────────────────────────── */
+.pf-addpf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: .65rem;
+    margin-bottom: .25rem;
+}
+.pf-addpf-pf-card {
+    position: relative;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: var(--pf-radius);
+    padding: 1rem 1rem .85rem;
+    cursor: pointer;
+    transition: border-color 180ms, box-shadow 180ms, transform 180ms;
+    display: flex; flex-direction: column; gap: .55rem;
+}
+.pf-addpf-pf-card:hover {
+    border-color: rgba(20,184,166,.35);
+    box-shadow: 0 4px 18px rgba(0,0,0,.1);
+    transform: translateY(-1px);
+}
+.pf-addpf-pf-card.current-pf {
+    border-color: var(--teal);
+    background: rgba(20,184,166,.04);
+    box-shadow: 0 4px 16px rgba(20,184,166,.12);
+}
+.pf-addpf-pf-name {
+    font-size: .88rem; font-weight: 800; color: var(--ink);
+    display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+}
+.pf-addpf-pf-name .pf-badge-neu {
+    font-size: .6rem; padding: .1rem .4rem;
+}
+.pf-addpf-pf-value {
+    font-family: var(--pf-mono); font-size: 1.05rem;
+    font-weight: 700; color: var(--ink); line-height: 1.1;
+}
+.pf-addpf-pf-value small {
+    font-size: .68rem; font-weight: 600; color: var(--muted);
+    font-family: inherit; margin-inline-end: .25rem;
+}
+.pf-addpf-pf-meta {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: .2rem .5rem;
+}
+.pf-addpf-pf-meta-item label {
+    display: block; font-size: .6rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--muted);
+}
+.pf-addpf-pf-meta-item span {
+    font-size: .78rem; font-weight: 700; font-family: var(--pf-mono);
+}
+.pf-addpf-open-btn {
+    align-self: flex-end; margin-top: auto;
+    background: var(--teal); color: #fff;
+    border: none; border-radius: 999px;
+    font-size: .72rem; font-weight: 700;
+    padding: .3rem .85rem; cursor: pointer;
+    transition: background 150ms, box-shadow 150ms;
+    letter-spacing: .02em;
+}
+.pf-addpf-open-btn:hover {
+    background: var(--teal-dark);
+    box-shadow: 0 3px 10px rgba(20,184,166,.3);
+}
+/* Active indicator for current portfolio */
+.pf-addpf-pf-card.current-pf .pf-addpf-open-btn {
+    background: transparent;
+    border: 1.5px solid var(--teal);
+    color: var(--teal);
+}
+.pf-addpf-pf-card.current-pf::before {
+    content: '';
+    position: absolute; top: 0; inset-inline-start: 0;
+    width: 3px; height: 100%;
+    background: var(--teal);
+    border-radius: var(--pf-radius) 0 0 var(--pf-radius);
+}
+html[dir="rtl"] .pf-addpf-pf-card.current-pf::before {
+    inset-inline-start: auto; inset-inline-end: 0;
+    border-radius: 0 var(--pf-radius) var(--pf-radius) 0;
+}
+
+/* ── Create new portfolio options ───────────────────────────── */
+.pf-addpf-create-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .6rem;
+}
+.pf-addpf-create-card {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: .55rem;
+    padding: 1rem .75rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--pf-radius);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 180ms, background 180ms, box-shadow 180ms, transform 180ms;
+}
+.pf-addpf-create-card:hover {
+    border-color: rgba(20,184,166,.4);
+    background: rgba(20,184,166,.03);
+    box-shadow: 0 4px 16px rgba(20,184,166,.09);
+    transform: translateY(-2px);
+}
+.pf-addpf-create-icon {
+    width: 2.4rem; height: 2.4rem;
+    border-radius: .65rem;
+    background: rgba(20,184,166,.1);
+    color: var(--teal);
+    display: grid; place-items: center;
+    font-size: 1rem; transition: background 180ms;
+}
+.pf-addpf-create-card:hover .pf-addpf-create-icon {
+    background: rgba(20,184,166,.18);
+}
+.pf-addpf-create-label {
+    font-size: .8rem; font-weight: 800; color: var(--ink); line-height: 1.2;
+}
+.pf-addpf-create-desc {
+    font-size: .7rem; color: var(--muted); line-height: 1.4; margin: 0;
+}
+
+/* ── "Add Portfolio" button in the dashboard header ─────────── */
+.pf-add-portfolio-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: transparent;
+    border: 1.5px solid var(--teal);
+    color: var(--teal);
+    border-radius: 999px;
+    font-size: .78rem; font-weight: 700;
+    padding: .45rem 1.1rem;
+    cursor: pointer;
+    transition: background 160ms, color 160ms, box-shadow 160ms;
+    white-space: nowrap; flex-shrink: 0;
+    letter-spacing: .01em;
+}
+.pf-add-portfolio-btn svg { flex-shrink: 0; }
+.pf-add-portfolio-btn:hover {
+    background: var(--teal);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(20,184,166,.28);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 540px) {
+    .pf-addpf-modal { max-width: calc(100vw - 2rem); padding: 1.25rem 1rem; }
+    .pf-addpf-grid  { grid-template-columns: 1fr 1fr; }
+    .pf-addpf-create-grid { grid-template-columns: 1fr; }
+    .pf-addpf-create-card { flex-direction: row; text-align: start; align-items: flex-start; gap: .75rem; }
+    .pf-addpf-create-icon { flex-shrink: 0; }
+}
+@media (max-width: 360px) {
+    .pf-addpf-grid { grid-template-columns: 1fr; }
 }

@@ -328,7 +328,9 @@ async def handle_stock_statistics(
             -- Market data (live from market_tickers)
             mt.name_en, mt.name_ar, mt.last_price, mt.market_code, mt.currency, mt.sector_name,
             mt.pe_ratio AS mt_pe, mt.pb_ratio AS mt_pb,
-            COALESCE(mt.dividend_yield, ss.dividend_yield) AS dividend_yield,
+            -- market_tickers.dividend_yield is PERCENT; stock_statistics is a FRACTION,
+            -- so the fallback must be x100 to avoid a ~100x-too-small yield.
+            COALESCE(mt.dividend_yield, ss.dividend_yield * 100) AS dividend_yield,
             mt.market_cap AS live_cap, mt.logo_url,
             -- Live sector averages for context (show stock vs sector)
             sa.avg_sector_pe, sa.avg_sector_pb

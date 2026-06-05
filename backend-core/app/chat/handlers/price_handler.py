@@ -63,7 +63,9 @@ async def handle_stock_price(
             COALESCE(m.prev_close, LAG(o.close) OVER (ORDER BY o.date), o.close) as prev_close,
             m.pe_ratio,
             COALESCE(m.pb_ratio, ss.pb_ratio) AS pb_ratio,
-            COALESCE(m.dividend_yield, ss.dividend_yield) AS dividend_yield,
+            -- market_tickers.dividend_yield is PERCENT; stock_statistics is a FRACTION,
+            -- so the fallback must be x100 to avoid a ~100x-too-small yield.
+            COALESCE(m.dividend_yield, ss.dividend_yield * 100) AS dividend_yield,
             m.market_cap, m.high_52w, m.low_52w, m.sector_name,
             m.last_updated, m.logo_url,
             o.date as ohlc_date,

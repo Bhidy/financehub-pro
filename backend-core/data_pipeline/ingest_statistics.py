@@ -367,30 +367,29 @@ async def main():
             # ============================================================
             logger.info("Running post-ingestion derived computations...")
             async with pool.acquire() as conn:
-                # 1. Compute revenue_growth from income_statements
+                # 1. Sync growth fields from income_statements (canonical), ANNUAL only.
+                #    BUGFIX: the previous query ranked across ALL period_types, so for a
+                #    symbol whose newest row is a quarter (e.g. Q1) it compared that quarter
+                #    against the latest annual → a spurious ~-74% for nearly every symbol.
+                #    income_statements.{revenue_growth,net_income_growth,eps_growth} are the
+                #    canonical YoY figures (stored as PERCENT); stock_statistics stores these
+                #    as FRACTIONS, hence the /100.
                 rg_result = await conn.execute("""
-                    WITH ranked AS (
-                        SELECT symbol, fiscal_year, revenue,
-                               ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY fiscal_year DESC) as rn
+                    UPDATE stock_statistics ss SET
+                        revenue_growth = i.revenue_growth / 100.0,
+                        profit_growth  = i.net_income_growth / 100.0,
+                        eps_growth     = i.eps_growth / 100.0
+                    FROM (
+                        SELECT DISTINCT ON (symbol) symbol,
+                               revenue_growth, net_income_growth, eps_growth
                         FROM income_statements
-                        WHERE revenue IS NOT NULL AND revenue != 0
-                    ),
-                    growth AS (
-                        SELECT r1.symbol,
-                               CASE WHEN r2.revenue IS NOT NULL AND r2.revenue != 0 
-                                    THEN (r1.revenue - r2.revenue) / ABS(r2.revenue)
-                                    ELSE NULL
-                               END as yoy_growth
-                        FROM ranked r1
-                        JOIN ranked r2 ON r1.symbol = r2.symbol AND r1.rn = 1 AND r2.rn = 2
-                    )
-                    UPDATE stock_statistics ss
-                    SET revenue_growth = g.yoy_growth
-                    FROM growth g
-                    WHERE ss.symbol = g.symbol AND ss.market_code = 'EGX'
-                    AND g.yoy_growth IS NOT NULL
+                        WHERE period_type = 'annual'
+                        ORDER BY symbol, fiscal_year DESC, period_ending DESC
+                    ) i
+                    WHERE ss.symbol = i.symbol AND ss.market_code = 'EGX'
+                      AND i.revenue_growth IS NOT NULL
                 """)
-                logger.info(f"  Revenue growth computed: {rg_result}")
+                logger.info(f"  Growth fields synced from income_statements (annual): {rg_result}")
                 
                 # 2. Cross-fill pb_ratio from stock_statistics to market_tickers
                 pb_result = await conn.execute("""

@@ -1913,10 +1913,8 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  /* Bleed to card edges for a flush rail feel */
-  margin-inline: calc(-1 * (var(--safe-left) + 18px)) calc(-1 * (var(--safe-right) + 20px));
-  padding-inline: calc(var(--safe-left) + 18px) calc(var(--safe-right) + 20px);
   padding-block: 4px;
+  /* First card aligns with content — no bleed hack needed */
 }
 .homeQuickGrid::-webkit-scrollbar { display: none; }
 

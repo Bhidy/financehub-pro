@@ -379,9 +379,9 @@ async def get_egx_profile(symbol: str):
 async def get_egx_financials(symbol: str, statement_type: str = "income-statement", period: str = "annual"):
     """Get financial statements for an EGX stock"""
     rows = await db.fetch_all("""
-        SELECT fiscal_year, end_date, revenue, net_income, eps, total_assets, 
+        SELECT fiscal_year, end_date, revenue, net_income, eps, total_assets,
                total_liabilities, total_equity, raw_data
-        FROM financial_statements 
+        FROM financial_statements_v
         WHERE symbol = $1 AND period_type = $2
         ORDER BY fiscal_year DESC
         LIMIT 10

@@ -192,6 +192,10 @@ SYMBOL_STOPWORDS = {
     # Extra lexical noise frequently mistaken as tickers in follow-up/compare queries
     'does', 'peers', 'terms', 'valuation', 'growth', 'compare', 'against',
     'specific', 'catalysts', 'catalyst', 'driving', 'unlocks',
+    # Market / index / exchange names — these are NOT tradeable tickers, so they must
+    # never be extracted as a symbol (e.g. "EGX top losers", "news on EGX").
+    'egx', 'tasi', 'tadawul', 'index', 'indices', 'exchange', 'bourse',
+    'egypt', 'egyptian', 'saudi', 'arabia', 'news',
 }
 
 # Arabic stopwords for N-gram filtering

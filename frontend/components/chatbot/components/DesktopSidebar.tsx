@@ -493,24 +493,16 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         exit={{ width: 0 }}
                         className="flex-shrink-0 h-full bg-slate-50 dark:bg-[#0F1419] border-e border-slate-200 dark:border-white/5 flex flex-col items-center py-4 gap-3 z-20"
                     >
-                        <div className="mb-4">
-                            <button
-                                onClick={onToggle}
-                                className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-[#13b8a6] hover:border-[#13b8a6]/30 transition-all shadow-sm group"
-                                title="Open Sidebar"
-                            >
-                                <PanelLeftOpen className={clsx("w-5 h-5 group-hover:scale-110 transition-transform", lang === 'ar' && "rotate-180")} />
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={onNewChat}
-                            className="w-10 h-10 rounded-xl bg-[#13b8a6] text-white flex items-center justify-center shadow-lg shadow-[#13b8a6]/20 hover:bg-[#0f8f82] transition-all hover:scale-105"
-                        >
-                            <Plus className="w-5 h-5" />
-                        </button>
-
                         <div className="flex-1" />
+
+                        {/* Open sidebar — sits just above user avatar */}
+                        <button
+                            onClick={onToggle}
+                            className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-[#13b8a6] hover:border-[#13b8a6]/30 transition-all shadow-sm group"
+                            title="Open Sidebar"
+                        >
+                            <PanelLeftOpen className={clsx("w-5 h-5 group-hover:scale-110 transition-transform", lang === 'ar' && "rotate-180")} />
+                        </button>
 
                         {isAuthenticated ? (
                             <button

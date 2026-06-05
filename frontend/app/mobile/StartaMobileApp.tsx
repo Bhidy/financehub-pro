@@ -2509,7 +2509,7 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
   const isDemoWorkspace = !portfolio.length && demoPortfolio.length > 0;
   const activeCash = isDemoWorkspace ? DEMO_PORTFOLIO_CASH : 0;
   const total = activePortfolio.reduce((sum, item) => sum + item.value, activeCash);
-  const [tab, setTab] = useState<"holdings" | "allocation" | "risk" | "dividends">("holdings");
+  const [tab, setTab] = useState<"holdings" | "allocation" | "risk" | "dividends">("allocation");
   // Real portfolio value series = sum of each holding's quantity × its real daily close.
   const portfolioTrend = useMemo(() => {
     const legs = activePortfolio
@@ -2609,8 +2609,8 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
 
         <div className={styles.segment}>
           {([
-            ["holdings", lang === "ar" ? "الأرصدة" : "Holdings"],
             ["allocation", lang === "ar" ? "التخصيص" : "Allocation"],
+            ["holdings", lang === "ar" ? "الأرصدة" : "Holdings"],
             ["risk", lang === "ar" ? "المخاطر" : "Risk"],
             ["dividends", lang === "ar" ? "التوزيعات" : "Dividends"],
           ] as const).map(([key, label]) => <Pill key={key} active={tab === key} onClick={() => setTab(key)}>{label}</Pill>)}

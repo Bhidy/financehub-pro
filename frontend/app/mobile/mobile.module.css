@@ -1063,11 +1063,11 @@
 .portfolioMetricRow {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   border-top: 1px solid var(--c-border);
   background: color-mix(in srgb, var(--c-surface-2) 72%, transparent);
   border-radius: 15px;
-  padding: 0 8px 10px;
+  padding: 0 4px 10px;
 }
 
 .portfolioMetricRow span {
@@ -1089,6 +1089,64 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+/* ── Performance tab ──────────────────────────────────── */
+.portContribGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.portContribCard {
+  border: 1px solid var(--c-border);
+  border-radius: 18px;
+  background: var(--c-surface);
+  padding: 13px 12px;
+  text-align: start;
+  display: grid;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.portContribCard:active { transform: scale(.97); }
+
+.portContribTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.portContribTop > div { display: grid; gap: 2px; }
+.portContribTop b { font: 800 13px/1 Manrope; color: var(--c-fg-1); }
+.portContribTop span { font: 700 9px/1 var(--mono); color: var(--c-fg-3); text-transform: uppercase; letter-spacing: .08em; }
+
+.portContribVal { font: 700 12px/1 var(--mono); color: var(--c-fg-2); letter-spacing: -.01em; }
+.portContribPl { font: 900 14px/1 Manrope; letter-spacing: -.015em; }
+
+.portRiskGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.portRiskTile {
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  background: var(--c-surface);
+  padding: 12px 13px;
+  display: grid;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.portRiskTile span {
+  font: 700 9px/1.2 var(--mono);
+  color: var(--c-fg-3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.portRiskTile strong {
+  font: 800 15px/1 Sora, Manrope;
+  color: var(--c-fg-1);
+  letter-spacing: -.02em;
 }
 
 .portfolioHoldingCard {

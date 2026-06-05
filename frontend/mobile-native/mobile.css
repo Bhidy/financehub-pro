@@ -4,3 +4,12 @@
  * Without this, all Tailwind classes are absent from the CSS bundle and
  * AI response cards render as invisible/unstyled plain HTML. */
 @import "tailwindcss";
+
+/* Class-based dark mode — MUST match the web (frontend/app/globals.css).
+ * StartaMobileApp bridges its light/dark toggle to a `.dark` class on <html>.
+ * Tailwind v4 does NOT auto-load tailwind.config.ts here (the Vite root is
+ * mobile-native/), so without this declaration `dark:` variants fall back to
+ * `@media (prefers-color-scheme: dark)` — i.e. the phone's OS theme — and the
+ * AI cards render dark even when the app is in Light mode. This makes every
+ * `dark:` utility follow the in-app theme toggle instead. */
+@custom-variant dark (&:where(.dark, .dark *));

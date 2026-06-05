@@ -214,10 +214,11 @@ async def handle_deep_efficiency(conn: asyncpg.Connection, symbol: str, market: 
         return ChatResponse(message_text="Data not found.", meta={'intent': 'UNKNOWN', 'confidence': 1.0})
         
     name = row['name_ar'] if lang == 'ar' and row['name_ar'] else row['name_en']
-    # All efficiency ratios come from stock_statistics (TTM) directly
-    roce = float(row['roce']) if row['roce'] is not None else None
-    roe = float(row['roe']) if row['roe'] else None
-    roic = float(row['roic']) if row['roic'] else None
+    # Returns ratios come from stock_statistics (TTM) as FRACTIONS (0.2729 = 27.29%);
+    # convert to percent for display, card and chart. Turnover ratios stay as-is (×).
+    roce = float(row['roce']) * 100 if row['roce'] is not None else None
+    roe = float(row['roe']) * 100 if row['roe'] is not None else None
+    roic = float(row['roic']) * 100 if row['roic'] is not None else None
     asset_to = row['asset_turnover'] if row['asset_turnover'] else None
     inv_to = row['inventory_turnover'] if row['inventory_turnover'] else None
 

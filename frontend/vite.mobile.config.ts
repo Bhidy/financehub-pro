@@ -11,6 +11,22 @@ export default defineConfig({
   // Relative base so assets resolve under Capacitor's capacitor://localhost origin.
   base: "./",
   plugins: [react()],
+  // Explicit @/ alias so WorldClassMessage / ChatCards imports resolve in both
+  // dev mode and production (Vite root is mobile-native/ so tsconfig paths
+  // aren't auto-picked up in dev; this makes it explicit).
+  resolve: {
+    alias: {
+      "@": resolve(__dirname),
+    },
+  },
+  css: {
+    // Point at the project-level PostCSS config (frontend/postcss.config.mjs)
+    // which applies @tailwindcss/postcss.  Without this, Vite's root being
+    // mobile-native/ means PostCSS config is never found, so Tailwind utility
+    // classes (used by WorldClassMessage, ChatCards, MobileAiResponse) are
+    // completely absent from the CSS bundle — everything renders unstyled.
+    postcss: resolve(__dirname, "postcss.config.mjs"),
+  },
   define: {
     __API_BASE__: JSON.stringify(API_BASE),
   },

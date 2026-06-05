@@ -3414,8 +3414,19 @@ class ChatService:
                 Intent.SCREENER_VALUE,
             }
             is_extended_intent = intent in EXTENDED_INTENTS
+            # Numeric-lookup intents whose handlers already produce an accurate,
+            # premium, deterministic message. We use that verbatim instead of the
+            # LLM narrator, which was HALLUCINATING the headline numbers (e.g. fund
+            # NAV 3073.30 -> "11.45", dividend yield 4.55% -> "0.0%", COMI net
+            # income ~82B -> "345M") and even replacing the handler's data card with
+            # a generic framework card. Trusting the handler guarantees 100% data
+            # accuracy and preserves the rich data card.
             STRICT_HANDLER_NARRATIVE_INTENTS = {
                 Intent.FIN_EPS,
+                Intent.FUND_NAV,
+                Intent.DIVIDENDS,
+                Intent.EARNINGS_ANALYSIS,
+                Intent.STOCK_STAT,
             }
             sector_metric_query = bool(entities.get("sector_metric_query"))
             use_handler_narrative_only = (

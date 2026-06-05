@@ -30,8 +30,10 @@ async def handle_income_revenue_breakdown(conn, symbol: str, language: str = "en
     rows = await conn.fetch("""
         SELECT fiscal_year, revenue, revenue_growth, cost_of_revenue, gross_profit, gross_margin,
                interest_income_loans, interest_income_investments, total_interest_income,
-               fee_commission_income, trading_income, insurance_revenue,
-               net_interest_income, interest_expense, loan_loss_provisions
+               fee_income AS fee_commission_income, trading_income,
+               NULL::numeric AS insurance_revenue,
+               net_interest_income, interest_expense,
+               provision_credit_losses AS loan_loss_provisions
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
     
@@ -100,7 +102,8 @@ async def handle_income_cost_structure(conn, symbol: str, language: str = "en") 
     
     rows = await conn.fetch("""
         SELECT fiscal_year, revenue, cost_of_revenue, operating_expenses, sga_expense,
-               research_development, selling_marketing, general_admin,
+               rd_expense AS research_development,
+               NULL::numeric AS selling_marketing, NULL::numeric AS general_admin,
                other_operating_expenses, operating_income, operating_margin
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)

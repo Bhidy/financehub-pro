@@ -1995,7 +1995,6 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
                 <button className={styles.homeNewsEntry} onClick={() => nav.push("article", { id: news[0].id })}>
                   <div className={styles.homeNewsEntryImg}><NewsImage item={news[0]} lang={lang} large /></div>
                   <div className={styles.homeNewsEntryBody}>
-                    <span className={styles.homeNewsEntryBadge}>{news[0].category}{news[0].symbol ? ` · ${news[0].symbol}` : ""}</span>
                     <strong className={styles.homeNewsEntryTitle}>{news[0].headline}</strong>
                     <div className={styles.homeNewsEntryMeta}>
                       <span>{news[0].time}</span>
@@ -2011,7 +2010,6 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
                     <button key={item.id} className={styles.homeNewsSmall} onClick={() => nav.push("article", { id: item.id })}>
                       <div className={styles.homeNewsSmallImg}><NewsImage item={item} lang={lang} /></div>
                       <div className={styles.homeNewsSmallBody}>
-                        <span className={styles.homeNewsEntryBadge}>{item.category}</span>
                         <strong className={styles.homeNewsSmallTitle}>{item.headline}</strong>
                         <span className={styles.homeNewsSmallTime}>{item.time}</span>
                       </div>
@@ -2133,7 +2131,6 @@ function NewsRow({ item, lang, onClick }: { item: NewsItem; lang: Lang; onClick:
     <article className={styles.newsCard2} onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onClick()}>
       <div className={styles.newsCardImg}><NewsImage item={item} lang={lang} large /></div>
       <div className={styles.newsCardBody}>
-        <span className={styles.newsCardBadge}>{item.category}{item.symbol ? ` · ${item.symbol}` : ""}</span>
         <h3 className={styles.newsCardTitle}>{item.headline}</h3>
         <div className={styles.newsCardFoot}>
           <span className={styles.newsCardTime}>{item.time}{item.source ? ` · ${item.source}` : ""}</span>

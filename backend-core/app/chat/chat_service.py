@@ -2206,6 +2206,35 @@ class ChatService:
         msg_lower = msg.lower()
         updated = dict(entities or {})
 
+        # ── Bounded routing corrections (the LLM classifier mislabels these edge
+        #    phrasings: cash-flow -> FCF definition, "top dividend stocks" -> a yield
+        #    definition, "top performing funds" -> stock TOP_GAINERS). Guarded so
+        #    genuine definitional queries ("what is …") are left alone. ──
+        _is_definition_q = bool(re.search(
+            r"\b(what\s+is|what's|whats|define|explain|meaning of|tell me about)\b", msg_lower)
+            or any(t in msg for t in ["ما هو", "ما هي", "عرف", "اشرح", "ما معنى"]))
+
+        if not _is_definition_q:
+            # Top/best/highest dividend or yield STOCKS -> dividend-leaders screener.
+            if (re.search(r"\b(top|best|highest|high|leading)\b.{0,24}\b(dividend|yield)", msg_lower)
+                    or re.search(r"\b(dividend|yield)\b.{0,16}\b(stocks?|leaders?|payers?|companies)\b", msg_lower)
+                    or any(t in msg for t in ["أعلى توزيعات", "أعلى عائد", "اسهم التوزيعات", "أفضل التوزيعات"])):
+                return Intent.SCREENER_INCOME, updated
+
+            # Top/best/performing FUNDS -> fund movers (not stock TOP_GAINERS).
+            if (re.search(r"\b(top|best|performing|performance|leading|highest[\s-]?return)\b.{0,24}\bfunds?\b", msg_lower)
+                    or re.search(r"\bfunds?\b.{0,16}\b(performance|movers|gainers|leaders|returns?|winners)\b", msg_lower)
+                    or any(t in msg for t in ["أفضل الصناديق", "أعلى الصناديق", "أداء الصناديق"])):
+                return Intent.FUND_MOVERS, updated
+
+            # "<SYMBOL> cash flow" -> financials (cashflow tab), not a FCF definition.
+            if re.search(r"\bcash[\s-]?flow\b", msg_lower) or "تدفق" in msg or "التدفقات" in msg:
+                _cf = updated.get("symbol") or (extract_potential_symbols(message)[:1] or [None])[0]
+                if _cf:
+                    updated["symbol"] = _cf
+                    updated["statement_type"] = "cashflow"
+                    return Intent.FINANCIALS, updated
+
         has_real_estate = (
             bool(re.search(r"\b(real[\s-]?estate|property)\b", msg_lower))
             or any(tok in msg for tok in ["عقار", "عقاري", "العقارات", "الإسكان", "الاسكان"])

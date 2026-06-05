@@ -302,18 +302,36 @@ ohlc: `1w,1m,3m,6m,1y,3y,5y,max` (param is `period`).
 
 ## 9. Ship to TestFlight (final phase)
 
-1. **Deploy the frontend to production** (so the CORS header + any `/mobile` web changes go live).
-   Follow `../docs/STARTAMARKETS_PUBLIC_SITE.md` exactly — Vercel project `finhub`, deploy from
-   repo root `startamarkets` (root dir `frontend`), and **the MANDATORY post‑deploy
-   `vercel alias set` step** (the #1 cause of "nothing changed" — the custom domain stays aliased
-   to the old deployment otherwise). The workspace is often dirty → use a clean release dir.
-   ⚠ Only deploy approved changes (CORS in `next.config.ts`; do NOT ship the temp `_concept*` files).
-2. **Build the native bundle (prod base)** + sync:
-   `./node_modules/.bin/vite build --config vite.mobile.config.ts && npx cap sync ios`
-3. **Bump build number** in Xcode (target App → General → Build), Archive, and upload to
-   **TestFlight** (App Store Connect, Bundle ID `com.mubasher.startamarkets`).
-4. Sanity: install via TestFlight → app opens to **Market Pulse** with real data, full‑bleed, no
-   black bars, light default, themes + Arabic working.
+> **Use the one-command scripts. Do not hand-run `vercel` or `xcodebuild`.**
+
+```bash
+# 1. Deploy web changes to production (CORS header, /mobile route, etc.)
+#    From the REPO ROOT (~/Documents/startamarkets):
+./scripts/deploy-web.sh
+
+# 2. Build + archive + upload the iOS app to TestFlight:
+#    From the REPO ROOT:
+./scripts/ship-ios.sh
+```
+
+`ship-ios.sh` does everything in step 2 automatically:
+- Builds the Vite mobile bundle (`npm run build:mobile`)
+- Syncs into the Capacitor iOS project (`cap sync ios`)
+- **Auto-bumps the build number** (`max(current+1, YYYYMMDD)`) — no Xcode GUI needed
+- Archives with `xcodebuild` (Release, distribution cert, automatic signing)
+- Exports + uploads to TestFlight via the App Store Connect API key
+
+After the upload succeeds, the script prints the exact `git commit` command to record the
+build-number bump in the repo. Run it, then open a PR → merge.
+
+**Sanity after TestFlight processing (~5–15 min):** install on a real iPhone → app opens to
+Market Pulse with real data, full-bleed, no black bars, light default, themes + Arabic working.
+
+**Key facts:**
+- Bundle ID: `com.mubasher.startamarkets`
+- API key: `~/.appstoreconnect/private_keys/AuthKey_53QD83W9UK.p8`
+- iOS project: `frontend/ios/App/`
+- Full rules: [`docs/DEPLOY_RUNBOOK.md`](../../../docs/DEPLOY_RUNBOOK.md)
 
 ---
 

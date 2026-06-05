@@ -1,199 +1,136 @@
-# FinHub Pro - Production Deployment Reference Guide
+# Starta Markets — Production Deployment Reference
 
-> **Purpose**: This document is the authoritative reference for deploying FinHub Pro to production. Provide this document to any AI model or developer to enable correct deployment without confusion.
+> **Any AI agent or human deploying this project must read [`DEPLOY_RUNBOOK.md`](./DEPLOY_RUNBOOK.md)
+> first.** It is the single authoritative deploy procedure. This file provides background detail
+> and a troubleshooting reference. The runbook supersedes any conflicting instructions here or
+> in any older doc/memory note.
 
-> [!IMPORTANT]
-> For branded public pages served at `https://startamarkets.com` (`/`, `/Funds`, `/Learn`, `/News`, `/Market-Pulse`, theme, or language work), read [`STARTAMARKETS_PUBLIC_SITE.md`](./STARTAMARKETS_PUBLIC_SITE.md) first. It records the actual static-page route map, shared theme/language systems, source-of-truth warning, and public-site deployment procedure.
-
----
-
-## Quick Reference
-
-| Component | URL | Platform |
-|-----------|-----|----------|
-| **Branded Public Site** | https://startamarkets.com | Vercel (`finhub` project) |
-| **Vercel Project Hostname** | https://startamarkets.com | Vercel |
-| **Backend API** | Hetzner VPS | Hetzner |
+> For branded public pages (`/`, `/Funds`, `/Learn`, `/News`, `/Market-Pulse`, theme, language),
+> also read [`STARTAMARKETS_PUBLIC_SITE.md`](./STARTAMARKETS_PUBLIC_SITE.md).
 
 ---
 
-## Frontend Deployment (Vercel)
+## Quick reference
 
-### Critical Configuration
+| Surface | Command | Time |
+|---------|---------|------|
+| **Web (startamarkets.com)** | `./scripts/deploy-web.sh` | ~2 min |
+| **iOS (TestFlight)** | `./scripts/ship-ios.sh` | ~6–10 min |
+| **Backend (Hetzner)** | `./scripts/deploy_production.sh backend smart` | ~3 min |
+| **Health check only** | `./scripts/deploy-web.sh verify` | 10 s |
+
+---
+
+## Vercel project facts
 
 | Setting | Value |
 |---------|-------|
-| **Project Name** | `finhub` |
+| **Project name** | `finhub` |
 | **Project ID** | `prj_EYpG42djOp1vEYI5BTadOreRFWC0` |
 | **Org ID** | `team_Gqpf3K97tjrOCyIlEnGjWCOE` |
-| **Root Directory** | `frontend` (set in Vercel Dashboard) |
-| **Framework** | Next.js 16.1.1 |
-| **Production URL** | https://startamarkets.com |
+| **Production domain** | `startamarkets.com` + `www.startamarkets.com` |
+| **Root Directory (Vercel setting)** | `frontend` |
+| **GitHub integration** | Auto-deploys + auto-aliases `main` pushes |
+| **Environment vars** | `DATABASE_URL`, `NEXT_PUBLIC_API_URL` (set in Vercel Dashboard) |
 
-### Deployment Steps
+### Two-project history (important background)
+A stray Vercel project named **`frontend`** existed alongside `finhub`. It was created by
+accidentally running `vercel` inside the `frontend/` directory. It had no env vars and did
+not own the domain — deploying to it caused every "changes aren't showing" incident.
 
-> [!CAUTION]
-> **MUST deploy from the repository root**, NOT from inside the `frontend` folder.
+**Status:** permanently deleted 2026-06-06 via Vercel API. Prevention:
+- `frontend/.vercel/project.json` is **committed** and points to `finhub`.
+  Running `vercel` from anywhere in the repo now targets `finhub` — a stray project
+  can never be created.
+- `deploy-web.sh` aborts if it detects a stray link and refuses to proceed.
+- If `vercel project ls` ever shows an unexpected Starta project, delete it immediately.
+
+---
+
+## How the web deploy works (background)
+
+Merging to `main` triggers the GitHub→Vercel integration which:
+1. Builds `finhub` from the `frontend/` root directory.
+2. Aliases `startamarkets.com` + `www` to the new deployment.
+
+`./scripts/deploy-web.sh` does the same thing explicitly (useful to force a deploy or
+re-alias after an accidental stale-domain situation). It also runs `npm run verify:routes`
+as a pre-deploy gate and curl-verifies the live pages + API after aliasing.
+
+**Never hand-run `vercel --prod`** — the script is the only sanctioned path.
+
+---
+
+## iOS / TestFlight facts
+
+| Setting | Value |
+|---------|-------|
+| App ID | `com.mubasher.startamarkets` |
+| Signing | Automatic (Distribution cert, already provisioned) |
+| API key | `~/.appstoreconnect/private_keys/AuthKey_53QD83W9UK.p8` |
+| Key ID | `53QD83W9UK` |
+| Issuer ID | `a3879256-fee1-4421-8369-9206ad76ee1c` |
+| Upload plist | `frontend/ios/UploadOptions.plist` (`destination=upload`) |
+| Build # scheme | `max(current+1, YYYYMMDD)` — always strictly increasing |
+| Encryption | `ITSAppUsesNonExemptEncryption=false` → no compliance hold |
+
+`./scripts/ship-ios.sh` handles all steps: `build:mobile` → `cap sync` → bump build# →
+`xcodebuild archive` → `xcodebuild -exportArchive` (upload). Commit the build-number bump
+**only after** a confirmed upload (the script prints the exact commit command).
+
+---
+
+## Backend facts
+
+| Setting | Value |
+|---------|-------|
+| Host | Hetzner VPS `root@46.224.223.172` |
+| SSH key | `~/.ssh/starta_deploy` (no password) |
+| Deploy | `./scripts/deploy_backend_key.sh` (key-based) |
+| Shortcut | `./scripts/deploy_production.sh backend smart` |
+| Runtime | FastAPI in Docker, port 7860, behind Caddy |
+
+> ⚠️ The `scripts/*.exp` expect-scripts hardcode the **old root password** — treat as
+> compromised; use the SSH key script only. `deploy-backend.yml` GitHub Action is STALE
+> (targets Railway, wrong paths) — do not rely on it.
+
+---
+
+## Vercel git-author guard
+
+On the Hobby plan, Vercel only builds commits whose **author email** is linked to the
+GitHub account (`mohamedbhidy@gmail.com` / `Bhidy`). A commit from an unlinked email is
+blocked silently. The repo has a pre-push hook that prevents this:
 
 ```bash
-# Step 1: Navigate to repository root
-cd /Users/home/Documents/startamarkets
-
-# Step 2: Install dependencies (from frontend directory)
-cd frontend && npm install && cd ..
-
-# Step 3: Build production bundle (optional, Vercel builds remotely)
-cd frontend && npm run build && cd ..
-
-# Step 4: Deploy to Vercel production (FROM ROOT!)
-npx vercel --prod --yes
+git config core.hooksPath scripts/git-hooks   # run once per fresh clone
 ```
 
-### Why Deploy from Root?
-
-The Vercel project has `frontend` configured as its **Root Directory** in the dashboard settings. When you run `vercel` from:
-
-- ✅ **Repository root** → Vercel looks for `./frontend` → Finds it → **Success**
-- ❌ **Frontend folder** → Vercel looks for `./frontend/frontend` → Fails → **Error**
-
-### Verification
-
-```bash
-# Check deployment is live
-curl -s -o /dev/null -w "%{http_code}" https://startamarkets.com/
-# Expected: 200
-```
+Pre-deploy checklist:
+- [ ] `git config user.email` → `mohamedbhidy@gmail.com`
+- [ ] `git status --short` — only intended files staged (never `git add -A`)
+- [ ] `npm run verify:routes` passes (built into `deploy-web.sh`)
+- [ ] `./scripts/deploy-web.sh` — deploys + aliases + verifies in one step
 
 ---
 
-## Repository Structure
+## Troubleshooting
 
-```
-startamarkets/                   ← DEPLOY FROM HERE
-├── .vercel/                     ← Vercel config (linked to finhub project)
-│   └── project.json
-├── frontend/                    ← Next.js application
-│   ├── .vercel/                 ← DUPLICATE (same project, causes confusion)
-│   ├── app/                     ← App Router pages
-│   ├── components/              ← React components
-│   └── package.json
-├── backend/                     ← FastAPI backend
-└── backend-core/               ← Backend API (Dockerized on Hetzner)
-```
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| "Changes not live" | Domain pinned to old build, or wrong project | `./scripts/deploy-web.sh` (re-deploys + re-aliases) |
+| Script aborts "STRAY link" | `frontend/.vercel` exists with wrong project | `rm -rf frontend/.vercel`, re-run |
+| `vercel` asks to create new project | Root `.vercel` missing | `cd <repo-root> && ./frontend/node_modules/.bin/vercel link` → pick **finhub** |
+| Live pages 200 but API returns nothing | Deployed a project without env vars | Run `./scripts/deploy-web.sh` to target `finhub` (has the env) |
+| Vercel build BLOCKED | Commit author email not linked | Fix: `git config user.email "mohamedbhidy@gmail.com"` |
+| TestFlight "build number already used" | Duplicate bump | `ship-ios.sh` auto-handles (`max(cur+1, today)`) |
+| iOS archive fails | Xcode not found / cert expired | `xcode-select --print-path`; renew cert in Apple Developer portal |
 
 ---
 
-## Common Issues & Solutions
+## Document history
 
-### Issue: "The provided path does not exist"
-
-**Error Message:**
-```
-Error: The provided path "~/Documents/startamarkets/frontend/frontend" does not exist
-```
-
-**Cause**: Running `vercel` from inside the `frontend` directory.
-
-**Solution**: Navigate to repository root and deploy from there:
-```bash
-cd /Users/home/Documents/startamarkets
-npx vercel --prod --yes
-```
-
-### Issue: Deployment succeeds but changes not visible
-
-**Cause**: Vercel might be building from an old commit cached in their system.
-
-**Solution**: 
-1. Clear Vercel cache: Go to [Project Settings](https://vercel.com/bhidys-projects/finhub/settings) → Clear Build Cache
-2. Redeploy: `npx vercel --prod --yes --force`
-
----
-
-## Workflow Commands
-
-Use these slash commands in the AI assistant:
-
-| Command | Description |
-|---------|-------------|
-| `/deploy-frontend` | Deploy frontend to Vercel production |
-| `/deploy-backend` | Deploy backend to Hetzner VPS |
-| `/deploy-and-verify` | Full deployment with verification |
-
----
-
-## Environment Variables
-
-Frontend environment variables are managed in Vercel Dashboard:
-- [Environment Variables Settings](https://vercel.com/bhidys-projects/finhub/settings/environment-variables)
-
-Key variables:
-- `NEXT_PUBLIC_API_URL` - Backend API URL
-- `DATABASE_URL` - PostgreSQL connection string
-
----
-
-## Manual Deployment Alternative
-
-If CLI fails, use Vercel Dashboard:
-
-1. Go to https://vercel.com/bhidys-projects/finhub/deployments
-2. Click "Create Deployment"
-3. Select branch "main" and latest commit
-4. Click "Create Deployment"
-
----
-
-## ⚠️ CRITICAL: Vercel git-author block (Hobby plan)
-
-> **Symptom**: Every git push to `main` produces a Vercel deployment that never goes live; `vercel inspect` shows `readyState: BLOCKED`, reason **"The Deployment was blocked because there was no git user associated with the commit."** The live site keeps serving an old deployment. This looks like a "broken build" but the build never runs.
-
-**Root cause**: On the Hobby plan, Vercel only builds git deployments whose **commit-author email is linked to the Vercel/GitHub account** (`mohamedbhidy@gmail.com` / GitHub `Bhidy`). Commits authored with an unlinked email (e.g. `m.mostafa@mubasher.net`) are blocked.
-
-**Fix (already applied repo-locally)**:
-```bash
-git config user.email "mohamedbhidy@gmail.com"   # repo-local; future commits deploy
-```
-Alternatively, add the other email as a *verified* email on the GitHub `Bhidy` account.
-
-**To recover a stuck state**: make any commit authored by the linked email (even `git commit --allow-empty`) and push — it builds. Then run the mandatory alias step (below).
-
-### 🛡️ PREVENTION (so this never recurs)
-
-1. **Repo-local git identity** (set — verify with `git config user.email`):
-   ```bash
-   git config user.email "mohamedbhidy@gmail.com"
-   git config user.name  "Mohamed Bhidy"
-   ```
-2. **Pre-push guard (committed)** — `scripts/git-hooks/pre-push` blocks any push to
-   `main` whose commit-author email is not the linked one. **Enable once per clone:**
-   ```bash
-   git config core.hooksPath scripts/git-hooks
-   ```
-   It refuses the push *before* it reaches GitHub, with the exact fix command — so a
-   BLOCKED Vercel deploy can never happen again from a wrong-author commit.
-3. **Pre-deploy checklist** (every release):
-   - [ ] `git config user.email` → `mohamedbhidy@gmail.com`
-   - [ ] `git status --short` reviewed — only intended files staged (repo carries unrelated in-flight work; never `git add -A`)
-   - [ ] `cd frontend && npm run build` passes locally
-   - [ ] push → poll Vercel until `readyState: READY` (not BLOCKED/ERROR)
-   - [ ] **alias** the new deployment URL to `startamarkets.com` + `www` (below) — **never skip**
-   - [ ] verify live: `curl -s -o /dev/null -w "%{http_code}" https://startamarkets.com/` → 200
-4. **How to detect a BLOCK fast** (if a deploy "did nothing"):
-   ```bash
-   ./frontend/node_modules/.bin/vercel inspect <deployment-url>   # look for: BLOCKED
-   # or via API: GET api.vercel.com/v6/deployments?projectId=...&limit=1  → readyState
-   ```
-
-**Mandatory after EVERY deploy** (git push *or* `vercel deploy`): alias the new deployment URL to the domains, or the live site keeps serving the old build:
-```bash
-./frontend/node_modules/.bin/vercel alias set <new-deployment-url> startamarkets.com
-./frontend/node_modules/.bin/vercel alias set <new-deployment-url> www.startamarkets.com
-```
-
-## Document Version
-
-| Version | Date | Author |
-|---------|------|--------|
-| 1.0 | 2026-01-01 | AI Assistant |
-| 1.1 | 2026-06-03 | Added Vercel git-author block fix + mandatory alias step |
+| Date | Change |
+|------|--------|
+| 2026-06-03 | Added Vercel git-author block fix |
+| 2026-06-06 | **Full rewrite** — one-command scripts, stray project deleted, runbook as primary reference |

@@ -176,10 +176,14 @@ async def handle_universal_screener(
         # PERCENTAGE SCALING FIX (Enterprise)
         # If user says "10% margin", Claude sends 10. DB likely stores 0.10.
         # We auto-scale if value is > 1.0 for percentage fields.
+        # Columns stored as FRACTIONS (0.20 = 20%): a user threshold like "20" must be
+        # scaled to 0.20. dividend_yield / change_percent / change are stored as PERCENT
+        # in the DB, so they are intentionally EXCLUDED (scaling them broke yield/change
+        # screens — e.g. "yield > 5" became 0.05 and matched everything).
         PERCENTAGE_METRICS = {
             "revenue_growth", "profit_growth", "eps_growth", "sales_growth",
             "gross_margin", "operating_margin", "net_margin", "profit_margin",
-            "roe", "roa", "roce", "dividend_yield", "change_percent", "change"
+            "roe", "roa", "roce", "roic"
         }
         
         if metric_key in PERCENTAGE_METRICS and isinstance(value, (int, float)) and abs(value) > 1.0:

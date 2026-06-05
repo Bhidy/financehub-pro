@@ -2496,6 +2496,8 @@ function portfolioStatsFromSeries(series: number[], portfolio: PortfolioPosition
   };
 }
 
+const PORT_PERIODS: Array<[string, string]> = [["1W","1w"],["1M","1m"],["3M","3m"],["6M","6m"],["1Y","1y"],["All","max"]];
+
 function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { nav: NavController; lang: Lang; portfolio: PortfolioPosition[]; stocks: Stock[]; onPortfolioChange?: (portfolio: PortfolioPosition[]) => void }) {
   const wl = useWatchlist();
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -2504,32 +2506,48 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
   const [manualAvg, setManualAvg] = useState("");
   const [csvRows, setCsvRows] = useState("");
   const [portfolioNotice, setPortfolioNotice] = useState("");
+  const [chartPeriod, setChartPeriod] = useState("3M");
+  const [periodTrends, setPeriodTrends] = useState<Record<string, number[]>>({});
   const demoPortfolio = useMemo(() => buildDemoPortfolio(stocks), [stocks]);
   const activePortfolio = portfolio.length ? portfolio : demoPortfolio;
   const isDemoWorkspace = !portfolio.length && demoPortfolio.length > 0;
   const activeCash = isDemoWorkspace ? DEMO_PORTFOLIO_CASH : 0;
   const total = activePortfolio.reduce((sum, item) => sum + item.value, activeCash);
-  const [tab, setTab] = useState<"holdings" | "allocation" | "risk" | "dividends">("allocation");
-  // Real portfolio value series = sum of each holding's quantity × its real daily close.
+  const [tab, setTab] = useState<"allocation" | "performance" | "holdings" | "dividends">("allocation");
+
+  // Load sparklines for selected chart period
+  useEffect(() => {
+    const apiPeriod = PORT_PERIODS.find(([k]) => k === chartPeriod)?.[1] ?? "3m";
+    const symbols = activePortfolio.map((p) => p.symbol);
+    if (!symbols.length) return;
+    let alive = true;
+    loadSparklines(symbols, apiPeriod).then((spark) => {
+      if (!alive) return;
+      setPeriodTrends(spark);
+    });
+    return () => { alive = false; };
+  }, [chartPeriod, activePortfolio.map(p => p.symbol).join(",")]);
+
+  // Build portfolio trend from period-specific sparklines (fall back to stock.trend)
   const portfolioTrend = useMemo(() => {
-    const legs = activePortfolio
-      .map((p) => {
-        const st = stocks.find((s) => s.symbol === p.symbol);
-        return st && st.trend.length > 1 ? { qty: p.quantity || 0, t: st.trend } : null;
-      })
-      .filter((x): x is { qty: number; t: number[] } => !!x);
+    const legs = activePortfolio.map((p) => {
+      const t = periodTrends[p.symbol] ?? stocks.find((s) => s.symbol === p.symbol)?.trend ?? [];
+      return t.length > 1 ? { qty: p.quantity || 0, t } : null;
+    }).filter((x): x is { qty: number; t: number[] } => !!x);
     if (!legs.length) return [];
     const len = Math.min(...legs.map((l) => l.t.length));
     if (len < 2) return [];
     return Array.from({ length: len }, (_, i) =>
       legs.reduce((sum, l) => sum + l.qty * l.t[l.t.length - len + i], activeCash),
     );
-  }, [activePortfolio, activeCash, stocks]);
+  }, [activePortfolio, activeCash, periodTrends, stocks]);
+
   const trendDelta = portfolioTrend.length > 1
     ? ((portfolioTrend[portfolioTrend.length - 1] - portfolioTrend[0]) / portfolioTrend[0]) * 100
     : 0;
   const realStats = portfolioStatsFromSeries(portfolioTrend, activePortfolio, lang);
   const weightedPl = activePortfolio.reduce((sum, p) => sum + p.plPct * (p.weight / 100), 0);
+  const sharpeEst = realStats.volatility && realStats.volatility > 0 ? ((weightedPl / realStats.totalDays) * 252 / (realStats.volatility * Math.sqrt(252))).toFixed(2) : "—";
   const leader = [...activePortfolio].sort((a, b) => b.weight - a.weight)[0];
   const hasPortfolio = activePortfolio.length > 0;
   const watchlistStocks = wl.symbols.map((symbol) => stocks.find((item) => item.symbol === symbol)).filter((item): item is Stock => !!item);
@@ -2588,6 +2606,7 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
         actions={<button className={styles.iconBtn2} aria-label={optionsOpen ? (lang === "ar" ? "إغلاق خيارات المحفظة" : "Close portfolio options") : (lang === "ar" ? "خيارات المحفظة" : "Portfolio options")} onClick={() => setOptionsOpen((open) => !open)}><Icon name={optionsOpen ? "x" : "plus"} size={21} /></button>}
       />
       <div className={styles.content}>
+        {/* ── Portfolio chart card with period selector ── */}
         <div className={cx(styles.chartCard, styles.portfolioPerformanceCard, styles.portfolioTopChart)}>
           <div className={styles.portfolioChartTop}>
             <div>
@@ -2598,39 +2617,80 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
           </div>
           <Delta value={trendDelta} />
           {portfolioTrend.length > 1
-            ? <MiniChart data={portfolioTrend} color="var(--c-brand)" height={176} grid dot />
-            : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد سلسلة أسعار كافية لرسم قيمة المحفظة." : "Not enough live holding history to draw a portfolio chart."}</div>}
+            ? <MiniChart data={portfolioTrend} color={trendDelta >= 0 ? "var(--c-brand)" : "var(--c-down)"} height={176} grid dot />
+            : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد سلسلة أسعار كافية." : "Not enough price history."}</div>}
+          {/* Period selector — same style as EGX30 chart */}
+          <div className={styles.tfBar}>
+            {PORT_PERIODS.map(([k]) => (
+              <button key={k} className={chartPeriod === k ? styles.on : undefined} onClick={() => setChartPeriod(k)}>{k}</button>
+            ))}
+          </div>
           <div className={styles.portfolioMetricRow}>
             <span><b>{realStats.best === undefined ? "—" : pct(realStats.best)}</b>{lang === "ar" ? "أفضل يوم" : "Best day"}</span>
             <span><b>{realStats.worst === undefined ? "—" : pct(realStats.worst)}</b>{lang === "ar" ? "أسوأ يوم" : "Worst day"}</span>
-            <span><b>{realStats.winRate === undefined ? "—" : `${realStats.winRate.toFixed(1)}%`}</b>{lang === "ar" ? "نسبة الربح" : "Win rate"}</span>
+            <span><b>{realStats.winRate === undefined ? "—" : `${realStats.winRate.toFixed(1)}%`}</b>{lang === "ar" ? "نسبة الفوز" : "Win rate"}</span>
+            <span><b>{realStats.maxDrawdown === undefined ? "—" : pct(realStats.maxDrawdown)}</b>{lang === "ar" ? "أقصى تراجع" : "Max DD"}</span>
           </div>
         </div>
 
+        {/* ── Tabs: Allocation | Performance | Holdings | Dividends ── */}
         <div className={styles.segment}>
           {([
             ["allocation", lang === "ar" ? "التخصيص" : "Allocation"],
+            ["performance", lang === "ar" ? "الأداء" : "Performance"],
             ["holdings", lang === "ar" ? "الأرصدة" : "Holdings"],
-            ["risk", lang === "ar" ? "المخاطر" : "Risk"],
             ["dividends", lang === "ar" ? "التوزيعات" : "Dividends"],
           ] as const).map(([key, label]) => <Pill key={key} active={tab === key} onClick={() => setTab(key)}>{label}</Pill>)}
         </div>
-        {tab === "holdings" && (
+
+        {/* Allocation */}
+        {tab === "allocation" && <Allocation portfolio={activePortfolio} lang={lang} />}
+
+        {/* Performance: Top Contributors + Risk Metrics */}
+        {tab === "performance" && (
           <>
-            <div className={styles.portfolioHoldingsGrid}>{activePortfolio.map((p) => <HoldingRow key={p.symbol} item={p} lang={lang} onClick={() => nav.push("stock", { symbol: p.symbol })} />)}</div>
-            <SectionHead title={lang === "ar" ? "التخصيص" : "Allocation"} />
-            <Allocation portfolio={activePortfolio} lang={lang} />
+            <SectionHead title={lang === "ar" ? "أفضل المساهمين" : "Top Contributors"} />
+            <div className={styles.portContribGrid}>
+              {[...activePortfolio].sort((a, b) => b.plPct - a.plPct).map((p) => (
+                <button key={p.symbol} className={styles.portContribCard} onClick={() => nav.push("stock", { symbol: p.symbol })}>
+                  <div className={styles.portContribTop}>
+                    <StockLogo symbol={p.symbol} className={styles.rowSym} />
+                    <div><b>{p.symbol}</b><span>{p.weight.toFixed(1)}%</span></div>
+                  </div>
+                  <div className={styles.portContribVal}>{compact(p.value, lang)}</div>
+                  <div className={cx(styles.portContribPl, p.plPct >= 0 ? styles.up : styles.down)}>
+                    {p.plPct >= 0 ? "▲" : "▼"} {pct(Math.abs(p.plPct))}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <SectionHead title={lang === "ar" ? "مقاييس المخاطر" : "Risk Metrics"} />
+            <div className={styles.portRiskGrid}>
+              {([
+                [lang === "ar" ? "التذبذب السنوي" : "Volatility (Ann.)", realStats.volatility === undefined ? "—" : `${(realStats.volatility * Math.sqrt(252)).toFixed(2)}%`],
+                [lang === "ar" ? "أقصى تراجع" : "Max Drawdown", realStats.maxDrawdown === undefined ? "—" : pct(realStats.maxDrawdown)],
+                [lang === "ar" ? "نسبة شارب (تقريبي)" : "Sharpe (est.)", sharpeEst],
+                [lang === "ar" ? "أيام الاسترداد" : "Recovery", realStats.recovery],
+                [lang === "ar" ? "أيام إيجابية" : "Positive days", realStats.totalDays ? `${realStats.positives} / ${realStats.totalDays}` : "—"],
+                [lang === "ar" ? "أكبر تركيز" : "Concentration", `${realStats.maxWeight.toFixed(1)}%`],
+                [lang === "ar" ? "العائد الكلي" : "Weighted P/L", pct(weightedPl)],
+                [lang === "ar" ? "عدد المراكز" : "Holdings", String(activePortfolio.length)],
+              ] as [string, string][]).map(([l, v]) => (
+                <div key={l} className={styles.portRiskTile}>
+                  <span>{l}</span>
+                  <strong>{v}</strong>
+                </div>
+              ))}
+            </div>
           </>
         )}
-        {tab === "allocation" && <Allocation portfolio={activePortfolio} lang={lang} />}
-        {tab === "risk" && <div className={styles.statGrid}>{[
-          [lang === "ar" ? "التذبذب" : "Volatility", realStats.volatility === undefined ? "—" : `${realStats.volatility.toFixed(2)}%`],
-          [lang === "ar" ? "أقصى تراجع" : "Max Drawdown", realStats.maxDrawdown === undefined ? "—" : pct(realStats.maxDrawdown)],
-          [lang === "ar" ? "أكبر وزن" : "Largest Weight", `${realStats.maxWeight.toFixed(1)}%`],
-          [lang === "ar" ? "عائد المراكز" : "Weighted P/L", pct(weightedPl)],
-          [lang === "ar" ? "نقاط البيانات" : "Data Points", String(portfolioTrend.length || "—")],
-          [lang === "ar" ? "مراكز" : "Holdings", String(activePortfolio.length)],
-        ].map(([l, v]) => <DataStat key={l} label={l} value={v} />)}</div>}
+
+        {/* Holdings */}
+        {tab === "holdings" && (
+          <div className={styles.portfolioHoldingsGrid}>{activePortfolio.map((p) => <HoldingRow key={p.symbol} item={p} lang={lang} onClick={() => nav.push("stock", { symbol: p.symbol })} />)}</div>
+        )}
+
+        {/* Dividends */}
         {tab === "dividends" && <DividendPanel lang={lang} />}
 
         {optionsOpen ? (

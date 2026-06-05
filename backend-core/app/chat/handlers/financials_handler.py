@@ -1386,9 +1386,43 @@ async def handle_financials_package(
         ])
 
     # 6. Construct Response
+    # Authoritative growth context for the LLM narrator, so it states the headline
+    # growth EXACTLY (the narrator was approximating ~3.6% from the raw card rows
+    # instead of the real annual YoY of ~12%). Sourced from income_statements'
+    # canonical YoY columns (annual).
+    revenue_growth_context = None
+    try:
+        if income_annual:
+            _l = income_annual[0]
+            _p = income_annual[1] if len(income_annual) >= 2 else None
+
+            def _f(x):
+                try:
+                    return float(x) if x is not None else None
+                except Exception:
+                    return None
+            lr, pr = _f(_l.get('revenue')), (_f(_p.get('revenue')) if _p else None)
+            rg = _f(_l.get('revenue_growth'))
+            if rg is None and lr is not None and pr:
+                rg = (lr - pr) / abs(pr) * 100.0
+            nig = _f(_l.get('net_income_growth'))
+            if lr is not None:
+                revenue_growth_context = {
+                    'latest_revenue_growth_pct': round(rg, 2) if rg is not None else None,
+                    'trend': 'up' if (rg or 0) >= 0 else 'down',
+                    'latest_revenue': lr,
+                    'prev_revenue': pr,
+                    'latest_net_income': _f(_l.get('net_income')),
+                    'latest_net_income_growth_pct': round(nig, 2) if nig is not None else None,
+                    'fiscal_year': _l.get('fiscal_year'),
+                }
+    except Exception:
+        revenue_growth_context = None
+
     return {
         'success': True,
         'message': f"Financial Explorer for {name}",
+        'revenue_growth_context': revenue_growth_context,
         'cards': [
             {
                 'type': 'stock_header',

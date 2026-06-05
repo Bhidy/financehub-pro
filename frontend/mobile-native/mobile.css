@@ -1,0 +1,6 @@
+/* Tailwind CSS entry point for the mobile Vite/Capacitor build.
+ * Imports all Tailwind v4 utilities so WorldClassMessage, ChatCards, and
+ * MobileAiResponse receive the same styling as the Next.js web build.
+ * Without this, all Tailwind classes are absent from the CSS bundle and
+ * AI response cards render as invisible/unstyled plain HTML. */
+@import "tailwindcss";

@@ -192,9 +192,11 @@
   max-width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-block: var(--page-gap) calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
+  /* .screen already clips at the tab bar via inset — no need to pad for it.
+     Bottom padding only needs to clear the floating AI FAB (48px) + breathing room. */
+  padding-block: var(--page-gap) 72px;
   padding-inline: calc(var(--safe-left) + 18px) calc(var(--safe-right) + 20px);
-  scroll-padding-block: var(--page-gap) calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
+  scroll-padding-block: var(--page-gap) 72px;
   scrollbar-width: none;
   overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;

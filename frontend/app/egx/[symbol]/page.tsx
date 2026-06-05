@@ -352,11 +352,41 @@ export default function EnterpriseStockProfile() {
                     if (p.fundamentals) combined.fundamentals = { ...combined.fundamentals, ...p.fundamentals };
                 }
 
-                if (Object.keys(combined.profile).length === 0) {
-                    const tickers = await fetchTickers().catch(() => []);
-                    const tick = tickers.find((t: any) => t.symbol === symbol || t.symbol === `${symbol}.CA`);
-                    if (tick) combined.profile = tick;
-                }
+                // CANONICAL OVERLAY (DISP-1 fix): market_tickers is the source of truth
+                // for EGX price / change / market-cap. The /yahoo/stock feed is a stale
+                // July-2024 snapshot, so we ALWAYS overlay the fresh canonical fields
+                // (previously this only filled in when the Yahoo profile was empty — so
+                // every stock showed Yahoo's stale price + ~42%-understated market cap,
+                // e.g. COMI 81.20/267.9B instead of 132.50/466.2B).
+                try {
+                    const tickers = await fetchTickers();
+                    const tick = (tickers || []).find((t: any) =>
+                        t.symbol === symbol || t.symbol === `${symbol}.CA` ||
+                        String(t.symbol || '').split('.')[0] === symbol);
+                    if (tick) {
+                        const num = (v: any) => (v === null || v === undefined || v === '' ? undefined : Number(v));
+                        combined.profile = {
+                            ...combined.profile,
+                            regularMarketPrice: num(tick.last_price) ?? combined.profile.regularMarketPrice,
+                            price: num(tick.last_price) ?? combined.profile.price,
+                            last_price: num(tick.last_price) ?? combined.profile.last_price,
+                            regularMarketChange: num(tick.change) ?? combined.profile.regularMarketChange,
+                            change: num(tick.change) ?? combined.profile.change,
+                            regularMarketChangePercent: num(tick.change_percent) ?? combined.profile.regularMarketChangePercent,
+                            change_pct: num(tick.change_percent) ?? combined.profile.change_pct,
+                            marketCap: num(tick.market_cap) ?? combined.profile.marketCap,
+                            market_cap: num(tick.market_cap) ?? combined.profile.market_cap,
+                            pe_ratio: num(tick.pe_ratio) ?? combined.profile.pe_ratio,
+                            pb_ratio: num(tick.pb_ratio) ?? combined.profile.pb_ratio,
+                            name_en: tick.name_en || combined.profile.name_en,
+                            display_name: tick.name_en || combined.profile.display_name,
+                            sector_name: tick.sector_name || combined.profile.sector_name,
+                            currency: combined.profile.currency || 'EGP',
+                        };
+                    } else if (Object.keys(combined.profile).length === 0) {
+                        combined.profile = { symbol };
+                    }
+                } catch { /* keep whatever Yahoo provided */ }
 
                 if (!combined.history?.length) {
                     const h = await fetchHistory(symbol).catch(() => []);
@@ -1023,7 +1053,7 @@ export default function EnterpriseStockProfile() {
                                 </h3>
                                 <div className="space-y-1">
                                     <DataRow label="Dividend Rate" value={formatNumber(p.trailingAnnualDividendRate || f.dividend_rate)} />
-                                    <DataRow label="Dividend Yield" value={formatPercent((p.trailingAnnualDividendYield || f.dividend_yield) / 100)} />
+                                    <DataRow label="Dividend Yield" value={formatPercent(p.trailingAnnualDividendYield || f.dividend_yield)} />
                                     <DataRow label="Payout Ratio" value={formatPercent(f.payout_ratio)} />
                                     <DataRow label="Ex-Dividend Date" value={formatDate(f.ex_dividend_date)} />
                                 </div>

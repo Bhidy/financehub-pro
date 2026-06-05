@@ -3896,11 +3896,6 @@ function LearnScreen({ nav, lang, topics }: { nav: NavController; lang: Lang; to
     <>
       <MarketTopBar lang={lang} nav={nav} title={copy[lang].learn} sub={lang === "ar" ? `${rows.length} موضوعات` : `${rows.length} topics`} />
       <div className={styles.content}>
-        <div className={styles.academyHero}>
-          <span>{lang === "ar" ? "أكاديمية Starta" : "Starta Academy"}</span>
-          <strong>{lang === "ar" ? "تعلم السوق المصري من محتوى Starta الحقيقي." : "Learn the Egyptian market from Starta's real academy content."}</strong>
-          <p>{lang === "ar" ? "كل درس يُحمّل من ملف Learn العام نفسه المستخدم في الموقع." : "Every lesson is loaded from the same public Learn content used by the website."}</p>
-        </div>
         <div className={styles.fundCards}>
           {rows.map((topic, i) => {
             const local = topic[lang];

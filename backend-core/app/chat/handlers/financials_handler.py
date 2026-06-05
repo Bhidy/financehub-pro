@@ -1914,10 +1914,17 @@ async def handle_ratio_analysis(
         cols = ['current_ratio', 'quick_ratio', 'debt_equity']
         title_en = "Liquidity & Health"
         title_ar = "السيولة والصحة المالية"
-        
+
+    # Safety net: if the intent didn't map to a known ratio category, fall back to a
+    # general ratio set so we never build "SELECT fiscal_year,  FROM ..." (syntax error).
+    if not cols:
+        cols = ['pe_ratio', 'pb_ratio', 'roe', 'roa', 'current_ratio', 'debt_equity']
+        title_en = title_en or "Key Ratios"
+        title_ar = title_ar or "أهم المؤشرات"
+
     row = await conn.fetchrow(f"""
         SELECT fiscal_year, {', '.join(cols)}
-        FROM financial_ratios_history 
+        FROM financial_ratios_history
         WHERE symbol = $1 
         ORDER BY fiscal_year DESC LIMIT 1
     """, symbol)

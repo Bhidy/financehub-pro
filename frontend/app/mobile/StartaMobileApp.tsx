@@ -1659,9 +1659,9 @@ function HomeMovers({ lang, nav, stocks }: { lang: Lang; nav: NavController; sto
   const [seg, setSeg] = useState<"active" | "gainers" | "losers">("active");
   const list = useMemo(() => {
     const s = stocks.filter((x) => x.symbol && x.price > 0);
-    if (seg === "gainers") return [...s].sort((a, b) => b.changePct - a.changePct).slice(0, 4);
-    if (seg === "losers") return [...s].sort((a, b) => a.changePct - b.changePct).slice(0, 4);
-    return [...s].sort((a, b) => b.volume - a.volume).slice(0, 4);
+    if (seg === "gainers") return [...s].sort((a, b) => b.changePct - a.changePct).slice(0, 3);
+    if (seg === "losers") return [...s].sort((a, b) => a.changePct - b.changePct).slice(0, 3);
+    return [...s].sort((a, b) => b.volume - a.volume).slice(0, 3);
   }, [stocks, seg]);
   const segs: Array<["active" | "gainers" | "losers", string]> = [
     ["active", lang === "ar" ? "الأنشط" : "Most Active"],
@@ -1979,20 +1979,12 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
           <button onClick={() => nav.push("watchlist")}><Icon name="star" /><span>{copy[lang].watchlist}</span></button>
         </div>
         <HomeMovers lang={lang} nav={nav} stocks={stocks} />
-        {/* Today's snapshot — top stock + top fund in 2-col row */}
-        <SectionHead title={lang === "ar" ? "لقطة اليوم" : "Today's snapshot"} />
-        <div className={styles.homeSnapshot2Col}>
-          <button className={styles.homeSnapshotBtn} onClick={() => topStock ? nav.push("company-profile", { symbol: topStock.symbol }) : nav.push("market-pulse")}>
-            <small>{lang === "ar" ? "السهم الأبرز · اليوم" : "Top stock · today"}</small>
-            {topStock ? <><StockLogo symbol={topStock.symbol} className={styles.homeSnapLogo} /><strong>{topStock.symbol}</strong><Delta value={topStock.changePct} /></> : <strong>—</strong>}
-          </button>
-          <button className={styles.homeSnapshotBtn} onClick={() => topFund ? nav.push("fund", { id: topFund.id }) : nav.setTab("funds")}>
-            <small>{lang === "ar" ? "أفضل صندوق · YTD" : "Top fund · YTD"}</small>
-            <strong className={styles.homeSnapFundName}>{topFund ? fundLabel(topFund, lang) : "—"}</strong>
-            <Delta value={topFund ? (fundReturn(topFund, "YTD") ?? 0) : 0} />
-          </button>
-        </div>
         {/* Portfolio — premium card with sparkline */}
+        <SectionHead
+          title={lang === "ar" ? "محفظتي" : "My Portfolio"}
+          action={lang === "ar" ? "عرض التفاصيل" : "View details"}
+          onAction={() => nav.setTab("portfolio")}
+        />
         <HomePortfolioCard nav={nav} lang={lang} activePortfolio={activePortfolio} stocks={stocks} isDemoWorkspace={!portfolio.length} />
         {news.length ? (
           <>

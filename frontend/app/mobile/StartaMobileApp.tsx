@@ -3880,7 +3880,7 @@ function Watchlist({ nav, lang, stocks, portfolio, search, isTab }: { nav: NavCo
 function Alerts({ nav, lang }: { nav: NavController; lang: Lang }) {
   return (
     <>
-      <PushHeader title={copy[lang].alerts} sub={lang === "ar" ? "تنبيهات حقيقية فقط" : "Real alerts only"} onBack={nav.pop} />
+      <PushTop title={copy[lang].alerts} sub={lang === "ar" ? "تنبيهات حقيقية فقط" : "Real alerts only"} onBack={nav.pop} />
       <div className={styles.content}>
         <EmptyPanel text={lang === "ar" ? "لا توجد تنبيهات محفوظة لهذا الجهاز حالياً. لن نعرض صفوفاً افتراضية داخل التطبيق." : "No alerts are configured on this device yet. Placeholder alert rows are not shown in the app."} />
       </div>
@@ -3892,7 +3892,7 @@ function LearnScreen({ nav, lang, topics }: { nav: NavController; lang: Lang; to
   const rows = topics.length ? topics : [];
   return (
     <>
-      <PushHeader title={copy[lang].learn} sub={lang === "ar" ? `${rows.length} موضوعات` : `${rows.length} topics`} onBack={nav.pop} />
+      <PushTop title={copy[lang].learn} sub={lang === "ar" ? `${rows.length} موضوعات` : `${rows.length} topics`} onBack={nav.pop} />
       <div className={styles.content}>
         <div className={styles.academyHero}>
           <span>{lang === "ar" ? "أكاديمية Starta" : "Starta Academy"}</span>
@@ -3924,7 +3924,7 @@ function CourseDetail({ nav, lang, topic }: { nav: NavController; lang: Lang; to
   const cover = lang === "ar" ? topic.coverImageAr || topic.coverImageEn : topic.coverImageEn || topic.coverImageAr;
   return (
     <>
-      <PushHeader title={local.category} sub={local.readTime} onBack={nav.pop} />
+      <PushTop title={local.category} sub={local.readTime} onBack={nav.pop} />
       <div className={styles.content}>
         <div className={styles.detailHero}>
           {cover ? <img className={styles.detailHeroImage} src={cover} alt="" /> : <span><Icon name={learnIcon(topic, 0)} /></span>}
@@ -3968,7 +3968,7 @@ function Profile({ nav, lang, portfolio }: { nav: NavController; lang: Lang; por
 function SettingsScreen({ nav, lang, theme, setTheme, setLang }: { nav: NavController; lang: Lang; theme: Theme; setTheme: (theme: Theme) => void; setLang: (lang: Lang) => void }) {
   return (
     <>
-      <PushHeader title={copy[lang].settings} onBack={nav.pop} />
+      <PushTop title={copy[lang].settings} sub={lang === "ar" ? "التفضيلات" : "Preferences"} onBack={nav.pop} />
       <div className={styles.content}>
         <ToggleRow icon={theme === "dark" ? "moon" : "sun"} label={copy[lang].darkMode} active={theme === "dark"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} />
         <ToggleRow icon="languages" label={copy[lang].arabic} active={lang === "ar"} onClick={() => setLang(lang === "ar" ? "en" : "ar")} />

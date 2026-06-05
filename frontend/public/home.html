@@ -39,6 +39,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
 
+    <!-- Portfolio showcase styles (used by the portfolio section on this page) -->
+    <link rel="stylesheet" href="/assets/portfolio-showcase.css?v=1.1.13">
+
     <!-- Mobile navigation (shared ultra-premium burger menu) -->
     <script src="/assets/starta-mobile-nav.js?v=1.0.4" defer></script>
 
@@ -3019,76 +3022,8 @@
         </div>
     </section>
 
-    <!-- 15. PORTFOLIO INTELLIGENCE -->
-    <section id="hp-portfolio-section" class="py-32 bg-surface border-t border-border section-premium relative overflow-hidden">
-        <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background:radial-gradient(circle at 80% 50%,rgba(20,184,166,.10),transparent 45%),radial-gradient(circle at 15% 80%,rgba(139,92,246,.07),transparent 35%)"></div>
-        <div class="max-w-7xl mx-auto px-6">
-            <!-- Header -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16 reveal-text">
-                <div class="space-y-5">
-                    <span class="section-tag" data-key="port_tag">PORTFOLIO INTELLIGENCE</span>
-                    <h2 class="section-title text-main" data-key="port_title">A Smarter View<br>of Your Portfolio</h2>
-                    <p class="text-muted copy-premium" data-key="port_text">Track every EGX position with institutional analytics — real-time P/L, risk metrics, benchmark comparison, and AI-driven insights, all in one workspace.</p>
-                    <div class="flex flex-wrap gap-3 pt-2">
-                        <a href="/Portfolio" class="btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold">
-                            <span data-key="port_cta">Open Portfolio</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-                        </a>
-                    </div>
-                </div>
-                <!-- KPI cards cluster -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
-                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k1_label">Total Value</div>
-                        <div class="text-2xl font-bold font-mono text-main">EGP 1.24M</div>
-                        <div class="text-xs font-bold" style="color:#22c55e">+24.54% total return</div>
-                    </div>
-                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
-                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k2_label">vs EGX30</div>
-                        <div class="text-2xl font-bold font-mono" style="color:#14b8a6">+6.12%</div>
-                        <div class="text-xs text-muted" data-key="port_outperform">Outperforming</div>
-                    </div>
-                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
-                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k3_label">Sharpe Ratio</div>
-                        <div class="text-2xl font-bold font-mono text-main">1.45</div>
-                        <div class="text-xs text-muted" data-key="port_risk_adj">Risk-adjusted</div>
-                    </div>
-                    <div class="glass-premium p-5 rounded-2xl border border-border space-y-1">
-                        <div class="text-xs text-muted uppercase tracking-widest" data-key="port_k4_label">Dividends YTD</div>
-                        <div class="text-2xl font-bold font-mono text-main">EGP 26.5K</div>
-                        <div class="text-xs font-bold" style="color:#22c55e">+18.4% vs last year</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Feature chips -->
-            <div class="flex flex-wrap gap-3 justify-center">
-                <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <span data-key="port_f1">Performance Charts</span>
-                </span>
-                <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                    <span data-key="port_f2">Risk Analytics</span>
-                </span>
-                <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-                    <span data-key="port_f3">AI Insights</span>
-                </span>
-                <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                    <span data-key="port_f4">EGX30 Benchmark</span>
-                </span>
-                <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <span data-key="port_f5">Dividend Tracker</span>
-                </span>
-                <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-border bg-panel text-sm font-medium text-muted">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-                    <span data-key="port_f6">Multi-Portfolio</span>
-                </span>
-            </div>
-        </div>
-    </section>
+    <!-- 15. PORTFOLIO INTELLIGENCE — interactive showcase (renders via portfolio-showcase.js) -->
+    <div id="pfShowcaseRoot" class="border-t border-border"></div>
 
     <!-- 4.4 STARTA ACADEMY SECTION -->
     <section id="hp-academy-section" class="py-32 bg-surface border-t border-border relative overflow-hidden section-premium">
@@ -4694,6 +4629,10 @@
 
         renderTopFunds();
     </script>
+
+    <!-- Portfolio showcase — must load after DOM; portfolio-store is required by showcase -->
+    <script src="/assets/portfolio-store.js"></script>
+    <script src="/assets/portfolio-showcase.js?v=1.1.13"></script>
 </body>
 
 </html>

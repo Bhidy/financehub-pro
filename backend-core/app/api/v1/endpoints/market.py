@@ -294,18 +294,16 @@ async def get_screener(
     market_code: str = None 
 ):
     query = """
-        SELECT DISTINCT ON (t.symbol)
+        SELECT
             t.symbol, t.name_en, t.sector_name, t.last_price, t.change_percent, t.volume,
             t.market_code,
-            ROUND((t.last_price * 100000000 / (COALESCE(f.net_income, 100000000))), 2) as pe_ratio,
-            ROUND((COALESCE(f.revenue, 0) / 1000000000), 2) as market_cap_b
+            -- Real PE + market cap from market_tickers. (Previously PE was fabricated
+            -- from a hardcoded 100,000,000-share assumption, and "market cap" was
+            -- actually REVENUE from the 5-month-stale financial_statements table.)
+            t.pe_ratio AS pe_ratio,
+            ROUND((COALESCE(t.market_cap, 0) / 1000000000.0)::numeric, 2) as market_cap_b
         FROM market_tickers t
-        LEFT JOIN (
-            SELECT DISTINCT ON (symbol) symbol, net_income, revenue 
-            FROM financial_statements 
-            ORDER BY symbol, fiscal_year DESC
-        ) f ON t.symbol = f.symbol
-        WHERE 
+        WHERE
             COALESCE(t.last_price, 0) >= $1 AND COALESCE(t.last_price, 0) <= $2
     """
     params = [min_price, max_price]
@@ -324,8 +322,13 @@ async def get_screener(
              # Saudi/Default
             query += f" AND (t.market_code = 'TDWL' OR t.market_code IS NULL OR t.market_code != 'EGX')"
 
-    query += f" ORDER BY t.symbol, {sort_by} {order.upper()} LIMIT 50"
-    
+    # Whitelist sort column + direction (sort_by/order come from query params — never
+    # interpolate raw user input into SQL).
+    _SORT = {"volume", "last_price", "change_percent", "pe_ratio", "market_cap_b", "symbol"}
+    sort_col = sort_by if sort_by in _SORT else "volume"
+    sort_dir = "ASC" if str(order).lower() == "asc" else "DESC"
+    query += f" ORDER BY {sort_col} {sort_dir} NULLS LAST LIMIT 50"
+
     return await db.fetch_all(query, *params)
 
 @router.get("/funds", response_model=List[dict])

@@ -28,7 +28,9 @@ import logging
 
 # Helper: Generate 4-digit OTP
 def generate_otp():
-    return ''.join(random.choices(string.digits, k=4))
+    # 6 digits (1,000,000 combinations) — a 4-digit code (10k) is trivially
+    # brute-forceable within the 10-minute validity window.
+    return ''.join(random.choices(string.digits, k=6))
 
 class EmailEngine:
     def __init__(self):
@@ -151,9 +153,8 @@ async def request_password_reset(req: ForgotPasswordRequest, background_tasks: B
     otp = generate_otp()
     expires_at = datetime.utcnow() + timedelta(minutes=10)
     
-    # EMERGENCY LOG: Always print access code to server logs (Fail-safe)
-    print(f"\n[SECURE LOG] Generated OTP for {req.email}: {otp}\n")
-    
+    # SECURITY: never log the OTP. Previously the password-reset code + email were
+    # printed to server logs in plaintext (anyone with log access -> account takeover).
     await db.execute("""
         INSERT INTO verification_codes (email, code, expires_at)
         VALUES ($1, $2, $3)

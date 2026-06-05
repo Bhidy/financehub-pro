@@ -4018,6 +4018,8 @@ const AI_METRIC_LABELS: Record<string, [string, string]> = {
   roe: ["ROE", "العائد على حقوق الملكية"], roa: ["ROA", "العائد على الأصول"], roic: ["ROIC", "ROIC"],
   beta: ["Beta", "بيتا"], beta_5y: ["Beta (5Y)", "بيتا (5س)"], rsi_14: ["RSI (14)", "مؤشر RSI"],
   ma_50d: ["MA 50D", "متوسط 50ي"], ma_200d: ["MA 200D", "متوسط 200ي"], market_cap: ["Market Cap", "القيمة السوقية"],
+  macd: ["MACD", "MACD"], macd_signal: ["MACD Signal", "إشارة MACD"], adx: ["ADX", "ADX"],
+  sma_50: ["50-DMA", "متوسط 50ي"], sma_200: ["200-DMA", "متوسط 200ي"], tv_rating: ["TV Signal", "إشارة TradingView"],
   gross_margin: ["Gross Margin", "الهامش الإجمالي"], operating_margin: ["Operating Margin", "هامش التشغيل"],
   profit_margin: ["Profit Margin", "هامش الربح"], ebitda_margin: ["EBITDA Margin", "هامش EBITDA"],
   eps_ttm: ["EPS (TTM)", "ربحية السهم"], revenue_ttm: ["Revenue (TTM)", "الإيرادات"],

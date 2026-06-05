@@ -1041,58 +1041,105 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 
 interface TechnicalsProps {
     title?: string;
+    language?: "en" | "ar";
     data: {
         symbol: string;
         rsi: number | null;
-        macd: { line: number; signal: number; hist: number };
-        pivot: number | null;
-        ma: { sma_50: number | null; sma_200: number | null };
-        support: number[];
-        resistance: number[];
+        macd?: { line: number | null; signal: number | null; hist: number | null };
+        pivot?: number | null;
+        ma?: { sma_50: number | null; sma_200: number | null };
+        adx?: number | null;
+        price?: number | null;
+        rating?: string | null;
+        rating_score?: number | null;
+        weekly_rating?: string | null;
+        support?: number[];
+        resistance?: number[];
+        timeframes?: Array<{ timeframe: string; rating: string; rsi: number | null }>;
+        source?: string;
     };
 }
 
-export function TechnicalsCard({ title, data }: TechnicalsProps) {
-    const getSentiment = (val: number | null, type: 'rsi' | 'trend') => {
-        if (val === null) return 'text-slate-400';
-        if (type === 'rsi') return val > 70 ? 'text-red-500' : val < 30 ? 'text-emerald-500' : 'text-slate-600';
-        return val > 0 ? 'text-emerald-500' : 'text-red-500';
-    };
+export function TechnicalsCard({ title, data, language = "en" }: TechnicalsProps) {
+    const isRtl = language === "ar";
+    const num = (v: number | null | undefined, d = 2) =>
+        v === null || v === undefined || Number.isNaN(v) ? "—" : v.toFixed(d);
+
+    // Rating badge colour driven by TradingView's composite score (-1..1)
+    const score = data.rating_score ?? null;
+    const ratingTone =
+        score === null ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10"
+        : score >= 0.1 ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
+        : score <= -0.1 ? "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/20"
+        : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10";
+
+    const rsiTone = (val: number | null | undefined) =>
+        val === null || val === undefined ? "text-slate-400"
+        : val >= 70 ? "text-red-500" : val <= 30 ? "text-emerald-500" : "text-slate-700 dark:text-white";
+
+    const tfLabel = (tf: string) =>
+        tf === "60" ? "1H" : tf === "240" ? "4H" : tf;
+
+    const Cell = ({ label, value, tone }: { label: string; value: string; tone?: string }) => (
+        <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg text-center">
+            <div className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">{label}</div>
+            <div className={`text-lg font-bold ${tone || "text-slate-700 dark:text-white"}`}>{value}</div>
+        </div>
+    );
 
     return (
-        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold">
-                <Activity size={18} className="text-cyan-600 dark:text-cyan-400" />
-                {title || "Technical Indicators"}
+        <div className="p-4 bg-white dark:bg-[#1A1F2E] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm" dir={isRtl ? "rtl" : "ltr"}>
+            <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-bold">
+                    <Activity size={18} className="text-cyan-600 dark:text-cyan-400" />
+                    {title || (isRtl ? "المؤشرات الفنية" : "Technical Indicators")}
+                </div>
+                {data.rating && (
+                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${ratingTone}`}>
+                        {data.rating}
+                    </span>
+                )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                {/* RSI & Pivot */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
                 {data.rsi !== null && data.rsi !== undefined && (
-                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg text-center">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">RSI (14)</div>
-                        <div className={`text-lg font-bold ${getSentiment(data.rsi, 'rsi')} dark:text-white`}>
-                            {data.rsi.toFixed(2)}
-                        </div>
-                    </div>
+                    <Cell label="RSI (14)" value={num(data.rsi)} tone={rsiTone(data.rsi)} />
                 )}
-                {data.pivot !== null && data.pivot !== undefined && (
-                    <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg text-center">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Pivot Point</div>
-                        <div className="text-lg font-bold text-slate-700 dark:text-white">
-                            {data.pivot.toFixed(2)}
-                        </div>
-                    </div>
+                {data.adx !== null && data.adx !== undefined && (
+                    <Cell label="ADX" value={num(data.adx)} />
+                )}
+                {data.macd?.line !== null && data.macd?.line !== undefined && (
+                    <Cell label="MACD" value={num(data.macd.line, 3)} tone={data.macd.line >= 0 ? "text-emerald-500" : "text-red-500"} />
+                )}
+                {data.macd?.signal !== null && data.macd?.signal !== undefined && (
+                    <Cell label={isRtl ? "إشارة MACD" : "MACD Signal"} value={num(data.macd.signal, 3)} />
+                )}
+                {data.ma?.sma_50 !== null && data.ma?.sma_50 !== undefined && (
+                    <Cell label={isRtl ? "متوسط 50ي" : "50-DMA"} value={num(data.ma.sma_50)} />
+                )}
+                {data.ma?.sma_200 !== null && data.ma?.sma_200 !== undefined && (
+                    <Cell label={isRtl ? "متوسط 200ي" : "200-DMA"} value={num(data.ma.sma_200)} />
                 )}
             </div>
 
-            {/* Support & Resistance */}
-            {(data.support?.length > 0 || data.resistance?.length > 0) && (
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    {data.support?.length > 0 && (
+            {/* Multi-timeframe TradingView signals */}
+            {data.timeframes && data.timeframes.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                    {data.timeframes.map((t, i) => (
+                        <span key={i} className="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300">
+                            {tfLabel(t.timeframe)}: {t.rating}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {/* Support & Resistance (only if provided) */}
+            {((data.support?.length ?? 0) > 0 || (data.resistance?.length ?? 0) > 0) && (
+                <div className="grid grid-cols-2 gap-4 mb-1">
+                    {(data.support?.length ?? 0) > 0 && (
                         <div className="space-y-1">
-                            <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-2">Support</div>
-                            {data.support.map((val, i) => (
+                            <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-2">{isRtl ? "دعم" : "Support"}</div>
+                            {data.support!.map((val, i) => (
                                 <div key={i} className="flex justify-between text-xs bg-emerald-50 dark:bg-emerald-500/10 p-1.5 rounded">
                                     <span className="text-emerald-700 dark:text-emerald-300">S{i + 1}</span>
                                     <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{val.toFixed(2)}</span>
@@ -1100,10 +1147,10 @@ export function TechnicalsCard({ title, data }: TechnicalsProps) {
                             ))}
                         </div>
                     )}
-                    {data.resistance?.length > 0 && (
+                    {(data.resistance?.length ?? 0) > 0 && (
                         <div className="space-y-1">
-                            <div className="text-xs font-semibold text-red-500 dark:text-red-400 mb-2">Resistance</div>
-                            {data.resistance.map((val, i) => (
+                            <div className="text-xs font-semibold text-red-500 dark:text-red-400 mb-2">{isRtl ? "مقاومة" : "Resistance"}</div>
+                            {data.resistance!.map((val, i) => (
                                 <div key={i} className="flex justify-between text-xs bg-red-50 dark:bg-red-500/10 p-1.5 rounded">
                                     <span className="text-red-700 dark:text-red-300">R{i + 1}</span>
                                     <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{val.toFixed(2)}</span>
@@ -1113,6 +1160,10 @@ export function TechnicalsCard({ title, data }: TechnicalsProps) {
                     )}
                 </div>
             )}
+
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-1">
+                {isRtl ? "المصدر: TradingView — قراءات موضوعية وليست توصية" : "Source: TradingView — objective readings, not a recommendation"}
+            </div>
         </div>
     );
 }
@@ -3053,8 +3104,7 @@ function ChatCard({ card, language, onSymbolClick, onExampleClick }: any) {
                 renderedCard = <FairValueCard title={card.title} data={card.data} language={language} />;
                 break;
             case "technicals":
-                // Explicitly hidden as per user request
-                renderedCard = null;
+                renderedCard = <TechnicalsCard title={card.title} data={card.data} language={language} />;
                 break;
             case "financial_explorer":
                 // Ultra-Premium Financial Explorer (Tabbed Interface)

@@ -46,6 +46,22 @@
         </div>
     </div>
 
+    <!-- Add Portfolio Modal — portfolio picker + creation options -->
+    <div id="addPortfolioModal" class="pf-modal-overlay">
+        <div class="pf-modal pf-addpf-modal" role="dialog" aria-modal="true" aria-labelledby="addPfModalTitle">
+            <div class="pf-modal-head">
+                <div class="pf-addpf-modal-title-group">
+                    <span class="pf-addpf-modal-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+                    </span>
+                    <h3 id="addPfModalTitle" class="pf-addpf-modal-heading">My Portfolios</h3>
+                </div>
+                <button class="pf-modal-close" id="closeAddPfModal" aria-label="Close">&times;</button>
+            </div>
+            <div id="addPfModalBody"></div>
+        </div>
+    </div>
+
     <!-- Add Transaction Modal -->
     <div id="addTxModal" class="pf-modal-overlay">
         <div class="pf-modal">

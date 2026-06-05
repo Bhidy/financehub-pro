@@ -159,13 +159,21 @@
                     (portfolio.isDefault ? '<span class="pf-badge-neu" style="font-size:.68rem;">' + (lang==='ar'?'الافتراضية':'Default') + '</span>' : '') +
                 '</div>' +
                 '<div class="pf-kpi-strip">' + kpis.join('') + '</div>' +
-                '<button class="pf-btn pf-btn--primary pf-btn--sm" id="addTxBtn" style="flex-shrink:0;">+ ' + t('addTx') + '</button>' +
+                // Header action buttons — "Add Portfolio" (outline) + "Add Transaction" (primary)
+                '<div class="pf-header-actions">' +
+                    '<button class="pf-add-portfolio-btn" id="addPortfolioBtn" aria-label="' + (lang === 'ar' ? 'إضافة محفظة' : 'Add Portfolio') + '">' +
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>' +
+                        (lang === 'ar' ? 'إضافة محفظة' : 'Add Portfolio') +
+                    '</button>' +
+                    '<button class="pf-btn pf-btn--primary pf-btn--sm" id="addTxBtn" style="flex-shrink:0;">+ ' + t('addTx') + '</button>' +
+                '</div>' +
             '</div>';
 
         document.getElementById('pfSelector').addEventListener('change', function() {
             window.location.href = '/Portfolio/' + this.value;
         });
         document.getElementById('addTxBtn').addEventListener('click', openAddTxModal);
+        document.getElementById('addPortfolioBtn').addEventListener('click', openAddPortfolioModal);
     }
 
     function kpi(label, value, sub, cls) {
@@ -793,6 +801,122 @@
             '<div class="pf-div-footer"><label>' + t('ytdDivs') + '</label><span class="pf-pos pf-num">+' + portfolio.currency + ' ' + fmt(metrics.dividendsYTD) + '</span></div>';
     }
 
+    /* ─── Add Portfolio Modal ─────────────────────────────────────────── */
+    function openAddPortfolioModal() {
+        var modal = document.getElementById('addPortfolioModal');
+        if (!modal) return;
+        renderAddPortfolioModal();
+        modal.classList.add('open');
+        modal.querySelector('.pf-addpf-modal').scrollTop = 0;
+        // Update heading for current language
+        var heading = document.getElementById('addPfModalTitle');
+        if (heading) heading.textContent = lang === 'ar' ? 'محافظي الاستثمارية' : 'My Portfolios';
+    }
+
+    function renderAddPortfolioModal() {
+        var body = document.getElementById('addPfModalBody');
+        var portfolios = PFStore.getAll();
+        var isCurrent = function(p) { return p.id === pfId; };
+        var fmt2 = function(n) { return PFStore.fmt(n, 2); };
+        var pct2 = function(n) { return (n >= 0 ? '+' : '') + fmt2(n) + '%'; };
+
+        /* ── Section 1: existing portfolios ── */
+        var pfCards = portfolios.map(function(p) {
+            var m      = PFStore.computeMetrics(p);
+            var ret    = m.totalReturn;
+            var retCls = ret >= 0 ? 'pf-pos' : 'pf-neg';
+            var name   = (lang === 'ar' && p.nameAr) ? p.nameAr : p.name;
+            var curr   = isCurrent(p);
+            var updLabel = lang === 'ar' ? 'آخر تحديث' : 'Updated';
+            var updDate  = new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: '2-digit', month: 'short' });
+            return '<div class="pf-addpf-pf-card' + (curr ? ' current-pf' : '') + '" data-pfid="' + p.id + '" role="button" tabindex="0" aria-label="' + escHtml(name) + '">' +
+                '<div class="pf-addpf-pf-name">' +
+                    '<span>' + escHtml(name) + '</span>' +
+                    (p.isDefault ? '<span class="pf-badge-neu">' + (lang === 'ar' ? 'الافتراضية' : 'Default') + '</span>' : '') +
+                '</div>' +
+                '<div class="pf-addpf-pf-value"><small>' + p.currency + '</small>' + fmt2(m.totalValue) + '</div>' +
+                '<div class="pf-addpf-pf-meta">' +
+                    '<div class="pf-addpf-pf-meta-item">' +
+                        '<label>' + (lang === 'ar' ? 'إجمالي العائد' : 'Total Return') + '</label>' +
+                        '<span class="' + retCls + ' pf-num">' + pct2(ret) + '</span>' +
+                    '</div>' +
+                    '<div class="pf-addpf-pf-meta-item">' +
+                        '<label>' + (lang === 'ar' ? 'الأسهم' : 'Holdings') + '</label>' +
+                        '<span>' + m.holdingsCount + '</span>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:.1rem;">' +
+                    '<span style="font-size:.65rem;color:var(--muted);">' + updLabel + ': ' + updDate + '</span>' +
+                    '<button class="pf-addpf-open-btn" data-pfid="' + p.id + '">' + (curr ? (lang === 'ar' ? 'مفتوح' : 'Active') : (lang === 'ar' ? 'فتح' : 'Open') + ' →') + '</button>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+
+        /* ── Section 2: create options ── */
+        var createOptions = [
+            { method: 'manual',    svgPath: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',              label: lang === 'ar' ? 'إنشاء يدوي'       : 'Create Manually',  desc: lang === 'ar' ? 'ابدأ من الصفر وأضف ممتلكاتك خطوة بخطوة.'  : 'Start fresh and add holdings step-by-step.' },
+            { method: 'import',    svgPath: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>', label: lang === 'ar' ? 'استيراد ملف'      : 'Import Holdings',  desc: lang === 'ar' ? 'ارفع ملف CSV أو XLSX بممتلكاتك فوراً.'    : 'Upload CSV or XLSX with your holdings.' },
+            { method: 'watchlist', svgPath: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',          label: lang === 'ar' ? 'من قائمة المتابعة' : 'From Watchlist',   desc: lang === 'ar' ? 'حوّل قائمة متابعتك إلى محفظة استثمارية.'   : 'Convert your watchlist into a portfolio.' }
+        ];
+        var createHtml = createOptions.map(function(opt) {
+            return '<div class="pf-addpf-create-card" data-method="' + opt.method + '" role="button" tabindex="0" aria-label="' + opt.label + '">' +
+                '<div class="pf-addpf-create-icon">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + opt.svgPath + '</svg>' +
+                '</div>' +
+                '<div class="pf-addpf-create-label">' + opt.label + '</div>' +
+                '<p class="pf-addpf-create-desc">' + opt.desc + '</p>' +
+            '</div>';
+        }).join('');
+
+        body.innerHTML =
+            // Existing portfolios
+            (portfolios.length
+                ? '<p class="pf-addpf-section-label">' + (lang === 'ar' ? 'محافظي' : 'Your Portfolios') + '</p>' +
+                  '<div class="pf-addpf-grid">' + pfCards + '</div>' +
+                  '<hr class="pf-addpf-divider">'
+                : '') +
+            // Create new
+            '<p class="pf-addpf-section-label">' + (lang === 'ar' ? 'إنشاء محفظة جديدة' : 'Create New Portfolio') + '</p>' +
+            '<div class="pf-addpf-create-grid">' + createHtml + '</div>';
+
+        // Wire portfolio open buttons
+        body.querySelectorAll('.pf-addpf-open-btn[data-pfid]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var id = btn.getAttribute('data-pfid');
+                if (id !== pfId) window.location.href = '/Portfolio/' + id;
+                else closeAddPortfolioModal();
+            });
+        });
+        // Clicking card body (outside button) also navigates
+        body.querySelectorAll('.pf-addpf-pf-card[data-pfid]').forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('.pf-addpf-open-btn')) return;
+                var id = card.getAttribute('data-pfid');
+                if (id !== pfId) window.location.href = '/Portfolio/' + id;
+            });
+        });
+        // Keyboard accessibility
+        body.querySelectorAll('[role="button"]').forEach(function(el) {
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+            });
+        });
+        // Create option cards → navigate to /Portfolio with the method pre-selected
+        body.querySelectorAll('.pf-addpf-create-card[data-method]').forEach(function(card) {
+            card.addEventListener('click', function() {
+                // Store the intended creation method then go to portfolio list
+                try { sessionStorage.setItem('pf-create-method', card.getAttribute('data-method')); } catch(e) {}
+                window.location.href = '/Portfolio';
+            });
+        });
+    }
+
+    function closeAddPortfolioModal() {
+        var modal = document.getElementById('addPortfolioModal');
+        if (modal) modal.classList.remove('open');
+    }
+
     /* ─── Add Transaction Modal ───────────────────────────────────────── */
     var txType = 'buy';
 
@@ -889,6 +1013,18 @@
     document.getElementById('closeAddTx').addEventListener('click', closeTxModal);
     document.getElementById('addTxModal').addEventListener('click', function(e){
         if (e.target === this) closeTxModal();
+    });
+
+    // Add Portfolio modal — close button + backdrop
+    document.getElementById('closeAddPfModal').addEventListener('click', closeAddPortfolioModal);
+    document.getElementById('addPortfolioModal').addEventListener('click', function(e){
+        if (e.target === this) closeAddPortfolioModal();
+    });
+    // Escape key closes either modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        if (document.getElementById('addPortfolioModal').classList.contains('open')) closeAddPortfolioModal();
+        if (document.getElementById('addTxModal').classList.contains('open')) closeTxModal();
     });
 
     if (lang === 'ar') {

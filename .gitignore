@@ -5,7 +5,14 @@ backend/.env
 .env*.local
 
 # Vercel
+# Ignore all .vercel directories (created by `vercel link`) EXCEPT the
+# committed frontend/.vercel/project.json which pins frontend/ to the
+# canonical 'finhub' project. This means running `vercel` inside frontend/
+# will ALWAYS target finhub (not create a stray project), making the
+# two-project split-brain structurally impossible.
 .vercel
+!frontend/.vercel
+!frontend/.vercel/project.json
 
 # Logs
 *.log

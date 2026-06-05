@@ -3423,10 +3423,16 @@ class ChatService:
             # accuracy and preserves the rich data card.
             STRICT_HANDLER_NARRATIVE_INTENTS = {
                 Intent.FIN_EPS,
-                Intent.FUND_NAV,
                 Intent.DIVIDENDS,
                 Intent.EARNINGS_ANALYSIS,
                 Intent.STOCK_STAT,
+                Intent.FUND_NAV,
+                Intent.FUND_INFO,
+                Intent.FUND_RISK,
+                Intent.FUND_FEES,
+                Intent.FUND_MANAGER,
+                Intent.FUND_SEARCH,
+                Intent.FUND_MOVERS,
             }
             sector_metric_query = bool(entities.get("sector_metric_query"))
             use_handler_narrative_only = (
@@ -5114,7 +5120,38 @@ class ChatService:
             if not symbol: return handle_clarify_symbol(language=language)
             return await handle_ratio_analysis(self.conn, symbol, intent, language)
             
-        # Deep Funds (New Phase 14)
+        # Deep Funds (Phase 14) — dispatch fund intents to the dedicated fund
+        # handlers. These were previously NOT wired here at all, so every fund query
+        # fell through to the generic LLM fallback, which hallucinated the NAV and
+        # dropped the real fund card. Now they hit handle_fund_* and return accurate
+        # data (e.g. Maashy NAV 3073.30).
+        elif intent in (Intent.FUND_NAV, Intent.FUND_INFO, Intent.FUND_RISK,
+                        Intent.FUND_FEES, Intent.FUND_MANAGER):
+            from app.chat.handlers.fund_handler import handle_fund_nav, handle_fund_search
+            fund_term = (entities.get('fund_id') or entities.get('fund_name')
+                         or entities.get('symbol') or '').strip()
+            if not fund_term:
+                # Pull the fund name out of the raw query (strip generic lookup words, EN+AR).
+                fund_term = re.sub(
+                    r'(?i)\b(whats?|is|are|the|me|show|tell|give|get|current|latest|please|'
+                    r'nav|net\s+asset\s+value|price|value|unit|units|of|for|a|an|on|about|'
+                    r'fund|funds|mutual|investment|صندوق|صناديق|سعر|قيمة|صافي|الأصول|الاصول|'
+                    r'ما|هو|هي|كم|ايه|إيه)\b',
+                    ' ', str(message or ''))
+                fund_term = re.sub(r'[^\w؀-ۿ\s]', ' ', fund_term)
+                fund_term = re.sub(r'\s+', ' ', fund_term).strip()
+            if not fund_term:
+                return await handle_fund_search(self.conn, language=language)
+            return await handle_fund_nav(self.conn, fund_term, language)
+
+        elif intent == Intent.FUND_SEARCH:
+            from app.chat.handlers.fund_handler import handle_fund_search
+            return await handle_fund_search(self.conn, entities.get('shariah'),
+                                            entities.get('category'), language)
+
+        elif intent == Intent.FUND_MOVERS:
+            from app.chat.handlers.fund_handler import handle_fund_movers
+            return await handle_fund_movers(self.conn, entities.get('range', 'YTD'), language)
 
         # Small Talk & Education
         elif intent in [Intent.GREETING, Intent.IDENTITY, Intent.CAPABILITIES, Intent.MOOD, Intent.GRATITUDE, Intent.GOODBYE]:

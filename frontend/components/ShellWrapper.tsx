@@ -16,7 +16,7 @@ interface ShellWrapperProps {
 const ISOLATED_ROUTE_PREFIXES: string[] = [];
 
 // Exact paths that are isolated (including root for mobile domains)
-const ISOLATED_EXACT_PATHS = ["/", "/login", "/register", "/forgot-password", "/setting", "/settings", "/Home", "/home"];
+const ISOLATED_EXACT_PATHS = ["/", "/login", "/register", "/forgot-password", "/setting", "/settings", "/Home", "/home", "/AiChat"];
 
 // Domains that should always show mobile-only experience (no sidebar)
 const MOBILE_ONLY_DOMAINS = ["startamarkets.com", "www.startamarkets.com"];

@@ -97,7 +97,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const { theme, toggleTheme } = useTheme();
     const [lang, setLang] = useState<Language>("en");
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [designMode, setDesignMode] = useState<'pro' | 'analyst'>('pro');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const mainRef = useRef<HTMLElement>(null);
@@ -509,21 +509,25 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                         <div className="flex-shrink-0 border-t border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827] p-4">
                             <div className="max-w-3xl mx-auto">
                                 <div className="flex items-center gap-2 p-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                    <button
+                                        onClick={clearHistory}
+                                        title="New chat"
+                                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
                                     <input
                                         type="text"
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                         placeholder={translations[lang].inputPlaceholder}
-                                        className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm"
+                                        className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm"
                                     />
                                     <button
                                         onClick={handleSend}
                                         disabled={isLoading || !query.trim()}
-                                        className={clsx(
-                                            "w-9 h-9 rounded-full text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all",
-                                            designMode === 'pro' ? "bg-[#13b8a6] hover:bg-[#0f8f82]" : "bg-[#13b8a6] hover:bg-[#0f8f82]"
-                                        )}
+                                        className="w-9 h-9 rounded-full bg-[#13b8a6] hover:bg-[#0f8f82] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
                                         {isLoading ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -717,6 +721,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                             onSend={handleSend}
                             isLoading={isLoading}
                             lang={lang}
+                            onNewChat={clearHistory}
                         />
                     </div>
                 </div>

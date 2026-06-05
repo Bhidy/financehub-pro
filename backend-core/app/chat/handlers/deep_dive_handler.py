@@ -278,9 +278,11 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
     currency = row['currency']
     
     
-    # Revenue and profit growth: TTM stock_statistics only (no annual fallback)
-    rev_growth = float(row['revenue_growth']) if row['revenue_growth'] is not None else None
-    prof_growth = float(row['profit_growth']) if row['profit_growth'] is not None else None
+    # Revenue and profit growth from stock_statistics. These are stored as
+    # FRACTIONS (0.1202 = 12.02%); convert to percent for the verdict thresholds
+    # and display below.
+    rev_growth = float(row['revenue_growth']) * 100 if row['revenue_growth'] is not None else None
+    prof_growth = float(row['profit_growth']) * 100 if row['profit_growth'] is not None else None
 
     reg_peg = float(row['peg_ratio']) if row['peg_ratio'] is not None else None
 
@@ -291,16 +293,19 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
         elif rev_growth < 0: growth_verdict = "Declining 📉"
         else: growth_verdict = "Stagnant 🐢"
 
+    rev_str = f"{rev_growth:.2f}" if rev_growth is not None else "N/A"
+    prof_str = f"{prof_growth:.2f}" if prof_growth is not None else "N/A"
+
     msg = f"🌱 **Growth Engine: {symbol}**\n\n"
     if lang == 'en':
         msg += f"**Verdict**: {growth_verdict}\n"
-        msg += f"**Revenue Growth**: {rev_growth if rev_growth is not None else 'N/A'}% (Y/Y)\n"
-        msg += f"**Profit Growth**: {prof_growth if prof_growth is not None else 'N/A'}% (Y/Y)\n"
+        msg += f"**Revenue Growth**: {rev_str}% (Y/Y)\n"
+        msg += f"**Profit Growth**: {prof_str}% (Y/Y)\n"
         msg += f"**PEG Ratio**: {reg_peg or 'N/A'}\n"
     else:
         msg += f"**التقييم**: {growth_verdict}\n"
-        msg += f"**نمو الإيرادات**: {rev_growth if rev_growth is not None else 'N/A'}% (سنوي)\n"
-        msg += f"**نمو الأرباح**: {prof_growth if prof_growth is not None else 'N/A'}% (سنوي)\n"
+        msg += f"**نمو الإيرادات**: {rev_str}% (سنوي)\n"
+        msg += f"**نمو الأرباح**: {prof_str}% (سنوي)\n"
         msg += f"**مضاعف النمو (PEG)**: {reg_peg or 'N/A'}\n"
 
     card = Card(
@@ -312,7 +317,7 @@ async def handle_deep_growth(conn: asyncpg.Connection, symbol: str, market: str,
             "metrics": {
                 "Revenue Growth": f"{rev_growth:.2f}%" if rev_growth is not None else "N/A",
                 "Profit Growth": f"{prof_growth:.2f}%" if prof_growth is not None else "N/A",
-                "EPS Growth": f"{row['eps_growth']}%" if row['eps_growth'] is not None else "N/A",
+                "EPS Growth": f"{float(row['eps_growth']) * 100:.2f}%" if row['eps_growth'] is not None else "N/A",
                 "PEG Ratio": reg_peg
             }
         }

@@ -6,7 +6,7 @@ Ultra-premium responses with graceful fallback when no history exists.
 from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import asyncpg
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from ..compliance import STARTA_GLOBAL_DISCLAIMER
 
 
@@ -45,11 +45,40 @@ async def handle_dividends(
     
     name = ticker_row['name_ar'] if language == 'ar' else ticker_row['name_en']
     currency = get_ticker_currency(ticker_row)
-    current_yield = float(ticker_row['dividend_yield']) if ticker_row['dividend_yield'] else None
     last_price = float(ticker_row['last_price']) if ticker_row['last_price'] else None
-    
-    # Fetch dividend history - use ACTUAL column names from table
-    # Table has: id, symbol, ex_date, dividend_amount
+
+    # ── FRESH dividend snapshot from egx_dividends (TradingView, refreshed daily) ──
+    # Same source the website stock pages use (/api/v1/egx/dividends-tv). It carries
+    # the most-recent + upcoming distribution and a live yield, which the legacy
+    # dividend_history table (frozen) lacks.
+    tv = await conn.fetchrow("""
+        SELECT div_yield, amount_recent, ex_date_recent, payment_date_recent,
+               amount_upcoming, ex_date_upcoming, payment_date_upcoming,
+               frequency, payout_ratio_ttm, continuous_growth
+        FROM egx_dividends WHERE UPPER(symbol) = $1
+    """, symbol.upper())
+
+    def _ts_to_date(ts):
+        try:
+            return datetime.fromtimestamp(int(ts), tz=timezone.utc).date() if ts else None
+        except Exception:
+            return None
+
+    # Current yield: prefer the fresh TradingView yield, fall back to market_tickers.
+    current_yield = None
+    if tv and tv['div_yield'] is not None:
+        current_yield = float(tv['div_yield'])
+    elif ticker_row['dividend_yield']:
+        current_yield = float(ticker_row['dividend_yield'])
+
+    payout_ratio_ttm = float(tv['payout_ratio_ttm']) if tv and tv['payout_ratio_ttm'] is not None else None
+    frequency = tv['frequency'] if tv else None
+    recent_ex = _ts_to_date(tv['ex_date_recent']) if tv else None
+    recent_amount = float(tv['amount_recent']) if tv and tv['amount_recent'] is not None else None
+    upcoming_ex = _ts_to_date(tv['ex_date_upcoming']) if tv else None
+    upcoming_amount = float(tv['amount_upcoming']) if tv and tv['amount_upcoming'] is not None else None
+
+    # Historical series (legacy table) — still useful for the multi-year table.
     rows = await conn.fetch("""
         SELECT ex_date, dividend_amount
         FROM dividend_history
@@ -57,7 +86,7 @@ async def handle_dividends(
         ORDER BY ex_date DESC
         LIMIT $2
     """, symbol, limit)
-    
+
     # Build cards based on available data
     cards = [
         {
@@ -70,30 +99,42 @@ async def handle_dividends(
             }
         }
     ]
-    
-    # Calculate totals from history
-    dividends = []
-    total_annual = 0
-    
-    for row in rows:
-        ex_date = row['ex_date']
-        amount = float(row['dividend_amount']) if row['dividend_amount'] else 0
-        
-        dividends.append({
-            'ex_date': ex_date.isoformat() if ex_date else None,
-            'amount': amount,
-            'currency': currency
-        })
-        
-        # Sum last year's dividends
-        if ex_date and amount and (datetime.now().date() - ex_date).days <= 365:
-            total_annual += amount
 
-    # If the trailing-12m sum is 0 but the stock clearly pays a dividend (positive
-    # current yield), the stored history is simply stale/incomplete. Fall back to a
-    # yield-implied annual figure so we NEVER present a misleading "0.00" for a
-    # dividend-paying stock (which also prevents the narrative layer from
-    # mis-reporting the yield as 0%).
+    # Merge the fresh TradingView "recent" distribution with the historical series,
+    # newest first, de-duplicated by ex-date. Guarantees the latest distribution
+    # (which the frozen history misses) is always shown AND counted.
+    dividends = []
+    seen_dates = set()
+
+    def _add_div(ex_date, amount):
+        if not ex_date:
+            return
+        key = ex_date.isoformat()
+        if key in seen_dates:
+            return
+        seen_dates.add(key)
+        dividends.append({'ex_date': key, 'amount': float(amount) if amount else 0, 'currency': currency})
+
+    if recent_ex and recent_amount:
+        _add_div(recent_ex, recent_amount)
+    for row in rows:
+        _add_div(row['ex_date'], float(row['dividend_amount']) if row['dividend_amount'] else 0)
+    dividends.sort(key=lambda d: d['ex_date'], reverse=True)
+
+    # Trailing-12m total from the merged, deduped distributions.
+    total_annual = 0
+    today = datetime.now().date()
+    for d in dividends:
+        try:
+            exd = datetime.fromisoformat(d['ex_date']).date()
+        except Exception:
+            exd = None
+        if exd and d['amount'] and (today - exd).days <= 365:
+            total_annual += d['amount']
+
+    # If the trailing-12m sum is still 0 but the stock clearly pays a dividend
+    # (positive current yield), fall back to a yield-implied annual figure so we
+    # NEVER present a misleading "0.00" for a dividend-paying stock.
     annual_is_estimated = False
     if (not total_annual) and current_yield and last_price:
         total_annual = (current_yield / 100.0) * last_price
@@ -114,6 +155,10 @@ async def handle_dividends(
                      lines.append(f"• التوزيعات السنوية المقدرة: ~{total_str} {currency}")
                  else:
                      lines.append(f"• إجمالي التوزيعات (آخر سنة): {total_str} {currency}")
+             if recent_amount and recent_ex:
+                 lines.append(f"• أحدث توزيع: {_format_number(recent_amount)} {currency} (تاريخ الاستحقاق {recent_ex.isoformat()})")
+             if upcoming_amount and upcoming_ex:
+                 lines.append(f"• 🔜 التوزيع القادم: {_format_number(upcoming_amount)} {currency} (تاريخ الاستحقاق {upcoming_ex.isoformat()})")
              lines.append(f"• عدد التوزيعات المسجلة: {len(dividends)}")
              if price_str: lines.append(f"• السعر الحالي: {price_str} {currency}")
              message = "\n".join(lines)
@@ -126,6 +171,10 @@ async def handle_dividends(
                      lines.append(f"• Est. Annual Dividend: ~{total_str} {currency}")
                  else:
                      lines.append(f"• Total Dividends (Last Year): {total_str} {currency}")
+             if recent_amount and recent_ex:
+                 lines.append(f"• Most Recent: {_format_number(recent_amount)} {currency} (ex-date {recent_ex.isoformat()})")
+             if upcoming_amount and upcoming_ex:
+                 lines.append(f"• 🔜 Upcoming: {_format_number(upcoming_amount)} {currency} (ex-date {upcoming_ex.isoformat()})")
              lines.append(f"• Number of Distributions: {len(dividends)}")
              if price_str: lines.append(f"• Current Price: {price_str} {currency}")
              message = "\n".join(lines)
@@ -138,7 +187,12 @@ async def handle_dividends(
                 'dividends': dividends,
                 'currency': currency,
                 'current_yield': current_yield,
-                'total_annual': total_annual
+                'total_annual': total_annual,
+                'upcoming_amount': upcoming_amount,
+                'upcoming_ex_date': upcoming_ex.isoformat() if upcoming_ex else None,
+                'payout_ratio_ttm': payout_ratio_ttm,
+                'frequency': frequency,
+                'source': 'tradingview'
             }
         })
     

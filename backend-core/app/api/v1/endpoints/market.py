@@ -239,8 +239,8 @@ async def get_financials(symbol: str):
             ROUND((net_income / NULLIF(total_assets, 0) * 100), 2) as roa,
             ROUND((net_income / NULLIF(total_equity, 0) * 100), 2) as roe,
             ROUND((total_liabilities / NULLIF(total_equity, 0)), 2) as debt_to_equity
-        FROM financial_statements 
-        WHERE symbol = $1 
+        FROM financial_statements_v
+        WHERE symbol = $1
         ORDER BY fiscal_year DESC
     """, symbol)
 

@@ -259,20 +259,8 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                         className="flex-shrink-0 h-full bg-slate-50 dark:bg-[#0F1419] border-e border-slate-200 dark:border-white/5 flex flex-col overflow-hidden relative z-20"
                     >
-                        {/* Header */}
-                        <div className="flex-shrink-0 p-4 pb-2">
-                            {/* Collapse button only */}
-                            <div className="flex items-center justify-end mb-6">
-                                <button
-                                    onClick={onToggle}
-                                    className="w-8 h-8 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5 flex items-center justify-center text-slate-400 hover:text-[#13b8a6] dark:hover:text-white transition-colors"
-                                    title="Close Sidebar"
-                                >
-                                    <PanelLeftClose className={clsx("w-5 h-5", lang === 'ar' && "rotate-180")} />
-                                </button>
-                            </div>
-
-                        </div>
+                        {/* Header — no branding, no collapse button (moved to footer) */}
+                        <div className="flex-shrink-0 p-4 pb-2" />
 
                         {/* Chat History List */}
                         <div className="flex-1 overflow-y-auto px-3 py-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-white/20">
@@ -469,14 +457,30 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                     >
                                         <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" />
                                     </button>
+                                    <button
+                                        onClick={onToggle}
+                                        className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:border-[#13b8a6]/30 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shrink-0"
+                                        title="Close Sidebar"
+                                    >
+                                        <PanelLeftClose className={clsx("w-4 h-4 text-slate-400 group-hover:text-[#13b8a6] transition-colors", lang === 'ar' && "rotate-180")} />
+                                    </button>
                                 </div>
                             ) : (
-                                <button
-                                    onClick={onLogin}
-                                    className="w-full p-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm text-center transition-all hover:bg-[#1E293B]"
-                                >
-                                    Sign In
-                                </button>
+                                <div className="flex gap-2 w-full">
+                                    <button
+                                        onClick={onLogin}
+                                        className="flex-1 p-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm text-center transition-all hover:bg-[#1E293B]"
+                                    >
+                                        Sign In
+                                    </button>
+                                    <button
+                                        onClick={onToggle}
+                                        className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:border-[#13b8a6]/30 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shrink-0"
+                                        title="Close Sidebar"
+                                    >
+                                        <PanelLeftClose className={clsx("w-4 h-4 text-slate-400 group-hover:text-[#13b8a6] transition-colors", lang === 'ar' && "rotate-180")} />
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </motion.aside>

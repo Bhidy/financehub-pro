@@ -35,6 +35,10 @@ export async function GET(request: Request) {
             // Listing page: only show funds with meaningful chart data (>= 10 nav_history entries)
             // This excludes ghost/stub records that have only 1 scraped point and no real history
             whereClause += ` AND (SELECT COUNT(*) FROM nav_history WHERE fund_id = f.fund_id) >= 10`;
+            // Freshness gate: hide funds whose latest NAV on our source (Mubasher) is older than
+            // 2 weeks. Better to show nothing than present a months-old NAV as if it were current.
+            // (Compare-by-ids path above is exempt so a direct link still resolves.)
+            whereClause += ` AND (SELECT MAX(date) FROM nav_history WHERE fund_id = f.fund_id) >= (CURRENT_DATE - INTERVAL '14 days')`;
         }
 
         const query = `

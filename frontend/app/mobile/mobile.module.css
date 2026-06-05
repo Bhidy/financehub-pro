@@ -2734,10 +2734,11 @@
   width: 100%;
   aspect-ratio: 1.9;
   border-radius: 16px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
-  background: var(--c-surface-3);
+  background: linear-gradient(145deg, #f4f8fb, color-mix(in srgb, var(--c-brand-tint) 40%, #fff));
   margin-bottom: 4px;
+  padding: 6px;
 }
 
 .courseIcon {

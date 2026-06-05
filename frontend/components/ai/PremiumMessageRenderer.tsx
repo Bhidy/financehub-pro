@@ -49,7 +49,7 @@ function StatLine({ text }: { text: string }) {
                 "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform",
                 gradient
             )}>
-                {(Icon as any)({ className: "w-5 h-5 text-white" })}
+                <Icon className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col min-w-[80px]">
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">{label}</span>
@@ -70,7 +70,7 @@ function VerdictBadge({ text }: { text: string }) {
     const type = match[1].toLowerCase();
     const message = match[2].trim();
 
-    const configs: Record<string, { icon: React.ElementType, bg: string, label: string, shadow: string }> = {
+    const configs: Record<string, { icon: React.ComponentType<{ className?: string }>, bg: string, label: string, shadow: string }> = {
         bullish: { icon: TrendingUp, bg: "from-emerald-500 to-teal-600", label: "Looking Good!", shadow: "shadow-emerald-500/25" },
         bearish: { icon: TrendingDown, bg: "from-red-500 to-rose-600", label: "Heads Up!", shadow: "shadow-red-500/25" },
         neutral: { icon: AlertCircle, bg: "from-slate-500 to-slate-600", label: "Mixed Signals", shadow: "shadow-slate-500/25" },
@@ -86,7 +86,7 @@ function VerdictBadge({ text }: { text: string }) {
             config.bg, config.shadow
         )}>
             <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                {(Icon as any)({ className: "w-5 h-5" })}
+                <Icon className="w-5 h-5" />
             </div>
             <div>
                 <div className="text-sm font-black">{config.label}</div>
@@ -116,7 +116,7 @@ function RankLine({ text }: { text: string }) {
                 "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg",
                 gradient
             )}>
-                {(Icon as any)({ className: "w-5 h-5 text-white" })}
+                <Icon className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-8">#{rank}</span>
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex-1">{content}</span>

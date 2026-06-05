@@ -4,30 +4,194 @@ import asyncpg
 from typing import Dict, Any, List
 from ..schemas import Card, CardType
 
+def _tv_rating_label(score, language: str = 'en') -> str:
+    """Map TradingView recommend_all score (-1..1) to a label, mirroring the
+    website's /api/v1/egx/technicals route."""
+    if score is None:
+        return 'Neutral' if language == 'en' else 'محايد'
+    try:
+        s = float(score)
+    except Exception:
+        return 'Neutral' if language == 'en' else 'محايد'
+    if s >= 0.5:
+        return 'Strong Buy' if language == 'en' else 'شراء قوي'
+    if s >= 0.1:
+        return 'Buy' if language == 'en' else 'شراء'
+    if s <= -0.5:
+        return 'Strong Sell' if language == 'en' else 'بيع قوي'
+    if s <= -0.1:
+        return 'Sell' if language == 'en' else 'بيع'
+    return 'Neutral' if language == 'en' else 'محايد'
+
+
+def _rsi_zone(rsi, language: str = 'en') -> str:
+    if rsi is None:
+        return ''
+    try:
+        r = float(rsi)
+    except Exception:
+        return ''
+    if r >= 70:
+        return 'Overbought' if language == 'en' else 'تشبع شرائي'
+    if r <= 30:
+        return 'Oversold' if language == 'en' else 'تشبع بيعي'
+    return 'Neutral' if language == 'en' else 'محايد'
+
+
+def _adx_zone(adx, language: str = 'en') -> str:
+    if adx is None:
+        return ''
+    try:
+        a = float(adx)
+    except Exception:
+        return ''
+    if a >= 25:
+        return 'Strong trend' if language == 'en' else 'اتجاه قوي'
+    if a >= 20:
+        return 'Developing trend' if language == 'en' else 'اتجاه ناشئ'
+    return 'Weak / ranging' if language == 'en' else 'ضعيف / عرضي'
+
+
 async def handle_technical_indicators(conn: asyncpg.Connection, symbol: str, language: str = 'en') -> Dict[str, Any]:
-    """Handle technical analysis requests."""
-    # Get basic ticker info
-    ticker = await conn.fetchrow("SELECT name_en, name_ar, currency FROM market_tickers WHERE symbol = $1", symbol)
+    """Handle technical-indicators requests.
+
+    Sources the SAME fresh TradingView technicals the website stock pages use
+    (egx_technicals via /api/v1/egx/technicals): RSI, MACD, ADX, moving averages
+    and TradingView's own composite signal, across timeframes. Factual readings
+    only — no personalized entry/exit advice.
+    """
+    ticker = await conn.fetchrow(
+        "SELECT name_en, name_ar, currency, last_price, market_code FROM market_tickers WHERE symbol = $1",
+        symbol,
+    )
     if not ticker:
         return {'success': False, 'message': f"Symbol {symbol} not found."}
 
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
-    
+    currency = ticker['currency'] or 'EGP'
+    price = float(ticker['last_price']) if ticker['last_price'] is not None else None
+    header_card = {'type': 'stock_header', 'data': {'symbol': symbol, 'name': name, 'currency': currency, 'market_code': ticker['market_code'] or 'EGX'}}
+
+    rows = await conn.fetch(
+        """
+        SELECT timeframe, rsi, macd_macd, macd_signal, stoch_k, stoch_d, cci20, adx, mom,
+               recommend_all, recommend_ma, recommend_other, ema50, ema200, sma50, sma200, updated_at
+        FROM egx_technicals WHERE UPPER(symbol) = $1
+        """,
+        symbol.upper(),
+    )
+
+    if not rows:
+        msg = (f"📊 Technical indicators aren't available for {name} ({symbol}) right now."
+               if language == 'en'
+               else f"📊 المؤشرات الفنية غير متاحة لـ {name} ({symbol}) حالياً.")
+        return {'success': True, 'message': msg, 'cards': [header_card], 'actions': []}
+
+    def _f(v):
+        try:
+            return float(v) if v is not None else None
+        except Exception:
+            return None
+
+    by_tf = {r['timeframe']: r for r in rows}
+    d = by_tf.get('1D') or rows[0]
+
+    rsi = _f(d['rsi'])
+    macd_line = _f(d['macd_macd'])
+    macd_sig = _f(d['macd_signal'])
+    macd_hist = (macd_line - macd_sig) if (macd_line is not None and macd_sig is not None) else None
+    adx = _f(d['adx'])
+    sma50 = _f(d['sma50'])
+    sma200 = _f(d['sma200'])
+    rating_score = _f(d['recommend_all'])
+    rating = _tv_rating_label(rating_score, language)
+    weekly = by_tf.get('1W')
+    weekly_rating = _tv_rating_label(_f(weekly['recommend_all']), language) if weekly else None
+
+    # Factual MA structure context (no advice)
+    ma_struct = None
+    if sma50 is not None and sma200 is not None:
+        if sma50 > sma200:
+            ma_struct = ('50-DMA above 200-DMA (bullish MA structure)' if language == 'en'
+                         else 'المتوسط 50 أعلى من المتوسط 200 (هيكل صاعد)')
+        else:
+            ma_struct = ('50-DMA below 200-DMA (bearish MA structure)' if language == 'en'
+                         else 'المتوسط 50 أدنى من المتوسط 200 (هيكل هابط)')
+
+    # ── Build message (factual readings) ──
     if language == 'ar':
-        msg = f"🔍 **التحليل الفني لـ {name}**\n\nنعتذر، هذه المنصة مخصصة للتحليل المالي والأساسي فقط. التحليل الفني غير مدعوم في الوقت الحالي."
+        lines = [f"📊 **المؤشرات الفنية لـ {name}** ({symbol}) — يومي"]
+        lines.append(f"• إشارة TradingView: **{rating}**" + (f" (أسبوعي: {weekly_rating})" if weekly_rating else ""))
+        if rsi is not None: lines.append(f"• مؤشر RSI(14): {rsi:.2f} ({_rsi_zone(rsi, language)})")
+        if macd_line is not None: lines.append(f"• MACD: {macd_line:.3f} (إشارة {macd_sig:.3f})" if macd_sig is not None else f"• MACD: {macd_line:.3f}")
+        if adx is not None: lines.append(f"• ADX: {adx:.2f} ({_adx_zone(adx, language)})")
+        if sma50 is not None or sma200 is not None:
+            lines.append(f"• المتوسطات: 50ي {sma50:.2f} / 200ي {sma200:.2f}" if (sma50 is not None and sma200 is not None) else f"• المتوسط: {sma50 or sma200:.2f}")
+        if ma_struct: lines.append(f"• {ma_struct}")
+        lines.append("\n_قراءات فنية موضوعية من TradingView — ليست توصية شراء/بيع._")
     else:
-        msg = f"🔍 **Technical Analysis for {name}**\n\nPlease note that this is a financial and fundamental analysis platform. Technical Analysis is not supported at this stage."
+        lines = [f"📊 **Technical Indicators for {name}** ({symbol}) — Daily"]
+        lines.append(f"• TradingView Signal: **{rating}**" + (f" (Weekly: {weekly_rating})" if weekly_rating else ""))
+        if rsi is not None: lines.append(f"• RSI (14): {rsi:.2f} ({_rsi_zone(rsi, language)})")
+        if macd_line is not None: lines.append(f"• MACD: {macd_line:.3f} (signal {macd_sig:.3f})" if macd_sig is not None else f"• MACD: {macd_line:.3f}")
+        if adx is not None: lines.append(f"• ADX: {adx:.2f} ({_adx_zone(adx, language)})")
+        if sma50 is not None and sma200 is not None:
+            lines.append(f"• Moving Avgs: 50-DMA {sma50:.2f} / 200-DMA {sma200:.2f}")
+        if ma_struct: lines.append(f"• {ma_struct}")
+        lines.append("\n_Objective technical readings from TradingView — not a buy/sell recommendation._")
+    message = "\n".join(lines)
+
+    # Flat metrics for the mobile metric-grid renderer (nested objects are skipped there)
+    tech_metrics: Dict[str, Any] = {}
+    if rsi is not None: tech_metrics['rsi_14'] = round(rsi, 2)
+    if macd_line is not None: tech_metrics['macd'] = round(macd_line, 4)
+    if macd_sig is not None: tech_metrics['macd_signal'] = round(macd_sig, 4)
+    if adx is not None: tech_metrics['adx'] = round(adx, 2)
+    if sma50 is not None: tech_metrics['sma_50'] = round(sma50, 2)
+    if sma200 is not None: tech_metrics['sma_200'] = round(sma200, 2)
+    tech_metrics['tv_rating'] = rating
+
+    timeframes = []
+    for tf in ['60', '240', '1D', '1W']:
+        if tf in by_tf:
+            timeframes.append({
+                'timeframe': tf,
+                'rating': _tv_rating_label(_f(by_tf[tf]['recommend_all']), language),
+                'rsi': _f(by_tf[tf]['rsi']),
+            })
+
+    technicals_card = {
+        'type': 'technicals',
+        'title': 'Technical Indicators' if language == 'en' else 'المؤشرات الفنية',
+        'data': {
+            'symbol': symbol,
+            'rsi': rsi,
+            'macd': {'line': macd_line, 'signal': macd_sig, 'hist': macd_hist},
+            'pivot': None,
+            'ma': {'sma_50': sma50, 'sma_200': sma200},
+            'adx': adx,
+            'price': price,
+            'rating': rating,
+            'rating_score': rating_score,
+            'weekly_rating': weekly_rating,
+            'support': [],
+            'resistance': [],
+            'timeframes': timeframes,
+            'metrics': tech_metrics,
+            'source': 'tradingview',
+            'updated_at': d['updated_at'].isoformat() if d['updated_at'] else None,
+        },
+    }
 
     return {
         'success': True,
-        'message': msg,
-        'cards': [
-            {'type': 'stock_header', 'data': {'symbol': symbol, 'name': name, 'currency': ticker['currency'], 'market_code': 'EGX'}},
-        ],
+        'message': message,
+        'cards': [header_card, technicals_card],
         'actions': [
-             {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
-             {'label': '💎 Fair Value', 'label_ar': '💎 القيمة العادلة', 'action_type': 'query', 'payload': f'value {symbol}'}
-        ]
+            {'label': '📈 Chart', 'label_ar': '📈 الشارت', 'action_type': 'query', 'payload': f'Chart {symbol} 6M'},
+            {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+            {'label': '💎 Fair Value', 'label_ar': '💎 القيمة العادلة', 'action_type': 'query', 'payload': f'value {symbol}'},
+        ],
     }
 
 async def handle_ownership(conn: asyncpg.Connection, symbol: str, language: str = 'en') -> Dict[str, Any]:

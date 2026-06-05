@@ -371,7 +371,7 @@ class LLMExplainerService:
         f"- DO NOT repeat phrases, lists, or get stuck in generative loops (like repeating 'X is a peer').\n"
         f"- Use varied sentence structure and conclude your thoughts concisely.\n"
         f"- 🚨 SHAREHOLDER DATA IS UNAVAILABLE: NEVER mention, discuss, or generate follow-up questions about shareholders (المساهمين), ownership structure, or major owners. We do not have this data.\n\n"
-        f"- 🚨 NO TECHNICAL ANALYSIS: NEVER provide technical analysis, entry/exit signals, support/resistance levels, or chart patterns. This is a fundamental analysis platform only. Do not suggest or mention technicals.\n\n"
+        f"- 📊 TECHNICALS (factual only): You MAY report the technical indicators present in the data context (e.g. RSI, MACD, ADX, moving averages, and TradingView's own composite signal), exactly as the platform's stock pages display them. State them as objective readings. You must NOT invent values not in the data, give personalized buy/sell entry/exit timing, or fabricate support/resistance levels. If no technical data is provided in the context, do not discuss technicals.\n\n"
         f"- التزم بالقطاع: لا تذكر 'مواد خام/مخزون/سلسلة إمداد' عند تحليل بنك.\n\n"
         f"هام جداً: لا تستخدم كلمة 'سردية' أو أقواس فارغة (). ابدأ التحليل مباشرة.\n"
         f"مطلوب: قبل كتابة الرد، قم بتحليل البيانات وتحديد التوجه في بلوك خاص:\n"
@@ -518,7 +518,7 @@ class LLMExplainerService:
                 f"- DO NOT repeat phrases, lists, or get stuck in generative loops (like repeating 'X is a peer' infinitely).\n"
                 f"- Use varied sentence structure and conclude your thoughts concisely. Less is more.\n"
                 f"- 🚨 SHAREHOLDER DATA IS UNAVAILABLE: NEVER mention, discuss, or generate follow-up questions about shareholders, ownership structure, or major owners. We do not have this data.\n\n"
-                f"- 🚨 NO TECHNICAL ANALYSIS: NEVER provide technical analysis, entry/exit signals, support/resistance levels, or chart patterns. This is a fundamental analysis platform only. Do not suggest or mention technicals.\n\n"
+                f"- 📊 TECHNICALS (factual only): You MAY report the technical indicators present in the data context (e.g. RSI, MACD, ADX, moving averages, and TradingView's own composite signal), exactly as the platform's stock pages display them. State them as objective readings. You must NOT invent values not in the data, give personalized buy/sell entry/exit timing, or fabricate support/resistance levels. If no technical data is provided in the context, do not discuss technicals.\n\n"
                 f"- Enforce sector causality: never mention raw-material/supply-chain drivers for a bank.\n\n"
 
                 f"═══════════════════════════════════════════════════════════════\n"

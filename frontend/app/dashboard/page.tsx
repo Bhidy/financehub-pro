@@ -54,6 +54,14 @@ export default function Home() {
   });
   const { data: sectors = [] } = useQuery({ queryKey: ["sectors", market], queryFn: fetchSectors });
   const { data: marketSummary } = useQuery({ queryKey: ["market-summary", market], queryFn: fetchMarketSummary });
+  // Real EGX30 index (TradingView). market-summary.index_value is a volume-weighted
+  // AVERAGE SHARE PRICE (~2.57 EGP), NOT the index — never show it as "EGX 30".
+  const { data: egxIndex } = useQuery({
+    queryKey: ["egx30-index"],
+    queryFn: () => fetch("/api/v1/egx30/index", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)),
+    enabled: isEgypt,
+    refetchInterval: 60000,
+  });
   const [chartPeriod, setChartPeriod] = useState("1D");
 
   // Computed Lists - wrapped with safe array handling
@@ -79,10 +87,13 @@ export default function Home() {
   const losersCount = marketSummary?.declining || tickers?.filter((t: Ticker) => (t.change || 0) < 0).length || 0;
   const unchangedCount = marketSummary?.unchanged || Math.max(0, (totalStocks - gainersCount - losersCount));
 
-  // Index values from market summary
-  const indexValue = Number(marketSummary?.index_value) || 12150.45;
-  const indexChange = Number(marketSummary?.index_change) || 0;
-  const indexChangePercent = Number(marketSummary?.index_change_percent) || 0;
+  // Index: real EGX30 from TradingView for Egypt; market-summary.index_value is a
+  // bogus volume-weighted avg price and must never be shown as the index. No
+  // fabricated fallback (was 12150.45).
+  const egxQ = egxIndex?.quote;
+  const indexValue = (isEgypt && egxQ?.value != null) ? Number(egxQ.value) : (Number(marketSummary?.index_value) || 0);
+  const indexChange = (isEgypt && egxQ?.change != null) ? Number(egxQ.change) : (Number(marketSummary?.index_change) || 0);
+  const indexChangePercent = (isEgypt && egxQ?.changePercent != null) ? Number(egxQ.changePercent) : (Number(marketSummary?.index_change_percent) || 0);
 
   // Top performing sectors (sorted by performance)
   const topSectors = useMemo(() => {

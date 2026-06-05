@@ -245,11 +245,16 @@ async def handle_ownership(conn: asyncpg.Connection, symbol: str, language: str 
             'date': str(r['as_of_date'])
         })
 
+    # Show "{name} = {symbol}" only when the name actually differs from the ticker
+    # (e.g. "CIB = COMI"); otherwise the placeholder name_en (= symbol) produces an
+    # ugly "COMI = COMI". When equal, show the symbol alone.
+    name_differs = str(name).strip().upper() != str(symbol).strip().upper()
     if language == 'ar':
-        msg = f"🤝 كبار المساهمين في {name} = {symbol}\nهيكل الملكية"
+        label = f"{name} ({symbol})" if name_differs else symbol
+        msg = f"🤝 كبار المساهمين في {label}\nهيكل الملكية"
     else:
-        # EXACT REQUESTED FORMAT: "Major Shareholders of CIB = COMI" -> "{name} = {symbol}"
-        msg = f"🤝 Major Shareholders of {name} = {symbol}\nOwnership Structure"
+        label = f"{name} ({symbol})" if name_differs else symbol
+        msg = f"🤝 Major Shareholders of {label}\nOwnership Structure"
 
     return {
         'success': True,

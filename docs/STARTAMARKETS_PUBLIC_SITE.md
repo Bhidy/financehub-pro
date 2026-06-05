@@ -291,111 +291,30 @@ Before deploying, read `git status --short`. This workspace often contains unrel
 
 ## Production Deployment
 
-### Critical Rule: Deploy From Repository Root
-
-Vercel is configured with `frontend` as the project Root Directory. Therefore deployment input must contain a `frontend/` directory.
-
-- Correct deployment root: `/Users/home/Documents/startamarkets`
-- Incorrect deployment root: `/Users/home/Documents/startamarkets/frontend`
-
-Deploying from inside `frontend` causes Vercel to look for `frontend/frontend` and fail with a missing-path error.
-
-### Standard Deployment From a Clean Intended Worktree
-
-Only use this when the repository root contains exactly the intended release content:
+> ⭐ **One command. Use the script.** Full rules: [`DEPLOY_RUNBOOK.md`](./DEPLOY_RUNBOOK.md).
 
 ```bash
-cd "/Users/home/Documents/startamarkets"
-
-# If the repository root has not yet been linked locally, link it to the
-# existing Vercel project "finhub" first. The generated .vercel directory is ignored.
-./frontend/node_modules/.bin/vercel link --yes
-
-# Deploy the repository root; Vercel builds frontend/ according to project settings.
-./frontend/node_modules/.bin/vercel deploy --prod --yes
+./scripts/deploy-web.sh            # deploy → alias → verify  (~2 min)
+./scripts/deploy-web.sh verify     # health-check only        (10 s)
 ```
 
-Verify that the link points to the existing `finhub` project, not a new project:
+The script deploys to **`finhub`** (the canonical Vercel project that owns `startamarkets.com`),
+aliases both `startamarkets.com` and `www`, then verifies live pages + API before returning.
+**Do not hand-run `vercel` commands** — the script is the only sanctioned path and prevents
+the two-project split-brain that caused every past "changes not showing" incident.
 
-```text
-projectId: prj_EYpG42djOp1vEYI5BTadOreRFWC0
-orgId: team_Gqpf3K97tjrOCyIlEnGjWCOE
-```
+### Important notes
 
-### Deployment From a Dirty Worktree
+**Pre-deploy:** `git status --short` first — only add your intended files (never `git add -A`;
+the workspace always has unrelated WIP). The script runs `npm run verify:routes` automatically.
 
-Do not blindly deploy the entire repository when unrelated files are modified or untracked. Use a clean release directory assembled from the intended tracked baseline plus only the approved changed public-site files. The release directory must have this shape:
+**Static asset cache-busting:** when you modify any file under `frontend/public/assets/`,
+increment its `?v=X.Y.Z` query string in the referencing HTML or the CDN serves the old file.
 
-```text
-release-root/
-├── .vercel/project.json   # Links to existing finhub project
-├── index.html             # Include when home.html is part of the release
-└── frontend/              # Next.js project and intended public-site changes
-```
-
-Then deploy from `release-root`, never from its `frontend/` child:
-
-```bash
-./frontend/node_modules/.bin/vercel deploy --prod --yes
-```
-
-### Successful Production Result
-
-A completed Vercel production deployment should end with output that includes an alias to:
-
-```text
-https://startamarkets.com
-```
-
-### Custom Domain Resolution and Cache-Busting Protocol
-
-To prevent situations where production updates are not visible on the live `https://startamarkets.com` custom domain even after a successful build, always follow this protocol:
-
-1. **Bust the CDN & Browser Caches**:
-   - Aggressive Edge Caching is active on Vercel's global CDN and inside user browsers for static public assets under `frontend/public/assets/` (like `market-pulse.js` and `market-pulse.css`).
-   - **Rule**: Whenever you modify any static JavaScript or CSS file, you **must** increment the query version parameter (`?v=X.X.X`) inside the referencing HTML script and stylesheet tags (e.g., inside `market-pulse.html`). Increment it sequentially (e.g., from `?v=1.1.3` to `?v=1.1.5`).
-   
-2. **Git Branch Alignment (Vercel Integration)**:
-   - Vercel's automated Git pipeline is tied to the `main` branch. Pushing commits directly to `main` on GitHub triggers a secure, remote production build that updates the `https://startamarkets.com` deployment.
-   - Always commit and push changes:
-     ```bash
-     git commit -am "Fix: refinement changes"
-     git push origin main
-     ```
-
-3. **Verify and Resolve Static Custom Domain Aliases**:
-   - Sometimes, the custom domains (`startamarkets.com` and `www.startamarkets.com`) might be statically aliased to an older deployment instead of the production branch deployment on Vercel.
-   - To check active aliases and resolve them to the latest deployment URL:
-     ```bash
-     # List all active aliases
-     ./frontend/node_modules/.bin/vercel alias list
-
-     # Explicitly bind the live domains to the latest deployment URL
-     ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> startamarkets.com
-     ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> www.startamarkets.com
-     ```
-
-> **MANDATORY POST-DEPLOY ALIAS STEP — Never skip this.**
->
-> Every deployment (via `vercel deploy --prod` OR via `git push origin main`) produces a new unique URL like `finhub-xxxxxxx-bhidys-projects.vercel.app`. Unless this URL is explicitly aliased to `startamarkets.com`, the live custom domain silently keeps serving the **old deployment**.
->
-> This is the most common root cause of "nothing changed on the site" even when the build succeeded.
->
-> **Always run these commands after every deployment:**
-> ```bash
-> # 1. Get the latest deployment URL
-> ./frontend/node_modules/.bin/vercel ls --scope bhidys-projects 2>&1 | grep finhub | head -3
->
-> # 2. Alias both domains to the newest URL
-> ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> startamarkets.com
-> ./frontend/node_modules/.bin/vercel alias set <latest-deployment-url> www.startamarkets.com
-> ```
->
-> **Verify the alias is live:**
-> ```bash
-> curl -s "https://startamarkets.com/Market-Pulse" | grep "v=1.1.X"
-> ```
-> Replace `v=1.1.X` with the version tag deployed. If the grep returns output, the alias is working correctly.
+**The old "MANDATORY POST-DEPLOY ALIAS STEP" is obsolete.** `finhub` auto-aliases
+`startamarkets.com` on every `main` push, and `deploy-web.sh` re-aliases on every run.
+That step was only needed when deploying to the wrong (stray) project — which can no
+longer happen. See [`DEPLOY_RUNBOOK.md`](./DEPLOY_RUNBOOK.md) for the full background.
 
 ## Do Not Confuse These Systems
 

@@ -3599,14 +3599,16 @@
 .legendRow i { width:9px; height:9px; border-radius:3px; }
 
 /* Segmented controls */
-.tfBar, .segBar { display:flex; gap:6px; padding:4px; border:1px solid var(--c-border); border-radius:13px; }
-.tfBar { background:color-mix(in srgb, var(--c-canvas) 60%, #000 12%); margin-top:10px; }
-.segBar { background:var(--c-surface); margin-bottom:12px; }
-.tfBar button, .segBar button { flex:1; border:0; background:transparent; color:var(--c-fg-3); padding:10px 0; border-radius:9px; }
-.tfBar button { font:700 11.5px/1 var(--mono); }
-.segBar button { font:700 12px/1 Manrope; }
-.tfBar button.on { background:var(--c-surface-3); color:var(--c-fg-1); box-shadow:var(--shadow-sm); }
+/* segBar keeps its pill container; tfBar is now a clean borderless tab row matching the website */
+.segBar { display:flex; gap:6px; padding:4px; border:1px solid var(--c-border); border-radius:13px; background:var(--c-surface); margin-bottom:12px; }
+.segBar button { flex:1; border:0; background:transparent; color:var(--c-fg-3); padding:10px 0; border-radius:9px; font:700 12px/1 Manrope; }
 .segBar button.on { background:linear-gradient(135deg, color-mix(in srgb, var(--c-brand) 24%, transparent), color-mix(in srgb, var(--c-brand) 12%, transparent)); color:var(--c-brand); border:1px solid var(--c-border-strong); }
+
+/* tfBar — borderless, no grey background, matches website style */
+.tfBar { display:flex; gap:0; margin-top:12px; border-top:1px solid var(--c-border); padding-top:2px; }
+.tfBar button { flex:1; border:0; background:transparent; color:var(--c-fg-3); padding:9px 0; font:700 11.5px/1 var(--mono); letter-spacing:.02em; }
+.tfBar button.on { color:var(--c-brand); font-weight:900; position:relative; }
+.tfBar button.on::after { content:""; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:18px; height:2px; background:var(--c-brand); border-radius:999px; }
 
 /* Stat tiles */
 .gridTwo { display:grid; grid-template-columns:1fr 1fr; gap:11px; }

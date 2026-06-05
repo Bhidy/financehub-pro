@@ -194,6 +194,10 @@ class LLMExplainerService:
                 extra_lines.append(f"  - Latest Year Revenue: {extra_context['latest_revenue']:,.0f}")
             if extra_context.get('prev_revenue') is not None:
                 extra_lines.append(f"  - Prior Year Revenue: {extra_context['prev_revenue']:,.0f}")
+            if extra_context.get('latest_net_income_growth_pct') is not None:
+                extra_lines.append(f"  - Net Income Growth (YoY, most recent year): {extra_context['latest_net_income_growth_pct']:+.2f}%")
+            if extra_context.get('latest_net_income') is not None:
+                extra_lines.append(f"  - Latest Year Net Income: {extra_context['latest_net_income']:,.0f}")
             if extra_context.get('years_of_data'):
                 extra_lines.append(f"  - Years of historical revenue data: {extra_context['years_of_data']}")
             extra_lines.append("]")

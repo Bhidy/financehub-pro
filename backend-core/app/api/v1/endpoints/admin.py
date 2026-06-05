@@ -35,11 +35,27 @@ except ImportError:
         fetch_price_snapshot = None
 
 from app.services.egypt_market_service import egypt_market_service
+import hmac
+from fastapi import Header, Depends
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-@router.get("/debug/fetch")
+
+def require_admin_token(x_admin_token: Optional[str] = Header(default=None)):
+    """Guard for privileged admin endpoints. Requires the X-Admin-Token header to
+    match the server's ADMIN_API_TOKEN env. These endpoints were previously
+    UNAUTHENTICATED in production (anyone could trigger refreshes / upload files /
+    SSRF). CI crons send the token from a GitHub secret; humans use it explicitly.
+    If ADMIN_API_TOKEN is not configured the endpoint is disabled (fail-closed)."""
+    expected = os.getenv("ADMIN_API_TOKEN")
+    if not expected:
+        raise HTTPException(status_code=503, detail="Admin endpoint disabled (ADMIN_API_TOKEN not configured)")
+    if not x_admin_token or not hmac.compare_digest(str(x_admin_token), str(expected)):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return True
+
+@router.get("/debug/fetch", dependencies=[Depends(require_admin_token)])
 async def debug_fetch_price(symbol: str):
     """Debug endpoint to test yfinance fetch directly"""
     try:
@@ -49,25 +65,13 @@ async def debug_fetch_price(symbol: str):
         return {"error": str(e)}
 
 @router.get("/debug/html")
-async def debug_html(url: str):
-    """Debug endpoint to fetch raw HTML using tls_client"""
-    import tls_client
-    try:
-        session = tls_client.Session(
-            client_identifier="chrome_120",
-            random_tls_extension_order=True
-        )
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
-        resp = session.get(url, headers=headers)
-        return {"status": resp.status_code, "html": resp.text[:200000]} 
-    except Exception as e:
-        return {"error": str(e)}
+async def debug_html(url: str = None):
+    """REMOVED — this was an unauthenticated SSRF (server-side fetch of any URL,
+    returning 200KB of the response — reachable cloud-metadata / internal services).
+    Permanently disabled."""
+    raise HTTPException(status_code=410, detail="Endpoint removed (SSRF risk)")
 
-@router.post("/debug/start_scheduler")
+@router.post("/debug/start_scheduler", dependencies=[Depends(require_admin_token)])
 async def debug_start_scheduler():
     """Force start the scheduler service"""
     from app.services.scheduler import scheduler_service
@@ -79,7 +83,7 @@ async def debug_start_scheduler():
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
-@router.get("/debug/scheduler_jobs")
+@router.get("/debug/scheduler_jobs", dependencies=[Depends(require_admin_token)])
 async def debug_scheduler_jobs():
     """Get status of background scheduler jobs"""
     from app.services.scheduler import scheduler_service
@@ -101,7 +105,7 @@ async def debug_scheduler_jobs():
 # DATABASE BACKUP MANAGEMENT
 # ============================================================
 
-@router.post("/backup/trigger")
+@router.post("/backup/trigger", dependencies=[Depends(require_admin_token)])
 async def trigger_backup(background_tasks: BackgroundTasks):
     """Manually trigger a database backup (runs in background)."""
     from app.services.backup_service import backup_service
@@ -110,13 +114,13 @@ async def trigger_backup(background_tasks: BackgroundTasks):
     background_tasks.add_task(backup_service.run_backup)
     return {"status": "triggered", "message": "Backup started in background. Check /backup/status for progress."}
 
-@router.get("/backup/status")
+@router.get("/backup/status", dependencies=[Depends(require_admin_token)])
 async def backup_status():
     """Get the current status of the weekly database backup."""
     from app.services.backup_service import backup_service
     return backup_service.get_status()
 
-@router.get("/debug/screener")
+@router.get("/debug/screener", dependencies=[Depends(require_admin_token)])
 async def debug_screener():
     """Debug the symbol discovery process"""
     try:
@@ -136,7 +140,7 @@ async def debug_screener():
         return {"status": "error", "error": str(e)}
 # ============================================================
 
-@router.post("/debug/reset_status")
+@router.post("/debug/reset_status", dependencies=[Depends(require_admin_token)])
 async def debug_reset_status():
     """Force reset the ingestion status lock"""
     global refresh_status
@@ -1852,7 +1856,7 @@ async def get_available_data_for_symbol(symbol: str):
     }
 
 
-@router.post("/upload/decypha-funds")
+@router.post("/upload/decypha-funds", dependencies=[Depends(require_admin_token)])
 async def upload_decypha_funds(file: UploadFile = File(...)):
     """
     Manually upload Decypha Mutual Funds Excel export.
@@ -1878,7 +1882,7 @@ async def upload_decypha_funds(file: UploadFile = File(...)):
         logger.error(f"Upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/debug/trigger_decypha")
+@router.post("/debug/trigger_decypha", dependencies=[Depends(require_admin_token)])
 async def debug_trigger_decypha(background_tasks: BackgroundTasks):
     """
     Manually trigger the Decypha Sync Job (same as Scheduler).

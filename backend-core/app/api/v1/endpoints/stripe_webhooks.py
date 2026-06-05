@@ -29,16 +29,17 @@ async def stripe_webhook(request: Request):
     if not sig_header:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing signature header")
 
+    if not endpoint_secret:
+        # SECURITY: never process unsigned webhooks. The previous fallback parsed the
+        # raw body without signature verification, letting anyone forge a
+        # checkout.session.completed and grant themselves a paid subscription. Fail closed.
+        logger.error("STRIPE_WEBHOOK_SECRET not configured — rejecting unsigned webhook")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Webhook signature verification not configured")
+
     try:
-        if endpoint_secret:
-            event = stripe.Webhook.construct_event(
-                payload, sig_header, endpoint_secret
-            )
-        else:
-            # Fallback for testing without signature verification (NOT FOR PROD)
-            data = json.loads(payload)
-            event = stripe.Event.construct_from(data, stripe.api_key)
-            
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
     except ValueError as e:
         # Invalid payload
         logger.error(f"Invalid payload: {e}")

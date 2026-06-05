@@ -261,14 +261,8 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                     >
                         {/* Header */}
                         <div className="flex-shrink-0 p-4 pb-2">
-                            {/* Brand + Collapse */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center shadow-lg shadow-[#13b8a6]/20">
-                                        <BarChart3 className="w-4 h-4 text-white" />
-                                    </div>
-                                    <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">STARTA</span>
-                                </div>
+                            {/* Collapse button only */}
+                            <div className="flex items-center justify-end mb-6">
                                 <button
                                     onClick={onToggle}
                                     className="w-8 h-8 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5 flex items-center justify-center text-slate-400 hover:text-[#13b8a6] dark:hover:text-white transition-colors"
@@ -278,14 +272,6 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                 </button>
                             </div>
 
-                            {/* New Chat Button */}
-                            <button
-                                onClick={onNewChat}
-                                className="w-full h-11 rounded-xl bg-[#13b8a6] hover:bg-[#0f8f82] text-white font-semibold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-[#13b8a6]/20 transition-all active:scale-[0.98] group"
-                            >
-                                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-                                New Chat
-                            </button>
                         </div>
 
                         {/* Chat History List */}

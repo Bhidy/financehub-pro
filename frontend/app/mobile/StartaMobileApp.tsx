@@ -674,13 +674,17 @@ function normalizeFund(row: Record<string, unknown>, _index: number): Fund {
   };
 }
 
+function safeDecodeUri(s: string) {
+  try { return decodeURIComponent(s); } catch { return s; }
+}
+
 function normalizeNews(row: Record<string, unknown>, lang: Lang): NewsItem {
   const body = String(row.article_body ?? "")
     .split(/\n{2,}|\.\s+/)
     .map((part) => part.trim())
     .filter(Boolean)
     .slice(0, 4);
-  const section = String(row.source_section ?? row.symbol ?? "Markets")
+  const section = safeDecodeUri(String(row.source_section ?? row.symbol ?? "Markets"))
     .split("/")
     .map((part) => part.trim())
     .filter((part) => part && part !== "ar");
@@ -1184,7 +1188,7 @@ function TabBar({ active, setActive, lang }: { active: TabId; setActive: (tab: T
     <nav className={styles.tabbar} aria-label={lang === "ar" ? "التنقل الرئيسي" : "Primary"}>
       {tabs.map((tab) => (
         <button key={tab.id} className={cx(styles.tab, active === tab.id && styles.tabOn)} onClick={() => setActive(tab.id)} aria-current={active === tab.id ? "page" : undefined} aria-label={t[tab.id]}>
-          <Icon name={tab.icon} size={21} strokeWidth={active === tab.id ? 2.4 : 2} />
+          <Icon name={tab.icon} size={19} strokeWidth={active === tab.id ? 2.3 : 1.9} />
           <span>{t[tab.id]}</span>
         </button>
       ))}
@@ -1519,11 +1523,13 @@ function MarketTopBar({ lang, nav, title, sub, actions }: { lang: Lang; nav: Nav
 }
 
 function TickerTape({ stocks, onPick }: { stocks: Stock[]; onPick: (symbol: string) => void }) {
-  const tape = useMemo(
-    () => [...stocks].filter((s) => s.symbol && s.price > 0).sort((a, b) => b.volume - a.volume).slice(0, 16),
-    [stocks],
-  );
-  if (tape.length < 4) return null;
+  const tape = useMemo(() => {
+    // Prefer stocks with a live price; fall back to any symbol with a non-negative price
+    const withPrice = [...stocks].filter((s) => s.symbol && s.price > 0);
+    const source = withPrice.length >= 2 ? withPrice : stocks.filter((s) => s.symbol && s.price >= 0);
+    return source.sort((a, b) => b.volume - a.volume).slice(0, 16);
+  }, [stocks]);
+  if (tape.length < 2) return null;
   // Render the run twice so the CSS marquee loops seamlessly at translateX(-50%).
   const run = [...tape, ...tape];
   return (
@@ -1907,11 +1913,52 @@ function MarketsScreen({ nav, lang, summary, egxIndex, stocks }: { nav: NavContr
   );
 }
 
+function HomePortfolioCard({ nav, lang, activePortfolio, stocks, isDemoWorkspace }: { nav: NavController; lang: Lang; activePortfolio: PortfolioPosition[]; stocks: Stock[]; isDemoWorkspace: boolean }) {
+  const total = activePortfolio.reduce((sum, p) => sum + p.value, 0);
+  const weightedPl = activePortfolio.reduce((sum, p) => sum + p.plPct * (p.weight / 100), 0);
+  const leader = useMemo(() => [...activePortfolio].sort((a, b) => b.weight - a.weight)[0], [activePortfolio]);
+  const trend = useMemo(() => {
+    const legs = activePortfolio.map((p) => {
+      const st = stocks.find((s) => s.symbol === p.symbol);
+      return st && st.trend.length > 1 ? { qty: p.quantity || 0, t: st.trend } : null;
+    }).filter((x): x is { qty: number; t: number[] } => !!x);
+    if (!legs.length) return [];
+    const len = Math.min(...legs.map((l) => l.t.length));
+    if (len < 2) return [];
+    return Array.from({ length: len }, (_, i) => legs.reduce((s, l) => s + l.qty * l.t[l.t.length - len + i], 0));
+  }, [activePortfolio, stocks]);
+  const trendUp = trend.length > 1 ? trend[trend.length - 1] >= trend[0] : weightedPl >= 0;
+  return (
+    <button className={styles.homePortCard} onClick={() => nav.setTab("portfolio")}>
+      <div className={styles.homePortTop}>
+        <div className={styles.homePortLabel}>
+          <span>{lang === "ar" ? "محفظتي" : "Portfolio"}</span>
+          {isDemoWorkspace && <span className={styles.homePortSample}>{lang === "ar" ? "نموذج" : "SAMPLE"}</span>}
+        </div>
+        <span className={weightedPl >= 0 ? styles.up : styles.down}>{weightedPl >= 0 ? "▲" : "▼"} {pct(Math.abs(weightedPl))}</span>
+      </div>
+      <div className={styles.homePortValue}>{total ? money(total, lang, 0) : "—"}</div>
+      {trend.length > 1 && (
+        <div className={styles.homePortChart}>
+          <MiniChart data={trend} color={trendUp ? "var(--c-brand)" : "var(--c-down)"} height={76} grid />
+        </div>
+      )}
+      <div className={styles.homePortStats}>
+        <div><span>{lang === "ar" ? "أعلى وزن" : "Top holding"}</span><strong>{leader?.symbol ?? "—"}</strong></div>
+        <div><span>{lang === "ar" ? "الأسهم" : "Holdings"}</span><strong>{activePortfolio.length}</strong></div>
+        <div><span>{lang === "ar" ? "العائد الكلي" : "Total return"}</span><strong className={weightedPl >= 0 ? styles.up : styles.down}>{pct(weightedPl)}</strong></div>
+      </div>
+    </button>
+  );
+}
+
 function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfolio }: { nav: NavController; lang: Lang; summary: MarketSummary; egxIndex: EgxIndex; stocks: Stock[]; funds: Fund[]; news: NewsItem[]; portfolio: PortfolioPosition[] }) {
   const topStock = useMemo(() => [...stocks].filter((stock) => stock.price > 0).sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct))[0], [stocks]);
   const topFund = useMemo(() => [...funds].sort((a, b) => (fundReturn(b, "YTD") ?? -999) - (fundReturn(a, "YTD") ?? -999))[0], [funds]);
-  const totalPortfolio = portfolio.reduce((sum, item) => sum + item.value, 0);
-  const weightedPl = portfolio.reduce((sum, p) => sum + p.plPct * (p.weight / 100), 0);
+  // Use demo portfolio as fallback so the Home snapshot is never empty (matches PortfolioScreen behaviour)
+  const activePortfolio = useMemo(() => portfolio.length ? portfolio : buildDemoPortfolio(stocks), [portfolio, stocks]);
+  const totalPortfolio = activePortfolio.reduce((sum, item) => sum + item.value, 0);
+  const weightedPl = activePortfolio.reduce((sum, p) => sum + p.plPct * (p.weight / 100), 0);
   const latestNews = news[0];
   return (
     <>
@@ -1932,31 +1979,55 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
           <button onClick={() => nav.push("watchlist")}><Icon name="star" /><span>{copy[lang].watchlist}</span></button>
         </div>
         <HomeMovers lang={lang} nav={nav} stocks={stocks} />
+        {/* Today's snapshot — top stock + top fund in 2-col row */}
         <SectionHead title={lang === "ar" ? "لقطة اليوم" : "Today's snapshot"} />
-        <div className={styles.homeSnapshot}>
-          <button onClick={() => topStock ? nav.push("company-profile", { symbol: topStock.symbol }) : nav.push("market-pulse")}>
-            <small>{lang === "ar" ? "السهم الأبرز · اليوم" : "Top stock move · today"}</small>
-            {topStock ? <><StockLogo symbol={topStock.symbol} /><strong>{topStock.symbol}</strong><Delta value={topStock.changePct} /></> : <strong>—</strong>}
+        <div className={styles.homeSnapshot2Col}>
+          <button className={styles.homeSnapshotBtn} onClick={() => topStock ? nav.push("company-profile", { symbol: topStock.symbol }) : nav.push("market-pulse")}>
+            <small>{lang === "ar" ? "السهم الأبرز · اليوم" : "Top stock · today"}</small>
+            {topStock ? <><StockLogo symbol={topStock.symbol} className={styles.homeSnapLogo} /><strong>{topStock.symbol}</strong><Delta value={topStock.changePct} /></> : <strong>—</strong>}
           </button>
-          <button onClick={() => topFund ? nav.push("fund", { id: topFund.id }) : nav.setTab("funds")}>
+          <button className={styles.homeSnapshotBtn} onClick={() => topFund ? nav.push("fund", { id: topFund.id }) : nav.setTab("funds")}>
             <small>{lang === "ar" ? "أفضل صندوق · YTD" : "Top fund · YTD"}</small>
-            <strong>{topFund ? fundLabel(topFund, lang) : "—"}</strong>
+            <strong className={styles.homeSnapFundName}>{topFund ? fundLabel(topFund, lang) : "—"}</strong>
             <Delta value={topFund ? (fundReturn(topFund, "YTD") ?? 0) : 0} />
           </button>
-          <button onClick={() => nav.setTab("portfolio")}>
-            <small>{copy[lang].portfolio}</small>
-            <strong>{totalPortfolio ? money(totalPortfolio, lang, 0) : "—"}</strong>
-            {portfolio.length ? <Delta value={weightedPl} /> : <span>{lang === "ar" ? "بانتظار البيانات" : "Waiting for data"}</span>}
-          </button>
         </div>
-        {latestNews ? (
+        {/* Portfolio — premium card with sparkline */}
+        <HomePortfolioCard nav={nav} lang={lang} activePortfolio={activePortfolio} stocks={stocks} isDemoWorkspace={!portfolio.length} />
+        {news.length ? (
           <>
             <SectionHead title={copy[lang].marketNews} action={lang === "ar" ? "عرض الكل" : "View all"} onAction={() => nav.setTab("news")} />
-            <button className={styles.homeNewsCard} onClick={() => nav.push("article", { id: latestNews.id })}>
-              <span className={styles.newsThumb2}><NewsImage item={latestNews} lang={lang} /></span>
-              <div><small>{latestNews.category} · {latestNews.time}</small><strong>{latestNews.headline}</strong></div>
-              <Icon name="chevron-right" />
-            </button>
+            <div className={styles.homeNewsFeed}>
+              {/* Row 1 — large featured card */}
+              {news[0] && (
+                <button className={styles.homeNewsEntry} onClick={() => nav.push("article", { id: news[0].id })}>
+                  <div className={styles.homeNewsEntryImg}><NewsImage item={news[0]} lang={lang} large /></div>
+                  <div className={styles.homeNewsEntryBody}>
+                    <span className={styles.homeNewsEntryBadge}>{news[0].category}{news[0].symbol ? ` · ${news[0].symbol}` : ""}</span>
+                    <strong className={styles.homeNewsEntryTitle}>{news[0].headline}</strong>
+                    <div className={styles.homeNewsEntryMeta}>
+                      <span>{news[0].time}</span>
+                      <span className={styles.homeNewsReadMore}>{lang === "ar" ? "اقرأ ›" : "Read article →"}</span>
+                    </div>
+                  </div>
+                </button>
+              )}
+              {/* Row 2 — two compact side-by-side cards */}
+              {(news[1] || news[2]) && (
+                <div className={styles.homeNewsRow2}>
+                  {[news[1], news[2]].filter(Boolean).map((item) => (
+                    <button key={item.id} className={styles.homeNewsSmall} onClick={() => nav.push("article", { id: item.id })}>
+                      <div className={styles.homeNewsSmallImg}><NewsImage item={item} lang={lang} /></div>
+                      <div className={styles.homeNewsSmallBody}>
+                        <span className={styles.homeNewsEntryBadge}>{item.category}</span>
+                        <strong className={styles.homeNewsSmallTitle}>{item.headline}</strong>
+                        <span className={styles.homeNewsSmallTime}>{item.time}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         ) : null}
         <SectionHead title={lang === "ar" ? "استكشف" : "Explore"} />
@@ -2048,32 +2119,36 @@ function newsRealImage(item: NewsItem) {
   return item.image ? `${API_BASE}/api/v1/news-image?url=${encodeURIComponent(item.image)}` : "";
 }
 
-function NewsImage({ item, lang, large = false }: { item: NewsItem; lang: Lang; large?: boolean }) {
-  // Premium fallback chain: real article photo → branded category cover →
-  // generic branded cover. Never shows a broken or identical-placeholder image.
-  const chain = useMemo(() => {
-    const list = [newsRealImage(item), newsCover(item, lang), `/assets/news-covers/${lang}-generic.webp`, "/assets/news-covers/en-generic.webp"].filter(Boolean);
-    return Array.from(new Set(list));
-  }, [item, lang]);
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    setIdx(0);
-  }, [chain]);
-  const src = chain[Math.min(idx, chain.length - 1)];
-  return <img src={src} alt="" loading="lazy" className={large ? styles.newsCoverLarge : undefined} onError={() => setIdx((i) => Math.min(i + 1, chain.length - 1))} />;
+function NewsImage({ item: _item, lang, large = false }: { item: NewsItem; lang: Lang; large?: boolean }) {
+  // Per product requirement: always show the single branded "News Insight" static cover
+  // (the same image used on startamarkets.com) — no real scraped photos, no category variants.
+  const src = `/assets/news-covers/${lang}-generic.webp`;
+  const fallback = "/assets/news-covers/en-generic.webp";
+  const [errored, setErrored] = useState(false);
+  return (
+    <img
+      src={errored ? fallback : src}
+      alt=""
+      loading="lazy"
+      className={large ? styles.newsCoverLarge : undefined}
+      onError={() => setErrored(true)}
+    />
+  );
 }
 
 function NewsRow({ item, lang, onClick }: { item: NewsItem; lang: Lang; onClick: () => void }) {
   return (
-    <button className={styles.newsRow2} onClick={onClick}>
-      <span className={styles.newsThumb2}><NewsImage item={item} lang={lang} /></span>
-      <div className={styles.newsRowCopy}>
-        <small>{item.category} {item.symbol ? `· ${item.symbol}` : ""} · {item.time}</small>
-        <strong>{item.headline}</strong>
-        <em>{item.source || (lang === "ar" ? "وكالة أنباء السوق" : "Market newswire")}</em>
+    <article className={styles.newsCard2} onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onClick()}>
+      <div className={styles.newsCardImg}><NewsImage item={item} lang={lang} large /></div>
+      <div className={styles.newsCardBody}>
+        <span className={styles.newsCardBadge}>{item.category}{item.symbol ? ` · ${item.symbol}` : ""}</span>
+        <h3 className={styles.newsCardTitle}>{item.headline}</h3>
+        <div className={styles.newsCardFoot}>
+          <span className={styles.newsCardTime}>{item.time}{item.source ? ` · ${item.source}` : ""}</span>
+          <span className={styles.newsCardReadMore}>{lang === "ar" ? "اقرأ ›" : "Read article →"}</span>
+        </div>
       </div>
-      <span className={styles.newsChevron}><Icon name="chevron-right" size={15} /></span>
-    </button>
+    </article>
   );
 }
 
@@ -3524,12 +3599,16 @@ function ArticleDetail({ nav, lang, item, news }: { nav: NavController; lang: La
     <>
       <PushTop title={lang === "ar" ? "خبر السوق" : "Market Story"} sub={item.category} onBack={nav.pop} action={<button className={styles.iconBtn2} aria-label={lang === "ar" ? "حفظ" : "Save"}><Icon name="bookmark" /></button>} />
       <div className={styles.content}>
-        <article className={styles.articleShell2}>
-          <div className={styles.articleImage2}><NewsImage item={item} lang={lang} large /></div>
-          <span className={styles.lblMono}>{item.category} {item.symbol ? `· ${item.symbol}` : ""}</span>
-          <h1>{item.headline}</h1>
-          <p className={styles.articleMeta2}>{item.source} · {item.time}</p>
-          {item.body.map((p, i) => <p key={i}>{p.endsWith(".") || p.endsWith("؟") ? p : `${p}.`}</p>)}
+        <article className={styles.articleWrap2}>
+          {/* Hero: cover image takes full card width */}
+          <div className={styles.articleHeroImg}><NewsImage item={item} lang={lang} large /></div>
+          <div className={styles.articleInner2}>
+            <span className={styles.articleBadge2}>{item.category}{item.symbol ? ` · ${item.symbol}` : ""}</span>
+            <h1 className={styles.articleH12}>{item.headline}</h1>
+            <p className={styles.articleMeta2}>{[item.source, item.time].filter(Boolean).join(" · ")}</p>
+            <div className={styles.articleDivider2} />
+            {item.body.map((p, i) => <p key={i} className={styles.articlePara2}>{p.endsWith(".") || p.endsWith("؟") ? p : `${p}.`}</p>)}
+          </div>
         </article>
         <button className={styles.newsAiCard2} onClick={() => nav.openAI(`Summarize this article: ${item.headline}`)}>
           <span><AIGlyph color="#fff" /></span>

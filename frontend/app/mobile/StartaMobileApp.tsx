@@ -2893,16 +2893,22 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
 
   return (
     <>
-      <AppBar title={t.more} sub={lang === "ar" ? "الحساب والإعدادات" : "Account & Settings"} action={
-        <div className={styles.iconBtnRow}>
-          <button className={styles.iconBtn2} aria-label={lang === "ar" ? "English" : "العربية"} onClick={() => setLang(lang === "ar" ? "en" : "ar")}>
-            <Icon name="languages" size={20} />
-          </button>
-          <button className={styles.iconBtn2} aria-label={theme === "dark" ? (lang === "ar" ? "وضع فاتح" : "Light mode") : (lang === "ar" ? "وضع داكن" : "Dark mode")} onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
-          </button>
-        </div>
-      } />
+      <MarketTopBar
+        lang={lang}
+        nav={nav}
+        title={t.more}
+        sub={lang === "ar" ? "الحساب والإعدادات" : "Account & Settings"}
+        actions={
+          <>
+            <button className={styles.iconBtn2} aria-label={lang === "ar" ? "English" : "العربية"} onClick={() => setLang(lang === "ar" ? "en" : "ar")}>
+              <Icon name="languages" size={20} />
+            </button>
+            <button className={styles.iconBtn2} aria-label={theme === "dark" ? (lang === "ar" ? "وضع فاتح" : "Light mode") : (lang === "ar" ? "وضع داكن" : "Dark mode")} onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+              <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
+            </button>
+          </>
+        }
+      />
       <div className={styles.content}>
         <div className={cx(styles.moreRevamp, styles.moreBento)}>
           <button className={styles.moreHero} onClick={() => nav.push("profile")}>

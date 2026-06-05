@@ -264,7 +264,7 @@ function canonicalizeChartType(value: any): string {
     return raw.toLowerCase();
 }
 
-function sanitizeChatResponse(raw: any): ChatResponse {
+export function sanitizeChatResponse(raw: any): ChatResponse {
     const metaRaw = (raw && typeof raw.meta === "object") ? raw.meta : {};
     const confidence = Number(metaRaw?.confidence);
     const latencyMs = Number(metaRaw?.latency_ms);

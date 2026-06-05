@@ -37,17 +37,37 @@ This folder was previously named `Info Site/mubasher-deep-extract`. The old name
 
 **The public site (`/`, `/Funds`, `/Learn`, `/News`, `/Market-Pulse`) is mostly static HTML in `frontend/public/`, served via Next.js rewrites — NOT the React App Router screens under `frontend/app/`.** See `docs/STARTAMARKETS_PUBLIC_SITE.md` before editing any public page.
 
-## How it deploys (do not improvise)
+## How it deploys — USE THE SCRIPTS, do not improvise
 
-- **Frontend:** `git push origin main` triggers the Vercel production build. After deploy you MUST alias the new URL to `startamarkets.com` (see `docs/STARTAMARKETS_PUBLIC_SITE.md` → "MANDATORY POST-DEPLOY ALIAS STEP"). Deploy from the **repo root**, never from `frontend/`.
-- **Backend:** git push; the Hetzner VPS rebuilds the Docker container.
-- **Never** run automated extraction scripts locally — cloud-only (risk of IP bans / data conflicts).
+> **Read [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md) before any deploy action.**
+> It is the authoritative, verified procedure. All other deploy notes (including older
+> versions of this file) are superseded by the runbook.
+
+```bash
+# Web — one command (deploy + alias + verify):
+./scripts/deploy-web.sh
+
+# iOS TestFlight — one command:
+./scripts/ship-ios.sh
+
+# Health-check only (no deploy):
+./scripts/deploy-web.sh verify
+```
+
+- **Web:** merging to `main` **auto-deploys `finhub` AND auto-aliases `startamarkets.com`**.
+  No manual alias step needed. Run `./scripts/deploy-web.sh verify` to confirm it's live.
+  The old "MANDATORY POST-DEPLOY ALIAS STEP" note is obsolete — the script handles it.
+- **iOS:** `./scripts/ship-ios.sh` builds the Vite bundle, syncs into Capacitor, auto-bumps
+  the build number, archives, and uploads to TestFlight in one step.
+- **Backend:** `./scripts/deploy_production.sh backend smart` (Hetzner VPS, SSH key auth).
+- **Never** run `vercel` by hand, never run automated scraping locally.
 
 ## Authoritative deeper docs
 
-- `docs/STARTAMARKETS_PUBLIC_SITE.md` — public site source tree, routing, theme/language, deployment + alias protocol.
-- `docs/SYSTEM_ARCHITECTURE_ANALYSIS.md` — full architecture, DB schema, AI chatbot pipeline.
-- `docs/DEPLOYMENT_REFERENCE.md` — deployment reference.
+- **[`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)** — ⭐ READ THIS FIRST for any deploy.
+- `docs/STARTAMARKETS_PUBLIC_SITE.md` — public site source tree, routing, theme/language.
+- `docs/ARCHITECTURE.md` — full architecture, DB schema, AI chatbot pipeline.
+- `docs/DEPLOYMENT_REFERENCE.md` — extended deployment background.
 
 ## What is NOT part of this repo (do not confuse)
 
@@ -62,12 +82,12 @@ During the June 2026 restructure, several things that used to sit beside this re
 1. This repo at `~/Documents/startamarkets` is the **only** source of truth for `startamarkets.com`.
 2. Public-page changes go in `frontend/public/`, not React components.
 3. Never commit/deploy the decoy in quarantine.
-4. After any frontend deploy, run the Vercel alias step or the live domain silently serves stale content.
+4. After any frontend deploy, run `./scripts/deploy-web.sh verify` to confirm the live domain is healthy.
 
 ## Governance — rules to keep this clean (added after the 2026-06 cleanup)
 
-- **One of everything.** One repo, one Vercel project (`finhub` → startamarkets.com), one domain. Never create extra Vercel projects or `vercel deploy` from copies — that's how 5 duplicate public clones of the site appeared. If `vercel project ls` ever shows a Starta clone, delete it.
-- **Never run `vercel` from inside `frontend/`.** It auto-creates a stray project + `.vercel` link. Always run Vercel commands from the **repo root** (the project's Root Directory setting is `frontend`).
+- **One of everything.** One repo, one Vercel project (`finhub` → startamarkets.com), one domain. The stray `frontend` Vercel project that caused repeated deploy incidents has been **permanently deleted** (2026-06-06). `frontend/.vercel/project.json` is committed and points to `finhub`, so running `vercel` from anywhere in the repo now targets `finhub`. If `vercel project ls` ever shows an unexpected Starta clone, delete it immediately via the Vercel API.
+- **Never run `vercel` by hand.** Use `./scripts/deploy-web.sh`. It enforces the correct project, aliases, and verifies in one step.
 - **Never commit secrets.** No `.env`, API keys, tokens, passwords, `*.exp`, or key-bearing docs. `.gitignore` enforces this — do not override it. Secrets live only in Hetzner backend `.env`, Vercel env vars, and your local `.env` (all gitignored). If a secret ever lands in a commit, it is compromised: rotate it and purge history.
 - **Keep the repo lean.** Ship only the app: `frontend/`, `backend-core/{app,scripts,data_pipeline}`, `docs/`, deploy configs, `index.html`. No scratch scripts, debug dumps, backups, `__pycache__`, archives, agent tooling (`.agent/`), or DB dumps.
 - **Don't duplicate the folder to "try something."** Branch in git. Drifted folder copies were the root of the entire mess.

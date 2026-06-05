@@ -1188,7 +1188,7 @@ function TabBar({ active, setActive, lang }: { active: TabId; setActive: (tab: T
     <nav className={styles.tabbar} aria-label={lang === "ar" ? "التنقل الرئيسي" : "Primary"}>
       {tabs.map((tab) => (
         <button key={tab.id} className={cx(styles.tab, active === tab.id && styles.tabOn)} onClick={() => setActive(tab.id)} aria-current={active === tab.id ? "page" : undefined} aria-label={t[tab.id]}>
-          <Icon name={tab.icon} size={19} strokeWidth={active === tab.id ? 2.3 : 1.9} />
+          <Icon name={tab.icon} size={21} strokeWidth={active === tab.id ? 2.4 : 2} />
           <span>{t[tab.id]}</span>
         </button>
       ))}

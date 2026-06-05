@@ -194,8 +194,11 @@ async def handle_ownership_detail(conn, symbol: str, language: str = "en") -> Di
     currency = get_ticker_currency(ticker)
     
     row = await conn.fetchrow("""
-        SELECT insider_ownership, institutional_ownership, float_shares, shares_outstanding, market_cap
-        FROM stock_statistics WHERE symbol=$1
+        SELECT s.insider_ownership, s.institutional_ownership, s.float_shares,
+               s.shares_outstanding, m.market_cap
+        FROM stock_statistics s
+        JOIN market_tickers m ON s.symbol = m.symbol AND m.market_code = 'EGX'
+        WHERE s.symbol=$1
     """, symbol)
     
     if not row: return _nd(symbol, name, language)

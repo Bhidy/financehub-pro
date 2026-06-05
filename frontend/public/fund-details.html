@@ -977,13 +977,21 @@
                 height: 420,
                 rightPriceScale: {
                     borderColor: 'rgba(148, 163, 184, 0.16)',
+                    // Reserve a stable axis width from creation so the plot pane width does not
+                    // shrink after the first paint. (When the axis measured itself late, the
+                    // most-recent NAV points were mapped past the pane, behind the price axis,
+                    // where the crosshair could not reach them — the latest price was visible
+                    // but unhoverable.)
+                    minimumWidth: 76,
                 },
                 timeScale: {
                     borderColor: 'rgba(148, 163, 184, 0.16)',
-                    timeVisible: true,
+                    // Daily NAV series (not intraday): keep the axis to clean dates and avoid
+                    // timestamp/business-day ambiguity.
+                    timeVisible: false,
                     secondsVisible: false,
-                    // Small gap after the last bar so the most-recent NAV point is
-                    // reachable/hoverable (it was flush against the right edge).
+                    // Breathing room after the last bar so the most-recent NAV point sits
+                    // inside the plot (not flush against the right axis) and stays hoverable.
                     rightOffset: 4,
                 },
                 grid: {
@@ -991,6 +999,9 @@
                     horzLines: { color: 'rgba(148, 163, 184, 0.08)' },
                 },
                 crosshair: {
+                    // Magnet snaps the crosshair to the nearest NAV point, so the latest
+                    // point is easy to land on even with imprecise cursor movement.
+                    mode: LightweightCharts.CrosshairMode.Magnet,
                     vertLine: {
                         color: 'rgba(20, 184, 166, 0.24)',
                         width: 1,
@@ -1013,11 +1024,21 @@
                 bottomColor: 'rgba(20, 184, 166, 0.02)',
                 lineWidth: 3,
                 crosshairMarkerRadius: 5,
-                priceLineVisible: false,
-                lastValueVisible: false,
+                // Always show the latest NAV as a persistent price line + right-axis tag, so
+                // the "last price" reads at a glance without having to hover the final point.
+                priceLineVisible: true,
+                priceLineColor: 'rgba(20, 184, 166, 0.55)',
+                priceLineWidth: 1,
+                priceLineStyle: 2,
+                lastValueVisible: true,
+                // Standard numeric axis format keeps the price scale narrow. The old
+                // "EGP 0.0000" custom formatter made the axis very wide, squeezing the most
+                // recent points into an unhoverable sliver. The floating tooltip below still
+                // shows the full "EGP 0.0000" value.
                 priceFormat: {
-                    type: 'custom',
-                    formatter: (price) => `${state.fund?.currency || 'EGP'} ${Number(price).toFixed(4)}`
+                    type: 'price',
+                    precision: 2,
+                    minMove: 0.01,
                 }
             });
 
@@ -1025,35 +1046,77 @@
             const tooltipDate = document.getElementById('tooltipDate');
             const tooltipValue = document.getElementById('tooltipValue');
 
-            state.chart.subscribeCrosshairMove((param) => {
-                if (!param || !param.point || !param.time || !param.seriesData) {
-                    tooltip.classList.remove('visible');
-                    return;
-                }
-
-                const data = param.seriesData.get(state.chartSeries);
-                if (!data || data.value === undefined) {
-                    tooltip.classList.remove('visible');
-                    return;
-                }
-
-                const containerRect = document.getElementById('chartContainer').getBoundingClientRect();
-                const date = new Date(param.time);
+            // ---- Robust hover layer (own the hit-testing) ----
+            // lightweight-charts' internal mouse hit-canvas can lag the time scale when the
+            // surrounding layout reflows, which left the most-recent NAV points unreachable by
+            // the native crosshair even though they render correctly. So instead of relying on
+            // it, a transparent layer over the whole plot maps the cursor to the nearest NAV
+            // point (clamped to the series), drives the native crosshair marker via
+            // setCrosshairPosition, and positions the tooltip from that point's own
+            // coordinates. Result: every point — including the latest NAV — is always reachable.
+            const showTooltipForPoint = (pt) => {
+                if (!pt || pt.value === undefined || pt.value === null) { tooltip.classList.remove('visible'); return; }
+                const px = state.chart.timeScale().timeToCoordinate(pt.time);
+                const py = state.chartSeries.priceToCoordinate(pt.value);
+                if (px === null || py === null) { tooltip.classList.remove('visible'); return; }
+                const containerRect = container.getBoundingClientRect();
+                const date = new Date(pt.time);
                 tooltipDate.textContent = Number.isNaN(date.getTime())
-                    ? param.time
+                    ? String(pt.time)
                     : date.toLocaleDateString(getChartLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
-                tooltipValue.textContent = `${state.fund?.currency || 'EGP'} ${Number(data.value).toFixed(4)}`;
-
-                tooltip.style.left = `${Math.min(Math.max(param.point.x, 90), containerRect.width - 90)}px`;
-                tooltip.style.top = `${Math.max(param.point.y - 14, 70)}px`;
+                tooltipValue.textContent = `${state.fund?.currency || 'EGP'} ${Number(pt.value).toFixed(4)}`;
+                tooltip.style.left = `${Math.min(Math.max(px, 90), containerRect.width - 90)}px`;
+                tooltip.style.top = `${Math.max(py - 14, 70)}px`;
                 tooltip.classList.add('visible');
+            };
+
+            const hoverLayer = document.createElement('div');
+            hoverLayer.style.cssText = 'position:absolute;inset:0;z-index:4;cursor:crosshair;';
+            container.appendChild(hoverLayer);
+            state.chartHoverLayer = hoverLayer;
+
+            const handleHover = (clientX) => {
+                const pts = state.chartPoints;
+                if (!pts || !pts.length || !state.chartSeries) return;
+                const rect = hoverLayer.getBoundingClientRect();
+                const localX = clientX - rect.left;
+                let logical = state.chart.timeScale().coordinateToLogical(localX);
+                if (logical === null || Number.isNaN(logical)) {
+                    // Cursor past the plot edge / over the price axis: clamp to the nearer end
+                    // (right side → latest NAV) instead of dropping the tooltip.
+                    logical = localX > rect.width / 2 ? pts.length - 1 : 0;
+                }
+                const idx = Math.max(0, Math.min(pts.length - 1, Math.round(logical)));
+                const pt = pts[idx];
+                if (!pt) return;
+                try { state.chart.setCrosshairPosition(pt.value, pt.time, state.chartSeries); } catch (error) { /* noop */ }
+                showTooltipForPoint(pt);
+            };
+
+            hoverLayer.addEventListener('mousemove', (event) => handleHover(event.clientX));
+            hoverLayer.addEventListener('mouseleave', () => {
+                try { state.chart.clearCrosshairPosition(); } catch (error) { /* noop */ }
+                tooltip.classList.remove('visible');
             });
 
             window.addEventListener('resize', () => {
                 if (state.chart) {
                     state.chart.applyOptions({ width: container.clientWidth });
+                    if (state.pinChartView) state.pinChartView();
                 }
             });
+
+            // A ResizeObserver catches layout reflows the window 'resize' event misses
+            // (e.g. the similar-funds panel loading and changing the chart column width).
+            // Each reflow re-syncs the chart width and re-fits so the latest NAV stays in view.
+            if ('ResizeObserver' in window) {
+                state.chartResizeObserver = new ResizeObserver(() => {
+                    if (!state.chart) return;
+                    state.chart.applyOptions({ width: container.clientWidth });
+                    if (state.pinChartView) state.pinChartView();
+                });
+                state.chartResizeObserver.observe(container);
+            }
         }
 
         function renderChart() {
@@ -1076,7 +1139,50 @@
 
             chartEmpty.style.display = 'none';
             state.chartSeries.setData(chartData);
-            state.chart.timeScale().fitContent();
+            state.chartPoints = chartData;   // drives the robust hover layer (nearest-point mapping)
+
+            // Fit the view to ALL points — re-asserted until the layout has settled.
+            // Root cause this guards against: the right price axis only measures its width
+            // AFTER the first paint (its label widths depend on the data). A single, early
+            // fitContent() computes the time-axis coordinate space against the full width, so
+            // the most-recent ~8-12 NAV points get mapped PAST the plot pane (behind the price
+            // axis) where the crosshair can't reach them — the latest price was rendered but
+            // unhoverable. Re-fitting across the next frames + a short settle window keeps the
+            // time scale in sync with the real pane width. fitContent() honours rightOffset,
+            // so the last point still keeps a small, hoverable gap from the edge.
+            const lastChartPoint = chartData[chartData.length - 1];
+            const chartContainerEl = document.getElementById('chartContainer');
+            state.pinChartView = () => {
+                if (!state.chart || !chartContainerEl) return;
+                try {
+                    // Force a FULL relayout before fitting. applyOptions({width}) with an
+                    // unchanged width is a no-op in lightweight-charts, so the pane is never
+                    // recomputed against the (late-measured) price-axis width — which left the
+                    // newest points mapped past the plot pane, behind the axis, unhoverable.
+                    // A 1px width "jiggle" guarantees the pane is re-derived, then fitContent
+                    // maps every point — including the latest NAV — inside the pane.
+                    const w = chartContainerEl.clientWidth;
+                    if (w > 1) {
+                        state.chart.applyOptions({ width: w - 1 });
+                        state.chart.applyOptions({ width: w });
+                    }
+                    state.chart.timeScale().fitContent();
+                } catch (error) { /* not ready */ }
+            };
+            state.pinChartView();
+            requestAnimationFrame(() => state.pinChartView());
+            window.setTimeout(() => state.pinChartView(), 120);
+            window.setTimeout(() => state.pinChartView(), 380);
+
+            // Mark the latest NAV point so the last price reads at a glance, even before hover.
+            if (lastChartPoint) {
+                state.chartSeries.setMarkers([{
+                    time: lastChartPoint.time,
+                    position: 'inBar',
+                    color: '#14B8A6',
+                    shape: 'circle',
+                }]);
+            }
 
             // Keep the headline NAV + "last update" date IN SYNC WITH THE CHART.
             // The metadata field `last_update_date` can run AHEAD of the actual NAV

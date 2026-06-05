@@ -88,8 +88,11 @@ function getScoreAssessment(score: number, maxScore: number, language: "en" | "a
 }
 
 export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
+    if (!data) return null;
     const maxScore = data.max_score || 100;
-    const scoreInfo = getScoreAssessment(data.score, maxScore, language);
+    const score = typeof data.score === "number" ? data.score : 0;
+    const factors = Array.isArray(data.factors) ? data.factors : [];
+    const scoreInfo = getScoreAssessment(score, maxScore, language);
     const isRtl = language === "ar";
     const ui = language === "ar"
         ? {
@@ -120,7 +123,7 @@ export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
             {/* Premium Header */}
             <div className={clsx(
                 "px-6 py-5 bg-gradient-to-r",
-                getScoreGradient(data.score, maxScore)
+                getScoreGradient(score, maxScore)
             )}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -143,7 +146,7 @@ export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
                     <div className={clsx("flex flex-col", isRtl ? "items-start" : "items-end")}>
                         <div className="flex items-baseline gap-1">
                             <span className="text-5xl font-black text-white tracking-tighter">
-                                {data.score}
+                                {score}
                             </span>
                             <span className="text-2xl font-bold text-white/60">
                                 /{maxScore}
@@ -170,10 +173,12 @@ export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
             {/* Factor Grid */}
             <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {data.factors.map((factor, idx) => {
-                        const colors = statusColors[factor.status];
-                        const Icon = getFactorIcon(factor.name);
-                        const factorPercentage = Math.round((factor.points / factor.max_points) * 100);
+                    {factors.map((factor, idx) => {
+                        const colors = statusColors[factor.status] || statusColors.neutral;
+                        const Icon = getFactorIcon(factor.name) as React.ComponentType<{ size?: number; className?: string }>;
+                        const factorPercentage = factor.max_points
+                            ? Math.round((factor.points / factor.max_points) * 100)
+                            : 0;
 
                         return (
                             <div
@@ -187,7 +192,7 @@ export function MacroScoreCard({ data, language = "en" }: MacroScoreCardProps) {
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <div className={clsx("p-1.5 rounded-lg", colors.badge)}>
-                                            {(Icon as any)({ size: 14, className: "stroke-[2.5]" })}
+                                            <Icon size={14} className="stroke-[2.5]" />
                                         </div>
                                         <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
                                             {factor.name}

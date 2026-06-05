@@ -1128,14 +1128,18 @@
             populateSelect(managerFilter, managers, getLabels().all_managers, managerFilter.value);
             populateSelect(riskFilter, risks.map((bucket) => getRiskLabel(bucket)), getLabels().all_risks, riskFilter.value);
 
+            // Default the marketplace to "Latest update" order (and list it first), while
+            // preserving any sort the user has actively chosen across re-renders/lang toggles.
+            const activeSort = sortSelect.value || 'updated-desc';
             sortSelect.innerHTML = [
+                { value: 'updated-desc', label: getLabels().sort_updated_desc },
                 { value: 'period-desc', label: getLabels().sort_period_desc },
                 { value: 'nav-desc', label: getLabels().sort_nav_desc },
                 { value: 'nav-asc', label: getLabels().sort_nav_asc },
                 { value: 'aum-desc', label: getLabels().sort_aum_desc },
-                { value: 'updated-desc', label: getLabels().sort_updated_desc },
                 { value: 'name-asc', label: getLabels().sort_name_asc }
-            ].map((option) => `<option value="${option.value}"${sortSelect.value === option.value ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+            ].map((option) => `<option value="${option.value}"${activeSort === option.value ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
+            sortSelect.value = activeSort;
         }
 
         function updateHeroMetrics() {
@@ -1247,12 +1251,19 @@
                 if (state.shariahOnly && !fund.isShariah) return false;
                 return true;
             }).sort((a, b) => {
-                const sort = sortSelect.value || 'period-desc';
+                const sort = sortSelect.value || 'updated-desc';
                 if (sort === 'name-asc') return getFundName(a).localeCompare(getFundName(b), state.lang === 'ar' ? 'ar' : 'en');
                 if (sort === 'nav-desc') return (b.latestNav || -Infinity) - (a.latestNav || -Infinity);
                 if (sort === 'nav-asc') return (a.latestNav || Infinity) - (b.latestNav || Infinity);
                 if (sort === 'aum-desc') return (b.aumValue || -Infinity) - (a.aumValue || -Infinity);
-                if (sort === 'updated-desc') return new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime();
+                if (sort === 'updated-desc') {
+                    // Sort by most-recent NAV date; break ties deterministically by
+                    // period return (desc) so same-date funds keep a stable, meaningful order
+                    // instead of falling back to arbitrary API insertion order.
+                    const byDate = new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime();
+                    if (byDate !== 0) return byDate;
+                    return (getReturnForPeriod(b) ?? -Infinity) - (getReturnForPeriod(a) ?? -Infinity);
+                }
 
                 const retA = getReturnForPeriod(a);
                 const retB = getReturnForPeriod(b);
@@ -1386,6 +1397,9 @@
                 timeScale: {
                     visible: false,
                     borderVisible: false,
+                    // Keep the pinned range stable when the card reflows so the latest NAV
+                    // point can't get scrolled off the right edge.
+                    lockVisibleTimeRangeOnResize: true,
                 },
                 grid: {
                     vertLines: { visible: false },
@@ -1422,30 +1436,69 @@
             });
 
             series.setData(chartData);
-            chart.timeScale().fitContent();
-            chart.subscribeCrosshairMove((param) => {
-                if (!param?.point || !param?.time) {
-                    tooltip.classList.remove('visible');
-                    return;
-                }
 
-                const data = param.seriesData.get(series);
-                if (!data || data.value === undefined) {
-                    tooltip.classList.remove('visible');
-                    return;
-                }
+            // Pin to all points + a small right pad so the most-recent NAV stays visible and
+            // hoverable. fitContent() alone left the last point flush against the right edge
+            // (and on the live page the newest points could end up scrolled off it entirely).
+            const lastIdx = chartData.length - 1;
+            const pinMini = () => {
+                try {
+                    // Force a real relayout (applyOptions with an unchanged width is a no-op, so
+                    // the time scale would otherwise stay desynced from the canvas after the card
+                    // grid reflows — which left the newest points mapped off-canvas, unreachable).
+                    const w = element.clientWidth;
+                    if (w > 1) { chart.applyOptions({ width: w - 1 }); chart.applyOptions({ width: w }); }
+                    chart.timeScale().setVisibleLogicalRange({ from: 0, to: lastIdx + 2 });
+                } catch (e) { }
+            };
+            pinMini();
+            requestAnimationFrame(pinMini);
+            window.setTimeout(pinMini, 160);
 
-                const hoveredDate = new Date(param.time);
+            // Dot the latest NAV point so the most recent price reads clearly on the sparkline.
+            if (chartData[lastIdx]) {
+                series.setMarkers([{ time: chartData[lastIdx].time, position: 'inBar', color: lineColor, shape: 'circle' }]);
+            }
+            // Robust hover: own the hit-testing. The native crosshair couldn't reach the most
+            // recent points (it stopped ~8 points short of the latest NAV). A transparent layer
+            // maps the cursor to the nearest point, drives the crosshair marker, and positions
+            // the tooltip from that point — so the latest NAV is always reachable.
+            if (getComputedStyle(element).position === 'static') element.style.position = 'relative';
+            const showMiniTip = (pt, lx, width) => {
+                if (!pt || pt.value === undefined || pt.value === null) { tooltip.classList.remove('visible'); return; }
+                const hoveredDate = new Date(pt.time);
                 tooltipLabel.textContent = Number.isNaN(hoveredDate.getTime())
-                    ? String(param.time)
+                    ? String(pt.time)
                     : hoveredDate.toLocaleDateString(getLocale(), { month: 'short', day: 'numeric', year: 'numeric' });
-                tooltipValue.textContent = `${currency} ${Number(data.value).toFixed(4)}`;
-                tooltip.style.left = `${Math.min(Math.max(param.point.x, 74), element.clientWidth - 74)}px`;
+                tooltipValue.textContent = `${currency} ${Number(pt.value).toFixed(4)}`;
+                tooltip.style.left = `${Math.min(Math.max(lx, 74), width - 74)}px`;
                 tooltip.classList.add('visible');
+            };
+            const miniOverlay = document.createElement('div');
+            miniOverlay.style.cssText = 'position:absolute;inset:0;z-index:2;cursor:crosshair;';
+            element.appendChild(miniOverlay);
+            miniOverlay.addEventListener('mousemove', (event) => {
+                if (!chartData.length) return;
+                const rect = miniOverlay.getBoundingClientRect();
+                const lx = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+                // Map the cursor fraction straight to the data index. This is robust even if the
+                // chart's internal coordinate space drifts from the canvas after a card reflow —
+                // the right edge always resolves to the latest NAV point.
+                const idx = rect.width > 0
+                    ? Math.max(0, Math.min(chartData.length - 1, Math.round((lx / rect.width) * (chartData.length - 1))))
+                    : chartData.length - 1;
+                const pt = chartData[idx];
+                try { chart.setCrosshairPosition(pt.value, pt.time, series); } catch (e) { }
+                showMiniTip(pt, lx, rect.width);
+            });
+            miniOverlay.addEventListener('mouseleave', () => {
+                try { chart.clearCrosshairPosition(); } catch (e) { }
+                tooltip.classList.remove('visible');
             });
 
             const resizeObserver = new ResizeObserver(() => {
                 chart.applyOptions({ width: element.clientWidth });
+                pinMini();
             });
             resizeObserver.observe(element);
             miniChartInstances.set(element.getAttribute('data-fund-id'), {
@@ -1637,7 +1690,7 @@
             typeFilter.value = '';
             managerFilter.value = '';
             riskFilter.value = '';
-            sortSelect.value = 'period-desc';
+            sortSelect.value = 'updated-desc';
             state.shariahOnly = false;
             renderFunds();
         }

@@ -42,6 +42,7 @@ interface MutualFund {
     investment_strategy: string | null;
     establishment_date: string | null;
     last_update_date: string | null;
+    last_updated: string | null;
 
     // Decypha Fields
     aum_millions: number | string | null;
@@ -79,6 +80,16 @@ const getMetric = (fund: MutualFund, period: PeriodOption): number => {
     else if (period === "5y") val = fund.returns_5y ?? fund.five_year_return;
 
     return safeNumber(val) || 0;
+};
+
+// NAV freshness — surfaces the "as of" date so a stale NAV is never shown as if current (DAT-1)
+const navFreshness = (raw: any): { label: string; stale: boolean } | null => {
+    if (!raw) return null;
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return null;
+    const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    const label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    return { label, stale: days > 45 };
 };
 
 export default function MutualFundsPage() {
@@ -415,7 +426,23 @@ export default function MutualFundsPage() {
                                                 <div className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
                                                     {Number(fund.latest_nav || 0).toFixed(2)}
                                                 </div>
-                                                <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-0.5">{config.currency}</div>
+                                                {(() => {
+                                                    const fresh = navFreshness(fund.last_updated);
+                                                    return (
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">{config.currency}</span>
+                                                            {fresh && (
+                                                                <span className={clsx(
+                                                                    "text-[10px] font-semibold flex items-center gap-0.5",
+                                                                    fresh.stale ? "text-amber-600 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"
+                                                                )}>
+                                                                    {fresh.stale && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" title="NAV not updated recently" />}
+                                                                    · as of {fresh.label}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
 
                                             {/* Return Card */}

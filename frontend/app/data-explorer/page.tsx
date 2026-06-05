@@ -127,7 +127,7 @@ export default function DataExplorerPage() {
                                             <div>
                                                 <div className="text-xs text-slate-500">Latest NAV</div>
                                                 <div className="text-lg font-bold text-emerald-600">
-                                                    SAR {parseFloat(fund.latest_nav).toFixed(2)}
+                                                    EGP {parseFloat(fund.latest_nav).toFixed(2)}
                                                 </div>
                                             </div>
                                             <div>
@@ -212,7 +212,7 @@ export default function DataExplorerPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 font-semibold text-emerald-600">
-                                                    {parseFloat(action.amount).toFixed(2)} SAR
+                                                    {parseFloat(action.amount).toFixed(2)} EGP
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-slate-600">
                                                     {new Date(action.ex_date).toLocaleDateString()}
@@ -255,12 +255,12 @@ export default function DataExplorerPage() {
                                             <div className="text-right">
                                                 <div className="text-xs text-slate-500">Value</div>
                                                 <div className="text-lg font-bold text-emerald-600">
-                                                    SAR {parseFloat(trade.value).toLocaleString()}
+                                                    EGP {parseFloat(trade.value).toLocaleString()}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="mt-3 flex justify-between text-xs text-slate-600">
-                                            <span>{parseFloat(trade.shares).toLocaleString()} shares @ SAR {parseFloat(trade.price).toFixed(2)}</span>
+                                            <span>{parseFloat(trade.shares).toLocaleString()} shares @ EGP {parseFloat(trade.price).toFixed(2)}</span>
                                             <span>{new Date(trade.transaction_date).toLocaleDateString()}</span>
                                         </div>
                                     </div>
@@ -297,7 +297,7 @@ export default function DataExplorerPage() {
                                             <div>
                                                 <div className="text-xs text-slate-500">Price Target</div>
                                                 <div className="text-lg font-bold text-green-600">
-                                                    SAR {parseFloat(rating.price_target).toFixed(2)}
+                                                    EGP {parseFloat(rating.price_target).toFixed(2)}
                                                 </div>
                                             </div>
                                             <div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Mic, Loader2 } from "lucide-react";
+import { Send, Mic, Loader2, Plus } from "lucide-react";
 import clsx from "clsx";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { translations, Language } from "../translations";
@@ -12,9 +12,10 @@ interface MobileInputProps {
     onSend: () => void;
     isLoading: boolean;
     lang?: Language;
+    onNewChat?: () => void;
 }
 
-export function MobileInput({ query, setQuery, onSend, isLoading, lang = 'en' }: MobileInputProps) {
+export function MobileInput({ query, setQuery, onSend, isLoading, lang = 'en', onNewChat }: MobileInputProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isFocused, setIsFocused] = useState(false);
 
@@ -54,7 +55,16 @@ export function MobileInput({ query, setQuery, onSend, isLoading, lang = 'en' }:
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#3B82F6]/5 via-[#14B8A6]/5 to-[#3B82F6]/5 -z-10 blur-xl" />
                     )}
 
-                    <div className="flex items-end gap-2 p-1.5 ps-4">
+                    <div className="flex items-end gap-2 p-1.5 ps-3">
+                        {onNewChat && (
+                            <button
+                                onClick={onNewChat}
+                                title="New chat"
+                                className="flex-none w-9 h-9 mb-0.5 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95 transition-all"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        )}
                         <textarea
                             ref={textareaRef}
                             value={query}

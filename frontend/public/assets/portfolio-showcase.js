@@ -522,13 +522,16 @@
             });
         }
 
-        // Wire CTA buttons to scroll smoothly down to #pfListRoot
+        // Wire CTA buttons: scroll to #pfListRoot on the Portfolio page, or navigate
+        // to /Portfolio when the section is embedded on another page (e.g. Home).
         document.querySelectorAll('.pf-showcase-cta').forEach(function (btn) {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 var target = document.getElementById('pfListRoot');
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.location.href = '/Portfolio';
                 }
             });
         });

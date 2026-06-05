@@ -273,6 +273,16 @@ export default function FundDetailPage() {
                                 {latestNav.toFixed(2)}
                                 <span className="text-sm font-sans font-bold opacity-70">{fund.currency || 'EGP'}</span>
                             </div>
+                            {fund.last_updated && (() => {
+                                const d = new Date(fund.last_updated);
+                                if (isNaN(d.getTime())) return null;
+                                const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+                                return (
+                                    <div className={clsx("text-[10px] font-semibold mt-1", days > 45 ? "text-amber-200" : "text-blue-100/70")}>
+                                        as of {d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}{days > 45 ? " • stale" : ""}
+                                    </div>
+                                );
+                            })()}
                             {chartPerformance !== null && (
                                 <div className={clsx("text-xs font-bold mt-1", chartPerformance >= 0 ? "text-emerald-300" : "text-red-300")}>
                                     {chartPerformance >= 0 ? "▲" : "▼"} {Math.abs(chartPerformance).toFixed(2)}% ({chartPeriod})

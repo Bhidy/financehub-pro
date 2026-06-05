@@ -55,6 +55,7 @@ import { useDomainDetect } from "@/hooks/useDomainDetect";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
 import { DesktopSidebar } from "./components/DesktopSidebar";
 import { translations, Language } from "./translations";
+import SiteNav from "@/components/SiteNav";
 
 const containsArabicChars = (text?: string) => /[\u0600-\u06FF]/.test(text || "");
 const canonicalizeCardType = (value: any): string => {
@@ -96,7 +97,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const { theme, toggleTheme } = useTheme();
     const [lang, setLang] = useState<Language>("en");
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [designMode, setDesignMode] = useState<'pro' | 'analyst'>('pro');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const mainRef = useRef<HTMLElement>(null);
@@ -336,7 +337,16 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
         ];
 
         return (
-            <div className="h-[100dvh] w-full flex bg-[#F8FAFC] dark:bg-[#0B1121] overflow-hidden">
+            <div className="h-[100dvh] w-full flex flex-col bg-[#F8FAFC] dark:bg-[#0B1121] overflow-hidden">
+                {/* ================================================================
+                    TOP NAV - Full-width site navigation
+                    ================================================================ */}
+                <SiteNav lang={lang} onToggleLang={toggleLang} />
+
+                {/* ================================================================
+                    BODY - Sidebar + Main content
+                    ================================================================ */}
+                <div className="flex-1 flex min-h-0 overflow-hidden">
                 {/* ================================================================
                     LEFT SIDEBAR - Ultra Premium Component
                     ================================================================ */}
@@ -359,97 +369,6 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                     MAIN CONTENT AREA (Matches Mockup)
                     ================================================================ */}
                 <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-                    {/* Top Header Bar - StartaAI PRO badge + User button */}
-                    <header className="flex-shrink-0 h-14 px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827]">
-                        <div className="flex items-center gap-2" dir="ltr">
-                            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">STARTA</span>
-                            <span className="px-1.5 py-0.5 rounded-[4px] bg-[#13b8a6]/10 text-[#13b8a6] text-[10px] font-black uppercase tracking-wider">{translations[lang].beta}</span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            {/* Design Switcher (Desktop) */}
-                            <div className="hidden bg-slate-100 dark:bg-white/5 p-1 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-white/10">
-                                <button
-                                    onClick={() => setDesignMode('pro')}
-                                    className={clsx(
-                                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all",
-                                        designMode === 'pro'
-                                            ? "bg-white dark:bg-slate-700 text-[#13b8a6] shadow-sm"
-                                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                    )}
-                                >
-                                    <Sparkles className="w-3 h-3" />
-                                    Pro
-                                </button>
-                                <button
-                                    onClick={() => setDesignMode('analyst')}
-                                    className={clsx(
-                                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all",
-                                        designMode === 'analyst'
-                                            ? "bg-white dark:bg-slate-700 text-[#13b8a6] shadow-sm"
-                                            : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                    )}
-                                >
-                                    <Bot className="w-3 h-3" />
-                                    Analyst
-                                </button>
-                            </div>
-
-                            {/* Language Switcher - HIDDEN as per user request */}
-                            {/* <button
-                                onClick={toggleLang}
-                                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors uppercase"
-                            >
-                                {lang === 'en' ? 'AR' : 'EN'}
-                            </button> */}
-
-                            {/* Dark Mode Toggle */}
-                            <button
-                                onClick={toggleTheme}
-                                className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center text-slate-400 transition-colors"
-                            >
-                                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                            </button>
-
-                            {/* User Button */}
-                            {isAuthenticated ? (
-                                <button
-                                    onClick={() => router.push(getRoute('setting'))}
-                                    className={clsx(
-                                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-sm font-medium transition-colors",
-                                        designMode === 'pro'
-                                            ? "bg-[#13b8a6] hover:bg-[#0f8f82]"
-                                            : "bg-[#13b8a6] hover:bg-[#0f8f82]"
-                                    )}
-                                >
-                                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold overflow-hidden relative">
-                                        {user?.avatar_url ? (
-                                            <img
-                                                src={user.avatar_url}
-                                                alt={user.full_name || "User"}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            user?.full_name?.charAt(0) || "U"
-                                        )}
-                                    </div>
-                                    {user?.full_name?.split(' ')[0] || "User"}
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => router.push(getRoute('login'))}
-                                    className={clsx(
-                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors",
-                                        designMode === 'pro'
-                                            ? "bg-[#13b8a6] hover:bg-[#0f8f82]"
-                                            : "bg-[#13b8a6] hover:bg-[#0f8f82]"
-                                    )}
-                                >
-                                    {translations[lang].signIn}
-                                </button>
-                            )}
-                        </div>
-                    </header>
 
 
 
@@ -617,6 +536,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                         </div>
                     )}
                 </div>
+                </div>{/* end body wrapper */}
             </div>
         );
     }
@@ -653,22 +573,16 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
             </AnimatePresence>
 
             {/* HEADER: Sticky Top */}
-            <div className="sticky top-0 z-40 bg-[#F8FAFC]/95 dark:bg-[#0F172A]/95  border-b border-slate-200/60 dark:border-white/[0.08]">
-                <div className="w-full max-w-[500px] mx-auto">
-                    <MobileHeader
-                        forceMarket={contextMarket}
-                        onNewChat={clearHistory}
-                        onOpenHistory={() => setIsHistoryOpen(true)}
-                        isAuthenticated={isAuthenticated}
-                        hasHistory={isAuthenticated}
-                        remainingQuestions={remainingQuestions}
-                        onLogin={() => router.push(getRoute('login'))}
-                        designMode={designMode}
-                        onToggleDesignMode={() => setDesignMode(designMode === 'pro' ? 'analyst' : 'pro')}
-                        lang={'en'} // Force English
-                        onToggleLang={() => { }} // Disable toggle
-                    />
-                </div>
+            <div className="sticky top-0 z-40">
+                <SiteNav
+                    lang={lang}
+                    onToggleLang={toggleLang}
+                    mobileChatActions={{
+                        onNewChat: clearHistory,
+                        onOpenHistory: () => setIsHistoryOpen(true),
+                        hasHistory: isAuthenticated,
+                    }}
+                />
             </div>
 
             {/* MAIN CONTENT: Natural Flow with Forced Height */}

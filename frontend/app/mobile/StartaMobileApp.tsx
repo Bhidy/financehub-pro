@@ -852,12 +852,12 @@ function fundTypeLabel(fund: Fund, lang: Lang) {
   return lang === "ar" && isArabicText(fund.typeAr) ? fund.typeAr! : fund.type;
 }
 
-function fundReturn(fund: Fund, key: "1M" | "3M" | "YTD" | "1Y" | "3Y" | "5Y") {
+function fundReturn(fund: Fund, key: "1M" | "3M" | "YTD" | "1Y" | "3Y" | "All") {
   if (key === "1M") return fund.return1m;
   if (key === "3M") return fund.return3m;
   if (key === "1Y") return fund.return1y;
   if (key === "3Y") return fund.return3y;
-  if (key === "5Y") return fund.return5y;
+  if (key === "All") return fund.return5y;   // best proxy for "all time" from API fields; chart calculates exact value from NAV history
   return fund.ytd;
 }
 
@@ -2187,7 +2187,7 @@ function NewsScreen({ nav, lang, news }: { nav: NavController; lang: Lang; news:
 
 const FUND_FILTERS = ["All", "Equity", "Sharia", "Balanced", "Fixed Income", "Money Market"] as const;
 type FundFilter = typeof FUND_FILTERS[number];
-type FundSort = "return" | "nav" | "risk" | "aum" | "name";
+type FundSort = "updated" | "return" | "nav" | "risk" | "aum" | "name";
 type RiskBucket = "all" | "low" | "medium" | "high" | "unclassified";
 
 function fundSearchBlob(fund: Fund) {
@@ -2275,7 +2275,7 @@ function FundCard({ fund, rank, lang, selected, onOpen, onToggle }: { fund: Fund
 
 function FundsScreen({ nav, lang, funds }: { nav: NavController; lang: Lang; funds: Fund[] }) {
   const [filter, setFilter] = useState<FundFilter>("All");
-  const [sort, setSort] = useState<FundSort>("return");
+  const [sort, setSort] = useState<FundSort>("updated");
   const [query, setQuery] = useState("");
   const [manager, setManager] = useState("all");
   const [risk, setRisk] = useState<RiskBucket>("all");
@@ -2295,6 +2295,15 @@ function FundsScreen({ nav, lang, funds }: { nav: NavController; lang: Lang; fun
       .filter((fund) => !shariahOnly || fund.shariah)
       .filter((fund) => !q || fundSearchBlob(fund).includes(q))
       .sort((a, b) => {
+        if (sort === "updated") {
+          // Sort by most-recent NAV date (newest first) — matches the /Funds web default.
+          // Use lastNavDate, fall back to lastUpdateDate.
+          const da = new Date(a.lastNavDate || a.lastUpdateDate || 0).getTime();
+          const db = new Date(b.lastNavDate || b.lastUpdateDate || 0).getTime();
+          if (db !== da) return db - da;
+          // Tiebreaker: YTD return descending (deterministic stable order for same-date funds).
+          return (fundReturn(b, "YTD") ?? 0) - (fundReturn(a, "YTD") ?? 0);
+        }
         if (sort === "nav") return b.nav - a.nav;
         if (sort === "risk") return (b.risk ?? -1) - (a.risk ?? -1);
         if (sort === "aum") return toNumber(b.raw?.aum_millions ?? b.raw?.aum) - toNumber(a.raw?.aum_millions ?? a.raw?.aum);
@@ -2313,6 +2322,7 @@ function FundsScreen({ nav, lang, funds }: { nav: NavController; lang: Lang; fun
     setSelectedIds((ids) => ids.includes(id) ? ids.filter((x) => x !== id) : ids.length >= 4 ? ids : [...ids, id]);
   };
   const sortLabels: Record<FundSort, string> = {
+    updated: lang === "ar" ? "آخر تحديث" : "Latest update",
     return: lang === "ar" ? "العائد" : "Return",
     nav: "NAV",
     risk: lang === "ar" ? "المخاطر" : "Risk",
@@ -2329,7 +2339,7 @@ function FundsScreen({ nav, lang, funds }: { nav: NavController; lang: Lang; fun
         actions={(
           <>
             <button className={cx(styles.iconBtn2, searchOpen && styles.iconBtnOn, query && styles.iconBtnMarked)} aria-label={lang === "ar" ? "بحث" : "Search"} onClick={() => setSearchOpen((value) => !value)}><Icon name={searchOpen ? "x" : "search"} size={20} /></button>
-            <button className={cx(styles.iconBtn2, filterOpen && styles.iconBtnOn, (filter !== "All" || sort !== "return" || manager !== "all" || risk !== "all" || shariahOnly) && styles.iconBtnMarked)} aria-label={lang === "ar" ? "الفلاتر" : "Filters"} onClick={() => setFilterOpen((value) => !value)}><Icon name="sliders" size={20} /></button>
+            <button className={cx(styles.iconBtn2, filterOpen && styles.iconBtnOn, (filter !== "All" || sort !== "updated" || manager !== "all" || risk !== "all" || shariahOnly) && styles.iconBtnMarked)} aria-label={lang === "ar" ? "الفلاتر" : "Filters"} onClick={() => setFilterOpen((value) => !value)}><Icon name="sliders" size={20} /></button>
             <button className={cx(styles.iconBtn2, selectedIds.length > 0 && styles.iconBtnMarked)} aria-label={copy[lang].compare} onClick={() => nav.push("compare", { ids: selectedIds })}><Icon name="git-compare" size={20} /></button>
           </>
         )}
@@ -2348,7 +2358,7 @@ function FundsScreen({ nav, lang, funds }: { nav: NavController; lang: Lang; fun
               <select value={sort} onChange={(e) => setSort(e.target.value as FundSort)} aria-label={lang === "ar" ? "ترتيب الصناديق" : "Sort funds"}>
                 {(Object.keys(sortLabels) as FundSort[]).map((key) => <option key={key} value={key}>{sortLabels[key]}</option>)}
               </select>
-              <button type="button" onClick={() => { setFilter("All"); setSort("return"); setManager("all"); setRisk("all"); setShariahOnly(false); }}>{lang === "ar" ? "إعادة ضبط" : "Reset"}</button>
+              <button type="button" onClick={() => { setFilter("All"); setSort("updated"); setManager("all"); setRisk("all"); setShariahOnly(false); }}>{lang === "ar" ? "إعادة ضبط" : "Reset"}</button>
             </div>
             <div className={styles.fundAdvanced}>
               <select value={manager} onChange={(event) => setManager(event.target.value)} aria-label={lang === "ar" ? "مدير الصندوق" : "Fund manager"}>
@@ -3486,7 +3496,7 @@ function FundDetail({ nav, lang, fund }: { nav: NavController; lang: Lang; fund?
         {tab === "profile" ? (
           <>
             <div className={styles.fundReturnGrid}>
-              {(["1M", "3M", "YTD", "1Y", "3Y", "5Y"] as const).map((key) => {
+              {(["1M", "3M", "YTD", "1Y", "3Y", "All"] as const).map((key) => {
                 const ret = fundReturn(fund, key);
                 return <DataStat key={key} label={key} value={ret === undefined ? "—" : pct(ret, 1)} tone={ret === undefined ? undefined : ret >= 0 ? "up" : "down"} />;
               })}

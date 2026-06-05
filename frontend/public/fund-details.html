@@ -169,6 +169,25 @@
             transform: translateY(-1px);
         }
 
+        /* Period performance cards */
+        .perf-card {
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .perf-card:hover {
+            border-color: rgba(20, 184, 166, 0.25);
+            transform: translateY(-1px);
+        }
+        .perf-card-active {
+            border-color: rgba(15, 118, 110, 0.28) !important;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.10), rgba(45, 212, 191, 0.05)) !important;
+            box-shadow: 0 8px 24px rgba(20, 184, 166, 0.12);
+        }
+        .perf-card-active .text-muted {
+            color: var(--teal-dark) !important;
+            opacity: 0.8;
+        }
+
         .chart-toolbar {
             border: 1px solid var(--c-border);
             background: var(--c-surface);
@@ -355,7 +374,7 @@
                             <div class="summary-card rounded-[1.8rem] p-5">
                                 <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="selected_return_label">Selected period return</div>
                                 <div id="fundSelectedReturn" class="mt-4 text-4xl font-display font-bold tracking-[-0.04em] text-main">—</div>
-                                <p id="fundSelectedRange" class="mt-2 text-sm text-muted">ALL</p>
+                                <p id="fundSelectedRange" class="mt-2 text-sm text-muted">YTD</p>
                             </div>
                         </div>
 
@@ -382,10 +401,10 @@
                             <div class="chart-range-shell" id="rangeButtons">
                                 <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="1M">1M</button>
                                 <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="3M">3M</button>
+                                <button class="range-btn active rounded-full px-4 py-2 text-sm font-semibold" data-range="YTD">YTD</button>
                                 <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="1Y">1Y</button>
                                 <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="3Y">3Y</button>
-                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="5Y">5Y</button>
-                                <button class="range-btn active rounded-full px-4 py-2 text-sm font-semibold" data-range="ALL">ALL</button>
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="ALL">All</button>
                             </div>
                         </div>
 
@@ -406,23 +425,34 @@
                 </div>
             </section>
 
-            <section class="mt-8 grid gap-5 lg:grid-cols-4 reveal-block">
-                <div class="summary-card rounded-[1.7rem] p-5">
+            <!-- Period performance cards — one per chart range, all calculated from NAV history,
+                 active card highlights to match the chart selection. Clicking a card also
+                 switches the chart to that period. -->
+            <section class="mt-8 grid gap-5 grid-cols-3 lg:grid-cols-6 reveal-block" id="perfCards">
+                <button class="summary-card perf-card rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="1M">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">1M</div>
+                    <div id="perf1m" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </button>
+                <button class="summary-card perf-card rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="3M">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">3M</div>
+                    <div id="perf3m" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </button>
+                <button class="summary-card perf-card perf-card-active rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="YTD">
                     <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">YTD</div>
-                    <div id="perfYtd" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
-                </div>
-                <div class="summary-card rounded-[1.7rem] p-5">
+                    <div id="perfYtd" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </button>
+                <button class="summary-card perf-card rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="1Y">
                     <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">1Y</div>
-                    <div id="perf1y" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
-                </div>
-                <div class="summary-card rounded-[1.7rem] p-5">
+                    <div id="perf1y" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </button>
+                <button class="summary-card perf-card rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="3Y">
                     <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">3Y</div>
-                    <div id="perf3y" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
-                </div>
-                <div class="summary-card rounded-[1.7rem] p-5">
-                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">5Y</div>
-                    <div id="perf5y" class="mt-4 text-3xl font-display font-bold tracking-[-0.04em] text-main">—</div>
-                </div>
+                    <div id="perf3y" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </button>
+                <button class="summary-card perf-card rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="ALL">
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">All</div>
+                    <div id="perfAll" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
+                </button>
             </section>
 
             <section class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)] reveal-block">
@@ -759,7 +789,7 @@
             funds: [],
             fund: null,
             history: [],
-            chartRange: 'ALL',
+            chartRange: 'YTD',
             chart: null,
             chartSeries: null,
             similarObserver: null,
@@ -913,9 +943,9 @@
             const targetDate = new Date(latestDate);
             if (state.chartRange === '1M') targetDate.setMonth(latestDate.getMonth() - 1);
             if (state.chartRange === '3M') targetDate.setMonth(latestDate.getMonth() - 3);
+            if (state.chartRange === 'YTD') { targetDate.setMonth(0); targetDate.setDate(1); }
             if (state.chartRange === '1Y') targetDate.setFullYear(latestDate.getFullYear() - 1);
             if (state.chartRange === '3Y') targetDate.setFullYear(latestDate.getFullYear() - 3);
-            if (state.chartRange === '5Y') targetDate.setFullYear(latestDate.getFullYear() - 5);
 
             let anchorPoint = null;
             for (let index = history.length - 1; index >= 0; index -= 1) {
@@ -951,6 +981,64 @@
             const last = safeNumber(history[history.length - 1]?.nav);
             if (first === null || last === null || first === 0) return null;
             return ((last - first) / first) * 100;
+        }
+
+        // Build anchor date for a given period label against a sorted history array.
+        function getAnchorForPeriod(history, period) {
+            if (!history.length) return null;
+            const latestDate = new Date(history[history.length - 1].date);
+            const target = new Date(latestDate);
+            if (period === '1M') target.setMonth(latestDate.getMonth() - 1);
+            else if (period === '3M') target.setMonth(latestDate.getMonth() - 3);
+            else if (period === 'YTD') { target.setMonth(0); target.setDate(1); }
+            else if (period === '1Y') target.setFullYear(latestDate.getFullYear() - 1);
+            else if (period === '3Y') target.setFullYear(latestDate.getFullYear() - 3);
+            else return history[0];   // ALL
+
+            // Walk backward to find the last point ON OR BEFORE the target date.
+            for (let i = history.length - 1; i >= 0; i -= 1) {
+                const d = new Date(history[i].date);
+                if (!Number.isNaN(d.getTime()) && d <= target) return history[i];
+            }
+            return null;
+        }
+
+        // Populate all 6 period performance cards from actual NAV history.
+        // Called after history loads (or on every re-render). Also marks the active card.
+        function renderPerfCards(history) {
+            const PERIODS = [
+                { range: '1M',  id: 'perf1m' },
+                { range: '3M',  id: 'perf3m' },
+                { range: 'YTD', id: 'perfYtd' },
+                { range: '1Y',  id: 'perf1y' },
+                { range: '3Y',  id: 'perf3y' },
+                { range: 'ALL', id: 'perfAll' },
+            ];
+            const sorted = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            const lastNav = sorted.length ? safeNumber(sorted[sorted.length - 1].nav) : null;
+
+            PERIODS.forEach(({ range, id }) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const anchor = getAnchorForPeriod(sorted, range);
+                const anchorNav = anchor ? safeNumber(anchor.nav) : null;
+                const ret = (anchorNav !== null && lastNav !== null && anchorNav !== 0)
+                    ? ((lastNav - anchorNav) / anchorNav) * 100
+                    : null;
+                const text = formatPercent(ret);
+                el.textContent = text;
+                el.className = `mt-4 text-2xl font-display font-bold tracking-[-0.04em] ${(ret !== null && ret < 0) ? 'text-red-500' : 'text-main'}`;
+            });
+
+            // Highlight the active card.
+            updatePerfCardHighlight();
+        }
+
+        function updatePerfCardHighlight() {
+            document.querySelectorAll('.perf-card').forEach((card) => {
+                const active = card.dataset.perfRange === state.chartRange;
+                card.classList.toggle('perf-card-active', active);
+            });
         }
 
         function chartTheme() {
@@ -1046,28 +1134,38 @@
             const tooltipDate = document.getElementById('tooltipDate');
             const tooltipValue = document.getElementById('tooltipValue');
 
-            // ---- Robust hover layer (own the hit-testing) ----
-            // lightweight-charts' internal mouse hit-canvas can lag the time scale when the
-            // surrounding layout reflows, which left the most-recent NAV points unreachable by
-            // the native crosshair even though they render correctly. So instead of relying on
-            // it, a transparent layer over the whole plot maps the cursor to the nearest NAV
-            // point (clamped to the series), drives the native crosshair marker via
-            // setCrosshairPosition, and positions the tooltip from that point's own
-            // coordinates. Result: every point — including the latest NAV — is always reachable.
-            const showTooltipForPoint = (pt) => {
-                if (!pt || pt.value === undefined || pt.value === null) { tooltip.classList.remove('visible'); return; }
-                const px = state.chart.timeScale().timeToCoordinate(pt.time);
-                const py = state.chartSeries.priceToCoordinate(pt.value);
-                if (px === null || py === null) { tooltip.classList.remove('visible'); return; }
+            // ---- Robust hover layer (own the hit-testing, coordinate-API-free) ----
+            // The chart renders the line/markers correctly, but lightweight-charts'
+            // time-axis coordinate helpers (coordinateToLogical / timeToCoordinate) can drift
+            // from the rendered geometry on a reflowing layout — which made the newest points
+            // map to mid-series dates and read as "unreachable". So we DON'T use them for hit-
+            // testing: we map the cursor's fraction across the measured PLOT width (container −
+            // price-axis width) straight to the data index, exactly mirroring how the line is
+            // drawn (full data range + the configured right pad). Y uses priceToCoordinate
+            // (the price axis is stable). Result: the point under the cursor — including the
+            // latest NAV at the right — is always correct, on every load.
+            const RIGHT_PAD = 4;
+            const priceAxisWidth = () => { try { return state.chart.priceScale('right').width() || 0; } catch (e) { return 0; } };
+
+            // Custom vertical crosshair guide (the native one can't track the cursor under the overlay)
+            const vGuide = document.createElement('div');
+            vGuide.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;background:rgba(20,184,166,0.5);pointer-events:none;z-index:3;display:none;';
+            container.appendChild(vGuide);
+
+            const showTooltipForPoint = (pt, cursorX) => {
+                if (!pt || pt.value === undefined || pt.value === null) { tooltip.classList.remove('visible'); vGuide.style.display = 'none'; return; }
                 const containerRect = container.getBoundingClientRect();
+                const py = state.chartSeries.priceToCoordinate(pt.value);
                 const date = new Date(pt.time);
                 tooltipDate.textContent = Number.isNaN(date.getTime())
                     ? String(pt.time)
                     : date.toLocaleDateString(getChartLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
                 tooltipValue.textContent = `${state.fund?.currency || 'EGP'} ${Number(pt.value).toFixed(4)}`;
-                tooltip.style.left = `${Math.min(Math.max(px, 90), containerRect.width - 90)}px`;
-                tooltip.style.top = `${Math.max(py - 14, 70)}px`;
+                tooltip.style.left = `${Math.min(Math.max(cursorX, 90), containerRect.width - 90)}px`;
+                tooltip.style.top = `${py !== null ? Math.max(py - 14, 70) : 70}px`;
                 tooltip.classList.add('visible');
+                vGuide.style.left = `${cursorX}px`;
+                vGuide.style.display = 'block';
             };
 
             const hoverLayer = document.createElement('div');
@@ -1079,24 +1177,18 @@
                 const pts = state.chartPoints;
                 if (!pts || !pts.length || !state.chartSeries) return;
                 const rect = hoverLayer.getBoundingClientRect();
-                const localX = clientX - rect.left;
-                let logical = state.chart.timeScale().coordinateToLogical(localX);
-                if (logical === null || Number.isNaN(logical)) {
-                    // Cursor past the plot edge / over the price axis: clamp to the nearer end
-                    // (right side → latest NAV) instead of dropping the tooltip.
-                    logical = localX > rect.width / 2 ? pts.length - 1 : 0;
-                }
-                const idx = Math.max(0, Math.min(pts.length - 1, Math.round(logical)));
-                const pt = pts[idx];
-                if (!pt) return;
-                try { state.chart.setCrosshairPosition(pt.value, pt.time, state.chartSeries); } catch (error) { /* noop */ }
-                showTooltipForPoint(pt);
+                const lx = Math.max(0, Math.min(rect.width, clientX - rect.left));
+                const plotW = Math.max(1, rect.width - priceAxisWidth());
+                const frac = Math.max(0, Math.min(1, lx / plotW));
+                // data points occupy logical [0 .. lastIdx] inside a [0 .. lastIdx+RIGHT_PAD] range
+                const idx = Math.max(0, Math.min(pts.length - 1, Math.round(frac * ((pts.length - 1) + RIGHT_PAD))));
+                showTooltipForPoint(pts[idx], lx);
             };
 
             hoverLayer.addEventListener('mousemove', (event) => handleHover(event.clientX));
             hoverLayer.addEventListener('mouseleave', () => {
-                try { state.chart.clearCrosshairPosition(); } catch (error) { /* noop */ }
                 tooltip.classList.remove('visible');
+                vGuide.style.display = 'none';
             });
 
             window.addEventListener('resize', () => {
@@ -1129,7 +1221,11 @@
 
             document.getElementById('fundSelectedReturn').textContent = formatPercent(rangeReturn);
             document.getElementById('fundSelectedReturn').className = `mt-4 text-4xl font-display font-bold tracking-[-0.04em] ${(rangeReturn !== null && rangeReturn < 0) ? 'text-red-500' : 'text-main'}`;
-            document.getElementById('fundSelectedRange').textContent = state.chartRange;
+            document.getElementById('fundSelectedRange').textContent = state.chartRange === 'ALL' ? 'All' : state.chartRange;
+
+            // Refresh the 6 period cards and re-highlight the active one.
+            if (state.history.length) renderPerfCards(state.history);
+            else updatePerfCardHighlight();
 
             if (chartData.length < 2) {
                 chartEmpty.style.display = 'flex';
@@ -1405,10 +1501,14 @@
             if (fund.is_shariah) chips.push(`<span class="chip border-emerald-200 bg-emerald-50 text-emerald-700">${escapeHtml(labels.shariah)}</span>`);
             document.getElementById('fundChips').innerHTML = chips.join('');
 
+            // Period cards are populated from NAV history once it loads (renderPerfCards).
+            // Seed with API-supplied returns as a fast first-paint placeholder.
             document.getElementById('perfYtd').textContent = formatPercent(safeNumber(fund.returns_ytd ?? fund.ytd_return));
             document.getElementById('perf1y').textContent = formatPercent(safeNumber(fund.returns_1y ?? fund.one_year_return));
             document.getElementById('perf3y').textContent = formatPercent(safeNumber(fund.returns_3y ?? fund.three_year_return));
-            document.getElementById('perf5y').textContent = formatPercent(safeNumber(fund.returns_5y ?? fund.five_year_return));
+            document.getElementById('perf1m').textContent = '—';
+            document.getElementById('perf3m').textContent = '—';
+            document.getElementById('perfAll').textContent = '—';
 
             renderProfileDetails(fund);
             
@@ -1808,11 +1908,24 @@
                 });
             });
 
+            // Chart range buttons (1M / 3M / YTD / 1Y / 3Y / All)
             document.querySelectorAll('[data-range]').forEach((button) => {
                 button.addEventListener('click', () => {
                     state.chartRange = button.dataset.range;
                     document.querySelectorAll('[data-range]').forEach((candidate) => {
                         candidate.classList.toggle('active', candidate.dataset.range === state.chartRange);
+                    });
+                    renderChart();
+                });
+            });
+
+            // Period performance cards — clicking a card switches the chart to that period.
+            document.querySelectorAll('[data-perf-range]').forEach((card) => {
+                card.addEventListener('click', () => {
+                    state.chartRange = card.dataset.perfRange;
+                    // Keep the chart toolbar in sync.
+                    document.querySelectorAll('[data-range]').forEach((btn) => {
+                        btn.classList.toggle('active', btn.dataset.range === state.chartRange);
                     });
                     renderChart();
                 });

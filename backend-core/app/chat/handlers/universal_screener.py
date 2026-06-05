@@ -186,11 +186,12 @@ async def handle_universal_screener(
             "roe", "roa", "roce", "roic"
         }
         
-        if metric_key in PERCENTAGE_METRICS and isinstance(value, (int, float)) and abs(value) > 1.0:
-            original_val = value
-            value = value / 100.0
-            # logger.info(f"Scaled {metric_key}: {original_val} -> {value}")
-        
+        display_value = value  # human-readable value for the criteria summary
+        is_pct_metric = metric_key in PERCENTAGE_METRICS
+        if is_pct_metric and isinstance(value, (int, float)) and abs(value) > 1.0:
+            value = value / 100.0  # scale user "20" -> 0.20 to match the fraction column
+            # display_value keeps the original "20" (shown as 20%)
+
         db_col = METRIC_MAP.get(metric_key)
         sql_op = OPERATOR_MAP.get(operator_key)
         
@@ -198,9 +199,11 @@ async def handle_universal_screener(
             params.append(value)
             sql += f" AND {db_col} {sql_op} ${len(params)}"
             
-            # Build description
+            # Build description (show the human value: % for ratio metrics)
             op_human = ">" if "gt" in operator_key else "<" if "lt" in operator_key else "="
-            query_description_parts.append(f"{metric_key} {op_human} {value}")
+            _label = str(metric_key).replace('_', ' ')
+            _shown = f"{display_value}%" if is_pct_metric else f"{display_value}"
+            query_description_parts.append(f"{_label} {op_human} {_shown}")
             
     # Apply Sorting
     order_clause = "ORDER BY m.market_cap DESC"  # Default
@@ -282,9 +285,25 @@ async def handle_universal_screener(
         if sector:
             title = f"أسهم {sector}"
 
+    # Rich, accurate summary used verbatim (STRICT_HANDLER_NARRATIVE_INTENTS) so the
+    # LLM narrator can't hallucinate "no stocks" over a non-empty result set.
+    crit = ", ".join(query_description_parts) if query_description_parts else (sort_by or "market cap")
+    _top = stocks[:5]
+    if language == 'ar':
+        _lines = [f"🔍 وجدت {len(stocks)} سهماً ({crit}):"]
+        _lines += [f"• {s.get('name') or s.get('symbol')} ({s.get('symbol')})" for s in _top]
+        if len(stocks) > len(_top):
+            _lines.append(f"و{len(stocks) - len(_top)} أخرى…")
+    else:
+        _lines = [f"🔍 Found {len(stocks)} stocks ({crit}):"]
+        _lines += [f"• {s.get('name') or s.get('symbol')} ({s.get('symbol')})" for s in _top]
+        if len(stocks) > len(_top):
+            _lines.append(f"…and {len(stocks) - len(_top)} more.")
+    summary_msg = "\n".join(_lines)
+
     return {
         "success": True,
-        "message": f"Found {len(stocks)} stocks.",
+        "message": summary_msg,
         "cards": [
             {
                 "type": CardType.SCREENER_RESULTS, # Uses existing ScreenerResults card

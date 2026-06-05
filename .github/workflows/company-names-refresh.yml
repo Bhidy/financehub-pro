@@ -1,0 +1,35 @@
+name: Company Names Refresh (TradingView)
+
+# Backfills market_tickers.name_en for EGX from TradingView's `description` field.
+# Fixes the long-standing gap where 95% of EGX rows had name_en = the ticker
+# symbol, so the English website / app / AI-chat showed "COMI" instead of
+# "Commercial International Bank". Idempotent + safe (only writes name_en, never
+# blanks a real name). The web/app/chat read name_en live, so no redeploy needed.
+# Names change rarely (new listings / renames) -> weekly is plenty.
+
+on:
+  schedule:
+    - cron: '30 6 * * 1'    # Mondays ~09:30 Cairo
+  workflow_dispatch:
+
+concurrency:
+  group: company-names-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install asyncpg httpx
+      - name: Refresh EGX company names from TradingView
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend-core/scripts/refresh_company_names.py

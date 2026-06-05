@@ -1,6 +1,11 @@
 # Starta Markets — Deployment
 *Verified against the actual scripts/workflows, 2026-06.*
 
+> ⚠️ **To actually deploy, follow [`DEPLOY_RUNBOOK.md`](./DEPLOY_RUNBOOK.md) and run the
+> one-command scripts `scripts/deploy-web.sh` / `scripts/ship-ios.sh`.** That runbook is
+> the procedure (and resolves the `finhub`-vs-stray-`frontend` project trap that has
+> repeatedly broken deploys). This file is reference background. **Do not hand-run `vercel`.**
+
 Two independently-deployed pieces: **frontend → Vercel**, **backend → Hetzner**. The DB (Supabase) is managed and not deployed.
 
 ---
@@ -11,19 +16,19 @@ Two independently-deployed pieces: **frontend → Vercel**, **backend → Hetzne
 
 > **Root-directory rule:** Vercel's project Root Directory is `frontend`. **Never run `vercel` from inside `frontend/`** — it creates a stray project + `.vercel` link. Always run from the repo root.
 
-### ⚠️ MANDATORY post-deploy step — alias the domain
-A `git push` does **not** automatically point `startamarkets.com` at the new build (the custom domain can stay stuck on an old deployment — this is the #1 "my changes aren't showing" cause). After every deploy:
-
+### ✅ Just run the script — it deploys + aliases + verifies
 ```bash
-# 1. Get the newest deployment URL (from repo root)
-./frontend/node_modules/.bin/vercel ls --yes | grep finhub | head -3
-
-# 2. Point both domains at it
-./frontend/node_modules/.bin/vercel alias set <new-deploy-url> startamarkets.com
-./frontend/node_modules/.bin/vercel alias set <new-deploy-url> www.startamarkets.com
+./scripts/deploy-web.sh            # deploy current commit → alias domain → verify live
+./scripts/deploy-web.sh verify     # only re-check the live site + API (no deploy)
 ```
 
-Verify: `curl -s -o /dev/null -w '%{http_code}' https://startamarkets.com/` → `200`.
+> **Why the alias step matters:** a `git push` — or a deploy to the *wrong* project —
+> does **not** reliably point `startamarkets.com` at the new build (the domain can stay
+> stuck on an old deployment: the #1 "my changes aren't showing" cause). `deploy-web.sh`
+> re-aliases `startamarkets.com` + `www` on every run, so this can't bite you. If you
+> ever must do it by hand, run vercel **from the repo ROOT** (never from `frontend/` —
+> that creates a stray project): `./frontend/node_modules/.bin/vercel --prod` then
+> `./frontend/node_modules/.bin/vercel alias set <url> startamarkets.com`.
 
 **Cache-busting:** when you change a static asset under `frontend/public/assets/`, bump its `?v=X.X.X` query in the referencing HTML, or the CDN serves the old file. (See `STARTAMARKETS_PUBLIC_SITE.md`.)
 

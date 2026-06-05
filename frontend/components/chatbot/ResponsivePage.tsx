@@ -407,13 +407,20 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                             <div className="relative group">
                                                 <div className="absolute inset-0 bg-[#13b8a6]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                                 <div className="relative flex items-center gap-3 p-2 pe-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                                    <button
+                                                        onClick={clearHistory}
+                                                        title="New chat"
+                                                        className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
                                                     <input
                                                         type="text"
                                                         value={query}
                                                         onChange={(e) => setQuery(e.target.value)}
                                                         onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                                         placeholder={typewriterPlaceholder}
-                                                        className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-base"
+                                                        className="flex-1 bg-transparent border-none outline-none px-2 py-3 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-base"
                                                     />
                                                     <button
                                                         onClick={handleSend}
@@ -614,13 +621,20 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                             <div className="absolute -inset-0.5 bg-gradient-to-r from-[#13b8a6]/30 to-[#13b8a6]/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                                             <div className="relative flex items-center gap-2 p-2 pr-2 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-[#1E293B] shadow-lg shadow-slate-200/50 dark:shadow-[#0F172A]/20">
+                                                <button
+                                                    onClick={clearHistory}
+                                                    title="New chat"
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </button>
                                                 <input
                                                     type="text"
                                                     value={query}
                                                     onChange={(e) => setQuery(e.target.value)}
                                                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                                                     placeholder={typewriterPlaceholder}
-                                                    className="flex-1 bg-transparent border-none outline-none px-3 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm font-medium"
+                                                    className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm font-medium"
                                                 />
                                                 <button
                                                     onClick={handleSend}

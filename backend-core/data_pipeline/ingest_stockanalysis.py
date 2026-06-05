@@ -666,10 +666,22 @@ async def scrape_and_insert(
             vals = list(row.values())
             placeholders = ", ".join(f"${i+1}" for i in range(len(cols)))
             
-            # Since we deleted first, conflict shouldn't theoretically happen on the same run,
-            # but good to keep safe for race conditions (though we are sequential here).
-            # We used DELETE, so just INSERT is fine. But let's keep ON CONFLICT DO NOTHING just in case.
-            conflict_clause = f"ON CONFLICT ({', '.join(unique_cols)}) DO NOTHING"
+            # ANNUAL rows have NULL fiscal_quarter. The 4-col UNIQUE can't dedupe NULLs
+            # (Postgres treats NULL as distinct), which previously let the same annual
+            # period insert multiple times. Target the partial unique index
+            # (symbol, fiscal_year, period_type) WHERE fiscal_quarter IS NULL and UPSERT
+            # so re-runs refresh instead of duplicating (or erroring on the index).
+            _fin = ('income_statements', 'balance_sheets', 'cashflow_statements')
+            if table_name in _fin and 'fiscal_quarter' in unique_cols:
+                _k = [c for c in unique_cols if c != 'fiscal_quarter']
+                _u = [c for c in cols if c not in _k]
+                if _u:
+                    conflict_clause = (f"ON CONFLICT ({', '.join(_k)}) WHERE fiscal_quarter IS NULL "
+                                       f"DO UPDATE SET " + ", ".join(f"{c} = EXCLUDED.{c}" for c in _u))
+                else:
+                    conflict_clause = f"ON CONFLICT ({', '.join(_k)}) WHERE fiscal_quarter IS NULL DO NOTHING"
+            else:
+                conflict_clause = f"ON CONFLICT ({', '.join(unique_cols)}) DO NOTHING"
             
             query = f"""
                 INSERT INTO {table_name} ({', '.join(cols)})

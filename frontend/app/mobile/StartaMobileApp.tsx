@@ -2876,9 +2876,7 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
   const tools: MoreItem[] = [
     { label: t.watchlist, sub: lang === "ar" ? "الرموز المتابَعة" : "Tracked symbols", icon: "star", action: () => nav.push("watchlist") },
     { label: t.alerts, sub: lang === "ar" ? "إشارات بدون تداول" : "Signals, no trading", icon: "bell", action: () => nav.push("alerts") },
-    { label: t.portfolioIntel, sub: lang === "ar" ? "تحليلات المحفظة" : "Portfolio analytics", icon: "line-chart", action: () => nav.push("portfolio-intel") },
     { label: t.learn, sub: lang === "ar" ? "أكاديمية Starta" : "Starta Academy", icon: "graduation-cap", action: () => nav.push("learn") },
-    { label: t.compare, sub: lang === "ar" ? "قارن الصناديق" : "Compare funds", icon: "git-compare", action: () => nav.push("compare") },
     { label: t.settings, sub: lang === "ar" ? "التفضيلات" : "Preferences", icon: "settings", action: () => nav.push("settings") },
   ];
   const prefs: MoreItem[] = [

@@ -2832,12 +2832,6 @@ function Allocation({ portfolio, lang }: { portfolio: PortfolioPosition[]; lang:
           <span>{active?.symbol ?? "—"}</span>
           <strong>{active ? `${active.weight.toFixed(1)}%` : "—"}</strong>
         </button>
-        <div className={styles.allocationSummary}>
-          <span>{lang === "ar" ? "أكبر مركز" : "Largest holding"}</span>
-          <strong>{active ? active.symbol : "—"}</strong>
-          <p>{active ? money(active.value, lang, 0) : "—"} · {active ? `${active.quantity ? formatNumber(active.quantity, { maximumFractionDigits: 0 }) : "—"} ${lang === "ar" ? "سهم" : "shares"}` : ""}</p>
-          <Delta value={active?.plPct ?? 0} />
-        </div>
       </div>
       <div className={styles.allocationCards}>
         {rows.map((p) => (

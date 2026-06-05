@@ -3433,6 +3433,9 @@ class ChatService:
                 Intent.FUND_MANAGER,
                 Intent.FUND_SEARCH,
                 Intent.FUND_MOVERS,
+                Intent.SCREENER_DEEP,
+                Intent.SCREENER_SAFETY,
+                Intent.SCREENER_GROWTH,
             }
             sector_metric_query = bool(entities.get("sector_metric_query"))
             use_handler_narrative_only = (

@@ -6,13 +6,13 @@ Handles CATALYST_CALENDAR intent: dividend dates, analyst events, key watchlist 
 
 Note: Full calendar data requires a dedicated 'corporate_events' table.
 If not yet available, this handler gracefully falls back to dividend signals
-from app.chat.currency_utils import get_ticker_currency, is_egx_market
 from stock_statistics + company calendar from corporate_actions.
 """
 
 import asyncpg
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
+from app.chat.currency_utils import get_ticker_currency, is_egx_market
 
 
 async def handle_catalyst_calendar(
@@ -74,7 +74,29 @@ async def handle_catalyst_calendar(
                 "icon": "💰" if "dividend" in action_type else "📋",
             })
 
-
+        # Upcoming dividend from the fresh TradingView snapshot (egx_dividends),
+        # which carries forward ex-dates that the corporate_actions table lacks.
+        tvdiv = await conn.fetchrow("""
+            SELECT amount_upcoming, ex_date_upcoming, payment_date_upcoming
+            FROM egx_dividends
+            WHERE UPPER(symbol) = $1 AND ex_date_upcoming IS NOT NULL
+        """, symbol.upper())
+        if tvdiv and tvdiv["ex_date_upcoming"]:
+            try:
+                exd = datetime.fromtimestamp(int(tvdiv["ex_date_upcoming"]), tz=timezone.utc).date()
+            except Exception:
+                exd = None
+            if exd and exd >= datetime.now(tz=timezone.utc).date():
+                amt = float(tvdiv["amount_upcoming"]) if tvdiv["amount_upcoming"] is not None else None
+                events.insert(0, {
+                    "event_type": "Upcoming Dividend" if language == "en" else "توزيع نقدي قادم",
+                    "symbol": symbol,
+                    "company": header_name,
+                    "date": str(exd),
+                    "ex_date": str(exd),
+                    "amount": f"{amt:,.2f} EGP" if amt else None,
+                    "icon": "🔜",
+                })
 
     # ── 2. Market-wide upcoming events ───────────────────────────────────────
     else:
@@ -107,6 +129,41 @@ async def handle_catalyst_calendar(
                 "amount": f"{amount:,.2f} EGP" if amount else None,
                 "icon": "💰" if "dividend" in action_type else "📋",
             })
+
+        # Fresh upcoming dividends from egx_dividends (TradingView forward calendar).
+        tv_upcoming = await conn.fetch("""
+            SELECT d.symbol, d.amount_upcoming, d.ex_date_upcoming,
+                   mt.name_en, mt.name_ar, mt.sector_name
+            FROM egx_dividends d
+            JOIN market_tickers mt ON d.symbol = mt.symbol AND mt.market_code = $1
+            WHERE d.ex_date_upcoming IS NOT NULL
+        """, market_code)
+        today = datetime.now(tz=timezone.utc).date()
+        tv_events: List[Dict[str, Any]] = []
+        for d in tv_upcoming:
+            try:
+                exd = datetime.fromtimestamp(int(d["ex_date_upcoming"]), tz=timezone.utc).date()
+            except Exception:
+                continue
+            if exd < today:
+                continue
+            amt = float(d["amount_upcoming"]) if d["amount_upcoming"] is not None else None
+            tv_events.append({
+                "event_type": "Upcoming Dividend" if language == "en" else "توزيع نقدي قادم",
+                "symbol": d["symbol"],
+                "company": (d["name_ar"] if language == "ar" else d["name_en"]) or d["symbol"],
+                "sector": d["sector_name"],
+                "date": str(exd),
+                "ex_date": str(exd),
+                "amount": f"{amt:,.2f} EGP" if amt else None,
+                "icon": "🔜",
+                "_sort": exd.isoformat(),
+            })
+        tv_events.sort(key=lambda e: e["_sort"])
+        for e in tv_events:
+            e.pop("_sort", None)
+        # Surface upcoming TV dividends first (the actually-forthcoming events).
+        events = tv_events + events
 
     # ── 3. Add static macro catalysts (always relevant) ──────────────────────
     macro_catalysts = _get_macro_catalysts(language)

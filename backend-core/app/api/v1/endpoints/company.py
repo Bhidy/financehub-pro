@@ -60,9 +60,9 @@ async def get_company_profile(symbol: str):
 async def get_company_financials(symbol: str):
     db_symbol = await resolve_symbol(symbol)
     return await db.fetch_all("""
-        SELECT * FROM financial_statements 
-        WHERE symbol = $1 
-        ORDER BY fiscal_year DESC 
+        SELECT * FROM financial_statements_v
+        WHERE symbol = $1
+        ORDER BY fiscal_year DESC
         LIMIT 20
     """, db_symbol)
 

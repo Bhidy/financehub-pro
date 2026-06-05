@@ -3933,8 +3933,10 @@ function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summ
     }
   }, [open, seed, runId]);
   useEffect(() => {
-    if (open) messagesEndRef.current?.scrollIntoView({ block: "end" });
+    if (open) messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length, loading, open]);
+  // Smooth-pin to the newest content as the typewriter writes (mirrors web /AiChat onTyping).
+  const scrollToEnd = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   async function ask(text: string) {
     const prompt = text.trim();
     if (!prompt || loading) return;
@@ -3962,6 +3964,11 @@ function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summ
     setMessages((m) => [...m, answer]);
     setLoading(false);
   }
+  // Only the newest assistant message runs the typewriter; older messages render in full.
+  let lastAssistantIdx = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "assistant") { lastAssistantIdx = i; break; }
+  }
   return (
     <AnimatePresence>
       {open ? (
@@ -3988,7 +3995,7 @@ function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summ
                 {messages.map((m, i) =>
                   m.role === "user"
                     ? <div key={i} className={styles.userBubble}><p>{m.text}</p></div>
-                    : <MobileAiResponse key={i} message={m} lang={lang} onAsk={ask} />
+                    : <MobileAiResponse key={i} message={m} lang={lang} onAsk={ask} isLatest={i === lastAssistantIdx && !loading} onTyping={scrollToEnd} />
                 )}
                 {loading ? <div className={styles.aiBubble}><p>{lang === "ar" ? "يحلل Starta AI البيانات الحية..." : "Starta AI is analyzing live data..."}</p></div> : null}
                 <div ref={messagesEndRef} />
@@ -4027,13 +4034,27 @@ function mobileCanonicalCardType(value: unknown): string {
   return String(value ?? "").trim().replace(/^cardtype\./i, "").toLowerCase();
 }
 
-function MobileAiResponse({ message, lang, onAsk }: { message: AiMessage; lang: Lang; onAsk: (query: string) => void }) {
+function MobileAiResponse({ message, lang, onAsk, isLatest = false, onTyping }: { message: AiMessage; lang: Lang; onAsk: (query: string) => void; isLatest?: boolean; onTyping?: () => void }) {
   const resp = message.response;
+  // Mirror WorldClassMessage's typewriter length so we know if it will animate.
+  // (When there is no narrative to type, WCM completes instantly WITHOUT firing
+  // onTypingComplete — so reveal the extras immediately in that case.)
+  const sn = (resp as { structured_narrative?: Record<string, unknown> } | undefined)?.structured_narrative;
+  const narrativeLen = sn
+    ? ["personal_greeting", "context_bridge", "human_opening", "core_narrative", "risk_warning"]
+        .reduce((n, k) => n + (typeof sn[k] === "string" ? (sn[k] as string).length : 0), 0)
+    : (resp?.conversational_text || message.text || "").length;
+  const willType = isLatest && narrativeLen > 0;
+  // Reveal cards/followups/actions only AFTER the narrative finishes typing
+  // (mirrors the web MessageRenderer, which gates these behind isTypingCompleted).
+  const [typingDone, setTypingDone] = useState(!willType);
+  useEffect(() => { if (!willType) setTypingDone(true); }, [willType]);
   // Cards WorldClassMessage already renders inline are excluded here (mirrors web).
   const leftoverCards = (resp?.cards || []).filter(
     (card) => !MOBILE_WORLDCLASS_CARD_TYPES.has(mobileCanonicalCardType((card as { type?: unknown })?.type)),
   );
   const followups = resp?.followups || [];
+  const hasExtras = leftoverCards.length > 0 || !!resp?.fact_explanations || followups.length > 0 || !!resp?.follow_up_prompt || (!!resp?.actions && resp.actions.length > 0);
   return (
     <div className="flex gap-2.5 w-full" dir={lang === "ar" ? "rtl" : "ltr"}>
       <div className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 mt-0.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-serif">S</div>
@@ -4042,32 +4063,43 @@ function MobileAiResponse({ message, lang, onAsk }: { message: AiMessage; lang: 
           conversationalText={resp?.conversational_text || message.text}
           response={resp}
           lang={lang}
-          isLatest={false}
+          isLatest={isLatest}
+          onTyping={onTyping}
+          onTypingComplete={() => setTypingDone(true)}
         />
-        {leftoverCards.length > 0 ? (
-          <ChatCards
-            cards={leftoverCards}
-            language={lang}
-            onSymbolClick={(symbol: string) => onAsk(lang === "ar" ? `حلّل سهم ${symbol}` : `Analyze ${symbol}`)}
-            onExampleClick={onAsk}
-          />
-        ) : null}
-        {resp?.fact_explanations ? (
-          <div className="mt-1 pt-2 border-t border-slate-100 dark:border-white/10">
-            <FactExplanations explanations={resp.fact_explanations} language={lang} />
-          </div>
-        ) : null}
-        {followups.length > 0 ? (
-          <FollowUpChips followups={followups} onAction={onAsk} language={lang} />
-        ) : resp?.follow_up_prompt ? (
-          <FollowUpPrompt content={resp.follow_up_prompt} />
-        ) : null}
-        {resp?.actions && resp.actions.length > 0 && followups.length === 0 ? (
-          <ActionsBar
-            actions={resp.actions}
-            language={lang}
-            onAction={(action: { label?: string; payload?: string }) => onAsk(String(action?.label || action?.payload || ""))}
-          />
+        {typingDone && hasExtras ? (
+          <motion.div
+            className="flex flex-col gap-3"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {leftoverCards.length > 0 ? (
+              <ChatCards
+                cards={leftoverCards}
+                language={lang}
+                onSymbolClick={(symbol: string) => onAsk(lang === "ar" ? `حلّل سهم ${symbol}` : `Analyze ${symbol}`)}
+                onExampleClick={onAsk}
+              />
+            ) : null}
+            {resp?.fact_explanations ? (
+              <div className="mt-1 pt-2 border-t border-slate-100 dark:border-white/10">
+                <FactExplanations explanations={resp.fact_explanations} language={lang} />
+              </div>
+            ) : null}
+            {followups.length > 0 ? (
+              <FollowUpChips followups={followups} onAction={onAsk} language={lang} />
+            ) : resp?.follow_up_prompt ? (
+              <FollowUpPrompt content={resp.follow_up_prompt} />
+            ) : null}
+            {resp?.actions && resp.actions.length > 0 && followups.length === 0 ? (
+              <ActionsBar
+                actions={resp.actions}
+                language={lang}
+                onAction={(action: { label?: string; payload?: string }) => onAsk(String(action?.label || action?.payload || ""))}
+              />
+            ) : null}
+          </motion.div>
         ) : null}
         <small className={styles.aiDisclaimer}>{lang === "ar" ? "للأغراض المعلوماتية فقط · ليست نصيحة استثمارية" : "Informational only · not investment advice"}</small>
       </div>

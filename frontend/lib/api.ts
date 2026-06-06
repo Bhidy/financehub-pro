@@ -728,6 +728,11 @@ export const fetchEgxEstimates = async (symbol: string) => {
     return data;
 };
 
+export const fetchEgxSeasonals = async (symbol: string) => {
+    const { data } = await localApi.get(`/egx/seasonals/${symbol}`);
+    return data;
+};
+
 export const fetchEgxFinancialsTV = async (symbol: string) => {
     const { data } = await localApi.get(`/egx/financials-tv/${symbol}`);
     return data;

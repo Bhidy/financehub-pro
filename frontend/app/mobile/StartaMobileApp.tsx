@@ -216,6 +216,10 @@ type CompanyProfileBundle = {
   ratios: Record<string, unknown>[];
   shareholders: Record<string, unknown>[];
   actions: Record<string, unknown>[];
+  // TradingView-native parity (mirrors the website /symbol page).
+  financialsTv: Record<string, unknown>[];
+  technicals: Record<string, unknown>[];
+  estimates?: Record<string, unknown>;
 };
 type NavController = {
   push: (name: PushName, props?: Record<string, unknown>) => void;
@@ -703,7 +707,7 @@ function normalizeNews(row: Record<string, unknown>, lang: Lang): NewsItem {
 
 async function loadCompanyProfile(symbol: string): Promise<CompanyProfileBundle> {
   const clean = encodeURIComponent(symbol);
-  const [websiteProfile, profileRaw, financials, ratios, shareholders, actions, egxStats] = await Promise.all([
+  const [websiteProfile, profileRaw, financials, ratios, shareholders, actions, egxStats, financialsTv, technicals, estimates] = await Promise.all([
     getJson<{ profile?: Record<string, unknown>; market_data?: Record<string, unknown>; statistics?: Record<string, unknown> }>(`/api/v1/company/${clean}/profile`, { ttl: 60_000 }),
     getJson<{ profile?: Record<string, unknown> }>(`/api/v1/company-profile-v2?symbol=${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/financials/${clean}`, { ttl: 60_000 }),
@@ -712,6 +716,10 @@ async function loadCompanyProfile(symbol: string): Promise<CompanyProfileBundle>
     getJson<Record<string, unknown>[]>(`/api/v1/corporate-actions?symbol=${clean}`, { ttl: 60_000 }),
     // Real TradingView-sourced valuation/technical stats (beta, MAs, RSI, P/E, P/B, 52w…).
     getJson<Record<string, unknown>>(`/api/v1/egx/statistics/${clean}`, { ttl: 60_000 }),
+    // TradingView-native parity — same feeds the website /symbol page consumes.
+    getJson<{ years?: Record<string, unknown>[] }>(`/api/v1/egx/financials-tv/${clean}`, { ttl: 60_000 }),
+    getJson<{ timeframes?: Record<string, unknown>[] }>(`/api/v1/egx/technicals/${clean}`, { ttl: 60_000 }),
+    getJson<Record<string, unknown>>(`/api/v1/egx/estimates/${clean}`, { ttl: 60_000 }),
   ]);
   return {
     profile: { ...(profileRaw?.profile ?? {}), ...(websiteProfile?.profile ?? {}) },
@@ -722,6 +730,9 @@ async function loadCompanyProfile(symbol: string): Promise<CompanyProfileBundle>
     ratios: Array.isArray(ratios) ? ratios : [],
     shareholders: Array.isArray(shareholders) ? shareholders : [],
     actions: Array.isArray(actions) ? actions : [],
+    financialsTv: Array.isArray(financialsTv?.years) ? financialsTv.years : [],
+    technicals: Array.isArray(technicals?.timeframes) ? technicals.timeframes : [],
+    estimates: estimates ?? undefined,
   };
 }
 
@@ -3905,10 +3916,10 @@ function PortfolioDetail({ nav, lang, portfolio, stocks }: { nav: NavController;
 // "Quote Detail") with full fundamentals (profile, financials, ownership, actions).
 function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
   const wl = useWatchlist();
-  const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], shareholders: [], actions: [] });
+  const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], shareholders: [], actions: [], financialsTv: [], technicals: [] });
   const [bars, setBars] = useState<OhlcBar[]>([]);
   const [tf, setTf] = useState<string>("3M");
-  const [tab, setTab] = useState<"overview" | "financials" | "ownership" | "actions">("overview");
+  const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "ownership" | "actions">("overview");
   const symbol = stock?.symbol;
 
   // Fundamentals load once per symbol — the page is already usable from `stock`
@@ -3999,6 +4010,44 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const on = wl.has(stock.symbol);
   const up = stock.changePct >= 0;
 
+  // ── TradingView-native: annual financial summary (sorted desc, ~8 years).
+  const tvFinancialYears = [...bundle.financialsTv]
+    .sort((a, b) => toNumber(b.fiscal_year) - toNumber(a.fiscal_year))
+    .slice(0, 8);
+
+  // ── TradingView-native: technicals (default to the 1D timeframe).
+  const tvTech1D = bundle.technicals.find((t) => String(t.timeframe) === "1D");
+  const techRec = recVerdict(tvTech1D ? optionalNumber(tvTech1D.recommend_all) : undefined);
+  const techIndicators = tvTech1D
+    ? [
+        ["RSI", optionalNumber(tvTech1D.rsi)],
+        ["MACD", optionalNumber(tvTech1D.macd_macd)],
+        [lang === "ar" ? "ستوكاستيك %K" : "Stochastic %K", optionalNumber(tvTech1D.stoch_k)],
+        ["CCI", optionalNumber(tvTech1D.cci20)],
+        ["ADX", optionalNumber(tvTech1D.adx)],
+        [lang === "ar" ? "الزخم" : "Momentum", optionalNumber(tvTech1D.mom)],
+        ["EMA 50", optionalNumber(tvTech1D.ema50)],
+        ["EMA 200", optionalNumber(tvTech1D.ema200)],
+        ["SMA 50", optionalNumber(tvTech1D.sma50)],
+        ["SMA 200", optionalNumber(tvTech1D.sma200)],
+      ].map(([label, value]) => ({ label: String(label), value: value === undefined ? "—" : toNumber(value).toFixed(2) }))
+    : [];
+
+  // ── TradingView-native: analyst estimates / forecasts.
+  const estimates = bundle.estimates ?? {};
+  const estimatesCovered = estimates.covered === true;
+  const targetAvg = optionalNumber(estimates.target_average);
+  const targetLow = optionalNumber(estimates.target_low);
+  const targetHigh = optionalNumber(estimates.target_high);
+  const targetUpside = targetAvg !== undefined && stock.price > 0 ? ((targetAvg - stock.price) / stock.price) * 100 : undefined;
+  const recBuySide = toNumber(estimates.rec_buy) + toNumber(estimates.rec_over);
+  const recHold = toNumber(estimates.rec_hold);
+  const recSellSide = toNumber(estimates.rec_sell) + toNumber(estimates.rec_under);
+  const recTotal = toNumber(estimates.rec_total);
+  const epsNextFq = optionalNumber(estimates.eps_fcst_next_fq);
+  const revNextFq = optionalNumber(estimates.rev_fcst_next_fq);
+  const epsNextFy = optionalNumber(estimates.eps_fcst_next_fy);
+
   return (
     <>
       <MarketTopBar
@@ -4058,6 +4107,8 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
         <div className={styles.segment}>
           <Pill active={tab === "overview"} onClick={() => setTab("overview")}>{lang === "ar" ? "نظرة" : "Overview"}</Pill>
           <Pill active={tab === "financials"} onClick={() => setTab("financials")}>{lang === "ar" ? "القوائم" : "Financials"}</Pill>
+          <Pill active={tab === "technicals"} onClick={() => setTab("technicals")}>{lang === "ar" ? "الفني" : "Technicals"}</Pill>
+          <Pill active={tab === "forecasts"} onClick={() => setTab("forecasts")}>{lang === "ar" ? "التوقعات" : "Forecasts"}</Pill>
           <Pill active={tab === "ownership"} onClick={() => setTab("ownership")}>{lang === "ar" ? "الملكية" : "Ownership"}</Pill>
           <Pill active={tab === "actions"} onClick={() => setTab("actions")}>{lang === "ar" ? "الإجراءات" : "Actions"}</Pill>
         </div>
@@ -4144,18 +4195,102 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
               <DataStat label="Total Debt" value={totalDebt ? compact(totalDebt, lang) : "—"} />
               <DataStat label="Net Cash" value={netCash ? compact(netCash, lang) : "—"} tone={netCash && netCash > 0 ? "up" : undefined} />
             </div>
-            <div className={styles.tableStack}>
-              {bundle.financials.length ? bundle.financials.slice(0, 6).map((row, i) => (
-                <div key={`${row.fiscal_year}-${row.period_type}-${i}`} className={styles.financialRow}>
-                  <span>{String(row.fiscal_year ?? "—")} · {String(row.period_type ?? "")}</span>
-                  <strong>{formatLarge(row.net_income ?? row.revenue ?? row.total_assets, lang)}</strong>
-                  <small>{[
-                    row.revenue !== undefined && `${lang === "ar" ? "الإيرادات" : "Revenue"} ${formatLarge(row.revenue, lang)}`,
-                    row.net_income !== undefined && `${lang === "ar" ? "صافي الدخل" : "Net income"} ${formatLarge(row.net_income, lang)}`,
-                  ].filter(Boolean).join(" · ") || (lang === "ar" ? "بيانات مالية حسب المتاح" : "Financial data as available")}</small>
+            {/* TradingView-native annual summary (revenue, net income, EPS, assets, debt). */}
+            <SectionHead title={lang === "ar" ? "الملخص السنوي" : "Annual Summary"} />
+            {tvFinancialYears.length ? (
+              <div className={styles.tvFinTable}>
+                <div className={cx(styles.tvFinRow, styles.tvFinHead)}>
+                  <span>{lang === "ar" ? "السنة" : "Year"}</span>
+                  <span>{lang === "ar" ? "الإيرادات" : "Revenue"}</span>
+                  <span>{lang === "ar" ? "صافي الدخل" : "Net Inc."}</span>
+                  <span>EPS</span>
+                  <span>{lang === "ar" ? "الأصول" : "Assets"}</span>
+                  <span>{lang === "ar" ? "الديون" : "Debt"}</span>
                 </div>
-              )) : <EmptyPanel text={lang === "ar" ? "لا توجد قوائم مالية متاحة لهذا الرمز حالياً." : "No financial statement rows are available for this symbol yet."} />}
-            </div>
+                {tvFinancialYears.map((row, i) => {
+                  const eps = optionalNumber(row.eps_diluted);
+                  return (
+                    <div key={`${String(row.fiscal_year ?? i)}-${i}`} className={styles.tvFinRow}>
+                      <span><b>{String(row.fiscal_year ?? "—")}</b></span>
+                      <span>{formatLarge(row.revenue, lang)}</span>
+                      <span>{formatLarge(row.net_income, lang)}</span>
+                      <span>{eps === undefined ? "-" : eps.toFixed(2)}</span>
+                      <span>{formatLarge(row.total_assets, lang)}</span>
+                      <span>{formatLarge(row.total_debt, lang)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : <EmptyPanel text={lang === "ar" ? "لا توجد بيانات مالية متاحة لهذا الرمز حالياً." : "No financial data is available for this symbol yet."} />}
+          </>
+        )}
+        {tab === "technicals" && (
+          <>
+            {tvTech1D ? (
+              <>
+                <div className={styles.companyMetricPanel}>
+                  <div className={styles.panelTitle}>
+                    <strong>{lang === "ar" ? "التوصية الفنية" : "Technical Rating"}</strong>
+                    <span>{lang === "ar" ? "إطار يومي · TradingView" : "1D · TradingView"}</span>
+                  </div>
+                  <div className={cx(styles.tvRating, techRec.tone === "up" ? styles.up : techRec.tone === "down" ? styles.down : undefined)}>
+                    {lang === "ar" ? techRec.ar : techRec.en}
+                  </div>
+                </div>
+                <div className={styles.tableStack}>
+                  {techIndicators.map((item) => (
+                    <div key={item.label} className={styles.financialRow}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : <EmptyPanel text={lang === "ar" ? "لا توجد بيانات فنية متاحة لهذا الرمز حالياً." : "No technical data is available for this symbol yet."} />}
+          </>
+        )}
+        {tab === "forecasts" && (
+          <>
+            {estimatesCovered ? (
+              <>
+                <div className={styles.statGrid}>
+                  <DataStat label={lang === "ar" ? "متوسط الهدف" : "Avg Target"} value={targetAvg !== undefined ? `${currency} ${targetAvg.toFixed(2)}` : "—"} tone="brand" />
+                  <DataStat label={lang === "ar" ? "الصعود المحتمل" : "Upside"} value={targetUpside === undefined ? "—" : `${targetUpside >= 0 ? "+" : ""}${targetUpside.toFixed(1)}%`} tone={targetUpside === undefined ? undefined : targetUpside >= 0 ? "up" : "down"} />
+                  <DataStat label={lang === "ar" ? "أدنى هدف" : "Low Target"} value={targetLow !== undefined ? `${currency} ${targetLow.toFixed(2)}` : "—"} />
+                  <DataStat label={lang === "ar" ? "أعلى هدف" : "High Target"} value={targetHigh !== undefined ? `${currency} ${targetHigh.toFixed(2)}` : "—"} />
+                </div>
+                {targetAvg !== undefined && targetHigh !== undefined && targetLow !== undefined && targetHigh > targetLow ? (
+                  <div className={styles.rangeBar}>
+                    <div className={styles.ends}>
+                      <span>{lang === "ar" ? "أدنى" : "Low"} <b>{targetLow.toFixed(2)}</b></span>
+                      <span>{lang === "ar" ? "أعلى" : "High"} <b>{targetHigh.toFixed(2)}</b></span>
+                    </div>
+                    <div className={styles.rangeTrack}>
+                      <i style={{ width: `${Math.max(0, Math.min(100, ((stock.price - targetLow) / (targetHigh - targetLow)) * 100)).toFixed(0)}%` }} />
+                      <b style={{ left: `${Math.max(0, Math.min(100, ((targetAvg - targetLow) / (targetHigh - targetLow)) * 100)).toFixed(0)}%` }} />
+                    </div>
+                    <p className={styles.rangeNote}>{lang === "ar" ? `متوسط هدف المحللين ${targetAvg.toFixed(2)} ${currency} مقابل السعر الحالي ${stock.price.toFixed(2)}.` : `Analyst average target ${targetAvg.toFixed(2)} ${currency} vs current ${stock.price.toFixed(2)}.`}</p>
+                  </div>
+                ) : null}
+                <div className={styles.companyMetricPanel}>
+                  <div className={styles.panelTitle}>
+                    <strong>{lang === "ar" ? "توصيات المحللين" : "Analyst Ratings"}</strong>
+                    <span>{recTotal} {lang === "ar" ? "محلل" : "analysts"}</span>
+                  </div>
+                  <div className={styles.profileFactsGrid}>
+                    <DataStat label={lang === "ar" ? "شراء" : "Buy"} value={String(recBuySide)} tone="up" />
+                    <DataStat label={lang === "ar" ? "محايد" : "Hold"} value={String(recHold)} />
+                    <DataStat label={lang === "ar" ? "بيع" : "Sell"} value={String(recSellSide)} tone="down" />
+                    <DataStat label={lang === "ar" ? "الإجمالي" : "Total"} value={String(recTotal)} tone="brand" />
+                  </div>
+                </div>
+                <div className={styles.statGrid}>
+                  <DataStat label={lang === "ar" ? "ربحية السهم (ربع قادم)" : "EPS Next Q"} value={epsNextFq !== undefined ? `${currency} ${epsNextFq.toFixed(2)}` : "—"} />
+                  <DataStat label={lang === "ar" ? "الإيرادات (ربع قادم)" : "Rev Next Q"} value={revNextFq !== undefined ? compact(revNextFq, lang) : "—"} />
+                  <DataStat label={lang === "ar" ? "ربحية السهم (سنة قادمة)" : "EPS Next FY"} value={epsNextFy !== undefined ? `${currency} ${epsNextFy.toFixed(2)}` : "—"} />
+                </div>
+              </>
+            ) : <EmptyPanel text={lang === "ar" ? "لا توجد تغطية من المحللين لهذا الرمز." : "No analyst coverage for this symbol."} />}
           </>
         )}
         {tab === "ownership" && (
@@ -4210,6 +4345,17 @@ function formatLarge(value: unknown, lang: Lang) {
   const n = toNumber(value, NaN);
   if (!Number.isFinite(n)) return "—";
   return compact(n, lang);
+}
+
+// Maps a TradingView recommend_all score (-1..1) to a verdict — same thresholds
+// the website /symbol page uses (>=.5 Strong Buy … <=-.5 Strong Sell).
+function recVerdict(value: number | undefined): { en: string; ar: string; tone?: "up" | "down" } {
+  if (value === undefined || !Number.isFinite(value)) return { en: "Neutral", ar: "محايد" };
+  if (value >= 0.5) return { en: "Strong Buy", ar: "شراء قوي", tone: "up" };
+  if (value >= 0.1) return { en: "Buy", ar: "شراء", tone: "up" };
+  if (value <= -0.5) return { en: "Strong Sell", ar: "بيع قوي", tone: "down" };
+  if (value <= -0.1) return { en: "Sell", ar: "بيع", tone: "down" };
+  return { en: "Neutral", ar: "محايد" };
 }
 
 function EmptyPanel({ text }: { text: string }) {

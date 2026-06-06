@@ -3490,15 +3490,16 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
 
   return (
     <>
-      <PushTop
+      <MarketTopBar
+        lang={lang}
+        nav={nav}
         title={stock.symbol}
         sub={stock.sector}
-        onBack={nav.pop}
-        action={(
-          <div className={styles.iconBtnRow}>
+        actions={(
+          <>
             <button className={styles.iconBtn2} aria-label={copy[lang].askAi} onClick={() => nav.openAI(`Analyze ${stock.symbol} (${stockLabel(stock, lang)}) using live market data`)}><AIGlyph size={18} /></button>
             <button className={cx(styles.iconBtn2, on && styles.iconBtnMarked)} aria-label={on ? (lang === "ar" ? "إزالة من المتابعة" : "Remove from watchlist") : (lang === "ar" ? "إضافة للمتابعة" : "Add to watchlist")} onClick={() => wl.toggle(stock.symbol)}><Star size={18} fill={on ? "currentColor" : "none"} strokeWidth={2} /></button>
-          </div>
+          </>
         )}
       />
       <div className={styles.content}>

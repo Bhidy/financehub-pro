@@ -86,7 +86,9 @@ export async function GET(request: Request) {
             source: null,
         }));
 
-        return NextResponse.json(sanitizedRows);
+        return NextResponse.json(sanitizedRows, {
+            headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' },
+        });
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown server error';
         console.error('[API /news ERROR]', message);

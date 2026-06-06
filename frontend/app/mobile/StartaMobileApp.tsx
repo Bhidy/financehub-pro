@@ -2061,29 +2061,6 @@ function WorkspaceDeepDive({ lang, nav, selectedId, stock, stocks, summary, egxI
         <DataStat label={lang === "ar" ? "متوسط القطاع" : "Sector Avg"} value={sectorAvg === undefined ? "—" : pct(sectorAvg, 1)} tone={sectorAvg === undefined ? undefined : sectorAvg >= 0 ? "up" : "down"} />
         <DataStat label={lang === "ar" ? "موقع النطاق" : "Range Position"} value={rangePos === undefined ? "—" : `${rangePos.toFixed(0)}%`} />
       </div>
-      <div className={styles.workspaceFeatureGrid}>
-        <button className={styles.workspacePrimaryCommand} onClick={() => nav.push("company-profile", { symbol: stock.symbol })}>
-          <span className={styles.commandIcon}><Icon name="landmark" /></span>
-          <small>{lang === "ar" ? "بحث كامل" : "Full research"}</small>
-          <b>{lang === "ar" ? "ملف الشركة" : "Company Profile"}</b>
-          <em>{lang === "ar" ? "القوائم والملكية والإجراءات" : "Financials, ownership, actions"}</em>
-          <i><Icon name="chevron-right" size={15} /></i>
-        </button>
-        <button onClick={() => nav.push("stock", { symbol: stock.symbol })}>
-          <span className={styles.commandIcon}><Icon name="line-chart" /></span>
-          <small>{lang === "ar" ? "السعر الحي" : "Live quote"}</small>
-          <b>{lang === "ar" ? "تفاصيل السعر" : "Quote Detail"}</b>
-          <em>{lang === "ar" ? "شموع ومؤشرات سعرية" : "Candles and price signals"}</em>
-          <i><Icon name="chevron-right" size={15} /></i>
-        </button>
-        <button onClick={() => nav.openAI(`Analyze ${stock.symbol} (${stockLabel(stock, lang)}) using live market data`)}>
-          <span className={styles.commandIcon}><AIGlyph /></span>
-          <small>{lang === "ar" ? "مساعد ذكي" : "AI command"}</small>
-          <b>{copy[lang].askAi}</b>
-          <em>{lang === "ar" ? "ملخص ذكي للسهم" : "Focused stock briefing"}</em>
-          <i><Icon name="chevron-right" size={15} /></i>
-        </button>
-      </div>
       {peers.length ? (
         <>
           <SectionHead title={lang === "ar" ? "أسهم من نفس القطاع" : "Sector peers"} />
@@ -3195,9 +3172,9 @@ function PushRouter({ screen, nav, lang, theme, setTheme, setLang, stocks, funds
 }) {
   const props = screen.props ?? {};
   if (screen.name === "market-pulse") return <MarketsScreen nav={nav} lang={lang} summary={summary} egxIndex={egxIndex} stocks={stocks} news={news} />;
-  if (screen.name === "stock") {
+  if (screen.name === "stock" || screen.name === "company-profile") {
     const stock = stocks.find((s) => s.symbol === props.symbol);
-    return stock ? <StockDetail nav={nav} lang={lang} stock={stock} news={news} /> : <MissingDataScreen nav={nav} lang={lang} title={lang === "ar" ? "السهم غير متاح" : "Stock unavailable"} />;
+    return stock ? <CompanyProfile nav={nav} lang={lang} stock={stock} news={news} /> : <MissingDataScreen nav={nav} lang={lang} title={lang === "ar" ? "السهم غير متاح" : "Stock unavailable"} />;
   }
   if (screen.name === "fund") {
     const fund = funds.find((f) => f.id === props.id);
@@ -3225,10 +3202,6 @@ function PushRouter({ screen, nav, lang, theme, setTheme, setLang, stocks, funds
   if (screen.name === "terms") return <LegalScreen nav={nav} lang={lang} kind="terms" />;
   if (screen.name === "portfolio-intel") return <PortfolioIntel nav={nav} lang={lang} portfolio={portfolio} />;
   if (screen.name === "portfolio-detail") return <PortfolioDetail nav={nav} lang={lang} portfolio={portfolio} stocks={stocks} />;
-  if (screen.name === "company-profile") {
-    const stock = stocks.find((s) => s.symbol === props.symbol);
-    return stock ? <CompanyProfile nav={nav} lang={lang} stock={stock} news={news} /> : <MissingDataScreen nav={nav} lang={lang} title={lang === "ar" ? "ملف الشركة غير متاح" : "Company profile unavailable"} />;
-  }
   return <MissingDataScreen nav={nav} lang={lang} title={lang === "ar" ? "الصفحة غير متاحة" : "Screen unavailable"} />;
 }
 
@@ -3342,26 +3315,33 @@ function PortfolioDetail({ nav, lang, portfolio, stocks }: { nav: NavController;
   );
 }
 
+// Merged Company Research page — combines the live quote / candle chart (formerly
+// "Quote Detail") with full fundamentals (profile, financials, ownership, actions).
 function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
+  const wl = useWatchlist();
   const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], shareholders: [], actions: [] });
   const [bars, setBars] = useState<OhlcBar[]>([]);
+  const [tf, setTf] = useState<string>("3M");
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"overview" | "financials" | "ownership" | "actions">("overview");
+  const symbol = stock?.symbol;
 
+  // Fundamentals load once per symbol.
   useEffect(() => {
-    if (!stock?.symbol) return;
+    if (!symbol) return;
     let active = true;
     setLoading(true);
-    Promise.all([loadCompanyProfile(stock.symbol), loadOhlcRows(stock.symbol, "3M")]).then(([next, rows]) => {
-      if (!active) return;
-      setBundle(next);
-      setBars(rows);
-      setLoading(false);
-    });
-    return () => {
-      active = false;
-    };
-  }, [stock?.symbol]);
+    loadCompanyProfile(symbol).then((next) => { if (active) { setBundle(next); setLoading(false); } });
+    return () => { active = false; };
+  }, [symbol]);
+
+  // OHLC reloads per selected timeframe (drives the candle chart + price signals).
+  useEffect(() => {
+    if (!symbol) return;
+    let alive = true;
+    loadOhlcRows(symbol, tf).then((rows) => { if (alive) setBars(rows); });
+    return () => { alive = false; };
+  }, [symbol, tf]);
 
   if (!stock) return null;
   const profile = bundle.profile ?? {};
@@ -3421,40 +3401,52 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
     return unique.slice(0, 4);
   })();
   const related = news.filter((item) => item.symbol === stock.symbol || item.headline.toUpperCase().includes(stock.symbol)).slice(0, 3);
-  const chartCloses = bars.map((row) => row.close).filter((value) => Number.isFinite(value) && value > 0);
-  const profileChart = chartCloses.length > 1 ? chartCloses : stock.trend;
+  const chartCloses = bars.length > 1 ? bars.map((row) => row.close).filter((value) => Number.isFinite(value) && value > 0) : stock.trend;
   const chartHigh = chartCloses.length ? Math.max(...chartCloses) : undefined;
   const chartLow = chartCloses.length ? Math.min(...chartCloses) : undefined;
   const latestBar = bars[bars.length - 1];
   const rangePct = chartHigh !== undefined && chartLow !== undefined && chartHigh > chartLow ? ((stock.price - chartLow) / (chartHigh - chartLow)) * 100 : undefined;
-  const chartUp = profileChart.length > 1 ? profileChart[profileChart.length - 1] >= profileChart[0] : stock.changePct >= 0;
+  // Real price signals derived from the selected-timeframe series (no mock).
+  const tfMomentum = chartCloses.length > 1 && chartCloses[0] ? ((chartCloses[chartCloses.length - 1] - chartCloses[0]) / chartCloses[0]) * 100 : stock.changePct;
+  const tfRets = chartCloses.slice(1).map((v, i) => (v - chartCloses[i]) / (chartCloses[i] || 1));
+  const tfVol = tfRets.length ? Math.sqrt(tfRets.reduce((a, b) => a + b ** 2, 0) / tfRets.length) * 100 : undefined;
+  const tfTrendUp = chartCloses.length > 1 ? chartCloses[chartCloses.length - 1] >= chartCloses[0] : stock.changePct >= 0;
+  const on = wl.has(stock.symbol);
+  const up = stock.changePct >= 0;
 
   return (
     <>
-      <PushHeader title={copy[lang].companyProfile} sub={`${stock.symbol} · ${stock.sector}`} onBack={nav.pop} action={<button aria-label={lang === "ar" ? "حفظ" : "Save"}><Icon name="bookmark" /></button>} />
+      <PushTop
+        title={stock.symbol}
+        sub={stock.sector}
+        onBack={nav.pop}
+        action={(
+          <div className={styles.iconBtnRow}>
+            <button className={styles.iconBtn2} aria-label={copy[lang].askAi} onClick={() => nav.openAI(`Analyze ${stock.symbol} (${stockLabel(stock, lang)}) using live market data`)}><AIGlyph size={18} /></button>
+            <button className={cx(styles.iconBtn2, on && styles.iconBtnMarked)} aria-label={on ? (lang === "ar" ? "إزالة من المتابعة" : "Remove from watchlist") : (lang === "ar" ? "إضافة للمتابعة" : "Add to watchlist")} onClick={() => wl.toggle(stock.symbol)}><Star size={18} fill={on ? "currentColor" : "none"} strokeWidth={2} /></button>
+          </div>
+        )}
+      />
       <div className={styles.content}>
-        <div className={styles.companyHero}>
-          <StockLogo symbol={stock.symbol} className={styles.avatar} />
-          <div>
-            <small>{exchange} · {currency}</small>
-            <h1>{displayName}</h1>
+        {/* Premium identity + price hero */}
+        <motion.div className={styles.crHero} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ ease: ONB_EASE, duration: 0.45 }}>
+          <span className={styles.crHeroGlow} aria-hidden="true" />
+          <div className={styles.crHeroTop}>
+            <StockLogo symbol={stock.symbol} className={styles.crLogo} />
+            <div className={styles.crHeroId}>
+              <h1>{displayName}</h1>
+              <small>{stock.symbol} · {exchange} · {stock.sector}</small>
+            </div>
           </div>
-        </div>
+          <div className={styles.crHeroPrice}>
+            <strong>{stock.price.toFixed(2)}<em>{currency}</em></strong>
+            <span className={cx(styles.crDelta, up ? styles.up : styles.down)}>{up ? "▲" : "▼"} {Math.abs(stock.change).toFixed(2)} · {pct(stock.changePct)}</span>
+          </div>
+        </motion.div>
         {loading ? <div className={styles.loadingBar} /> : null}
-        <div className={styles.companyChartHero}>
-          <div className={styles.companyChartTitle}>
-            <span>{lang === "ar" ? "السعر والأداء" : "Price performance"}</span>
-            <button onClick={() => nav.openAI(`Analyze ${stock.symbol} company profile using available Starta data`)}><AIGlyph /> {copy[lang].askAi}</button>
-          </div>
-          <div className={styles.companyChartValue}>
-            <strong>{stock.price.toFixed(2)} <small>{currency}</small></strong>
-            <Delta value={stock.changePct} />
-          </div>
-          <div className={styles.companyLineChart}>
-            {profileChart.length > 1
-              ? <MiniChart data={profileChart} color={chartUp ? "var(--c-brand)" : "var(--c-down)"} height={168} grid dot />
-              : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
-          </div>
+
+        {/* Interactive candle chart + timeframe selector */}
+        <div className={styles.crChartCard}>
           {latestBar ? (
             <div className={styles.ohlcMiniGrid}>
               {[
@@ -3465,6 +3457,12 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
               ].map(([label, value]) => <span key={String(label)}><small>{label}</small><b>{Number(value).toFixed(2)}</b></span>)}
             </div>
           ) : null}
+          <div className={styles.crChartArea}>
+            {bars.length > 1
+              ? <CandleChart rows={bars} height={192} lang={lang} />
+              : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
+          </div>
+          <div className={styles.tfBar}>{["1M", "3M", "6M", "1Y", "3Y", "MAX"].map((x) => <button key={x} className={tf === x ? styles.on : undefined} onClick={() => setTf(x)}>{x}</button>)}</div>
         </div>
         <div className={styles.statGrid}>
           <DataStat label={lang === "ar" ? "القيمة السوقية" : "Market Cap"} value={marketCap ? compact(marketCap, lang) : "—"} tone="brand" />
@@ -3480,14 +3478,21 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
         </div>
         {tab === "overview" && (
           <>
+            <SectionHead title={lang === "ar" ? "إشارات السعر" : "Price Signals"} />
+            <div className={styles.statGrid}>
+              <DataStat label={lang === "ar" ? `زخم ${tf}` : `${tf} Momentum`} value={`${tfMomentum >= 0 ? "+" : ""}${tfMomentum.toFixed(1)}%`} tone={tfMomentum >= 0 ? "up" : "down"} />
+              <DataStat label={lang === "ar" ? "التذبذب" : "Volatility"} value={tfVol === undefined ? "—" : `${tfVol.toFixed(1)}%`} />
+              <DataStat label={lang === "ar" ? "موقع النطاق" : "Range Position"} value={rangePct === undefined ? "—" : `${rangePct.toFixed(0)}%`} tone="brand" />
+              <DataStat label={lang === "ar" ? "الاتجاه" : "Trend"} value={chartCloses.length > 1 ? (tfTrendUp ? (lang === "ar" ? "صاعد" : "Uptrend") : (lang === "ar" ? "هابط" : "Downtrend")) : "—"} tone={tfTrendUp ? "up" : "down"} />
+            </div>
             {rangePct !== undefined ? (
               <div className={styles.rangeBar}>
                 <div className={styles.ends}>
-                  <span>{lang === "ar" ? "أدنى ٣ أشهر" : "3M Low"} <b>{chartLow?.toFixed(2)}</b></span>
-                  <span>{lang === "ar" ? "أعلى ٣ أشهر" : "3M High"} <b>{chartHigh?.toFixed(2)}</b></span>
+                  <span>{lang === "ar" ? `أدنى ${tf}` : `${tf} Low`} <b>{chartLow?.toFixed(2)}</b></span>
+                  <span>{lang === "ar" ? `أعلى ${tf}` : `${tf} High`} <b>{chartHigh?.toFixed(2)}</b></span>
                 </div>
                 <div className={styles.rangeTrack}><i style={{ width: `${Math.max(0, Math.min(100, rangePct)).toFixed(0)}%` }} /><b style={{ left: `${Math.max(0, Math.min(100, rangePct)).toFixed(0)}%` }} /></div>
-                <p className={styles.rangeNote}>{lang === "ar" ? `السعر الحالي عند ${rangePct.toFixed(1)}% من نطاق ٣ أشهر.` : `Current price is at ${rangePct.toFixed(1)}% of the 3-month range.`}</p>
+                <p className={styles.rangeNote}>{lang === "ar" ? `السعر الحالي عند ${rangePct.toFixed(1)}% من نطاق ${tf}.` : `Current price is at ${rangePct.toFixed(1)}% of the ${tf} range.`}</p>
               </div>
             ) : null}
             <div className={styles.companyMetricPanel}>
@@ -3620,10 +3625,11 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             </div>
           </>
         )}
-        <div className={styles.actionRow}>
-          <PrimaryButton ghost onClick={() => nav.openAI(`Explain the company profile for ${stock.symbol}`)}><AIGlyph /> {copy[lang].askAi}</PrimaryButton>
-          <PrimaryButton onClick={() => nav.push("stock", { symbol: stock.symbol })}>{lang === "ar" ? "العودة للسعر" : "Quote Detail"}</PrimaryButton>
-        </div>
+        <button className={styles.crAiCta} onClick={() => nav.openAI(`Give me a full briefing on ${stock.symbol} (${stockLabel(stock, lang)}) — valuation, momentum, and risks.`)}>
+          <span><AIGlyph color="#fff" /></span>
+          <div><b>{lang === "ar" ? "حلّل مع Starta AI" : "Analyze with Starta AI"}</b><small>{lang === "ar" ? "التقييم، الزخم، والمخاطر" : "Valuation, momentum, and risks"}</small></div>
+          <Icon name="chevron-right" />
+        </button>
         <p className={styles.disclaimer}>{copy[lang].disclaimer}</p>
       </div>
     </>
@@ -3638,97 +3644,6 @@ function formatLarge(value: unknown, lang: Lang) {
 
 function EmptyPanel({ text }: { text: string }) {
   return <div className={styles.emptyPanel}>{text}</div>;
-}
-
-function StockDetail({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
-  const [tf, setTf] = useState<string>("3M");
-  const [bars, setBars] = useState<OhlcBar[]>([]);
-  const wl = useWatchlist();
-  const symbol = stock?.symbol;
-  useEffect(() => {
-    if (!symbol) return;
-    let alive = true;
-    loadOhlcRows(symbol, tf).then((rows) => { if (alive) setBars(rows); });
-    return () => { alive = false; };
-  }, [symbol, tf]);
-  if (!stock) return null;
-  const chartData = bars.length > 1 ? bars.map((row) => row.close) : stock.trend;
-  const latestBar = bars[bars.length - 1];
-  const trendUp = chartData.length > 1 ? chartData[chartData.length - 1] >= chartData[0] : stock.changePct >= 0;
-  const hi = chartData.length ? Math.max(...chartData) : 0;
-  const lo = chartData.length ? Math.min(...chartData) : 0;
-  // Real, free quant signals derived from the price series (no locks, no mock).
-  const momentum = chartData.length > 1 ? ((chartData[chartData.length - 1] - chartData[0]) / chartData[0]) * 100 : stock.changePct;
-  const rets = chartData.slice(1).map((v, i) => (v - chartData[i]) / (chartData[i] || 1));
-  const meanRet = rets.length ? rets.reduce((a, b) => a + b, 0) / rets.length : 0;
-  const vol = rets.length ? Math.sqrt(rets.reduce((a, b) => a + (b - meanRet) ** 2, 0) / rets.length) * 100 : 0;
-  const rangePos = hi > lo ? ((stock.price - lo) / (hi - lo)) * 100 : 0;
-  const related = news.filter((item) => item.symbol === stock.symbol).slice(0, 3);
-  return (
-    <>
-      <PushHeader title={stock.symbol} sub={stock.sector} onBack={nav.pop} action={<button onClick={() => wl.toggle(stock.symbol)} aria-label={wl.has(stock.symbol) ? (lang === "ar" ? "إزالة من المتابعة" : "Remove from watchlist") : (lang === "ar" ? "إضافة للمتابعة" : "Add to watchlist")}><Star size={18} fill={wl.has(stock.symbol) ? "currentColor" : "none"} strokeWidth={2} /></button>} />
-      <div className={styles.content}>
-        <div className={styles.detailHero}>
-          <div className={styles.stockHeroIdentity}>
-            <StockLogo symbol={stock.symbol} />
-            <span>{stockLabel(stock, lang)}</span>
-          </div>
-          <strong>{stock.price.toFixed(2)} EGP</strong>
-          <Delta value={stock.changePct} />
-        </div>
-        <div className={styles.chartCard}>
-          {latestBar ? (
-            <div className={styles.ohlcStrip}>
-              {[
-                [lang === "ar" ? "الافتتاح" : "Open", latestBar.open],
-                [lang === "ar" ? "الأعلى" : "High", latestBar.high],
-                [lang === "ar" ? "الأدنى" : "Low", latestBar.low],
-                [lang === "ar" ? "الإغلاق" : "Close", latestBar.close],
-              ].map(([label, value]) => (
-                <span key={String(label)} style={{ display: "grid", gap: 4 }}>
-                  <small style={{ color: "var(--c-fg-3)", font: "700 9px/1 IBM Plex Mono, monospace", textTransform: "uppercase", letterSpacing: ".08em" }}>{label}</small>
-                  <b style={{ color: "var(--c-fg-1)", font: "800 11px/1 IBM Plex Mono, monospace" }}>{Number(value).toFixed(2)}</b>
-                </span>
-              ))}
-            </div>
-          ) : null}
-          {bars.length > 1
-            ? <CandleChart rows={bars} height={178} lang={lang} />
-            : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
-          <div className={styles.segment}>{["1M", "3M", "6M", "1Y", "3Y", "MAX"].map((x) => <Pill key={x} active={tf === x} onClick={() => setTf(x)}>{x}</Pill>)}</div>
-        </div>
-        <SectionHead title={lang === "ar" ? "المؤشرات الرئيسية" : "Key Metrics"} />
-        <div className={styles.statGrid}>
-          <DataStat label={lang === "ar" ? "القيمة السوقية" : "Market Cap"} value={stock.marketCap ? compact(stock.marketCap, lang) : "—"} />
-          <DataStat label="P/E" value={stock.pe ? `${stock.pe.toFixed(1)}×` : "—"} />
-          <DataStat label={lang === "ar" ? `أعلى ${tf}` : `${tf} High`} value={hi ? hi.toFixed(2) : "—"} tone="up" />
-          <DataStat label={lang === "ar" ? `أدنى ${tf}` : `${tf} Low`} value={lo ? lo.toFixed(2) : "—"} tone="down" />
-          <DataStat label={lang === "ar" ? "حجم التداول" : "Volume"} value={stock.volume ? compact(stock.volume, lang) : "—"} />
-          <DataStat label={lang === "ar" ? "التقييم" : "Valuation"} value={stock.pe && stock.pe < 10 ? (lang === "ar" ? "مقوّم بأقل" : "Undervalued") : (lang === "ar" ? "مراقبة" : "Watch")} tone="brand" />
-        </div>
-        <SectionHead title={lang === "ar" ? "إشارات السعر" : "Price Signals"} />
-        <div className={styles.statGrid}>
-          <DataStat label={lang === "ar" ? `زخم ${tf}` : `${tf} Momentum`} value={`${momentum >= 0 ? "+" : ""}${momentum.toFixed(1)}%`} tone={momentum >= 0 ? "up" : "down"} />
-          <DataStat label={lang === "ar" ? "التذبذب" : "Volatility"} value={vol ? `${vol.toFixed(1)}%` : "—"} />
-          <DataStat label={lang === "ar" ? "موقع النطاق" : "Range Position"} value={chartData.length ? `${rangePos.toFixed(0)}%` : "—"} tone="brand" />
-          <DataStat label={lang === "ar" ? "الاتجاه" : "Trend"} value={chartData.length > 1 ? (trendUp ? (lang === "ar" ? "صاعد" : "Uptrend") : (lang === "ar" ? "هابط" : "Downtrend")) : "—"} tone={trendUp ? "up" : "down"} />
-        </div>
-        <div className={styles.actionRow}>
-          <PrimaryButton ghost onClick={() => nav.openAI(`Analyze ${stock.symbol} (${stockLabel(stock, lang)})`)}><AIGlyph /> {copy[lang].askAi}</PrimaryButton>
-          <PrimaryButton onClick={() => nav.push("company-profile", { symbol: stock.symbol })}>{lang === "ar" ? "تحليل الشركة" : "Company Research"}</PrimaryButton>
-        </div>
-        <button className={styles.profileLinkCard} onClick={() => nav.push("company-profile", { symbol: stock.symbol })}>
-          <span><Icon name="landmark" /></span>
-          <div>
-            <strong>{copy[lang].companyProfile}</strong>
-            <small>{lang === "ar" ? "الملف، القوائم، الملكية، والإجراءات" : "Profile, financials, ownership, and actions"}</small>
-          </div>
-          <Icon name="chevron-right" />
-        </button>
-        {related.map((item) => <NewsRow key={item.id} item={item} lang={lang} onClick={() => nav.push("article", { id: item.id })} />)}
-      </div>
-    </>
-  );
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

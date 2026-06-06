@@ -893,6 +893,8 @@ const GUEST_USAGE_KEY = "fh_guest_usage";
 const GUEST_LIMITS: Record<string, number> = { ai: 3, research: 3, compare: 2 };
 // Pushed screens that consume a guest "premium" allowance.
 const GATED_PUSH: Record<string, string> = { "company-profile": "research", stock: "research", compare: "compare" };
+// Google sign-in ships once the web callback is deployed + @capacitor/app is wired.
+const GOOGLE_ENABLED = false;
 
 function getAuthToken() {
   return storage.get(AUTH_TOKEN_KEY);
@@ -2091,8 +2093,10 @@ function SignInForm({ lang, onAuthed, setScreen, startGoogle }: { lang: Lang; on
     <form className={styles.authForm} onSubmit={submit}>
       <h1 className={styles.authTitle}>{lang === "ar" ? "مرحباً بعودتك" : "Welcome back"}</h1>
       <p className={styles.authSub}>{lang === "ar" ? "سجّل الدخول للوصول الكامل إلى Starta." : "Sign in for full access to Starta."}</p>
-      <GoogleButton lang={lang} startGoogle={startGoogle} />
-      <div className={styles.authDivider}><span>{lang === "ar" ? "أو" : "or"}</span></div>
+      {GOOGLE_ENABLED ? (<>
+        <GoogleButton lang={lang} startGoogle={startGoogle} />
+        <div className={styles.authDivider}><span>{lang === "ar" ? "أو" : "or"}</span></div>
+      </>) : null}
       <AuthField label={lang === "ar" ? "البريد الإلكتروني" : "Email"} type="email" autoComplete="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@email.com" />
       <AuthField label={lang === "ar" ? "كلمة المرور" : "Password"} type="password" autoComplete="current-password" value={password} onChange={setPassword} placeholder="••••••••" />
       <button type="button" className={styles.authForgot} onClick={() => setScreen("forgot")}>{lang === "ar" ? "نسيت كلمة المرور؟" : "Forgot password?"}</button>
@@ -2125,8 +2129,10 @@ function SignUpForm({ lang, onAuthed, setScreen, startGoogle }: { lang: Lang; on
     <form className={styles.authForm} onSubmit={submit}>
       <h1 className={styles.authTitle}>{lang === "ar" ? "أنشئ حسابك المجاني" : "Create your free account"}</h1>
       <p className={styles.authSub}>{lang === "ar" ? "ذكاء سوقي غير محدود في دقيقة." : "Unlimited market intelligence in under a minute."}</p>
-      <GoogleButton lang={lang} startGoogle={startGoogle} />
-      <div className={styles.authDivider}><span>{lang === "ar" ? "أو" : "or"}</span></div>
+      {GOOGLE_ENABLED ? (<>
+        <GoogleButton lang={lang} startGoogle={startGoogle} />
+        <div className={styles.authDivider}><span>{lang === "ar" ? "أو" : "or"}</span></div>
+      </>) : null}
       <AuthField label={lang === "ar" ? "الاسم الكامل" : "Full name"} type="text" autoComplete="name" value={name} onChange={setName} placeholder={lang === "ar" ? "محمد بهيدي" : "Mohamed Bhidy"} />
       <AuthField label={lang === "ar" ? "البريد الإلكتروني" : "Email"} type="email" autoComplete="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@email.com" />
       <AuthField label={lang === "ar" ? "كلمة المرور" : "Password"} type="password" autoComplete="new-password" value={password} onChange={setPassword} placeholder={lang === "ar" ? "6 أحرف على الأقل" : "At least 6 characters"} />

@@ -996,8 +996,7 @@ export default function SymbolDetailPage() {
     const TABS: { id: TabId; label: string; icon: any }[] = [
         { id: "overview", label: t.tab_overview, icon: Activity },
         { id: "financials", label: t.tab_financials, icon: FileText },
-        { id: "technicals", label: t.tab_technicals, icon: Gauge },
-        { id: "forecasts", label: t.tab_forecasts, icon: Crosshair },
+        { id: "technicals", label: lang === "ar" ? "الفني والتوقعات" : "Technicals & Forecasts", icon: Gauge },
         { id: "seasonals", label: lang === "ar" ? "الموسمية" : "Seasonals", icon: BarChart3 },
         { id: "ratios", label: t.tab_ratios, icon: Target },
         { id: "dividends", label: t.tab_dividends, icon: Calendar },
@@ -1240,13 +1239,12 @@ export default function SymbolDetailPage() {
                                                 </button>
                                             )}
                                             {hasE && (
-                                                <button onClick={() => setActiveTab("forecasts")} className="flex items-center gap-3 group">
+                                                <button onClick={() => setActiveTab("technicals")} className="flex items-center gap-3 group">
                                                     <Crosshair className="w-5 h-5 text-[#14b8a6]" />
                                                     <div className="text-left rtl:text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{lang === "ar" ? "هدف المحللين" : "Analyst Target"}</p>
                                                         <p className="font-extrabold group-hover:underline">{currency} {Number(tvEstimates.target_average).toFixed(2)} {up != null && <span className={up >= 0 ? "text-emerald-500" : "text-rose-500"}>({up >= 0 ? "+" : ""}{up.toFixed(1)}%)</span>}</p></div>
                                                 </button>
                                             )}
-                                            <span className="text-[10px] font-bold text-slate-400 ml-auto rtl:ml-0 rtl:mr-auto">TradingView · {lang === "ar" ? "مؤجل ١٥ د" : "15-min delayed"}</span>
                                         </div>
                                     );
                                 })()}
@@ -1456,7 +1454,6 @@ export default function SymbolDetailPage() {
                                                 {b.label}
                                             </button>
                                         ))}
-                                        <span className="text-[11px] font-bold text-slate-400 ml-auto">{lang === "ar" ? "مصدر: TradingView · مؤجل ١٥ دقيقة" : "Source: TradingView · 15-min delayed"}</span>
                                     </div>
                                     {/* gauges */}
                                     <div className="premium-glass rounded-3xl p-6 md:p-8">
@@ -1489,9 +1486,9 @@ export default function SymbolDetailPage() {
                             );
                         })()}
 
-                        {/* ═══════════════════════ FORECASTS TAB ═══════════════════════ */}
-                        {activeTab === "forecasts" && (
-                            <div className="space-y-6">
+                        {/* ════════ FORECASTS — merged into the "Technicals & Forecasts" tab ════════ */}
+                        {activeTab === "technicals" && (
+                            <div className="space-y-6 mt-6">
                                 {(!tvEstimates || tvEstimates.covered === false) ? (
                                     <div className="premium-glass rounded-3xl p-12 text-center">
                                         <Crosshair className="w-12 h-12 text-slate-300 mx-auto mb-4" />

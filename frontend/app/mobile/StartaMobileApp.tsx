@@ -4140,8 +4140,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
         <div className={styles.segment}>
           <Pill active={tab === "overview"} onClick={() => setTab("overview")}>{lang === "ar" ? "نظرة" : "Overview"}</Pill>
           <Pill active={tab === "financials"} onClick={() => setTab("financials")}>{lang === "ar" ? "القوائم" : "Financials"}</Pill>
-          <Pill active={tab === "technicals"} onClick={() => setTab("technicals")}>{lang === "ar" ? "الفني" : "Technicals"}</Pill>
-          <Pill active={tab === "forecasts"} onClick={() => setTab("forecasts")}>{lang === "ar" ? "التوقعات" : "Forecasts"}</Pill>
+          <Pill active={tab === "technicals"} onClick={() => setTab("technicals")}>{lang === "ar" ? "الفني والتوقعات" : "Technicals & Forecasts"}</Pill>
           <Pill active={tab === "seasonals"} onClick={() => setTab("seasonals")}>{lang === "ar" ? "الموسمية" : "Seasonals"}</Pill>
           <Pill active={tab === "ownership"} onClick={() => setTab("ownership")}>{lang === "ar" ? "الملكية" : "Ownership"}</Pill>
           <Pill active={tab === "actions"} onClick={() => setTab("actions")}>{lang === "ar" ? "الإجراءات" : "Actions"}</Pill>
@@ -4301,8 +4300,9 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             ) : <EmptyPanel text={lang === "ar" ? "لا توجد بيانات فنية متاحة لهذا الرمز حالياً." : "No technical data is available for this symbol yet."} />}
           </>
         )}
-        {tab === "forecasts" && (
+        {tab === "technicals" && (
           <>
+            {/* Forecasts — merged into the Technicals & Forecasts tab */}
             {estimatesCovered ? (
               <>
                 <div className={styles.statGrid}>

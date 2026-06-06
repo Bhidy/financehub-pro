@@ -2224,18 +2224,29 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
 function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | null; stocks: Stock[]; lang: Lang; nav: NavController; onClose: () => void }) {
   const wl = useWatchlist();
   const [bars, setBars] = useState<OhlcBar[]>([]);
+  const [tf, setTf] = useState("3M");
   const stock = symbol ? stocks.find((s) => s.symbol === symbol) : undefined;
   const up = (stock?.changePct ?? 0) >= 0;
   const on = stock ? wl.has(stock.symbol) : false;
+  // Reset the timeframe each time a different stock is opened.
+  useEffect(() => { setTf("3M"); }, [symbol]);
   useEffect(() => {
     if (!stock?.symbol) {
       setBars([]);
       return;
     }
     let alive = true;
-    loadOhlcRows(stock.symbol, "3M").then((rows) => { if (alive) setBars(rows); });
+    loadOhlcRows(stock.symbol, tf).then((rows) => { if (alive) setBars(rows); });
     return () => { alive = false; };
-  }, [stock?.symbol]);
+  }, [stock?.symbol, tf]);
+  // Line series = real daily closes for the selected timeframe (falls back to the sparkline).
+  const closes = useMemo(
+    () => (bars.length > 1 ? bars.map((r) => r.close).filter((n) => Number.isFinite(n) && n > 0) : (stock?.trend ?? [])),
+    [bars, stock?.trend],
+  );
+  const periodReturn = closes.length > 1 && closes[0] ? ((closes[closes.length - 1] - closes[0]) / closes[0]) * 100 : (stock?.changePct ?? 0);
+  const periodAbs = closes.length > 1 ? Math.abs(closes[closes.length - 1] - closes[0]) : Math.abs(stock?.change ?? 0);
+  const periodUp = periodReturn >= 0;
   return (
     <AnimatePresence>
       {stock ? (
@@ -2251,15 +2262,22 @@ function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | n
               </button>
               <button className={styles.sheetClose} aria-label={lang === "ar" ? "إغلاق" : "Close"} onClick={onClose}><Icon name="x" size={18} /></button>
             </div>
-            <div className={styles.sheetPx}><b>{stock.price.toFixed(2)}</b><span className={styles.unit}>EGP</span></div>
-            <div className={cx(styles.deltaRow, up ? styles.up : styles.down)}>
-              {up ? "▲" : "▼"} {Math.abs(stock.change).toFixed(2)} <span className={up ? styles.up : styles.down}>{pct(stock.changePct)}</span>
-              <span className={styles.deltaChip}>{lang === "ar" ? "اليوم" : "Today"}</span>
+            <div className={styles.sheetQuoteRow}>
+              <div className={styles.sheetPx}><b>{stock.price.toFixed(2)}</b><span className={styles.unit}>EGP</span></div>
+              <span className={cx(styles.sheetDayPill, up ? styles.up : styles.down)}>{up ? "▲" : "▼"} {Math.abs(stock.change).toFixed(2)} · {pct(stock.changePct)} <em>{lang === "ar" ? "اليوم" : "Today"}</em></span>
             </div>
-            <div className={styles.chartFull}>
-              {bars.length > 1
-                ? <CandleChart rows={bars} height={132} lang={lang} />
-                : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
+            {/* Premium line chart + period selector — same design as the index/market-pulse cards */}
+            <div className={styles.sheetChartCard}>
+              <div className={styles.sheetChartTop}>
+                <span className={cx(styles.sheetPeriodReturn, periodUp ? styles.up : styles.down)}>{periodUp ? "▲" : "▼"} {periodAbs.toFixed(2)} · {pct(periodReturn)}</span>
+                <span className={styles.deltaChip}>{tf}</span>
+              </div>
+              <div className={cx(styles.chartFull, styles.sheetChartArea)}>
+                {closes.length > 1
+                  ? <MiniChart data={closes} color={periodUp ? "var(--c-brand)" : "var(--c-down)"} height={150} grid dot />
+                  : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
+              </div>
+              <div className={styles.tfBar}>{INDEX_TF.map(([k]) => <button key={k} className={tf === k ? styles.on : undefined} onClick={() => setTf(k)}>{k}</button>)}</div>
             </div>
             <div className={styles.gridTwo}>
               <div className={styles.statTile}><div className={styles.lblMono}>{lang === "ar" ? "حجم التداول" : "Volume"}</div><div className={styles.tval}>{stock.volume ? compact(stock.volume, lang) : "—"}</div></div>

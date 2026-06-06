@@ -4276,9 +4276,31 @@
 .sheetStar { width:44px; height:44px; border-radius:13px; border:1px solid var(--c-border); background:var(--c-surface-2); display:grid; place-items:center; color:var(--c-fg-3); flex:none; }
 .sheetStar.on { color:var(--c-brand); border-color:var(--c-border-strong); background:var(--c-brand-tint); }
 .sheetClose { width:38px; height:38px; border-radius:12px; border:1px solid var(--c-border); background:var(--c-surface-2); display:grid; place-items:center; color:var(--c-fg-2); flex:none; }
-.sheetPx { display:flex; align-items:baseline; gap:9px; margin-bottom:6px; }
-.sheetPx b { font:800 32px/1 var(--mono); letter-spacing:-.03em; color:var(--c-fg-1); }
-.sheetPx .unit { font:600 14px/1 var(--mono); color:var(--c-fg-3); }
+.sheetPx { display:flex; align-items:baseline; gap:8px; }
+.sheetPx b { font:800 36px/1 Sora, var(--mono); letter-spacing:-.04em; color:var(--c-fg-1); }
+.sheetPx .unit { font:700 14px/1 var(--mono); color:var(--c-fg-3); }
+
+/* premium quote row: big price + day-change pill */
+.sheetQuoteRow { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+.sheetDayPill { display:inline-flex; align-items:center; gap:5px; font:800 12.5px/1 var(--mono); padding:7px 11px; border-radius:999px; }
+.sheetDayPill em { font:800 9px/1 var(--mono); font-style:normal; text-transform:uppercase; letter-spacing:.1em; opacity:.7; margin-inline-start:3px; }
+.sheetDayPill.up { color:var(--c-up); background:var(--c-up-tint); }
+.sheetDayPill.down { color:var(--c-down); background:var(--c-down-tint); }
+
+/* premium chart card inside the sheet (line chart + period selector) */
+.sheetChartCard {
+  border:1px solid var(--c-border);
+  border-radius:22px;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--c-surface) 96%, var(--c-brand) 4%), var(--c-surface));
+  padding:14px 14px 8px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow-sm);
+}
+.sheetChartTop { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; }
+.sheetPeriodReturn { font:800 13px/1 var(--mono); letter-spacing:-.01em; }
+.sheetPeriodReturn.up { color:var(--c-up); }
+.sheetPeriodReturn.down { color:var(--c-down); }
+.sheetChartArea { margin-top:2px; }
 
 /* Watchlist rows (split: tappable body + trailing add/remove) */
 .watchRow { display:flex; align-items:stretch; border:1px solid var(--c-border); border-radius:16px; background:var(--c-surface); margin-bottom:9px; overflow:hidden; }

@@ -84,6 +84,7 @@ export async function GET() {
         const breadth = breadthResult.rows[0] || {};
         const index = indexResult.rows[0] || {};
 
+        const cacheHeaders = { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' };
         return NextResponse.json({
             market_status: resolveEgxMarketStatus(),
             market_code: "EGX",
@@ -113,7 +114,7 @@ export async function GET() {
                 closes_at: "14:30",
                 days: ["Sun", "Mon", "Tue", "Wed", "Thu"],
             },
-        });
+        }, { headers: cacheHeaders });
     } catch (error: any) {
         console.error("[API /market-summary ERROR]", error?.message || error);
         return NextResponse.json({ error: error?.message || "market summary failed" }, { status: 500 });

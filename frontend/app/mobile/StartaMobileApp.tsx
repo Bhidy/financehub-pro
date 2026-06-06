@@ -3769,12 +3769,6 @@ function FundDetail({ nav, lang, fund }: { nav: NavController; lang: Lang; fund?
             <span><i style={{ background: "var(--c-brand)" }} />{lang === "ar" ? "آخر تحديث" : "Updated"} {formatDate(fund.lastNavDate || fund.lastUpdateDate, lang)}</span>
           </div>
         </div>
-        <div className={styles.gridTwo}>
-          <div className={styles.statTile}><div className={styles.lblMono}>{lang === "ar" ? "عائد YTD" : "YTD Return"}</div><div className={cx(styles.tval, fund.ytd >= 0 ? styles.up : styles.down)}>{pct(fund.ytd, 1)}</div></div>
-          <div className={styles.statTile}><div className={styles.lblMono}>{lang === "ar" ? "المخاطر" : "Risk"}</div><div className={styles.tval}><FundRisk value={fund.risk} lang={lang} /></div></div>
-          <div className={styles.statTile}><div className={styles.lblMono}>{lang === "ar" ? "السيولة" : "Liquidity"}</div><div className={styles.tval}><span className={styles.sub}>{fund.liquidity}</span></div></div>
-          <div className={styles.statTile}><div className={styles.lblMono}>{lang === "ar" ? "الحد الأدنى" : "Minimum"}</div><div className={styles.tval}><span className={styles.sub}>{fund.min}</span></div></div>
-        </div>
         <div className={styles.segBar}>
           {[
             ["profile", lang === "ar" ? "الملف" : "Profile"],

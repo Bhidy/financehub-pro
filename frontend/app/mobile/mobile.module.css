@@ -4217,8 +4217,9 @@
 
 /* Buttons + link card */
 .btnRow2 { display:flex; gap:11px; margin-top:6px; }
-.btn2 { flex:1; border:0; border-radius:15px; padding:15px 0; font:800 13.5px/1 Manrope; text-align:center; }
-.btn2.primary { background:var(--grad-brand); color:#06221f; }
+.btn2 { flex:1; border:0; border-radius:15px; padding:15px 0; font:800 13.5px/1 Manrope; display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+.btn2 svg { width:18px; height:18px; flex:none; }
+.btn2.primary { background:var(--grad-brand); color:#ffffff; }
 .btn2.ghost { background:var(--c-surface); border:1px solid var(--c-border); color:var(--c-fg-1); }
 .linkCard2 { display:flex; align-items:center; gap:14px; border:1px solid var(--c-border); border-radius:18px; background:var(--c-surface); padding:16px; margin-top:13px; width:100%; text-align:start; }
 .linkCard2 .lic { width:42px; height:42px; border-radius:12px; background:var(--c-brand-tint); display:grid; place-items:center; color:var(--c-brand); flex:none; }

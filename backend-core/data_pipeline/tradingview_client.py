@@ -318,7 +318,7 @@ class TradingViewEGXClient:
 # --------------------------------------------------------------------------- #
 # Saudi (Tadawul/TASI) endpoints + client
 # --------------------------------------------------------------------------- #
-KSA_SCAN_URL = "https://scanner.tradingview.com/saudi/scan"
+KSA_SCAN_URL = "https://scanner.tradingview.com/ksa/scan"
 KSA_PREFIX = "TADAWUL:"
 MIN_KSA_UNIVERSE = 50  # active Saudi names; floor well below real ~200 for safety
 

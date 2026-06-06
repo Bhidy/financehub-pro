@@ -3721,6 +3721,58 @@ function richText(item: Record<string, unknown>, key: string, lang: Lang) {
   return firstString(item, lang === "ar" ? [`${key}_ar`, `${key}_en`, key] : [`${key}_en`, `${key}_ar`, key], "");
 }
 
+const FUND_ALLOC_PALETTE = ["var(--c-brand)", "var(--c-info)", "#a78bfa", "var(--c-warn)", "#f472b6", "#34d399", "#fbbf24", "#fb7185"];
+
+// Premium donut + legend for a fund's published asset allocation.
+function FundAllocationChart({ items, lang }: { items: Record<string, unknown>[]; lang: Lang }) {
+  const rows = items.map((item, i) => ({
+    key: richText(item, "key", lang),
+    value: toNumber(item.value),
+    color: typeof item.color === "string" && item.color.trim() ? String(item.color) : FUND_ALLOC_PALETTE[i % FUND_ALLOC_PALETTE.length],
+  }));
+  const sorted = [...rows].sort((a, b) => b.value - a.value);
+  const nonZero = sorted.filter((r) => r.value > 0);
+  const total = nonZero.reduce((s, r) => s + r.value, 0) || 1;
+  const R = 38;
+  const C = 2 * Math.PI * R;
+  const GAP = nonZero.length > 1 ? 2.6 : 0; // small gap between slices for a segmented look
+  let acc = 0;
+  const arcs = nonZero.map((seg) => {
+    const len = (seg.value / total) * C;
+    const dash = Math.max(0.5, len - GAP);
+    const offset = -acc;
+    acc += len;
+    return { color: seg.color, dash, offset };
+  });
+  const top = nonZero[0];
+  return (
+    <div className={styles.fundAllocCard}>
+      <div className={styles.fundAllocDonutWrap}>
+        <svg viewBox="0 0 100 100" className={styles.fundAllocDonut} aria-hidden="true">
+          <circle cx="50" cy="50" r={R} fill="none" stroke="var(--c-surface-2)" strokeWidth="11" />
+          {arcs.map((a, i) => (
+            <circle key={i} cx="50" cy="50" r={R} fill="none" stroke={a.color} strokeWidth="11"
+              strokeDasharray={`${a.dash} ${C}`} strokeDashoffset={a.offset} strokeLinecap="round" transform="rotate(-90 50 50)" />
+          ))}
+        </svg>
+        <div className={styles.fundAllocCenter}>
+          <b>{top ? `${top.value.toFixed(0)}%` : "—"}</b>
+          <span>{top ? top.key : (lang === "ar" ? "التوزيع" : "Asset mix")}</span>
+        </div>
+      </div>
+      <div className={styles.fundAllocLegend}>
+        {sorted.map((r2, i) => (
+          <div key={`${r2.key}-${i}`} className={cx(styles.fundAllocLegRow, r2.value === 0 && styles.fundAllocLegMuted)}>
+            <i style={{ background: r2.color }} />
+            <span>{r2.key}</span>
+            <strong>{r2.value.toFixed(0)}%</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FundDetail({ nav, lang, fund }: { nav: NavController; lang: Lang; fund?: Fund }) {
   const [series, setSeries] = useState<number[]>([]);
   const [tab, setTab] = useState<"profile" | "allocation" | "rules" | "docs">("profile");
@@ -3793,12 +3845,7 @@ function FundDetail({ nav, lang, fund }: { nav: NavController; lang: Lang; fund?
         ) : null}
         {tab === "allocation" ? (
           allocation.length ? (
-            <div className={styles.allocPanel}>
-              {allocation.map((item, i) => {
-                const value = toNumber(item.value);
-                return <div key={`${richText(item, "key", lang)}-${i}`} className={styles.allocRow}><span>{richText(item, "key", lang)}</span><i><b style={{ width: `${Math.min(100, value)}%`, background: String(item.color ?? "var(--c-brand)") }} /></i><strong>{value.toFixed(0)}%</strong></div>;
-              })}
-            </div>
+            <FundAllocationChart items={allocation} lang={lang} />
           ) : <EmptyPanel text={lang === "ar" ? "لا يوجد توزيع أصول منشور لهذا الصندوق حالياً." : "No published asset allocation is available for this fund yet."} />
         ) : null}
         {tab === "rules" ? (

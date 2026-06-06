@@ -22,7 +22,7 @@ const NAV_LINKS = [
     { href: "/Funds", en: "MUTUAL FUNDS", ar: "الصناديق الاستثمارية" },
     { href: "/Market-Pulse", en: "MARKET PULSE", ar: "نبض السوق" },
     { href: "/News", en: "MARKET NEWS", ar: "أخبار السوق" },
-    { href: "/Portfolio", en: "PORTFOLIO", ar: "المحفظة" },
+    { href: "/Portfolio/demo", en: "MY PORTFOLIO", ar: "محفظتي" },
     { href: "/Learn", en: "LEARN", ar: "تعلّم" },
 ];
 

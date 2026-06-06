@@ -1886,16 +1886,32 @@ export default function SymbolDetailPage() {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap mb-2">
                                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${sentimentClass}`}>{sentimentLabel}</span>
+                                                                {article.source && (
+                                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
+                                                                        {article.origin === "tradingview" ? "TradingView" : article.source}
+                                                                    </span>
+                                                                )}
                                                                 <span className="text-xs text-slate-400 font-semibold tracking-wide">
                                                                     {article.published_at ? new Date(article.published_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" }) : ""}
                                                                 </span>
                                                             </div>
 
-                                                            {/* Internal Route Link ONLY - Absolutely no external URL exposed */}
-                                                            <Link href={`/news/${article.id}`}
-                                                                className="font-extrabold text-base text-slate-900 dark:text-white hover:text-[#14b8a6] dark:hover:text-[#14b8a6] transition-colors leading-snug block mb-2">
-                                                                {cleanHeadline}
-                                                            </Link>
+                                                            {/* Local items -> in-app reader (/news/{id}); TV items -> source link (new tab) */}
+                                                            {article.id ? (
+                                                                <Link href={`/news/${article.id}`}
+                                                                    className="font-extrabold text-base text-slate-900 dark:text-white hover:text-[#14b8a6] dark:hover:text-[#14b8a6] transition-colors leading-snug block mb-2">
+                                                                    {cleanHeadline}
+                                                                </Link>
+                                                            ) : article.url ? (
+                                                                <a href={article.url} target="_blank" rel="noopener noreferrer"
+                                                                    className="font-extrabold text-base text-slate-900 dark:text-white hover:text-[#14b8a6] dark:hover:text-[#14b8a6] transition-colors leading-snug block mb-2">
+                                                                    {cleanHeadline}
+                                                                </a>
+                                                            ) : (
+                                                                <span className="font-extrabold text-base text-slate-900 dark:text-white leading-snug block mb-2">
+                                                                    {cleanHeadline}
+                                                                </span>
+                                                            )}
 
                                                             {cleanBody && (
                                                                 <>

@@ -257,6 +257,25 @@ def format_value(value: Any, fmt: str, currency: str = "EGP") -> str:
             return f"{val:,.0f}"
 
 
+def scale_statement_rows(rows, registry, factor: float = 1_000_000):
+    """income_statements/balance_sheets/cashflow_statements store EGP in MILLIONS.
+    Multiply every FMT_CURRENCY column by `factor` so format_value (which assumes
+    absolute EGP) renders the right magnitude. Per-share/percent/ratio columns are
+    untouched; ratios computed from two scaled columns are unaffected (scale cancels)."""
+    cur_cols = {c for c, m in registry.items() if m.get("format") == FMT_CURRENCY}
+    out = []
+    for r in rows:
+        d = dict(r)
+        for c in cur_cols:
+            if c in d and d[c] is not None:
+                try:
+                    d[c] = float(d[c]) * factor
+                except (TypeError, ValueError):
+                    pass
+        out.append(d)
+    return out
+
+
 def get_category_columns(table: str, category: str) -> List[str]:
     """Get all column names for a given category in a table."""
     registry = ALL_REGISTRIES.get(table, {})

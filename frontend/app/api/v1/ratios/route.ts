@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { db } from '@/lib/db-server';
+import { db, numerify } from '@/lib/db-server';
+
+// View already emits absolute EGP; ratios are unitless. Coerce NUMERIC strings only.
+const RATIO_NUM = ['pe_ratio', 'pb_ratio', 'dividend_yield', 'gross_margin',
+    'operating_margin', 'net_margin', 'roe', 'roa', 'eps_ttm', 'revenue_growth', 'profit_growth'];
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -23,7 +27,7 @@ export async function GET(request: Request) {
              FROM stock_stats_view WHERE symbol = $1 LIMIT $2`,
             [symbol.toUpperCase(), limit]
         );
-        return NextResponse.json(result.rows);
+        return NextResponse.json(result.rows.map((r) => numerify(r, RATIO_NUM)));
     } catch (error: any) {
         console.error('ratios route error:', error?.message);
         return NextResponse.json({ error: 'internal_error' }, { status: 500 });

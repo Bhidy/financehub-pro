@@ -6,7 +6,7 @@ Provides detailed income statement data with multi-year trends.
 from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 from typing import Dict, Any, List, Optional
-from .column_registry import INCOME_COLUMNS, format_value, get_category_columns
+from .column_registry import INCOME_COLUMNS, format_value, get_category_columns, scale_statement_rows
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +36,11 @@ async def handle_income_revenue_breakdown(conn, symbol: str, language: str = "en
                provision_credit_losses AS loan_loss_provisions
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
-    
+    rows = scale_statement_rows(rows, INCOME_COLUMNS)
+
     if not rows:
         return _no_data(symbol, name, language)
-    
+
     is_bank = rows[0].get('total_interest_income') is not None
     years = [r['fiscal_year'] for r in rows]
     
@@ -107,7 +108,8 @@ async def handle_income_cost_structure(conn, symbol: str, language: str = "en") 
                other_operating_expenses, operating_income, operating_margin
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
-    
+    rows = scale_statement_rows(rows, INCOME_COLUMNS)
+
     if not rows:
         return _no_data(symbol, name, language)
     
@@ -176,10 +178,11 @@ async def handle_income_growth_trend(conn, symbol: str, metric: str = "revenue",
     rows = await conn.fetch(
         f"SELECT {col_str} FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year ASC LIMIT 10", symbol
     )
-    
+    rows = scale_statement_rows(rows, INCOME_COLUMNS)
+
     if not rows:
         return _no_data(symbol, name, language)
-    
+
     years = [r['fiscal_year'] for r in rows]
     series = []
     for col in cols:
@@ -223,10 +226,11 @@ async def handle_income_ebitda_breakdown(conn, symbol: str, language: str = "en"
                operating_income, operating_margin
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
-    
+    rows = scale_statement_rows(rows, INCOME_COLUMNS)
+
     if not rows:
         return _no_data(symbol, name, language)
-    
+
     years = [r['fiscal_year'] for r in rows]
     data = {
         "years": years, "currency": currency,
@@ -267,10 +271,11 @@ async def handle_income_tax_analysis(conn, symbol: str, language: str = "en") ->
         SELECT fiscal_year, pretax_income, income_tax, effective_tax_rate, net_income
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year ASC LIMIT 10
     """, symbol)
-    
+    rows = scale_statement_rows(rows, INCOME_COLUMNS)
+
     if not rows:
         return _no_data(symbol, name, language)
-    
+
     years = [r['fiscal_year'] for r in rows]
     data = {
         "years": years, "currency": currency,
@@ -312,10 +317,11 @@ async def handle_income_earnings_quality(conn, symbol: str, language: str = "en"
                minority_interest_earnings, net_income_common
         FROM income_statements WHERE symbol=$1 ORDER BY fiscal_year ASC LIMIT 10
     """, symbol)
-    
+    rows = scale_statement_rows(rows, INCOME_COLUMNS)
+
     if not rows:
         return _no_data(symbol, name, language)
-    
+
     years = [r['fiscal_year'] for r in rows]
     data = {
         "years": years, "currency": currency,

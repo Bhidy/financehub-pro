@@ -6,7 +6,7 @@ Provides detailed cashflow analysis with multi-year trends.
 from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 from typing import Dict, Any, List
-from .column_registry import CASHFLOW_COLUMNS, format_value
+from .column_registry import CASHFLOW_COLUMNS, format_value, scale_statement_rows
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ async def handle_cashflow_waterfall(conn, symbol: str, language: str = "en") -> 
                fx_effect, net_change_cash, beginning_cash, ending_cash
         FROM cashflow_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
+    rows = scale_statement_rows(rows, CASHFLOW_COLUMNS)
     if not rows: return _nd(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]
@@ -59,6 +60,7 @@ async def handle_cashflow_capex_trend(conn, symbol: str, language: str = "en") -
         SELECT fiscal_year, capex, cash_from_operating, free_cashflow, sale_of_ppe
         FROM cashflow_statements WHERE symbol=$1 ORDER BY fiscal_year ASC LIMIT 10
     """, symbol)
+    rows = scale_statement_rows(rows, CASHFLOW_COLUMNS)
     if not rows: return _nd(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]
@@ -87,6 +89,7 @@ async def handle_cashflow_debt_activity(conn, symbol: str, language: str = "en")
                dividends_paid, share_repurchases, share_issuances, cash_from_financing
         FROM cashflow_statements WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
+    rows = scale_statement_rows(rows, CASHFLOW_COLUMNS)
     if not rows: return _nd(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]
@@ -121,6 +124,7 @@ async def handle_cashflow_fcf_analysis(conn, symbol: str, language: str = "en") 
                fcf_growth, fcf_margin, fcf_per_share, levered_fcf, unlevered_fcf
         FROM cashflow_statements WHERE symbol=$1 ORDER BY fiscal_year ASC LIMIT 10
     """, symbol)
+    rows = scale_statement_rows(rows, CASHFLOW_COLUMNS)
     if not rows: return _nd(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]

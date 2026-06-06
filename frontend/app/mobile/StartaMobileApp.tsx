@@ -3397,16 +3397,15 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], shareholders: [], actions: [] });
   const [bars, setBars] = useState<OhlcBar[]>([]);
   const [tf, setTf] = useState<string>("3M");
-  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"overview" | "financials" | "ownership" | "actions">("overview");
   const symbol = stock?.symbol;
 
-  // Fundamentals load once per symbol.
+  // Fundamentals load once per symbol — the page is already usable from `stock`
+  // (hero, chart, key stats), so this just fills the tabs in the background.
   useEffect(() => {
     if (!symbol) return;
     let active = true;
-    setLoading(true);
-    loadCompanyProfile(symbol).then((next) => { if (active) { setBundle(next); setLoading(false); } });
+    loadCompanyProfile(symbol).then((next) => { if (active) setBundle(next); });
     return () => { active = false; };
   }, [symbol]);
 
@@ -3518,7 +3517,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             <span className={cx(styles.crDelta, up ? styles.up : styles.down)}>{up ? "▲" : "▼"} {Math.abs(stock.change).toFixed(2)} · {pct(stock.changePct)}</span>
           </div>
         </motion.div>
-        {loading ? <div className={styles.loadingBar} /> : null}
 
         {/* Interactive candle chart + timeframe selector */}
         <div className={styles.crChartCard}>

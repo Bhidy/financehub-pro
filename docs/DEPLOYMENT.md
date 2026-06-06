@@ -42,19 +42,13 @@ deploy and no alias step.
 
 The live backend is a **Docker container** (FastAPI `app.main:app`, port `7860`) behind **Caddy** (SSL/reverse-proxy) on the Hetzner VPS. Frontend reaches it via `NEXT_PUBLIC_API_URL` (the `/api/:path*` rewrite) + same-origin Next.js routes.
 
-**Deploy via the script (run from the repo root):**
+**Deploy via the key-based script (run from the repo root):**
 ```bash
-./scripts/deploy_production.sh backend            # standard
-./scripts/deploy_production.sh backend smart      # fast hot-swap (git reset + rolling restart)
-./scripts/deploy_production.sh backend nuclear    # stop, prune, full rebuild (use when in doubt)
-# NOTE: this script no longer deploys the frontend (removed 2026-06). `all` now does backend only.
-# Frontend deploys ONLY by merging to `main`. Prefer ./scripts/deploy_backend_key.sh for backend.
+./scripts/deploy_backend_key.sh        # SSH key auth (no password): git reset → rebuild → hot-swap
 ```
-It pushes code to GitHub, then SSHes to the VPS to rebuild/restart the container. Backend env lives at **`/opt/starta/.env`** on the server.
+It SSHes (key `~/.ssh/starta_deploy`) to the VPS, pulls `main`, rebuilds the backend Docker layer, and hot-swaps the container. Backend env lives at **`/opt/starta/.env`** on the server. (`scripts/deploy_production.sh` is now a deprecated redirect to this script.)
 
-> **`deploy-backend.yml` (GitHub Action) is STALE — do not rely on it.** It targets **Railway** (`railway up`), filters on `backend/**` (the path is `backend-core/`, so it never fires), and `cd backend` (doesn't exist). Recommend deleting it to avoid confusion. The real backend host is Hetzner, deployed by the script above.
-
-> The `scripts/*.exp` (expect) helpers automate the SSH steps but **hardcode the server password** — see `SECURITY.md`. Treat them as compromised until the password is rotated.
+> ✅ 2026-06: the `scripts/*.exp` password helpers were **deleted** and SSH **password authentication is disabled** on the server (key-only). The stale `deploy-backend.yml` GitHub Action was also removed. See `SECURITY.md`.
 
 ---
 
@@ -74,5 +68,5 @@ GitHub Actions drive all data ingestion (IP-ban/conflict risk if run locally):
 ## Pre-deploy checklist
 1. `cd frontend && npm run verify:routes && npm run build` (route guard + build).
 2. `git status` — deploy only intended changes (this worktree often has unrelated WIP).
-3. Frontend: push → **alias step** → verify `200`.
-4. Backend: `./scripts/deploy_production.sh backend smart` → check `https://startamarkets.com/api/v1/market-summary` → `200`.
+3. Frontend: branch → PR → **merge to `main`** → Vercel auto-builds + domain auto-follows → `./scripts/deploy-web.sh` verifies `200`.
+4. Backend: `./scripts/deploy_backend_key.sh` → check `https://startamarkets.com/api/v1/market-summary` → `200`.

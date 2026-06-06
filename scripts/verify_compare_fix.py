@@ -14,7 +14,9 @@ logging.basicConfig(level=logging.INFO)
 
 # Load environment
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL') or 'postgresql://postgres:***REMOVED-CREDENTIAL***@46.224.223.172:5432/mubasher_db' # Use tunnel or direct if possible
+DATABASE_URL = os.getenv('DATABASE_URL')  # required; no hardcoded credentials (legacy Hetzner Postgres is retired — prod is Supabase)
+if not DATABASE_URL:
+    raise SystemExit('Set the DATABASE_URL env var (no hardcoded credentials are bundled).')
 
 # Import the handler (after path setup)
 from app.chat.handlers.compare_handler import handle_compare_stocks

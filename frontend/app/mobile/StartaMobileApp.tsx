@@ -590,11 +590,11 @@ async function getJson<T>(url: string, options: { ttl?: number; fresh?: boolean 
   }
 }
 
-async function postJson<T>(url: string, body: Record<string, unknown>): Promise<T | null> {
+async function postJson<T>(url: string, body: Record<string, unknown>, headers: Record<string, string> = {}): Promise<T | null> {
   try {
     const res = await fetch(`${API_BASE}${url}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
     });
     if (!res.ok) return null;
@@ -859,7 +859,200 @@ const storage = {
       /* ignore unavailable storage */
     }
   },
+  remove(key: string) {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) window.localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  },
 };
+
+// ============================================================================
+// Auth — real account system (mirrors the website: JWT + guest freemium gate).
+// Talks to the same prod backend the app already uses; CapacitorHttp makes the
+// cross-origin calls + custom headers CORS-safe.
+// ============================================================================
+type AuthUser = {
+  id?: number;
+  email: string;
+  full_name?: string;
+  phone?: string;
+  avatar_url?: string;
+  role?: string;
+  subscription_status?: string;
+  subscription_plan?: string;
+};
+
+const AUTH_TOKEN_KEY = "fh_auth_token";
+const AUTH_REFRESH_KEY = "fh_refresh_token";
+const AUTH_USER_KEY = "fh_user";
+const GUEST_USAGE_KEY = "fh_guest_usage";
+
+// Free guest allowances before the register popup (authed users are unlimited).
+const GUEST_LIMITS: Record<string, number> = { ai: 3, research: 3, compare: 2 };
+// Pushed screens that consume a guest "premium" allowance.
+const GATED_PUSH: Record<string, string> = { "company-profile": "research", stock: "research", compare: "compare" };
+
+function getAuthToken() {
+  return storage.get(AUTH_TOKEN_KEY);
+}
+function getStoredUser(): AuthUser | null {
+  try {
+    const raw = storage.get(AUTH_USER_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
+    return null;
+  }
+}
+function saveAuth(token: string, refresh: string | undefined, user: AuthUser) {
+  storage.set(AUTH_TOKEN_KEY, token);
+  if (refresh) storage.set(AUTH_REFRESH_KEY, refresh);
+  storage.set(AUTH_USER_KEY, JSON.stringify(user));
+}
+function clearAuth() {
+  [AUTH_TOKEN_KEY, AUTH_REFRESH_KEY, AUTH_USER_KEY].forEach((k) => storage.remove(k));
+}
+
+// Authorization header when signed in (guests gated locally, not via the server).
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = { ...extra };
+  const token = getAuthToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+// ---- Guest freemium gate (per-action local counters) ----
+function guestUsage(): Record<string, number> {
+  try { return JSON.parse(storage.get(GUEST_USAGE_KEY) || "{}") as Record<string, number>; } catch { return {}; }
+}
+function guestRemaining(action: string): number {
+  return Math.max(0, (GUEST_LIMITS[action] ?? 0) - (guestUsage()[action] ?? 0));
+}
+function bumpGuest(action: string) {
+  const u = guestUsage();
+  u[action] = (u[action] ?? 0) + 1;
+  storage.set(GUEST_USAGE_KEY, JSON.stringify(u));
+}
+function resetGuestUsage() { storage.remove(GUEST_USAGE_KEY); }
+
+type AuthResult = { ok: boolean; user?: AuthUser; error?: string };
+
+async function authSignup(email: string, password: string, fullName: string): Promise<AuthResult> {
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), password, full_name: fullName.trim() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: typeof data.detail === "string" ? data.detail : "Could not create your account." };
+    if (data.access_token && data.user) saveAuth(data.access_token, data.refresh_token, data.user);
+    return { ok: true, user: data.user };
+  } catch {
+    return { ok: false, error: "Network error. Please try again." };
+  }
+}
+
+async function authLogin(email: string, password: string): Promise<AuthResult> {
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: typeof data.detail === "string" ? data.detail : "Incorrect email or password." };
+    if (data.access_token && data.user) saveAuth(data.access_token, data.refresh_token, data.user);
+    return { ok: true, user: data.user };
+  } catch {
+    return { ok: false, error: "Network error. Please try again." };
+  }
+}
+
+// Validate a stored token on launch; returns the fresh user or null if invalid.
+async function authMe(): Promise<AuthUser | null> {
+  const token = getAuthToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.status === 401) {
+      const refreshed = await authRefresh();
+      return refreshed;
+    }
+    if (!res.ok) return null;
+    const user = (await res.json()) as AuthUser;
+    storage.set(AUTH_USER_KEY, JSON.stringify(user));
+    return user;
+  } catch {
+    return getStoredUser(); // offline: trust the cached user
+  }
+}
+
+async function authRefresh(): Promise<AuthUser | null> {
+  const refresh = storage.get(AUTH_REFRESH_KEY);
+  if (!refresh) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refresh }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.access_token && data.user) { saveAuth(data.access_token, data.refresh_token, data.user); return data.user; }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function authForgotPassword(email: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/forgot-password`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: typeof data.detail === "string" ? data.detail : "Could not send the code." };
+    return { ok: true };
+  } catch { return { ok: false, error: "Network error. Please try again." }; }
+}
+
+async function authVerifyOtp(email: string, code: string): Promise<{ ok: boolean; resetToken?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/verify-otp`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim(), code: code.trim() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: typeof data.detail === "string" ? data.detail : "Invalid or expired code." };
+    return { ok: true, resetToken: data.reset_token };
+  } catch { return { ok: false, error: "Network error. Please try again." }; }
+}
+
+async function authResetPassword(resetToken: string, newPassword: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/proxy/auth/reset-password-confirm`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: resetToken, new_password: newPassword }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: typeof data.detail === "string" ? data.detail : "Could not reset your password." };
+    return { ok: true };
+  } catch { return { ok: false, error: "Network error. Please try again." }; }
+}
+
+// Google OAuth: ask the backend for the consent URL (reuses the web callback,
+// with state.mobile so the web route bounces tokens back to our app scheme).
+const GOOGLE_WEB_CALLBACK = "https://startamarkets.com/api/auth/google/callback";
+const APP_OAUTH_SCHEME = "com.mubasher.startamarkets://oauth";
+async function authGoogleUrl(): Promise<string | null> {
+  try {
+    const state = encodeURIComponent(JSON.stringify({ mobile: true, returnTo: APP_OAUTH_SCHEME }));
+    const res = await fetch(`${API_BASE}/api/proxy/auth/google/url?redirect_uri=${encodeURIComponent(GOOGLE_WEB_CALLBACK)}&state=${state}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data.auth_url === "string" ? data.auth_url : null;
+  } catch { return null; }
+}
 
 function readWatch(): string[] {
   try {
@@ -1380,7 +1573,7 @@ function OnbAiVisual({ active }: { active: boolean }) {
   );
 }
 
-function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; setLang: (lang: Lang) => void }) {
+function Onboarding({ lang, enter, setLang, onSignIn }: { lang: Lang; enter: () => void; setLang: (lang: Lang) => void; onSignIn?: () => void }) {
   const t = copy[lang];
   const rtl = lang === "ar";
   const [index, setIndex] = useState(0);
@@ -1481,6 +1674,11 @@ function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; s
             {t.createAccount}
           </motion.button>
         )}
+        {onSignIn ? (
+          <button className={styles.onbSignIn} onClick={onSignIn}>
+            {rtl ? "لديك حساب؟ " : "Already have an account? "}<b>{rtl ? "تسجيل الدخول" : "Sign in"}</b>
+          </button>
+        ) : null}
       </div>
     </div>
   );
@@ -1489,7 +1687,12 @@ function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; s
 export default function StartaMobileApp() {
   const [lang, setLang] = useState<Lang>("en");
   const [theme, setTheme] = useState<Theme>("light");
-  const [authed, setAuthed] = useState(false);
+  // `entered` = past the onboarding/welcome (guest OR signed-in). Signed-in users
+  // and anyone who has already onboarded skip the welcome on subsequent launches.
+  const [entered, setEntered] = useState<boolean>(() => !!getStoredUser() || storage.get("fh_onboarded") === "1");
+  const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
+  const [authScreen, setAuthScreen] = useState<null | "signin" | "signup" | "forgot">(null);
+  const [registerOpen, setRegisterOpen] = useState(false);
   const [tab, setTab] = useState<TabId>("home");
   const [stack, setStack] = useState<PushScreen[]>([]);
   const [aiOpen, setAiOpen] = useState(false);
@@ -1630,8 +1833,87 @@ export default function StartaMobileApp() {
     return () => listener?.remove?.();
   }, [aiOpen, sheet, stack.length, tab]);
 
+  // Validate any stored token on launch; refresh if the access token expired.
+  useEffect(() => {
+    if (!getAuthToken()) return;
+    let alive = true;
+    authMe().then((u) => {
+      if (!alive) return;
+      if (u) setUser(u);
+      else { clearAuth(); setUser(null); }
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const handleAuthed = (u: AuthUser) => {
+    setUser(u);
+    setAuthScreen(null);
+    setRegisterOpen(false);
+    resetGuestUsage();
+  };
+  const logout = () => {
+    clearAuth();
+    resetGuestUsage();
+    setUser(null);
+  };
+
+  // Google sign-in: open the consent page in the system/in-app browser. The web
+  // callback bounces tokens back to the app via the com.mubasher.startamarkets:// scheme.
+  const startGoogle = async (): Promise<boolean> => {
+    const url = await authGoogleUrl();
+    if (!url) return false;
+    const cap = (window as unknown as { Capacitor?: { Plugins?: { Browser?: { open?: (o: { url: string }) => Promise<void> } } } }).Capacitor;
+    try {
+      if (cap?.Plugins?.Browser?.open) await cap.Plugins.Browser.open({ url });
+      else window.open(url, "_blank");
+    } catch { window.open(url, "_blank"); }
+    return true;
+  };
+
+  // Deep-link handler: capture tokens from the Google OAuth redirect.
+  useEffect(() => {
+    const consumeOAuth = (rawUrl: string) => {
+      try {
+        if (!/google_auth=success/.test(rawUrl)) return;
+        const params = new URLSearchParams(rawUrl.split("?")[1] || "");
+        const token = params.get("token");
+        const refresh = params.get("refresh_token") || undefined;
+        const userJson = params.get("user");
+        if (token && userJson) {
+          const u = JSON.parse(decodeURIComponent(userJson)) as AuthUser;
+          saveAuth(token, refresh, u);
+          handleAuthed(u);
+          const cap = (window as unknown as { Capacitor?: { Plugins?: { Browser?: { close?: () => void } } } }).Capacitor;
+          cap?.Plugins?.Browser?.close?.();
+        }
+      } catch { /* ignore malformed deep link */ }
+    };
+    const appPlugin = (window as unknown as {
+      Capacitor?: { Plugins?: { App?: { addListener?: (event: string, cb: (data: { url?: string }) => void) => { remove?: () => void } | Promise<{ remove?: () => void }> } } };
+    }).Capacitor?.Plugins?.App;
+    let listener: { remove?: () => void } | undefined;
+    const result = appPlugin?.addListener?.("appUrlOpen", (data) => { if (data?.url) consumeOAuth(data.url); });
+    if (result && typeof (result as Promise<{ remove?: () => void }>).then === "function") {
+      void (result as Promise<{ remove?: () => void }>).then((l) => { listener = l; });
+    } else if (result) {
+      listener = result as { remove?: () => void };
+    }
+    if (typeof window !== "undefined") consumeOAuth(window.location.href);
+    return () => listener?.remove?.();
+  }, []);
+
   const nav = useMemo(() => ({
-    push: (name: PushName, props?: Record<string, unknown>) => setStack((items) => [...items, { name, props }]),
+    push: (name: PushName, props?: Record<string, unknown>) => {
+      // Guest freemium gate: a few free opens of premium surfaces, then register.
+      if (!user) {
+        const action = GATED_PUSH[name];
+        if (action) {
+          if (guestRemaining(action) <= 0) { setRegisterOpen(true); return; }
+          bumpGuest(action);
+        }
+      }
+      setStack((items) => [...items, { name, props }]);
+    },
     pop: () => setStack((items) => items.slice(0, -1)),
     setTab: (id: TabId) => {
       setStack([]);
@@ -1644,7 +1926,7 @@ export default function StartaMobileApp() {
     },
     openStock: (symbol: string) => setSheet(symbol),
     back: handleBack,
-  }), [aiOpen, sheet, stack.length, tab]);
+  }), [aiOpen, sheet, stack.length, tab, user]);
 
   const current = stack[stack.length - 1];
   const t = copy[lang];
@@ -1660,14 +1942,14 @@ export default function StartaMobileApp() {
   return (
     <main className={styles.stage} data-theme={theme} dir={lang === "ar" ? "rtl" : "ltr"} data-lenis-prevent="true">
       <section className={styles.device} aria-label="Starta Markets mobile app">
-        {!authed ? (
-          <Onboarding lang={lang} setLang={setLang} enter={() => setAuthed(true)} />
+        {!entered ? (
+          <Onboarding lang={lang} setLang={setLang} enter={() => { storage.set("fh_onboarded", "1"); setEntered(true); }} onSignIn={() => { storage.set("fh_onboarded", "1"); setEntered(true); setAuthScreen("signin"); }} />
         ) : (
           <>
             <div className={styles.screen}>
               {current ? (
                 <div key={`${current.name}-${stack.length}`} className={styles.screenMotion}>
-                  <PushRouter screen={current} nav={nav} lang={lang} theme={theme} setTheme={setTheme} setLang={setLang} stocks={stocks} funds={funds} news={news} topics={topics} portfolio={portfolio} summary={summary} egxIndex={egxIndex} />
+                  <PushRouter screen={current} nav={nav} lang={lang} theme={theme} setTheme={setTheme} setLang={setLang} stocks={stocks} funds={funds} news={news} topics={topics} portfolio={portfolio} summary={summary} egxIndex={egxIndex} user={user} onAuth={setAuthScreen} logout={logout} />
                 </div>
               ) : (
                 <div key={tab} className={styles.screenMotion}>
@@ -1676,7 +1958,7 @@ export default function StartaMobileApp() {
                   {tab === "news" && <NewsScreen nav={nav} lang={lang} news={news} />}
                   {tab === "funds" && <FundsScreen nav={nav} lang={lang} funds={funds} />}
                   {tab === "portfolio" && <PortfolioScreen lang={lang} nav={nav} portfolio={portfolio} stocks={stocks} onPortfolioChange={setPortfolio} />}
-                  {tab === "more" && <MoreScreen nav={nav} lang={lang} theme={theme} setTheme={setTheme} setLang={setLang} logout={() => setAuthed(false)} />}
+                  {tab === "more" && <MoreScreen nav={nav} lang={lang} theme={theme} setTheme={setTheme} setLang={setLang} user={user} onAuth={setAuthScreen} logout={logout} />}
                 </div>
               )}
             </div>
@@ -1687,7 +1969,9 @@ export default function StartaMobileApp() {
             ) : null}
             <TabBar active={tab} setActive={nav.setTab} lang={lang} />
             <StockSheet symbol={sheet} stocks={stocks} lang={lang} nav={nav} onClose={() => setSheet(null)} />
-            <AIOverlay open={aiOpen} seed={aiSeed} runId={aiRunId} onClose={() => { setAiOpen(false); setAiSeed(undefined); }} lang={lang} stocks={stocks} funds={funds} news={news} summary={summary} />
+            <AIOverlay open={aiOpen} seed={aiSeed} runId={aiRunId} onClose={() => { setAiOpen(false); setAiSeed(undefined); }} lang={lang} stocks={stocks} funds={funds} news={news} summary={summary} isAuthed={!!user} onGuestLimit={() => { setAiOpen(false); setRegisterOpen(true); }} />
+            <RegisterPopup open={registerOpen} lang={lang} onClose={() => setRegisterOpen(false)} onSignup={() => { setRegisterOpen(false); setAuthScreen("signup"); }} onSignin={() => { setRegisterOpen(false); setAuthScreen("signin"); }} />
+            <AuthFlow screen={authScreen} lang={lang} onClose={() => setAuthScreen(null)} onAuthed={handleAuthed} setScreen={setAuthScreen} startGoogle={startGoogle} />
           </>
         )}
       </section>
@@ -1761,6 +2045,222 @@ function BrandGlyph() {
       <path d="M72 46L86 32" stroke="#fff" strokeWidth="11" strokeLinecap="round" />
       <path d="M99 19L79 25L93 39Z" fill="#fff" />
     </svg>
+  );
+}
+
+// ===================== Auth UI (sign in / sign up / forgot / register popup) ====
+function GoogleGlyph({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8a12 12 0 1 1 0-24c3 0 5.8 1.1 7.9 3l5.7-5.7A20 20 0 1 0 24 44c11 0 20-8 20-20 0-1.3-.1-2.3-.4-3.5z" />
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8A12 12 0 0 1 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7A20 20 0 0 0 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2A12 12 0 0 1 12.7 28l-6.6 5.1A20 20 0 0 0 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4.1 5.6l6.2 5.2C39.7 35.3 44 30.2 44 24c0-1.3-.1-2.3-.4-3.5z" />
+    </svg>
+  );
+}
+
+function GoogleButton({ lang, startGoogle }: { lang: Lang; startGoogle: () => Promise<boolean> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <button type="button" className={styles.authGoogle} disabled={busy} onClick={async () => { setBusy(true); await startGoogle(); setBusy(false); }}>
+      <GoogleGlyph /> {busy ? (lang === "ar" ? "جارٍ الفتح…" : "Opening…") : (lang === "ar" ? "المتابعة عبر Google" : "Continue with Google")}
+    </button>
+  );
+}
+
+function AuthField({ label, type, value, onChange, placeholder, autoComplete, inputMode, maxLength }: { label: string; type: string; value: string; onChange: (v: string) => void; placeholder?: string; autoComplete?: string; inputMode?: "text" | "email" | "numeric"; maxLength?: number }) {
+  return (
+    <label className={styles.authField}>
+      <span>{label}</span>
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} inputMode={inputMode} maxLength={maxLength} />
+    </label>
+  );
+}
+
+function SignInForm({ lang, onAuthed, setScreen, startGoogle }: { lang: Lang; onAuthed: (u: AuthUser) => void; setScreen: (s: "signin" | "signup" | "forgot") => void; startGoogle: () => Promise<boolean> }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) { setError(lang === "ar" ? "أدخل البريد وكلمة المرور." : "Enter your email and password."); return; }
+    setLoading(true); setError("");
+    const r = await authLogin(email, password);
+    setLoading(false);
+    if (r.ok && r.user) onAuthed(r.user); else setError(r.error || (lang === "ar" ? "تعذّر تسجيل الدخول." : "Sign in failed."));
+  };
+  return (
+    <form className={styles.authForm} onSubmit={submit}>
+      <h1 className={styles.authTitle}>{lang === "ar" ? "مرحباً بعودتك" : "Welcome back"}</h1>
+      <p className={styles.authSub}>{lang === "ar" ? "سجّل الدخول للوصول الكامل إلى Starta." : "Sign in for full access to Starta."}</p>
+      <GoogleButton lang={lang} startGoogle={startGoogle} />
+      <div className={styles.authDivider}><span>{lang === "ar" ? "أو" : "or"}</span></div>
+      <AuthField label={lang === "ar" ? "البريد الإلكتروني" : "Email"} type="email" autoComplete="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@email.com" />
+      <AuthField label={lang === "ar" ? "كلمة المرور" : "Password"} type="password" autoComplete="current-password" value={password} onChange={setPassword} placeholder="••••••••" />
+      <button type="button" className={styles.authForgot} onClick={() => setScreen("forgot")}>{lang === "ar" ? "نسيت كلمة المرور؟" : "Forgot password?"}</button>
+      {error ? <div className={styles.authError}>{error}</div> : null}
+      <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ تسجيل الدخول…" : "Signing in…") : (lang === "ar" ? "تسجيل الدخول" : "Sign in")}</button>
+      <p className={styles.authSwitch}>{lang === "ar" ? "ليس لديك حساب؟ " : "New to Starta? "}<button type="button" onClick={() => setScreen("signup")}>{lang === "ar" ? "أنشئ حساباً" : "Create account"}</button></p>
+    </form>
+  );
+}
+
+function SignUpForm({ lang, onAuthed, setScreen, startGoogle }: { lang: Lang; onAuthed: (u: AuthUser) => void; setScreen: (s: "signin" | "signup" | "forgot") => void; startGoogle: () => Promise<boolean> }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) { setError(lang === "ar" ? "أدخل اسمك." : "Enter your full name."); return; }
+    if (!email.trim()) { setError(lang === "ar" ? "أدخل بريدك الإلكتروني." : "Enter your email."); return; }
+    if (password.length < 6) { setError(lang === "ar" ? "كلمة المرور 6 أحرف على الأقل." : "Password must be at least 6 characters."); return; }
+    if (password !== confirm) { setError(lang === "ar" ? "كلمتا المرور غير متطابقتين." : "Passwords don't match."); return; }
+    setLoading(true); setError("");
+    const r = await authSignup(email, password, name);
+    setLoading(false);
+    if (r.ok && r.user) onAuthed(r.user); else setError(r.error || (lang === "ar" ? "تعذّر إنشاء الحساب." : "Sign up failed."));
+  };
+  return (
+    <form className={styles.authForm} onSubmit={submit}>
+      <h1 className={styles.authTitle}>{lang === "ar" ? "أنشئ حسابك المجاني" : "Create your free account"}</h1>
+      <p className={styles.authSub}>{lang === "ar" ? "ذكاء سوقي غير محدود في دقيقة." : "Unlimited market intelligence in under a minute."}</p>
+      <GoogleButton lang={lang} startGoogle={startGoogle} />
+      <div className={styles.authDivider}><span>{lang === "ar" ? "أو" : "or"}</span></div>
+      <AuthField label={lang === "ar" ? "الاسم الكامل" : "Full name"} type="text" autoComplete="name" value={name} onChange={setName} placeholder={lang === "ar" ? "محمد بهيدي" : "Mohamed Bhidy"} />
+      <AuthField label={lang === "ar" ? "البريد الإلكتروني" : "Email"} type="email" autoComplete="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@email.com" />
+      <AuthField label={lang === "ar" ? "كلمة المرور" : "Password"} type="password" autoComplete="new-password" value={password} onChange={setPassword} placeholder={lang === "ar" ? "6 أحرف على الأقل" : "At least 6 characters"} />
+      <AuthField label={lang === "ar" ? "تأكيد كلمة المرور" : "Confirm password"} type="password" autoComplete="new-password" value={confirm} onChange={setConfirm} placeholder="••••••••" />
+      {error ? <div className={styles.authError}>{error}</div> : null}
+      <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ الإنشاء…" : "Creating…") : (lang === "ar" ? "إنشاء حساب" : "Create account")}</button>
+      <p className={styles.authSwitch}>{lang === "ar" ? "لديك حساب؟ " : "Already have an account? "}<button type="button" onClick={() => setScreen("signin")}>{lang === "ar" ? "تسجيل الدخول" : "Sign in"}</button></p>
+    </form>
+  );
+}
+
+function ForgotForm({ lang, setScreen, onAuthed }: { lang: Lang; setScreen: (s: "signin" | "signup" | "forgot") => void; onAuthed: (u: AuthUser) => void }) {
+  const [step, setStep] = useState<"email" | "otp" | "reset" | "done">("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const sendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) { setError(lang === "ar" ? "أدخل بريدك." : "Enter your email."); return; }
+    setLoading(true); setError("");
+    const r = await authForgotPassword(email);
+    setLoading(false);
+    if (r.ok) setStep("otp"); else setError(r.error || "");
+  };
+  const verify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.trim().length < 4) { setError(lang === "ar" ? "أدخل الرمز المرسل." : "Enter the code we emailed you."); return; }
+    setLoading(true); setError("");
+    const r = await authVerifyOtp(email, code);
+    setLoading(false);
+    if (r.ok && r.resetToken) { setResetToken(r.resetToken); setStep("reset"); } else setError(r.error || "");
+  };
+  const reset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) { setError(lang === "ar" ? "كلمة المرور 6 أحرف على الأقل." : "Password must be at least 6 characters."); return; }
+    setLoading(true); setError("");
+    const r = await authResetPassword(resetToken, newPassword);
+    if (!r.ok) { setLoading(false); setError(r.error || ""); return; }
+    // auto sign in with the new password
+    const li = await authLogin(email, newPassword);
+    setLoading(false);
+    if (li.ok && li.user) onAuthed(li.user); else setStep("done");
+  };
+  return (
+    <div className={styles.authForm}>
+      <h1 className={styles.authTitle}>{lang === "ar" ? "إعادة تعيين كلمة المرور" : "Reset your password"}</h1>
+      {step === "email" && (
+        <form onSubmit={sendCode}>
+          <p className={styles.authSub}>{lang === "ar" ? "سنرسل رمز تحقق إلى بريدك." : "We'll email you a verification code."}</p>
+          <AuthField label={lang === "ar" ? "البريد الإلكتروني" : "Email"} type="email" autoComplete="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@email.com" />
+          {error ? <div className={styles.authError}>{error}</div> : null}
+          <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ الإرسال…" : "Sending…") : (lang === "ar" ? "إرسال الرمز" : "Send code")}</button>
+        </form>
+      )}
+      {step === "otp" && (
+        <form onSubmit={verify}>
+          <p className={styles.authSub}>{lang === "ar" ? `أدخل الرمز المرسل إلى ${email}` : `Enter the code sent to ${email}`}</p>
+          <AuthField label={lang === "ar" ? "رمز التحقق" : "Verification code"} type="text" inputMode="numeric" maxLength={6} value={code} onChange={setCode} placeholder="••••••" />
+          {error ? <div className={styles.authError}>{error}</div> : null}
+          <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ التحقق…" : "Verifying…") : (lang === "ar" ? "تحقّق" : "Verify")}</button>
+        </form>
+      )}
+      {step === "reset" && (
+        <form onSubmit={reset}>
+          <p className={styles.authSub}>{lang === "ar" ? "اختر كلمة مرور جديدة." : "Choose a new password."}</p>
+          <AuthField label={lang === "ar" ? "كلمة المرور الجديدة" : "New password"} type="password" autoComplete="new-password" value={newPassword} onChange={setNewPassword} placeholder={lang === "ar" ? "6 أحرف على الأقل" : "At least 6 characters"} />
+          {error ? <div className={styles.authError}>{error}</div> : null}
+          <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ الحفظ…" : "Saving…") : (lang === "ar" ? "تعيين كلمة المرور" : "Set new password")}</button>
+        </form>
+      )}
+      {step === "done" && (
+        <>
+          <p className={styles.authSub}>{lang === "ar" ? "تم تحديث كلمة المرور. سجّل الدخول الآن." : "Password updated. You can sign in now."}</p>
+          <button className={styles.authSubmit} onClick={() => setScreen("signin")}>{lang === "ar" ? "تسجيل الدخول" : "Sign in"}</button>
+        </>
+      )}
+      <p className={styles.authSwitch}><button type="button" onClick={() => setScreen("signin")}>{lang === "ar" ? "العودة لتسجيل الدخول" : "Back to sign in"}</button></p>
+    </div>
+  );
+}
+
+function AuthFlow({ screen, lang, onClose, onAuthed, setScreen, startGoogle }: { screen: null | "signin" | "signup" | "forgot"; lang: Lang; onClose: () => void; onAuthed: (u: AuthUser) => void; setScreen: (s: null | "signin" | "signup" | "forgot") => void; startGoogle: () => Promise<boolean> }) {
+  const go = (s: "signin" | "signup" | "forgot") => setScreen(s);
+  return (
+    <AnimatePresence>
+      {screen ? (
+        <motion.div className={styles.authWrap} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <div className={styles.authScrim} onClick={onClose} />
+          <motion.div className={styles.authPanel} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ type: "spring", damping: 30, stiffness: 320 }}>
+            <div className={styles.authHead}>
+              <span className={styles.authBrandTile}><BrandGlyph /></span>
+              <button className={styles.authClose} onClick={onClose} aria-label={lang === "ar" ? "إغلاق" : "Close"}><Icon name="x" size={18} /></button>
+            </div>
+            {screen === "signin" && <SignInForm lang={lang} onAuthed={onAuthed} setScreen={go} startGoogle={startGoogle} />}
+            {screen === "signup" && <SignUpForm lang={lang} onAuthed={onAuthed} setScreen={go} startGoogle={startGoogle} />}
+            {screen === "forgot" && <ForgotForm lang={lang} setScreen={go} onAuthed={onAuthed} />}
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
+function RegisterPopup({ open, lang, onClose, onSignup, onSignin }: { open: boolean; lang: Lang; onClose: () => void; onSignup: () => void; onSignin: () => void }) {
+  const benefits = lang === "ar"
+    ? ["محادثات Starta AI بلا حدود", "بحث كامل: قوائم مالية وملكية", "تنبيهات ومقارنة صناديق متقدمة"]
+    : ["Unlimited Starta AI conversations", "Full research: financials & ownership", "Advanced alerts & fund comparison"];
+  return (
+    <AnimatePresence>
+      {open ? (
+        <motion.div className={styles.regWrap} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          <div className={styles.regScrim} onClick={onClose} />
+          <motion.div className={styles.regCard} initial={{ y: 24, opacity: 0, scale: 0.97 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 24, opacity: 0 }} transition={{ type: "spring", damping: 28, stiffness: 320 }}>
+            <span className={styles.regGlow} aria-hidden="true" />
+            <div className={styles.regIcon}><AIGlyph color="#fff" size={26} /></div>
+            <h2 className={styles.regTitle}>{lang === "ar" ? "أنشئ حسابك المجاني" : "Create your free account"}</h2>
+            <p className={styles.regSub}>{lang === "ar" ? "لقد استخدمت محاولاتك المجانية. سجّل للوصول غير المحدود." : "You've used your free tries. Register for unlimited access."}</p>
+            <ul className={styles.regBenefits}>
+              {benefits.map((b) => <li key={b}><span className={styles.regCheck}><Icon name="check" size={13} /></span>{b}</li>)}
+            </ul>
+            <button className={styles.regPrimary} onClick={onSignup}>{lang === "ar" ? "إنشاء حساب مجاني" : "Register for free"}</button>
+            <button className={styles.regSecondary} onClick={onSignin}>{lang === "ar" ? "لديك حساب؟ تسجيل الدخول" : "Already have an account? Sign in"}</button>
+            <button className={styles.regLater} onClick={onClose}>{lang === "ar" ? "ليس الآن" : "Maybe later"}</button>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -3133,7 +3633,7 @@ function MoreCard({ item, lang }: { item: MoreItem; lang: Lang }) {
   );
 }
 
-function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavController; lang: Lang; theme: Theme; setTheme: (theme: Theme) => void; setLang: (lang: Lang) => void; logout: () => void }) {
+function MoreScreen({ nav, lang, theme, setTheme, setLang, logout, user, onAuth }: { nav: NavController; lang: Lang; theme: Theme; setTheme: (theme: Theme) => void; setLang: (lang: Lang) => void; logout: () => void; user?: AuthUser | null; onAuth?: (s: "signin" | "signup") => void }) {
   const t = copy[lang];
   const watchCount = readWatch().length;
 
@@ -3177,16 +3677,21 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
       />
       <div className={styles.content}>
         <div className={cx(styles.moreRevamp, styles.moreBento)}>
-          <button className={styles.moreHero} onClick={() => nav.push("profile")}>
+          <button className={styles.moreHero} onClick={() => (user ? nav.push("profile") : onAuth?.("signin"))}>
             <span className={styles.moreHeroGlow} aria-hidden="true" />
-            <span className={styles.moreAvatar}>M</span>
+            <span className={styles.moreAvatar}>{user ? (user.full_name || user.email || "S").trim().charAt(0).toUpperCase() : "S"}</span>
             <span className={styles.moreHeroId}>
-              <b>Mohamed Bhidy</b>
+              <b>{user ? (user.full_name || user.email) : (lang === "ar" ? "زائر" : "Guest")}</b>
+              {user ? <small>{user.email}</small> : <small>{lang === "ar" ? "سجّل الدخول أو أنشئ حساباً" : "Sign in or create an account"}</small>}
             </span>
-            <span className={styles.moreHeroStats}>
-              <span><b>{watchCount}</b><small>{lang === "ar" ? "متابعة" : "Watch"}</small></span>
-              <span><b>{lang === "ar" ? "مجاني" : "Free"}</b><small>{lang === "ar" ? "الخطة" : "Plan"}</small></span>
-            </span>
+            {user ? (
+              <span className={styles.moreHeroStats}>
+                <span><b>{watchCount}</b><small>{lang === "ar" ? "متابعة" : "Watch"}</small></span>
+                <span><b>{lang === "ar" ? "مجاني" : "Free"}</b><small>{lang === "ar" ? "الخطة" : "Plan"}</small></span>
+              </span>
+            ) : (
+              <span className={styles.moreHeroCta}>{lang === "ar" ? "دخول" : "Sign in"}<Icon name={lang === "ar" ? "chevron-left" : "chevron-right"} size={15} /></span>
+            )}
           </button>
 
           {secLabel(lang === "ar" ? "مميز" : "Featured")}
@@ -3221,7 +3726,9 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
             ))}
           </div>
 
-          <PrimaryButton ghost onClick={logout}>{lang === "ar" ? "تسجيل الخروج" : "Sign out"}</PrimaryButton>
+          {user
+            ? <PrimaryButton ghost onClick={logout}>{lang === "ar" ? "تسجيل الخروج" : "Sign out"}</PrimaryButton>
+            : <PrimaryButton onClick={() => onAuth?.("signup")}>{lang === "ar" ? "إنشاء حساب مجاني" : "Create free account"}</PrimaryButton>}
           <p className={styles.disclaimer}>Starta Markets v1.0 · {t.disclaimer}</p>
         </div>
       </div>
@@ -3229,7 +3736,7 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
   );
 }
 
-function PushRouter({ screen, nav, lang, theme, setTheme, setLang, stocks, funds, news, topics, portfolio, summary, egxIndex }: {
+function PushRouter({ screen, nav, lang, theme, setTheme, setLang, stocks, funds, news, topics, portfolio, summary, egxIndex, user, onAuth, logout }: {
   screen: PushScreen;
   nav: NavController;
   lang: Lang;
@@ -3243,6 +3750,9 @@ function PushRouter({ screen, nav, lang, theme, setTheme, setLang, stocks, funds
   portfolio: PortfolioPosition[];
   summary: MarketSummary;
   egxIndex: EgxIndex;
+  user?: AuthUser | null;
+  onAuth?: (s: "signin" | "signup") => void;
+  logout?: () => void;
 }) {
   const props = screen.props ?? {};
   if (screen.name === "market-pulse") return <MarketsScreen nav={nav} lang={lang} summary={summary} egxIndex={egxIndex} stocks={stocks} news={news} />;
@@ -3267,7 +3777,7 @@ function PushRouter({ screen, nav, lang, theme, setTheme, setLang, stocks, funds
     const topic = topics.find((item) => item.slug === props.slug);
     return topic ? <CourseDetail nav={nav} lang={lang} topic={topic} /> : <MissingDataScreen nav={nav} lang={lang} title={lang === "ar" ? "المحتوى غير متاح" : "Content unavailable"} />;
   }
-  if (screen.name === "profile") return <Profile nav={nav} lang={lang} portfolio={portfolio} />;
+  if (screen.name === "profile") return <Profile nav={nav} lang={lang} portfolio={portfolio} user={user} onAuth={onAuth} logout={logout} />;
   if (screen.name === "settings") return <SettingsScreen nav={nav} lang={lang} theme={theme} setTheme={setTheme} setLang={setLang} />;
   if (screen.name === "subscription") return <Subscription nav={nav} lang={lang} />;
   if (screen.name === "help") return <HelpScreen nav={nav} lang={lang} />;
@@ -4176,8 +4686,10 @@ function learnIcon(topic: LearnTopic, index: number) {
   return ["graduation-cap", "line-chart", "coins", "shield-check"][index % 4];
 }
 
-function Profile({ nav, lang, portfolio }: { nav: NavController; lang: Lang; portfolio: PortfolioPosition[] }) {
+function Profile({ nav, lang, portfolio, user, onAuth, logout }: { nav: NavController; lang: Lang; portfolio: PortfolioPosition[]; user?: AuthUser | null; onAuth?: (s: "signin" | "signup") => void; logout?: () => void }) {
   const watchCount = readWatch().length;
+  const displayName = user ? (user.full_name || user.email) : (lang === "ar" ? "زائر" : "Guest");
+  const initial = (user ? (user.full_name || user.email || "S") : "S").trim().charAt(0).toUpperCase();
   const stats: Array<{ icon: string; label: string; value: string; onClick: () => void }> = [
     { icon: "wallet", label: lang === "ar" ? "المراكز" : "Positions", value: String(portfolio.length), onClick: () => nav.setTab("portfolio") },
     { icon: "star", label: lang === "ar" ? "المتابعة" : "Watchlist", value: String(watchCount), onClick: () => nav.push("watchlist") },
@@ -4190,15 +4702,22 @@ function Profile({ nav, lang, portfolio }: { nav: NavController; lang: Lang; por
       <div className={styles.content}>
         <div className={styles.profileHero2}>
           <span className={styles.profileHeroGlow} aria-hidden="true" />
-          <div className={styles.profileAvatar2}>M</div>
-          <strong className={styles.profileName2}>Mohamed Bhidy</strong>
+          <div className={styles.profileAvatar2}>{initial}</div>
+          <strong className={styles.profileName2}>{displayName}</strong>
+          {user ? <small className={styles.profileEmail}>{user.email}</small> : null}
           <div className={styles.profileChips}>
             <span className={styles.profileChip}>{lang === "ar" ? "خطة مجانية" : "Free plan"}</span>
-            <span className={styles.profileChip}>{lang === "ar" ? "جلسة محلية" : "Local session"}</span>
+            <span className={styles.profileChip}>{user ? (lang === "ar" ? "حساب موثّق" : "Verified account") : (lang === "ar" ? "زائر" : "Guest")}</span>
           </div>
-          <button className={styles.profileUpgrade} onClick={() => nav.push("subscription")}>
-            <Icon name="crown" size={16} /> {lang === "ar" ? "الترقية إلى Analyst" : "Upgrade to Analyst"}
-          </button>
+          {user ? (
+            <button className={styles.profileUpgrade} onClick={() => nav.push("subscription")}>
+              <Icon name="crown" size={16} /> {lang === "ar" ? "الترقية إلى Analyst" : "Upgrade to Analyst"}
+            </button>
+          ) : (
+            <button className={styles.profileUpgrade} onClick={() => onAuth?.("signup")}>
+              {lang === "ar" ? "إنشاء حساب مجاني" : "Create free account"}
+            </button>
+          )}
         </div>
         <div className={styles.profileStatGrid}>
           {stats.map((s) => (
@@ -4208,6 +4727,15 @@ function Profile({ nav, lang, portfolio }: { nav: NavController; lang: Lang; por
             </button>
           ))}
         </div>
+        {user ? (
+          <button className={styles.profileSignout} onClick={() => { logout?.(); nav.pop(); }}>
+            {lang === "ar" ? "تسجيل الخروج" : "Sign out"}
+          </button>
+        ) : (
+          <button className={styles.profileSigninRow} onClick={() => onAuth?.("signin")}>
+            {lang === "ar" ? "لديك حساب؟ تسجيل الدخول" : "Already have an account? Sign in"}
+          </button>
+        )}
       </div>
     </>
   );
@@ -4338,7 +4866,7 @@ function Subscription({ nav, lang }: { nav: NavController; lang: Lang }) {
   );
 }
 
-function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summary }: { open: boolean; seed?: string; runId: number; onClose: () => void; lang: Lang; stocks: Stock[]; funds: Fund[]; news: NewsItem[]; summary: MarketSummary }) {
+function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summary, isAuthed, onGuestLimit }: { open: boolean; seed?: string; runId: number; onClose: () => void; lang: Lang; stocks: Stock[]; funds: Fund[]; news: NewsItem[]; summary: MarketSummary; isAuthed?: boolean; onGuestLimit?: () => void }) {
   const t = copy[lang];
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [input, setInput] = useState("");
@@ -4357,13 +4885,18 @@ function AIOverlay({ open, seed, runId, onClose, lang, stocks, funds, news, summ
   async function ask(text: string) {
     const prompt = text.trim();
     if (!prompt || loading) return;
+    // Guest freemium gate: a few free AI questions, then the register popup.
+    if (!isAuthed) {
+      if (guestRemaining("ai") <= 0) { onGuestLimit?.(); return; }
+      bumpGuest("ai");
+    }
     const history = messages.map((message) => ({ role: message.role, content: message.text }));
     setMessages((m) => [...m, { role: "user", text: prompt }]);
     setInput("");
     setLoading(true);
     // Same endpoint the website calls; normalize with the SAME sanitizer so the
     // response object is byte-for-byte what /AiChat renders (cards, followups, etc.).
-    const raw = await postJson<any>("/api/v1/ai/chat", { message: prompt, history, language: lang });
+    const raw = await postJson<any>("/api/v1/ai/chat", { message: prompt, history, language: lang }, authHeaders());
     const safe = raw ? sanitizeChatResponse(raw) : null;
     const answerText = safe
       ? (lang === "ar"

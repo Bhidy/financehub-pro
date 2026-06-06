@@ -975,6 +975,63 @@ function MultiLineChart({ series, colors, height = 116 }: { series: number[][]; 
   );
 }
 
+const CHART_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function chartShortDate(d?: string) {
+  const m = d ? /^(\d{4})-(\d{2})-(\d{2})/.exec(d) : null;
+  return m ? `${CHART_MONTHS[Math.max(0, Math.min(11, +m[2] - 1))]} ${+m[3]}` : "";
+}
+
+// Premium real-price line/area chart with a price (Y) axis and date (X) axis —
+// drawn from actual OHLC closes so it reads as a genuine chart, not a sparkline.
+function PriceLineChart({ bars, fallback, color, height = 188, lang }: { bars: OhlcBar[]; fallback: number[]; color: string; height?: number; lang: Lang }) {
+  const hasBars = bars.length > 1;
+  const series = (hasBars ? bars.map((b) => b.close) : fallback).filter((n) => Number.isFinite(n) && n > 0);
+  if (series.length < 2) return <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>;
+  const W = 320;
+  const axisW = 42;        // right gutter for price labels
+  const padT = 10;
+  const padB = 20;         // bottom gutter for date labels
+  const plotW = W - axisW;
+  const plotH = height - padT - padB;
+  const max = Math.max(...series);
+  const min = Math.min(...series);
+  const span = Math.max(1e-9, max - min);
+  const decimals = max < 10 ? 2 : max < 1000 ? 2 : 1;
+  const xAt = (i: number) => (i / (series.length - 1)) * plotW;
+  const yAt = (v: number) => padT + (1 - (v - min) / span) * plotH;
+  const line = series.map((v, i) => `${i ? "L" : "M"}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(" ");
+  const area = `${line} L${plotW.toFixed(1)} ${(padT + plotH).toFixed(1)} L0 ${(padT + plotH).toFixed(1)} Z`;
+  const gid = `pl-${color.replace(/[^a-z0-9]/gi, "")}`;
+  const yLevels = [1, 0.66, 0.33, 0].map((f) => min + span * f);
+  const lastX = xAt(series.length - 1);
+  const lastY = yAt(series[series.length - 1]);
+  const dateIdx = hasBars ? [0, Math.floor((series.length - 1) / 2), series.length - 1] : [];
+  return (
+    <svg className={styles.priceChart} viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" role="img">
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* horizontal price gridlines + Y labels */}
+      {yLevels.map((lvl, i) => (
+        <g key={i}>
+          <line x1="0" x2={plotW} y1={yAt(lvl)} y2={yAt(lvl)} className={styles.priceGrid} />
+          <text x={W - 4} y={yAt(lvl) + 3} className={styles.priceYLabel} textAnchor="end">{lvl.toFixed(decimals)}</text>
+        </g>
+      ))}
+      <path d={area} fill={`url(#${gid})`} />
+      <path d={line} fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <circle cx={lastX} cy={lastY} r="3.6" fill={color} stroke="var(--c-surface)" strokeWidth="2" />
+      {/* X date labels */}
+      {dateIdx.map((idx, i) => (
+        <text key={i} x={Math.max(14, Math.min(plotW - 14, xAt(idx)))} y={height - 6} className={styles.priceXLabel} textAnchor={i === 0 ? "start" : i === dateIdx.length - 1 ? "end" : "middle"}>{chartShortDate(bars[idx]?.date)}</text>
+      ))}
+    </svg>
+  );
+}
+
 const LOGO_ALIASES: Record<string, string> = {
   AIHC: "AIH",
   CCAPP: "CCAP",
@@ -2272,10 +2329,8 @@ function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | n
                 <span className={cx(styles.sheetPeriodReturn, periodUp ? styles.up : styles.down)}>{periodUp ? "▲" : "▼"} {periodAbs.toFixed(2)} · {pct(periodReturn)}</span>
                 <span className={styles.deltaChip}>{tf}</span>
               </div>
-              <div className={cx(styles.chartFull, styles.sheetChartArea)}>
-                {closes.length > 1
-                  ? <MiniChart data={closes} color={periodUp ? "var(--c-brand)" : "var(--c-down)"} height={150} grid dot />
-                  : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
+              <div className={styles.sheetChartArea}>
+                <PriceLineChart bars={bars} fallback={stock.trend} color={periodUp ? "var(--c-brand)" : "var(--c-down)"} height={172} lang={lang} />
               </div>
               <div className={styles.tfBar}>{INDEX_TF.map(([k]) => <button key={k} className={tf === k ? styles.on : undefined} onClick={() => setTf(k)}>{k}</button>)}</div>
             </div>

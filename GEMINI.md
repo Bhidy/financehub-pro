@@ -28,8 +28,8 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 - **Data Extraction:** Custom scrapers in `extractors/`
 
 ### Deployment
-- **Frontend:** Vercel (CLI deploy: `vercel --prod`)
-- **Backend:** Hetzner VPS (Auto-deployed via Docker)
+- **Frontend:** Vercel (project `finhub`). Deploy = **merge a PR to `main`** → Vercel Git Integration auto-builds and `startamarkets.com` auto-follows. **Never run `vercel --prod`/`vercel alias`.** See `docs/DEPLOY_RUNBOOK.md`.
+- **Backend:** Hetzner VPS — `./scripts/deploy_backend_key.sh`.
 - **Database:** Supabase PostgreSQL
 
 ---
@@ -37,7 +37,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 ## Critical Rules
 
 1. **API URL:** The production API URL is `https://starta.46-224-223-172.sslip.io/api/v1`. Hardcode this in `frontend/lib/api.ts`.
-2. **Deployment:** ALWAYS use the unified script: `./scripts/deploy_production.sh`. **NEVER** run `npx vercel` or `git push` manually for production updates. This script enforces the critical "Frontend Root Execution" rule.
+2. **Deployment (frontend):** Deploy = **merge a PR to `main`**. Vercel's Git Integration (project `finhub`) builds it automatically and `startamarkets.com` auto-follows — that is the ONLY web deploy path. **NEVER** run `vercel`, `vercel --prod`, `vercel alias`, or `./scripts/deploy_production.sh frontend`; those are removed/forbidden because they created a competing build that raced the git deploy (the root cause of every "changes-not-live" incident). Authoritative procedure: `docs/DEPLOY_RUNBOOK.md`.
   3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
   4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
   5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).
@@ -143,9 +143,10 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 
 ### Deploy Frontend to Production
 ```bash
-### Deploy Frontend to Production
-```bash
-./scripts/deploy_production.sh frontend
+# Deploy = merge your PR to `main`. Vercel (project finhub) builds it and
+# startamarkets.com auto-follows. There is NO frontend deploy command.
+# Verify it went live (verify-only — does not deploy):
+./scripts/deploy-web.sh
 ```
 
 ### Check Production Health
@@ -155,9 +156,7 @@ curl https://starta.46-224-223-172.sslip.io/health
 
 ### Deploy Backend to Hetzner
 ```bash
-### Deploy Backend to Hetzner
-```bash
-./scripts/deploy_production.sh backend
+./scripts/deploy_backend_key.sh
 ```
 
 ### Force "Nuclear" Backend Rebuild (Immediate)

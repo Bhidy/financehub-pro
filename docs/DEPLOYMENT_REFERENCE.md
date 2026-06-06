@@ -14,10 +14,10 @@
 
 | Surface | Command | Time |
 |---------|---------|------|
-| **Web (startamarkets.com)** | `./scripts/deploy-web.sh` | ~2 min |
+| **Web (startamarkets.com)** | merge a PR to `main` (auto-deploys; domain auto-follows) | ~1–2 min |
+| **Web — verify live** | `./scripts/deploy-web.sh` (verify-only, does NOT deploy) | 10 s |
 | **iOS (TestFlight)** | `./scripts/ship-ios.sh` | ~6–10 min |
-| **Backend (Hetzner)** | `./scripts/deploy_production.sh backend smart` | ~3 min |
-| **Health check only** | `./scripts/deploy-web.sh verify` | 10 s |
+| **Backend (Hetzner)** | `./scripts/deploy_backend_key.sh` | ~3 min |
 
 ---
 
@@ -30,7 +30,7 @@
 | **Org ID** | `team_Gqpf3K97tjrOCyIlEnGjWCOE` |
 | **Production domain** | `startamarkets.com` + `www.startamarkets.com` |
 | **Root Directory (Vercel setting)** | `frontend` |
-| **GitHub integration** | Auto-deploys + auto-aliases `main` pushes |
+| **GitHub integration** | Auto-deploys `main`; `startamarkets.com` auto-follows production (the ONLY deploy path) |
 | **Environment vars** | `DATABASE_URL`, `NEXT_PUBLIC_API_URL` (set in Vercel Dashboard) |
 
 ### Two-project history (important background)
@@ -39,10 +39,9 @@ accidentally running `vercel` inside the `frontend/` directory. It had no env va
 not own the domain — deploying to it caused every "changes aren't showing" incident.
 
 **Status:** permanently deleted 2026-06-06 via Vercel API. Prevention:
-- `frontend/.vercel/project.json` is **committed** and points to `finhub`.
-  Running `vercel` from anywhere in the repo now targets `finhub` — a stray project
-  can never be created.
-- `deploy-web.sh` aborts if it detects a stray link and refuses to proceed.
+- All `.vercel` directories are **gitignored**; the canonical link is `root/.vercel → finhub`
+  (one-time `vercel link` on a fresh clone). Never run `vercel` inside `frontend/`.
+- `deploy-web.sh` aborts if it detects a stray `frontend/.vercel` link.
 - If `vercel project ls` ever shows an unexpected Starta project, delete it immediately.
 
 ---
@@ -51,13 +50,15 @@ not own the domain — deploying to it caused every "changes aren't showing" inc
 
 Merging to `main` triggers the GitHub→Vercel integration which:
 1. Builds `finhub` from the `frontend/` root directory.
-2. Aliases `startamarkets.com` + `www` to the new deployment.
+2. `startamarkets.com` + `www` **auto-follow** the new production deployment.
 
-`./scripts/deploy-web.sh` does the same thing explicitly (useful to force a deploy or
-re-alias after an accidental stale-domain situation). It also runs `npm run verify:routes`
-as a pre-deploy gate and curl-verifies the live pages + API after aliasing.
+That is the entire deploy. `./scripts/deploy-web.sh` does **not** deploy — it is a
+verify-only health check (curl the live pages + API).
 
-**Never hand-run `vercel --prod`** — the script is the only sanctioned path.
+**Never hand-run `vercel --prod` or `vercel alias`.** A manual CLI deploy creates a
+second production build that races the git build for the domain — the verified root
+cause of the recurring "changes aren't showing" mess (removed 2026-06). Merging to
+`main` is the only sanctioned path.
 
 ---
 

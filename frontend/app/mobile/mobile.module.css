@@ -3203,6 +3203,48 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* ── Premium fund allocation donut + legend ──────────────────────── */
+.fundAllocCard {
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 86% 6%, color-mix(in srgb, var(--c-brand) 14%, transparent), transparent 38%),
+    linear-gradient(180deg, color-mix(in srgb, var(--c-surface) 96%, var(--c-brand) 4%), var(--c-surface));
+  padding: 18px 16px 8px;
+  box-shadow: 0 16px 40px -26px rgba(15, 23, 42, .3);
+}
+.fundAllocDonutWrap {
+  position: relative;
+  width: 172px;
+  height: 172px;
+  margin: 4px auto 14px;
+  display: grid;
+  place-items: center;
+}
+.fundAllocDonut { width: 100%; height: 100%; filter: drop-shadow(0 8px 18px rgba(15,23,42,.12)); }
+.fundAllocCenter { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+.fundAllocCenter b { display: block; font: 800 32px/1 Sora, sans-serif; letter-spacing: -.04em; color: var(--c-fg-1); }
+.fundAllocCenter span {
+  display: block; margin-top: 4px; max-width: 104px; margin-inline: auto;
+  font: 800 9.5px/1.25 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--c-fg-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fundAllocLegend { display: grid; }
+.fundAllocLegRow {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 4px;
+  border-top: 1px solid var(--c-border);
+}
+.fundAllocLegRow:first-child { border-top: 0; }
+.fundAllocLegRow i { width: 11px; height: 11px; border-radius: 4px; flex: none; box-shadow: 0 2px 5px -1px color-mix(in srgb, currentColor 0%, rgba(15,23,42,.3)); }
+.fundAllocLegRow span { min-width: 0; color: var(--c-fg-1); font: 700 13.5px/1.3 Manrope, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fundAllocLegRow strong { font: 800 13.5px/1 var(--mono); color: var(--c-fg-1); letter-spacing: -.02em; }
+.fundAllocLegMuted { opacity: .42; }
+[dir="rtl"] .fundAllocLegRow span { text-align: right; }
+
 .allocationHero {
   display: grid;
   justify-items: center;

@@ -1887,6 +1887,14 @@ function HomeMovers({ lang, nav, stocks }: { lang: Lang; nav: NavController; sto
 
 const INDEX_SELECTION = "__EGX30__";
 
+// Famous / most-followed EGX names — drives the workspace selector rail order.
+const FAMOUS_EGX = [
+  "COMI", "HRHO", "TMGH", "SWDY", "EAST", "ETEL", "ABUK", "ESRS", "MNHD", "PHDC",
+  "EKHO", "JUFO", "MFPC", "AMOC", "SKPC", "CIEB", "ADIB", "FWRY", "ISPH", "CCAP",
+  "ORWE", "SAUD", "QNBE", "HELI", "AMER", "ORHD", "PHAR", "EGTS", "SIDI", "EFIH",
+  "CLHO", "MTIE", "OLFI", "EFIC", "BINV", "GBCO", "RAYA", "EGAL", "SUGR", "DSCW",
+];
+
 function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary, egxIndex }: { lang: Lang; nav: NavController; stocks: Stock[]; selectedId: string; setSelectedId: (symbol: string) => void; summary: MarketSummary; egxIndex: EgxIndex }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1895,11 +1903,19 @@ function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary
   const isIndex = selectedId === INDEX_SELECTION;
   const picked = stocks.find((stock) => stock.symbol === selectedId) || stocks.find((stock) => stock.symbol === "COMI") || stocks[0];
   const q = query.trim().toLowerCase();
+  // Default rail = famous EGX names first (in curated order), topped up by volume to ≥25.
+  const railStocks = useMemo(() => {
+    const bySymbol = new Map(stocks.map((stock) => [stock.symbol, stock] as const));
+    const famous = FAMOUS_EGX.map((sym) => bySymbol.get(sym)).filter((stock): stock is Stock => !!stock && stock.price > 0);
+    const seen = new Set(famous.map((stock) => stock.symbol));
+    const extra = stocks.filter((stock) => stock.symbol && stock.price > 0 && !seen.has(stock.symbol)).sort((a, b) => b.volume - a.volume);
+    return [...famous, ...extra].slice(0, 25);
+  }, [stocks]);
   const matches = q
     ? stocks
         .filter((stock) => `${stock.symbol} ${stock.name} ${stock.nameAr ?? ""} ${stock.sector}`.toLowerCase().includes(q))
-        .slice(0, 8)
-    : stocks.slice(0, 6);
+        .slice(0, 12)
+    : railStocks;
   if (!picked && !isIndex) return null;
   const indexValue = toNumber(egxIndex.quote?.value, toNumber(summary.index_value));
   const indexChange = toNumber(egxIndex.quote?.changePercent, toNumber(summary.index_change_percent));

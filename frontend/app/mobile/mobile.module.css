@@ -2083,11 +2083,13 @@
   stroke-width: 2.7;
 }
 
+/* wrapper: OHLC cards + enlarge button in one row */
+.ohlcAndEnlarge { display: flex; align-items: flex-start; gap: 7px; margin-top: 10px; }
 .ohlcMiniGrid {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 7px;
-  margin-top: 12px;
 }
 
 .ohlcMiniGrid span {
@@ -2209,7 +2211,7 @@
   padding: 14px 14px 8px;
   box-shadow: var(--shadow-sm);
 }
-.crChartArea { margin-top: 6px; position: relative; }
+.crChartArea { margin-top: 8px; }
 
 .crAiCta {
   width: 100%;
@@ -3097,6 +3099,7 @@
   background: var(--c-surface);
   color: var(--c-fg-2);
   white-space: nowrap;
+  flex-shrink: 0;
   font: 800 11px/1 Manrope, sans-serif;
   text-transform: capitalize;
 }
@@ -4252,7 +4255,7 @@
    ============================================================================ */
 
 /* App bar */
-.appTop { display:flex; align-items:center; justify-content:space-between; padding:8px 18px 14px; gap:12px; }
+.appTop { display:flex; align-items:center; justify-content:space-between; padding:6px 18px 6px; gap:12px; }
 .brandWrap { display:flex; align-items:center; gap:11px; min-width:0; }
 .logoTile { width:42px; height:42px; border-radius:13px; background:var(--grad-brand); display:grid; place-items:center; box-shadow:0 10px 26px -12px rgba(20,184,166,.55); flex:none; }
 .logoTile img, .logoTile svg { width:26px; height:26px; }
@@ -5061,8 +5064,8 @@
 
 /* Fullscreen Advanced Chart overlay (landscape) + enlarge button */
 .chartFs { position: fixed; inset: 0; z-index: 60; background: #0b1220; display: flex; flex-direction: column; }
-.chartFsBar { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: #0b1220; border-bottom: 1px solid var(--c-border, rgba(148,163,184,.2)); flex-shrink: 0; }
-.chartFsTitle { font-weight: 800; color: var(--c-fg-1, #f1f5f9); font-size: 13px; }
-.chartFsClose { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--c-border, rgba(148,163,184,.2)); background: transparent; color: var(--c-fg-1, #f1f5f9); font-size: 16px; }
+/* Floating close pill — sits over the TradingView chart, no custom header bar */
+.chartFsCloseFloat { position: absolute; top: calc(var(--safe-top, 0px) + 10px); right: 12px; z-index: 10; width: 36px; height: 36px; border-radius: 11px; border: 1px solid rgba(255,255,255,.18); background: rgba(15,23,42,.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #f1f5f9; font-size: 16px; display: flex; align-items: center; justify-content: center; }
 .chartFsBody { flex: 1; min-height: 0; }
-.crEnlargeBtn { position: absolute; top: 8px; right: 8px; z-index: 3; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--c-border, rgba(148,163,184,.2)); background: rgba(11,18,32,.6); color: var(--c-fg-2, #94a3b8); display: inline-flex; align-items: center; justify-content: center; }
+/* Enlarge button — now a flex sibling of the OHLC cards, not a chart overlay */
+.crEnlargeBtn { width: 38px; flex-shrink: 0; align-self: stretch; border-radius: 13px; border: 1px solid var(--c-border); background: var(--c-surface-2); color: var(--c-brand); display: flex; align-items: center; justify-content: center; }

@@ -1139,48 +1139,15 @@ export default function SymbolDetailPage() {
                         </div>
                     </div>
 
-                    {/* OHLC Quick Strip */}
-                    <div className="mt-6 pt-5 border-t border-slate-200/30 dark:border-slate-800/50 grid grid-cols-3 md:grid-cols-6 gap-4">
-                        {[
-                            { l: lang === "ar" ? "حجم التداول" : "Volume", v: volume > 0 ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(volume) : "--" },
-                            { l: lang === "ar" ? "متوسط ​الحجم ٢٠ي" : "Avg Vol 20D", v: avgVolume20d > 0 ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(avgVolume20d) : "--" },
-                            { l: lang === "ar" ? "الحجم النسبي" : "Rel. Volume", v: relativeVolume > 0 ? `${relativeVolume.toFixed(2)}x` : "--" },
-                            { l: lang === "ar" ? "أعلى ٥٢ أسبوع" : "52W High", v: chartStats?.high52 ? chartStats.high52.toFixed(2) : (stats.price_change_52w ? "--" : "--") },
-                            { l: lang === "ar" ? "أدنى ٥٢ أسبوع" : "52W Low", v: chartStats?.low52 ? chartStats.low52.toFixed(2) : "--" },
-                            { l: lang === "ar" ? "عائد الفترة" : "Period Return", v: chartStats?.periodReturn ? `${chartStats.periodReturn >= 0 ? "+" : ""}${chartStats.periodReturn.toFixed(1)}%` : "--" },
-                        ].map((item, i) => (
-                            <div key={i} className="text-center">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.l}</p>
-                                <p className="font-extrabold text-sm mt-0.5 tabular">{item.v}</p>
-                            </div>
-                        ))}
-                    </div>
+                    {/* OHLC Quick Strip removed — Volume / Avg Vol 20D / Rel. Volume / 52W High /
+                        52W Low / Period Return are already shown in the Overview "Technical
+                        Momentum" section, the price-chart strip, and the right sidebar. */}
                 </div>
             </div>
 
-            {/* QUICK STATS ROW */}
-            <div className="max-w-[1536px] mx-auto px-6 mb-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                    {[
-                        { l: t.market_cap, v: marketCap > 0 ? formatCurrency(marketCap, currency) : "-", icon: Landmark, color: "text-[#14b8a6]" },
-                        { l: t.pe_ratio, v: peRatio > 0 ? peRatio.toFixed(2) : "-", icon: Target, color: "text-amber-500" },
-                        { l: t.div_yield, v: dividendYield > 0 ? `${pct(dividendYield)}` : "-", icon: Wallet, color: "text-emerald-500" },
-                        { l: t.eps_ttm, v: trailingEps !== 0 ? `${currency} ${trailingEps.toFixed(2)}` : "-", icon: DollarSign, color: "text-indigo-500" },
-                        { l: t.bvps, v: bookValue > 0 ? `${currency} ${bookValue.toFixed(2)}` : "-", icon: BookOpen, color: "text-blue-500" },
-                        { l: t.beta, v: betaValue !== 0 ? betaValue.toFixed(2) : "-", icon: Activity, color: "text-rose-500" },
-                    ].map((card, i) => (
-                        <div key={i} className="premium-glass rounded-2xl p-4 flex items-center gap-3">
-                            <div className="p-2.5 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
-                                <card.icon className={`w-4 h-4 ${card.color}`} />
-                            </div>
-                            <div>
-                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{card.l}</p>
-                                <p className="font-extrabold text-sm mt-0.5 tabular">{card.v}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            {/* QUICK STATS ROW removed — Market Cap / P/E / Div Yield / EPS / BVPS / Beta
+                are already shown in Overview "Key Metrics", the Ratios & Risk tab, and the
+                right sidebar, so this duplicate header strip is hidden. */}
 
             {/* TABS */}
             <div className="max-w-[1536px] mx-auto px-6 mb-8">

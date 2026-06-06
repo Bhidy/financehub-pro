@@ -1986,12 +1986,6 @@ function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary
               </>
             )}
           </div>
-          {range !== undefined ? (
-            <div className={styles.rangeBar}>
-              <div className={styles.ends}><span>{(lang === "ar" ? "أدنى" : "Low")} {rangeTf} <b>{low?.toFixed(2)}</b></span><span>{(lang === "ar" ? "أعلى" : "High")} {rangeTf} <b>{high?.toFixed(2)}</b></span></div>
-              <div className={styles.rangeTrack}><i style={{ width: `${Math.max(0, Math.min(100, range)).toFixed(0)}%` }} /><b style={{ left: `${Math.max(0, Math.min(100, range)).toFixed(0)}%` }} /></div>
-            </div>
-          ) : null}
         </article>
       </div>
     </>

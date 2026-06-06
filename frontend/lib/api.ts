@@ -733,6 +733,13 @@ export const fetchEgxSeasonals = async (symbol: string) => {
     return data;
 };
 
+export const fetchEgxNewsTV = async (symbol: string, lang: string = "en") => {
+    // TradingView-native per-symbol news (live TV headlines merged with our
+    // enriched market_news feed). Returns the market_news item shape.
+    const { data } = await localApi.get(`/egx/news-tv/${symbol}`, { params: { lang } });
+    return Array.isArray(data) ? data : [];
+};
+
 export const fetchEgxFinancialsTV = async (symbol: string) => {
     const { data } = await localApi.get(`/egx/financials-tv/${symbol}`);
     return data;

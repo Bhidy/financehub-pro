@@ -220,6 +220,22 @@ type CompanyProfileBundle = {
   financialsTv: Record<string, unknown>[];
   technicals: Record<string, unknown>[];
   estimates?: Record<string, unknown>;
+  // Monthly seasonality + per-symbol TradingView news.
+  seasonals?: SeasonalsResponse;
+  newsTv?: Record<string, unknown>[];
+};
+type SeasonalMonth = {
+  month: number;
+  label: string;
+  avg_return: number | null;
+  positive_rate: number | null;
+  years: number;
+};
+type SeasonalsResponse = {
+  available: boolean;
+  years_covered: number;
+  window_years?: number;
+  months: SeasonalMonth[];
 };
 type NavController = {
   push: (name: PushName, props?: Record<string, unknown>) => void;
@@ -705,11 +721,10 @@ function normalizeNews(row: Record<string, unknown>, lang: Lang): NewsItem {
   };
 }
 
-async function loadCompanyProfile(symbol: string): Promise<CompanyProfileBundle> {
+async function loadCompanyProfile(symbol: string, lang: Lang): Promise<CompanyProfileBundle> {
   const clean = encodeURIComponent(symbol);
-  const [websiteProfile, profileRaw, financials, ratios, shareholders, actions, egxStats, financialsTv, technicals, estimates] = await Promise.all([
+  const [websiteProfile, financials, ratios, shareholders, actions, egxStats, financialsTv, technicals, estimates, seasonals, newsTv] = await Promise.all([
     getJson<{ profile?: Record<string, unknown>; market_data?: Record<string, unknown>; statistics?: Record<string, unknown> }>(`/api/v1/company/${clean}/profile`, { ttl: 60_000 }),
-    getJson<{ profile?: Record<string, unknown> }>(`/api/v1/company-profile-v2?symbol=${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/financials/${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/ratios?symbol=${clean}&limit=6`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/shareholders?symbol=${clean}&limit=8`, { ttl: 60_000 }),
@@ -720,9 +735,13 @@ async function loadCompanyProfile(symbol: string): Promise<CompanyProfileBundle>
     getJson<{ years?: Record<string, unknown>[] }>(`/api/v1/egx/financials-tv/${clean}`, { ttl: 60_000 }),
     getJson<{ timeframes?: Record<string, unknown>[] }>(`/api/v1/egx/technicals/${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>>(`/api/v1/egx/estimates/${clean}`, { ttl: 60_000 }),
+    // Monthly seasonality (avg return / positive-rate per calendar month).
+    getJson<SeasonalsResponse>(`/api/v1/egx/seasonals/${clean}`, { ttl: 60_000 }),
+    // Per-symbol TradingView news (same feed the website /symbol page consumes).
+    getJson<Record<string, unknown>[]>(`/api/v1/egx/news-tv/${clean}?lang=${lang}`, { ttl: 60_000 }),
   ]);
   return {
-    profile: { ...(profileRaw?.profile ?? {}), ...(websiteProfile?.profile ?? {}) },
+    profile: { ...(websiteProfile?.profile ?? {}) },
     marketData: websiteProfile?.market_data,
     // Merge: egx_statistics fills the snapshot; website statistics (if any) wins.
     statistics: { ...(egxStats ?? {}), ...(websiteProfile?.statistics ?? {}) },
@@ -733,6 +752,8 @@ async function loadCompanyProfile(symbol: string): Promise<CompanyProfileBundle>
     financialsTv: Array.isArray(financialsTv?.years) ? financialsTv.years : [],
     technicals: Array.isArray(technicals?.timeframes) ? technicals.timeframes : [],
     estimates: estimates ?? undefined,
+    seasonals: seasonals ?? undefined,
+    newsTv: Array.isArray(newsTv) ? newsTv : [],
   };
 }
 
@@ -3919,7 +3940,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], shareholders: [], actions: [], financialsTv: [], technicals: [] });
   const [bars, setBars] = useState<OhlcBar[]>([]);
   const [tf, setTf] = useState<string>("3M");
-  const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "ownership" | "actions">("overview");
+  const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ownership" | "actions">("overview");
   const symbol = stock?.symbol;
 
   // Fundamentals load once per symbol — the page is already usable from `stock`
@@ -3927,9 +3948,9 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   useEffect(() => {
     if (!symbol) return;
     let active = true;
-    loadCompanyProfile(symbol).then((next) => { if (active) setBundle(next); });
+    loadCompanyProfile(symbol, lang).then((next) => { if (active) setBundle(next); });
     return () => { active = false; };
-  }, [symbol]);
+  }, [symbol, lang]);
 
   // OHLC reloads per selected timeframe (drives the candle chart + price signals).
   useEffect(() => {
@@ -4048,6 +4069,18 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const revNextFq = optionalNumber(estimates.rev_fcst_next_fq);
   const epsNextFy = optionalNumber(estimates.eps_fcst_next_fy);
 
+  // ── Monthly seasonality (avg return / positive-rate per calendar month).
+  const seasonals = bundle.seasonals;
+  const seasonalAvailable = seasonals?.available === true;
+  const seasonalMonths = Array.isArray(seasonals?.months) ? seasonals.months : [];
+  const seasonalMax = seasonalMonths.reduce((m, x) => Math.max(m, Math.abs(toNumber(x.avg_return))), 0) || 1;
+  const seasonalBest = seasonalMonths.reduce<SeasonalMonth | undefined>((best, x) => (best === undefined || toNumber(x.avg_return) > toNumber(best.avg_return) ? x : best), undefined);
+  const seasonalWorst = seasonalMonths.reduce<SeasonalMonth | undefined>((worst, x) => (worst === undefined || toNumber(x.avg_return) < toNumber(worst.avg_return) ? x : worst), undefined);
+  const seasonalConsistent = seasonalMonths.reduce<SeasonalMonth | undefined>((top, x) => (top === undefined || toNumber(x.positive_rate) > toNumber(top.positive_rate) ? x : top), undefined);
+
+  // ── Overview related news: prefer per-symbol TradingView feed, fall back to global.
+  const newsTvItems = (bundle.newsTv ?? []).filter((item) => firstString(item, ["headline"], "")).slice(0, 4);
+
   return (
     <>
       <MarketTopBar
@@ -4109,6 +4142,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
           <Pill active={tab === "financials"} onClick={() => setTab("financials")}>{lang === "ar" ? "القوائم" : "Financials"}</Pill>
           <Pill active={tab === "technicals"} onClick={() => setTab("technicals")}>{lang === "ar" ? "الفني" : "Technicals"}</Pill>
           <Pill active={tab === "forecasts"} onClick={() => setTab("forecasts")}>{lang === "ar" ? "التوقعات" : "Forecasts"}</Pill>
+          <Pill active={tab === "seasonals"} onClick={() => setTab("seasonals")}>{lang === "ar" ? "الموسمية" : "Seasonals"}</Pill>
           <Pill active={tab === "ownership"} onClick={() => setTab("ownership")}>{lang === "ar" ? "الملكية" : "Ownership"}</Pill>
           <Pill active={tab === "actions"} onClick={() => setTab("actions")}>{lang === "ar" ? "الإجراءات" : "Actions"}</Pill>
         </div>
@@ -4167,7 +4201,25 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                   </div>
                 </article>
               ) : null}
-              {related.length ? (
+              {newsTvItems.length ? (
+                <article>
+                  <strong>{lang === "ar" ? "أخبار مرتبطة" : "Related stories"}</strong>
+                  <div className={styles.relatedMiniList}>
+                    {newsTvItems.map((item, i) => {
+                      const headline = firstString(item, ["headline"], "");
+                      const source = firstString(item, ["source", "origin"], "");
+                      const when = formatDate(item.published_at, lang);
+                      const meta = [source, when === "—" ? "" : when].filter(Boolean).join(" · ");
+                      return (
+                        <div key={`${headline.slice(0, 24)}-${i}`} className={styles.relatedTvRow}>
+                          <span className={styles.relatedHeadline}>{headline}</span>
+                          {meta ? <small className={styles.relatedMeta}>{meta}</small> : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+              ) : related.length ? (
                 <article>
                   <strong>{lang === "ar" ? "أخبار مرتبطة" : "Related stories"}</strong>
                   <div className={styles.relatedMiniList}>
@@ -4291,6 +4343,48 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                 </div>
               </>
             ) : <EmptyPanel text={lang === "ar" ? "لا توجد تغطية من المحللين لهذا الرمز." : "No analyst coverage for this symbol."} />}
+          </>
+        )}
+        {tab === "seasonals" && (
+          <>
+            {seasonalAvailable ? (
+              <>
+                <div className={styles.companyMetricPanel}>
+                  <div className={styles.panelTitle}>
+                    <strong>{lang === "ar" ? "الموسمية الشهرية" : "Monthly Seasonality"}</strong>
+                    <span>{lang === "ar" ? `تاريخ ${toNumber(seasonals?.years_covered)} سنوات` : `${toNumber(seasonals?.years_covered)}-year history`}</span>
+                  </div>
+                  <div className={styles.seasonalChart}>
+                    {seasonalMonths.map((m) => {
+                      const avg = toNumber(m.avg_return);
+                      const up = avg >= 0;
+                      const height = Math.max(6, Math.round((Math.abs(avg) / seasonalMax) * 100));
+                      return (
+                        <div key={m.month} className={styles.seasonalCol} title={`${m.label} ${avg >= 0 ? "+" : ""}${avg.toFixed(1)}%`}>
+                          <b className={cx(styles.seasonalVal, up ? styles.up : styles.down)}>{avg >= 0 ? "+" : ""}{avg.toFixed(1)}</b>
+                          <i className={cx(styles.seasonalBar, up ? styles.up : styles.down)} style={{ height: `${height}%` }} />
+                          <small className={styles.seasonalLabel}>{m.label}</small>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className={styles.tableStack}>
+                  <div className={styles.financialRow}>
+                    <span>{lang === "ar" ? "أفضل شهر" : "Best Month"}</span>
+                    <strong className={styles.up}>{seasonalBest ? `${seasonalBest.label} · ${toNumber(seasonalBest.avg_return) >= 0 ? "+" : ""}${toNumber(seasonalBest.avg_return).toFixed(1)}%` : "—"}</strong>
+                  </div>
+                  <div className={styles.financialRow}>
+                    <span>{lang === "ar" ? "أضعف شهر" : "Weakest Month"}</span>
+                    <strong className={styles.down}>{seasonalWorst ? `${seasonalWorst.label} · ${toNumber(seasonalWorst.avg_return) >= 0 ? "+" : ""}${toNumber(seasonalWorst.avg_return).toFixed(1)}%` : "—"}</strong>
+                  </div>
+                  <div className={styles.financialRow}>
+                    <span>{lang === "ar" ? "الأكثر ثباتاً" : "Most Consistent"}</span>
+                    <strong>{seasonalConsistent ? `${seasonalConsistent.label} · ${toNumber(seasonalConsistent.positive_rate).toFixed(0)}%` : "—"}</strong>
+                  </div>
+                </div>
+              </>
+            ) : <EmptyPanel text={lang === "ar" ? "لا يوجد تاريخ أسعار كافٍ لحساب الموسمية." : "Not enough price history for seasonality"} />}
           </>
         )}
         {tab === "ownership" && (

@@ -2221,10 +2221,10 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
       <div className={styles.content}>
         <IndexHero lang={lang} egxIndex={egxIndex} summary={summary} />
         <div className={styles.homeQuickGrid}>
-          <button onClick={() => nav.setTab("markets")}><Icon name="activity" /><span>{copy[lang].marketPulse}</span></button>
-          <button onClick={() => nav.setTab("funds")}><Icon name="landmark" /><span>{copy[lang].mutualFunds}</span></button>
-          <button onClick={() => nav.setTab("news")}><Icon name="newspaper" /><span>{copy[lang].marketNews}</span></button>
           <button onClick={() => nav.push("watchlist")}><Icon name="star" /><span>{copy[lang].watchlist}</span></button>
+          <button onClick={() => nav.openAI()}><AIGlyph size={22} /><span>{copy[lang].aiTitle}</span></button>
+          <button onClick={() => nav.push("alerts")}><Icon name="bell" /><span>{copy[lang].alerts}</span></button>
+          <button onClick={() => nav.push("learn")}><Icon name="graduation-cap" /><span>{copy[lang].learn}</span></button>
         </div>
         <HomeMovers lang={lang} nav={nav} stocks={stocks} />
         {/* Portfolio — premium card with sparkline */}

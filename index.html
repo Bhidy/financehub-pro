@@ -643,6 +643,42 @@
             }
         }
 
+        /* ── INVESTMENT SIMULATOR ─────────────────────────────────────────── */
+        .sim-range {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 3px;
+            background: var(--c-border);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            display: block;
+        }
+        .sim-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: #14B8A6;
+            cursor: pointer;
+            box-shadow: 0 0 0 3px rgba(20,184,166,0.25);
+            transition: box-shadow 0.2s ease;
+        }
+        .sim-range::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(20,184,166,0.38); }
+        .sim-range::-moz-range-thumb {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #14B8A6; border: none; cursor: pointer;
+        }
+        .sim-tab { color: var(--c-text-muted); background: transparent; border: none; cursor: pointer; }
+        .sim-tab.active { color: #14B8A6; background: rgba(20,184,166,0.09); }
+        .sim-tab:hover:not(.active) { color: var(--c-text-main); background: rgba(255,255,255,0.04); }
+        .sim-risk-btn { background: transparent; cursor: pointer; border-color: var(--c-border); }
+        .sim-risk-btn.active { border-color: rgba(20,184,166,0.7) !important; background: rgba(20,184,166,0.09) !important; }
+        .sim-risk-btn:hover:not(.active) { border-color: rgba(255,255,255,0.16); }
+        #sim-area-chart text, #sim-bar-chart text { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+        /* ─────────────────────────────────────────────────────────────────── */
+
         @media (prefers-reduced-motion: reduce) {
 
             *,
@@ -3155,6 +3191,287 @@
         </div>
     </section>
 
+    <!-- 21. INVESTMENT PORTFOLIO SIMULATOR -->
+    <section id="hp-calculator-section" class="py-32 bg-page border-t border-border relative overflow-hidden section-premium">
+        <!-- Ambient glows -->
+        <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div class="absolute top-0 left-1/4 w-[700px] h-[420px] rounded-full blur-[130px]" style="background:rgba(20,184,166,0.05)"></div>
+            <div class="absolute bottom-0 right-1/4 w-[500px] h-[320px] rounded-full blur-[90px]" style="background:rgba(59,130,246,0.04)"></div>
+        </div>
+        <div class="absolute inset-0 opacity-10" style="background-image:var(--grad-grid);background-size:40px 40px" aria-hidden="true"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <!-- Header -->
+            <div class="mb-14 reveal-text">
+                <span class="section-tag" data-key="calc_tag">WEALTH PROJECTION</span>
+                <h2 class="section-title text-main mb-4 max-w-2xl" data-key="calc_title">The Power of Compound Returns.</h2>
+                <p class="text-muted copy-premium max-w-xl" data-key="sim_sub">Model your investment growth with different risk profiles, time horizons, and market scenarios.</p>
+            </div>
+
+            <!-- Two-column layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+
+                <!-- ── LEFT: Input Panel ── -->
+                <div class="glass-premium rounded-2xl border border-border p-6 space-y-7 premium-hover">
+                    <div class="flex items-center gap-2 pb-1">
+                        <svg class="w-4 h-4 text-starta-teal shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                        <span class="text-xs font-bold tracking-widest text-starta-teal uppercase" data-key="sim_params">Parameters</span>
+                    </div>
+
+                    <!-- Risk Profile -->
+                    <div>
+                        <label class="text-[10px] font-bold text-muted uppercase tracking-widest mb-3 block" data-key="sim_risk_profile">Risk Profile</label>
+                        <div class="space-y-2">
+                            <button onclick="setSimRisk('conservative')" id="sim-risk-conservative" class="sim-risk-btn w-full p-3 rounded-xl border-2 text-left transition-all" data-risk="conservative">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-main text-sm" data-key="sim_conservative">Conservative</span>
+                                    <span class="text-[10px] text-muted font-mono">8% · EQ 30%</span>
+                                </div>
+                                <div class="text-[10px] text-muted mt-0.5" data-key="sim_conservative_desc">Low risk · Bonds-heavy</div>
+                            </button>
+                            <button onclick="setSimRisk('moderate')" id="sim-risk-moderate" class="sim-risk-btn w-full p-3 rounded-xl border-2 text-left transition-all active" data-risk="moderate">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-main text-sm" data-key="sim_moderate">Moderate</span>
+                                    <span class="text-[10px] text-muted font-mono">12% · EQ 50%</span>
+                                </div>
+                                <div class="text-[10px] text-muted mt-0.5" data-key="sim_moderate_desc">Balanced growth</div>
+                            </button>
+                            <button onclick="setSimRisk('aggressive')" id="sim-risk-aggressive" class="sim-risk-btn w-full p-3 rounded-xl border-2 text-left transition-all" data-risk="aggressive">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-main text-sm" data-key="sim_aggressive">Aggressive</span>
+                                    <span class="text-[10px] text-muted font-mono">16% · EQ 80%</span>
+                                </div>
+                                <div class="text-[10px] text-muted mt-0.5" data-key="sim_aggressive_desc">High risk · Equity-heavy</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Initial Investment -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-muted uppercase tracking-widest" data-key="sim_initial">Initial Investment</label>
+                            <span class="text-xs font-mono text-starta-teal font-semibold" id="sim-initial-val">100,000 EGP</span>
+                        </div>
+                        <input type="range" id="sim-initial" class="sim-range" min="10000" max="1000000" step="10000" value="100000" oninput="updateSimulator()">
+                    </div>
+
+                    <!-- Monthly Contribution -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-muted uppercase tracking-widest" data-key="sim_monthly">Monthly Contribution</label>
+                            <span class="text-xs font-mono text-starta-teal font-semibold" id="sim-monthly-val">5,000 EGP</span>
+                        </div>
+                        <input type="range" id="sim-monthly" class="sim-range" min="0" max="50000" step="500" value="5000" oninput="updateSimulator()">
+                    </div>
+
+                    <!-- Time Horizon -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-muted uppercase tracking-widest" data-key="sim_horizon">Time Horizon</label>
+                            <span class="text-xs font-mono text-starta-teal font-semibold"><span id="sim-years-val">10</span>&nbsp;<span data-key="sim_years">yrs</span></span>
+                        </div>
+                        <input type="range" id="sim-years" class="sim-range" min="1" max="30" step="1" value="10" oninput="updateSimulator()">
+                    </div>
+
+                    <!-- Expected Return -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-muted uppercase tracking-widest" data-key="sim_return">Expected Return</label>
+                            <span class="text-xs font-mono text-starta-teal font-semibold"><span id="sim-return-val">12</span>%</span>
+                        </div>
+                        <input type="range" id="sim-return" class="sim-range" min="3" max="25" step="0.5" value="12" oninput="updateSimulator()">
+                    </div>
+
+                    <!-- Volatility -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-muted uppercase tracking-widest" data-key="sim_volatility">Volatility</label>
+                            <span class="text-xs font-mono text-starta-teal font-semibold"><span id="sim-vol-val">15</span>%</span>
+                        </div>
+                        <input type="range" id="sim-vol" class="sim-range" min="5" max="40" step="1" value="15" oninput="updateSimulator()">
+                    </div>
+
+                    <p class="text-[10px] text-muted leading-relaxed border-t border-border pt-4" data-key="sim_disclaimer">For illustrative purposes only. Not investment advice.</p>
+                </div>
+
+                <!-- ── RIGHT: Results ── -->
+                <div class="lg:col-span-2 space-y-5">
+
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-3 gap-3 sm:gap-4">
+                        <div class="glass-premium rounded-xl border border-border p-4 premium-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-muted" data-key="sim_final_value">Final Value</span>
+                                <svg class="w-3.5 h-3.5 text-starta-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                            </div>
+                            <div class="text-lg font-bold text-starta-teal font-display leading-tight" id="sim-stat-final">—</div>
+                            <div class="text-[10px] text-muted mt-1" id="sim-stat-return-pct">—</div>
+                        </div>
+                        <div class="glass-premium rounded-xl border border-border p-4 premium-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-muted" data-key="sim_total_invested">Invested</span>
+                                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div class="text-lg font-bold text-blue-400 font-display leading-tight" id="sim-stat-invested">—</div>
+                            <div class="text-[10px] text-muted mt-1" id="sim-stat-invested-sub">—</div>
+                        </div>
+                        <div class="glass-premium rounded-xl border border-border p-4 premium-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-muted" data-key="sim_gains">Gains</span>
+                                <svg class="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            </div>
+                            <div class="text-lg font-bold text-violet-400 font-display leading-tight" id="sim-stat-gains">—</div>
+                            <div class="text-[10px] text-muted mt-1" id="sim-stat-gains-sub">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Panel -->
+                    <div class="glass-premium rounded-2xl border border-border overflow-hidden">
+                        <!-- Tab Nav -->
+                        <div class="flex border-b border-border">
+                            <button onclick="setSimTab('projection')" id="sim-tab-projection" class="sim-tab flex-1 py-3 text-[10px] font-bold tracking-widest uppercase transition-all active" data-key="sim_tab_projection">Growth</button>
+                            <button onclick="setSimTab('scenarios')" id="sim-tab-scenarios" class="sim-tab flex-1 py-3 text-[10px] font-bold tracking-widest uppercase transition-all border-l border-border" data-key="sim_tab_scenarios">Scenarios</button>
+                            <button onclick="setSimTab('allocation')" id="sim-tab-allocation" class="sim-tab flex-1 py-3 text-[10px] font-bold tracking-widest uppercase transition-all border-l border-border" data-key="sim_tab_allocation">Allocation</button>
+                        </div>
+
+                        <!-- Growth Projection Tab -->
+                        <div id="sim-panel-projection" class="sim-panel p-5">
+                            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <h3 class="text-sm font-bold text-main" data-key="sim_chart_title">Portfolio Growth Over Time</h3>
+                                <div class="flex items-center gap-4 text-[10px]">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full inline-block" style="background:#14B8A6"></span><span class="text-muted" data-key="sim_chart_portfolio">Portfolio Value</span></span>
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full inline-block" style="background:#60A5FA"></span><span class="text-muted" data-key="sim_chart_invested">Total Invested</span></span>
+                                </div>
+                            </div>
+                            <div style="height:260px;position:relative">
+                                <svg id="sim-area-chart" style="width:100%;height:100%" viewBox="0 0 600 240" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="grad-portfolio" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.42"/>
+                                            <stop offset="100%" stop-color="#14B8A6" stop-opacity="0.02"/>
+                                        </linearGradient>
+                                        <linearGradient id="grad-invested" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.28"/>
+                                            <stop offset="100%" stop-color="#60A5FA" stop-opacity="0.02"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <line x1="0" y1="50" x2="600" y2="50" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <line x1="0" y1="100" x2="600" y2="100" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <line x1="0" y1="150" x2="600" y2="150" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <line x1="0" y1="200" x2="600" y2="200" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <path id="sim-area-pf-fill" fill="url(#grad-portfolio)"/>
+                                    <path id="sim-area-inv-fill" fill="url(#grad-invested)"/>
+                                    <polyline id="sim-line-portfolio" fill="none" stroke="#14B8A6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <polyline id="sim-line-invested" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <g id="sim-xlabels" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.4"></g>
+                                    <g id="sim-ylabels" fill="currentColor" font-size="9" text-anchor="end" opacity="0.4"></g>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Scenarios Tab -->
+                        <div id="sim-panel-scenarios" class="sim-panel p-5 hidden">
+                            <div class="mb-4">
+                                <h3 class="text-sm font-bold text-main" data-key="sim_monte_title">Monte Carlo Simulation</h3>
+                                <p class="text-[11px] text-muted mt-1" data-key="sim_monte_sub">500 iterations · 10th, 50th &amp; 90th percentile outcomes</p>
+                            </div>
+                            <div style="height:200px">
+                                <svg id="sim-bar-chart" style="width:100%;height:100%" viewBox="0 0 600 180" preserveAspectRatio="none">
+                                    <line x1="0" y1="40" x2="600" y2="40" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <line x1="0" y1="90" x2="600" y2="90" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <line x1="0" y1="140" x2="600" y2="140" stroke="currentColor" stroke-opacity="0.06" stroke-width="1"/>
+                                    <g id="sim-bars"></g>
+                                    <g id="sim-bar-labels" fill="currentColor" font-size="9" text-anchor="middle"></g>
+                                </svg>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3 mt-4">
+                                <div class="p-3 rounded-xl border border-red-500/20 bg-red-500/5 text-center">
+                                    <div class="text-[9px] text-muted mb-1 uppercase tracking-widest" data-key="sim_worst">Worst (10%)</div>
+                                    <div class="text-sm font-bold text-red-400 font-display" id="sim-mc-worst">—</div>
+                                </div>
+                                <div class="p-3 rounded-xl border border-starta-teal/20 bg-starta-teal/5 text-center">
+                                    <div class="text-[9px] text-muted mb-1 uppercase tracking-widest" data-key="sim_expected">Expected (50%)</div>
+                                    <div class="text-sm font-bold text-starta-teal font-display" id="sim-mc-avg">—</div>
+                                </div>
+                                <div class="p-3 rounded-xl border border-blue-500/20 bg-blue-500/5 text-center">
+                                    <div class="text-[9px] text-muted mb-1 uppercase tracking-widest" data-key="sim_best">Best (90%)</div>
+                                    <div class="text-sm font-bold text-blue-400 font-display" id="sim-mc-best">—</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Allocation Tab -->
+                        <div id="sim-panel-allocation" class="sim-panel p-5 hidden">
+                            <h3 class="text-sm font-bold text-main mb-6" data-key="sim_alloc_title">Suggested Asset Allocation</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                <!-- Donut chart -->
+                                <div class="flex items-center justify-center" style="height:180px">
+                                    <svg id="sim-pie-chart" viewBox="0 0 180 180" style="width:180px;height:180px">
+                                        <!-- Background track -->
+                                        <circle cx="90" cy="90" r="54" fill="none" stroke="var(--c-border)" stroke-width="26"/>
+                                        <!-- Equity arc -->
+                                        <circle id="sim-pie-equity" cx="90" cy="90" r="54" fill="none" stroke="#14B8A6" stroke-width="26"
+                                            stroke-dasharray="0 339.3" transform="rotate(-90 90 90)" style="transition:stroke-dasharray 0.65s ease,stroke-dashoffset 0.65s ease"/>
+                                        <!-- Fixed Income arc -->
+                                        <circle id="sim-pie-fixed" cx="90" cy="90" r="54" fill="none" stroke="#60A5FA" stroke-width="26"
+                                            stroke-dasharray="0 339.3" transform="rotate(-90 90 90)" style="transition:stroke-dasharray 0.65s ease,stroke-dashoffset 0.65s ease"/>
+                                        <!-- Gold arc -->
+                                        <circle id="sim-pie-gold" cx="90" cy="90" r="54" fill="none" stroke="#FBBF24" stroke-width="26"
+                                            stroke-dasharray="0 339.3" transform="rotate(-90 90 90)" style="transition:stroke-dasharray 0.65s ease,stroke-dashoffset 0.65s ease"/>
+                                        <text id="sim-pie-pct" x="90" y="85" text-anchor="middle" fill="currentColor" font-size="18" font-weight="800" opacity="0.9">50%</text>
+                                        <text x="90" y="100" text-anchor="middle" fill="currentColor" font-size="9" opacity="0.45" data-key="sim_equity">Equity</text>
+                                    </svg>
+                                </div>
+                                <!-- Legend -->
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 rounded-xl border border-starta-teal/20 bg-starta-teal/5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-3 h-3 rounded shrink-0" style="background:#14B8A6"></span>
+                                            <div>
+                                                <div class="text-xs font-semibold text-main" data-key="sim_equity">Equity</div>
+                                                <div class="text-[10px] text-muted" data-key="sim_equity_desc">Stocks for growth</div>
+                                            </div>
+                                        </div>
+                                        <span class="text-xl font-bold text-starta-teal font-display" id="sim-alloc-equity">50%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 rounded-xl border border-blue-500/20 bg-blue-500/5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-3 h-3 rounded shrink-0" style="background:#60A5FA"></span>
+                                            <div>
+                                                <div class="text-xs font-semibold text-main" data-key="sim_fixed">Fixed Income</div>
+                                                <div class="text-[10px] text-muted" data-key="sim_fixed_desc">Bonds for stability</div>
+                                            </div>
+                                        </div>
+                                        <span class="text-xl font-bold text-blue-400 font-display" id="sim-alloc-fixed">45%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-3 h-3 rounded shrink-0" style="background:#FBBF24"></span>
+                                            <div>
+                                                <div class="text-xs font-semibold text-main" data-key="sim_gold">Gold</div>
+                                                <div class="text-[10px] text-muted" data-key="sim_gold_desc">Inflation hedge</div>
+                                            </div>
+                                        </div>
+                                        <span class="text-xl font-bold text-yellow-400 font-display" id="sim-alloc-gold">5%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA row -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between glass-premium rounded-xl border border-border p-4 gap-4">
+                        <p class="text-xs text-muted max-w-xs" data-key="sim_cta_note">Start with any amount. Consistency builds wealth over time.</p>
+                        <a href="/AiChat" class="px-6 py-2.5 rounded-xl font-bold text-sm btn-primary inline-flex items-center gap-2 shrink-0">
+                            <span data-key="sim_cta">Ask AI Analyst</span>
+                            <svg class="w-3.5 h-3.5 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- 20. PRICING & CLOSE (Updated to match image) -->
     <section id="pricing" class="hidden py-40 bg-page border-t border-border relative section-premium-xl">
         <div class="max-w-7xl mx-auto px-6 text-center mb-20">
@@ -3615,7 +3932,30 @@
                 footer_disclaimer: "Starta Markets is a financial data and technology platform. All content, tools, and AI analyses provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.",
                 footer_copy: "&copy; 2026 Starta Markets. All Rights Reserved.",
                 footer_lnk_privacy: "Privacy Policy",
-                footer_lnk_terms: "Terms of Service"
+                footer_lnk_terms: "Terms of Service",
+                sim_sub: "Model your investment growth with different risk profiles, time horizons, and market scenarios.",
+                sim_params: "Parameters",
+                sim_risk_profile: "Risk Profile",
+                sim_conservative: "Conservative", sim_conservative_desc: "Low risk · Bonds-heavy",
+                sim_moderate: "Moderate", sim_moderate_desc: "Balanced growth",
+                sim_aggressive: "Aggressive", sim_aggressive_desc: "High risk · Equity-heavy",
+                sim_initial: "Initial Investment", sim_monthly: "Monthly Contribution",
+                sim_horizon: "Time Horizon", sim_years: "yrs",
+                sim_return: "Expected Return", sim_volatility: "Volatility",
+                sim_final_value: "Final Value", sim_total_invested: "Invested", sim_gains: "Gains",
+                sim_tab_projection: "Growth", sim_tab_scenarios: "Scenarios", sim_tab_allocation: "Allocation",
+                sim_chart_title: "Portfolio Growth Over Time",
+                sim_chart_portfolio: "Portfolio Value", sim_chart_invested: "Total Invested",
+                sim_monte_title: "Monte Carlo Simulation",
+                sim_monte_sub: "500 iterations · 10th, 50th &amp; 90th percentile outcomes",
+                sim_worst: "Worst (10%)", sim_expected: "Expected (50%)", sim_best: "Best (90%)",
+                sim_alloc_title: "Suggested Asset Allocation",
+                sim_equity: "Equity", sim_equity_desc: "Stocks for growth",
+                sim_fixed: "Fixed Income", sim_fixed_desc: "Bonds for stability",
+                sim_gold: "Gold", sim_gold_desc: "Inflation hedge",
+                sim_cta_note: "Start with any amount. Consistency builds wealth over time.",
+                sim_cta: "Ask AI Analyst",
+                sim_disclaimer: "For illustrative purposes only. Not investment advice."
             },
             ar: {
                 nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "جرّب الآن",
@@ -3715,7 +4055,30 @@
                 footer_disclaimer: "منصة ستارتا ماركتس هي منصة للبيانات والتقنيات المالية. جميع المحتويات والأدوات والتحليلات المدعومة بالذكاء الاصطناعي هي لأغراض معلوماتية وتعليمية فقط، ولا ينبغي تفسيرها كاستشارات استثمارية أو توصيات بالشراء أو البيع لأي ورقة مالية أو صندوق استثماري. أسواق المال تنطوي على مخاطر وتذبذبات عالية؛ ويتحمل كل مستثمر المسؤولية الكاملة عن قراراته بعد الدراسة والدقة.",
                 footer_copy: "&copy; ٢٠٢٦ ستارتا ماركتس. جميع الحقوق محفوظة.",
                 footer_lnk_privacy: "سياسة الخصوصية",
-                footer_lnk_terms: "شروط الخدمة"
+                footer_lnk_terms: "شروط الخدمة",
+                sim_sub: "محاكاة نمو استثماراتك بأنماط مخاطرة مختلفة وآفاق زمنية متنوعة وسيناريوهات السوق.",
+                sim_params: "المعطيات",
+                sim_risk_profile: "مستوى المخاطرة",
+                sim_conservative: "محافظ", sim_conservative_desc: "مخاطرة منخفضة · تركيز على السندات",
+                sim_moderate: "متوازن", sim_moderate_desc: "نمو متوازن",
+                sim_aggressive: "جريء", sim_aggressive_desc: "مخاطرة مرتفعة · تركيز على الأسهم",
+                sim_initial: "رأس المال الأولي", sim_monthly: "الإضافة الشهرية",
+                sim_horizon: "الأفق الزمني", sim_years: "سنوات",
+                sim_return: "العائد المتوقع", sim_volatility: "التقلب",
+                sim_final_value: "القيمة النهائية", sim_total_invested: "إجمالي الاستثمار", sim_gains: "الأرباح",
+                sim_tab_projection: "النمو", sim_tab_scenarios: "السيناريوهات", sim_tab_allocation: "التوزيع",
+                sim_chart_title: "نمو المحفظة عبر الزمن",
+                sim_chart_portfolio: "قيمة المحفظة", sim_chart_invested: "إجمالي الاستثمار",
+                sim_monte_title: "محاكاة مونت كارلو",
+                sim_monte_sub: "٥٠٠ تكرار · النتائج عند الشريحة ١٠ و٥٠ و٩٠",
+                sim_worst: "أسوأ حالة (١٠٪)", sim_expected: "المتوقع (٥٠٪)", sim_best: "أفضل حالة (٩٠٪)",
+                sim_alloc_title: "التوزيع المقترح للأصول",
+                sim_equity: "أسهم", sim_equity_desc: "أسهم للنمو",
+                sim_fixed: "دخل ثابت", sim_fixed_desc: "سندات للاستقرار",
+                sim_gold: "ذهب", sim_gold_desc: "تحوط ضد التضخم",
+                sim_cta_note: "ابدأ بأي مبلغ. الانتظام هو سر بناء الثروة.",
+                sim_cta: "اسأل المحلل الذكي",
+                sim_disclaimer: "لأغراض توضيحية فقط. ليست نصيحة استثمارية."
             }
         };
 
@@ -4628,6 +4991,229 @@
         renderHpAcademy(_initLang);
 
         renderTopFunds();
+
+        // ── INVESTMENT PORTFOLIO SIMULATOR ────────────────────────────────────
+        (function() {
+            var SIM = {
+                profile: 'moderate',
+                initial: 100000,
+                monthly: 5000,
+                years: 10,
+                ret: 12,
+                vol: 15,
+                profiles: {
+                    conservative: { ret: 8,  vol: 10, equity: 30, fixed: 60, gold: 10 },
+                    moderate:     { ret: 12, vol: 15, equity: 50, fixed: 45, gold: 5  },
+                    aggressive:   { ret: 16, vol: 25, equity: 80, fixed: 15, gold: 5  }
+                }
+            };
+
+            function fmtShort(n) {
+                n = Math.round(n);
+                if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+                if (n >= 1000)    return (n / 1000).toFixed(0) + 'K';
+                return n.toLocaleString();
+            }
+            function fmtFull(n) {
+                return Math.round(n).toLocaleString() + ' EGP';
+            }
+
+            function calcGrowth(initial, monthly, years, annRet) {
+                var data = [], invested = initial, pv = initial;
+                for (var y = 0; y <= years; y++) {
+                    if (y > 0) { pv = pv * (1 + annRet / 100) + monthly * 12; invested += monthly * 12; }
+                    data.push({ year: y, pv: pv, invested: invested, gains: pv - invested });
+                }
+                return data;
+            }
+
+            function monteCarlo(initial, monthly, years, avgRet, vol, iter) {
+                var results = [];
+                for (var i = 0; i < iter; i++) {
+                    var p = initial;
+                    for (var y = 1; y <= years; y++) {
+                        var r = (Math.random() - 0.5) * 2 * vol + avgRet;
+                        p = p * (1 + r / 100) + monthly * 12;
+                    }
+                    results.push(p);
+                }
+                results.sort(function(a, b) { return a - b; });
+                return {
+                    worst:   results[Math.floor(iter * 0.1)],
+                    average: results[Math.floor(iter * 0.5)],
+                    best:    results[Math.floor(iter * 0.9)]
+                };
+            }
+
+            function svgEl(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+            function drawAreaChart(data) {
+                var W = 600, H = 240, PL = 50, PT = 12, PB = 28, PR = 8;
+                var cW = W - PL - PR, cH = H - PT - PB;
+                var maxVal = 0;
+                data.forEach(function(d) { if (d.pv > maxVal) maxVal = d.pv; });
+                maxVal *= 1.1;
+                function tx(i) { return PL + (i / (data.length - 1)) * cW; }
+                function ty(v) { return PT + cH - (v / maxVal) * cH; }
+                var pfPts = [], invPts = [];
+                data.forEach(function(d, i) { pfPts.push(tx(i) + ',' + ty(d.pv)); invPts.push(tx(i) + ',' + ty(d.invested)); });
+                document.getElementById('sim-line-portfolio').setAttribute('points', pfPts.join(' '));
+                document.getElementById('sim-line-invested').setAttribute('points', invPts.join(' '));
+                // Fill paths
+                var base = H - PB;
+                var pfFill = 'M' + tx(0) + ',' + ty(data[0].pv);
+                data.slice(1).forEach(function(d, i) { pfFill += ' L' + tx(i+1) + ',' + ty(d.pv); });
+                pfFill += ' L' + tx(data.length-1) + ',' + base + ' L' + PL + ',' + base + ' Z';
+                var invFill = 'M' + tx(0) + ',' + ty(data[0].invested);
+                data.slice(1).forEach(function(d, i) { invFill += ' L' + tx(i+1) + ',' + ty(d.invested); });
+                invFill += ' L' + tx(data.length-1) + ',' + base + ' L' + PL + ',' + base + ' Z';
+                document.getElementById('sim-area-pf-fill').setAttribute('d', pfFill);
+                document.getElementById('sim-area-inv-fill').setAttribute('d', invFill);
+                // X labels
+                var xlG = document.getElementById('sim-xlabels');
+                xlG.innerHTML = '';
+                var step = Math.ceil(data.length / 6);
+                data.forEach(function(d, i) {
+                    if (i === 0 || i === data.length - 1 || i % step === 0) {
+                        var t = svgEl('text'); t.setAttribute('x', tx(i)); t.setAttribute('y', H - PB + 16);
+                        t.textContent = 'Y' + d.year; xlG.appendChild(t);
+                    }
+                });
+                // Y labels
+                var ylG = document.getElementById('sim-ylabels');
+                ylG.innerHTML = '';
+                [0.25, 0.5, 0.75, 1.0].forEach(function(pct) {
+                    var v = maxVal * pct, t = svgEl('text');
+                    t.setAttribute('x', PL - 5); t.setAttribute('y', ty(v) + 3);
+                    t.textContent = fmtShort(v); ylG.appendChild(t);
+                });
+            }
+
+            function drawBarChart(mc) {
+                var W = 600, H = 180;
+                var maxVal = mc.best * 1.2;
+                var bars = [
+                    { val: mc.worst,   color: '#F87171' },
+                    { val: mc.average, color: '#14B8A6' },
+                    { val: mc.best,    color: '#60A5FA' }
+                ];
+                var barsG = document.getElementById('sim-bars');
+                var labsG = document.getElementById('sim-bar-labels');
+                barsG.innerHTML = ''; labsG.innerHTML = '';
+                var bW = 90, gap = (W - bars.length * bW) / (bars.length + 1);
+                bars.forEach(function(b, i) {
+                    var x = gap + i * (bW + gap);
+                    var bH = Math.max(4, (b.val / maxVal) * (H - 30));
+                    var y = H - 16 - bH;
+                    var rect = svgEl('rect');
+                    rect.setAttribute('x', x); rect.setAttribute('y', y);
+                    rect.setAttribute('width', bW); rect.setAttribute('height', bH);
+                    rect.setAttribute('rx', 7); rect.setAttribute('fill', b.color);
+                    rect.setAttribute('fill-opacity', '0.78');
+                    barsG.appendChild(rect);
+                    var txt = svgEl('text');
+                    txt.setAttribute('x', x + bW / 2); txt.setAttribute('y', y - 5);
+                    txt.setAttribute('fill', b.color); txt.setAttribute('font-weight', '700');
+                    txt.textContent = fmtShort(b.val);
+                    labsG.appendChild(txt);
+                });
+            }
+
+            function drawPieChart(profile) {
+                var CIRC = 2 * Math.PI * 54;
+                var eq = profile.equity / 100 * CIRC;
+                var fx = profile.fixed  / 100 * CIRC;
+                var gd = profile.gold   / 100 * CIRC;
+                var equityEl = document.getElementById('sim-pie-equity');
+                var fixedEl  = document.getElementById('sim-pie-fixed');
+                var goldEl   = document.getElementById('sim-pie-gold');
+                equityEl.setAttribute('stroke-dasharray', eq + ' ' + CIRC);
+                equityEl.style.strokeDashoffset = 0;
+                fixedEl.setAttribute('stroke-dasharray', fx + ' ' + CIRC);
+                fixedEl.style.strokeDashoffset = -eq;
+                goldEl.setAttribute('stroke-dasharray', gd + ' ' + CIRC);
+                goldEl.style.strokeDashoffset = -(eq + fx);
+                document.getElementById('sim-pie-pct').textContent  = profile.equity + '%';
+                document.getElementById('sim-alloc-equity').textContent = profile.equity + '%';
+                document.getElementById('sim-alloc-fixed').textContent  = profile.fixed + '%';
+                document.getElementById('sim-alloc-gold').textContent   = profile.gold + '%';
+            }
+
+            function updateSimulator() {
+                SIM.initial = parseInt(document.getElementById('sim-initial').value, 10);
+                SIM.monthly = parseInt(document.getElementById('sim-monthly').value, 10);
+                SIM.years   = parseInt(document.getElementById('sim-years').value, 10);
+                SIM.ret     = parseFloat(document.getElementById('sim-return').value);
+                SIM.vol     = parseInt(document.getElementById('sim-vol').value, 10);
+                // Update slider labels
+                document.getElementById('sim-initial-val').textContent = SIM.initial.toLocaleString() + ' EGP';
+                document.getElementById('sim-monthly-val').textContent = SIM.monthly.toLocaleString() + ' EGP';
+                document.getElementById('sim-years-val').textContent   = SIM.years;
+                document.getElementById('sim-return-val').textContent  = SIM.ret;
+                document.getElementById('sim-vol-val').textContent     = SIM.vol;
+                // Compute
+                var data = calcGrowth(SIM.initial, SIM.monthly, SIM.years, SIM.ret);
+                var last = data[data.length - 1];
+                var retPct = ((last.pv - last.invested) / last.invested * 100).toFixed(1);
+                // Summary
+                document.getElementById('sim-stat-final').textContent       = fmtFull(last.pv);
+                document.getElementById('sim-stat-return-pct').textContent  = '+' + retPct + '% total return';
+                document.getElementById('sim-stat-invested').textContent    = fmtFull(last.invested);
+                document.getElementById('sim-stat-invested-sub').textContent = 'Over ' + SIM.years + ' years';
+                document.getElementById('sim-stat-gains').textContent       = fmtFull(last.gains);
+                document.getElementById('sim-stat-gains-sub').textContent   = 'Profit from compound growth';
+                // Charts
+                drawAreaChart(data);
+                var mc = monteCarlo(SIM.initial, SIM.monthly, SIM.years, SIM.ret, SIM.vol, 400);
+                document.getElementById('sim-mc-worst').textContent = fmtFull(mc.worst);
+                document.getElementById('sim-mc-avg').textContent   = fmtFull(mc.average);
+                document.getElementById('sim-mc-best').textContent  = fmtFull(mc.best);
+                drawBarChart(mc);
+                drawPieChart(SIM.profiles[SIM.profile]);
+            }
+
+            window.setSimRisk = function(profile) {
+                SIM.profile = profile;
+                var p = SIM.profiles[profile];
+                SIM.ret = p.ret; SIM.vol = p.vol;
+                document.getElementById('sim-return').value = p.ret;
+                document.getElementById('sim-vol').value    = p.vol;
+                document.querySelectorAll('.sim-risk-btn').forEach(function(b) {
+                    b.classList.toggle('active', b.dataset.risk === profile);
+                });
+                updateSimulator();
+            };
+
+            window.setSimTab = function(tab) {
+                document.querySelectorAll('.sim-tab').forEach(function(t) {
+                    t.classList.toggle('active', t.id === 'sim-tab-' + tab);
+                });
+                document.querySelectorAll('.sim-panel').forEach(function(p) { p.classList.add('hidden'); });
+                document.getElementById('sim-panel-' + tab).classList.remove('hidden');
+            };
+
+            window.updateSimulator = updateSimulator;
+
+            // Kick off on next tick so DOM is fully parsed
+            setTimeout(function() {
+                if (document.getElementById('sim-initial')) updateSimulator();
+            }, 80);
+
+            // Animate the section in with GSAP when it enters viewport
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                ScrollTrigger.create({
+                    trigger: '#hp-calculator-section',
+                    start: 'top bottom',
+                    once: true,
+                    onEnter: function() {
+                        gsap.from('#hp-calculator-section .glass-premium', {
+                            y: 20, opacity: 0, duration: 0.6, stagger: 0.08, ease: 'power3.out'
+                        });
+                    }
+                });
+            }
+        })();
+        // ─────────────────────────────────────────────────────────────────────
     </script>
 
     <!-- Portfolio showcase — must load after DOM; portfolio-store is required by showcase -->

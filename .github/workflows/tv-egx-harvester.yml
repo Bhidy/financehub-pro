@@ -1,13 +1,14 @@
 name: TradingView EGX Harvester
 
 # Auxiliary TradingView cycles (technicals / news / estimates / symbol-map).
-# The 1-min intraday PRICE path runs on the backend (admin refresh, EGX_PRIMARY_TV=1),
-# not here - GitHub cron cannot do reliable 1-min. This handles the slower cycles.
+# prices cycle: writes today's forming OHLC candle to ohlc_data every 15 min during
+# the session — this is the intraday chart-update path (backend handles market_tickers
+# via EGX_PRIMARY_TV every 5 min; this adds the ohlc_data write).
 # NOTE: requires repo secret DATABASE_URL. Disabled-by-default until that is set.
 
 on:
   schedule:
-    - cron: '*/15 6-13 * * 0-4'   # technicals, market hours (UTC), Sun-Thu
+    - cron: '*/15 6-13 * * 0-4'   # technicals + prices, market hours (UTC), Sun-Thu
     - cron: '*/30 6-14 * * 0-4'   # news
     - cron: '0 15 * * 0-4'        # estimates, post-close
     - cron: '30 15 * * 0-4'       # dividends, post-close
@@ -20,7 +21,7 @@ on:
         required: true
         default: 'technicals'
         type: choice
-        options: [technicals, news, estimates, dividends, symbolmap, financials, all]
+        options: [prices, technicals, news, estimates, dividends, symbolmap, financials, all]
 
 concurrency:
   group: tv-egx-harvester
@@ -55,7 +56,9 @@ jobs:
             echo "cycle=${{ github.event.inputs.cycle }}" >> "$GITHUB_OUTPUT"
           else
             case "${{ github.event.schedule }}" in
-              "*/15 6-13 * * 0-4") echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;
+              # prices first: writes today's OHLC candle to ohlc_data (chart update).
+              # Then technicals so both cycle in the same 15-min window.
+              "*/15 6-13 * * 0-4") echo "cycle=prices_and_technicals" >> "$GITHUB_OUTPUT" ;;
               "*/30 6-14 * * 0-4") echo "cycle=news" >> "$GITHUB_OUTPUT" ;;
               "0 15 * * 0-4")      echo "cycle=estimates" >> "$GITHUB_OUTPUT" ;;
               "30 15 * * 0-4")     echo "cycle=dividends" >> "$GITHUB_OUTPUT" ;;

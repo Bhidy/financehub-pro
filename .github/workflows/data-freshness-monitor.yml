@@ -78,6 +78,35 @@ jobs:
             *error*|*partial_failure*) STALE=1; REASON="${REASON:+$REASON; }backend status=$LAST_STATUS";;
           esac
 
+          # ---- CHART DATA (ohlc_data) freshness check --------------------------------
+          # ohlc_data is the source the public chart reads. The reservoir (data_sync.yml)
+          # writes it every 4h. A prior asyncpg date-type bug caused 100% silent failures
+          # for 3+ days — this gate would have caught it on the first post-close cycle.
+          # We probe via the public frontend API so we test the full stack (DB -> Vercel).
+          # Threshold: ohlc_data max date must not be more than 2 trading days behind
+          # today (handles weekends + the 4h write window after market close).
+          OHLC_DATE=$(curl -s --max-time 20 "https://startamarkets.com/api/v1/egx/history/COMI" \
+            | jq -r 'if type=="array" and length>0 then last | .date else empty end' 2>/dev/null || echo "")
+          TODAY_EPOCH=$(date -u +%s)
+          OHLC_STALE=0
+          if [ -z "$OHLC_DATE" ]; then
+            OHLC_STALE=1
+            REASON="${REASON:+$REASON; }chart ohlc_data: no COMI bars returned"
+          else
+            OHLC_EPOCH=$(date -d "$OHLC_DATE" +%s 2>/dev/null || echo 0)
+            if [ "$OHLC_EPOCH" -gt 0 ]; then
+              OHLC_AGE_DAYS=$(( (TODAY_EPOCH - OHLC_EPOCH) / 86400 ))
+              echo "ohlc_data latest bar: $OHLC_DATE (${OHLC_AGE_DAYS}d ago)"
+              # Allow up to 4 days for weekends + holiday buffer; >4 = genuine freeze
+              if [ "$OHLC_AGE_DAYS" -gt 4 ]; then
+                OHLC_STALE=1
+                REASON="${REASON:+$REASON; }chart data frozen: last OHLC bar ${OHLC_DATE} (${OHLC_AGE_DAYS}d ago)"
+              fi
+            fi
+          fi
+          [ "$OHLC_STALE" = "1" ] && STALE=1
+          # ----------------------------------------------------------------------------
+
           {
             echo "age_min=$AGE_MIN"
             echo "last_status=$LAST_STATUS"
@@ -91,7 +120,7 @@ jobs:
           if [ "$STALE" = "1" ]; then
             echo "::warning::DATA STALE — $REASON (age=${AGE_MIN}m, last_status=$LAST_STATUS) — paging Discord"
           else
-            echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS"
+            echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS | chart bar: $OHLC_DATE"
           fi
 
       - name: Alert Discord on stale data

@@ -1,79 +1,96 @@
 # 🚀 Starta Markets — Deploy Runbook (READ THIS FIRST)
 
-> **Any AI agent or human deploying Starta MUST read this file before running a
-> single deploy command.** It is the single source of truth. If another doc, a
-> memory note, or your own instinct disagrees with this file, **this file wins.**
-> Older notes that say "deploy from `frontend/`" or "project is `frontend`" are
-> WRONG and caused real outages — see _Why this exists_ at the bottom.
+> **Any AI agent or human deploying Starta MUST read this file first.** It is the
+> single source of truth. If another doc, a memory note, an old script comment,
+> or your own instinct disagrees with this file, **this file wins.** Older notes
+> that say "deploy from `frontend/`", "project is `frontend`", "run `vercel
+> --prod`", or "alias the domain manually" are **WRONG** and caused real
+> outages — see _Why this exists_ at the bottom.
 
-There are **two surfaces**, deployed independently. Use the scripts. Don't improvise.
+There are **three surfaces**, deployed independently:
 
-| Surface | What it is | Command | Time |
-|---|---|---|---|
-| **Web** | `startamarkets.com` (Next.js on Vercel) | `./scripts/deploy-web.sh` | ~2 min |
-| **iOS** | The Capacitor app (TestFlight) | `./scripts/ship-ios.sh` | ~6–10 min |
-| Backend | FastAPI on Hetzner (separate) | `./scripts/deploy_production.sh backend smart` | — |
+| Surface | What it is | How it deploys |
+|---|---|---|
+| **Web** | `startamarkets.com` (Next.js on Vercel, project `finhub`) | **Merge to `main`.** That's the whole deploy. |
+| **iOS** | The Capacitor app (TestFlight) | `./scripts/ship-ios.sh` |
+| **Backend** | FastAPI on Hetzner | `./scripts/deploy_backend_key.sh` |
 
 ---
 
-## ✅ The ONLY correct way to deploy WEB
+## ✅ WEB — there is exactly ONE way, and it is automatic
+
+**Deploying the web = landing code on `main`. Nothing else. No script deploys it.**
 
 ```bash
-# 1. Land your code on main the normal way (review + history):
-git add <only-your-files>            # surgical — NEVER `git add -A` (tree has unrelated WIP)
-git commit -m "…"
-git push -u origin <branch>
-gh pr create --base main --fill && gh pr merge --merge
+# 1. Branch (never commit straight to main).
+git checkout -b fix/my-change
 
-# 2. Ship it (from anywhere in the repo). One command. Deploys + aliases + verifies:
+# 2. Stage ONLY your files — never `git add -A` (the tree carries unrelated WIP).
+git add <only-your-files>
+git commit -m "fix: my change"           # author MUST be mohamedbhidy@gmail.com (see below)
+git push -u origin fix/my-change
+
+# 3. Open a PR and merge it. THE MERGE IS THE DEPLOY.
+gh pr create --base main --fill
+gh pr merge --squash --delete-branch
+
+# 4. Confirm it went live (verify-only — does NOT deploy):
 ./scripts/deploy-web.sh
 ```
 
-That's it. The script targets the **`finhub`** Vercel project from the repo **root**,
-deploys, points `startamarkets.com` + `www` at the new build, and curl-verifies the
-live pages **and** the live API before declaring success. Re-running is safe.
-
-> **Even lazier (valid):** merging to `main` alone auto-deploys `finhub`, which
-> **owns the domain and auto-aliases it**. But still run `./scripts/deploy-web.sh verify`
-> afterwards to confirm — occasionally a build gets "pinned" and the domain needs the
-> nudge the script gives.
+When the PR merges to `main`, **Vercel's Git Integration (project `finhub`) builds
+the commit automatically and `startamarkets.com` + `www` auto-follow that build.**
+There is no second step, no CLI deploy, no domain aliasing. Give it ~1–2 minutes,
+then run `./scripts/deploy-web.sh` to prove the live pages **and** the live API
+are healthy.
 
 ### Non-negotiable WEB rules
-1. **Project is `finhub`.** It owns `startamarkets.com` and auto-deploys `main`.
-2. **Always run Vercel from the repo ROOT** (root `.vercel` → `finhub`).
-   **NEVER run `vercel` inside `frontend/`** — it creates a *stray `frontend`
-   project*, deploys there, and splits the domain. The script enforces this and
-   aborts if it finds `frontend/.vercel`.
-3. **All `.vercel` directories are fully gitignored** — there is no committed
-   `frontend/.vercel` any more. `frontend/.gitignore` contains only `.vercel`
-   (no exceptions). On a fresh clone neither `root/.vercel` nor `frontend/.vercel`
-   exist. One-time root link setup:
+1. **The deploy trigger is a merge to `main`.** Period. Do **not** run `vercel`,
+   `vercel --prod`, `vercel alias`, `vercel deploy`, or any script that does — by
+   hand or in CI. There is no longer any script that deploys the web, on purpose.
+2. **One Vercel project: `finhub`.** It owns `startamarkets.com`, is git-connected
+   to `Bhidy/financehub-pro` with production branch `main`, and has the env vars.
+   Never create a second project. Never run `vercel` inside `frontend/` (that is
+   how the old stray `frontend` project — now deleted — was born). `.vercel` is
+   gitignored; on a fresh clone, the one-time link is
    `cd <repo-root> && ./frontend/node_modules/.bin/vercel link` → choose **finhub**.
-4. **Verify the LIVE site, not just "deployment Ready."** The script checks
-   `/`, `/mobile`, `/AiChat` = 200 **and** `/api/v1/market-summary` returns real data.
-5. Changing a static asset in `frontend/public/assets/`? Bump its `?v=X.Y.Z` query in
-   the HTML or the CDN serves the stale file.
+3. **Commit author email must be `mohamedbhidy@gmail.com`.** Vercel (Hobby) silently
+   refuses to build commits whose author email is not account-linked, so the site
+   would keep serving the old build. The `pre-push` hook
+   (`core.hooksPath=scripts/git-hooks`) blocks the push if any commit on `main` has
+   a different author. Fix: `git commit --amend --reset-author --no-edit`.
+4. **Verify the LIVE site, not just "deployment Ready."** `./scripts/deploy-web.sh`
+   checks `/`, `/mobile`, `/AiChat` = 200 **and** `/api/v1/market-summary` returns
+   real data.
+5. Changing a static asset in `frontend/public/assets/`? Bump its `?v=X.Y.Z` query
+   in the HTML or the CDN serves the stale file.
 
 ---
 
-## ✅ The ONLY correct way to ship iOS (TestFlight)
+## ✅ iOS (TestFlight)
 
 ```bash
-./scripts/ship-ios.sh         # build bundle → cap sync → bump → archive → upload
+./scripts/ship-ios.sh         # build bundle → cap sync → bump build# → archive → upload
 # on success it prints the bump-commit command; run it, then PR→merge it.
 ```
 
-The script auto-bumps the build number to `max(current+1, todayYYYYMMDD)` so it is
-**always** strictly increasing (TestFlight rejects equal/lower). It uploads via the
-App Store Connect API key (no password, no Xcode GUI). After it succeeds, Apple
-"processes" the build for ~5–15 min before it appears in TestFlight.
+Auto-bumps the build number to `max(current+1, todayYYYYMMDD)` (TestFlight rejects
+equal/lower). Uploads via the App Store Connect API key (no password, no Xcode GUI).
+Apple "processes" the build ~5–15 min before it appears. The iOS app calls the
+**prod** API directly (`https://startamarkets.com`) — baked into the bundle; no
+backend change needed to ship the app.
 
-### Non-negotiable iOS rules
-1. The iOS project lives under **`frontend/ios/`** (paths are `frontend`-relative).
-2. The app calls the **prod** API directly (`https://startamarkets.com`); the bundle
-   build bakes that in. No backend change needed to ship the app.
-3. Commit the build-number bump **only after** the upload succeeds (the script
-   prints the exact command), so the repo never claims a build that didn't ship.
+---
+
+## ✅ Backend (Hetzner)
+
+```bash
+./scripts/deploy_backend_key.sh        # SSH-key deploy to root@…/opt/starta
+```
+
+`scripts/deploy_production.sh` is legacy; its **frontend** path has been removed
+(it used to run `vercel --prod` and was part of the deploy mess). Use
+`deploy_backend_key.sh` for the backend.
 
 ---
 
@@ -81,21 +98,36 @@ App Store Connect API key (no password, no Xcode GUI). After it succeeds, Apple
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| "My changes aren't live" | Domain pinned to an old build, or you deployed the stray `frontend` project | `./scripts/deploy-web.sh` (re-deploys finhub + re-aliases) |
-| Script aborts: "STRAY link at frontend/.vercel" | `vercel` was accidentally run inside `frontend/` | `rm -rf frontend/.vercel`, then re-run |
-| `vercel link`/deploy asks to create a project | No root `.vercel` link | Link to the **existing `finhub`** project, never create a new one |
-| Live pages 200 but data missing | Deployed a project without env vars | Deploy `finhub` (it has `DATABASE_URL`, `NEXT_PUBLIC_API_URL`); re-run the script |
-| TestFlight "build number already used" | Bump wasn't strictly increasing | `ship-ios.sh` handles this automatically — just re-run |
+| "My changes aren't live" | The merge hasn't finished building, or a build errored | Wait ~2 min; check the finhub deployment list in the Vercel dashboard; re-run `./scripts/deploy-web.sh` to verify |
+| Push rejected by pre-push hook | A commit author email ≠ `mohamedbhidy@gmail.com` | `git config user.email mohamedbhidy@gmail.com` then `git commit --amend --reset-author --no-edit` |
+| `frontend/.vercel` exists | Someone ran `vercel` inside `frontend/` | `rm -rf frontend/.vercel` (canonical link is root/.vercel → finhub) |
+| Live pages 200 but data missing | Backend/API issue | Check the Hetzner backend + `/api/v1/market-summary` |
+
+**Never "fix" a web deploy by running `vercel --prod` or aliasing the domain.**
+That re-introduces the exact race this runbook exists to prevent. If a merge built
+but isn't live, the answer is in the Vercel dashboard (a failed build or a still-
+building deployment), not a manual CLI deploy.
 
 ---
 
-## Why this exists (the recurring mess, root-caused 2026-06)
+## Why this exists (root-caused 2026-06)
 
-The org has **two** Vercel projects: **`finhub`** (canonical — owns the domain,
-auto-deploys `main`, has the env vars) and a **stray `frontend`** project created by
-running `vercel` from inside `frontend/`. Past memory notes said to "deploy from
-`frontend/` and manually alias" — that deploys to the **stray** project, which does
-**not** own the domain, so the site appeared to need a fragile manual alias every time
-and would silently drift (split-brain). Deploying **`finhub` from the root** makes the
-domain follow automatically. These two scripts encode the correct path so nobody has
-to rediscover it. **Use them.**
+The web used to have **four** ways to deploy, layered up over time as each "fix"
+added another path instead of removing one:
+
+1. ✅ Vercel **Git Integration** (finhub ← `main`) — correct, automatic.
+2. ❌ `deploy-web.sh` running `vercel --prod` + `vercel alias set` — a CLI deploy.
+3. 💣 a dormant `frontend/.github/workflows/deploy-frontend.yml` — another CLI deploy.
+4. 💣 `deploy_production.sh` running `npx vercel --prod` — a fossil from a dead project.
+
+Paths #1 and #2 **both ran on every change**, producing two competing production
+builds that raced for the domain; the manual `vercel alias set` transiently forced
+the apex onto the CLI build, so the next git build "wasn't live" until you re-ran
+the script — a self-perpetuating loop. That race was the root cause of every
+"changes-not-live / wrong-url / pinned-domain / split-brain / deployed-the-wrong-
+branch" incident.
+
+**The fix was subtraction, not another script:** paths #2, #3, and #4 were
+deleted. Web deploys now have a single source of truth — a merge to `main` — and
+the domain auto-follows. `deploy-web.sh` was kept only as a **verify-only**
+health-check. Do not re-add a manual deploy path.

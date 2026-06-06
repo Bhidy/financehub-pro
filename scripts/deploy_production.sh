@@ -117,34 +117,24 @@ if [[ "$MODE" == "all" || "$MODE" == "backend" ]]; then
     fi
 fi
 
-# 3. FRONTEND DEPLOYMENT (Vercel)
+# 3. FRONTEND DEPLOYMENT — REMOVED (single-deploy-path policy, root-caused 2026-06)
 # ------------------------------------------------------------------------------
-if [[ "$MODE" == "all" || "$MODE" == "frontend" ]]; then
-    echo "----------------------------------------------------------------"
-    echo "🎨 Deploying Frontend to Vercel..."
-    echo "----------------------------------------------------------------"
-    
-    # CRITICAL RULE ENFORCEMENT:
-    # Run from ROOT, but target the Vercel project correctly.
-    # We do NOT cd into frontend/. We run `vercel --prod` from root which picks up 
-    # the project configuration or user must ensure vercel.json is correct.
-    # WAIT - The user rule says: "Always deploy frontend manually using `npx vercel --prod` from the PROJECT ROOT (`mubasher-deep-extract/`). NEVER run it from inside `frontend/`"
-    
-    # Let's verify we are NOT in frontend/ (already checked above, but double check pwd)
-    CURRENT_DIR=$(pwd)
-    if [[ "$CURRENT_DIR" == *"frontend"* ]]; then
-         echo "❌ CRITICAL ERROR: Detected execution inside 'frontend' directory."
-         echo "This violates Deployment Protocol #2."
-         exit 1
-    fi
-
-    echo "✅ Directory Context Verified: $CURRENT_DIR (Project Root)"
-    
-    # Execute Vercel Deployment
-    # We use 'npx vercel --prod' and let interactive mode handle it or use pre-configured settings
-    echo "🚀 Executing: npx vercel --prod"
-    npx vercel --prod
+# This script NO LONGER deploys the frontend. The ONLY way the frontend reaches
+# production is by landing code on `main`: Vercel's Git Integration (project
+# `finhub`) auto-builds it and the apex (startamarkets.com) auto-follows.
+#
+# The old `npx vercel --prod` here was a SECOND, competing production build that
+# raced the automatic git build for the domain — the root cause of every
+# "changes-not-live / wrong-url" incident. It is deleted, not worked around.
+# (It also referenced a long-dead project root, "mubasher-deep-extract".)
+if [[ "$MODE" == "frontend" ]]; then
+    echo "❌ This script no longer deploys the frontend."
+    echo "   Deploy = merge your PR to 'main'. Vercel builds it; startamarkets.com follows."
+    echo "   Verify after merge:  ./scripts/deploy-web.sh   (verify-only)"
+    echo "   Authoritative procedure:  docs/DEPLOY_RUNBOOK.md"
+    exit 1
 fi
+# (MODE=all falls through to backend-only below; frontend is intentionally skipped.)
 
 echo "----------------------------------------------------------------"
 echo "✅ Deployment Process Complete."

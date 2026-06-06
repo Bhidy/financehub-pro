@@ -4185,22 +4185,14 @@ function Profile({ nav, lang, portfolio }: { nav: NavController; lang: Lang; por
     { icon: "bell", label: lang === "ar" ? "التنبيهات" : "Alerts", value: "—", onClick: () => nav.push("alerts") },
     { icon: "graduation-cap", label: lang === "ar" ? "الدروس" : "Courses", value: "—", onClick: () => nav.push("learn") },
   ];
-  const links: Array<{ icon: string; label: string; onClick: () => void }> = [
-    { icon: "wallet", label: copy[lang].portfolio, onClick: () => nav.setTab("portfolio") },
-    { icon: "star", label: copy[lang].watchlist, onClick: () => nav.push("watchlist") },
-    { icon: "bell", label: copy[lang].alerts, onClick: () => nav.push("alerts") },
-    { icon: "graduation-cap", label: copy[lang].learn, onClick: () => nav.push("learn") },
-    { icon: "settings", label: copy[lang].settings, onClick: () => nav.push("settings") },
-  ];
   return (
     <>
       <PushTop title={copy[lang].profile} onBack={nav.pop} action={<button className={styles.iconBtn2} aria-label={copy[lang].settings} onClick={() => nav.push("settings")}><Icon name="settings" size={20} /></button>} />
       <div className={styles.content}>
         <div className={styles.profileHero2}>
           <span className={styles.profileHeroGlow} aria-hidden="true" />
-          <div className={styles.profileAvatar2}>S</div>
-          <strong className={styles.profileName2}>{lang === "ar" ? "مساحة Starta" : "Starta Workspace"}</strong>
-          <small className={styles.profileSub2}>{lang === "ar" ? "جلسة محلية للتخصيص وقائمة المتابعة والمحفظة" : "Local session for preferences, watchlist & portfolio"}</small>
+          <div className={styles.profileAvatar2}>M</div>
+          <strong className={styles.profileName2}>Mohamed Bhidy</strong>
           <div className={styles.profileChips}>
             <span className={styles.profileChip}>{lang === "ar" ? "خطة مجانية" : "Free plan"}</span>
             <span className={styles.profileChip}>{lang === "ar" ? "جلسة محلية" : "Local session"}</span>
@@ -4214,16 +4206,6 @@ function Profile({ nav, lang, portfolio }: { nav: NavController; lang: Lang; por
             <button key={s.label} className={styles.profileStatTile} onClick={s.onClick}>
               <span className={styles.profileStatIcon}><Icon name={s.icon} size={18} /></span>
               <span className={styles.profileStatText}><b>{s.value}</b><small>{s.label}</small></span>
-            </button>
-          ))}
-        </div>
-        <SectionHead title={lang === "ar" ? "اختصارات" : "Shortcuts"} />
-        <div className={styles.profileLinks}>
-          {links.map((l) => (
-            <button key={l.label} className={styles.profileLinkRow} onClick={l.onClick}>
-              <span className={styles.profileLinkIcon}><Icon name={l.icon} size={18} /></span>
-              <span className={styles.profileLinkLabel}>{l.label}</span>
-              <Icon name="chevron-right" size={16} />
             </button>
           ))}
         </div>

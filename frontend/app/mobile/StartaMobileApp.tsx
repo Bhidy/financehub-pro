@@ -1936,20 +1936,6 @@ function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary
             {query ? <button type="button" onClick={() => setQuery("")} aria-label={lang === "ar" ? "مسح" : "Clear"}><Icon name="x" size={15} /></button> : null}
           </label>
         ) : null}
-        <div className={styles.workspaceRail}>
-          <button className={isIndex ? styles.on : undefined} onClick={() => { setSelectedId(INDEX_SELECTION); setQuery(""); }}>
-            <span className={styles.workspaceIndexIcon}><Icon name="activity" size={15} /></span>
-            <span>EGX30</span>
-            <b className={indexChange >= 0 ? styles.up : styles.down}>{pct(indexChange)}</b>
-          </button>
-          {matches.map((stock) => (
-            <button key={stock.symbol} className={!isIndex && stock.symbol === picked.symbol ? styles.on : undefined} onClick={() => { setSelectedId(stock.symbol); setQuery(""); }}>
-              <StockLogo symbol={stock.symbol} />
-              <span>{stock.symbol}</span>
-              <b className={stock.changePct >= 0 ? styles.up : styles.down}>{pct(stock.changePct)}</b>
-            </button>
-          ))}
-        </div>
         <article className={styles.selectedEquity}>
           <div className={styles.selectedEquityTop}>
             {isIndex ? <span className={cx(styles.stockLogo, styles.avatar)}><Icon name="activity" size={19} /></span> : <StockLogo symbol={picked.symbol} />}
@@ -1987,6 +1973,20 @@ function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary
             )}
           </div>
         </article>
+        <div className={styles.workspaceRail}>
+          <button className={isIndex ? styles.on : undefined} onClick={() => { setSelectedId(INDEX_SELECTION); setQuery(""); }}>
+            <span className={styles.workspaceIndexIcon}><Icon name="activity" size={15} /></span>
+            <span>EGX30</span>
+            <b className={indexChange >= 0 ? styles.up : styles.down}>{pct(indexChange)}</b>
+          </button>
+          {matches.map((stock) => (
+            <button key={stock.symbol} className={!isIndex && stock.symbol === picked.symbol ? styles.on : undefined} onClick={() => { setSelectedId(stock.symbol); setQuery(""); }}>
+              <StockLogo symbol={stock.symbol} />
+              <span>{stock.symbol}</span>
+              <b className={stock.changePct >= 0 ? styles.up : styles.down}>{pct(stock.changePct)}</b>
+            </button>
+          ))}
+        </div>
       </div>
     </>
   );

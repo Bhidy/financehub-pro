@@ -690,11 +690,16 @@ export default function SymbolDetailPage() {
         return parsedFinancials.find((f: any) => f.period_type === "annual") || parsedFinancials[0];
     }, [parsedFinancials]);
 
-    // Summary mini-chart series. Prefer the AUDITED annual statements (same source
-    // as the statement table -> cards & table never disagree, and they match the
-    // official EGX filing). Fall back to TradingView's 20y series only when audited
-    // data is unavailable (e.g. a stock without audited coverage).
+    // Summary mini-chart series — TradingView-native (egx_financials), the same
+    // source as the Financials summary table, so cards & table always agree and
+    // stay fresh forever. Falls back to audited annual only if TV is unavailable.
     const cardSeries = useMemo(() => {
+        if (Array.isArray(tvFinancials?.years) && tvFinancials.years.length >= 2) {
+            return {
+                source: "tradingview",
+                rows: [...tvFinancials.years].sort((a: any, b: any) => a.fiscal_year - b.fiscal_year),
+            };
+        }
         const annual = (Array.isArray(parsedFinancials) ? parsedFinancials : [])
             .filter((f: any) => f.period_type === "annual")
             .slice()
@@ -707,9 +712,6 @@ export default function SymbolDetailPage() {
                     net_income: f.net_income, total_assets: f.total_assets,
                 })),
             };
-        }
-        if (Array.isArray(tvFinancials?.years) && tvFinancials.years.length >= 2) {
-            return { source: "tradingview", rows: tvFinancials.years };
         }
         return null;
     }, [parsedFinancials, tvFinancials]);
@@ -1341,185 +1343,75 @@ export default function SymbolDetailPage() {
                                             data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.total_assets != null ? Number(y.total_assets) : null }))} />
                                     </div>
                                 )}
-                            <div className="premium-glass rounded-3xl p-8 space-y-6">
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/10 pb-6">
-                                    <div>
-                                        <h3 className="text-xl font-extrabold flex items-center gap-2">
-                                            <FileText className="w-5 h-5 text-[#14b8a6]" /> {t.financial_statement}
-                                        </h3>
-                                        <p className="text-xs text-slate-400 font-bold uppercase mt-1">
-                                            {isBank ? "Banking-Format Audited Disclosures" : "Corporate Audited Statements"} · {currency}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-3 flex-wrap">
-                                        <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                                            <button onClick={() => setFinancialPeriod("annual")} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${financialPeriod === "annual" ? "bg-[#14b8a6] text-white shadow-sm" : "text-slate-450"}`}>{t.annual_view}</button>
-                                            <button onClick={() => setFinancialPeriod("quarterly")} className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${financialPeriod === "quarterly" ? "bg-[#14b8a6] text-white shadow-sm" : "text-slate-450"}`}>{t.quarterly_view}</button>
+                            {(() => {
+                                const yrs = Array.isArray(tvFinancials?.years)
+                                    ? [...tvFinancials.years].sort((a: any, b: any) => b.fiscal_year - a.fiscal_year).slice(0, 12)
+                                    : [];
+                                if (yrs.length === 0) {
+                                    return (
+                                        <div className="premium-glass rounded-3xl p-8">
+                                            <div className="flex flex-col items-center py-16 text-slate-400">
+                                                <AlertCircle className="w-12 h-12 mb-3" />
+                                                <p className="text-sm font-semibold">{t.empty_state}</p>
+                                            </div>
                                         </div>
-                                        <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                                            {[
-                                                { id: "income", label: t.income_statement },
-                                                { id: "balance", label: t.balance_sheet },
-                                                { id: "cashflow", label: t.cash_flow }
-                                            ].map((sTab) => (
-                                                <button key={sTab.id} onClick={() => setFinancialSubTab(sTab.id as any)}
-                                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold whitespace-nowrap ${financialSubTab === sTab.id ? "bg-[#14b8a6] text-white shadow-sm" : "text-slate-450"}`}>
-                                                    {sTab.label}
-                                                </button>
-                                            ))}
+                                    );
+                                }
+                                const col = (v: any) => (v != null ? formatCurrency(v, currency) : "-");
+                                const ps = (v: any) => (v != null ? `${currency} ${Number(v).toFixed(2)}` : "-");
+                                return (
+                                    <div className="premium-glass rounded-3xl p-8 space-y-6">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-200/10 pb-6">
+                                            <div>
+                                                <h3 className="text-xl font-extrabold flex items-center gap-2">
+                                                    <FileText className="w-5 h-5 text-[#14b8a6]" /> {lang === "ar" ? "الملخص المالي" : "Financial Summary"}
+                                                </h3>
+                                                <p className="text-xs text-slate-400 font-bold uppercase mt-1">{lang === "ar" ? "سنوي · " : "Annual · "}{currency}</p>
+                                            </div>
+                                            <span className="text-[11px] font-bold text-slate-400">{lang === "ar" ? "مصدر: TradingView" : "Source: TradingView"}</span>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider text-right">
+                                                        <th className="text-left py-4 px-4 min-w-[90px]">{lang === "ar" ? "الفترة" : "Period"}</th>
+                                                        <th className="py-4 px-4 min-w-[120px]">{lang === "ar" ? "الإيرادات" : "Revenue"}</th>
+                                                        <th className="py-4 px-4 min-w-[120px]">{lang === "ar" ? "إجمالي الربح" : "Gross Profit"}</th>
+                                                        <th className="py-4 px-4 min-w-[110px]">EBITDA</th>
+                                                        <th className="py-4 px-4 min-w-[120px]">{lang === "ar" ? "صافي الدخل" : "Net Income"}</th>
+                                                        <th className="py-4 px-4 min-w-[80px]">{lang === "ar" ? "ربحية السهم" : "EPS"}</th>
+                                                        <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "التدفق النقدي الحر" : "Free Cash Flow"}</th>
+                                                        <th className="py-4 px-4 min-w-[120px]">{lang === "ar" ? "إجمالي الأصول" : "Total Assets"}</th>
+                                                        <th className="py-4 px-4 min-w-[110px]">{lang === "ar" ? "إجمالي الديون" : "Total Debt"}</th>
+                                                        <th className="py-4 px-4 min-w-[80px]">{lang === "ar" ? "التوزيع" : "DPS"}</th>
+                                                        <th className="py-4 px-4 min-w-[80px] text-amber-500">{t.yoy_change}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {yrs.map((f: any, i: number) => {
+                                                        const prevF = yrs[i + 1];
+                                                        return (
+                                                            <tr key={f.fiscal_year} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold text-sm text-right">
+                                                                <td className="py-5 px-4 text-left text-slate-850 dark:text-white whitespace-nowrap">FY {f.fiscal_year}</td>
+                                                                <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-200">{col(f.revenue)}</td>
+                                                                <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{col(f.gross_profit)}</td>
+                                                                <td className="py-5 px-4 tabular text-slate-600 dark:text-slate-400">{col(f.ebitda)}</td>
+                                                                <td className="py-5 px-4 tabular text-emerald-600 dark:text-emerald-400">{col(f.net_income)}</td>
+                                                                <td className="py-5 px-4 tabular">{ps(f.eps_diluted)}</td>
+                                                                <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{col(f.free_cash_flow)}</td>
+                                                                <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{col(f.total_assets)}</td>
+                                                                <td className="py-5 px-4 tabular text-rose-500/80">{col(f.total_debt)}</td>
+                                                                <td className="py-5 px-4 tabular text-amber-600 dark:text-amber-400">{ps(f.dps)}</td>
+                                                                <td className={`py-5 px-4 tabular text-xs ${yoyDelta(f.net_income, prevF?.net_income).startsWith("+") ? "text-emerald-500" : "text-rose-500"}`}>{yoyDelta(f.net_income, prevF?.net_income)}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
-                                </div>
-
-                                {filteredFinancials.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider text-right">
-                                                    <th className="text-left py-4 px-4 min-w-[100px]">{lang === "ar" ? "الفترة المالية" : "Period"}</th>
-
-                                                    {/* INCOME HEADERS */}
-                                                    {financialSubTab === "income" && (isBank ? (
-                                                        <>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_interest_income}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.interest_expense}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.net_interest_income}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.provision_credit_losses}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.trading_income}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{lang === "ar" ? "صافي الدخل" : "Net Income"}</th>
-                                                            <th className="py-4 px-4 min-w-[80px]">{lang === "ar" ? "ربحية السهم" : "EPS"}</th>
-                                                            <th className="py-4 px-4 min-w-[80px] text-amber-500">{t.yoy_change}</th>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "الإيرادات" : "Revenue"}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "إجمالي الربح" : "Gross Profit"}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "الربح التشغيلي" : "Operating Income"}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{lang === "ar" ? "صافي الدخل" : "Net Income"}</th>
-                                                            <th className="py-4 px-4 min-w-[80px]">{lang === "ar" ? "ربحية السهم" : "EPS"}</th>
-                                                            <th className="py-4 px-4 min-w-[80px] text-amber-500">{t.yoy_change}</th>
-                                                        </>
-                                                    ))}
-
-                                                    {/* BALANCE HEADERS */}
-                                                    {financialSubTab === "balance" && (isBank ? (
-                                                        <>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.cash_equivalents}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.net_loans}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.investment_securities}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.deposits}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_equity}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_assets}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{t.book_value_ps}</th>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_current_assets}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_assets}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_current_liabilities}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_liabilities}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{t.total_equity}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{t.book_value_ps}</th>
-                                                        </>
-                                                    ))}
-
-                                                    {/* CASH FLOW HEADERS */}
-                                                    {financialSubTab === "cashflow" && (
-                                                        <>
-                                                            <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "التدفقات التشغيلية" : "Operating CF"}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "التدفقات الاستثمارية" : "Investing CF"}</th>
-                                                            <th className="py-4 px-4 min-w-[130px]">{lang === "ar" ? "التدفقات التمويلية" : "Financing CF"}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{t.capex}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{t.dividends_paid}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{t.da}</th>
-                                                            <th className="py-4 px-4 min-w-[110px]">{t.fcf}</th>
-                                                        </>
-                                                    )}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {filteredFinancials.slice(0, 10).map((f: any, i: number) => {
-                                                    const prevF = filteredFinancials[i + 1];
-                                                    return (
-                                                        <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold text-sm text-right">
-                                                            <td className="py-5 px-4 text-left text-slate-850 dark:text-white whitespace-nowrap">
-                                                                {f.period_type === "annual" ? `FY ${f.fiscal_year}` : `Q${f.fiscal_quarter || "—"} ${f.fiscal_year}`}
-                                                            </td>
-
-                                                            {/* INCOME ROWS */}
-                                                            {financialSubTab === "income" && (isBank ? (
-                                                                <>
-                                                                    <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{formatCurrency(f.total_interest_income, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-500">{formatCurrency(f.interest_expense, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{formatCurrency(f.net_interest_income, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-rose-500/80">{formatCurrency(f.provision_credit_losses, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-600 dark:text-slate-400">{formatCurrency(f.trading_income, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-emerald-600 dark:text-emerald-400">{formatCurrency(f.net_income, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular">{f.eps ? `${currency} ${Number(f.eps).toFixed(2)}` : "-"}</td>
-                                                                    <td className={`py-5 px-4 tabular text-xs ${yoyDelta(f.net_income, prevF?.net_income).startsWith("+") ? "text-emerald-500" : "text-rose-500"}`}>
-                                                                        {yoyDelta(f.net_income, prevF?.net_income)}
-                                                                    </td>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-200">{formatCurrency(f.revenue, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{formatCurrency(f.gross_profit, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{formatCurrency(f.operating_income, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-emerald-600 dark:text-emerald-400">{formatCurrency(f.net_income, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular">{f.eps ? `${currency} ${Number(f.eps).toFixed(2)}` : "-"}</td>
-                                                                    <td className={`py-5 px-4 tabular text-xs ${yoyDelta(f.revenue, prevF?.revenue).startsWith("+") ? "text-emerald-500" : "text-rose-500"}`}>
-                                                                        {yoyDelta(f.revenue, prevF?.revenue)}
-                                                                    </td>
-                                                                </>
-                                                            ))}
-
-                                                            {/* BALANCE ROWS */}
-                                                            {financialSubTab === "balance" && (isBank ? (
-                                                                <>
-                                                                    <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{formatCurrency(f.cash_equivalents, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{formatCurrency(f.net_loans, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-600 dark:text-slate-400">{formatCurrency(f.total_investments || f.investment_securities, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-indigo-500 dark:text-indigo-400">{formatCurrency(f.deposits, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-emerald-600 dark:text-emerald-400">{formatCurrency(f.total_equity, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{formatCurrency(f.total_assets, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular">{f.book_value_per_share ? `${currency} ${Number(f.book_value_per_share).toFixed(2)}` : "-"}</td>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <td className="py-5 px-4 tabular text-slate-600 dark:text-slate-400">{formatCurrency(f.total_current_assets, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{formatCurrency(f.total_assets, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-500">{formatCurrency(f.total_current_liabilities, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{formatCurrency(f.total_liabilities, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-emerald-600 dark:text-emerald-400">{formatCurrency(f.total_equity, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular">{f.book_value_per_share ? `${currency} ${Number(f.book_value_per_share).toFixed(2)}` : "-"}</td>
-                                                                </>
-                                                            ))}
-
-                                                            {/* CASH FLOW ROWS */}
-                                                            {financialSubTab === "cashflow" && (
-                                                                <>
-                                                                    <td className="py-5 px-4 tabular text-slate-700 dark:text-slate-300">{formatCurrency(f.cash_flow_operating || f.operating_cashflow, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-500">{formatCurrency(f.cash_from_investing, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-500">{formatCurrency(f.cash_from_financing, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-rose-500">{formatCurrency(f.capex, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-amber-500">{formatCurrency(f.dividends_paid, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-slate-400">{formatCurrency(f.depreciation_amortization, currency)}</td>
-                                                                    <td className="py-5 px-4 tabular text-emerald-600 dark:text-emerald-400">{formatCurrency(f.free_cashflow, currency)}</td>
-                                                                </>
-                                                            )}
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center py-16 text-slate-400">
-                                        <AlertCircle className="w-12 h-12 mb-3" />
-                                        <p className="text-sm font-semibold">{t.empty_state}</p>
-                                    </div>
-                                )}
-                            </div>
+                                );
+                            })()}
                             </div>
                         )}
 

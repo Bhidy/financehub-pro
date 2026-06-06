@@ -1680,7 +1680,7 @@ export default function StartaMobileApp() {
                 </div>
               )}
             </div>
-            {current || (tab !== "home" && tab !== "markets" && tab !== "portfolio") ? (
+            {(current || (tab !== "home" && tab !== "markets" && tab !== "portfolio")) && current?.name !== "subscription" ? (
               <button className={cx(styles.aiFab, current && styles.aiFabPushed)} onClick={() => nav.openAI()} aria-label={t.askAi}>
                 <AIGlyph color="#fff" size={21} />
               </button>
@@ -4215,15 +4215,48 @@ function Subscription({ nav, lang }: { nav: NavController; lang: Lang }) {
         ["PDF / Excel exports", "3 PDF", "Advanced PDF + Excel"],
         ["Daily market briefing", "—", "Included"],
       ];
+  const positive = (v: string) => /unlimited|included|complete|advanced|غير محدود|مشمول|كاملة|متقدم/i.test(v);
+  const renderVal = (v: string, accent: boolean) => {
+    if (v === "—") return <span className={styles.planCellMuted}>—</span>;
+    if (positive(v)) return <span className={cx(styles.planCellGood, accent && styles.planCellAccent)}><Icon name="check" size={13} /> {v}</span>;
+    return <span className={accent ? styles.planCellAccent : undefined}>{v}</span>;
+  };
   return (
     <>
-      <PushHeader title={lang === "ar" ? "خطط Starta" : "Starta Plans"} sub={lang === "ar" ? "اختر ميزتك" : "Choose your edge"} onBack={nav.pop} />
+      <MarketTopBar lang={lang} nav={nav} title={lang === "ar" ? "خطط Starta" : "Starta Plans"} sub={lang === "ar" ? "اختر ميزتك" : "Choose your edge"} />
       <div className={styles.content}>
-        <div className={styles.planGrid}>
-          <div><span>{lang === "ar" ? "Starter" : "The Starter"}</span><strong>{lang === "ar" ? "مجاني" : "Free"}</strong><small>{lang === "ar" ? "بيانات أساسية للمستثمر المتابع" : "Essential market data for the casual investor"}</small></div>
-          <div className={styles.planPopular}><em>POPULAR</em><span>{lang === "ar" ? "Analyst" : "The Analyst"}</span><strong>69 EGP</strong><small>{lang === "ar" ? "شهرياً أو 662 جنيه سنوياً" : "Monthly or 662 EGP annually"}</small></div>
+        {/* Plan cards */}
+        <div className={styles.planCards2}>
+          <div className={styles.planCard2}>
+            <span className={styles.planKicker2}>{lang === "ar" ? "المبتدئ" : "THE STARTER"}</span>
+            <strong className={styles.planPrice2}>{lang === "ar" ? "مجاني" : "Free"}</strong>
+            <small className={styles.planDesc2}>{lang === "ar" ? "بيانات أساسية للمستثمر المتابع" : "Essential market data for the casual investor"}</small>
+            <span className={styles.planCurrentTag}>{lang === "ar" ? "خطتك الحالية" : "Current plan"}</span>
+          </div>
+          <div className={cx(styles.planCard2, styles.planCard2Popular)}>
+            <span className={styles.planPopularTag}>★ {lang === "ar" ? "الأكثر شيوعاً" : "POPULAR"}</span>
+            <span className={styles.planKicker2}>{lang === "ar" ? "المحلّل" : "THE ANALYST"}</span>
+            <strong className={styles.planPrice2}>69 <em>{lang === "ar" ? "ج.م/شهر" : "EGP/mo"}</em></strong>
+            <small className={styles.planDesc2}>{lang === "ar" ? "أو 662 جنيه سنوياً" : "or 662 EGP billed annually"}</small>
+          </div>
         </div>
-        {features.map(([feature, starter, analyst]) => <div key={feature} className={styles.compareRow}><span>{feature}</span><strong>{starter}</strong><strong>{analyst}</strong></div>)}
+
+        {/* Comparison table */}
+        <div className={styles.planTable}>
+          <div className={cx(styles.planRow, styles.planRowHead)}>
+            <span>{lang === "ar" ? "الميزة" : "Feature"}</span>
+            <span>{lang === "ar" ? "مجاني" : "Free"}</span>
+            <span className={styles.planColAnalyst}>{lang === "ar" ? "المحلّل" : "Analyst"}</span>
+          </div>
+          {features.map(([feature, starter, analyst]) => (
+            <div key={feature} className={styles.planRow}>
+              <span className={styles.planFeatureName}>{feature}</span>
+              {renderVal(starter, false)}
+              <span className={styles.planColAnalyst}>{renderVal(analyst, true)}</span>
+            </div>
+          ))}
+        </div>
+
         <p className={styles.disclaimer}>{lang === "ar" ? "هذه الخطط للعرض المعلوماتي فقط داخل التطبيق. لا توجد ميزات مقفلة في تجربة Starta الحالية." : "Plans are shown for information only inside the app. No current Starta mobile feature is locked."}</p>
       </div>
     </>

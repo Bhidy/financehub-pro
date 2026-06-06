@@ -1330,7 +1330,7 @@ function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; s
   const slides = [
     {
       kind: "market" as const,
-      kicker: rtl ? "بيانات حية" : "LIVE MARKET DATA",
+      kicker: rtl ? "بيانات السوق" : "MARKET DATA",
       title: rtl ? "السوق المصري لحظة بلحظة" : "The Egyptian market, live.",
       sub: rtl ? "أسعار EGX، واتساع السوق، والأكثر حركة — بيانات مؤسسية." : "EGX prices, market breadth, and top movers — institutional data, instantly.",
     },

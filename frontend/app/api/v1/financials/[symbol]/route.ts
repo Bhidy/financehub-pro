@@ -211,8 +211,15 @@ export async function GET(
         });
 
         // Normalise EGP-millions -> absolute EGP and coerce NUMERIC strings -> numbers.
-        const normalised = financialsList.map((r: any) =>
-            numerify(r, FIN_ALL_NUM, { scaleFields: FIN_MONEY, scale: 1_000_000 }));
+        // The x1e6 scale is gated on currency: income_statements/balance_sheets/cashflow
+        // are confirmed 100% EGP-millions today. Gating on EGP future-proofs against any
+        // later non-EGP (e.g. SAR) financials being ingested at a different scale —
+        // it can never silently corrupt them by 1e6.
+        const normalised = financialsList.map((r: any) => {
+            const cur = String(r.currency || 'EGP').toUpperCase();
+            const scale = cur === 'EGP' ? 1_000_000 : 1;
+            return numerify(r, FIN_ALL_NUM, { scaleFields: FIN_MONEY, scale });
+        });
 
         return NextResponse.json(normalised);
     } catch (error: any) {

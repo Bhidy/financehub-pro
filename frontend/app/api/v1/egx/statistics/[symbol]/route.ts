@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { db } from '@/lib/db-server';
+import { db, numerify } from '@/lib/db-server';
+
+// stock_stats_view ALREADY emits absolute EGP (monetary scaled x1e6 in the view) —
+// so coerce NUMERIC strings to numbers but do NOT re-scale here.
+const STATS_NUM = ['last_price', 'pe_ratio', 'pb_ratio', 'dividend_yield', 'market_cap',
+    'beta_5y', 'rsi_14', 'ma_50d', 'ma_200d', 'gross_margin', 'operating_margin', 'profit_margin',
+    'revenue_growth', 'profit_growth', 'eps_growth', 'eps_ttm', 'revenue_ttm', 'net_income_ttm',
+    'roe', 'roa', 'total_debt', 'book_value', 'bvps', 'shares_outstanding'];
 
 // Key statistics from the FRESH single source: stock_stats_view derives everything
 // live from TradingView (market_tickers + egx_technicals) + Yahoo (income_statements,
@@ -21,7 +28,7 @@ export async function GET(
         if (result.rows.length === 0) {
             return NextResponse.json({ error: 'Statistics not found' }, { status: 404 });
         }
-        return NextResponse.json(result.rows[0]);
+        return NextResponse.json(numerify(result.rows[0], STATS_NUM));
     } catch (error: any) {
         console.error('[API] /egx/statistics error:', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

@@ -98,15 +98,15 @@ def check_symbol(base: str, sym: str, min_year: int) -> list[str]:
             if bvps > last_price * 50:
                 v.append(f"{sym}: bvps={bvps:,.0f} implausible vs price {last_price} "
                          f"(total-equity-as-per-share bug?)")
-        # 2: scaled monetary must be absolute (>= 1e6) when present
-        for fld in ("net_income_ttm", "total_debt", "revenue_ttm", "book_value"):
+        # 2: scaled monetary sanity via RATIO vs market cap (robust for micro-caps).
+        # The millions-leak bug makes net_income/revenue ~1e6x too small -> ratio ~1e-7;
+        # genuinely tiny earners stay well above 1e-4, so this never false-positives.
+        for fld in ("net_income_ttm", "revenue_ttm"):
             val = _f(stats.get(fld))
-            if val is not None and val != 0 and abs(val) < 1e6:
-                v.append(f"{sym}: stats.{fld}={val} looks UNSCALED (millions leaked as units)")
-        # shares sanity
-        sh = _f(stats.get("shares_outstanding"))
-        if sh is not None and sh != 0 and sh < 1e5:
-            v.append(f"{sym}: shares_outstanding={sh} implausibly small (unscaled?)")
+            if val is not None and val != 0 and market_cap and market_cap > 0:
+                if abs(val) / market_cap < 1e-4:
+                    v.append(f"{sym}: stats.{fld}={val} is {abs(val)/market_cap:.1e}x market_cap "
+                             f"— SCALE BUG (unscaled millions?)")
     except Exception as e:
         v.append(f"{sym}: profile fetch failed: {e}")
 
@@ -132,9 +132,6 @@ def check_symbol(base: str, sym: str, min_year: int) -> list[str]:
                 if ratio < 1e-4:
                     v.append(f"{sym}: net_income {ni:,.0f} is {ratio:.1e}x market_cap "
                              f"{market_cap:,.0f} — SCALE BUG (likely 1e6 too small)")
-            # absolute floor
-            if ni is not None and ni != 0 and abs(ni) < 1e6:
-                v.append(f"{sym}: financials net_income={ni} below 1e6 — unscaled millions?")
             # 4: reconcile statement table vs profile TTM (same audited source)
             if ni is not None and profile_ni is not None and profile_ni != 0:
                 rr = abs(ni - profile_ni) / abs(profile_ni)

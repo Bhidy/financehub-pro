@@ -30,7 +30,11 @@ export async function GET(
             [symbol]
         );
 
-        const cacheHeaders = { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400' };
+        // s-maxage=900: CDN serves cached bars for 15 min (reservoir runs every 4h, TV
+        // harvester writes today's forming candle every 15 min during session).
+        // stale-while-revalidate=1800: CDN revalidates in background after expiry —
+        // no blocking wait, but staleness is bounded to 30 min max (not 24h).
+        const cacheHeaders = { 'Cache-Control': 's-maxage=900, stale-while-revalidate=1800' };
 
         if (result.rows.length > 0) {
             const formattedData = result.rows.map((row: any) => ({

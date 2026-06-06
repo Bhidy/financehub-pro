@@ -303,13 +303,21 @@ CYCLES = {"prices": cycle_prices, "technicals": cycle_technicals, "estimates": c
           "news": cycle_news, "symbolmap": cycle_symbolmap, "financials": cycle_financials,
           "dividends": cycle_dividends}
 
+# Compound cycles: run multiple cycles in sequence within one invocation.
+COMPOUND = {"prices_and_technicals": ["prices", "technicals"]}
+
 
 async def main(cycle: str):
     if not DATABASE_URL:
         sys.exit("DATABASE_URL not set")
     conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
     try:
-        todo = list(CYCLES) if cycle == "all" else [cycle]
+        if cycle == "all":
+            todo = list(CYCLES)
+        elif cycle in COMPOUND:
+            todo = COMPOUND[cycle]
+        else:
+            todo = [cycle]
         for c in todo:
             await CYCLES[c](conn)
     finally:
@@ -318,5 +326,6 @@ async def main(cycle: str):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cycle", default="prices", choices=list(CYCLES) + ["all"])
+    ap.add_argument("--cycle", default="prices",
+                    choices=list(CYCLES) + list(COMPOUND) + ["all"])
     asyncio.run(main(ap.parse_args().cycle))

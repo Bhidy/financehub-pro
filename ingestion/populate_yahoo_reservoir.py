@@ -5,6 +5,7 @@ import math
 import time
 import json
 import logging
+import datetime
 import yfinance as yf
 import pandas as pd
 import asyncpg
@@ -71,13 +72,18 @@ def _num(x):
 def _hist_to_ohlc_rows(symbol, hist):
     """Build (symbol, date, o, h, l, c, adj_close, volume) rows for the ohlc_data table.
     The Market-Pulse chart reads ohlc_data, NOT yahoo_cache — so the reservoir must
-    keep BOTH in sync or charts silently freeze while the cache looks fresh."""
+    keep BOTH in sync or charts silently freeze while the cache looks fresh.
+    IMPORTANT: asyncpg date codec requires datetime.date objects, NOT strings.
+    Passing a raw string raises: 'str' object has no attribute 'toordinal'"""
     rows = []
     for b in hist or []:
         try:
-            d = str(b.get("date", ""))[:10]
+            d_str = str(b.get("date", ""))[:10]
+            if not d_str:
+                continue
+            d = datetime.date.fromisoformat(d_str)  # datetime.date required by asyncpg
             o, h, l, c = _num(b.get("open")), _num(b.get("high")), _num(b.get("low")), _num(b.get("close"))
-            if not d or None in (o, h, l, c) or c <= 0:
+            if None in (o, h, l, c) or c <= 0:
                 continue
             v = int(_num(b.get("volume")) or 0)
             rows.append((symbol, d, o, h, l, c, c, v))
@@ -206,8 +212,10 @@ async def main():
     logger.info(f"Starting ingestion for {total} symbols...")
 
     saved = 0
-    no_data = []   # Yahoo returned nothing
-    failed = []    # raised an exception (isolated, does not abort the run)
+    ohlc_written = 0   # symbols where ohlc_data was actually updated
+    ohlc_attempted = 0 # symbols that had bars to write
+    no_data = []       # Yahoo returned nothing
+    failed = []        # raised an exception (isolated, does not abort the run)
 
     for idx, sym in enumerate(symbols, 1):
         clean_sym = sym.replace(".CA", "")
@@ -261,13 +269,15 @@ async def main():
             # Keep ohlc_data (the table the public chart reads) in sync with the cache.
             ohlc_rows = _hist_to_ohlc_rows(clean_sym, final_hist)
             if ohlc_rows:
+                ohlc_attempted += 1
                 await conn.executemany("""
                     INSERT INTO ohlc_data (symbol, date, open, high, low, close, adj_close, volume)
-                    VALUES ($1, $2::date, $3, $4, $5, $6, $7, $8)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     ON CONFLICT (symbol, date) DO UPDATE SET
                         open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
                         close=EXCLUDED.close, adj_close=EXCLUDED.adj_close, volume=EXCLUDED.volume
                 """, ohlc_rows)
+                ohlc_written += 1
 
             saved += 1
             logger.info(f"[{idx}/{total}] SAVED {clean_sym} ({len(ohlc_rows)} bars) in {time.time()-start_t:.2f}s")
@@ -282,14 +292,20 @@ async def main():
 
     await conn.close()
     logger.info(
-        f"Ingestion Complete. saved={saved}/{total} | no_data={len(no_data)} | errors={len(failed)}"
+        f"Ingestion Complete. saved={saved}/{total} | ohlc_written={ohlc_written}/{ohlc_attempted} | no_data={len(no_data)} | errors={len(failed)}"
     )
     if failed:
         logger.warning(f"Symbols with errors: {', '.join(failed[:50])}")
 
-    # Fail the job ONLY on a total wipeout, so partial runs still let gap-fill proceed.
+    # Fail on total wipeout.
     if saved == 0 and total > 0:
         logger.error("FATAL: 0 symbols saved — failing the job.")
+        sys.exit(1)
+    # Fail loudly when ohlc writes are universally broken (catches type-error regressions).
+    # A prior bug passed date as str instead of datetime.date, causing 100% ohlc failures
+    # while delisted-symbol saves kept `saved` > 0, masking the failure entirely.
+    if ohlc_attempted > 10 and ohlc_written == 0:
+        logger.error(f"FATAL: 0/{ohlc_attempted} ohlc_data writes succeeded — chart data frozen. Check _hist_to_ohlc_rows.")
         sys.exit(1)
 
 if __name__ == "__main__":

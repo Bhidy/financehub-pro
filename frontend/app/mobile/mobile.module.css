@@ -3720,6 +3720,77 @@
   padding: 22px;
 }
 
+/* ── Premium profile page ───────────────────────────────────────── */
+.profileHero2 {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--c-border-strong) 55%, transparent);
+  border-radius: 28px;
+  padding: 26px 20px 22px;
+  text-align: center;
+  background: radial-gradient(125% 95% at 50% -5%, color-mix(in srgb, var(--c-brand) 17%, var(--c-surface)) 0%, var(--c-surface) 58%);
+  box-shadow: 0 28px 64px -36px rgba(15,23,42,.5), inset 0 1px 0 color-mix(in srgb,#fff 16%, transparent);
+}
+.profileHeroGlow {
+  position: absolute; top: -72px; left: 50%; transform: translateX(-50%);
+  width: 230px; height: 230px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-brand) 40%, transparent), transparent 66%);
+  filter: blur(20px); pointer-events: none;
+}
+.profileAvatar2 {
+  position: relative; z-index: 1;
+  width: 84px; height: 84px; margin: 0 auto 14px;
+  border-radius: 26px; display: grid; place-items: center;
+  background: linear-gradient(140deg, var(--c-brand-bright), var(--c-brand) 55%, var(--c-brand-deep));
+  color: #fff; font: 800 38px/1 Sora, sans-serif;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c-brand) 13%, transparent),
+              0 22px 46px -16px color-mix(in srgb, var(--c-brand) 75%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.3);
+}
+.profileName2 { position: relative; display: block; font: 800 22px/1.12 Sora, sans-serif; letter-spacing: -.03em; color: var(--c-fg-1); }
+.profileSub2 { position: relative; display: block; margin-top: 7px; font: 500 13px/1.45 Manrope, sans-serif; color: var(--c-fg-2); max-width: 290px; margin-inline: auto; }
+.profileChips { position: relative; display: flex; justify-content: center; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.profileChip {
+  font: 800 9.5px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase;
+  color: var(--c-fg-2); background: var(--c-surface-2); border: 1px solid var(--c-border);
+  padding: 7px 11px; border-radius: 999px;
+}
+.profileUpgrade {
+  position: relative; margin-top: 17px; width: 100%; height: 50px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; border-radius: 16px;
+  background: linear-gradient(135deg, var(--c-brand-bright), var(--c-brand) 52%, var(--c-brand-deep));
+  color: #04211c; font: 800 14px/1 Manrope, sans-serif;
+  box-shadow: var(--glow-brand);
+}
+.profileUpgrade:active { transform: scale(.98); }
+.profileUpgrade svg { color: #04211c; }
+
+.profileStatGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.profileStatTile {
+  display: flex; align-items: center; gap: 11px;
+  border: 1px solid var(--c-border); border-radius: 18px; background: var(--c-surface);
+  padding: 14px; text-align: start; box-shadow: var(--shadow-sm);
+}
+.profileStatTile:active { transform: scale(.97); }
+.profileStatIcon { width: 40px; height: 40px; border-radius: 13px; flex: none; display: grid; place-items: center; background: var(--c-brand-tint); color: var(--c-brand); }
+.profileStatText { display: grid; gap: 2px; min-width: 0; }
+.profileStatText b { font: 800 20px/1 Sora, sans-serif; color: var(--c-fg-1); letter-spacing: -.02em; }
+.profileStatText small { font: 700 9.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--c-fg-3); }
+
+.profileLinks { display: grid; gap: 9px; }
+.profileLinkRow {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 13px;
+  border: 1px solid var(--c-border); border-radius: 16px; background: var(--c-surface);
+  padding: 13px 14px; text-align: start; box-shadow: var(--shadow-sm);
+}
+.profileLinkRow:active { transform: scale(.99); }
+.profileLinkIcon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--c-brand-tint); color: var(--c-brand); }
+.profileLinkLabel { font: 800 14px/1.2 Manrope, sans-serif; color: var(--c-fg-1); min-width: 0; }
+.profileLinkRow > svg:last-child { color: var(--c-fg-3); }
+[dir="rtl"] .profileLinkRow { text-align: right; }
+[dir="rtl"] .profileLinkRow > svg:last-child { transform: rotate(180deg); }
+
 .toggleRow i {
   width: 44px;
   height: 25px;

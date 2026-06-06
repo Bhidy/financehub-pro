@@ -43,8 +43,11 @@ live pages **and** the live API before declaring success. Re-running is safe.
 2. **Always run Vercel from the repo ROOT** (root `.vercel` → `finhub`).
    **NEVER run `vercel` inside `frontend/`** — it creates a *stray `frontend`
    project*, deploys there, and splits the domain. The script enforces this and
-   aborts if it finds `frontend/.vercel`. If you see that file: `rm -rf frontend/.vercel`.
-3. `.vercel` is **gitignored**, so a fresh clone has no link. One-time setup:
+   aborts if it finds `frontend/.vercel`.
+3. **All `.vercel` directories are fully gitignored** — there is no committed
+   `frontend/.vercel` any more. `frontend/.gitignore` contains only `.vercel`
+   (no exceptions). On a fresh clone neither `root/.vercel` nor `frontend/.vercel`
+   exist. One-time root link setup:
    `cd <repo-root> && ./frontend/node_modules/.bin/vercel link` → choose **finhub**.
 4. **Verify the LIVE site, not just "deployment Ready."** The script checks
    `/`, `/mobile`, `/AiChat` = 200 **and** `/api/v1/market-summary` returns real data.
@@ -79,7 +82,7 @@ App Store Connect API key (no password, no Xcode GUI). After it succeeds, Apple
 | Symptom | Cause | Fix |
 |---|---|---|
 | "My changes aren't live" | Domain pinned to an old build, or you deployed the stray `frontend` project | `./scripts/deploy-web.sh` (re-deploys finhub + re-aliases) |
-| Script aborts: "STRAY link at frontend/.vercel" | A `vercel` command was run inside `frontend/` | `rm -rf frontend/.vercel`, then re-run |
+| Script aborts: "STRAY link at frontend/.vercel" | `vercel` was accidentally run inside `frontend/` | `rm -rf frontend/.vercel`, then re-run |
 | `vercel link`/deploy asks to create a project | No root `.vercel` link | Link to the **existing `finhub`** project, never create a new one |
 | Live pages 200 but data missing | Deployed a project without env vars | Deploy `finhub` (it has `DATABASE_URL`, `NEXT_PUBLIC_API_URL`); re-run the script |
 | TestFlight "build number already used" | Bump wasn't strictly increasing | `ship-ios.sh` handles this automatically — just re-run |

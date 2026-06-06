@@ -5,14 +5,10 @@ backend/.env
 .env*.local
 
 # Vercel
-# Ignore all .vercel directories (created by `vercel link`) EXCEPT the
-# committed frontend/.vercel/project.json which pins frontend/ to the
-# canonical 'finhub' project. This means running `vercel` inside frontend/
-# will ALWAYS target finhub (not create a stray project), making the
-# two-project split-brain structurally impossible.
+# Ignore ALL .vercel directories. The canonical project link lives at
+# root/.vercel (gitignored, one-time setup via `vercel link`). Never
+# run `vercel` inside frontend/ — use ./scripts/deploy-web.sh instead.
 .vercel
-!frontend/.vercel
-!frontend/.vercel/project.json
 
 # Logs
 *.log

@@ -152,6 +152,19 @@ def check_symbol(base: str, sym: str, min_year: int) -> list[str]:
     except Exception as e:
         v.append(f"{sym}: financials-tv fetch failed: {e}")
 
+    # ---- seasonals (computed from ohlc_data; never-fail as long as OHLC is fresh) ----
+    try:
+        st, seas = get_json(base, f"/api/v1/egx/seasonals/{sym}")
+        if st != 200:
+            v.append(f"{sym}: seasonals HTTP {st}")
+        elif seas.get("available"):
+            populated = len([m for m in (seas.get("months") or []) if m.get("avg_return") is not None])
+            if populated < 6:
+                v.append(f"{sym}: seasonals available but only {populated}/12 months populated")
+        # not-available (recent IPO, <2y history) is acceptable, not a failure
+    except Exception as e:
+        v.append(f"{sym}: seasonals fetch failed: {e}")
+
     return v
 
 

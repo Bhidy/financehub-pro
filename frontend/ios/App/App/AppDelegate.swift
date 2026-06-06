@@ -11,6 +11,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    // Make @capacitor/screen-orientation's lock() authoritative: the supported
+    // orientations follow the Capacitor bridge view controller (which the plugin
+    // updates on lock/unlock). Defaults to portrait so the app stays portrait
+    // everywhere except the fullscreen landscape chart.
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return (window?.rootViewController as? CAPBridgeViewController)?.supportedInterfaceOrientations ?? .portrait
+    }
+
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.

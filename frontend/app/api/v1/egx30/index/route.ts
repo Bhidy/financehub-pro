@@ -9,7 +9,7 @@ const TV_WS_URL = "wss://data.tradingview.com/socket.io/websocket";
 const TV_ORIGIN = "https://www.tradingview.com";
 const TV_USER_AGENT = "Mozilla/5.0 (compatible; FinhubPro/1.0; +https://finhub-pro.vercel.app)";
 const TV_HISTORY_BARS = 420;
-const WS_TIMEOUT_MS = 7_000;
+const WS_TIMEOUT_MS = 5_000;
 const CACHE_TTL_MS = 30_000;
 
 type TvQuoteMap = Record<string, unknown>;
@@ -412,10 +412,16 @@ const fetchFromScannerFallback = async (): Promise<EgxIndexResponse> => {
     );
 };
 
+const CDN_CACHE = 'Cache-Control';
+const CDN_CACHE_LIVE = 's-maxage=30, stale-while-revalidate=60';
+const CDN_CACHE_STALE = 's-maxage=60, stale-while-revalidate=300';
+
 export async function GET() {
     try {
         if (cachedPayload && Date.now() - cachedAt < CACHE_TTL_MS) {
-            return NextResponse.json(cachedPayload);
+            return NextResponse.json(cachedPayload, {
+                headers: { [CDN_CACHE]: CDN_CACHE_LIVE },
+            });
         }
 
         let payload: EgxIndexResponse;
@@ -430,7 +436,9 @@ export async function GET() {
         cachedPayload = payload;
         cachedAt = Date.now();
         if (payload.available) lastGoodPayload = payload;
-        return NextResponse.json(payload);
+        return NextResponse.json(payload, {
+            headers: { [CDN_CACHE]: CDN_CACHE_LIVE },
+        });
     } catch (error: any) {
         console.error("[API /egx30/index ERROR]", error?.message || error);
         // Graceful degradation: prefer the last good payload over an empty hero.
@@ -440,7 +448,7 @@ export async function GET() {
                 source: "last-known-good",
                 note: "Live EGX30 feed is temporarily unavailable; showing the last confirmed values.",
                 fetchedAt: new Date().toISOString(),
-            });
+            }, { headers: { [CDN_CACHE]: CDN_CACHE_STALE } });
         }
         return NextResponse.json(
             {

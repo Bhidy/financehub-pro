@@ -14,8 +14,9 @@ export async function GET(
         const period = url.searchParams.get('period') || 'max';
 
         // 1. Try fetching from the persistent ohlc_data table
+        // symbol is already uppercased — avoid UPPER() to allow index usage
         const result = await db.query(
-            `SELECT 
+            `SELECT
                 date::text as date,
                 open,
                 high,
@@ -23,11 +24,13 @@ export async function GET(
                 close,
                 adj_close,
                 volume
-             FROM ohlc_data 
-             WHERE UPPER(symbol) = $1
+             FROM ohlc_data
+             WHERE symbol = $1
              ORDER BY date ASC`,
             [symbol]
         );
+
+        const cacheHeaders = { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400' };
 
         if (result.rows.length > 0) {
             const formattedData = result.rows.map((row: any) => ({
@@ -39,13 +42,13 @@ export async function GET(
                 adj_close: parseFloat(row.adj_close) || parseFloat(row.close) || 0,
                 volume: parseInt(row.volume) || 0
             }));
-            return NextResponse.json(formattedData);
+            return NextResponse.json(formattedData, { headers: cacheHeaders });
         }
 
         // ohlc_data is the single source of truth for charts (100% EGX coverage).
         // No rows -> empty (the yfinance reservoir backfills new listings); no
         // backend fallback, so chart reads never leave Supabase.
-        return NextResponse.json([]);
+        return NextResponse.json([], { headers: cacheHeaders });
 
     } catch (error: any) {
         console.error('[API /egx/history ERROR]', error.message);

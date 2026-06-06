@@ -34,7 +34,9 @@ export async function GET(request: Request) {
         `;
 
         const result = await db.query(query, params);
-        return NextResponse.json(result.rows);
+        return NextResponse.json(result.rows, {
+            headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
+        });
     } catch (error: any) {
         console.error('[API] /egx/stocks error:', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

@@ -9,11 +9,20 @@ interface ShellWrapperProps {
     children: React.ReactNode;
 }
 
-// Routes that should be completely isolated (no sidebar, no search)
-// Uses prefix matching for nested routes
-// Routes that should be completely isolated (no sidebar, no search)
-// Uses prefix matching for nested routes
-const ISOLATED_ROUTE_PREFIXES: string[] = [];
+// Routes that are ALWAYS isolated (no sidebar, no search) on EVERY domain.
+// Prefix-matched so nested routes are covered (e.g. /symbol/COMI, /mobile/...).
+//
+// These are intrinsically full-bleed React surfaces:
+//   /mobile  — the self-contained Capacitor mobile app (its own device frame)
+//   /symbol  — the canonical company/stock profile page
+//   /shared  — public share links (shared AI chats / messages); standalone
+// They must NEVER be wrapped in the desktop AppSidebar shell. Isolation MUST be
+// route-based (not domain-based): the domain check below only fires on
+// startamarkets.com, so on localhost dev and *.vercel.app previews these routes
+// would otherwise leak the legacy sidebar and squish the page. Keying on the
+// route makes dev/preview faithfully match production. (cf. /AiChat below, which
+// was already exact-listed for this same reason.)
+const ISOLATED_ROUTE_PREFIXES: string[] = ["/mobile", "/symbol", "/shared"];
 
 // Exact paths that are isolated (including root for mobile domains)
 const ISOLATED_EXACT_PATHS = ["/", "/login", "/register", "/forgot-password", "/setting", "/settings", "/Home", "/home", "/AiChat"];

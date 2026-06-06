@@ -33,13 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
-# Ignore the .vercel directory BUT keep the committed project.json that
-# pins this directory to the 'finhub' Vercel project. Running `vercel`
-# from inside frontend/ will read this file and deploy to finhub instead
-# of creating a stray new project — the split-brain is impossible.
+# vercel — ignore entirely; canonical link is root/.vercel (gitignored)
+# Never run `vercel` inside frontend/ — use ./scripts/deploy-web.sh
 .vercel
-!.vercel/project.json
 
 # typescript
 *.tsbuildinfo

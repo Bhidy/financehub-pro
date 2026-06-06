@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/market-pulse.css?v=1.2.6">
+    <link rel="stylesheet" href="/assets/market-pulse.css?v=1.2.8">
 </head>
 <body>
     <div class="grid-backdrop"></div>
@@ -156,7 +156,12 @@
                             <button type="button" data-period="3y" data-days="1095">3Y</button>
                             <button type="button" data-period="max" data-days="9999">MAX</button>
                         </div>
-                        <span id="historyCaption" class="subtle" data-key="historical_prices">Historical close prices</span>
+                        <span class="chart-caption-group">
+                            <span id="historyCaption" class="subtle" data-key="historical_prices">Historical close prices</span>
+                            <button id="enlargeChartBtn" class="enlarge-chart-btn" type="button" aria-label="Enlarge chart" title="Open advanced chart">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                            </button>
+                        </span>
                     </div>
                     <figure class="price-figure">
                         <svg id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" role="img" aria-label="Selected equity historical price chart"></svg>
@@ -325,8 +330,19 @@
         </div>
     </div>
 
+    <div id="chartModal" class="chart-modal-overlay" aria-hidden="true">
+        <div class="chart-modal-panel" role="dialog" aria-label="Advanced chart">
+            <div class="chart-modal-header">
+                <span id="chartModalTitle" class="display">Advanced Chart</span>
+                <button id="chartModalCloseBtn" class="chart-modal-close" type="button" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div id="chartModalBody" class="chart-modal-body"></div>
+        </div>
+    </div>
     <script src="/assets/portfolio-store.js?v=1.2.0"></script>
     <script src="/assets/news-covers.js?v=1.2.0"></script>
-    <script src="/assets/market-pulse.js?v=1.2.6"></script>
+    <script src="/assets/market-pulse.js?v=1.2.8"></script>
 </body>
 </html>

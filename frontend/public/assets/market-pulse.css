@@ -1306,3 +1306,32 @@ html[data-theme="dark"] .fact-card:hover {
     border-color: rgba(20, 184, 166, 0.45) !important;
     box-shadow: 0 8px 24px rgba(20, 184, 166, 0.12) !important;
 }
+
+/* ─── Enlarge chart button + fullscreen TradingView Advanced Chart modal ─── */
+.chart-caption-group { display: inline-flex; align-items: center; gap: 8px; }
+.enlarge-chart-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid var(--line, rgba(148, 163, 184, 0.25));
+    background: transparent; color: var(--muted, #94a3b8);
+    cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.enlarge-chart-btn:hover { color: var(--teal, #14b8a6); border-color: var(--teal, #14b8a6); background: rgba(20, 184, 166, 0.08); }
+.chart-modal-overlay { position: fixed; inset: 0; z-index: 2000; display: none; }
+.chart-modal-overlay.active { display: block; }
+.chart-modal-panel { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface, #0b1220); }
+.chart-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; border-bottom: 1px solid var(--line, rgba(148, 163, 184, 0.25));
+    background: var(--surface, #0b1220); flex-shrink: 0;
+}
+.chart-modal-header .display { font-weight: 800; color: var(--ink, #f1f5f9); font-size: 0.95rem; }
+.chart-modal-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 8px;
+    border: 1px solid var(--line, rgba(148, 163, 184, 0.25));
+    background: transparent; color: var(--ink, #f1f5f9);
+    cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.chart-modal-close:hover { color: var(--red, #ef4444); border-color: var(--red, #ef4444); background: rgba(239, 68, 68, 0.08); }
+.chart-modal-body { flex: 1; min-height: 0; }

@@ -2004,6 +2004,126 @@
   font: 900 11px/1 var(--mono);
 }
 
+/* ============================================================
+   Company Research — premium merged page (quote + fundamentals)
+   ============================================================ */
+.crHero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--c-border-strong) 60%, transparent);
+  border-radius: 26px;
+  padding: 18px 18px 16px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--c-brand) 12%, var(--c-surface)) 0%, var(--c-surface) 55%);
+  box-shadow: 0 24px 56px -34px rgba(15, 23, 42, 0.4), inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent);
+}
+.crHeroGlow {
+  position: absolute;
+  top: -60px;
+  inset-inline-end: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-brand) 30%, transparent), transparent 68%);
+  filter: blur(14px);
+  pointer-events: none;
+}
+.crHeroTop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.crLogo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  flex: none;
+}
+.crHeroId { min-width: 0; }
+.crHeroId h1 {
+  margin: 0;
+  font: 800 21px/1.12 Sora, sans-serif;
+  letter-spacing: -0.03em;
+  color: var(--c-fg-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.crHeroId small {
+  display: block;
+  margin-top: 5px;
+  color: var(--c-fg-3);
+  font: 800 10px/1.2 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.crHeroPrice {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.crHeroPrice strong {
+  font: 800 36px/1 Sora, sans-serif;
+  letter-spacing: -0.04em;
+  color: var(--c-fg-1);
+}
+.crHeroPrice strong em {
+  font: 800 13px/1 var(--mono);
+  font-style: normal;
+  color: var(--c-fg-3);
+  margin-inline-start: 6px;
+  letter-spacing: 0;
+}
+.crDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 800 12.5px/1 var(--mono);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.crDelta.up { color: var(--c-up); background: var(--c-up-tint); }
+.crDelta.down { color: var(--c-down); background: var(--c-down-tint); }
+
+.crChartCard {
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
+  background: var(--c-surface);
+  padding: 14px 14px 8px;
+  box-shadow: var(--shadow-sm);
+}
+.crChartArea { margin-top: 6px; }
+
+.crAiCta {
+  width: 100%;
+  border: 0;
+  border-radius: 18px;
+  background: var(--grad-brand);
+  color: #04211c;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  text-align: start;
+  margin: 4px 0 14px;
+  box-shadow: var(--glow-brand);
+}
+.crAiCta:active { transform: scale(0.99); }
+.crAiCta > span {
+  width: 38px; height: 38px; border-radius: 12px; flex: none;
+  background: rgba(255, 255, 255, 0.22);
+  display: grid; place-items: center;
+}
+.crAiCta div { flex: 1; min-width: 0; }
+.crAiCta b { display: block; font: 900 13.5px/1.15 Manrope, sans-serif; }
+.crAiCta small { display: block; margin-top: 3px; font: 700 10.5px/1.2 Manrope, sans-serif; opacity: 0.78; }
+[dir="rtl"] .crAiCta svg:last-child { transform: rotate(180deg); }
+
 .companyMetricPanel {
   border: 1px solid var(--c-border);
   border-radius: 22px;

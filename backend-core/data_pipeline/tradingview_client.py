@@ -242,6 +242,55 @@ class TradingViewEGXClient:
         return rows
 
     # ------------------------------------------------------------------ #
+    # E1: FUNDAMENTALS SNAPSHOT — latest-FY scalars (equity, ROE, BVPS, …)
+    # TradingView is a COMPLETE fundamentals source. The deep `_h` arrays omit
+    # several rich latest-annual figures (total_equity, operating income/margin,
+    # ROE/ROA, BVPS, shares, total liabilities); this captures them so the
+    # platform can be 100% TV-native and never depend on the dead audited
+    # scraper. All values are ABSOLUTE EGP / native units (NO millions scaling).
+    # Banks legitimately return null gross_profit/ebitda (sector-structural).
+    # ------------------------------------------------------------------ #
+    async def get_fundamentals(self) -> List[Dict[str, Any]]:
+        cols = ["name", "fiscal_period_fy",
+                "total_revenue_fy", "gross_profit_fy", "oper_income_fy", "ebitda_fy",
+                "net_income_fy", "total_assets_fy", "total_equity_fy",
+                "total_liabilities_fy", "total_debt_fy", "free_cash_flow_fy",
+                "earnings_per_share_diluted_fy", "book_value_per_share_fy",
+                "total_shares_outstanding_current", "dps_common_stock_prim_issue_fy",
+                "gross_margin_fy", "operating_margin_fy",
+                "return_on_equity_fy", "return_on_assets_fy"]
+        rows = await self._scan(cols, rng=[0, 300])
+        out: List[Dict[str, Any]] = []
+        for d in rows:
+            sym = d.get("symbol")
+            fy = d.get("fiscal_period_fy")
+            if not sym or fy is None:
+                continue
+            out.append({
+                "symbol": sym,
+                "fiscal_year": int(fy),
+                "revenue": _finite(d.get("total_revenue_fy")),
+                "gross_profit": _finite(d.get("gross_profit_fy")),
+                "operating_income": _finite(d.get("oper_income_fy")),
+                "ebitda": _finite(d.get("ebitda_fy")),
+                "net_income": _finite(d.get("net_income_fy")),
+                "total_assets": _finite(d.get("total_assets_fy")),
+                "total_equity": _finite(d.get("total_equity_fy")),
+                "total_liabilities": _finite(d.get("total_liabilities_fy")),
+                "total_debt": _finite(d.get("total_debt_fy")),
+                "free_cash_flow": _finite(d.get("free_cash_flow_fy")),
+                "eps_diluted": _finite(d.get("earnings_per_share_diluted_fy")),
+                "bvps": _finite(d.get("book_value_per_share_fy")),
+                "shares_outstanding": _finite(d.get("total_shares_outstanding_current")),
+                "dps": _finite(d.get("dps_common_stock_prim_issue_fy")),
+                "gross_margin": _finite(d.get("gross_margin_fy")),
+                "operating_margin": _finite(d.get("operating_margin_fy")),
+                "roe": _finite(d.get("return_on_equity_fy")),
+                "roa": _finite(d.get("return_on_assets_fy")),
+            })
+        return out
+
+    # ------------------------------------------------------------------ #
     # E1: DIVIDENDS + FORWARD CALENDAR
     # ------------------------------------------------------------------ #
     async def get_dividends(self) -> List[Dict[str, Any]]:

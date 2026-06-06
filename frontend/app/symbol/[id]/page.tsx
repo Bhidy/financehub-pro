@@ -8,7 +8,7 @@ import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchFairValues, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
-    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxSeasonals
+    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxSeasonals, fetchEgxNewsTV
 } from "@/lib/api";
 import {
     sanitizeNewsText,
@@ -600,8 +600,8 @@ export default function SymbolDetailPage() {
     });
 
     const { data: newsData = [] } = useQuery({
-        queryKey: ["news", symbol, lang],
-        queryFn: () => fetchNews({ symbol, limit: 20, language: lang } as any),
+        queryKey: ["news-tv", symbol, lang],
+        queryFn: () => fetchEgxNewsTV(symbol, lang),
         enabled: !!symbol
     });
 

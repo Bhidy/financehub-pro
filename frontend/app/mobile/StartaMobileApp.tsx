@@ -1228,7 +1228,6 @@ function OnbMarketVisual({ active }: { active: boolean }) {
       <motion.div className={styles.onbCard} initial={{ opacity: 0, y: 26, scale: 0.94 }} animate={active ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 26, scale: 0.94 }} transition={{ type: "spring", stiffness: 170, damping: 20 }}>
         <div className={styles.onbCardTop}>
           <span className={styles.onbMono}>EGX 30</span>
-          <span className={styles.onbLive}><motion.i animate={{ opacity: [1, 0.25, 1], scale: [1, 1.25, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />LIVE</span>
         </div>
         <CountUp to={52652.5} active={active} className={styles.onbBig} />
         <div className={styles.onbDelta}>▲ +1,984.80 <span>+3.92%</span></div>
@@ -1333,7 +1332,7 @@ function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; s
       kind: "market" as const,
       kicker: rtl ? "بيانات حية" : "LIVE MARKET DATA",
       title: rtl ? "السوق المصري لحظة بلحظة" : "The Egyptian market, live.",
-      sub: rtl ? "أسعار EGX، واتساع السوق، والأكثر حركة — بيانات مؤسسية فورية." : "Real-time EGX prices, market breadth, and top movers — institutional data, instantly.",
+      sub: rtl ? "أسعار EGX، واتساع السوق، والأكثر حركة — بيانات مؤسسية." : "EGX prices, market breadth, and top movers — institutional data, instantly.",
     },
     {
       kind: "funds" as const,
@@ -1425,7 +1424,6 @@ function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; s
             {t.createAccount}
           </motion.button>
         )}
-        <small className={styles.onbFoot}>{t.guest}</small>
       </div>
     </div>
   );

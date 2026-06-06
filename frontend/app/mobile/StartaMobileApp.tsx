@@ -1196,30 +1196,236 @@ function TabBar({ active, setActive, lang }: { active: TabId; setActive: (tab: T
   );
 }
 
-function AuthGate({ lang, enter, setLang }: { lang: Lang; enter: () => void; setLang: (lang: Lang) => void }) {
-  const t = copy[lang];
+// Animated count-up number (eased, replays whenever it becomes active).
+function CountUp({ to, active, decimals = 1, className }: { to: number; active: boolean; decimals?: number; className?: string }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!active) { setVal(0); return; }
+    let raf = 0;
+    const start = performance.now();
+    const dur = 1300;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setVal(to * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, to]);
+  return <div className={className}>{formatNumber(val, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</div>;
+}
+
+const ONB_EASE = [0.22, 1, 0.36, 1] as const;
+
+// Slide 1 — live market: glass quote card with self-drawing chart + drifting ticker chips.
+function OnbMarketVisual({ active }: { active: boolean }) {
+  const line = "M0,70 L22,58 L44,63 L66,44 L88,50 L110,33 L132,39 L154,21 L176,27 L200,12";
+  const area = `${line} L200,90 L0,90 Z`;
   return (
-    <div className={styles.auth}>
-      <div className={styles.authGlow} />
-      <button className={styles.langMini} onClick={() => setLang(lang === "ar" ? "en" : "ar")}>{lang === "ar" ? "EN" : "AR"}</button>
-      <div className={styles.authCenter}>
-        <img src="/assets/starta-mobile/brand/logo-mark.svg" className={styles.authLogo} alt="Starta" />
-        <h1>{t.welcomeTitleA} <span>{t.welcomeTitleB}</span></h1>
-        <p>{t.welcomeSub}</p>
-        <div className={styles.featureRows}>
-          {[
-            ["zap", lang === "ar" ? "أسعار وبيانات لحظية" : "Live prices and market breadth"],
-            ["shield-check", lang === "ar" ? "رؤية مؤسسية للمخاطر" : "Institutional risk intelligence"],
-            ["landmark", lang === "ar" ? "صناديق وأخبار وتعلّم" : "Funds, news, and academy"],
-          ].map(([icon, label]) => (
-            <div key={label} className={styles.featureRow}>
-              <span><Icon name={icon} /></span>
-              <strong>{label}</strong>
+    <div className={styles.onbVisual}>
+      <motion.div className={cx(styles.onbGlow, styles.onbGlowBrand)} animate={{ opacity: [0.45, 0.8, 0.45], scale: [1, 1.12, 1] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className={styles.onbCard} initial={{ opacity: 0, y: 26, scale: 0.94 }} animate={active ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 26, scale: 0.94 }} transition={{ type: "spring", stiffness: 170, damping: 20 }}>
+        <div className={styles.onbCardTop}>
+          <span className={styles.onbMono}>EGX 30</span>
+          <span className={styles.onbLive}><motion.i animate={{ opacity: [1, 0.25, 1], scale: [1, 1.25, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />LIVE</span>
+        </div>
+        <CountUp to={52652.5} active={active} className={styles.onbBig} />
+        <div className={styles.onbDelta}>▲ +1,984.80 <span>+3.92%</span></div>
+        <svg className={styles.onbChart} viewBox="0 0 200 90" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="onbFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="var(--c-brand)" stopOpacity="0.34" />
+              <stop offset="1" stopColor="var(--c-brand)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <motion.path d={area} fill="url(#onbFill)" initial={{ opacity: 0 }} animate={active ? { opacity: 1 } : { opacity: 0 }} transition={{ delay: 0.9, duration: 0.7 }} />
+          <motion.path d={line} fill="none" stroke="var(--c-brand)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0 }} animate={active ? { pathLength: 1 } : { pathLength: 0 }} transition={{ duration: 1.5, ease: "easeInOut" }} />
+        </svg>
+      </motion.div>
+      <motion.span className={cx(styles.onbChip, styles.onbChipA)} animate={{ y: [0, -11, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>COMI <b className={styles.up}>+1.2%</b></motion.span>
+      <motion.span className={cx(styles.onbChip, styles.onbChipB)} animate={{ y: [0, 12, 0] }} transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}>SWDY <b className={styles.up}>+2.4%</b></motion.span>
+      <motion.span className={cx(styles.onbChip, styles.onbChipC)} animate={{ y: [0, -9, 0] }} transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}>HRHO <b className={styles.down}>-0.4%</b></motion.span>
+    </div>
+  );
+}
+
+const ONB_DONUT = (() => {
+  const r = 38;
+  const circ = 2 * Math.PI * r;
+  const segs = [
+    { w: 30, color: "var(--c-brand)" },
+    { w: 24, color: "var(--c-info)" },
+    { w: 19, color: "#a78bfa" },
+    { w: 15, color: "var(--c-warn)" },
+    { w: 12, color: "#f472b6" },
+  ];
+  let acc = 0;
+  const arcs = segs.map((s) => {
+    const len = (s.w / 100) * circ;
+    const offset = -acc;
+    acc += len;
+    return { ...s, len, offset };
+  });
+  return { circ, arcs };
+})();
+
+// Slide 2 — funds & portfolio: animated allocation donut + floating legend chips.
+function OnbFundsVisual({ active }: { active: boolean }) {
+  return (
+    <div className={styles.onbVisual}>
+      <motion.div className={cx(styles.onbGlow, styles.onbGlowInfo)} animate={{ opacity: [0.4, 0.75, 0.4], scale: [1, 1.1, 1] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className={styles.onbCard} initial={{ opacity: 0, y: 26, scale: 0.94 }} animate={active ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 26, scale: 0.94 }} transition={{ type: "spring", stiffness: 170, damping: 20 }}>
+        <div className={styles.onbCardTop}>
+          <span className={styles.onbMono}>ALLOCATION</span>
+          <span className={styles.onbPill}>5 STOCKS</span>
+        </div>
+        <div className={styles.onbDonutWrap}>
+          <motion.svg viewBox="0 0 100 100" className={styles.onbDonut}
+            initial={{ rotate: -110, scale: 0.6, opacity: 0 }}
+            animate={active ? { rotate: 0, scale: 1, opacity: 1 } : { rotate: -110, scale: 0.6, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 120, damping: 18 }}>
+            <motion.g animate={{ rotate: 360 }} transition={{ duration: 48, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "50px 50px" }}>
+              {ONB_DONUT.arcs.map((a, i) => (
+                <circle key={i} cx="50" cy="50" r="38" fill="none" stroke={a.color} strokeWidth="12"
+                  strokeDasharray={`${a.len} ${ONB_DONUT.circ}`} strokeDashoffset={a.offset}
+                  strokeLinecap="butt" transform="rotate(-90 50 50)" />
+              ))}
+            </motion.g>
+          </motion.svg>
+          <div className={styles.onbDonutCenter}><b>EGP</b><span>636K</span></div>
+        </div>
+      </motion.div>
+      <motion.span className={cx(styles.onbChip, styles.onbChipA)} animate={{ y: [0, -10, 0] }} transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}><i style={{ background: "var(--c-brand)" }} />COMI 30%</motion.span>
+      <motion.span className={cx(styles.onbChip, styles.onbChipB)} animate={{ y: [0, 11, 0] }} transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}><i style={{ background: "var(--c-info)" }} />SWDY 24%</motion.span>
+      <motion.span className={cx(styles.onbChip, styles.onbChipC)} animate={{ y: [0, -8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}>+18.4% <b className={styles.up}>YTD</b></motion.span>
+    </div>
+  );
+}
+
+// Slide 3 — AI analyst: pulsing orb with concentric rings, orbiting dot, floating prompts.
+function OnbAiVisual({ active }: { active: boolean }) {
+  return (
+    <div className={styles.onbVisual}>
+      <motion.div className={cx(styles.onbGlow, styles.onbGlowBrand)} animate={{ opacity: [0.5, 0.85, 0.5], scale: [1, 1.15, 1] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }} />
+      {[0, 1, 2].map((i) => (
+        <motion.span key={i} className={styles.onbRing} animate={active ? { scale: [0.9, 1.9], opacity: [0.5, 0] } : { opacity: 0 }} transition={{ duration: 3, repeat: Infinity, delay: i * 1, ease: "easeOut" }} />
+      ))}
+      <motion.div className={styles.onbOrbit} animate={{ rotate: 360 }} transition={{ duration: 11, repeat: Infinity, ease: "linear" }}>
+        <span className={styles.onbOrbitDot} />
+        <span className={cx(styles.onbOrbitDot, styles.onbOrbitDot2)} />
+      </motion.div>
+      <motion.div className={styles.onbOrb} initial={{ scale: 0, opacity: 0 }} animate={active ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }} transition={{ type: "spring", stiffness: 200, damping: 16 }}>
+        <motion.div animate={{ rotate: [0, 8, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}><AIGlyph color="#fff" size={42} /></motion.div>
+      </motion.div>
+      <motion.span className={cx(styles.onbBubble, styles.onbBubbleA)} initial={{ opacity: 0, scale: 0.8 }} animate={active ? { opacity: 1, scale: 1, y: [0, -8, 0] } : { opacity: 0 }} transition={{ opacity: { delay: 0.5 }, y: { duration: 4, repeat: Infinity, ease: "easeInOut" } }}>“Analyze COMI”</motion.span>
+      <motion.span className={cx(styles.onbBubble, styles.onbBubbleB)} initial={{ opacity: 0, scale: 0.8 }} animate={active ? { opacity: 1, scale: 1, y: [0, 9, 0] } : { opacity: 0 }} transition={{ opacity: { delay: 0.75 }, y: { duration: 4.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 } }}>“Summarize news”</motion.span>
+    </div>
+  );
+}
+
+function Onboarding({ lang, enter, setLang }: { lang: Lang; enter: () => void; setLang: (lang: Lang) => void }) {
+  const t = copy[lang];
+  const rtl = lang === "ar";
+  const [index, setIndex] = useState(0);
+  const slides = [
+    {
+      kind: "market" as const,
+      kicker: rtl ? "بيانات حية" : "LIVE MARKET DATA",
+      title: rtl ? "السوق المصري لحظة بلحظة" : "The Egyptian market, live.",
+      sub: rtl ? "أسعار EGX، واتساع السوق، والأكثر حركة — بيانات مؤسسية فورية." : "Real-time EGX prices, market breadth, and top movers — institutional data, instantly.",
+    },
+    {
+      kind: "funds" as const,
+      kicker: rtl ? "صناديق ومحافظ" : "FUNDS & PORTFOLIO",
+      title: rtl ? "خصّص، تتبّع، وقارن" : "Allocate. Track. Compare.",
+      sub: rtl ? "صناديق الاستثمار، وتخصيص المحفظة، ومقاييس المخاطر في مساحة واحدة هادئة." : "Mutual funds, portfolio allocation, and risk metrics in one calm workspace.",
+    },
+    {
+      kind: "ai" as const,
+      kicker: rtl ? "محلّل ذكي" : "AI ANALYST",
+      title: rtl ? "اسأل، افهم، قرّر" : "Ask. Understand. Decide.",
+      sub: rtl ? "محلّل Starta الذكي، وأخبار السوق، وأكاديمية التعلّم — في جيبك." : "Starta's AI analyst, market news, and academy — right in your pocket.",
+    },
+  ];
+  const last = slides.length - 1;
+  const go = (i: number) => setIndex(Math.max(0, Math.min(last, i)));
+  const onDragEnd = (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const t2 = 55;
+    if (info.offset.x < -t2 || info.velocity.x < -380) go(index + 1);
+    else if (info.offset.x > t2 || info.velocity.x > 380) go(index - 1);
+  };
+
+  return (
+    <div className={styles.onb}>
+      {/* drifting ambient background orbs */}
+      <div className={styles.onbBgWrap} aria-hidden="true">
+        <motion.span className={styles.onbBgOrbA} animate={{ x: [0, 30, 0], y: [0, 24, 0] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.span className={styles.onbBgOrbB} animate={{ x: [0, -26, 0], y: [0, 30, 0] }} transition={{ duration: 17, repeat: Infinity, ease: "easeInOut" }} />
+      </div>
+
+      {/* top bar */}
+      <div className={styles.onbTopBar}>
+        <div className={styles.onbBrand}><span className={styles.onbBrandTile}><BrandGlyph /></span><b>STARTA</b></div>
+        <div className={styles.onbTopActions}>
+          <button className={styles.onbLang} onClick={() => setLang(rtl ? "en" : "ar")}>{rtl ? "EN" : "ع"}</button>
+          <button className={styles.onbSkip} onClick={enter}>{rtl ? "تخطّي" : "Skip"}</button>
+        </div>
+      </div>
+
+      {/* carousel */}
+      <div className={styles.onbViewport}>
+        <motion.div
+          className={styles.onbTrack}
+          drag="x"
+          dragElastic={0.16}
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragEnd={onDragEnd}
+          animate={{ x: `${-index * 100}%` }}
+          transition={{ type: "spring", stiffness: 300, damping: 34 }}
+        >
+          {slides.map((s, i) => (
+            <div className={styles.onbSlide} key={s.kind}>
+              {s.kind === "market" && <OnbMarketVisual active={index === i} />}
+              {s.kind === "funds" && <OnbFundsVisual active={index === i} />}
+              {s.kind === "ai" && <OnbAiVisual active={index === i} />}
+              <div className={styles.onbCopy}>
+                <AnimatePresence mode="wait">
+                  {index === i && (
+                    <motion.div key={s.kind} initial="hide" animate="show" exit="hide" variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } } }}>
+                      <motion.span className={styles.onbKicker} variants={{ hide: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { ease: ONB_EASE, duration: 0.5 } } }}>{s.kicker}</motion.span>
+                      <motion.h1 variants={{ hide: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { ease: ONB_EASE, duration: 0.55 } } }}>{s.title}</motion.h1>
+                      <motion.p variants={{ hide: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { ease: ONB_EASE, duration: 0.55 } } }}>{s.sub}</motion.p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           ))}
-        </div>
-        <PrimaryButton onClick={enter}>{t.createAccount}</PrimaryButton>
-        <small>{t.guest}</small>
+        </motion.div>
+      </div>
+
+      {/* dots */}
+      <div className={styles.onbDots}>
+        {slides.map((s, i) => (
+          <button key={s.kind} className={cx(styles.onbDot, index === i && styles.onbDotOn)} onClick={() => go(i)} aria-label={`Slide ${i + 1}`} />
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div className={styles.onbCta}>
+        {index < last ? (
+          <button className={styles.onbNext} onClick={() => go(index + 1)}>
+            <span>{rtl ? "التالي" : "Next"}</span>
+            <span className={styles.onbNextIcon} style={rtl ? { transform: "scaleX(-1)" } : undefined}><Icon name="chevron-right" size={18} /></span>
+          </button>
+        ) : (
+          <motion.button className={styles.onbStart} onClick={enter} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ease: ONB_EASE, duration: 0.4 }}>
+            <span className={styles.onbStartShine} />
+            {t.createAccount}
+          </motion.button>
+        )}
+        <small className={styles.onbFoot}>{t.guest}</small>
       </div>
     </div>
   );
@@ -1400,7 +1606,7 @@ export default function StartaMobileApp() {
     <main className={styles.stage} data-theme={theme} dir={lang === "ar" ? "rtl" : "ltr"} data-lenis-prevent="true">
       <section className={styles.device} aria-label="Starta Markets mobile app">
         {!authed ? (
-          <AuthGate lang={lang} setLang={setLang} enter={() => setAuthed(true)} />
+          <Onboarding lang={lang} setLang={setLang} enter={() => setAuthed(true)} />
         ) : (
           <>
             <div className={styles.screen}>
@@ -3894,7 +4100,7 @@ function LearnScreen({ nav, lang, topics }: { nav: NavController; lang: Lang; to
   const rows = topics.length ? topics : [];
   return (
     <>
-      <MarketTopBar lang={lang} nav={nav} title={copy[lang].learn} sub={lang === "ar" ? `${rows.length} موضوعات` : `${rows.length} topics`} />
+      <MarketTopBar lang={lang} nav={nav} title={copy[lang].learn} sub={lang === "ar" ? "أكاديمية Starta" : "Starta Academy"} />
       <div className={styles.content}>
         <div className={styles.fundCards}>
           {rows.map((topic, i) => {

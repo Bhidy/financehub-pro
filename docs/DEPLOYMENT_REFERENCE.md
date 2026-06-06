@@ -88,12 +88,12 @@ cause of the recurring "changes aren't showing" mess (removed 2026-06). Merging 
 | Host | Hetzner VPS `root@46.224.223.172` |
 | SSH key | `~/.ssh/starta_deploy` (no password) |
 | Deploy | `./scripts/deploy_backend_key.sh` (key-based) |
-| Shortcut | `./scripts/deploy_production.sh backend smart` |
+| (deprecated) | `./scripts/deploy_production.sh` now just redirects to the key script |
 | Runtime | FastAPI in Docker, port 7860, behind Caddy |
 
-> ⚠️ The `scripts/*.exp` expect-scripts hardcode the **old root password** — treat as
-> compromised; use the SSH key script only. `deploy-backend.yml` GitHub Action is STALE
-> (targets Railway, wrong paths) — do not rely on it.
+> ✅ 2026-06: the `scripts/*.exp` password helpers were **deleted** and SSH **password
+> authentication is disabled** on the server (key-only). Deploy via
+> `./scripts/deploy_backend_key.sh`. The stale `deploy-backend.yml` Action was removed too.
 
 ---
 

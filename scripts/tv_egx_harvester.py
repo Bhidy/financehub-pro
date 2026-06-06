@@ -332,6 +332,25 @@ async def cycle_fundamentals(conn):
                 d.get("total_debt"), d.get("free_cash_flow"), d.get("eps_diluted"),
                 d.get("bvps"), d.get("shares_outstanding"), d.get("dps"),
                 d.get("gross_margin"), d.get("operating_margin"), d.get("roe"), d.get("roa"))
+            # Sync the LATEST-year egx_financials row from the authoritative _fy
+            # scalar. TradingView's net_income_fy_h[0] (history-array latest) is
+            # unreliable for some names (e.g. SEIGA: _h[0]=827K but scalar=40.25M,
+            # the latter matching market cap). The compound cycle runs
+            # financials -> fundamentals, so this runs LAST and wins, keeping the
+            # Financials-tab latest year consistent with Overview/Ratios.
+            if d.get("fiscal_year") is not None:
+                await conn.execute("""
+                    INSERT INTO egx_financials (symbol,period_type,fiscal_year,revenue,gross_profit,
+                        ebitda,net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
+                    VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
+                    ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
+                        revenue=EXCLUDED.revenue, gross_profit=EXCLUDED.gross_profit, ebitda=EXCLUDED.ebitda,
+                        net_income=EXCLUDED.net_income, eps_diluted=EXCLUDED.eps_diluted,
+                        free_cash_flow=EXCLUDED.free_cash_flow, total_assets=EXCLUDED.total_assets,
+                        total_debt=EXCLUDED.total_debt, dps=EXCLUDED.dps, updated_at=now()
+                """, d["symbol"], d["fiscal_year"], d.get("revenue"), d.get("gross_profit"),
+                    d.get("ebitda"), d.get("net_income"), d.get("eps_diluted"), d.get("free_cash_flow"),
+                    d.get("total_assets"), d.get("total_debt"), d.get("dps"))
             n += 1
         except Exception as e:
             await _deadletter(conn, "fundamentals", d.get("symbol"), d, e)

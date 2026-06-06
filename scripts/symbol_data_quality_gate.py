@@ -110,42 +110,47 @@ def check_symbol(base: str, sym: str, min_year: int) -> list[str]:
     except Exception as e:
         v.append(f"{sym}: profile fetch failed: {e}")
 
-    # ---- 2+4+6: financials magnitude, reconciliation, freshness ----
+    # ---- financials magnitude, reconciliation, freshness (TradingView source) ----
+    # The symbol page's Financials tab + Overview/Ratios are now 100% TV-native
+    # (egx_financials / egx_fundamentals), so the gate tests the TV feed the UI
+    # actually uses — not the retired audited route.
     try:
-        st, fins = get_json(base, f"/api/v1/financials/{sym}")
+        st, fins = get_json(base, f"/api/v1/egx/financials-tv/{sym}")
         if st != 200:
-            v.append(f"{sym}: financials HTTP {st}")
-        annual = [r for r in (fins or []) if r.get("period_type") == "annual"]
-        annual.sort(key=lambda r: r.get("fiscal_year") or 0, reverse=True)
-        if annual:
-            latest = annual[0]
+            v.append(f"{sym}: financials-tv HTTP {st}")
+        years = [r for r in ((fins or {}).get("years") or []) if r.get("fiscal_year")]
+        years.sort(key=lambda r: r.get("fiscal_year") or 0, reverse=True)
+        if years:
+            latest = years[0]
             ni = _f(latest.get("net_income"))
-            rev = _f(latest.get("revenue"))
             fy = latest.get("fiscal_year") or 0
-            # type
+            # type — TV NUMERIC must be coerced to a number, never a string
             if latest.get("net_income") is not None and not is_num(latest.get("net_income")):
-                v.append(f"{sym}: financials.net_income is string not number")
-            # scale vs market cap (the K/B bug): a real listed co's net income is
-            # not 7 orders of magnitude below its market cap.
+                v.append(f"{sym}: financials net_income is string not number")
+            # scale vs market cap (TV is absolute EGP; ratio guards any future drift)
             if ni is not None and market_cap and market_cap > 0:
                 ratio = abs(ni) / market_cap
                 if ratio < 1e-4:
                     v.append(f"{sym}: net_income {ni:,.0f} is {ratio:.1e}x market_cap "
-                             f"{market_cap:,.0f} — SCALE BUG (likely 1e6 too small)")
-            # 4: reconcile statement table vs profile TTM (same audited source)
+                             f"{market_cap:,.0f} — SCALE BUG")
+            # reconcile financials table vs profile TTM — BOTH TradingView now, so
+            # they must match closely (cross-tab consistency guard).
             if ni is not None and profile_ni is not None and profile_ni != 0:
                 rr = abs(ni - profile_ni) / abs(profile_ni)
-                if rr > 0.5:
+                if rr > 0.2:
                     v.append(f"{sym}: net_income table={ni:,.0f} vs profile_ttm={profile_ni:,.0f} "
-                             f"disagree {rr:.0%} (source split / scale mismatch)")
-            # 6: freshness — latest filed annual should not lag two years
-            if fy and fy < min_year - 1:
-                v.append(f"{sym}: latest audited annual is FY{fy} (< {min_year-1}) — "
-                         f"financials STALE (no live writer?)")
+                             f"disagree {rr:.0%} (TV sources must agree)")
+            # freshness — flag only GENUINE multi-year staleness (>= 2 years behind).
+            # A 1-year lag is normal: not every issuer has filed the prior FY yet, and
+            # TradingView itself may only carry through FY(year-1) for some names
+            # (e.g. PHDC's latest TV annual is FY2024 in mid-2026). The pipeline-stall
+            # signal is a 2+ year gap.
+            if fy and fy < min_year - 2:
+                v.append(f"{sym}: latest TV annual is FY{fy} (< {min_year-2}) — financials STALE")
         else:
-            v.append(f"{sym}: no annual financials returned")
+            v.append(f"{sym}: no TV annual financials returned")
     except Exception as e:
-        v.append(f"{sym}: financials fetch failed: {e}")
+        v.append(f"{sym}: financials-tv fetch failed: {e}")
 
     return v
 

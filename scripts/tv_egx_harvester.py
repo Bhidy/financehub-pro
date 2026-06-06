@@ -344,10 +344,15 @@ async def cycle_fundamentals(conn):
                         ebitda,net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
                     VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
                     ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
-                        revenue=EXCLUDED.revenue, gross_profit=EXCLUDED.gross_profit, ebitda=EXCLUDED.ebitda,
-                        net_income=EXCLUDED.net_income, eps_diluted=EXCLUDED.eps_diluted,
-                        free_cash_flow=EXCLUDED.free_cash_flow, total_assets=EXCLUDED.total_assets,
-                        total_debt=EXCLUDED.total_debt, dps=EXCLUDED.dps, updated_at=now()
+                        revenue=COALESCE(EXCLUDED.revenue, egx_financials.revenue),
+                        gross_profit=COALESCE(EXCLUDED.gross_profit, egx_financials.gross_profit),
+                        ebitda=COALESCE(EXCLUDED.ebitda, egx_financials.ebitda),
+                        net_income=COALESCE(EXCLUDED.net_income, egx_financials.net_income),
+                        eps_diluted=COALESCE(EXCLUDED.eps_diluted, egx_financials.eps_diluted),
+                        free_cash_flow=COALESCE(EXCLUDED.free_cash_flow, egx_financials.free_cash_flow),
+                        total_assets=COALESCE(EXCLUDED.total_assets, egx_financials.total_assets),
+                        total_debt=COALESCE(EXCLUDED.total_debt, egx_financials.total_debt),
+                        dps=COALESCE(EXCLUDED.dps, egx_financials.dps), updated_at=now()
                 """, d["symbol"], d["fiscal_year"], d.get("revenue"), d.get("gross_profit"),
                     d.get("ebitda"), d.get("net_income"), d.get("eps_diluted"), d.get("free_cash_flow"),
                     d.get("total_assets"), d.get("total_debt"), d.get("dps"))

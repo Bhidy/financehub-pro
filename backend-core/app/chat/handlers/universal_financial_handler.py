@@ -12,7 +12,7 @@ import re
 from typing import Dict, Any, List, Optional
 from .column_registry import (
     INCOME_COLUMNS, BALANCE_COLUMNS, CASHFLOW_COLUMNS,
-    ALL_REGISTRIES, find_columns_by_keyword, format_value
+    ALL_REGISTRIES, find_columns_by_keyword, format_value, scale_statement_rows
 )
 
 logger = logging.getLogger(__name__)
@@ -386,6 +386,7 @@ async def handle_universal_financial(conn, symbol: str, message: str, language: 
             rows = await conn.fetch(
                 f"SELECT {col_str} FROM {table} WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5", symbol
             )
+            rows = scale_statement_rows(rows, ALL_REGISTRIES[table])
             if rows:
                 for c in cols:
                     col_name = c["column"]

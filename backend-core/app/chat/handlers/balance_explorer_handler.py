@@ -6,7 +6,7 @@ Provides detailed balance sheet data with multi-year trends.
 from app.chat.currency_utils import get_ticker_currency, is_egx_market
 import logging
 from typing import Dict, Any, List
-from .column_registry import BALANCE_COLUMNS, format_value
+from .column_registry import BALANCE_COLUMNS, format_value, scale_statement_rows
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ async def handle_balance_debt_structure(conn, symbol: str, language: str = "en")
                total_debt, net_cash, net_cash_per_share, total_equity
         FROM balance_sheets WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
+    rows = scale_statement_rows(rows, BALANCE_COLUMNS)
     if not rows:
         return _no_data(symbol, name, language)
     
@@ -60,6 +61,7 @@ async def handle_balance_assets_breakdown(conn, symbol: str, language: str = "en
                long_term_investments, total_assets
         FROM balance_sheets WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
+    rows = scale_statement_rows(rows, BALANCE_COLUMNS)
     if not rows: return _no_data(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]
@@ -99,6 +101,7 @@ async def handle_balance_working_capital(conn, symbol: str, language: str = "en"
                cash_equivalents, accounts_receivable, inventory, accounts_payable, short_term_debt
         FROM balance_sheets WHERE symbol=$1 ORDER BY fiscal_year ASC LIMIT 10
     """, symbol)
+    rows = scale_statement_rows(rows, BALANCE_COLUMNS)
     if not rows: return _no_data(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]
@@ -135,6 +138,7 @@ async def handle_balance_equity_breakdown(conn, symbol: str, language: str = "en
                total_common_equity, book_value_per_share, tangible_bv_per_share
         FROM balance_sheets WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
+    rows = scale_statement_rows(rows, BALANCE_COLUMNS)
     if not rows: return _no_data(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]
@@ -167,6 +171,7 @@ async def handle_balance_ppe_breakdown(conn, symbol: str, language: str = "en") 
                ppe_machinery, ppe_construction, ppe_leasehold
         FROM balance_sheets WHERE symbol=$1 ORDER BY fiscal_year DESC LIMIT 5
     """, symbol)
+    rows = scale_statement_rows(rows, BALANCE_COLUMNS)
     if not rows: return _no_data(symbol, name, language)
     
     years = [r['fiscal_year'] for r in rows]

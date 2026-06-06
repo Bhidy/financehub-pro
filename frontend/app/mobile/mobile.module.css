@@ -1243,6 +1243,21 @@
   box-shadow: 0 22px 52px -32px rgba(15, 23, 42, .45);
 }
 
+/* Neutral chart placeholder while the period series loads (prevents red flash) */
+.portfolioChartSkeleton {
+  width: 100%;
+  border-radius: 16px;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--c-surface-2) 70%, transparent) 30%,
+    color-mix(in srgb, var(--c-brand-tint) 60%, var(--c-surface-2)) 50%,
+    color-mix(in srgb, var(--c-surface-2) 70%, transparent) 70%);
+  background-size: 220% 100%;
+  animation: portfolioChartShimmer 1.2s ease-in-out infinite;
+}
+@keyframes portfolioChartShimmer { 0% { background-position: 180% 0; } 100% { background-position: -80% 0; } }
+.deltaPlaceholder { display: inline-block; min-height: 18px; color: transparent; }
+@media (prefers-reduced-motion: reduce) { .portfolioChartSkeleton { animation: none; } }
+
 .portfolioChartTop {
   display: flex;
   justify-content: space-between;

@@ -3998,10 +3998,7 @@ function ChartFullscreen({ symbol, lang, onClose }: { symbol: string; lang: Lang
   }, [symbol, lang]);
   return (
     <div className={styles.chartFs}>
-      <div className={styles.chartFsBar}>
-        <span className={styles.chartFsTitle}>{symbol} · {lang === "ar" ? "الرسم المتقدم" : "Advanced Chart"}</span>
-        <button className={styles.chartFsClose} onClick={onClose} aria-label="Close">✕</button>
-      </div>
+      <button className={styles.chartFsCloseFloat} onClick={onClose} aria-label={lang === "ar" ? "إغلاق" : "Close"}>✕</button>
       <div ref={hostRef} className={styles.chartFsBody} />
     </div>
   );
@@ -4189,25 +4186,32 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
 
         {/* Interactive candle chart + timeframe selector */}
         <div className={styles.crChartCard}>
-          {latestBar ? (
-            <div className={styles.ohlcMiniGrid}>
-              {[
-                [lang === "ar" ? "الافتتاح" : "Open", latestBar.open],
-                [lang === "ar" ? "الأعلى" : "High", latestBar.high],
-                [lang === "ar" ? "الأدنى" : "Low", latestBar.low],
-                [lang === "ar" ? "الإغلاق" : "Close", latestBar.close],
-              ].map(([label, value]) => <span key={String(label)}><small>{label}</small><b>{Number(value).toFixed(2)}</b></span>)}
-            </div>
-          ) : null}
-          <div className={styles.crChartArea}>
+          <div className={styles.ohlcAndEnlarge}>
+            {latestBar ? (
+              <div className={styles.ohlcMiniGrid}>
+                {[
+                  [lang === "ar" ? "الافتتاح" : "Open", latestBar.open],
+                  [lang === "ar" ? "الأعلى" : "High", latestBar.high],
+                  [lang === "ar" ? "الأدنى" : "Low", latestBar.low],
+                  [lang === "ar" ? "الإغلاق" : "Close", latestBar.close],
+                ].map(([label, value]) => <span key={String(label)}><small>{label}</small><b>{Number(value).toFixed(2)}</b></span>)}
+              </div>
+            ) : null}
             {symbol && bars.length > 1 ? (
               <button
                 type="button"
                 className={styles.crEnlargeBtn}
                 onClick={() => setChartFull(true)}
                 aria-label={lang === "ar" ? "تكبير الرسم" : "Enlarge chart"}
-              >⤢</button>
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                  <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                </svg>
+              </button>
             ) : null}
+          </div>
+          <div className={styles.crChartArea}>
             {bars.length > 1
               ? <CandleChart rows={bars} height={192} lang={lang} />
               : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}

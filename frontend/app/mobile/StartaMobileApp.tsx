@@ -2774,23 +2774,28 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
   const total = activePortfolio.reduce((sum, item) => sum + item.value, activeCash);
   const [tab, setTab] = useState<"allocation" | "performance" | "holdings" | "dividends">("allocation");
 
-  // Load sparklines for selected chart period
+  // Load sparklines for selected chart period. chartReady gates the chart render
+  // so we never flash a wrong (stale-data) chart before the real period data lands.
+  const [chartReady, setChartReady] = useState(false);
   useEffect(() => {
     const apiPeriod = PORT_PERIODS.find(([k]) => k === chartPeriod)?.[1] ?? "3m";
     const symbols = activePortfolio.map((p) => p.symbol);
     if (!symbols.length) return;
     let alive = true;
+    setChartReady(false);
     loadSparklines(symbols, apiPeriod).then((spark) => {
       if (!alive) return;
       setPeriodTrends(spark);
+      setChartReady(true);
     });
     return () => { alive = false; };
   }, [chartPeriod, activePortfolio.map(p => p.symbol).join(",")]);
 
-  // Build portfolio trend from period-specific sparklines (fall back to stock.trend)
+  // Build portfolio trend ONLY from the period-specific sparklines (no stale
+  // sparkline fallback — that was the source of the red flash on entry).
   const portfolioTrend = useMemo(() => {
     const legs = activePortfolio.map((p) => {
-      const t = periodTrends[p.symbol] ?? stocks.find((s) => s.symbol === p.symbol)?.trend ?? [];
+      const t = periodTrends[p.symbol] ?? [];
       return t.length > 1 ? { qty: p.quantity || 0, t } : null;
     }).filter((x): x is { qty: number; t: number[] } => !!x);
     if (!legs.length) return [];
@@ -2799,7 +2804,7 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
     return Array.from({ length: len }, (_, i) =>
       legs.reduce((sum, l) => sum + l.qty * l.t[l.t.length - len + i], activeCash),
     );
-  }, [activePortfolio, activeCash, periodTrends, stocks]);
+  }, [activePortfolio, activeCash, periodTrends]);
 
   const trendDelta = portfolioTrend.length > 1
     ? ((portfolioTrend[portfolioTrend.length - 1] - portfolioTrend[0]) / portfolioTrend[0]) * 100
@@ -2874,10 +2879,12 @@ function PortfolioScreen({ nav, lang, portfolio, stocks, onPortfolioChange }: { 
             </div>
             {isDemoWorkspace ? <span className={styles.sampleBadge}>{lang === "ar" ? "نموذج" : "SAMPLE"}</span> : null}
           </div>
-          <Delta value={trendDelta} />
-          {portfolioTrend.length > 1
-            ? <MiniChart data={portfolioTrend} color={trendDelta >= 0 ? "var(--c-brand)" : "var(--c-down)"} height={176} grid dot />
-            : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد سلسلة أسعار كافية." : "Not enough price history."}</div>}
+          {chartReady ? <Delta value={trendDelta} /> : <span className={styles.deltaPlaceholder} aria-hidden="true">—</span>}
+          {!chartReady
+            ? <div className={styles.portfolioChartSkeleton} style={{ height: 176 }} />
+            : portfolioTrend.length > 1
+              ? <MiniChart data={portfolioTrend} color={trendDelta >= 0 ? "var(--c-brand)" : "var(--c-down)"} height={176} grid dot />
+              : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد سلسلة أسعار كافية." : "Not enough price history."}</div>}
           {/* Period selector — same style as EGX30 chart */}
           <div className={styles.tfBar}>
             {PORT_PERIODS.map(([k]) => (

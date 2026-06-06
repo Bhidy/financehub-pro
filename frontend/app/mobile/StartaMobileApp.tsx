@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Capacitor } from "@capacitor/core";
 import styles from "./mobile.module.css";
 // ── Unified AI chat rendering — the SAME pipeline the website /AiChat uses,
 //    so mobile responses are identical to the web (one renderer, one data shape).
@@ -1763,6 +1764,17 @@ export default function StartaMobileApp() {
     document.documentElement.classList.toggle("dark", theme === "dark");
     storage.set(MOBILE_THEME_KEY, theme);
   }, [theme]);
+
+  // Default the native app to portrait. Info.plist permits landscape only so the
+  // fullscreen Advanced Chart can rotate; lock portrait at launch so every other
+  // screen stays upright regardless of how the device is held on cold start.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const so = (window as unknown as {
+      Capacitor?: { Plugins?: { ScreenOrientation?: { lock?: (o: { orientation: string }) => Promise<unknown> } } };
+    }).Capacitor?.Plugins?.ScreenOrientation;
+    void so?.lock?.({ orientation: "portrait" })?.catch(() => {});
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -3933,6 +3945,68 @@ function PortfolioDetail({ nav, lang, portfolio, stocks }: { nav: NavController;
   );
 }
 
+// Fullscreen TradingView Advanced Chart for an EGX symbol. Tapping the enlarge
+// button opens this; on a native build it rotates the device to landscape and
+// restores portrait on close. ScreenOrientation is reached through the Capacitor
+// runtime-global Plugins bridge (same idiom the file uses for the App plugin),
+// so no extra build-time dependency is required.
+function ChartFullscreen({ symbol, lang, onClose }: { symbol: string; lang: Lang; onClose: () => void }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    type OrientationPlugin = { lock?: (opts: { orientation: string }) => Promise<unknown>; unlock?: () => Promise<unknown> };
+    const nativeOrientation = (): OrientationPlugin | undefined =>
+      (window as unknown as { Capacitor?: { Plugins?: { ScreenOrientation?: OrientationPlugin } } }).Capacitor?.Plugins?.ScreenOrientation;
+    // rotate to landscape (native) / best-effort (web)
+    (async () => {
+      try {
+        if (Capacitor.isNativePlatform()) await nativeOrientation()?.lock?.({ orientation: "landscape" });
+        else { const so = (screen as unknown as { orientation?: { lock?: (o: string) => Promise<unknown> } }).orientation; if (so && so.lock) so.lock("landscape").catch(() => {}); }
+      } catch { /* ignore */ }
+    })();
+    const host = hostRef.current;
+    if (host) {
+      host.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "tradingview-widget-container";
+      wrap.style.height = "100%"; wrap.style.width = "100%";
+      const w = document.createElement("div");
+      w.className = "tradingview-widget-container__widget";
+      w.style.height = "100%"; w.style.width = "100%";
+      wrap.appendChild(w);
+      const isDark = document.documentElement.classList.contains("dark") || document.documentElement.dataset.theme === "dark";
+      const s = document.createElement("script");
+      s.type = "text/javascript"; s.async = true;
+      s.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+      s.text = JSON.stringify({
+        autosize: true, symbol: "EGX:" + symbol, interval: "D", timezone: "Africa/Cairo",
+        theme: isDark ? "dark" : "light", style: "1", locale: lang === "ar" ? "ar" : "en",
+        allow_symbol_change: false, hide_side_toolbar: false, withdateranges: true,
+        details: false, calendar: false, support_host: "https://www.tradingview.com",
+      });
+      wrap.appendChild(s);
+      host.appendChild(wrap);
+    }
+    return () => {
+      (async () => {
+        try {
+          if (Capacitor.isNativePlatform()) await nativeOrientation()?.lock?.({ orientation: "portrait" });
+          else { const so = (screen as unknown as { orientation?: { unlock?: () => void } }).orientation; if (so && so.unlock) so.unlock(); }
+        } catch { /* ignore */ }
+      })();
+      if (host) host.innerHTML = "";
+    };
+  }, [symbol, lang]);
+  return (
+    <div className={styles.chartFs}>
+      <div className={styles.chartFsBar}>
+        <span className={styles.chartFsTitle}>{symbol} · {lang === "ar" ? "الرسم المتقدم" : "Advanced Chart"}</span>
+        <button className={styles.chartFsClose} onClick={onClose} aria-label="Close">✕</button>
+      </div>
+      <div ref={hostRef} className={styles.chartFsBody} />
+    </div>
+  );
+}
+
 // Merged Company Research page — combines the live quote / candle chart (formerly
 // "Quote Detail") with full fundamentals (profile, financials, ownership, actions).
 function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
@@ -3941,6 +4015,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const [bars, setBars] = useState<OhlcBar[]>([]);
   const [tf, setTf] = useState<string>("3M");
   const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ownership" | "actions">("overview");
+  const [chartFull, setChartFull] = useState(false);
   const symbol = stock?.symbol;
 
   // Fundamentals load once per symbol — the page is already usable from `stock`
@@ -4125,6 +4200,14 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             </div>
           ) : null}
           <div className={styles.crChartArea}>
+            {symbol && bars.length > 1 ? (
+              <button
+                type="button"
+                className={styles.crEnlargeBtn}
+                onClick={() => setChartFull(true)}
+                aria-label={lang === "ar" ? "تكبير الرسم" : "Enlarge chart"}
+              >⤢</button>
+            ) : null}
             {bars.length > 1
               ? <CandleChart rows={bars} height={192} lang={lang} />
               : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
@@ -4431,6 +4514,11 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
           </>
         )}
       </div>
+      <AnimatePresence>
+        {chartFull && symbol ? (
+          <ChartFullscreen symbol={symbol} lang={lang} onClose={() => setChartFull(false)} />
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }

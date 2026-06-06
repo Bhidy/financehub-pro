@@ -231,7 +231,7 @@ async def main():
 
             prof, fund, hist = res
 
-            # MERGE LOGIC: Read existing to prevent overwriting StockAnalysis data
+            # MERGE LOGIC: Read existing to preserve any prior data that Yahoo omits
             existing = await conn.fetchrow(
                 "SELECT profile_data, financial_data, history_data FROM yahoo_cache WHERE symbol=$1",
                 clean_sym,
@@ -248,7 +248,7 @@ async def main():
                     for k, v in existing_prof.items():
                         if k not in final_prof or final_prof[k] is None:
                             final_prof[k] = v
-                # Preserve StockAnalysis financials if Yahoo is None
+                # Preserve existing financials if Yahoo returns None for a field
                 if existing['financial_data']:
                     existing_fund = json.loads(existing['financial_data'])
                     for k, v in existing_fund.items():

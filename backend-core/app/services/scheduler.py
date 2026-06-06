@@ -68,9 +68,8 @@ class SchedulerService:
                 replace_existing=True
             )
 
-            # --- TIER 2B: Stock Statistics Refresh (Friday 01:00) ---
-            # Refreshes all stock_statistics from StockAnalysis.com
-            # Runs 1 hour after financial statements sweep
+            # --- TIER 2B: Statistics slot (Friday 01:00) ---
+            # No-op — TradingView financials/estimates cycles cover this data
             self.scheduler.add_job(
                 self.run_statistics_refresh_job,
                 CronTrigger(day_of_week='fri', hour=1, minute=0, timezone='Africa/Cairo'),
@@ -323,59 +322,35 @@ class SchedulerService:
 
     async def run_maintenance_job(self):
         try:
-            from data_pipeline.ingest_stockanalysis import run_ingestion_job
-            from app.services.notification_service import notification_service
-            
-            result = await run_ingestion_job()
-            if result['status'] == 'success':
-                notification_service.send_discord(f"✅ **Weekly Sweep Success**\nSymbols: {result['symbols_count']}", is_error=False)
-            else:
-                notification_service.send_discord(f"❌ **Weekly Sweep Failed**", is_error=True)
-        except Exception as e:
-            logger.error(f"Maintenance job error: {e}")
-
-    async def run_statistics_refresh_job(self):
-        """Weekly stock_statistics refresh from StockAnalysis.com (Runs Friday 01:00 Cairo)."""
-        try:
             from app.services.notification_service import notification_service
             base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            script_path = os.path.join(base_dir, 'data_pipeline', 'ingest_statistics.py')
-            
-            logger.info("📊 Starting stock_statistics refresh...")
+            script_path = os.path.join(base_dir, 'scripts', 'tv_egx_harvester.py')
+
+            logger.info("Weekly sweep: triggering TradingView financials cycle...")
             proc = await asyncio.create_subprocess_exec(
-                sys.executable, script_path,
+                sys.executable, script_path, '--cycle', 'financials',
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
             stdout, stderr = await proc.communicate()
             out = (stdout or b'').decode(errors='ignore')
-            
+
             if proc.returncode == 0:
-                # Extract success/failed counts from output
-                success_count = '?'
-                failed_count = '?'
-                if 'Success:' in out:
-                    try:
-                        success_count = out.split('Success:')[1].split('\n')[0].strip()
-                    except: pass
-                if 'Failed:' in out:
-                    try:
-                        failed_count = out.split('Failed:')[1].split('\n')[0].strip()
-                    except: pass
                 notification_service.send_discord(
-                    f"✅ **Stock Statistics Refresh Success**\n"
-                    f"Updated: {success_count}\nFailed: {failed_count}",
-                    is_error=False
-                )
-                logger.info(f"✅ Statistics refresh complete: {success_count} updated, {failed_count} failed")
+                    f"✅ **Weekly Sweep Success** (TV financials)\n{out[-200:]}",
+                    is_error=False)
             else:
-                error_tail = (out or (stderr or b'').decode(errors='ignore'))[-500:]
+                err = (stderr or b'').decode(errors='ignore')[-400:]
                 notification_service.send_discord(
-                    f"❌ **Stock Statistics Refresh Failed**\nExit: {proc.returncode}\n```{error_tail}```",
-                    is_error=True
-                )
-                logger.error(f"Statistics refresh failed with exit code {proc.returncode}")
+                    f"❌ **Weekly Sweep Failed** (TV financials)\n```{err}```",
+                    is_error=True)
         except Exception as e:
-            logger.error(f"Statistics refresh job error: {e}")
+            logger.error(f"Maintenance job error: {e}")
+
+    async def run_statistics_refresh_job(self):
+        """Weekly stats refresh — superseded by TradingView financials/estimates cycles.
+        Data now flows from tv_egx_harvester (egx_technicals, analyst_estimates tables).
+        This slot is kept in the scheduler to avoid breaking the cron wiring."""
+        logger.info("Statistics slot: TradingView financials/estimates cover this — no-op")
 
     async def run_decypha_job(self):
         try:

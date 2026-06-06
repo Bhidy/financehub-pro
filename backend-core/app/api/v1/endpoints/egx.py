@@ -62,81 +62,20 @@ async def get_egx_stock(symbol: str):
 
 @router.get("/egx/ohlc/{symbol}", response_model=List[dict])
 async def get_egx_ohlc(symbol: str, period: str = "1y", limit: int = 500):
-    """Get OHLC historical data for an EGX stock from StockAnalysis.com"""
-    import httpx
-    from bs4 import BeautifulSoup
-    from datetime import datetime
-    import re
-    
-    url = f"https://stockanalysis.com/quote/egx/{symbol.lower()}/history/"
-    
+    """Get OHLC historical data for an EGX stock from the ohlc_data table
+    (written by populate_yahoo_reservoir.py + tv_egx_harvester.py prices cycle)."""
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.get(url, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            })
-            if resp.status_code != 200:
-                print(f"StockAnalysis OHLC error: HTTP {resp.status_code} for {symbol}")
-                return []
-            
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            
-            # Find the history table
-            table = soup.find('table')
-            if not table:
-                print(f"No OHLC table found for {symbol}")
-                return []
-            
-            rows = table.find_all('tr')[1:]  # Skip header
-            history = []
-            
-            for row in rows[:limit]:
-                cells = row.find_all('td')
-                if len(cells) >= 6:
-                    try:
-                        date_str = cells[0].get_text(strip=True)
-                        # Parse date (format: "Jan 02, 2025")
-                        try:
-                            date_obj = datetime.strptime(date_str, "%b %d, %Y")
-                            date = date_obj.strftime("%Y-%m-%d")
-                        except:
-                            date = date_str
-                        
-                        def parse_num(s):
-                            s = s.replace(',', '').replace('$', '').strip()
-                            if s in ['-', 'N/A', '']:
-                                return 0
-                            try:
-                                return float(s)
-                            except:
-                                return 0
-                        
-                        history.append({
-                            "date": date,
-                            "open": parse_num(cells[1].get_text(strip=True)),
-                            "high": parse_num(cells[2].get_text(strip=True)),
-                            "low": parse_num(cells[3].get_text(strip=True)),
-                            "close": parse_num(cells[4].get_text(strip=True)),
-                            "volume": int(parse_num(cells[5].get_text(strip=True)))
-                        })
-                    except Exception as e:
-                        continue
-            
-            # Robust Quantitative Data Cleaning (Spikes/Outliers Filter)
-            valid_closes = [h['close'] for h in history if h['close'] > 0]
-            if len(valid_closes) > 5:
-                sorted_closes = sorted(valid_closes)
-                median_close = sorted_closes[len(sorted_closes) // 2]
-                if median_close > 2.0:
-                    history = [
-                        h for h in history 
-                        if h['close'] >= median_close * 0.25 
-                        and h['close'] <= median_close * 4.0
-                    ]
-            
-            return history
+        rows = await db.fetch_all(
+            """SELECT date::text, open, high, low, close, volume
+               FROM ohlc_data
+               WHERE symbol = $1
+               ORDER BY date DESC
+               LIMIT $2""",
+            symbol.upper(), limit
+        )
+        return [dict(r) for r in rows]
     except Exception as e:
-        print(f"StockAnalysis OHLC error for {symbol}: {e}")
+        print(f"OHLC fetch failed for {symbol}: {e}")
         return []
 
 

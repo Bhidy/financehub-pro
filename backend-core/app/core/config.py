@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_REDIRECT_URI: str = os.getenv("GOOGLE_REDIRECT_URI") or "https://finhub-pro.vercel.app/api/auth/google/callback"
+
+    # Data feed primacy — TradingView is the unconditional primary for both markets.
+    # yfinance is the automatic fallback inside EGXFeedRouter / KSAFeedRouter.
+    # These flags are intentionally True-by-default; set False only in isolated tests.
+    EGX_PRIMARY_TV: bool = True
+    KSA_PRIMARY_TV: bool = True
+
     class Config:
         case_sensitive = True
         env_file = ".env"

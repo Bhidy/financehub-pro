@@ -29,7 +29,7 @@ jobs:
           pip install --upgrade pip
           # curl_cffi enables the reservoir's Chrome-impersonation session (anti-block);
           # without it the script logs "High Risk of Block" and falls back to plain requests.
-          pip install yfinance asyncpg pandas requests beautifulsoup4 httpx python-dotenv curl_cffi tls_client
+          pip install yfinance asyncpg pandas requests beautifulsoup4 httpx python-dotenv curl_cffi
 
       - name: Run Primary Ingestion (Yahoo Finance)
         env:
@@ -37,11 +37,3 @@ jobs:
         run: |
           python ingestion/populate_yahoo_reservoir.py
 
-      # Independent second source — run even if the Yahoo step failed, so a Yahoo
-      # outage can't also block the StockAnalysis gap-fill.
-      - name: Run Gap-Fill Ingestion (StockAnalysis)
-        if: always()
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          python ingestion/populate_from_stockanalysis.py

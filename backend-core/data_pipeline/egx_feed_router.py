@@ -178,3 +178,91 @@ class _YFinanceChartClient:
             return out
 
         return await asyncio.get_running_loop().run_in_executor(None, _dl)
+
+
+# --------------------------------------------------------------------------- #
+# KSA (Saudi Tadawul) Feed Router — mirrors EGXFeedRouter
+# Invariant: always >= 2 sources (TradingView primary → yfinance .SR fallback)
+# --------------------------------------------------------------------------- #
+class YFinanceKSAClient:
+    """Batched yfinance(.SR) Saudi price client. Mirrors the get_ksa_stocks() dict shape."""
+
+    name = "yfinance"
+
+    def __init__(self, symbols: List[str] | None = None):
+        self._symbols = symbols
+
+    async def get_ksa_stocks(self) -> List[Dict[str, Any]]:
+        import asyncio
+        import yfinance as yf
+
+        if not self._symbols:
+            raise FeedDegraded("yfinance KSA fallback needs a symbol universe")
+
+        def _download() -> List[Dict[str, Any]]:
+            tickers = [f"{s}.SR" for s in self._symbols]
+            data = yf.download(tickers, period="5d", group_by="ticker",
+                               progress=False, threads=True)
+            out: List[Dict[str, Any]] = []
+            for s in self._symbols:
+                try:
+                    df = data[f"{s}.SR"].dropna()
+                    if df.empty:
+                        continue
+                    last = df.iloc[-1]
+                    prev = df.iloc[-2] if len(df) > 1 else last
+                    close = float(last["Close"])
+                    pchg = (close - float(prev["Close"])) / float(prev["Close"]) * 100 \
+                        if float(prev["Close"]) else 0.0
+                    out.append({
+                        "symbol": s, "name_en": None,
+                        "last_price": close,
+                        "change": close - float(prev["Close"]),
+                        "change_percent": pchg,
+                        "volume": int(last.get("Volume") or 0),
+                        "open": float(last["Open"]), "high": float(last["High"]),
+                        "low": float(last["Low"]),
+                        "market_cap": None, "revenue": None, "net_income": None,
+                        "pe_ratio": None, "dividend_yield": None,
+                        "sector_name": None, "market_code": "KSA", "currency": "SAR",
+                    })
+                except Exception:  # per-symbol isolation
+                    continue
+            return out
+
+        return await asyncio.get_running_loop().run_in_executor(None, _download)
+
+
+class KSAFeedRouter:
+    """Ordered fallback over Saudi price sources: TradingView → yfinance(.SR).
+    Mirrors EGXFeedRouter — INVARIANT: always >= 2 independent providers."""
+
+    def __init__(self, fallback_symbols: List[str] | None = None):
+        from data_pipeline.tradingview_client import TradingViewKSAClient
+        self.sources: List[Tuple[str, Any]] = [
+            ("tradingview", TradingViewKSAClient()),
+            ("yfinance", YFinanceKSAClient(symbols=fallback_symbols)),
+        ]
+        assert len(self.sources) >= 2, "INVARIANT: never single-source KSA"
+        self.last_source: str | None = None
+
+    async def get_ksa_stocks(self) -> List[Dict[str, Any]]:
+        errors: List[str] = []
+        for name, client in self.sources:
+            try:
+                stocks = await client.get_ksa_stocks()
+                if stocks and len(stocks) >= 10:
+                    self.last_source = name
+                    for s in stocks:
+                        s.setdefault("source", name)
+                    logger.info("KSA feed served by '%s' (%d rows)", name, len(stocks))
+                    return stocks
+                errors.append(f"{name}: only {len(stocks) if stocks else 0} rows")
+            except FeedDegraded as e:
+                errors.append(f"{name}: degraded ({e})")
+                logger.warning("KSA source '%s' degraded: %s", name, e)
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"{name}: {type(e).__name__}: {e}")
+                logger.warning("KSA source '%s' failed: %s", name, e)
+        logger.error("ALL KSA sources failed: %s", errors)
+        raise AllSourcesFailed("; ".join(errors))

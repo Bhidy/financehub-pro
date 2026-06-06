@@ -3980,7 +3980,10 @@ function Watchlist({ nav, lang, stocks, portfolio, search, isTab }: { nav: NavCo
         .filter((s) => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || (s.nameAr ?? "").includes(query.trim()))
         .slice(0, 24)
     : [];
-  const holdings = portfolio
+  // Mirror PortfolioScreen: fall back to the sample portfolio so the Portfolio
+  // tab shows the same holdings as the main Portfolio page (never "no holdings").
+  const activePortfolio = portfolio.length ? portfolio : buildDemoPortfolio(stocks);
+  const holdings = activePortfolio
     .map((p) => ({ p, stock: stocks.find((s) => s.symbol === p.symbol) }))
     .filter((x): x is { p: PortfolioPosition; stock: Stock } => !!x.stock);
 

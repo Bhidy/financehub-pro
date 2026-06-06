@@ -3179,10 +3179,9 @@ function MoreScreen({ nav, lang, theme, setTheme, setLang, logout }: { nav: NavC
         <div className={cx(styles.moreRevamp, styles.moreBento)}>
           <button className={styles.moreHero} onClick={() => nav.push("profile")}>
             <span className={styles.moreHeroGlow} aria-hidden="true" />
-            <span className={styles.moreAvatar}>S</span>
+            <span className={styles.moreAvatar}>M</span>
             <span className={styles.moreHeroId}>
-              <b>{lang === "ar" ? "مساحة Starta" : "Starta Workspace"}</b>
-              <small>{lang === "ar" ? "جلسة محلية · بدون حساب تداول" : "Local session · no trading account"}</small>
+              <b>Mohamed Bhidy</b>
             </span>
             <span className={styles.moreHeroStats}>
               <span><b>{watchCount}</b><small>{lang === "ar" ? "متابعة" : "Watch"}</small></span>

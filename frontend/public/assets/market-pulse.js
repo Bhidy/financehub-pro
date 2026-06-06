@@ -1465,6 +1465,13 @@
             byId("periodControls").querySelectorAll("button").forEach((period) => period.classList.toggle("active", period === button));
             renderStockChart();
         }));
+        const enlargeBtn = byId("enlargeChartBtn");
+        if (enlargeBtn) enlargeBtn.addEventListener("click", openChartModal);
+        const chartCloseBtn = byId("chartModalCloseBtn");
+        if (chartCloseBtn) chartCloseBtn.addEventListener("click", closeChartModal);
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") { const m = byId("chartModal"); if (m && m.classList.contains("active")) closeChartModal(); }
+        });
         byId("indexPeriodControls").querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
             state.indexDays = Number(button.dataset.days);
             byId("indexPeriodControls").querySelectorAll("button").forEach((period) => period.classList.toggle("active", period === button));
@@ -1591,6 +1598,50 @@
                 toggleCustomWatchlist(state.selected);
             });
         }
+    }
+
+    // ─── Enlarge chart → fullscreen TradingView Advanced Chart ───────────────
+    function openChartModal() {
+        const modal = byId("chartModal");
+        if (!modal) return;
+        const item = selectedStock();
+        const sym = (item && item.symbol) ? item.symbol : state.selected;
+        if (!sym) return;
+        byId("chartModalTitle").textContent = sym + " · Advanced Chart";
+        const body = byId("chartModalBody");
+        body.innerHTML = "";
+        const theme = (window.StartaTheme && window.StartaTheme.current && window.StartaTheme.current() === "dark") ? "dark" : "light";
+        const wrap = document.createElement("div");
+        wrap.className = "tradingview-widget-container";
+        wrap.style.height = "100%"; wrap.style.width = "100%";
+        const w = document.createElement("div");
+        w.className = "tradingview-widget-container__widget";
+        w.style.height = "100%"; w.style.width = "100%";
+        wrap.appendChild(w);
+        const s = document.createElement("script");
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+        s.text = JSON.stringify({
+            autosize: true, symbol: "EGX:" + sym, interval: "D", timezone: "Africa/Cairo",
+            theme: theme, style: "1", locale: state.lang === "ar" ? "ar" : "en",
+            allow_symbol_change: false, hide_side_toolbar: false, withdateranges: true,
+            details: true, calendar: false, support_host: "https://www.tradingview.com"
+        });
+        wrap.appendChild(s);
+        body.appendChild(wrap);
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+    function closeChartModal() {
+        const modal = byId("chartModal");
+        if (!modal) return;
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+        const body = byId("chartModalBody");
+        if (body) body.innerHTML = "";
+        document.body.style.overflow = "";
     }
 
     bind();

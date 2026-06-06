@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 /**
@@ -77,10 +78,18 @@ export function TradingViewChartModal({
         };
     }, [open, tvSymbol, lang, onClose]);
 
-    if (!open) return null;
+    if (!open || typeof document === "undefined") return null;
 
-    return (
-        <div className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-sm flex flex-col" role="dialog" aria-modal="true">
+    // Portal to <body>: escapes any ancestor with transform/filter/backdrop-filter
+    // (e.g. the premium-glass cards) that would otherwise become the containing
+    // block for position:fixed and clip the modal short of the viewport.
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[2000] bg-black/90 flex flex-col"
+            style={{ height: "100dvh", width: "100vw" }}
+            role="dialog"
+            aria-modal="true"
+        >
             <div className="flex items-center justify-between px-5 py-3 bg-[#0b1220] border-b border-slate-800 flex-shrink-0">
                 <span className="font-extrabold text-white text-sm md:text-base">
                     {title || tvSymbol.replace("EGX:", "")} · {lang === "ar" ? "الرسم البياني المتقدم" : "Advanced Chart"}
@@ -94,6 +103,7 @@ export function TradingViewChartModal({
                 </button>
             </div>
             <div ref={hostRef} className="flex-1 min-h-0" />
-        </div>
+        </div>,
+        document.body
     );
 }

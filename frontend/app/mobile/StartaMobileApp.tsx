@@ -1862,11 +1862,9 @@ export default function StartaMobileApp() {
   const startGoogle = async (): Promise<boolean> => {
     const url = await authGoogleUrl();
     if (!url) return false;
-    const cap = (window as unknown as { Capacitor?: { Plugins?: { Browser?: { open?: (o: { url: string }) => Promise<void> } } } }).Capacitor;
-    try {
-      if (cap?.Plugins?.Browser?.open) await cap.Plugins.Browser.open({ url });
-      else window.open(url, "_blank");
-    } catch { window.open(url, "_blank"); }
+    // Open consent in the system browser. Capacitor routes window.open("_system")
+    // to the native browser; the deep-link redirect (custom scheme) returns to the app.
+    try { window.open(url, "_system"); } catch { window.open(url, "_blank"); }
     return true;
   };
 
@@ -1883,8 +1881,6 @@ export default function StartaMobileApp() {
           const u = JSON.parse(decodeURIComponent(userJson)) as AuthUser;
           saveAuth(token, refresh, u);
           handleAuthed(u);
-          const cap = (window as unknown as { Capacitor?: { Plugins?: { Browser?: { close?: () => void } } } }).Capacitor;
-          cap?.Plugins?.Browser?.close?.();
         }
       } catch { /* ignore malformed deep link */ }
     };

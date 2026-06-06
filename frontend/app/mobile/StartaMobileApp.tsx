@@ -4197,28 +4197,39 @@ function HelpScreen({ nav, lang }: { nav: NavController; lang: Lang }) {
 }
 
 function Subscription({ nav, lang }: { nav: NavController; lang: Lang }) {
+  // Feature matrix grounded in what the app actually ships today: live EGX data,
+  // Starta AI, full company research (financials/ownership/actions), charts +
+  // technical indicators, portfolio analytics, fund comparison, alerts, exports.
   const features = lang === "ar"
     ? [
-        ["أسئلة Starta AI", "5 يومياً", "غير محدود"],
-        ["تنزيلات مؤسسية", "3", "غير محدود"],
-        ["قوائم الدخل", "3", "غير محدود"],
-        ["الميزانيات", "3", "غير محدود"],
-        ["التدفقات النقدية 5 سنوات", "3", "غير محدود"],
-        ["النسب والمؤشرات", "كل النسب", "كاملة + تاريخية"],
-        ["تصدير PDF / Excel", "3 PDF", "PDF و Excel متقدم"],
-        ["الموجز اليومي", "—", "مشمول"],
+        ["أسعار ومؤشر EGX اللحظية", "فوري", "فوري"],
+        ["نبض السوق والأكثر حركة", "مشمول", "مشمول"],
+        ["مساعد Starta AI", "5 محادثات/يوم", "غير محدود"],
+        ["تحليل وموجز يومي بالذكاء", "—", "مشمول"],
+        ["رموز قائمة المتابعة", "10", "غير محدود"],
+        ["القوائم المالية للشركات", "آخر فترة", "كاملة + تاريخية"],
+        ["النسب والملكية والإجراءات", "نسب أساسية", "كاملة"],
+        ["الرسوم والمؤشرات الفنية", "حتى سنة", "كامل + إشارات"],
+        ["تحليلات المحفظة والمخاطر", "التوزيع", "مخاطر + إسناد"],
+        ["مقارنة الصناديق وسجل NAV", "—", "حتى 4 صناديق"],
+        ["تنبيهات الأسعار والإشارات", "3", "غير محدود"],
+        ["تصدير PDF / Excel", "—", "متقدم"],
       ]
     : [
-        ["Starta AI chats", "5 per day", "Unlimited"],
-        ["Institutional downloads", "3", "Unlimited"],
-        ["Income statements", "3", "Unlimited"],
-        ["Balance sheets", "3", "Unlimited"],
-        ["5-year cash flows", "3", "Unlimited"],
-        ["Ratios & KPIs", "All ratios", "Complete + history"],
-        ["PDF / Excel exports", "3 PDF", "Advanced PDF + Excel"],
-        ["Daily market briefing", "—", "Included"],
+        ["Live EGX prices & index", "Real-time", "Real-time"],
+        ["Market Pulse & top movers", "Included", "Included"],
+        ["Starta AI assistant", "5 chats / day", "Unlimited"],
+        ["AI analysis & daily briefing", "—", "Included"],
+        ["Watchlist symbols", "10", "Unlimited"],
+        ["Company financials", "Latest period", "Full + history"],
+        ["Ratios, ownership & actions", "Key ratios", "Complete"],
+        ["Charts & technical indicators", "Up to 1Y", "Full + signals"],
+        ["Portfolio analytics & risk", "Allocation", "Risk + attribution"],
+        ["Fund comparison & NAV history", "—", "Up to 4 funds"],
+        ["Price & signal alerts", "3", "Unlimited"],
+        ["PDF / Excel exports", "—", "Advanced"],
       ];
-  const positive = (v: string) => /unlimited|included|complete|advanced|غير محدود|مشمول|كاملة|متقدم/i.test(v);
+  const positive = (v: string) => /unlimited|included|complete|advanced|full|real.?time|غير محدود|مشمول|كاملة|كامل|متقدم|فوري/i.test(v);
   const renderVal = (v: string, accent: boolean) => {
     if (v === "—") return <span className={styles.planCellMuted}>—</span>;
     if (positive(v)) return <span className={cx(styles.planCellGood, accent && styles.planCellAccent)}><Icon name="check" size={13} /> {v}</span>;
@@ -4240,7 +4251,8 @@ function Subscription({ nav, lang }: { nav: NavController; lang: Lang }) {
             <span className={styles.planPopularTag}>★ {lang === "ar" ? "الأكثر شيوعاً" : "POPULAR"}</span>
             <span className={styles.planKicker2}>{lang === "ar" ? "المحلّل" : "THE ANALYST"}</span>
             <strong className={styles.planPrice2}>69 <em>{lang === "ar" ? "ج.م/شهر" : "EGP/mo"}</em></strong>
-            <small className={styles.planDesc2}>{lang === "ar" ? "أو 662 جنيه سنوياً" : "or 662 EGP billed annually"}</small>
+            <small className={styles.planDesc2}>{lang === "ar" ? "بحث كامل و Starta AI بلا حدود" : "Full research & unlimited Starta AI"}</small>
+            <span className={styles.planAnnual}>{lang === "ar" ? "أو 662 جنيه سنوياً" : "or 662 EGP billed annually"}</span>
           </div>
         </div>
 

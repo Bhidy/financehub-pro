@@ -2268,11 +2268,6 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
             </div>
           </>
         ) : null}
-        <SectionHead title={lang === "ar" ? "استكشف" : "Explore"} />
-        <div className={styles.homeExplore}>
-          <button onClick={() => nav.push("learn")}><Icon name="graduation-cap" /><b>{copy[lang].learn}</b><span>{lang === "ar" ? "تعلّم السوق بهدوء" : "Learn the market calmly"}</span></button>
-          <button onClick={() => nav.push("alerts")}><Icon name="bell" /><b>{copy[lang].alerts}</b><span>{lang === "ar" ? "تنبيهات بدون تداول" : "Signals without trading"}</span></button>
-        </div>
       </div>
     </>
   );

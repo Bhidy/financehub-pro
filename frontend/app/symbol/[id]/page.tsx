@@ -23,8 +23,9 @@ import {
     Target, Zap, PieChart, AlertCircle, Wallet,
     Briefcase, Calendar, ArrowUp, ArrowDown, Globe, Award, Landmark, CheckCircle, ShieldAlert,
     DollarSign, Newspaper, ChevronRight, TrendingDown as TrendDown, Info,
-    ExternalLink, BookOpen, Star, Gauge, Crosshair, Minus
+    ExternalLink, BookOpen, Star, Gauge, Crosshair, Minus, Maximize2
 } from "lucide-react";
+import { TradingViewChartModal } from "@/components/TradingViewChartModal";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -538,6 +539,7 @@ export default function SymbolDetailPage() {
     type TabId = "overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ratios" | "dividends" | "news" | "profile";
     const [activeTab, setActiveTab] = useState<TabId>("overview");
     const [chartPeriod, setChartPeriod] = useState("3m");
+    const [chartFullscreen, setChartFullscreen] = useState(false);
     const [financialPeriod, setFinancialPeriod] = useState<"annual" | "quarterly">("annual");
     const [financialSubTab, setFinancialSubTab] = useState<"income" | "balance" | "cashflow">("income");
     const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
@@ -1203,7 +1205,16 @@ export default function SymbolDetailPage() {
                                                 </button>
                                             ))}
                                         </div>
-                                        <span className="text-xs text-slate-400 font-bold">{t.historical_prices}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-400 font-bold">{t.historical_prices}</span>
+                                            {isEgx && (
+                                                <button type="button" onClick={() => setChartFullscreen(true)}
+                                                    title={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"} aria-label="Enlarge chart"
+                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors">
+                                                    <Maximize2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     <figure className="price-figure relative w-full h-[350px]">
                                         {loading && (
@@ -1220,6 +1231,8 @@ export default function SymbolDetailPage() {
                                         <svg ref={setSvgElement} id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" className="w-full h-full block overflow-visible" />
                                     </figure>
                                 </div>
+
+                                <TradingViewChartModal open={chartFullscreen} onClose={() => setChartFullscreen(false)} tvSymbol={`EGX:${symbol}`} title={symbol} lang={lang} />
 
                                 {/* TradingView signal strip — Technical Rating + Analyst Target, under the chart */}
                                 {isEgx && (() => {

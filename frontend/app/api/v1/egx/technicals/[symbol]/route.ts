@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db-server';
+import { db, numerify } from '@/lib/db-server';
+
+// Numeric indicator columns — coerced from Postgres NUMERIC strings to JS
+// numbers so the frontend can call .toFixed() without crashing the page.
+const TECH_NUM = ['rsi', 'macd_macd', 'macd_signal', 'stoch_k', 'stoch_d',
+    'cci20', 'adx', 'mom', 'recommend_all', 'recommend_ma', 'recommend_other',
+    'ema50', 'ema200', 'sma50', 'sma200'];
 
 // TradingView multi-timeframe technicals for an EGX symbol.
 // Returns one object per timeframe (1D / 60 / 240 / 1W) plus a summary.
@@ -25,12 +31,15 @@ export async function GET(
             : r >= 0.5 ? 'strong_buy' : r >= 0.1 ? 'buy'
             : r <= -0.5 ? 'strong_sell' : r <= -0.1 ? 'sell' : 'neutral';
 
-        const timeframes = result.rows.map((r) => ({
-            ...r,
-            summary: label(r.recommend_all),
-            ma_signal: label(r.recommend_ma),
-            osc_signal: label(r.recommend_other),
-        }));
+        const timeframes = result.rows.map((raw) => {
+            const r = numerify(raw, TECH_NUM);
+            return {
+                ...r,
+                summary: label(r.recommend_all),
+                ma_signal: label(r.recommend_ma),
+                osc_signal: label(r.recommend_other),
+            };
+        });
 
         const daily = timeframes.find((t) => t.timeframe === '1D') || timeframes[0] || null;
         return NextResponse.json({

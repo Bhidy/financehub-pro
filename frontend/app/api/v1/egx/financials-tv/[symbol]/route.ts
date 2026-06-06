@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db-server';
+import { db, numerify } from '@/lib/db-server';
+
+const TVFIN_NUM = ['revenue', 'gross_profit', 'ebitda', 'net_income',
+    'eps_diluted', 'free_cash_flow', 'total_assets', 'total_debt', 'dps'];
 
 // TradingView 20-year annual statement history for an EGX symbol.
 export async function GET(
@@ -19,7 +22,7 @@ export async function GET(
         return NextResponse.json({
             symbol: symbol.toUpperCase(),
             source: 'tradingview',
-            years: result.rows,
+            years: result.rows.map((r) => numerify(r, TVFIN_NUM)),
         });
     } catch (error) {
         console.error('Error fetching EGX financials (TV):', error);

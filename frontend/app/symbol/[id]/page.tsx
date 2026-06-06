@@ -345,7 +345,7 @@ function IndicatorTable({ title, icon: Icon, color, rows, lang }: {
                         <div key={i} className="flex items-center justify-between py-3">
                             <span className="text-sm font-bold text-slate-500 dark:text-slate-300">{r.name}</span>
                             <div className="flex items-center gap-3">
-                                <span className="text-sm font-extrabold tabular">{r.value == null ? "-" : r.value.toFixed(2)}</span>
+                                <span className="text-sm font-extrabold tabular">{r.value == null || !Number.isFinite(Number(r.value)) ? "-" : Number(r.value).toFixed(2)}</span>
                                 {r.signal && <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold w-[64px] text-center" style={{ color: sm.c, background: sm.bg }}>{sm.t}</span>}
                             </div>
                         </div>
@@ -690,6 +690,30 @@ export default function SymbolDetailPage() {
         return parsedFinancials.find((f: any) => f.period_type === "annual") || parsedFinancials[0];
     }, [parsedFinancials]);
 
+    // Summary mini-chart series. Prefer the AUDITED annual statements (same source
+    // as the statement table -> cards & table never disagree, and they match the
+    // official EGX filing). Fall back to TradingView's 20y series only when audited
+    // data is unavailable (e.g. a stock without audited coverage).
+    const cardSeries = useMemo(() => {
+        const annual = (Array.isArray(parsedFinancials) ? parsedFinancials : [])
+            .filter((f: any) => f.period_type === "annual")
+            .slice()
+            .sort((a: any, b: any) => a.fiscal_year - b.fiscal_year);
+        if (annual.length >= 2) {
+            return {
+                source: "audited",
+                rows: annual.map((f: any) => ({
+                    fiscal_year: f.fiscal_year, revenue: f.revenue,
+                    net_income: f.net_income, total_assets: f.total_assets,
+                })),
+            };
+        }
+        if (Array.isArray(tvFinancials?.years) && tvFinancials.years.length >= 2) {
+            return { source: "tradingview", rows: tvFinancials.years };
+        }
+        return null;
+    }, [parsedFinancials, tvFinancials]);
+
     const profileData = useMemo(() => localProfile?.profile || yahooProfile?.profile || {}, [localProfile, yahooProfile]);
     const fundamentalsData = useMemo(() => yahooProfile?.fundamentals || {}, [yahooProfile]);
 
@@ -761,7 +785,9 @@ export default function SymbolDetailPage() {
         if (val !== 0) return val;
         return latestAnnualStatement?.eps || 0;
     }, [stats, fundamentalsData, latestAnnualStatement]);
-    const bookValue = useMemo(() => Number(stats.bvps || stats.book_value || fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [stats, fundamentalsData, latestAnnualStatement]);
+    // stats.bvps is the TRUE per-share book value from the view; stats.book_value is
+    // now ABSOLUTE total equity (not per-share) so it is intentionally NOT a BVPS source.
+    const bookValue = useMemo(() => Number(stats.bvps || fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [stats, fundamentalsData, latestAnnualStatement]);
     const dividendRate = useMemo(() => Number(stats.dps || fundamentalsData.dividend_rate || 0), [stats, fundamentalsData]);
     const payoutRatio = useMemo(() => Number(stats.payout_ratio || fundamentalsData.payout_ratio || 0), [stats, fundamentalsData]);
     const floatShares = useMemo(() => Number(stats.float_shares || profileData.float_shares || 0), [stats, profileData]);
@@ -1305,14 +1331,14 @@ export default function SymbolDetailPage() {
                         {/* ═══════════════════════ FINANCIALS TAB ═══════════════════════ */}
                         {activeTab === "financials" && (
                             <div className="space-y-6">
-                                {Array.isArray(tvFinancials?.years) && tvFinancials.years.length >= 2 && (
+                                {cardSeries && cardSeries.rows.length >= 2 && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <MiniBarChart title={lang === "ar" ? "الإيرادات · ٢٠ سنة" : "Revenue · 20Y"} color="#14b8a6" currency={currency} lang={lang}
-                                            data={tvFinancials.years.map((y: any) => ({ year: y.fiscal_year, value: y.revenue != null ? Number(y.revenue) : null }))} />
-                                        <MiniBarChart title={lang === "ar" ? "صافي الدخل · ٢٠ سنة" : "Net Income · 20Y"} color="#10b981" currency={currency} lang={lang}
-                                            data={tvFinancials.years.map((y: any) => ({ year: y.fiscal_year, value: y.net_income != null ? Number(y.net_income) : null }))} />
-                                        <MiniBarChart title={lang === "ar" ? "إجمالي الأصول · ٢٠ سنة" : "Total Assets · 20Y"} color="#6366f1" currency={currency} lang={lang}
-                                            data={tvFinancials.years.map((y: any) => ({ year: y.fiscal_year, value: y.total_assets != null ? Number(y.total_assets) : null }))} />
+                                        <MiniBarChart title={lang === "ar" ? "الإيرادات السنوية" : "Revenue (Annual)"} color="#14b8a6" currency={currency} lang={lang}
+                                            data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.revenue != null ? Number(y.revenue) : null }))} />
+                                        <MiniBarChart title={lang === "ar" ? "صافي الدخل السنوي" : "Net Income (Annual)"} color="#10b981" currency={currency} lang={lang}
+                                            data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.net_income != null ? Number(y.net_income) : null }))} />
+                                        <MiniBarChart title={lang === "ar" ? "إجمالي الأصول السنوي" : "Total Assets (Annual)"} color="#6366f1" currency={currency} lang={lang}
+                                            data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.total_assets != null ? Number(y.total_assets) : null }))} />
                                     </div>
                                 )}
                             <div className="premium-glass rounded-3xl p-8 space-y-6">
@@ -2188,7 +2214,7 @@ export default function SymbolDetailPage() {
                                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
                                                     <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو الإيرادات (سنوي)" : "Revenue Growth (YoY)"}</span>
                                                     <span className={`tabular text-xs font-black ${revenueGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                        {revenueGrowth >= 0 ? "+" : ""}{(revenueGrowth * 100).toFixed(1)}%
+                                                        {revenueGrowth >= 0 ? "+" : ""}{revenueGrowth.toFixed(1)}%
                                                     </span>
                                                 </div>
                                             )}
@@ -2196,7 +2222,7 @@ export default function SymbolDetailPage() {
                                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
                                                     <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو ربحية السهم" : "EPS Growth (YoY)"}</span>
                                                     <span className={`tabular text-xs font-black ${epsGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                        {epsGrowth >= 0 ? "+" : ""}{(epsGrowth * 100).toFixed(1)}%
+                                                        {epsGrowth >= 0 ? "+" : ""}{epsGrowth.toFixed(1)}%
                                                     </span>
                                                 </div>
                                             )}
@@ -2204,7 +2230,7 @@ export default function SymbolDetailPage() {
                                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
                                                     <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو الأرباح" : "Profit Growth (YoY)"}</span>
                                                     <span className={`tabular text-xs font-black ${profitGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                        {profitGrowth >= 0 ? "+" : ""}{(profitGrowth * 100).toFixed(1)}%
+                                                        {profitGrowth >= 0 ? "+" : ""}{profitGrowth.toFixed(1)}%
                                                     </span>
                                                 </div>
                                             )}

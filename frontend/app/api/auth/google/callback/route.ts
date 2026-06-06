@@ -83,6 +83,25 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // MOBILE (Capacitor app): bounce the tokens back into the native app via a
+        // custom URL scheme deep link. Safari reliably opens the app from an HTML
+        // location redirect (a plain Location header to a custom scheme is flaky).
+        if (isMobile) {
+            const schemeBase = returnOrigin && returnOrigin.includes("://") ? returnOrigin : "com.mubasher.startamarkets://oauth";
+            const sep = schemeBase.includes("?") ? "&" : "?";
+            const deepLink =
+                `${schemeBase}${sep}token=${encodeURIComponent(data.access_token)}` +
+                `&refresh_token=${encodeURIComponent(data.refresh_token || "")}` +
+                `&user=${encodeURIComponent(JSON.stringify(data.user))}&google_auth=success`;
+            return new NextResponse(
+                `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">` +
+                `<meta http-equiv="refresh" content="0;url=${deepLink}"></head>` +
+                `<body style="font-family:system-ui;text-align:center;padding:48px 24px;color:#0b1220">Signing you in…` +
+                `<script>location.href=${JSON.stringify(deepLink)}</script></body></html>`,
+                { headers: { "content-type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
+            );
+        }
+
         // Create a response that will set cookies/localStorage on client side
         // We'll use a redirect with token in query params (temporary, handled by client)
 

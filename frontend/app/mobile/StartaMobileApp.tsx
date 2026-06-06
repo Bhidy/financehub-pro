@@ -3691,12 +3691,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             </div>
           </>
         )}
-        <button className={styles.crAiCta} onClick={() => nav.openAI(`Give me a full briefing on ${stock.symbol} (${stockLabel(stock, lang)}) — valuation, momentum, and risks.`)}>
-          <span><AIGlyph color="#fff" /></span>
-          <div><b>{lang === "ar" ? "حلّل مع Starta AI" : "Analyze with Starta AI"}</b><small>{lang === "ar" ? "التقييم، الزخم، والمخاطر" : "Valuation, momentum, and risks"}</small></div>
-          <Icon name="chevron-right" />
-        </button>
-        <p className={styles.disclaimer}>{copy[lang].disclaimer}</p>
       </div>
     </>
   );

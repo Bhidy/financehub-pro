@@ -299,12 +299,52 @@ def _i(v):
         return None
 
 
+async def cycle_fundamentals(conn):
+    """Latest-annual TV fundamentals snapshot (equity, operating income/margin,
+    ROE/ROA, BVPS, shares, liabilities, …) into egx_fundamentals — one row per
+    symbol. This is the TV-native source for the symbol page's Overview/Ratios
+    metrics, replacing the stale audited income_statements/balance_sheets feed.
+    All values are ABSOLUTE EGP (no millions scaling)."""
+    rows = await TradingViewEGXClient().get_fundamentals()
+    n = 0
+    for d in rows:
+        try:
+            await conn.execute("""
+                INSERT INTO egx_fundamentals (symbol, fiscal_year, revenue, gross_profit,
+                    operating_income, ebitda, net_income, total_assets, total_equity,
+                    total_liabilities, total_debt, free_cash_flow, eps_diluted, bvps,
+                    shares_outstanding, dps, gross_margin, operating_margin, roe, roa, updated_at)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now())
+                ON CONFLICT (symbol) DO UPDATE SET
+                    fiscal_year=EXCLUDED.fiscal_year, revenue=EXCLUDED.revenue,
+                    gross_profit=EXCLUDED.gross_profit, operating_income=EXCLUDED.operating_income,
+                    ebitda=EXCLUDED.ebitda, net_income=EXCLUDED.net_income,
+                    total_assets=EXCLUDED.total_assets, total_equity=EXCLUDED.total_equity,
+                    total_liabilities=EXCLUDED.total_liabilities, total_debt=EXCLUDED.total_debt,
+                    free_cash_flow=EXCLUDED.free_cash_flow, eps_diluted=EXCLUDED.eps_diluted,
+                    bvps=EXCLUDED.bvps, shares_outstanding=EXCLUDED.shares_outstanding,
+                    dps=EXCLUDED.dps, gross_margin=EXCLUDED.gross_margin,
+                    operating_margin=EXCLUDED.operating_margin, roe=EXCLUDED.roe, roa=EXCLUDED.roa,
+                    updated_at=now()
+            """, d["symbol"], d.get("fiscal_year"), d.get("revenue"), d.get("gross_profit"),
+                d.get("operating_income"), d.get("ebitda"), d.get("net_income"),
+                d.get("total_assets"), d.get("total_equity"), d.get("total_liabilities"),
+                d.get("total_debt"), d.get("free_cash_flow"), d.get("eps_diluted"),
+                d.get("bvps"), d.get("shares_outstanding"), d.get("dps"),
+                d.get("gross_margin"), d.get("operating_margin"), d.get("roe"), d.get("roa"))
+            n += 1
+        except Exception as e:
+            await _deadletter(conn, "fundamentals", d.get("symbol"), d, e)
+    logger.info("fundamentals: upserted %d symbols", n)
+
+
 CYCLES = {"prices": cycle_prices, "technicals": cycle_technicals, "estimates": cycle_estimates,
           "news": cycle_news, "symbolmap": cycle_symbolmap, "financials": cycle_financials,
-          "dividends": cycle_dividends}
+          "dividends": cycle_dividends, "fundamentals": cycle_fundamentals}
 
 # Compound cycles: run multiple cycles in sequence within one invocation.
-COMPOUND = {"prices_and_technicals": ["prices", "technicals"]}
+COMPOUND = {"prices_and_technicals": ["prices", "technicals"],
+            "financials_and_fundamentals": ["financials", "fundamentals"]}
 
 
 async def main(cycle: str):

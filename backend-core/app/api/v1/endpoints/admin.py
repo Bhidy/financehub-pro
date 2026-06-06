@@ -22,18 +22,6 @@ import pandas as pd
 import io
 from fastapi import UploadFile, File
 
-# Ensure data_pipeline is reachable
-try:
-    from data_pipeline.ingest_stockanalysis import run_ingestion_job, fetch_price_snapshot
-except ImportError:
-    # If running locally or differently, try appending path
-    sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
-    try:
-        from data_pipeline.ingest_stockanalysis import run_ingestion_job, fetch_price_snapshot
-    except ImportError:
-        run_ingestion_job = None
-        fetch_price_snapshot = None
-
 from app.services.egypt_market_service import egypt_market_service
 import hmac
 from fastapi import Header, Depends
@@ -122,18 +110,15 @@ async def backup_status():
 
 @router.get("/debug/screener", dependencies=[Depends(require_admin_token)])
 async def debug_screener():
-    """Debug the symbol discovery process"""
+    """Debug the EGX feed — probes TradingViewEGXClient and EGXFeedRouter directly."""
     try:
-        from data_pipeline.market_loader import EGXProductionLoader
-        loader = EGXProductionLoader()
-        # Verify client type
-        client_type = str(type(loader.client))
-        # Fetch stocks
-        stocks = await loader.client.get_egx_stocks()
+        from data_pipeline.tradingview_client import TradingViewEGXClient
+        client = TradingViewEGXClient()
+        stocks = await client.get_egx_stocks()
         return {
             "status": "success",
             "count": len(stocks),
-            "client_type": client_type,
+            "client_type": "TradingViewEGXClient",
             "sample": stocks[:2] if stocks else None
         }
     except Exception as e:
@@ -298,7 +283,8 @@ async def fetch_prices_yfinance(symbols: List[str]) -> Dict:
 
 async def fetch_egx_prices_yfinance(symbols: List[str]) -> Dict:
     """
-    FALLBACK price source for EGX when the StockAnalysis screener is unavailable.
+    Legacy yfinance fallback for EGX prices (now superseded by EGXFeedRouter which
+    handles the TV → yfinance chain automatically). Retained for direct-call utility.
 
     Uses yfinance's BATCHED `download()` (the chart API) with the `.CA` suffix —
     one HTTP request per chunk of symbols instead of a per-symbol `.info` call.
@@ -655,107 +641,8 @@ async def save_intraday_no_overwrite(records: List[Dict]):
 
 
 async def fetch_prices_stockanalysis(symbols: List[str]) -> Dict:
-    """
-    Fetch current prices for EGX stocks using StockAnalysis.com
-    Optimized: Non-blocking thread pool + Incremental batching
-    """
-    import tls_client
-    from bs4 import BeautifulSoup
-    import re
-    from functools import partial
-    
-    results = {}
-    errors = []
-    
-    # Create persistent session
-    session = tls_client.Session(
-        client_identifier="chrome_120",
-        random_tls_extension_order=True
-    )
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-    }
-
-    async def fetch_single(sym: str):
-        try:
-            clean_symbol = sym.replace('.CA', '')
-            url = f"https://stockanalysis.com/quote/egx/{clean_symbol}/"
-            
-            # Run blocking IO in thread pool
-            loop = asyncio.get_running_loop()
-            resp = await loop.run_in_executor(
-                None, 
-                partial(session.get, url, headers=headers)
-            )
-            
-            if resp.status_code != 200:
-                return (None, f"{sym}: {resp.status_code}")
-                
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            price_div = soup.find('div', class_=lambda c: c and 'text-4xl' in c)
-            
-            if not price_div:
-                return (None, f"{sym}: No price")
-                
-            price = float(price_div.get_text().strip().replace(',', ''))
-            
-            # Parse change
-            change = 0.0
-            change_percent = 0.0
-            change_div = soup.find('div', class_=lambda c: c and 'font-semibold' in c and ('text-green' in c or 'text-red' in c))
-            if change_div:
-                match = re.search(r'([+\-]?\d+\.?\d*)\s*\(\s*([+\-]?\d+\.?\d*)%?\)', change_div.get_text())
-                if match:
-                    change = float(match.group(1))
-                    change_percent = float(match.group(2))
-            
-            return ({
-                'symbol': sym,
-                'last_price': price,
-                'change': change,
-                'change_percent': change_percent,
-                'volume': 0,
-                'last_updated': datetime.now().isoformat()
-            }, None)
-            
-        except Exception as e:
-            return (None, f"{sym}: {e}")
-
-    # Process in batches of 10 to allow incremental DB updates
-    BATCH_SIZE = 10
-    total_batches = (len(symbols) + BATCH_SIZE - 1) // BATCH_SIZE
-    
-    logger.info(f"Processing {len(symbols)} Egypt stocks in {total_batches} batches...")
-    
-    for i in range(0, len(symbols), BATCH_SIZE):
-        batch = symbols[i:i + BATCH_SIZE]
-        batch_results = []
-        
-        # Concurrency within batch
-        tasks = [fetch_single(s) for s in batch]
-        # Gather returns list of tuples (data, error)
-        batch_out = await asyncio.gather(*tasks)
-        
-        valid_data = []
-        for data, err in batch_out:
-            if data:
-                valid_data.append(data)
-                results[data['symbol']] = data
-            if err:
-                errors.append(err)
-        
-        # Incremental DB Update (Critical for visibility)
-        if valid_data:
-            await update_market_tickers(valid_data)
-            logger.info(f"Updated batch {i//BATCH_SIZE + 1}/{total_batches} ({len(valid_data)} stocks)")
-            
-        # Rate limit between batches
-        await asyncio.sleep(2)
-            
-    return {"results": list(results.values()), "errors": errors}
+    """Removed — StockAnalysis.com is no longer a data source. Use EGXFeedRouter."""
+    raise RuntimeError("fetch_prices_stockanalysis is removed; use EGXFeedRouter instead")
 
 
 async def save_analyst_ratings(symbol: str, data: Dict):
@@ -800,7 +687,9 @@ async def refresh_all_prices():
     """
     5-MINUTE REFRESH: Update all stock prices
     Designed to run every 5 minutes during market hours
-    Splits into Saudi (yfinance) and Egypt (StockAnalysis) batches
+    Egypt: EGXFeedRouter (TradingView primary → yfinance .CA fallback)
+    Saudi: KSAFeedRouter (TradingView primary → yfinance .SR fallback)
+    Both routers enforce the >= 2 source invariant — never single-source.
     """
     global refresh_status
     
@@ -828,104 +717,72 @@ async def refresh_all_prices():
         async def process_ksa():
             if not saudi_symbols: return 0, []
             try:
-                logger.info(f"Refreshing {len(saudi_symbols)} KSA stocks (Yahoo)...")
-                # Using 30s timeout to prevent hanging
-                saudi_data = await asyncio.wait_for(fetch_prices_yfinance(saudi_symbols), timeout=45.0)
-                await update_market_tickers(saudi_data["results"])
-                return len(saudi_data["results"]), saudi_data["errors"]
+                from data_pipeline.egx_feed_router import KSAFeedRouter
+                logger.info(f"Refreshing {len(saudi_symbols)} KSA stocks via TradingView/yfinance router...")
+                ksa_stocks = await asyncio.wait_for(
+                    KSAFeedRouter(fallback_symbols=saudi_symbols).get_ksa_stocks(), timeout=60.0)
+                ksa_updates = {}
+                for stock in ksa_stocks:
+                    if not stock.get('last_price'):
+                        continue
+                    ksa_updates[stock['symbol']] = {
+                        'symbol': stock['symbol'],
+                        'name_en': stock.get('name_en'),
+                        'sector': stock.get('sector_name'),
+                        'last_price': float(stock['last_price']),
+                        'change': float(stock.get('change') or 0.0),
+                        'change_percent': float(stock.get('change_percent') or 0.0),
+                        'volume': int(stock.get('volume') or 0),
+                    }
+                if ksa_updates:
+                    await update_market_tickers(ksa_updates)
+                    try:
+                        await db.execute(
+                            "UPDATE market_tickers SET source='tradingview', updated_at=NOW() "
+                            "WHERE market_code!='EGX' AND symbol = ANY($1::text[])",
+                            list(ksa_updates.keys()))
+                    except Exception as _src_e:
+                        logger.warning(f"KSA source tagging skipped: {_src_e}")
+                    logger.info(f"KSA updated {len(ksa_updates)} stocks via TradingView/yfinance router")
+                    return len(ksa_updates), []
+                return 0, ["KSAFeedRouter returned no usable prices"]
             except Exception as e:
                 logger.error(f"KSA Update Failed: {e}")
                 return 0, [f"KSA Critical: {e}"]
 
         async def process_egx():
-            # egypt_symbols doubles as a flag that EGX is present/enabled in the DB
             if not egypt_symbols: return 0, []
-
-            egx_notes = []
-
-            # --- SOURCE 0 (primary, FLAG-GATED): TradingView nuclear feed ---
-            # Enable by setting env EGX_PRIMARY_TV=1. Default OFF = no behaviour change.
-            # On any failure it falls through to the existing StockAnalysis/yfinance chain.
-            if os.environ.get("EGX_PRIMARY_TV", "").lower() in ("1", "true", "yes", "on"):
-                try:
-                    from data_pipeline.egx_feed_router import EGXFeedRouter
-                    tv_stocks = await EGXFeedRouter(fallback_symbols=egypt_symbols).get_egx_stocks()
-                    tv_updates = {}
-                    for stock in tv_stocks:
-                        if not stock.get('last_price'):
-                            continue  # never zero out a live stock
-                        tv_updates[stock['symbol']] = {
-                            'symbol': stock['symbol'],
-                            'name_en': stock.get('name_en'),
-                            'sector': stock.get('sector_name'),
-                            'last_price': float(stock['last_price']),
-                            'change': float(stock.get('change') or 0.0),
-                            'change_percent': float(stock.get('change_percent') or 0.0),
-                            'volume': int(stock.get('volume') or 0),
-                        }
-                    if tv_updates:
-                        await update_market_tickers(tv_updates)
-                        try:  # best-effort provenance/freshness; never blocks the price update
-                            await db.execute(
-                                "UPDATE market_tickers SET source='tradingview', updated_at=NOW() "
-                                "WHERE market_code='EGX' AND symbol = ANY($1::text[])",
-                                list(tv_updates.keys()))
-                        except Exception as _src_e:
-                            logger.warning(f"source tagging skipped: {_src_e}")
-                        logger.info(f"EGX primary=TradingView updated {len(tv_updates)} stocks")
-                        return len(tv_updates), []
-                    egx_notes.append("TradingView returned no usable prices")
-                except Exception as e:
-                    logger.warning(f"TradingView primary failed: {e} — falling through to StockAnalysis/yfinance")
-                    egx_notes.append(f"TV error: {str(e)[:80]}")
-
-            # --- SOURCE 1 (primary): StockAnalysis screener ---
             try:
-                from data_pipeline.market_loader import EGXProductionLoader
-                loader = EGXProductionLoader()
-                egypt_stocks = await loader.client.get_egx_stocks()
-
-                if egypt_stocks:
-                    logger.info(f"Refreshing {len(egypt_stocks)} Egypt stocks via Screener...")
-                    egx_updates = {}
-                    for stock in egypt_stocks:
-                        # Skip rows without a real price — never zero out a live stock
-                        if not stock.get('last_price'):
-                            continue
-                        egx_updates[stock['symbol']] = {
-                            'symbol': stock['symbol'],
-                            'name_en': stock.get('name_en'),
-                            'sector': stock.get('sector_name'),
-                            'last_price': float(stock['last_price']),
-                            'change': float(stock.get('change') or 0.0),
-                            'change_percent': float(stock.get('change_percent') or 0.0),
-                            'volume': int(stock.get('volume') or 0),
-                        }
-                    if egx_updates:
-                        await update_market_tickers(egx_updates)
-                        return len(egx_updates), []
-                    egx_notes.append("Screener returned rows but no usable prices")
-                else:
-                    egx_notes.append("Screener returned 0 stocks")
-                logger.warning(f"EGX primary source unusable ({egx_notes[-1]}) — using yfinance(.CA) fallback")
+                from data_pipeline.egx_feed_router import EGXFeedRouter
+                egx_stocks = await EGXFeedRouter(fallback_symbols=egypt_symbols).get_egx_stocks()
+                egx_updates = {}
+                for stock in egx_stocks:
+                    if not stock.get('last_price'):
+                        continue  # never zero out a live stock
+                    egx_updates[stock['symbol']] = {
+                        'symbol': stock['symbol'],
+                        'name_en': stock.get('name_en'),
+                        'sector': stock.get('sector_name'),
+                        'last_price': float(stock['last_price']),
+                        'change': float(stock.get('change') or 0.0),
+                        'change_percent': float(stock.get('change_percent') or 0.0),
+                        'volume': int(stock.get('volume') or 0),
+                    }
+                if egx_updates:
+                    await update_market_tickers(egx_updates)
+                    try:  # best-effort provenance tag; never blocks the price update
+                        await db.execute(
+                            "UPDATE market_tickers SET source='tradingview', updated_at=NOW() "
+                            "WHERE market_code='EGX' AND symbol = ANY($1::text[])",
+                            list(egx_updates.keys()))
+                    except Exception as _src_e:
+                        logger.warning(f"EGX source tagging skipped: {_src_e}")
+                    logger.info(f"EGX updated {len(egx_updates)} stocks via TradingView/yfinance router")
+                    return len(egx_updates), []
+                return 0, ["EGXFeedRouter returned no usable prices"]
             except Exception as e:
-                logger.error(f"EGX screener failed: {e} — using yfinance(.CA) fallback")
-                egx_notes.append(f"Screener error: {str(e)[:80]}")
-
-            # --- SOURCE 2 (fallback): yfinance (.CA), same engine as KSA ---
-            try:
-                egx_data = await asyncio.wait_for(
-                    fetch_egx_prices_yfinance(egypt_symbols), timeout=180.0
-                )
-                fb = egx_data["results"]
-                if fb:
-                    await update_market_tickers(fb)
-                    logger.info(f"EGX fallback updated {len(fb)} stocks via yfinance(.CA)")
-                    return len(fb), egx_notes  # data flowed; note that primary was degraded
-                return 0, egx_notes + ["yfinance(.CA) fallback returned 0"]
-            except Exception as e:
-                logger.error(f"EGX yfinance fallback failed: {e}")
-                return 0, egx_notes + [f"yfinance fallback error: {str(e)[:80]}"]
+                logger.error(f"EGX feed router failed (all sources exhausted): {e}")
+                return 0, [f"EGX error: {str(e)[:120]}"]
 
         # Execute in parallel
         results = await asyncio.gather(process_ksa(), process_egx(), return_exceptions=True)
@@ -961,9 +818,8 @@ async def refresh_daily_data():
     """
     DAILY EOD REFRESH: Full OHLC history, analyst data
     Runs after market close (6 PM Saudi)
-    Splits: 
-      - Saudi: yfinance (OHLC + Analyst)
-      - Egypt: StockAnalysis (Ingestion script handles Financials + Profile + History)
+    - Saudi: yfinance (OHLC + Analyst)
+    - Egypt: TradingView financials cycle (tv_egx_harvester.py --cycle financials)
     """
     global refresh_status
     
@@ -1001,24 +857,26 @@ async def refresh_daily_data():
             except Exception as e:
                 refresh_status["errors"].append(f"{symbol}: {str(e)[:30]}")
         
-        # 2. Egypt Stocks (StockAnalysis Ingestion)
+        # 2. Egypt Stocks (TradingView financials harvest)
         if egypt_symbols:
-            # We can trigger the existing ingestion job which now covers everything
-            # Or iterate and call ingest_symbol manually if we want granular control
-            # Let's call the robust ingestion job wrapper
-            if run_ingestion_job:
-                logger.info("Triggering StockAnalysis ingestion for Egypt stocks...")
-                # Define callback for visibility
-                async def _ingest_cb(data):
-                    refresh_status["last_status"] = f"Daily Sync: Egypt {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
-                    _heartbeat()
-                
-                # run_ingestion_job handles its own DB connection and iteration
-                ingest_result = await run_ingestion_job(status_callback=_ingest_cb)
-                if ingest_result.get("status") == "failed":
-                    refresh_status["errors"].append(f"Egypt Ingestion Failed: {ingest_result.get('error')}")
-            else:
-                 refresh_status["errors"].append("Egypt Ingestion Module not loaded")
+            logger.info("Triggering TradingView financials cycle for Egypt stocks...")
+            try:
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+                script_path = os.path.join(base_dir, 'scripts', 'tv_egx_harvester.py')
+                proc = await asyncio.create_subprocess_exec(
+                    sys.executable, script_path, '--cycle', 'financials',
+                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
+                if proc.returncode != 0:
+                    err_tail = (stderr or b'').decode(errors='ignore')[-300:]
+                    refresh_status["errors"].append(f"Egypt TV financials exit {proc.returncode}: {err_tail}")
+                    logger.error(f"Egypt TV financials failed (exit {proc.returncode}): {err_tail}")
+                else:
+                    logger.info("Egypt TV financials cycle completed successfully")
+            except Exception as e:
+                refresh_status["errors"].append(f"Egypt financials: {str(e)[:80]}")
+                logger.error(f"Egypt financials trigger failed: {e}")
 
         # Also update prices (covers both markets via split logic)
         await refresh_all_prices()
@@ -1185,19 +1043,24 @@ async def backfill_historical_data(symbol: str = None):
                 except Exception as e:
                     refresh_status["errors"].append(f"{sym}: {str(e)[:30]}")
 
-        # 2. EGYPT BACKFILL (StockAnalysis)
+        # 2. EGYPT BACKFILL (TradingView financials cycle)
         if egypt_symbols:
-            logger.info(f"Starting Egypt StockAnalysis backfill for {len(egypt_symbols)} stocks...")
-            if run_ingestion_job:
-                # We can either loop and call ingest_symbol directly if we imported it
-                # Or just trigger the big job. Let's trigger the job as it's cleaner.
-                # However, backfill usually implies ALL, and ingestion job does ALL.
-                ingest_mask = await run_ingestion_job()
-                stats["egypt_ingested"] = ingest_mask.get("symbols_count", 0)
-                if ingest_mask.get("status") == "failed":
-                     refresh_status["errors"].append(f"Egypt Ingestion Failed: {ingest_mask.get('error')}")
-            else:
-                refresh_status["errors"].append("Egypt Ingestion logic not found")
+            logger.info(f"Triggering TradingView financials backfill for {len(egypt_symbols)} Egypt stocks...")
+            try:
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+                script_path = os.path.join(base_dir, 'scripts', 'tv_egx_harvester.py')
+                proc = await asyncio.create_subprocess_exec(
+                    sys.executable, script_path, '--cycle', 'financials',
+                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
+                if proc.returncode == 0:
+                    stats["egypt_ingested"] = len(egypt_symbols)
+                else:
+                    err_tail = (stderr or b'').decode(errors='ignore')[-200:]
+                    refresh_status["errors"].append(f"Egypt TV backfill exit {proc.returncode}: {err_tail}")
+            except Exception as e:
+                refresh_status["errors"].append(f"Egypt backfill error: {str(e)[:80]}")
         
         total = sum(v for k, v in stats.items() if k != 'stocks_done')
         refresh_status["last_status"] = f"success: {total} records. Saudi:{stats['stocks_done']}, Egypt:{stats['egypt_ingested']}"
@@ -1446,24 +1309,26 @@ async def trigger_indices_refresh(background_tasks: BackgroundTasks):
 @router.post("/refresh/ingestion")
 async def trigger_ingestion_job(background_tasks: BackgroundTasks):
     """
-    CHATBOT DATA INGESTION: Run StockAnalysis pipeline
+    DATA INGESTION: Trigger TradingView financials + estimates harvest for Egypt.
+    Replaces the former StockAnalysis pipeline.
     """
     if _is_locked():
         return {"status": "already_running"}
-        
-    if not run_ingestion_job:
-        raise HTTPException(status_code=500, detail="Ingestion module not available")
 
     async def _run_wrapper():
         global refresh_status
         _lock_refresh()
-        async def _progress_cb(data):
-             refresh_status["last_status"] = f"Ingesting {data['current_index']}/{data['total_symbols']} ({data['percent_complete']}%) - {data['last_symbol']}"
-             refresh_status["stats"] = data
-             _heartbeat()
-
         try:
-            await run_ingestion_job(status_callback=_progress_cb)
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+            script_path = os.path.join(base_dir, 'scripts', 'tv_egx_harvester.py')
+            for cycle in ('financials', 'estimates'):
+                refresh_status["last_status"] = f"TV harvest: {cycle}"
+                _heartbeat()
+                proc = await asyncio.create_subprocess_exec(
+                    sys.executable, script_path, '--cycle', cycle,
+                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+                await asyncio.wait_for(proc.communicate(), timeout=600)
             refresh_status["last_status"] = "ingestion_success"
         except Exception as e:
             logger.error(f"Ingestion failed: {e}")
@@ -1472,11 +1337,11 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
             refresh_status["is_running"] = False
 
     background_tasks.add_task(_run_wrapper)
-    
+
     return {
         "status": "started",
-        "method": "stockanalysis_ingest",
-        "message": "Chatbot data ingestion started"
+        "method": "tradingview_harvest",
+        "message": "TradingView financials + estimates harvest started"
     }
 
 

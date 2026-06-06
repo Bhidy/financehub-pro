@@ -6,7 +6,6 @@ import asyncpg
 from typing import Dict, Any, List, Optional
 import math
 from datetime import datetime, timedelta
-import tls_client
 import asyncio
 import logging
 

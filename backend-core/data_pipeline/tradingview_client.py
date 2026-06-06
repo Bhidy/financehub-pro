@@ -313,3 +313,107 @@ class TradingViewEGXClient:
     @staticmethod
     def logo_url(logoid: str, big: bool = False) -> str:
         return f"{LOGO_BASE}/{logoid}{'--big' if big else ''}.svg"
+
+
+# --------------------------------------------------------------------------- #
+# Saudi (Tadawul/TASI) endpoints + client
+# --------------------------------------------------------------------------- #
+KSA_SCAN_URL = "https://scanner.tradingview.com/saudi/scan"
+KSA_PREFIX = "TADAWUL:"
+MIN_KSA_UNIVERSE = 50  # active Saudi names; floor well below real ~200 for safety
+
+_KSA_PRICE_COLS = [
+    "name", "close", "change", "change_abs", "volume",
+    "open", "high", "low", "market_cap_basic",
+    "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
+    "dividends_yield", "sector", "time", "last_bar_update_time",
+]
+
+
+def _to_ksa_symbol(tv_symbol: str) -> str:
+    """'TADAWUL:1120' -> '1120'. Tolerant of already-bare symbols."""
+    return tv_symbol.split(":", 1)[1] if ":" in tv_symbol else tv_symbol
+
+
+class TradingViewKSAClient:
+    """Async TradingView client for the Saudi Tadawul market.
+    Same design contract as TradingViewEGXClient — drop-in primary for KSAFeedRouter."""
+
+    def __init__(self, timeout: float = 20.0, retries: int = 3):
+        self._timeout = timeout
+        self._retries = retries
+
+    async def _request(self, method: str, url: str, **kw) -> httpx.Response:
+        last_exc: Optional[Exception] = None
+        for attempt in range(1, self._retries + 1):
+            try:
+                async with httpx.AsyncClient(timeout=self._timeout, headers=_HEADERS) as c:
+                    resp = await c.request(method, url, **kw)
+                if resp.status_code == 200:
+                    return resp
+                logger.warning("TV KSA %s -> HTTP %s (attempt %d/%d)",
+                               url.split("/")[-1], resp.status_code, attempt, self._retries)
+                last_exc = httpx.HTTPStatusError(
+                    f"HTTP {resp.status_code}", request=resp.request, response=resp)
+            except (httpx.HTTPError, asyncio.TimeoutError) as e:
+                last_exc = e
+                logger.warning("TV KSA request failed: %s (attempt %d/%d)", e, attempt, self._retries)
+            if attempt < self._retries:
+                await asyncio.sleep(0.4 * (2 ** (attempt - 1)))
+        raise FeedDegraded(f"TV KSA request exhausted retries: {last_exc}")
+
+    async def _scan(self, columns: List[str], *, rng: Optional[List[int]] = None) -> List[Dict[str, Any]]:
+        body: Dict[str, Any] = {"columns": columns, "range": rng or [0, 500]}
+        resp = await self._request("POST", KSA_SCAN_URL, json=body)
+        try:
+            payload = resp.json()
+        except ValueError as e:
+            raise FeedDegraded(f"TV KSA scan returned non-JSON: {e}")
+        rows = payload.get("data") or []
+        out: List[Dict[str, Any]] = []
+        for r in rows:
+            d = dict(zip(columns, r.get("d", [])))
+            d["_tv_symbol"] = r.get("s", "")
+            d["symbol"] = _to_ksa_symbol(r.get("s", ""))
+            out.append(d)
+        return out
+
+    async def get_ksa_stocks(self) -> List[Dict[str, Any]]:
+        """Bulk price/overview for all Saudi stocks. Same dict shape as get_egx_stocks()
+        but currency=SAR and market_code='KSA'. Raises FeedDegraded on implausible payload."""
+        rows = await self._scan(_KSA_PRICE_COLS, rng=[0, 500])
+        if len(rows) < MIN_KSA_UNIVERSE:
+            raise FeedDegraded(f"TV KSA returned only {len(rows)} rows (< {MIN_KSA_UNIVERSE})")
+
+        stocks: List[Dict[str, Any]] = []
+        for d in rows:
+            symbol = d["symbol"]
+            price = _finite(d.get("close"))
+            change_pct = _finite(d.get("change"))
+            if not _valid_price_row(symbol, price, change_pct):
+                continue
+            stocks.append({
+                "symbol": symbol,
+                "name_en": d.get("name") or "",
+                "market_cap": _finite(d.get("market_cap_basic")),
+                "last_price": price,
+                "change": _finite(d.get("change_abs")),
+                "change_percent": change_pct,
+                "volume": int(_finite(d.get("volume")) or 0),
+                "open": _finite(d.get("open")),
+                "high": _finite(d.get("high")),
+                "low": _finite(d.get("low")),
+                "revenue": _finite(d.get("total_revenue_fy")),
+                "net_income": _finite(d.get("net_income_fy")),
+                "pe_ratio": _finite(d.get("price_earnings_ttm")),
+                "dividend_yield": _finite(d.get("dividends_yield")),
+                "sector_name": d.get("sector") or "",
+                "market_code": "KSA",
+                "currency": "SAR",
+                "bar_time": d.get("time"),
+                "last_bar_update_time": d.get("last_bar_update_time"),
+            })
+        if len(stocks) < MIN_KSA_UNIVERSE:
+            raise FeedDegraded(f"TV KSA had {len(rows)} rows but only {len(stocks)} usable prices")
+        logger.info("TradingView KSA price feed: %d/%d usable", len(stocks), len(rows))
+        return stocks

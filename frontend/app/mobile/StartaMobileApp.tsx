@@ -3586,7 +3586,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
               <DataStat label={lang === "ar" ? "الهاتف" : "Phone"} value={phone || "—"} />
             </div>
             <div className={styles.legalStack}>
-              {description ? <article><strong>{lang === "ar" ? "عن الشركة" : "About"}</strong><p>{description}</p></article> : null}
               {officers.length ? (
                 <article>
                   <strong>{lang === "ar" ? "الإدارة والقيادة" : "Management & Leadership"}</strong>
@@ -3608,15 +3607,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                   </div>
                 </article>
               ) : null}
-              <article>
-                <strong>{lang === "ar" ? "بيانات الملف" : "Profile Data"}</strong>
-                <p>{lang === "ar" ? "تُعرض البيانات كما هي متاحة من مصادر Starta وقاعدة بيانات الشركة." : "Data is displayed as available from Starta's company-profile database and related market tables."}</p>
-              </article>
               {address ? <article><strong>{lang === "ar" ? "العنوان" : "Address"}</strong><p>{address}</p></article> : null}
-              <article>
-                <strong>{lang === "ar" ? "آخر تحديث" : "Last Update"}</strong>
-                <p>{asOf ? formatDate(asOf, lang) : (lang === "ar" ? "غير متاح" : "Not available")}</p>
-              </article>
             </div>
           </>
         )}

@@ -962,8 +962,11 @@ export const fetchRatios = async (symbol: string) => {
 };
 
 export const fetchFairValues = async (symbol?: string) => {
+    // Use the Vercel/Supabase route (localApi). The Hetzner backend proxy
+    // (`api`) returns 500 for /fair-values; the local route reads the
+    // fair_values table directly and is the source of truth.
     const params = symbol ? { symbol } : {};
-    const { data } = await api.get(`/fair-values`, { params });
+    const { data } = await localApi.get(`/fair-values`, { params });
     return data;
 };
 

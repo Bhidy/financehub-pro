@@ -69,6 +69,36 @@ async function query(text: string, params?: any[]): Promise<QueryResult> {
     }
 }
 
+/**
+ * Coerce Postgres NUMERIC columns (which node-postgres returns as STRINGS to
+ * preserve precision) into JS numbers. This is the single guard against the
+ * entire "value.toFixed is not a function" class of crashes and against
+ * string-vs-number comparison bugs in downstream code.
+ *
+ * - `fields` listed are coerced to a finite number or null.
+ * - `scaleFields` (optional) are additionally multiplied by `scale` AFTER
+ *   coercion — used to normalise EGP-millions tables to absolute EGP.
+ * Non-numeric/identifier fields (symbol, timeframe, dates) are never touched.
+ */
+export function numerify<T extends Record<string, any>>(
+    row: T,
+    fields: string[],
+    opts?: { scaleFields?: string[]; scale?: number }
+): T {
+    if (!row) return row;
+    const out: any = { ...row };
+    const scaleSet = new Set(opts?.scaleFields || []);
+    const scale = opts?.scale ?? 1;
+    for (const f of fields) {
+        const v = out[f];
+        if (v === null || v === undefined || v === '') { out[f] = null; continue; }
+        const n = typeof v === 'number' ? v : Number(v);
+        if (!Number.isFinite(n)) { out[f] = null; continue; }
+        out[f] = scaleSet.has(f) ? n * scale : n;
+    }
+    return out;
+}
+
 // Health check for diagnostics API
 async function healthCheck(): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
     const start = Date.now();

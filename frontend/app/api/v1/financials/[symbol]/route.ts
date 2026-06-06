@@ -1,5 +1,28 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db-server';
+import { db, numerify } from '@/lib/db-server';
+
+// income_statements / balance_sheets / cashflow_statements store EGP in MILLIONS.
+// These monetary columns are scaled to ABSOLUTE EGP (x 1,000,000) so the UI's
+// formatter renders "EGP 82.24B" instead of "EGP 82.24K". Per-share values,
+// margins and ratios are NOT scaled (only coerced from NUMERIC strings).
+const FIN_MONEY = [
+    'revenue', 'cost_of_revenue', 'gross_profit', 'operating_income', 'net_income', 'ebitda',
+    'provision_credit_losses', 'interest_expense', 'total_interest_income', 'interest_income_loans',
+    'interest_income_investments', 'net_interest_income', 'trading_income', 'fee_income',
+    'total_noninterest_income', 'operating_expenses', 'rd_expense', 'sga_expense', 'depreciation',
+    'pretax_income', 'income_tax', 'ebit', 'shares_outstanding',
+    'total_assets', 'total_liabilities', 'total_equity', 'cash_equivalents', 'short_term_investments',
+    'accounts_receivable', 'inventory', 'total_current_assets', 'trading_assets', 'investment_securities',
+    'total_investments', 'gross_loans', 'allowance_loan_losses', 'net_loans', 'property_plant_equipment',
+    'goodwill', 'intangible_assets', 'accounts_payable', 'short_term_debt', 'total_current_liabilities',
+    'deposits', 'long_term_debt', 'total_noncurrent_liabilities',
+    'cash_flow_operating', 'operating_cashflow', 'cash_from_investing', 'cash_from_financing',
+    'free_cashflow', 'depreciation_amortization', 'stock_based_compensation', 'capex',
+    'share_repurchases', 'dividends_paid', 'debt_issued', 'debt_repaid',
+];
+const FIN_NUM_ONLY = ['eps', 'eps_diluted', 'book_value_per_share', 'effective_tax_rate',
+    'net_margin', 'gross_margin', 'operating_margin', 'ebitda_margin', 'ebit_margin'];
+const FIN_ALL_NUM = [...FIN_MONEY, ...FIN_NUM_ONLY];
 
 export async function GET(
     request: Request,
@@ -187,7 +210,11 @@ export async function GET(
             return b.period_type.localeCompare(a.period_type);
         });
 
-        return NextResponse.json(financialsList);
+        // Normalise EGP-millions -> absolute EGP and coerce NUMERIC strings -> numbers.
+        const normalised = financialsList.map((r: any) =>
+            numerify(r, FIN_ALL_NUM, { scaleFields: FIN_MONEY, scale: 1_000_000 }));
+
+        return NextResponse.json(normalised);
     } catch (error: any) {
         console.error('[API /financials ERROR]', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

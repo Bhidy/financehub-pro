@@ -30,7 +30,7 @@ export async function GET(
             ? "AND (content_language = 'ar' OR source_section ILIKE '%/ar')"
             : "AND (content_language IS NULL OR content_language <> 'ar')";
         const r = await db.query(
-            `SELECT headline, source, url, published_at, sentiment_score, article_body, image_url
+            `SELECT id, headline, source, url, published_at, sentiment_score, article_body, image_url
              FROM market_news
              WHERE (symbol = $1 OR symbol = $2) ${langClause}
              ORDER BY published_at DESC NULLS LAST
@@ -38,6 +38,7 @@ export async function GET(
             [sym, `${sym}.CA`]
         );
         local = r.rows.map((x: any) => ({
+            id: x.id,                       // enables the in-app article route /news/{id}
             headline: x.headline,
             source: x.source,
             url: x.url,
@@ -65,6 +66,7 @@ export async function GET(
         if (resp.ok) {
             const j = await resp.json();
             tv = (j.items || []).map((it: any) => ({
+                id: null,                   // TV items have no in-app article -> link via `url`
                 headline: it.title,
                 source: it.provider || it.source || 'TradingView',
                 url: it.storyPath ? `https://www.tradingview.com${it.storyPath}` : null,

@@ -8,7 +8,7 @@ import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
     fetchCorporateActions, fetchFairValues, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
-    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV
+    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxSeasonals
 } from "@/lib/api";
 import {
     sanitizeNewsText,
@@ -456,6 +456,40 @@ function MiniBarChart({ title, data, color, currency, lang }: {
     );
 }
 
+// Monthly seasonality — diverging bar chart (avg % return per calendar month).
+// Pure SVG/flex, matches the page's bespoke chart idiom (TradingView Seasonals style).
+function SeasonalChart({ months }: {
+    months: { month: number; label: string; avg_return: number | null; positive_rate: number | null; years: number }[];
+}) {
+    const range = Math.max(...months.map((m) => Math.abs(m.avg_return ?? 0)), 1);
+    return (
+        <div className="flex items-stretch gap-1.5 h-56" dir="ltr">
+            {months.map((m) => {
+                const v = m.avg_return ?? 0;
+                const up = v >= 0;
+                const pct = (Math.abs(v) / range) * 50;
+                return (
+                    <div key={m.month} className="flex-1 flex flex-col items-center">
+                        <div className="relative flex-1 w-full">
+                            <div className="absolute left-0 right-0 rounded"
+                                style={{
+                                    top: `${up ? 50 - pct : 50}%`,
+                                    bottom: `${up ? 50 : 50 - pct}%`,
+                                    background: up ? "#10b981" : "#f43f5e",
+                                    opacity: 0.88,
+                                }}
+                                title={`${m.label}: ${up ? "+" : ""}${v.toFixed(1)}%  ·  ${m.positive_rate ?? 0}% positive (${m.years}y)`} />
+                            <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-300 dark:bg-slate-600" />
+                        </div>
+                        <span className="text-[10px] text-slate-400 mt-1.5 font-bold">{m.label}</span>
+                        <span className={`text-[9px] font-extrabold tabular ${up ? "text-emerald-500" : "text-rose-500"}`}>{up ? "+" : ""}{v.toFixed(1)}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 // ─── MAIN PAGE COMPONENT ─────────────────────────────────────────────────────
 export default function SymbolDetailPage() {
     const params = useParams();
@@ -501,7 +535,7 @@ export default function SymbolDetailPage() {
         }
     }, [theme]);
 
-    type TabId = "overview" | "financials" | "technicals" | "forecasts" | "ratios" | "dividends" | "news" | "profile";
+    type TabId = "overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ratios" | "dividends" | "news" | "profile";
     const [activeTab, setActiveTab] = useState<TabId>("overview");
     const [chartPeriod, setChartPeriod] = useState("3m");
     const [financialPeriod, setFinancialPeriod] = useState<"annual" | "quarterly">("annual");
@@ -587,6 +621,11 @@ export default function SymbolDetailPage() {
         queryKey: ["egx-estimates", symbol],
         queryFn: () => fetchEgxEstimates(symbol),
         enabled: !!symbol && isEgx, staleTime: 300000
+    });
+    const { data: tvSeasonals } = useQuery({
+        queryKey: ["egx-seasonals", symbol],
+        queryFn: () => fetchEgxSeasonals(symbol),
+        enabled: !!symbol && isEgx, staleTime: 3600000
     });
     const { data: tvFinancials } = useQuery({
         queryKey: ["egx-financials-tv", symbol],
@@ -959,6 +998,7 @@ export default function SymbolDetailPage() {
         { id: "financials", label: t.tab_financials, icon: FileText },
         { id: "technicals", label: t.tab_technicals, icon: Gauge },
         { id: "forecasts", label: t.tab_forecasts, icon: Crosshair },
+        { id: "seasonals", label: lang === "ar" ? "الموسمية" : "Seasonals", icon: BarChart3 },
         { id: "ratios", label: t.tab_ratios, icon: Target },
         { id: "dividends", label: t.tab_dividends, icon: Calendar },
         { id: "news", label: t.tab_news, icon: Newspaper },
@@ -1508,6 +1548,45 @@ export default function SymbolDetailPage() {
                                             </div>
                                         </div>
                                     </>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ═══════════════════════ SEASONALS TAB ═══════════════════════ */}
+                        {activeTab === "seasonals" && (
+                            <div className="space-y-6">
+                                {tvSeasonals?.available ? (
+                                    <div className="premium-glass rounded-3xl p-8">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-200/10 pb-6 mb-6">
+                                            <div>
+                                                <h3 className="text-xl font-extrabold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#14b8a6]" /> {lang === "ar" ? "الأداء الموسمي الشهري" : "Monthly Seasonality"}</h3>
+                                                <p className="text-xs text-slate-400 font-bold uppercase mt-1">{lang === "ar" ? `متوسط العائد الشهري · ${tvSeasonals.years_covered} سنة` : `Average monthly return · ${tvSeasonals.years_covered}-year history`}</p>
+                                            </div>
+                                            <span className="text-[11px] font-bold text-slate-400">{lang === "ar" ? "محسوب من سجل الأسعار" : "Computed from price history"}</span>
+                                        </div>
+                                        <SeasonalChart months={tvSeasonals.months} />
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                                            {(() => {
+                                                const wd = (tvSeasonals.months || []).filter((m: any) => m.avg_return != null);
+                                                if (wd.length === 0) return null;
+                                                const best = [...wd].sort((a: any, b: any) => b.avg_return - a.avg_return)[0];
+                                                const worst = [...wd].sort((a: any, b: any) => a.avg_return - b.avg_return)[0];
+                                                const cons = [...wd].sort((a: any, b: any) => (b.positive_rate ?? 0) - (a.positive_rate ?? 0))[0];
+                                                return (<>
+                                                    <MetricCard label={lang === "ar" ? "أفضل شهر" : "Best Month"} value={`${best.label} +${best.avg_return.toFixed(1)}%`} icon={TrendingUp} color="text-emerald-500" />
+                                                    <MetricCard label={lang === "ar" ? "أضعف شهر" : "Weakest Month"} value={`${worst.label} ${worst.avg_return.toFixed(1)}%`} icon={TrendDown} color="text-rose-500" />
+                                                    <MetricCard label={lang === "ar" ? "الأكثر اتساقًا" : "Most Consistent"} value={`${cons.label} · ${cons.positive_rate}%`} icon={CheckCircle} color="text-[#14b8a6]" subtitle={lang === "ar" ? "نسبة الأشهر الإيجابية" : "positive rate"} />
+                                                    <MetricCard label={lang === "ar" ? "سنوات البيانات" : "Years of Data"} value={`${tvSeasonals.years_covered}`} icon={Calendar} color="text-slate-400" />
+                                                </>);
+                                            })()}
+                                        </div>
+                                        <p className="text-[11px] text-slate-400 mt-6">{lang === "ar" ? "الأنماط الموسمية السابقة لا تضمن النتائج المستقبلية." : "Past seasonal patterns do not guarantee future results."}</p>
+                                    </div>
+                                ) : (
+                                    <div className="premium-glass rounded-3xl p-12 text-center">
+                                        <BarChart3 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                        <p className="text-slate-400 font-bold">{lang === "ar" ? "لا توجد بيانات تاريخية كافية للموسمية" : "Not enough price history for seasonality"}</p>
+                                    </div>
                                 )}
                             </div>
                         )}

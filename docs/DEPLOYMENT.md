@@ -12,23 +12,27 @@ Two independently-deployed pieces: **frontend → Vercel**, **backend → Hetzne
 
 ## Frontend → Vercel (project `finhub`)
 
-**Trigger:** push to `main` (Vercel GitHub integration builds automatically), or `vercel deploy --prod` from the **repo root**.
+**Trigger:** **merge a PR to `main`.** That is the ONLY web deploy. Vercel's Git
+Integration (project `finhub`, production branch `main`) builds the commit
+automatically and `startamarkets.com` + `www` **auto-follow** it. There is no CLI
+deploy and no alias step.
 
-> **Root-directory rule:** Vercel's project Root Directory is `frontend`. **Never run `vercel` from inside `frontend/`** — it creates a stray project + `.vercel` link. Always run from the repo root.
+> **Root-directory rule:** Vercel's project Root Directory is `frontend`. **Never run
+> `vercel` from inside `frontend/`** — it creates a stray project + `.vercel` link.
+> The canonical link is `root/.vercel → finhub`.
 
-### ✅ Just run the script — it deploys + aliases + verifies
+### ✅ Deploy = merge to `main`; then verify
 ```bash
-./scripts/deploy-web.sh            # deploy current commit → alias domain → verify live
-./scripts/deploy-web.sh verify     # only re-check the live site + API (no deploy)
+# (the deploy happens automatically the moment your PR merges to main)
+./scripts/deploy-web.sh            # verify-only: checks live pages + API (does NOT deploy)
 ```
 
-> **Why the alias step matters:** a `git push` — or a deploy to the *wrong* project —
-> does **not** reliably point `startamarkets.com` at the new build (the domain can stay
-> stuck on an old deployment: the #1 "my changes aren't showing" cause). `deploy-web.sh`
-> re-aliases `startamarkets.com` + `www` on every run, so this can't bite you. If you
-> ever must do it by hand, run vercel **from the repo ROOT** (never from `frontend/` —
-> that creates a stray project): `./frontend/node_modules/.bin/vercel --prod` then
-> `./frontend/node_modules/.bin/vercel alias set <url> startamarkets.com`.
+> **Do NOT hand-run `vercel --prod` or `vercel alias`.** They create a SECOND
+> production build that races the automatic git build for the domain — the verified
+> root cause of every "my changes aren't showing / pinned domain" incident (root-caused
+> 2026-06). The domain is a project production domain that auto-follows `main`; if a
+> merge built but isn't live, look in the Vercel dashboard (a failed or still-building
+> deployment), never re-alias by hand. See `DEPLOY_RUNBOOK.md`.
 
 **Cache-busting:** when you change a static asset under `frontend/public/assets/`, bump its `?v=X.X.X` query in the referencing HTML, or the CDN serves the old file. (See `STARTAMARKETS_PUBLIC_SITE.md`.)
 
@@ -43,7 +47,8 @@ The live backend is a **Docker container** (FastAPI `app.main:app`, port `7860`)
 ./scripts/deploy_production.sh backend            # standard
 ./scripts/deploy_production.sh backend smart      # fast hot-swap (git reset + rolling restart)
 ./scripts/deploy_production.sh backend nuclear    # stop, prune, full rebuild (use when in doubt)
-./scripts/deploy_production.sh all                # frontend + backend
+# NOTE: this script no longer deploys the frontend (removed 2026-06). `all` now does backend only.
+# Frontend deploys ONLY by merging to `main`. Prefer ./scripts/deploy_backend_key.sh for backend.
 ```
 It pushes code to GitHub, then SSHes to the VPS to rebuild/restart the container. Backend env lives at **`/opt/starta/.env`** on the server.
 

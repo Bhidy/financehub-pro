@@ -456,9 +456,12 @@
 }
 
 /* carousel */
-.onbViewport { position: relative; z-index: 2; flex: 1; min-height: 0; overflow: hidden; width: 100%; }
-.onbTrack { display: flex; height: 100%; width: 100%; touch-action: pan-y; cursor: grab; }
+/* Force LTR geometry on the carousel — transform-based slide tracks break under
+   dir=rtl (flex children reverse but translateX does not). Text content stays RTL. */
+.onbViewport { position: relative; z-index: 2; flex: 1; min-height: 0; overflow: hidden; width: 100%; direction: ltr; }
+.onbTrack { display: flex; height: 100%; width: 100%; touch-action: pan-y; cursor: grab; direction: ltr; }
 .onbTrack:active { cursor: grabbing; }
+[dir="rtl"] .onbCopy { direction: rtl; }
 .onbSlide {
   flex: 0 0 100%;
   height: 100%;
@@ -4348,6 +4351,9 @@
 /* Live ticker tape (full-bleed strip under the top bar) */
 .ticker {
   position:relative; overflow:hidden; flex:none;
+  /* Force LTR — the translateX(-50%) marquee geometry breaks under dir=rtl
+     (inline-flex content reverses). Ticker symbols/prices are direction-neutral. */
+  direction:ltr;
   border-top:1px solid var(--c-border); border-bottom:1px solid var(--c-border);
   background:color-mix(in srgb, var(--c-surface) 72%, transparent);
   -webkit-mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);

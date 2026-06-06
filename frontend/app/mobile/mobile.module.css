@@ -5002,3 +5002,59 @@
 .articlePara2:last-child { margin-bottom:0 !important; }
 
 [dir="rtl"] .articleWrap2, [dir="rtl"] .articleInner2 { text-align:right; }
+
+/* ── Monthly seasonality: a compact 12-bar chart (one thin bar per month). */
+.seasonalChart {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: end;
+  gap: 4px;
+  margin-top: 14px;
+  min-height: 132px;
+}
+.seasonalCol {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: end;
+  justify-items: center;
+  gap: 4px;
+  height: 100%;
+}
+.seasonalVal {
+  font: 800 8.5px/1 Manrope, sans-serif;
+  white-space: nowrap;
+}
+.seasonalVal.up { color: var(--c-up); }
+.seasonalVal.down { color: var(--c-down); }
+.seasonalBar {
+  display: block;
+  width: 9px;
+  min-height: 4px;
+  border-radius: 4px;
+  align-self: end;
+}
+.seasonalBar.up { background: var(--c-up); }
+.seasonalBar.down { background: var(--c-down); }
+.seasonalLabel {
+  color: var(--c-fg-3);
+  font: 700 8.5px/1 Manrope, sans-serif;
+}
+
+/* ── Related TV news rows in the company overview (display-only). */
+.relatedTvRow {
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  background: var(--c-surface-2);
+  padding: 11px 12px;
+  display: grid;
+  gap: 4px;
+  text-align: start;
+}
+.relatedHeadline {
+  color: var(--c-fg-1);
+  font: 800 12px/1.28 Manrope, sans-serif;
+}
+.relatedMeta {
+  color: var(--c-fg-3);
+  font: 600 10.5px/1.2 Manrope, sans-serif;
+}

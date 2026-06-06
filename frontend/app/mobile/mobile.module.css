@@ -4302,6 +4302,12 @@
 .sheetPeriodReturn.down { color:var(--c-down); }
 .sheetChartArea { margin-top:2px; }
 
+/* Real-price line chart with price (Y) + date (X) axes */
+.priceChart { width:100%; display:block; }
+.priceGrid { stroke:var(--c-border); stroke-width:1; stroke-dasharray:2 5; vector-effect:non-scaling-stroke; opacity:.7; }
+.priceYLabel { fill:var(--c-fg-3); font:700 9px/1 var(--mono); letter-spacing:-.02em; }
+.priceXLabel { fill:var(--c-fg-3); font:700 9px/1 var(--mono); letter-spacing:.02em; text-transform:uppercase; }
+
 /* Watchlist rows (split: tappable body + trailing add/remove) */
 .watchRow { display:flex; align-items:stretch; border:1px solid var(--c-border); border-radius:16px; background:var(--c-surface); margin-bottom:9px; overflow:hidden; }
 .watchMain { flex:1; min-width:0; display:flex; align-items:center; gap:13px; padding-block:13px; padding-inline:14px 6px; background:transparent; border:0; text-align:start; }

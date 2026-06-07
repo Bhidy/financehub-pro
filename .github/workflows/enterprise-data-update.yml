@@ -45,7 +45,7 @@ jobs:
   # ============================================================
   watchdog:
     name: 🐕 Enterprise Watchdog
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 60
     
     steps:

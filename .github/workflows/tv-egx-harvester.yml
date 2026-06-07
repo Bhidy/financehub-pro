@@ -30,7 +30,7 @@ concurrency:
 jobs:
   qa-gate:
     # Resilience suite needs no DB - proves never-fail before any write job runs.
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -46,7 +46,7 @@ jobs:
 
   harvest:
     needs: qa-gate
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

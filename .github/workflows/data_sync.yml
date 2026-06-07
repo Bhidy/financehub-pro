@@ -12,7 +12,7 @@ concurrency:
 jobs:
   fill-reservoir:
     name: "Ingest Deep Financial Data"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 60
     
     steps:

@@ -44,7 +44,7 @@ permissions:
 jobs:
   update:
     name: Update fund NAVs (Mubasher CSV)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 20
     env:
       HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}

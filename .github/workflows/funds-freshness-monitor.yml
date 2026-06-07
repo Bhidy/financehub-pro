@@ -33,7 +33,7 @@ permissions:
 jobs:
   freshness:
     name: Check fund NAV freshness
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 5
     env:
       HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}

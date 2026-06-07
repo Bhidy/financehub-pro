@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   morning-brief:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 10
     # NOTE: `secrets` is NOT allowed in a step-level `if:` — using it there makes the
     # whole workflow un-compilable (0s failure on every trigger, no logs). Expose the

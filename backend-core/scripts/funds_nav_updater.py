@@ -56,6 +56,8 @@ import sys
 from datetime import date, datetime, timezone
 
 import asyncpg
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
 try:
     import httpx  # needed only for the updater (fetch) path; --monitor runs without it
 except ModuleNotFoundError:  # pragma: no cover
@@ -262,7 +264,7 @@ async def write_one(conn, fund_id, pts) -> int:
 async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
               dry_run=False, min_updated=1):
     db_url = load_db_url()
-    conn = await asyncpg.connect(db_url, statement_cache_size=0)
+    conn = await connect_resilient(db_url)
     try:
         universe = await get_universe(conn, only_numeric, ids, limit)
         print(f"[funds-nav] universe={len(universe)} funds  dry_run={dry_run}", flush=True)
@@ -326,7 +328,7 @@ async def monitor(stale_days: int = 5, min_fresh_10d: int = 30):
     GREEN, so a RED run means the monitor itself broke — DB unreachable, etc.).
     """
     db_url = load_db_url()
-    conn = await asyncpg.connect(db_url, statement_cache_size=0)
+    conn = await connect_resilient(db_url)
     try:
         newest = await conn.fetchval(
             "SELECT MAX(date) FROM nav_history WHERE fund_id ~ '^[0-9]+$'")

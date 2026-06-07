@@ -22,6 +22,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
+
 import httpx
 
 try:
@@ -82,7 +85,7 @@ async def main():
         print("ABORT: implausibly few names from TradingView (feed issue?)", file=sys.stderr)
         sys.exit(1)
 
-    conn = await asyncpg.connect(url, statement_cache_size=0)
+    conn = await connect_resilient(url)
     try:
         updated = 0
         for sym, name in names.items():

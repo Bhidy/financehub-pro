@@ -1,0 +1,51 @@
+name: Pipeline Watchdog
+
+# Dead-man's-switch for the ENTIRE data platform ($0 — GitHub Actions + Supabase
+# + Discord only). Every 30 min it verifies:
+#   1. every dataset is fresh vs a trading-calendar-aware SLA (outcome-based), and
+#   2. every scheduled workflow actually fired (process-based — catches the
+#      "cron silently never ran" bug that left 3 workflows dead).
+# On any problem it AUTO-HEALS (dispatches the corrective workflow, cooldown-
+# guarded) and alerts Discord. It writes a heartbeat to `pipeline_heartbeat`;
+# data_sync.yml independently checks that heartbeat, so the watchdog itself is
+# watched (no single blind spot), for free.
+#
+# Signal hygiene: a RED run means the WATCHDOG ITSELF broke (DB unreachable);
+# stale DATA keeps the run GREEN but alerts + heals.
+#
+# Self-heal dispatch needs a token with actions:write. The default GITHUB_TOKEN
+# can READ runs and the DB (so detection + alerting always work), but GitHub's
+# recursion guard may stop it from STARTING other workflows. For guaranteed
+# auto-heal, add a free fine-grained PAT (actions:write) as secret
+# WATCHDOG_DISPATCH_TOKEN — the workflow uses it automatically if present.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'    # every 30 min, all days; calendar logic relaxes closed periods
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline-watchdog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write              # dispatch corrective workflows (self-heal)
+
+jobs:
+  watchdog:
+    name: Freshness + schedule liveness + auto-heal
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install asyncpg
+      - name: Run watchdog (detect + heal)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GH_TOKEN: ${{ secrets.WATCHDOG_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+        run: python scripts/pipeline_watchdog.py --heal

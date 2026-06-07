@@ -11,6 +11,9 @@ import pandas as pd
 import asyncpg
 from dotenv import load_dotenv
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend-core"))
+from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
+
 # Setup
 load_dotenv()
 logging.basicConfig(
@@ -199,7 +202,7 @@ async def main():
         logger.error("No DATABASE_URL")
         return
 
-    conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
+    conn = await connect_resilient(DATABASE_URL)
     
     # Get symbols
     rows = await conn.fetch("SELECT symbol FROM market_tickers WHERE market_code='EGX' OR symbol LIKE '%.CA' OR symbol LIKE '%.SR'")

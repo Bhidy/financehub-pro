@@ -17,10 +17,10 @@ jobs:
     
     steps:
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.10'
           
@@ -36,4 +36,14 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python ingestion/populate_yahoo_reservoir.py
+
+      # Watch the watchman: independently verify the Pipeline Watchdog itself is
+      # still running (alerts Discord if its heartbeat is stale). This + the
+      # watchdog watching data_sync = mutual dead-man's-switch, no single blind spot.
+      - name: Watch the watchdog
+        if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python scripts/pipeline_watchdog.py --check-watchdog 75
 

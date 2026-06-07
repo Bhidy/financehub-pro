@@ -85,6 +85,124 @@ async def suite_resilience():
           f"source={r.last_source}")
 
 
+def _load_harvester():
+    """Import scripts/tv_egx_harvester.py as a module (no DB connection at import)."""
+    import importlib.util
+    path = os.path.join(os.path.dirname(__file__), "..", "scripts", "tv_egx_harvester.py")
+    spec = importlib.util.spec_from_file_location("tvh", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+# --------------------------------------------------------------------------- #
+# 14.2b WRITE-PATH ERROR TAXONOMY (no DB) — guards the 2026-06-07 incident:
+#   a schema/code bug ('column "sector" does not exist') must FAIL FAST, never be
+#   silently dead-lettered 289x, never be retried. Transient infra -> retry.
+# --------------------------------------------------------------------------- #
+async def suite_write_resilience():
+    print("\n14.2b WRITE-PATH ERROR TAXONOMY")
+    import asyncpg as pg
+    tvh = _load_harvester()
+
+    check("structural errors classified fatal (UndefinedColumn/Table/Syntax)",
+          issubclass(pg.UndefinedColumnError, tvh.STRUCTURAL_DB_ERRORS)
+          and issubclass(pg.UndefinedTableError, tvh.STRUCTURAL_DB_ERRORS)
+          and issubclass(pg.PostgresSyntaxError, tvh.STRUCTURAL_DB_ERRORS))
+    check("transient errors classified retryable (Conn/TooManyConns/Timeout)",
+          issubclass(pg.ConnectionDoesNotExistError, tvh.TRANSIENT_DB_ERRORS)
+          and issubclass(pg.TooManyConnectionsError, tvh.TRANSIENT_DB_ERRORS)
+          and issubclass(pg.CannotConnectNowError, tvh.TRANSIENT_DB_ERRORS))
+
+    # route real exception instances through the live handler
+    dl = []
+    async def _fake_dl(conn, cyc, key, payload, err):
+        dl.append((cyc, key))
+    tvh._deadletter = _fake_dl
+
+    # 1) STRUCTURAL (the incident) -> re-raised, NEVER dead-lettered
+    raised = None
+    try:
+        await tvh._on_write_error(None, "prices", "COMI", {},
+                                  pg.UndefinedColumnError('column "sector" of relation "market_tickers" does not exist'))
+    except pg.UndefinedColumnError:
+        raised = True
+    check("schema/code bug -> fails fast (raised, never dead-lettered)", raised and dl == [],
+          f"raised={raised}, deadletters={dl}")
+
+    # 2) TRANSIENT -> re-raised (so the cycle loop reconnects+retries)
+    raised2 = None
+    try:
+        await tvh._on_write_error(None, "prices", "COMI", {}, pg.TooManyConnectionsError("pooler full"))
+    except pg.TooManyConnectionsError:
+        raised2 = True
+    check("transient infra error -> raised for reconnect+retry", raised2 and dl == [],
+          f"raised={raised2}, deadletters={dl}")
+
+    # 3) genuine single-row DATA error -> dead-lettered, cycle survives
+    await tvh._on_write_error(None, "prices", "XYZ", {}, ValueError("bad numeric for one row"))
+    check("single bad row -> dead-lettered, cycle survives", dl == [("prices", "XYZ")], f"{dl}")
+
+
+# --------------------------------------------------------------------------- #
+# 14.1c WRITE CONTRACT (requires DB) — dry-run the harvester's EXACT write SQL
+#   against the LIVE schema inside a rolled-back transaction. Zero data impact.
+#   This is the gate that catches column/table drift BEFORE a live harvest.
+# --------------------------------------------------------------------------- #
+async def suite_write_contract():
+    if not DATABASE_URL:
+        print("\n14.1c WRITE CONTRACT: skipped (no DATABASE_URL)")
+        return
+    import asyncpg
+    from datetime import date
+    tvh = _load_harvester()
+    print("\n14.1c WRITE CONTRACT (every write statement vs live schema)")
+    conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=20)
+    try:
+        # (a) parse-validate EVERY write statement of EVERY cycle against the live
+        #     schema: catches missing/renamed columns, dropped tables, syntax drift
+        #     (the 'sector' incident class). Parse-only — no execute, no data.
+        bad = []
+        for label, sql in tvh.ALL_WRITE_SQL.items():
+            try:
+                await conn.prepare(sql)
+            except Exception as e:  # noqa: BLE001
+                bad.append(f"{label}: {type(e).__name__}: {str(e).splitlines()[0]}")
+        check(f"all {len(tvh.ALL_WRITE_SQL)} write statements parse vs live schema",
+              not bad, " | ".join(bad))
+
+        # (b) market_tickers conflict semantics — the PK-vs-target dup-key bug only
+        #     shows at runtime, so execute both paths in a rolled-back tx.
+        tr = conn.transaction()
+        await tr.start()
+        try:
+            probe = "__QAPROBE__"  # synthetic; <= market_tickers.symbol varchar(20); rolled back
+            # INSERT path: validates columns/types/lengths against the live schema.
+            await conn.execute(tvh.SQL_UPSERT_MARKET_TICKER,
+                probe, "QA Probe", "QA Sector", 1.0, 0.0, 0.0, 0,
+                None, None, None, "qa")
+            await conn.execute(tvh.SQL_UPSERT_OHLC,
+                probe, date(2000, 1, 1), 1.0, 1.0, 1.0, 1.0, 0, "qa")
+            check("prices-cycle SQL matches market_tickers + ohlc_data schema", True)
+
+            # CONFLICT path: a pre-existing row under a NULL market_code must still
+            # UPDATE — guards the 2026-06-07 72-row 'market_tickers_pkey already
+            # exists' failure caused by an ON CONFLICT target not matching the PK.
+            probe2 = "__QAPROBE2__"
+            await conn.execute(
+                "INSERT INTO market_tickers (symbol, market_code, last_price) VALUES ($1, NULL, 1.0)", probe2)
+            await conn.execute(tvh.SQL_UPSERT_MARKET_TICKER,
+                probe2, "QA Probe", "QA Sector", 2.0, 0.0, 0.0, 0, None, None, None, "qa")
+            check("upsert over NULL-market_code row UPDATEs (no dup-key)", True)
+        except Exception as e:  # noqa: BLE001 — any structural mismatch is a No-Go
+            check("prices-cycle SQL matches market_tickers + ohlc_data schema", False,
+                  f"{type(e).__name__}: {e}")
+        finally:
+            await tr.rollback()  # never persist the probe row
+    finally:
+        await conn.close()
+
+
 # --------------------------------------------------------------------------- #
 # 14.1 / live: validate the real TV client's own gates
 # --------------------------------------------------------------------------- #
@@ -150,8 +268,12 @@ async def main(suite: str):
     print("=" * 60)
     print("EGX DATA AUDIT  -  institutional go/no-go gate")
     print("=" * 60)
+    if suite in ("all", "resilience", "contract"):
+        await suite_write_resilience()      # no-DB write-path error taxonomy
     if suite in ("all", "resilience"):
         await suite_resilience()
+    if suite in ("all", "contract", "dataquality"):
+        await suite_write_contract()        # DB dry-run: SQL vs live schema
     if suite in ("all", "live"):
         await suite_live()
     if suite in ("all", "dataquality"):
@@ -172,5 +294,5 @@ async def main(suite: str):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--suite", default="all",
-                    choices=["all", "resilience", "live", "dataquality"])
+                    choices=["all", "resilience", "live", "dataquality", "contract"])
     asyncio.run(main(ap.parse_args().suite))

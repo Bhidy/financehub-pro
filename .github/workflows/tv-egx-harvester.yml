@@ -32,20 +32,24 @@ jobs:
     # Resilience suite needs no DB - proves never-fail before any write job runs.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - run: pip install httpx asyncpg
-      - name: Chaos / resilience audit
+      - name: Chaos / resilience audit (feed + write-path taxonomy, no DB)
         run: python qa/egx_audit.py --suite resilience
+      - name: Write-contract preflight (schema-drift gate — needs DB)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python qa/egx_audit.py --suite contract
 
   harvest:
     needs: qa-gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - run: pip install httpx asyncpg yfinance

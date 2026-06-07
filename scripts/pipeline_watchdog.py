@@ -312,13 +312,43 @@ async def main(heal: bool, check_watchdog_min: int):
                     res = _dispatch(file, {})
                     heals.append(f"↻ {file}: {res}")
 
-        # 3) heartbeat (so the paired monitor can confirm we're alive)
+        # 3) RUNNER DISK CHECK (self-hosted only — checks actual Hetzner VPS disk)
+        #    Warn at 85%, critical at 92%. Standard-library shutil; no pip needed.
+        DISK_WARN_PCT = 85
+        DISK_CRIT_PCT = 92
+        disk_summary = ""
+        print("  --- runner disk ---")
+        try:
+            import shutil
+            du = shutil.disk_usage("/")
+            _disk_pct = int(du.used * 100 / du.total)
+            _disk_free_gb = du.free / (1024 ** 3)
+            disk_summary = f"disk={_disk_pct}%"
+            if _disk_pct >= DISK_CRIT_PCT:
+                mark = "🔴"
+                problems.append(
+                    f"🔴 **runner disk CRITICAL: {_disk_pct}% full** — only {_disk_free_gb:.1f}G free on Hetzner VPS."
+                    f" Runner will crash if disk fills. Clear: `docker system prune -f` or expand volume."
+                )
+            elif _disk_pct >= DISK_WARN_PCT:
+                mark = "🟠"
+                problems.append(
+                    f"🟠 **runner disk {_disk_pct}% full** — {_disk_free_gb:.1f}G remaining on Hetzner VPS."
+                    f" Free space soon: `docker system prune -f` or clear /tmp, logs."
+                )
+            else:
+                mark = "✅"
+            print(f"  {mark} runner disk:    {_disk_pct}% used, {_disk_free_gb:.1f}G free")
+        except Exception as e:
+            print(f"  ❓ disk check skipped: {e}", file=sys.stderr)
+
+        # 4) heartbeat (so the paired monitor can confirm we're alive)
         await conn.execute("""
             INSERT INTO pipeline_heartbeat(name,last_run_at,detail) VALUES('pipeline_watchdog',$1,$2)
             ON CONFLICT (name) DO UPDATE SET last_run_at=EXCLUDED.last_run_at, detail=EXCLUDED.detail
-        """, now, f"{len(problems)} problem(s)")
+        """, now, f"{len(problems)} problem(s)" + (f" | {disk_summary}" if disk_summary else ""))
 
-        # 4) report + alert
+        # 5) report + alert
         if heals:
             print("\n".join("  " + h for h in heals))
         if problems:
@@ -327,7 +357,7 @@ async def main(heal: bool, check_watchdog_min: int):
             print(f"\nWATCHDOG: {len(problems)} problem(s) found"
                   + (f", {sum('DISPATCHED' in h for h in heals)} heal(s) dispatched" if heals else ""))
         else:
-            print("\nWATCHDOG: all datasets fresh, all schedules live ✅")
+            print("\nWATCHDOG: all datasets fresh, all schedules live, runner disk OK ✅")
     finally:
         await conn.close()
 

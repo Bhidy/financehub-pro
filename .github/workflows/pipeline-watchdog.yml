@@ -27,7 +27,7 @@ on:
     #
     # Trading window (EGX, UTC): Sun–Thu 06:00–13:15 UTC
     - cron: '*/30 6-14 * * 0-4'   # every 30 min during EGX session (tight freshness SLA)
-    - cron: '0 */2 15-23 * * *'   # every 2 h post-close / evening (wall-days + schedule-liveness)
+    - cron: '0 15,17,19,21,23 * * *'  # every 2 h post-close / evening (wall-days + schedule-liveness)
     - cron: '0 0,2,4 * * *'       # every 2 h overnight (0,2,4 UTC — quiet hours)
     # Net: ~22 runs/day vs 48 before → saves ≈350 min/month from watchdog alone.
   workflow_dispatch:

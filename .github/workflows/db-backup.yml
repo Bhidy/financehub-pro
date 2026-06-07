@@ -1,0 +1,89 @@
+name: Database Backup (off-site)
+
+# Free, off-site, retained, integrity-checked DB backup — fixes the DR gap where
+# the only backup was a single pg_dump file on the Hetzner box itself
+# (/app/backups/financehub_weekly.sql.gz), overwritten weekly, with no off-site
+# copy, no history, and no restore verification: if that disk died, so did the
+# backup. This runs pg_dump from GitHub (off the prod host), verifies the dump,
+# and keeps each run as a versioned artifact — $0.
+#
+# SECRET REQUIRED: SUPABASE_DIRECT_URL — the DIRECT (session-mode, port 5432)
+# connection string from Supabase → Project Settings → Database → Connection
+# string → "Direct connection". pg_dump needs a session connection; the pooled
+# DATABASE_URL (port 6543, transaction mode) does NOT work for pg_dump. If the
+# secret is missing the run fails LOUD (a visible failure beats a silent fake
+# backup).
+
+on:
+  schedule:
+    - cron: '0 3 * * 4'     # Thursdays 03:00 UTC (weekly), matches the old tier7 slot
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: pg_dump → verify → off-site artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - name: Install pg_dump (PostgreSQL 16 client, PGDG)
+        run: |
+          set -euo pipefail
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16
+          pg_dump --version
+
+      - name: Dump + verify
+        env:
+          DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DIRECT_URL:-}" ]; then
+            echo "::error::SUPABASE_DIRECT_URL secret is not set — cannot take a real backup."
+            exit 1
+          fi
+          STAMP="$(date -u +%Y%m%d-%H%M)"
+          OUT="financehub-${STAMP}.sql.gz"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          # --no-owner/--no-privileges keep the dump portable for restore into any DB.
+          pg_dump --no-owner --no-privileges --format=plain "$DIRECT_URL" | gzip -9 > "$OUT"
+          # Integrity: gzip must be valid AND the dump must be plausibly large (a
+          # failed/empty dump is a few bytes — never let that masquerade as a backup).
+          gzip -t "$OUT"
+          SIZE=$(stat -f%z "$OUT" 2>/dev/null || stat -c%s "$OUT")
+          echo "backup size: ${SIZE} bytes"
+          if [ "$SIZE" -lt 102400 ]; then
+            echo "::error::backup is only ${SIZE} bytes (<100KB) — almost certainly a failed/empty dump."
+            exit 1
+          fi
+          # Sanity: the decompressed dump must contain core tables.
+          for t in market_tickers ohlc_data mutual_funds; do
+            if ! zcat "$OUT" | grep -q "CREATE TABLE.*\b${t}\b\|COPY .*\b${t}\b"; then
+              echo "::warning::table '${t}' not found in dump (verify schema)."
+            fi
+          done
+          echo "✓ backup verified: $OUT (${SIZE} bytes)"
+
+      - name: Upload off-site artifact (retained, versioned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.OUT }}
+          path: ${{ env.OUT }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Alert Discord on failure
+        if: failure() && env.HAS_DISCORD != ''
+        run: |
+          MSG=$(printf '🔴 **DB BACKUP FAILED** — no fresh off-site backup was produced.\n• Run: https://github.com/%s/actions/runs/%s' "${{ github.repository }}" "${{ github.run_id }}")
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d "$(printf '{"content": %s}' "$(printf '%s' "$MSG" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')")" || true

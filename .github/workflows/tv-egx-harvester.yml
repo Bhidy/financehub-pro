@@ -31,9 +31,10 @@ jobs:
   qa-gate:
     # Resilience suite needs no DB - proves never-fail before any write job runs.
     runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install httpx asyncpg
@@ -47,9 +48,10 @@ jobs:
   harvest:
     needs: qa-gate
     runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install httpx asyncpg yfinance

@@ -24,6 +24,8 @@ Reads DATABASE_URL from env/.env.
 """
 import argparse, asyncio, os, re, sys
 import asyncpg
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
 
 def load_db_url():
     u = os.environ.get("DATABASE_URL")
@@ -77,7 +79,7 @@ WHERE ss.symbol = mt.symbol AND mt.market_code = 'EGX';
 """
 
 async def main(view_only):
-    c = await asyncpg.connect(load_db_url(), statement_cache_size=0)
+    c = await connect_resilient(load_db_url())
     try:
         await c.execute(VIEW)
         print("[stock_stats_view] refreshed (timeframe='1D')")

@@ -156,9 +156,23 @@ async def suite_write_contract():
     import asyncpg
     from datetime import date
     tvh = _load_harvester()
-    print("\n14.1c WRITE CONTRACT (dry-run vs live schema)")
+    print("\n14.1c WRITE CONTRACT (every write statement vs live schema)")
     conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=20)
     try:
+        # (a) parse-validate EVERY write statement of EVERY cycle against the live
+        #     schema: catches missing/renamed columns, dropped tables, syntax drift
+        #     (the 'sector' incident class). Parse-only — no execute, no data.
+        bad = []
+        for label, sql in tvh.ALL_WRITE_SQL.items():
+            try:
+                await conn.prepare(sql)
+            except Exception as e:  # noqa: BLE001
+                bad.append(f"{label}: {type(e).__name__}: {str(e).splitlines()[0]}")
+        check(f"all {len(tvh.ALL_WRITE_SQL)} write statements parse vs live schema",
+              not bad, " | ".join(bad))
+
+        # (b) market_tickers conflict semantics — the PK-vs-target dup-key bug only
+        #     shows at runtime, so execute both paths in a rolled-back tx.
         tr = conn.transaction()
         await tr.start()
         try:

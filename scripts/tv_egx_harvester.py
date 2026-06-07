@@ -103,6 +103,145 @@ SQL_UPSERT_OHLC = """
         close=EXCLUDED.close, volume=EXCLUDED.volume, source=EXCLUDED.source
 """
 
+# Remaining cycle write SQL — hoisted to module constants so the QA gate
+# (qa/egx_audit.py --suite contract) dry-runs the EXACT statement of EVERY cycle
+# against the live schema. Any future column/table/conflict-target drift in any
+# cycle is caught pre-harvest instead of silently dead-lettering.
+SQL_UPSERT_TECHNICALS = """
+    INSERT INTO egx_technicals (symbol,timeframe,rsi,macd_macd,macd_signal,stoch_k,stoch_d,
+        cci20,adx,mom,recommend_all,recommend_ma,recommend_other,ema50,ema200,sma50,sma200,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now())
+    ON CONFLICT (symbol,timeframe) DO UPDATE SET
+        rsi=EXCLUDED.rsi, macd_macd=EXCLUDED.macd_macd, macd_signal=EXCLUDED.macd_signal,
+        stoch_k=EXCLUDED.stoch_k, stoch_d=EXCLUDED.stoch_d, cci20=EXCLUDED.cci20,
+        adx=EXCLUDED.adx, mom=EXCLUDED.mom, recommend_all=EXCLUDED.recommend_all,
+        recommend_ma=EXCLUDED.recommend_ma, recommend_other=EXCLUDED.recommend_other,
+        ema50=EXCLUDED.ema50, ema200=EXCLUDED.ema200, sma50=EXCLUDED.sma50,
+        sma200=EXCLUDED.sma200, updated_at=now()
+"""
+
+SQL_UPSERT_ESTIMATES = """
+    INSERT INTO egx_estimates (symbol,target_average,target_high,target_low,target_median,
+        rec_buy,rec_over,rec_hold,rec_under,rec_sell,rec_total,
+        eps_fcst_next_fq,rev_fcst_next_fq,eps_fcst_next_fy,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, now())
+    ON CONFLICT (symbol) DO UPDATE SET
+        target_average=EXCLUDED.target_average, target_high=EXCLUDED.target_high,
+        target_low=EXCLUDED.target_low, target_median=EXCLUDED.target_median,
+        rec_buy=EXCLUDED.rec_buy, rec_over=EXCLUDED.rec_over, rec_hold=EXCLUDED.rec_hold,
+        rec_under=EXCLUDED.rec_under, rec_sell=EXCLUDED.rec_sell, rec_total=EXCLUDED.rec_total,
+        eps_fcst_next_fq=EXCLUDED.eps_fcst_next_fq, rev_fcst_next_fq=EXCLUDED.rev_fcst_next_fq,
+        eps_fcst_next_fy=EXCLUDED.eps_fcst_next_fy, updated_at=now()
+"""
+
+SQL_UPSERT_NEWS = """
+    INSERT INTO egx_news (id,content_hash,title,provider,source,published_at,story_path,related_symbols)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+    ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, story_path=EXCLUDED.story_path
+"""
+
+SQL_UPSERT_SYMBOL_MAP = """
+    INSERT INTO symbol_map (internal_symbol,tv_symbol,yahoo_symbol,isin,logoid,logo_url,is_primary,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7, now())
+    ON CONFLICT (internal_symbol) DO UPDATE SET
+        tv_symbol=EXCLUDED.tv_symbol, isin=EXCLUDED.isin, logoid=EXCLUDED.logoid,
+        logo_url=EXCLUDED.logo_url, is_primary=EXCLUDED.is_primary, updated_at=now()
+"""
+
+SQL_UPSERT_SYMBOL_MAP_NO_ISIN = """
+    INSERT INTO symbol_map (internal_symbol,tv_symbol,yahoo_symbol,logoid,logo_url,is_primary,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6, now())
+    ON CONFLICT (internal_symbol) DO UPDATE SET
+        tv_symbol=EXCLUDED.tv_symbol, logoid=EXCLUDED.logoid,
+        logo_url=EXCLUDED.logo_url, updated_at=now()
+"""
+
+SQL_UPDATE_TICKER_IDENTITY = (
+    "UPDATE market_tickers SET isin=$2, logo_url=$3 WHERE symbol=$1 AND market_code='EGX'"
+)
+
+SQL_UPSERT_FINANCIALS = """
+    INSERT INTO egx_financials (symbol,period_type,fiscal_year,revenue,gross_profit,ebitda,
+        net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
+    VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
+    ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
+        revenue=EXCLUDED.revenue, gross_profit=EXCLUDED.gross_profit, ebitda=EXCLUDED.ebitda,
+        net_income=EXCLUDED.net_income, eps_diluted=EXCLUDED.eps_diluted,
+        free_cash_flow=EXCLUDED.free_cash_flow, total_assets=EXCLUDED.total_assets,
+        total_debt=EXCLUDED.total_debt, dps=EXCLUDED.dps, updated_at=now()
+"""
+
+SQL_UPSERT_DIVIDENDS = """
+    INSERT INTO egx_dividends (symbol,div_yield,amount_recent,ex_date_recent,payment_date_recent,
+        amount_upcoming,ex_date_upcoming,payment_date_upcoming,frequency,payout_ratio_ttm,continuous_growth,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
+    ON CONFLICT (symbol) DO UPDATE SET
+        div_yield=EXCLUDED.div_yield, amount_recent=EXCLUDED.amount_recent,
+        ex_date_recent=EXCLUDED.ex_date_recent, payment_date_recent=EXCLUDED.payment_date_recent,
+        amount_upcoming=EXCLUDED.amount_upcoming, ex_date_upcoming=EXCLUDED.ex_date_upcoming,
+        payment_date_upcoming=EXCLUDED.payment_date_upcoming, frequency=EXCLUDED.frequency,
+        payout_ratio_ttm=EXCLUDED.payout_ratio_ttm, continuous_growth=EXCLUDED.continuous_growth,
+        updated_at=now()
+"""
+
+SQL_UPSERT_FUNDAMENTALS = """
+    INSERT INTO egx_fundamentals (symbol, fiscal_year, revenue, gross_profit,
+        operating_income, ebitda, net_income, total_assets, total_equity,
+        total_liabilities, total_debt, free_cash_flow, eps_diluted, bvps,
+        shares_outstanding, dps, gross_margin, operating_margin, roe, roa, updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now())
+    ON CONFLICT (symbol) DO UPDATE SET
+        fiscal_year=EXCLUDED.fiscal_year, revenue=EXCLUDED.revenue,
+        gross_profit=EXCLUDED.gross_profit, operating_income=EXCLUDED.operating_income,
+        ebitda=EXCLUDED.ebitda, net_income=EXCLUDED.net_income,
+        total_assets=EXCLUDED.total_assets, total_equity=EXCLUDED.total_equity,
+        total_liabilities=EXCLUDED.total_liabilities, total_debt=EXCLUDED.total_debt,
+        free_cash_flow=EXCLUDED.free_cash_flow, eps_diluted=EXCLUDED.eps_diluted,
+        bvps=EXCLUDED.bvps, shares_outstanding=EXCLUDED.shares_outstanding,
+        dps=EXCLUDED.dps, gross_margin=EXCLUDED.gross_margin,
+        operating_margin=EXCLUDED.operating_margin, roe=EXCLUDED.roe, roa=EXCLUDED.roa,
+        updated_at=now()
+"""
+
+SQL_SYNC_FINANCIALS_FROM_FUNDAMENTALS = """
+    INSERT INTO egx_financials (symbol,period_type,fiscal_year,revenue,gross_profit,
+        ebitda,net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
+    VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
+    ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
+        revenue=COALESCE(EXCLUDED.revenue, egx_financials.revenue),
+        gross_profit=COALESCE(EXCLUDED.gross_profit, egx_financials.gross_profit),
+        ebitda=COALESCE(EXCLUDED.ebitda, egx_financials.ebitda),
+        net_income=COALESCE(EXCLUDED.net_income, egx_financials.net_income),
+        eps_diluted=COALESCE(EXCLUDED.eps_diluted, egx_financials.eps_diluted),
+        free_cash_flow=COALESCE(EXCLUDED.free_cash_flow, egx_financials.free_cash_flow),
+        total_assets=COALESCE(EXCLUDED.total_assets, egx_financials.total_assets),
+        total_debt=COALESCE(EXCLUDED.total_debt, egx_financials.total_debt),
+        dps=COALESCE(EXCLUDED.dps, egx_financials.dps), updated_at=now()
+"""
+
+SQL_INSERT_DEADLETTER = (
+    "INSERT INTO egx_ingest_deadletter(cycle,symbol,payload,error) VALUES($1,$2,$3,$4)"
+)
+
+# Registry of EVERY write statement the harvester issues. The QA write-contract
+# gate (qa/egx_audit.py) iterates this and validates each against the live schema,
+# so adding a new write means adding it here -> it is covered automatically.
+ALL_WRITE_SQL = {
+    "market_tickers":            SQL_UPSERT_MARKET_TICKER,
+    "ohlc_data":                 SQL_UPSERT_OHLC,
+    "egx_technicals":            SQL_UPSERT_TECHNICALS,
+    "egx_estimates":             SQL_UPSERT_ESTIMATES,
+    "egx_news":                  SQL_UPSERT_NEWS,
+    "symbol_map":                SQL_UPSERT_SYMBOL_MAP,
+    "symbol_map(no_isin)":       SQL_UPSERT_SYMBOL_MAP_NO_ISIN,
+    "market_tickers(identity)":  SQL_UPDATE_TICKER_IDENTITY,
+    "egx_financials":            SQL_UPSERT_FINANCIALS,
+    "egx_financials(sync)":      SQL_SYNC_FINANCIALS_FROM_FUNDAMENTALS,
+    "egx_dividends":             SQL_UPSERT_DIVIDENDS,
+    "egx_fundamentals":          SQL_UPSERT_FUNDAMENTALS,
+    "egx_ingest_deadletter":     SQL_INSERT_DEADLETTER,
+}
+
 
 async def _symbols(conn) -> list[str]:
     rows = await conn.fetch("SELECT symbol FROM market_tickers WHERE market_code='EGX' ORDER BY symbol")
@@ -111,8 +250,7 @@ async def _symbols(conn) -> list[str]:
 
 async def _deadletter(conn, cycle, symbol, payload, error):
     try:
-        await conn.execute(
-            "INSERT INTO egx_ingest_deadletter(cycle,symbol,payload,error) VALUES($1,$2,$3,$4)",
+        await conn.execute(SQL_INSERT_DEADLETTER,
             cycle, symbol, json.dumps(payload, default=str), str(error)[:500])
     except Exception:
         logger.exception("deadletter write failed")
@@ -166,18 +304,8 @@ async def cycle_technicals(conn):
     n = 0
     for r in rows:
         try:
-            await conn.execute("""
-                INSERT INTO egx_technicals (symbol,timeframe,rsi,macd_macd,macd_signal,stoch_k,stoch_d,
-                    cci20,adx,mom,recommend_all,recommend_ma,recommend_other,ema50,ema200,sma50,sma200,updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now())
-                ON CONFLICT (symbol,timeframe) DO UPDATE SET
-                    rsi=EXCLUDED.rsi, macd_macd=EXCLUDED.macd_macd, macd_signal=EXCLUDED.macd_signal,
-                    stoch_k=EXCLUDED.stoch_k, stoch_d=EXCLUDED.stoch_d, cci20=EXCLUDED.cci20,
-                    adx=EXCLUDED.adx, mom=EXCLUDED.mom, recommend_all=EXCLUDED.recommend_all,
-                    recommend_ma=EXCLUDED.recommend_ma, recommend_other=EXCLUDED.recommend_other,
-                    ema50=EXCLUDED.ema50, ema200=EXCLUDED.ema200, sma50=EXCLUDED.sma50,
-                    sma200=EXCLUDED.sma200, updated_at=now()
-            """, r["symbol"], r["timeframe"], r.get("rsi"), r.get("macd_macd"), r.get("macd_signal"),
+            await conn.execute(SQL_UPSERT_TECHNICALS,
+                r["symbol"], r["timeframe"], r.get("rsi"), r.get("macd_macd"), r.get("macd_signal"),
                 r.get("stoch_k"), r.get("stoch_d"), r.get("cci20"), r.get("adx"), r.get("mom"),
                 r.get("recommend_all"), r.get("recommend_ma"), r.get("recommend_other"),
                 r.get("ema50"), r.get("ema200"), r.get("sma50"), r.get("sma200"))
@@ -192,19 +320,8 @@ async def cycle_estimates(conn):
     n = 0
     for r in rows:
         try:
-            await conn.execute("""
-                INSERT INTO egx_estimates (symbol,target_average,target_high,target_low,target_median,
-                    rec_buy,rec_over,rec_hold,rec_under,rec_sell,rec_total,
-                    eps_fcst_next_fq,rev_fcst_next_fq,eps_fcst_next_fy,updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, now())
-                ON CONFLICT (symbol) DO UPDATE SET
-                    target_average=EXCLUDED.target_average, target_high=EXCLUDED.target_high,
-                    target_low=EXCLUDED.target_low, target_median=EXCLUDED.target_median,
-                    rec_buy=EXCLUDED.rec_buy, rec_over=EXCLUDED.rec_over, rec_hold=EXCLUDED.rec_hold,
-                    rec_under=EXCLUDED.rec_under, rec_sell=EXCLUDED.rec_sell, rec_total=EXCLUDED.rec_total,
-                    eps_fcst_next_fq=EXCLUDED.eps_fcst_next_fq, rev_fcst_next_fq=EXCLUDED.rev_fcst_next_fq,
-                    eps_fcst_next_fy=EXCLUDED.eps_fcst_next_fy, updated_at=now()
-            """, r["symbol"], r.get("price_target_average"), r.get("price_target_high"),
+            await conn.execute(SQL_UPSERT_ESTIMATES,
+                r["symbol"], r.get("price_target_average"), r.get("price_target_high"),
                 r.get("price_target_low"), r.get("price_target_median"),
                 r.get("recommendation_buy"), r.get("recommendation_over"), r.get("recommendation_hold"),
                 r.get("recommendation_under"), r.get("recommendation_sell"), r.get("recommendation_total"),
@@ -223,11 +340,8 @@ async def cycle_news(conn):
         try:
             h = hashlib.sha1(f"{it.get('title')}|{it.get('published_at')}|{it.get('provider')}"
                              .encode()).hexdigest()
-            await conn.execute("""
-                INSERT INTO egx_news (id,content_hash,title,provider,source,published_at,story_path,related_symbols)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-                ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, story_path=EXCLUDED.story_path
-            """, it["id"], h, it.get("title"), it.get("provider"), it.get("source"),
+            await conn.execute(SQL_UPSERT_NEWS,
+                it["id"], h, it.get("title"), it.get("provider"), it.get("source"),
                 it.get("published_at"), it.get("story_path"), json.dumps(it.get("related_symbols")))
             n += 1
         except Exception as e:
@@ -251,29 +365,18 @@ async def cycle_symbolmap(conn):
             if not idn:
                 continue
             try:
-                await conn.execute("""
-                    INSERT INTO symbol_map (internal_symbol,tv_symbol,yahoo_symbol,isin,logoid,logo_url,is_primary,updated_at)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7, now())
-                    ON CONFLICT (internal_symbol) DO UPDATE SET
-                        tv_symbol=EXCLUDED.tv_symbol, isin=EXCLUDED.isin, logoid=EXCLUDED.logoid,
-                        logo_url=EXCLUDED.logo_url, is_primary=EXCLUDED.is_primary, updated_at=now()
-                """, s, idn["tv_symbol"], f"{s}.CA", idn.get("isin"),
+                await conn.execute(SQL_UPSERT_SYMBOL_MAP,
+                    s, idn["tv_symbol"], f"{s}.CA", idn.get("isin"),
                     idn.get("logoid"), idn.get("logo_url"), idn.get("is_primary"))
             except asyncpg.UniqueViolationError:
                 # ISIN already claimed by another ticker (dual listing). Map without ISIN.
                 collisions += 1
-                await conn.execute("""
-                    INSERT INTO symbol_map (internal_symbol,tv_symbol,yahoo_symbol,logoid,logo_url,is_primary,updated_at)
-                    VALUES ($1,$2,$3,$4,$5,$6, now())
-                    ON CONFLICT (internal_symbol) DO UPDATE SET
-                        tv_symbol=EXCLUDED.tv_symbol, logoid=EXCLUDED.logoid,
-                        logo_url=EXCLUDED.logo_url, updated_at=now()
-                """, s, idn["tv_symbol"], f"{s}.CA",
+                await conn.execute(SQL_UPSERT_SYMBOL_MAP_NO_ISIN,
+                    s, idn["tv_symbol"], f"{s}.CA",
                     idn.get("logoid"), idn.get("logo_url"), idn.get("is_primary"))
                 logger.info("symbolmap: ISIN dual-listing for %s — mapped without ISIN", s)
             if s in tracked:
-                await conn.execute(
-                    "UPDATE market_tickers SET isin=$2, logo_url=$3 WHERE symbol=$1 AND market_code='EGX'",
+                await conn.execute(SQL_UPDATE_TICKER_IDENTITY,
                     s, idn.get("isin"), idn.get("logo_url"))
             n += 1
         except Exception as e:
@@ -310,16 +413,8 @@ async def cycle_financials(conn):
             g = lambda arr, j: (arr[j] if j < len(arr) else None)
             for j, yr in enumerate(years):
                 try:
-                    await conn.execute("""
-                        INSERT INTO egx_financials (symbol,period_type,fiscal_year,revenue,gross_profit,ebitda,
-                            net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
-                        VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
-                        ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
-                            revenue=EXCLUDED.revenue, gross_profit=EXCLUDED.gross_profit, ebitda=EXCLUDED.ebitda,
-                            net_income=EXCLUDED.net_income, eps_diluted=EXCLUDED.eps_diluted,
-                            free_cash_flow=EXCLUDED.free_cash_flow, total_assets=EXCLUDED.total_assets,
-                            total_debt=EXCLUDED.total_debt, dps=EXCLUDED.dps, updated_at=now()
-                    """, sym, int(yr), g(rev, j), g(gp, j), g(eb, j), g(ni, j), g(eps, j),
+                    await conn.execute(SQL_UPSERT_FINANCIALS,
+                        sym, int(yr), g(rev, j), g(gp, j), g(eb, j), g(ni, j), g(eps, j),
                         g(fcf, j), g(ta, j), g(td, j), g(dps, j))
                     total += 1
                 except Exception as e:
@@ -336,18 +431,8 @@ async def cycle_dividends(conn):
         try:
             freq = d.get("dividends_frequency")
             freq = str(freq) if freq is not None else None
-            await conn.execute("""
-                INSERT INTO egx_dividends (symbol,div_yield,amount_recent,ex_date_recent,payment_date_recent,
-                    amount_upcoming,ex_date_upcoming,payment_date_upcoming,frequency,payout_ratio_ttm,continuous_growth,updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
-                ON CONFLICT (symbol) DO UPDATE SET
-                    div_yield=EXCLUDED.div_yield, amount_recent=EXCLUDED.amount_recent,
-                    ex_date_recent=EXCLUDED.ex_date_recent, payment_date_recent=EXCLUDED.payment_date_recent,
-                    amount_upcoming=EXCLUDED.amount_upcoming, ex_date_upcoming=EXCLUDED.ex_date_upcoming,
-                    payment_date_upcoming=EXCLUDED.payment_date_upcoming, frequency=EXCLUDED.frequency,
-                    payout_ratio_ttm=EXCLUDED.payout_ratio_ttm, continuous_growth=EXCLUDED.continuous_growth,
-                    updated_at=now()
-            """, d["symbol"], d.get("dividends_yield"), d.get("dividend_amount_recent"),
+            await conn.execute(SQL_UPSERT_DIVIDENDS,
+                d["symbol"], d.get("dividends_yield"), d.get("dividend_amount_recent"),
                 _i(d.get("dividend_ex_date_recent")), _i(d.get("dividend_payment_date_recent")),
                 d.get("dividend_amount_upcoming"), _i(d.get("dividend_ex_date_upcoming")),
                 _i(d.get("dividend_payment_date_upcoming")), freq,
@@ -375,24 +460,8 @@ async def cycle_fundamentals(conn):
     n = 0
     for d in rows:
         try:
-            await conn.execute("""
-                INSERT INTO egx_fundamentals (symbol, fiscal_year, revenue, gross_profit,
-                    operating_income, ebitda, net_income, total_assets, total_equity,
-                    total_liabilities, total_debt, free_cash_flow, eps_diluted, bvps,
-                    shares_outstanding, dps, gross_margin, operating_margin, roe, roa, updated_at)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now())
-                ON CONFLICT (symbol) DO UPDATE SET
-                    fiscal_year=EXCLUDED.fiscal_year, revenue=EXCLUDED.revenue,
-                    gross_profit=EXCLUDED.gross_profit, operating_income=EXCLUDED.operating_income,
-                    ebitda=EXCLUDED.ebitda, net_income=EXCLUDED.net_income,
-                    total_assets=EXCLUDED.total_assets, total_equity=EXCLUDED.total_equity,
-                    total_liabilities=EXCLUDED.total_liabilities, total_debt=EXCLUDED.total_debt,
-                    free_cash_flow=EXCLUDED.free_cash_flow, eps_diluted=EXCLUDED.eps_diluted,
-                    bvps=EXCLUDED.bvps, shares_outstanding=EXCLUDED.shares_outstanding,
-                    dps=EXCLUDED.dps, gross_margin=EXCLUDED.gross_margin,
-                    operating_margin=EXCLUDED.operating_margin, roe=EXCLUDED.roe, roa=EXCLUDED.roa,
-                    updated_at=now()
-            """, d["symbol"], d.get("fiscal_year"), d.get("revenue"), d.get("gross_profit"),
+            await conn.execute(SQL_UPSERT_FUNDAMENTALS,
+                d["symbol"], d.get("fiscal_year"), d.get("revenue"), d.get("gross_profit"),
                 d.get("operating_income"), d.get("ebitda"), d.get("net_income"),
                 d.get("total_assets"), d.get("total_equity"), d.get("total_liabilities"),
                 d.get("total_debt"), d.get("free_cash_flow"), d.get("eps_diluted"),
@@ -405,21 +474,8 @@ async def cycle_fundamentals(conn):
             # financials -> fundamentals, so this runs LAST and wins, keeping the
             # Financials-tab latest year consistent with Overview/Ratios.
             if d.get("fiscal_year") is not None:
-                await conn.execute("""
-                    INSERT INTO egx_financials (symbol,period_type,fiscal_year,revenue,gross_profit,
-                        ebitda,net_income,eps_diluted,free_cash_flow,total_assets,total_debt,dps,updated_at)
-                    VALUES ($1,'annual',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
-                    ON CONFLICT (symbol,period_type,fiscal_year) DO UPDATE SET
-                        revenue=COALESCE(EXCLUDED.revenue, egx_financials.revenue),
-                        gross_profit=COALESCE(EXCLUDED.gross_profit, egx_financials.gross_profit),
-                        ebitda=COALESCE(EXCLUDED.ebitda, egx_financials.ebitda),
-                        net_income=COALESCE(EXCLUDED.net_income, egx_financials.net_income),
-                        eps_diluted=COALESCE(EXCLUDED.eps_diluted, egx_financials.eps_diluted),
-                        free_cash_flow=COALESCE(EXCLUDED.free_cash_flow, egx_financials.free_cash_flow),
-                        total_assets=COALESCE(EXCLUDED.total_assets, egx_financials.total_assets),
-                        total_debt=COALESCE(EXCLUDED.total_debt, egx_financials.total_debt),
-                        dps=COALESCE(EXCLUDED.dps, egx_financials.dps), updated_at=now()
-                """, d["symbol"], d["fiscal_year"], d.get("revenue"), d.get("gross_profit"),
+                await conn.execute(SQL_SYNC_FINANCIALS_FROM_FUNDAMENTALS,
+                    d["symbol"], d["fiscal_year"], d.get("revenue"), d.get("gross_profit"),
                     d.get("ebitda"), d.get("net_income"), d.get("eps_diluted"), d.get("free_cash_flow"),
                     d.get("total_assets"), d.get("total_debt"), d.get("dps"))
             n += 1

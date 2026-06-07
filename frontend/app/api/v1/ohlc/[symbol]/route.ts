@@ -26,18 +26,32 @@ export async function GET(
             case 'max': days = 10000; break;
         }
 
+        // Reconciliation: ohlc_data (audited, primary EGX) wins; ohlc_history is
+        // the explicit fallback (Saudi/legacy). The source + the newest bar date
+        // are returned as headers so a stale chart can never be served silently.
+        const freshnessHeaders = (rows: any[], source: string, dateField: string) => {
+            const last = rows.length ? rows[rows.length - 1][dateField] : null;
+            const h: Record<string, string> = { 'X-Data-Source': source };
+            if (last) {
+                const asOf = new Date(last);
+                h['X-Data-As-Of'] = asOf.toISOString();
+                h['X-Data-Age-Seconds'] = String(Math.max(0, Math.round((Date.now() - asOf.getTime()) / 1000)));
+            }
+            return h;
+        };
+
         // Try querying ohlc_data first (audited, rich EGX data in date column)
         try {
             const resultData = await db.query(
-                `SELECT date as time, open, high, low, close, volume 
-                 FROM ohlc_data 
+                `SELECT date as time, open, high, low, close, volume
+                 FROM ohlc_data
                  WHERE (symbol = $1 OR symbol = $2)
                    AND date >= NOW() - INTERVAL '${days} days'
                  ORDER BY date ASC`,
                 [cleanSym, `${cleanSym}.CA`]
             );
             if (resultData && resultData.rows && resultData.rows.length > 0) {
-                return NextResponse.json(resultData.rows);
+                return NextResponse.json(resultData.rows, { headers: freshnessHeaders(resultData.rows, 'ohlc_data', 'time') });
             }
         } catch (err: any) {
             console.warn('[ohlc_data query warning in ohlc]', err.message);
@@ -45,15 +59,15 @@ export async function GET(
 
         // Fallback to ohlc_history (Saudi market or legacy)
         const resultHistory = await db.query(
-            `SELECT time, open, high, low, close, volume 
-             FROM ohlc_history 
+            `SELECT time, open, high, low, close, volume
+             FROM ohlc_history
              WHERE (symbol = $1 OR symbol = $2)
                AND time >= NOW() - INTERVAL '${days} days'
              ORDER BY time ASC`,
             [cleanSym, `${cleanSym}.CA`]
         );
 
-        return NextResponse.json(resultHistory.rows);
+        return NextResponse.json(resultHistory.rows, { headers: freshnessHeaders(resultHistory.rows, 'ohlc_history', 'time') });
     } catch (error: any) {
         console.error('[API /ohlc ERROR]', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

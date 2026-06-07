@@ -416,6 +416,22 @@ function RecommendationDistribution({ buy, over, hold, under, sell, total, lang 
     );
 }
 
+// Data-freshness pill: shows users exactly how current the price/chart is, so
+// a stale number is never presented as if live. <30min = Live; <3 days = "as of
+// <time>" (covers the Thu→Sun EGX weekend, neutral); older = amber "Delayed".
+function dataFreshness(ts: any, lang: string): { text: string; dot: string; cls: string } | null {
+    if (!ts) return null;
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return null;
+    const ageH = (Date.now() - d.getTime()) / 3.6e6;
+    const isAr = lang === "ar";
+    const when = d.toLocaleString(isAr ? "ar-EG" : "en-US", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const day = d.toLocaleDateString(isAr ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" });
+    if (ageH < 0.5) return { text: isAr ? "مباشر" : "Live", dot: "bg-emerald-500 animate-pulse", cls: "text-emerald-600 dark:text-emerald-400" };
+    if (ageH < 72) return { text: (isAr ? "حتى " : "as of ") + when, dot: "bg-slate-400", cls: "text-slate-400" };
+    return { text: (isAr ? "بيانات متأخرة · حتى " : "Delayed · as of ") + day, dot: "bg-amber-500", cls: "text-amber-600 dark:text-amber-400" };
+}
+
 // 20-year financial history bar chart (pure SVG, TV-style)
 function MiniBarChart({ title, data, color, currency, lang }: {
     title: string; color: string; currency: string; lang: "en" | "ar";
@@ -1110,12 +1126,15 @@ export default function SymbolDetailPage() {
                                 <h2 className="text-slate-500 dark:text-slate-400 font-semibold text-lg mt-1.5">
                                     {lang === "ar" && (stockData as any).name_ar ? (stockData as any).name_ar : ((stockData as any).name_en || symbol)}
                                 </h2>
-                                {(stockData as any).last_updated && (
-                                    <p className="text-xs text-slate-400 font-medium mt-1">
-                                        {lang === "ar" ? "آخر تحديث: " : "Last updated: "}
-                                        {new Date((stockData as any).last_updated).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
-                                    </p>
-                                )}
+                                {(() => {
+                                    const f = dataFreshness((stockData as any).last_updated || (stockData as any).updated_at, lang);
+                                    return f ? (
+                                        <p className={`text-xs font-semibold mt-1 inline-flex items-center gap-1.5 ${f.cls}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
+                                            {f.text}
+                                        </p>
+                                    ) : null;
+                                })()}
                             </div>
                         </div>
 
@@ -1206,6 +1225,16 @@ export default function SymbolDetailPage() {
                                             ))}
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            {(() => {
+                                                const lc = chartData[chartData.length - 1] as any;
+                                                const f = lc ? dataFreshness(lc.date || lc.time, lang) : null;
+                                                return f ? (
+                                                    <span className={`text-[10px] font-semibold inline-flex items-center gap-1 ${f.cls}`} title={lang === "ar" ? "حداثة بيانات الرسم" : "Chart data freshness"}>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
+                                                        {f.text}
+                                                    </span>
+                                                ) : null;
+                                            })()}
                                             <span className="text-xs text-slate-400 font-bold">{t.historical_prices}</span>
                                             {isEgx && (
                                                 <button type="button" onClick={() => setChartFullscreen(true)}

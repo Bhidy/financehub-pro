@@ -11,6 +11,16 @@ Usage:
     DATABASE_URL=... python scripts/tv_egx_harvester.py --cycle prices
     DATABASE_URL=... python scripts/tv_egx_harvester.py --cycle all
 Cycles: prices | technicals | dividends | estimates | news | statements | symbolmap | all
+
+Failure model (post 2026-06-07 incident — "column \"sector\" does not exist"):
+every per-row DB error is routed by CLASS, never blindly dead-lettered:
+  * STRUCTURAL (wrong column / missing table / bad SQL / type mismatch) -> a CODE
+    BUG, identical for every row. Fail FAST and LOUD on the first row. Never
+    dead-letter it 289x; never retry it.
+  * TRANSIENT (pooler drop, connection ceiling, statement timeout) -> reconnect
+    and retry the whole idempotent cycle with bounded backoff.
+  * DATA (one bad value on one row) -> dead-letter that single row and carry on,
+    so one poison row never sinks the cycle.
 """
 import argparse
 import asyncio
@@ -30,6 +40,69 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger("TVHarvester")
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# --- connection hardening --------------------------------------------------- #
+# command_timeout bounds every statement so a hung write fails in seconds, not
+# minutes (the 2026-06-07 incident wasted 2m21s before failing). statement_cache
+# stays disabled for the Supabase transaction-mode pooler (port 6543).
+CONNECT_KW = dict(statement_cache_size=0, command_timeout=30)
+MAX_CYCLE_ATTEMPTS = 4
+
+# --- error taxonomy --------------------------------------------------------- #
+# STRUCTURAL = code/schema mismatch. A bug, identical for every row. Fail fast.
+STRUCTURAL_DB_ERRORS = (
+    asyncpg.UndefinedColumnError,    # 42703 — e.g. the "sector" vs "sector_name" bug
+    asyncpg.UndefinedTableError,     # 42P01
+    asyncpg.UndefinedFunctionError,  # 42883
+    asyncpg.PostgresSyntaxError,     # 42601
+    asyncpg.DatatypeMismatchError,   # 42804
+)
+# TRANSIENT = infrastructure blip. Reconnect and retry the (idempotent) cycle.
+TRANSIENT_DB_ERRORS = (
+    asyncpg.PostgresConnectionError,  # 08xxx — connection lost / does-not-exist
+    asyncpg.CannotConnectNowError,    # 57P03 — server/pooler starting up
+    asyncpg.TooManyConnectionsError,  # 53300 — Supabase pooler connection ceiling
+    asyncpg.InterfaceError,           # client-side: "connection is closed"
+    ConnectionError, OSError, asyncio.TimeoutError,
+)
+
+# --- prices-cycle write SQL (module-level so the QA gate dry-runs the EXACT
+#     statements against the live schema — no drift between code and test) ---- #
+# NB: market_tickers PRIMARY KEY is (symbol) alone. The conflict target MUST be
+# (symbol) — every authoritative writer (market_loader, admin, stockanalysis)
+# uses it. The old (symbol, market_code) target failed for symbols stored with a
+# NULL market_code: the target found no match, the INSERT fired, and the bare PK
+# rejected it (the 72/289 'market_tickers_pkey already exists' failures). We also
+# normalise market_code -> 'EGX' on conflict and bump last_updated, mirroring the
+# backend writer so freshness monitoring sees harvester writes.
+SQL_UPSERT_MARKET_TICKER = """
+    INSERT INTO market_tickers (symbol, market_code, name_en, sector_name, last_price,
+        change, change_percent, volume, market_cap, pe_ratio, dividend_yield, source,
+        updated_at, last_updated)
+    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now(), now())
+    ON CONFLICT (symbol) DO UPDATE SET
+        market_code = EXCLUDED.market_code,
+        name_en     = COALESCE(EXCLUDED.name_en,     market_tickers.name_en),
+        sector_name = COALESCE(EXCLUDED.sector_name, market_tickers.sector_name),
+        last_price  = EXCLUDED.last_price,
+        change      = EXCLUDED.change,
+        change_percent = EXCLUDED.change_percent,
+        volume      = EXCLUDED.volume,
+        market_cap  = COALESCE(EXCLUDED.market_cap, market_tickers.market_cap),
+        pe_ratio    = COALESCE(EXCLUDED.pe_ratio,   market_tickers.pe_ratio),
+        dividend_yield = COALESCE(EXCLUDED.dividend_yield, market_tickers.dividend_yield),
+        source      = EXCLUDED.source,
+        updated_at  = now(),
+        last_updated = now()
+"""
+
+SQL_UPSERT_OHLC = """
+    INSERT INTO ohlc_data (symbol, date, open, high, low, close, volume, source)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+    ON CONFLICT (symbol, date) DO UPDATE SET
+        open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
+        close=EXCLUDED.close, volume=EXCLUDED.volume, source=EXCLUDED.source
+"""
+
 
 async def _symbols(conn) -> list[str]:
     rows = await conn.fetch("SELECT symbol FROM market_tickers WHERE market_code='EGX' ORDER BY symbol")
@@ -45,6 +118,19 @@ async def _deadletter(conn, cycle, symbol, payload, error):
         logger.exception("deadletter write failed")
 
 
+async def _on_write_error(conn, cycle, key, payload, exc):
+    """Route a per-row write failure by class. STRUCTURAL and TRANSIENT errors
+    are RE-RAISED so they surface (fail-fast bug / reconnect-and-retry); only a
+    genuine single-row DATA error is dead-lettered so the cycle survives it."""
+    if isinstance(exc, STRUCTURAL_DB_ERRORS):
+        logger.error("%s: STRUCTURAL DB error (code/schema bug) on %s -> aborting cycle: %s",
+                     cycle, key, exc)
+        raise exc
+    if isinstance(exc, TRANSIENT_DB_ERRORS):
+        raise exc
+    await _deadletter(conn, cycle, key, payload, exc)
+
+
 # --------------------------------------------------------------------------- #
 async def cycle_prices(conn):
     """Intraday price + today's OHLC candle. Upserts market_tickers + ohlc_data."""
@@ -55,23 +141,8 @@ async def cycle_prices(conn):
     n = 0
     for s in stocks:
         try:
-            await conn.execute("""
-                INSERT INTO market_tickers (symbol, market_code, name_en, sector, last_price,
-                    change, change_percent, volume, market_cap, pe_ratio, dividend_yield, source, updated_at)
-                VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now())
-                ON CONFLICT (symbol, market_code) DO UPDATE SET
-                    name_en   = COALESCE(EXCLUDED.name_en, market_tickers.name_en),
-                    sector    = COALESCE(EXCLUDED.sector,  market_tickers.sector),
-                    last_price= EXCLUDED.last_price,
-                    change    = EXCLUDED.change,
-                    change_percent = EXCLUDED.change_percent,
-                    volume    = EXCLUDED.volume,
-                    market_cap= COALESCE(EXCLUDED.market_cap, market_tickers.market_cap),
-                    pe_ratio  = COALESCE(EXCLUDED.pe_ratio,   market_tickers.pe_ratio),
-                    dividend_yield = COALESCE(EXCLUDED.dividend_yield, market_tickers.dividend_yield),
-                    source    = EXCLUDED.source,
-                    updated_at= now()
-            """, s["symbol"], s.get("name_en"), s.get("sector_name"), s["last_price"],
+            await conn.execute(SQL_UPSERT_MARKET_TICKER,
+                s["symbol"], s.get("name_en"), s.get("sector_name"), s["last_price"],
                 s.get("change"), s.get("change_percent"), s.get("volume"),
                 s.get("market_cap"), s.get("pe_ratio"), s.get("dividend_yield"), s.get("source", src))
 
@@ -79,17 +150,12 @@ async def cycle_prices(conn):
             if s.get("open") and s.get("high") and s.get("low") and s.get("bar_time"):
                 from datetime import datetime, timezone
                 d = datetime.fromtimestamp(s["bar_time"], tz=timezone.utc).date()
-                await conn.execute("""
-                    INSERT INTO ohlc_data (symbol, date, open, high, low, close, volume, source)
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-                    ON CONFLICT (symbol, date) DO UPDATE SET
-                        open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
-                        close=EXCLUDED.close, volume=EXCLUDED.volume, source=EXCLUDED.source
-                """, s["symbol"], d, s["open"], s["high"], s["low"], s["last_price"],
+                await conn.execute(SQL_UPSERT_OHLC,
+                    s["symbol"], d, s["open"], s["high"], s["low"], s["last_price"],
                     s.get("volume"), s.get("source", src))
             n += 1
-        except Exception as e:  # per-symbol isolation (L4)
-            await _deadletter(conn, "prices", s.get("symbol"), s, e)
+        except Exception as e:  # per-symbol isolation (L4) + error taxonomy
+            await _on_write_error(conn, "prices", s.get("symbol"), s, e)
     logger.info("prices: upserted %d/%d via %s", n, len(stocks), src)
     if n == 0:
         raise SystemExit("FAIL: 0 tickers updated")  # fail-loud (L9)
@@ -117,7 +183,7 @@ async def cycle_technicals(conn):
                 r.get("ema50"), r.get("ema200"), r.get("sma50"), r.get("sma200"))
             n += 1
         except Exception as e:
-            await _deadletter(conn, "technicals", r.get("symbol"), r, e)
+            await _on_write_error(conn, "technicals", r.get("symbol"), r, e)
     logger.info("technicals: upserted %d (symbol,tf) rows", n)
 
 
@@ -146,7 +212,7 @@ async def cycle_estimates(conn):
                 r.get("earnings_per_share_forecast_next_fy"))
             n += 1
         except Exception as e:
-            await _deadletter(conn, "estimates", r.get("symbol"), r, e)
+            await _on_write_error(conn, "estimates", r.get("symbol"), r, e)
     logger.info("estimates: upserted %d covered names", n)
 
 
@@ -165,7 +231,7 @@ async def cycle_news(conn):
                 it.get("published_at"), it.get("story_path"), json.dumps(it.get("related_symbols")))
             n += 1
         except Exception as e:
-            await _deadletter(conn, "news", it.get("id"), it, e)
+            await _on_write_error(conn, "news", it.get("id"), it, e)
     logger.info("news: upserted %d items", n)
 
 
@@ -211,7 +277,7 @@ async def cycle_symbolmap(conn):
                     s, idn.get("isin"), idn.get("logo_url"))
             n += 1
         except Exception as e:
-            await _deadletter(conn, "symbolmap", s, {}, e)
+            await _on_write_error(conn, "symbolmap", s, {}, e)
     logger.info("symbolmap: mapped %d/%d (tracked=%d, tv=%d, ISIN dual-listings=%d)",
                 n, len(universe), len(tracked), len(tv_syms), collisions)
 
@@ -230,7 +296,7 @@ async def cycle_financials(conn):
             rows = await client.get_statements(batch)
         except Exception as e:
             for s in batch:
-                await _deadletter(conn, "financials", s, {}, e)
+                await _deadletter(conn, "financials", s, {}, e)  # TV-fetch failure (not a DB write)
             continue
         for d in rows:
             sym = d.get("symbol")
@@ -257,7 +323,7 @@ async def cycle_financials(conn):
                         g(fcf, j), g(ta, j), g(td, j), g(dps, j))
                     total += 1
                 except Exception as e:
-                    await _deadletter(conn, "financials", sym, {"year": yr}, e)
+                    await _on_write_error(conn, "financials", sym, {"year": yr}, e)
     logger.info("financials: upserted %d (symbol,year) rows for %d symbols", total, len(syms))
 
 
@@ -288,7 +354,7 @@ async def cycle_dividends(conn):
                 d.get("dividend_payout_ratio_ttm"), d.get("continuous_dividend_growth"))
             n += 1
         except Exception as e:
-            await _deadletter(conn, "dividends", d.get("symbol"), d, e)
+            await _on_write_error(conn, "dividends", d.get("symbol"), d, e)
     logger.info("dividends: upserted %d symbols", n)
 
 
@@ -358,7 +424,7 @@ async def cycle_fundamentals(conn):
                     d.get("total_assets"), d.get("total_debt"), d.get("dps"))
             n += 1
         except Exception as e:
-            await _deadletter(conn, "fundamentals", d.get("symbol"), d, e)
+            await _on_write_error(conn, "fundamentals", d.get("symbol"), d, e)
     logger.info("fundamentals: upserted %d symbols", n)
 
 
@@ -371,21 +437,53 @@ COMPOUND = {"prices_and_technicals": ["prices", "technicals"],
             "financials_and_fundamentals": ["financials", "fundamentals"]}
 
 
+async def _run_cycle(name, fn):
+    """Run one cycle on a fresh, time-bounded connection. TRANSIENT infra errors
+    -> reconnect and retry the (idempotent) cycle with bounded backoff. STRUCTURAL
+    and DATA-level outcomes surface to the caller (fail-fast / loud)."""
+    last = None
+    for attempt in range(1, MAX_CYCLE_ATTEMPTS + 1):
+        conn = None
+        try:
+            conn = await asyncpg.connect(DATABASE_URL, **CONNECT_KW)
+            await fn(conn)
+            return
+        except TRANSIENT_DB_ERRORS as e:
+            last = e
+            wait = min(2 ** attempt, 30)
+            logger.warning("%s: transient DB error %s: %s (attempt %d/%d) — reconnecting in %ds",
+                           name, type(e).__name__, e, attempt, MAX_CYCLE_ATTEMPTS, wait)
+            await asyncio.sleep(wait)
+        finally:
+            if conn is not None:
+                try:
+                    await conn.close(timeout=5)
+                except Exception:
+                    pass
+    raise SystemExit(f"FAIL: cycle '{name}' could not reach DB after {MAX_CYCLE_ATTEMPTS} "
+                     f"attempts; last error {type(last).__name__}: {last}")
+
+
 async def main(cycle: str):
     if not DATABASE_URL:
         sys.exit("DATABASE_URL not set")
-    conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
-    try:
-        if cycle == "all":
-            todo = list(CYCLES)
-        elif cycle in COMPOUND:
-            todo = COMPOUND[cycle]
-        else:
-            todo = [cycle]
-        for c in todo:
-            await CYCLES[c](conn)
-    finally:
-        await conn.close()
+    if cycle == "all":
+        todo = list(CYCLES)
+    elif cycle in COMPOUND:
+        todo = COMPOUND[cycle]
+    else:
+        todo = [cycle]
+    # Cycle isolation: one cycle's failure must NOT skip its siblings (a prices
+    # blip used to silently kill the technicals write in the same window).
+    failed = []
+    for c in todo:
+        try:
+            await _run_cycle(c, CYCLES[c])
+        except (Exception, SystemExit) as e:
+            logger.error("cycle '%s' FAILED: %s", c, e)
+            failed.append(f"{c}: {e}")
+    if failed:
+        sys.exit("FAIL: " + " | ".join(failed))
 
 
 if __name__ == "__main__":

@@ -209,10 +209,21 @@ def main():
                 body += f"\n…and {len(all_v)-15} more."
             data = json.dumps({"content": body}).encode()
             req = urllib.request.Request(hook, data=data, headers={"Content-Type": "application/json"})
-            urllib.request.urlopen(req, timeout=20)
-            print("   (Discord alerted)")
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                status = resp.status
+            if status < 300:
+                print("   ✓ Discord alerted")
+            else:
+                print(f"   ⚠️  Discord returned HTTP {status} — alert may not have been delivered",
+                      file=sys.stderr)
+        except urllib.error.HTTPError as e:
+            print(f"   ⚠️  Discord alert FAILED (HTTP {e.code} {e.reason}) "
+                  f"— webhook may be expired/revoked; rotate DISCORD_WEBHOOK_URL secret",
+                  file=sys.stderr)
         except Exception as e:
-            print(f"   (Discord alert failed: {e})")
+            print(f"   ⚠️  Discord alert FAILED: {type(e).__name__}: {e}", file=sys.stderr)
+    else:
+        print("   (DISCORD_WEBHOOK_URL not set — no alert sent)")
     return 1
 
 

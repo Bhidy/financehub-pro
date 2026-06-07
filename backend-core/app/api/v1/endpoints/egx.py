@@ -4,13 +4,37 @@ Egyptian Stock Exchange (EGX) API Endpoints
 Provides access to all 223 EGX stocks with full data coverage.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from typing import List, Optional
 from app.db.session import db
 import asyncio
 import time
+from datetime import datetime, timezone
 
 router = APIRouter()
+
+
+def _set_freshness(response: "Response", rows: list, source: str, date_key: str = "date") -> None:
+    """Stamp data-freshness headers on a chart/price response so a stale payload
+    is never served silently (mobile app / AI chat read these). Non-breaking:
+    body is untouched. Exception-guarded — freshness telemetry must never break
+    a data response."""
+    try:
+        if response is None or not rows:
+            return
+        dates = [str(r.get(date_key))[:10] for r in rows if r.get(date_key)]
+        if not dates:
+            return
+        latest = max(dates)  # robust regardless of asc/desc ordering
+        response.headers["X-Data-As-Of"] = latest
+        response.headers["X-Data-Source"] = source
+        try:
+            age = (datetime.now(timezone.utc).date() - datetime.fromisoformat(latest).date()).days
+            response.headers["X-Data-Age-Days"] = str(max(0, age))
+        except Exception:
+            pass
+    except Exception:
+        pass
 
 # ──────────────────────────────────────────────────────────────
 # In-memory TTL cache for Yahoo Finance history responses.
@@ -61,7 +85,7 @@ async def get_egx_stock(symbol: str):
 
 
 @router.get("/egx/ohlc/{symbol}", response_model=List[dict])
-async def get_egx_ohlc(symbol: str, period: str = "1y", limit: int = 500):
+async def get_egx_ohlc(symbol: str, response: Response, period: str = "1y", limit: int = 500):
     """Get OHLC historical data for an EGX stock from the ohlc_data table
     (written by populate_yahoo_reservoir.py + tv_egx_harvester.py prices cycle)."""
     try:
@@ -73,7 +97,9 @@ async def get_egx_ohlc(symbol: str, period: str = "1y", limit: int = 500):
                LIMIT $2""",
             symbol.upper(), limit
         )
-        return [dict(r) for r in rows]
+        out = [dict(r) for r in rows]
+        _set_freshness(response, out, "ohlc_data")
+        return out
     except Exception as e:
         print(f"OHLC fetch failed for {symbol}: {e}")
         return []
@@ -82,6 +108,7 @@ async def get_egx_ohlc(symbol: str, period: str = "1y", limit: int = 500):
 @router.get("/egx/history/{symbol}", response_model=List[dict])
 async def get_egx_yahoo_history(
     symbol: str,
+    response: Response,
     period: str = Query(
         "1y",
         enum=["1m", "3m", "6m", "1y", "3y", "5y", "max"],
@@ -113,6 +140,7 @@ async def get_egx_yahoo_history(
     if cache_key in _yf_history_cache:
         ts, cached_rows = _yf_history_cache[cache_key]
         if now - ts < _YF_CACHE_TTL:
+            _set_freshness(response, cached_rows, "yfinance_cache")
             return cached_rows
 
     # 3. Map our period names → yfinance period strings
@@ -197,6 +225,7 @@ async def get_egx_yahoo_history(
 
     # 5. Cache successful (non-empty) responses; cache empty too to avoid thundering herd
     _yf_history_cache[cache_key] = (now, rows)
+    _set_freshness(response, rows, "yfinance")
     return rows
 
 @router.get("/egx/sectors", response_model=List[dict])

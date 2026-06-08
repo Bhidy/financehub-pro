@@ -12,7 +12,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Production database connection using environment variable fallback
-DATABASE_URL = os.getenv("DATABASE_URL", "postgres://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require")
+import sys
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
 
 # Extracted data from Rubix Mubasher
 STOCKS_DATA = [

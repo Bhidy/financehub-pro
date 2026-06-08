@@ -1,18 +1,15 @@
 import psycopg2
+import sys
 import os
 
-DB_PARAMS = {
-    "host": "aws-1-eu-central-1.pooler.supabase.com",
-    "port": 6543,
-    "database": "postgres",
-    "user": "postgres.kgjpkphfjmmiyjsgsaup",
-    "password": "REDACTED_PASSWORD",
-    "sslmode": "require"
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
+
 
 def check_data():
     try:
-        conn = psycopg2.connect(**DB_PARAMS)
+        conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         
         tables = [

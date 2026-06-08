@@ -9,14 +9,12 @@ With completion percentages and progress bars for ALL phases.
 import psycopg2
 from datetime import datetime
 
-DB_PARAMS = {
-    "host": "aws-1-eu-central-1.pooler.supabase.com",
-    "port": 6543,
-    "database": "postgres",
-    "user": "postgres.kgjpkphfjmmiyjsgsaup",
-    "password": "REDACTED_PASSWORD",
-    "sslmode": "require"
-}
+import sys
+import os
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
+
 
 TOTAL_SYMBOLS = 453
 
@@ -37,7 +35,7 @@ def get_count(cur, table, distinct_col=None):
 
 def get_metrics():
     try:
-        conn = psycopg2.connect(**DB_PARAMS)
+        conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         
         # ============ PHASE 1-3 (COMPLETED) ============

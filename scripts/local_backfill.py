@@ -20,15 +20,11 @@ import random
 sys.stdout.reconfigure(line_buffering=True)
 
 # Connection details
-DB_PARAMS = {
-    "host": "aws-1-eu-central-1.pooler.supabase.com",
-    "port": 6543,
-    "database": "postgres",
-    "user": "postgres.kgjpkphfjmmiyjsgsaup",
-    "password": "REDACTED_PASSWORD",
-    "sslmode": "require",
-    "connect_timeout": 30
-}
+import os
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
+
 
 stats = {"ohlc": 0, "h1": 0, "m5": 0, "done": 0, "fail": 0}
 
@@ -53,7 +49,7 @@ def connect_db():
     while attempts < 10:
         try:
             print(f"🔌 Connecting to DB (Attempt {attempts+1})...", flush=True)
-            conn = psycopg2.connect(**DB_PARAMS)
+            conn = psycopg2.connect(DATABASE_URL)
             conn.autocommit = True
             cur = conn.cursor()
             print("✅ Connected!", flush=True)

@@ -38,18 +38,14 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 ]
 
-DB_PARAMS = {
-    "host": "aws-1-eu-central-1.pooler.supabase.com",
-    "port": 6543,
-    "database": "postgres",
-    "user": "postgres.kgjpkphfjmmiyjsgsaup",
-    "password": "REDACTED_PASSWORD",
-    "sslmode": "require",
-    "connect_timeout": 30
-}
+import os
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
+
 
 def get_db():
-    conn = psycopg2.connect(**DB_PARAMS)
+    conn = psycopg2.connect(DATABASE_URL)
     conn.autocommit = True
     return conn
 

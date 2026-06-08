@@ -38,18 +38,14 @@ logging.basicConfig(
 logger = logging.getLogger("TurboCollector")
 
 # Database Connection Pool
-DB_PARAMS = {
-    "host": "aws-1-eu-central-1.pooler.supabase.com",
-    "port": 6543,
-    "database": "postgres",
-    "user": "postgres.kgjpkphfjmmiyjsgsaup",
-    "password": "REDACTED_PASSWORD",
-    "sslmode": "require",
-    "connect_timeout": 30
-}
+import os
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
+
 
 try:
-    db_pool = psycopg2.pool.ThreadedConnectionPool(1, 10, **DB_PARAMS)
+    db_pool = psycopg2.pool.ThreadedConnectionPool(1, 10, DATABASE_URL)
     logger.info("✅ Database connection pool created")
 except Exception as e:
     logger.error(f"❌ Failed to create DB pool: {e}")

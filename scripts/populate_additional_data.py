@@ -18,7 +18,11 @@ import sys
 from datetime import datetime, timedelta
 import random
 
-DATABASE_URL = "postgresql://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres"
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if not DATABASE_URL:
+    import sys
+    sys.exit("ERROR: DATABASE_URL environment variable not set")
 
 logging.basicConfig(
     level=logging.INFO,

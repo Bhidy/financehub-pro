@@ -14,10 +14,10 @@ import os
 from datetime import datetime
 
 # Supabase Production Database URL
-DATABASE_URL = os.environ.get('DATABASE_URL') or \
-    "postgresql://postgres.kgjpkphfjmmiyjsgsaup:REDACTED_PASSWORD@aws-1-eu-central-1.pooler.supabase.com:6543/postgres"
-
-
+import sys
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. Set it before running this script.")
 async def main():
     print("\n" + "=" * 70)
     print("  📊 FINANCEHUB DATA FRESHNESS REPORT")

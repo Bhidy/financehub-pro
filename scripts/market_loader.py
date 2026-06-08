@@ -43,6 +43,9 @@ logging.basicConfig(
 logger = logging.getLogger('EGXLoader')
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    sys.exit("ERROR: DATABASE_URL environment variable not set. "
+             "Set it before running this script.")
 
 class StockAnalysisClient:
     """

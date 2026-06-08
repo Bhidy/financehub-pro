@@ -19,14 +19,19 @@ export const dynamic = 'force-dynamic';
  *
  * Response:
  *   { alive, age_minutes, last_heartbeat, detail, checked_at }
- *   alive = true  → watchdog ran within the last 75 min (2.5× its 30-min schedule)
+ *   alive = true  → watchdog ran within the last STALE_THRESHOLD_MIN minutes
  *   alive = false → watchdog is silent; GitHub Actions may be down or billing failed
  *
  * HTTP 200 always (so monitors can do keyword checks, not status checks).
  * No CDN caching — this is a real-time liveness signal.
+ *
+ * THRESHOLD NOTE: pipeline-watchdog.yml runs every 30 min during EGX trading hours
+ * (06–14 UTC) and every 2 h overnight (at 15,17,19,21,23,0,2,4 UTC). Setting the
+ * threshold to 150 min (2.5× the 2-h overnight cadence) avoids spurious alive=false
+ * during the normal overnight gap while still catching a genuine 2+ hour outage.
  */
 
-const STALE_THRESHOLD_MIN = 75; // 2.5× the 30-min watchdog schedule
+const STALE_THRESHOLD_MIN = 150; // 120-min overnight gap + 30-min buffer = 150 min
 
 export async function GET() {
     const checkedAt = new Date().toISOString();

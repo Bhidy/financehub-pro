@@ -52,8 +52,20 @@ jobs:
       - name: 🚀 Start Watchdog
         run: echo "Enterprise Watchdog starting at $(date)"
 
-      - name: Set up jq
-        run: sudo apt-get install -y jq
+      - name: Ensure jq (self-installing, no sudo)
+        # The self-hosted runner has NO passwordless sudo, so `sudo apt-get install`
+        # used to fail 100% of runs here. Install a static jq into ~/.local/bin
+        # (no root, no apt) ONLY if missing and reuse it after — it can never fail
+        # on tooling, and the later jq calls can never silently fake success.
+        run: |
+          if command -v jq >/dev/null 2>&1; then echo "jq present: $(jq --version)"; exit 0; fi
+          if [ -x "$HOME/.local/bin/jq" ]; then echo "$HOME/.local/bin" >> "$GITHUB_PATH"; echo "jq cached"; exit 0; fi
+          echo "jq missing — installing static binary to ~/.local/bin (no sudo)"
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 -o "$HOME/.local/bin/jq"
+          chmod +x "$HOME/.local/bin/jq"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/jq" --version
 
       # ============================================================
       # JOB 1: PRICE REFRESH (Every 5 min during market hours)
@@ -90,10 +102,15 @@ jobs:
               if [ "${UPDATED:-0}" -gt 0 ] 2>/dev/null; then
                 echo "✅ Price refresh updated $UPDATED tickers"
               else
-                # 0 updates is suspicious but transient (one bad screener cycle). The
-                # Data Freshness Monitor is the authoritative alarm if prices actually
-                # stay stale — so warn, don't page every 5 minutes.
-                echo "::warning::Price refresh updated 0 tickers (status=$LAST_STATUS). Freshness monitor will escalate if this persists."
+                # 0 updates is suspicious but usually transient (one bad screener
+                # cycle). Stay NON-FATAL here on purpose: hard-failing every 5 min on a
+                # single empty cycle was the old false-red. A SUSTAINED 0 (prices truly
+                # frozen) is escalated independently, defense-in-depth:
+                #   - L1 on-box Data Freshness Monitor (Hetzner runner), and
+                #   - L2 OFF-box freshness route (Vercel→Supabase) polled by UptimeRobot,
+                #     which still fires even if this whole runner/box is down.
+                # So we WARN loudly (visible amber) but never page every 5 minutes here.
+                echo "::warning::Price refresh updated 0 tickers (status=$LAST_STATUS). NON-FATAL — L1 freshness monitor + L2 off-box freshness route escalate if prices stay frozen."
               fi
               break
             fi

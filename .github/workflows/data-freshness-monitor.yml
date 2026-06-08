@@ -35,8 +35,21 @@ jobs:
     env:
       HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
-      - name: Set up jq
-        run: sudo apt-get install -y jq
+      - name: Ensure jq (self-installing, no sudo)
+        # The runner user has NO passwordless sudo, so the old `sudo apt-get install
+        # -y jq` failed 100% of runs and turned this MONITOR red on its own setup —
+        # silencing the alarm it exists to raise. Install a static jq into
+        # ~/.local/bin (no root, no apt) ONLY if missing, reuse it after. Can never
+        # fail on tooling and can never silently fail-open.
+        run: |
+          if command -v jq >/dev/null 2>&1; then echo "jq present: $(jq --version)"; exit 0; fi
+          if [ -x "$HOME/.local/bin/jq" ]; then echo "$HOME/.local/bin" >> "$GITHUB_PATH"; echo "jq cached"; exit 0; fi
+          echo "jq missing — installing static binary to ~/.local/bin (no sudo)"
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64 -o "$HOME/.local/bin/jq"
+          chmod +x "$HOME/.local/bin/jq"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/jq" --version
 
       - name: Probe price freshness
         id: check

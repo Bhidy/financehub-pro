@@ -35,8 +35,6 @@ jobs:
     name: Check fund NAV freshness
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 5
-    env:
-      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -49,10 +47,3 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python backend-core/scripts/funds_nav_updater.py --monitor --stale-days 5
-
-      - name: Alert Discord on stale funds
-        if: steps.check.outputs.stale == '1' && env.HAS_DISCORD != ''
-        run: |
-          MSG=$(printf '🟠 **FUNDS FRESHNESS ALERT** — mutual-fund NAVs may be frozen on startamarkets.com\n• reason: `%s`\n• newest NAV: `%s` (`%s` days old) | funds fresh within 10d: `%s`\n• Run: https://github.com/%s/actions/runs/%s' \
-            "${{ steps.check.outputs.reason }}" "${{ steps.check.outputs.newest }}" "${{ steps.check.outputs.age_days }}" "${{ steps.check.outputs.fresh10 }}" "${{ github.repository }}" "${{ github.run_id }}")
-          jq -n --arg c "$MSG" '{content: $c}' | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

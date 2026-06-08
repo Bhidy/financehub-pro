@@ -31,16 +31,14 @@ jobs:
     name: pg_dump → verify → off-site artifact
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 30
-    env:
-      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
-      - name: Install pg_dump (PostgreSQL 16 client, PGDG)
+      - name: Verify pg_dump is present (pre-installed on runner host)
         run: |
           set -euo pipefail
-          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-16
+          # The self-hosted runner has NO passwordless sudo — postgresql-client-16
+          # is pre-installed on the host by a human as root. Fail LOUD if it is
+          # missing so a broken host can never silently skip the backup.
+          command -v pg_dump >/dev/null 2>&1 || { echo "::error::pg_dump (postgresql-client) missing on runner host — pre-install postgresql-client-16 as root"; exit 1; }
           pg_dump --version
 
       - name: Dump + verify
@@ -81,9 +79,3 @@ jobs:
           path: ${{ env.OUT }}
           retention-days: 30
           if-no-files-found: error
-
-      - name: Alert Discord on failure
-        if: failure() && env.HAS_DISCORD != ''
-        run: |
-          MSG=$(printf '🔴 **DB BACKUP FAILED** — no fresh off-site backup was produced.\n• Run: https://github.com/%s/actions/runs/%s' "${{ github.repository }}" "${{ github.run_id }}")
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d "$(printf '{"content": %s}' "$(printf '%s' "$MSG" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')")" || true

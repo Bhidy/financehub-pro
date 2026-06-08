@@ -32,8 +32,6 @@ jobs:
     name: Check price freshness
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 5
-    env:
-      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
       - name: Ensure jq (self-installing, no sudo)
         # The runner user has NO passwordless sudo, so the old `sudo apt-get install
@@ -135,10 +133,3 @@ jobs:
           else
             echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS | chart bar: $OHLC_DATE"
           fi
-
-      - name: Alert Discord on stale data
-        if: steps.check.outputs.stale == '1' && env.HAS_DISCORD != ''
-        run: |
-          MSG=$(printf '🟠 **DATA FRESHNESS ALERT** — prices may be frozen on startamarkets.com\n• reason: `%s`\n• price age: `%s min` | last_status: `%s`\n• Run: https://github.com/%s/actions/runs/%s' \
-            "${{ steps.check.outputs.reason }}" "${{ steps.check.outputs.age_min }}" "${{ steps.check.outputs.last_status }}" "${{ github.repository }}" "${{ github.run_id }}")
-          jq -n --arg c "$MSG" '{content: $c}' | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

@@ -32,11 +32,6 @@ jobs:
   morning-brief:
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 10
-    # NOTE: `secrets` is NOT allowed in a step-level `if:` — using it there makes the
-    # whole workflow un-compilable (0s failure on every trigger, no logs). Expose the
-    # secret as an env var and gate the notify steps on `env.HAS_DISCORD` instead.
-    env:
-      HAS_DISCORD: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
     steps:
       # ── Step 1: Check day is actually a trading day ─────────────────────────
@@ -93,25 +88,3 @@ jobs:
           if [ "$HEALTH" != "200" ]; then
             echo "::warning::Backend health check returned $HEALTH"
           fi
-
-      # ── Step 4: Send notification on success ────────────────────────────────
-      - name: Notify Discord — Brief Ready
-        if: >
-          steps.check_day.outputs.is_trading_day == 'true' &&
-          steps.generate_brief.outputs.status == 'true' &&
-          env.HAS_DISCORD != ''
-        run: |
-          DATE=$(date +'%A, %d %B %Y')
-          jq -n --arg d "$DATE" '{content: ("📰 **EGX Morning Brief Ready** — " + $d + "\nMarket opens in ~30 minutes (10:00 Cairo Time)\n\n📊 Visit: https://startamarkets.com\n💬 Ask the AI for today: Give me the morning brief")}' \
-            | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-
-
-      # ── Step 5: Notify on failure ────────────────────────────────────────────
-      - name: Notify Discord — Brief Failed
-        if: >
-          steps.check_day.outputs.is_trading_day == 'true' &&
-          failure() &&
-          env.HAS_DISCORD != ''
-        run: |
-          DATE=$(date +'%A, %d %B %Y')
-          jq -n --arg d "$DATE" '{content: ("⚠️ **Morning Brief Generation Failed** — " + $d + "\nThe automated morning brief did not complete successfully.\nCheck GitHub Actions logs for details.")}' \
-            | curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" -H "Content-Type: application/json" -d @-

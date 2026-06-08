@@ -258,18 +258,5 @@ jobs:
           done
 
       # ============================================================
-      # ALERTING SYSTEM
+      # JOB 5 (above) is the last step.
       # ============================================================
-      - name: ✅ Discord Success Alert
-        if: success()
-        run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{"content": "✅ **FinanceHub Watchdog**: Auto-update cycle completed successfully at '"$(date)"'"}'
-          
-      - name: 🚨 Discord Failure Alert
-        if: failure()
-        run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{"content": "🚨 **CRITICAL**: FinanceHub Watchdog FAILED!\n**Run:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

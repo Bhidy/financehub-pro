@@ -1,5 +1,12 @@
 name: Production Watchdog
 
+# NOTE: This job only checks /health LIVENESS (is the API process up). It is NOT a
+# data-freshness signal. For REAL data freshness (prices/charts/news/funds SLAs)
+# rely on the OFF-box L2 route GET /api/v1/health/freshness
+# (https://startamarkets.com/api/v1/health/freshness — Vercel -> Supabase, zero
+# Hetzner dependency; 503 + "DATA_STALE" when a critical feed is stale), polled
+# every ~5 min by the external uptime monitor (UptimeRobot). Do NOT raise this
+# cron's frequency to compensate — it adds self-hosted runner load.
 on:
   schedule:
     # Run every 6 hours (Check 4 times a day)
@@ -22,10 +29,3 @@ jobs:
             exit 1
           fi
             echo "API is Healthy ✅"
-
-      - name: Notify Discord on Failure
-        if: failure()
-        run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{"content": "🚨 **CRITICAL ALERT**\nFinanceHub API is DOWN!\nURL: https://starta.46-224-223-172.sslip.io\nCheck Hetzner VPS immediately."}'

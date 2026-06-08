@@ -38,7 +38,10 @@ def load_db_url():
                 if m: return m.group(1).strip()
     raise SystemExit("no DATABASE_URL")
 
-# stock_stats_view, corrected to use the DAILY (1D) technicals timeframe.
+# DEPRECATED — DO NOT EXECUTE (kept for reference only). This inline view reads
+# income_statements WITHOUT the x1e6 scale; running it would REVERT migration 0007
+# and re-corrupt net_income_ttm for ~73 symbols every time this workflow runs.
+# main() now applies backend-core/migrations/0007_*.sql instead (single source of truth).
 VIEW = """
 DROP VIEW IF EXISTS stock_stats_view;
 CREATE VIEW stock_stats_view AS
@@ -81,8 +84,15 @@ WHERE ss.symbol = mt.symbol AND mt.market_code = 'EGX';
 async def main(view_only):
     c = await connect_resilient(load_db_url())
     try:
-        await c.execute(VIEW)
-        print("[stock_stats_view] refreshed (timeframe='1D')")
+        # Apply the CANONICAL view from the migration (TV-native, absolute EGP, 1D
+        # technicals) — never the deprecated inline income_statements view above,
+        # which would silently revert the 0007 scale fix and re-corrupt net_income.
+        _vm = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "migrations", "0007_stock_stats_view_basics_ef_first.sql")
+        with open(_vm) as _f:
+            await c.execute(_f.read())
+        print(f"[stock_stats_view] applied from {os.path.basename(_vm)} "
+              "(TV-native, absolute EGP — NOT the old unscaled income_statements view)")
         if not view_only:
             res = await c.execute(REFRESH)
             print(f"[stock_statistics] refreshed: {res}")

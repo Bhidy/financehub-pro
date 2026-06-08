@@ -298,6 +298,28 @@ async def cycle_prices(conn):
     if n == 0:
         raise SystemExit("FAIL: 0 tickers updated")  # fail-loud (L9)
 
+    # Fetch EGX30 index level from TradingView and store in market_tickers so the
+    # market-summary API can read a real index value (instead of computing a wrong VWAP).
+    # Non-fatal: a failure here skips the index row but the main ticker upsert already succeeded.
+    try:
+        idx_rows = await TradingViewEGXClient()._scan(
+            ["close", "change", "change_abs", "volume"],
+            tickers=["EGX:EGX30"])
+        if idx_rows:
+            ix = idx_rows[0]
+            await conn.execute(SQL_UPSERT_MARKET_TICKER,
+                "EGX30", "EGX 30 Index", "Index",  # symbol, name_en, sector_name
+                _finite(ix.get("close")),            # last_price
+                _finite(ix.get("change_abs")),       # change (absolute pts)
+                _finite(ix.get("change")),           # change_percent
+                int(_finite(ix.get("volume")) or 0), # volume
+                None, None, None,                    # market_cap, pe_ratio, dividend_yield
+                "tradingview")
+            logger.info("prices: EGX30 index upserted: %.2f (%.2f%%)",
+                        _finite(ix.get("close")) or 0, _finite(ix.get("change")) or 0)
+    except Exception as e:
+        logger.warning("prices: EGX30 index fetch skipped: %s", e)
+
 
 async def cycle_technicals(conn):
     rows = await TradingViewEGXClient().get_technicals()

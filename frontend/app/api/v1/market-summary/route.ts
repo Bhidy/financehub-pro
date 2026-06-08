@@ -41,9 +41,38 @@ const resolveEgxMarketStatus = (): "OPEN" | "CLOSED" => {
     return "OPEN";
 };
 
+// Fetch the EGX30 index level from the TV scanner. We first attempt to read
+// it from market_tickers (populated by the TV harvester cycle), and fall back
+// to calling TradingView directly. Returns null on any failure so callers can
+// gracefully handle missing index data.
+async function fetchEgx30Index(): Promise<{ value: number; change: number; changePct: number } | null> {
+    try {
+        const resp = await fetch("https://scanner.tradingview.com/egypt/scan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (compatible; startamarkets/1.0)",
+                "Origin": "https://www.tradingview.com",
+            },
+            body: JSON.stringify({
+                columns: ["close", "change", "change_abs"],
+                symbols: { tickers: ["EGX:EGX30"] },
+            }),
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!resp.ok) return null;
+        const payload = await resp.json() as { data?: Array<{ d: number[] }> };
+        const row = payload.data?.[0]?.d;
+        if (!row || row.length < 3) return null;
+        return { value: row[0], changePct: row[1], change: row[2] };
+    } catch {
+        return null;
+    }
+}
+
 export async function GET() {
     try {
-        const [summaryResult, breadthResult, indexResult] = await Promise.all([
+        const [summaryResult, breadthResult, egx30Stored, egx30Live] = await Promise.all([
             db.query(`
                 SELECT
                     COUNT(*) as total_stocks,
@@ -68,21 +97,29 @@ export async function GET() {
                 FROM market_tickers
                 WHERE last_price IS NOT NULL AND market_code = 'EGX'
             `),
+            // EGX30 stored by TV harvester cycle (symbol='EGX30', market_code='EGX')
             db.query(`
-                SELECT
-                    ROUND(SUM(last_price * volume) / NULLIF(SUM(volume), 0), 2) as weighted_price,
-                    ROUND(SUM(change * volume) / NULLIF(SUM(volume), 0), 3) as weighted_change,
-                    ROUND(SUM(change_percent * volume) / NULLIF(SUM(volume), 0), 2) as weighted_change_percent
+                SELECT last_price, change, change_percent
                 FROM market_tickers
-                WHERE last_price IS NOT NULL
-                  AND volume > 0
-                  AND market_code = 'EGX'
+                WHERE symbol = 'EGX30' AND market_code = 'EGX'
+                LIMIT 1
             `),
+            // Fallback: fetch EGX30 live from TradingView scanner (non-fatal if fails)
+            fetchEgx30Index().catch(() => null),
         ]);
 
         const stats = summaryResult.rows[0] || {};
         const breadth = breadthResult.rows[0] || {};
-        const index = indexResult.rows[0] || {};
+
+        // EGX30 index — prefer DB row (harvester-populated), fall back to live TV fetch
+        const storedEgx30 = egx30Stored.rows[0];
+        const egx30 = storedEgx30
+            ? {
+                value: toNumber(storedEgx30.last_price),
+                change: toNumber(storedEgx30.change),
+                changePct: toNumber(storedEgx30.change_percent),
+            }
+            : egx30Live;
 
         const cacheHeaders = { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' };
         return NextResponse.json({
@@ -90,9 +127,9 @@ export async function GET() {
             market_code: "EGX",
             market_name: "Egyptian Exchange",
 
-            index_value: toNumber(index.weighted_price),
-            index_change: toNumber(index.weighted_change),
-            index_change_percent: toNumber(index.weighted_change_percent),
+            index_value: egx30?.value ?? null,
+            index_change: egx30?.change ?? null,
+            index_change_percent: egx30?.changePct ?? null,
 
             total_stocks: toNumber(stats.total_stocks),
             advancing: toNumber(stats.advancing),

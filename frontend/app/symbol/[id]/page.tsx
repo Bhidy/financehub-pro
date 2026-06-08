@@ -285,7 +285,7 @@ function recMeta(v: number | null | undefined): RecMeta {
 function RecommendationGauge({ value, title, lang }: { value: number | null; title: string; lang: "en" | "ar" }) {
     const m = recMeta(value);
     const v = Math.max(-1, Math.min(1, value ?? 0));
-    const angle = -90 + (v + 1) * 90; // -90 (sell) .. +90 (buy)
+    const angle = 180 + (v + 1) * 90; // 180° (sell, left) → 270° (neutral, top) → 360° (buy, right)
     const r = 78, cx = 100, cy = 96;
     const arc = (start: number, end: number, color: string) => {
         const p = (a: number) => [cx + r * Math.cos((a * Math.PI) / 180), cy + r * Math.sin((a * Math.PI) / 180)];
@@ -296,9 +296,11 @@ function RecommendationGauge({ value, title, lang }: { value: number | null; tit
     return (
         <div className="flex flex-col items-center justify-center">
             <svg viewBox="0 0 200 116" className="w-full max-w-[260px]">
-                {arc(180, 240, "#ef4444")}
-                {arc(240, 300, "#f59e0b")}
-                {arc(300, 360, "#10b981")}
+                {arc(180, 225, "#dc2626")}
+                {arc(225, 261, "#ef4444")}
+                {arc(261, 279, "#f59e0b")}
+                {arc(279, 315, "#22c55e")}
+                {arc(315, 360, "#16a34a")}
                 {value != null && (
                     <>
                         <line x1={cx} y1={cy} x2={needle[0]} y2={needle[1]} stroke={m.color} strokeWidth="4" strokeLinecap="round" />
@@ -1505,6 +1507,13 @@ export default function SymbolDetailPage() {
                                             <RecommendationGauge value={tf.recommend_all} title={lang === "ar" ? "الملخص" : "Summary"} lang={lang} />
                                             <RecommendationGauge value={tf.recommend_ma} title={t.tech_mas} lang={lang} />
                                         </div>
+                                        {tf.updated_at && (
+                                            <p className="text-[11px] text-slate-400 text-center mt-4 font-medium">
+                                                {lang === "ar" ? "آخر تحديث" : "Last updated"}{" "}
+                                                {new Date(tf.updated_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-GB", { dateStyle: "short", timeStyle: "short" })}
+                                                {" · TradingView · 15min delayed"}
+                                            </p>
+                                        )}
                                     </div>
                                     {/* indicator tables */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

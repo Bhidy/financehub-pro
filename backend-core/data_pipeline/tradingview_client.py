@@ -249,15 +249,14 @@ class TradingViewEGXClient:
     # platform can be 100% TV-native and never depend on the dead audited
     # scraper.
     #
-    # UNIT CONTRACT (critical — re-verified June 2026):
+    # UNIT CONTRACT (verified June 2026 — corrected after post-harvest telemetry):
     # TradingView's scanner returns monetary aggregate _fy scalars for EGX stocks
-    # in EGP MILLIONS (e.g. net_income_fy=82239 means EGP 82.239 billion).
+    # in ABSOLUTE EGP (e.g. net_income_fy=61_634_295_000 means EGP ~61.6 billion).
+    # This was confirmed by comparing the _fy scalar to the _fy_h history-array
+    # value for the same fiscal year: they are identical, and _fy_h is documented
+    # as absolute EGP everywhere. No scaling is applied.
     # Per-share values (eps, bvps, dps) and ratios (margins, ROE, ROA) are in
-    # native per-share EGP / percentage — no scaling needed.
-    # All monetary aggregates are multiplied by _TV_MONETARY_SCALE (1e6) before
-    # being stored in egx_fundamentals, so the DB always holds ABSOLUTE EGP.
-    # The _fy_h history arrays (stored in egx_financials via cycle_financials)
-    # are already in absolute EGP — no scaling required for those.
+    # native per-share EGP / percentage — also no scaling needed.
     # Banks legitimately return null gross_profit/ebitda (sector-structural).
     # ------------------------------------------------------------------ #
     async def get_fundamentals(self) -> List[Dict[str, Any]]:
@@ -271,16 +270,6 @@ class TradingViewEGXClient:
                 "return_on_equity_fy", "return_on_assets_fy"]
         rows = await self._scan(cols, rng=[0, 300])
 
-        # TV scanner returns EGX monetary aggregates in EGP millions.
-        # Multiply by this constant so egx_fundamentals stores ABSOLUTE EGP,
-        # consistent with egx_financials (which holds absolute EGP from _fy_h arrays).
-        _TV_MONETARY_SCALE = 1_000_000
-
-        def _m(key: str):
-            """Scale a TV monetary _fy field from EGP millions to absolute EGP."""
-            v = _finite(d.get(key))
-            return v * _TV_MONETARY_SCALE if v is not None else None
-
         out: List[Dict[str, Any]] = []
         for d in rows:
             sym = d.get("symbol")
@@ -290,17 +279,17 @@ class TradingViewEGXClient:
             out.append({
                 "symbol": sym,
                 "fiscal_year": int(fy),
-                # Monetary aggregates — multiply by 1e6 (TV EGP millions → absolute EGP)
-                "revenue": _m("total_revenue_fy"),
-                "gross_profit": _m("gross_profit_fy"),
-                "operating_income": _m("oper_income_fy"),
-                "ebitda": _m("ebitda_fy"),
-                "net_income": _m("net_income_fy"),
-                "total_assets": _m("total_assets_fy"),
-                "total_equity": _m("total_equity_fy"),
-                "total_liabilities": _m("total_liabilities_fy"),
-                "total_debt": _m("total_debt_fy"),
-                "free_cash_flow": _m("free_cash_flow_fy"),
+                # Monetary aggregates — TV returns ABSOLUTE EGP, store as-is
+                "revenue": _finite(d.get("total_revenue_fy")),
+                "gross_profit": _finite(d.get("gross_profit_fy")),
+                "operating_income": _finite(d.get("oper_income_fy")),
+                "ebitda": _finite(d.get("ebitda_fy")),
+                "net_income": _finite(d.get("net_income_fy")),
+                "total_assets": _finite(d.get("total_assets_fy")),
+                "total_equity": _finite(d.get("total_equity_fy")),
+                "total_liabilities": _finite(d.get("total_liabilities_fy")),
+                "total_debt": _finite(d.get("total_debt_fy")),
+                "free_cash_flow": _finite(d.get("free_cash_flow_fy")),
                 # Per-share values — already in EGP per share, no scaling
                 "eps_diluted": _finite(d.get("earnings_per_share_diluted_fy")),
                 "bvps": _finite(d.get("book_value_per_share_fy")),

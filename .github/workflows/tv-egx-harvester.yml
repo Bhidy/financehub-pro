@@ -9,6 +9,7 @@ name: TradingView EGX Harvester
 on:
   schedule:
     - cron: '*/15 6-13 * * 0-4'   # technicals + prices, market hours (UTC), Sun-Thu
+    - cron: '45 11 * * 0-4'       # technicals post-close snapshot (EGX closes 11:30 UTC / 14:30 Cairo)
     - cron: '*/30 6-14 * * 0-4'   # news
     - cron: '0 15 * * 0-4'        # estimates, post-close
     - cron: '30 15 * * 0-4'       # dividends, post-close
@@ -65,6 +66,7 @@ jobs:
               # prices first: writes today's OHLC candle to ohlc_data (chart update).
               # Then technicals so both cycle in the same 15-min window.
               "*/15 6-13 * * 0-4") echo "cycle=prices_and_technicals" >> "$GITHUB_OUTPUT" ;;
+              "45 11 * * 0-4")     echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;
               "*/30 6-14 * * 0-4") echo "cycle=news" >> "$GITHUB_OUTPUT" ;;
               "0 15 * * 0-4")      echo "cycle=estimates" >> "$GITHUB_OUTPUT" ;;
               "30 15 * * 0-4")     echo "cycle=dividends" >> "$GITHUB_OUTPUT" ;;

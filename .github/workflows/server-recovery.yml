@@ -1,0 +1,79 @@
+name: Server Recovery (disk + backend)
+
+# One-shot ops workflow: runs ON the Hetzner box via the self-hosted runner.
+# Frees disk, writes the current DATABASE_URL secret into /opt/starta/.env,
+# restarts the backend container, and re-adds the deploy SSH key.
+# Manual dispatch only (private repo → only collaborators can run it).
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  recover:
+    runs-on: [self-hosted, linux, x64, hetzner]
+    steps:
+      - name: Access + disk diagnosis
+        run: |
+          set +e
+          echo "=== WHOAMI ==="; id; echo "HOME=$HOME"; pwd
+          echo "=== SUDO (passwordless?) ==="; sudo -n true 2>/dev/null && echo "SUDO=YES" || echo "SUDO=NO"
+          echo "=== DOCKER (direct) ==="; docker ps >/dev/null 2>&1 && echo "DOCKER=YES" || echo "DOCKER=NO"
+          echo "=== DOCKER (sudo) ==="; sudo -n docker ps >/dev/null 2>&1 && echo "SUDO_DOCKER=YES" || echo "SUDO_DOCKER=NO"
+          echo "=== DISK ==="; df -h / 2>/dev/null
+          echo "=== INODES ==="; df -i / 2>/dev/null | tail -1
+          echo "=== /opt/starta ==="; (ls -la /opt/starta 2>&1 || sudo -n ls -la /opt/starta 2>&1) | head -8
+          echo "=== biggest dirs ==="; sudo -n du -xh --max-depth=2 /var /opt /home 2>/dev/null | sort -rh | head -15
+
+      - name: Free disk space
+        run: |
+          set +e
+          DK="docker"; sudo -n docker ps >/dev/null 2>&1 && DK="sudo -n docker"
+          echo "=== before ==="; df -h / | tail -1
+          $DK system df 2>/dev/null
+          echo "=== prune images/containers/networks ==="; $DK system prune -af 2>&1 | tail -3
+          echo "=== prune build cache ==="; $DK builder prune -af 2>&1 | tail -2
+          echo "=== journal vacuum ==="; sudo -n journalctl --vacuum-size=50M 2>&1 | tail -2
+          echo "=== apt + caches ==="; sudo -n apt-get clean 2>&1 | tail -1; rm -rf "$HOME"/.cache/* 2>/dev/null; echo cleaned
+          echo "=== after ==="; df -h / | tail -1
+
+      - name: Update backend .env (new DB password) + restart
+        env:
+          NEW_DSN: ${{ secrets.DATABASE_URL }}
+        run: |
+          set +e
+          ENVF=/opt/starta/.env
+          SUDO=""; sudo -n true 2>/dev/null && SUDO="sudo -n"
+          if $SUDO test -f "$ENVF" 2>/dev/null; then
+            echo "updating DATABASE_URL in $ENVF"
+            $SUDO sed -i '/^DATABASE_URL=/d' "$ENVF"
+            printf 'DATABASE_URL=%s\n' "$NEW_DSN" | $SUDO tee -a "$ENVF" >/dev/null
+            echo "verify (masked):"; $SUDO grep '^DATABASE_URL=' "$ENVF" | sed -E 's#:[^:@]+@#:<PW>@#'
+          else
+            echo "NO ACCESS to $ENVF"
+          fi
+          echo "=== restart backend ==="
+          DK="docker"; sudo -n docker ps >/dev/null 2>&1 && DK="sudo -n docker"
+          if [ -d /opt/starta ]; then
+            cd /opt/starta
+            $DK compose -f docker-compose.prod.yml up -d backend 2>&1 | tail -10 \
+              || $DK compose -f docker-compose.prod.yml up -d 2>&1 | tail -10 \
+              || $DK-compose -f docker-compose.prod.yml up -d backend 2>&1 | tail -10
+          fi
+
+      - name: Re-add deploy SSH key
+        run: |
+          set +e
+          SUDO=""; sudo -n true 2>/dev/null && SUDO="sudo -n"
+          PUB='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIISy20ig9N69gZ9ZTpHENzAHspmjaAWLQ6N8ZaxzSAG6 starta-autodeploy@claude'
+          $SUDO mkdir -p /root/.ssh
+          $SUDO sh -c "grep -qF '$PUB' /root/.ssh/authorized_keys 2>/dev/null || echo '$PUB' >> /root/.ssh/authorized_keys"
+          $SUDO chmod 700 /root/.ssh 2>/dev/null; $SUDO chmod 600 /root/.ssh/authorized_keys 2>/dev/null
+          echo "deploy key re-add attempted"
+
+      - name: Final status
+        run: |
+          set +e
+          DK="docker"; sudo -n docker ps >/dev/null 2>&1 && DK="sudo -n docker"
+          echo "=== containers ==="; $DK ps 2>&1 | head
+          echo "=== local backend probe ==="; for p in 8000 80 8080 3000 5000; do curl -s -m 5 -o /dev/null -w "localhost:$p -> %{http_code}\n" "http://localhost:$p/health" 2>/dev/null; done
+          echo "=== disk final ==="; df -h / | tail -1

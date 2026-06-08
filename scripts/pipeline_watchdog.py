@@ -14,10 +14,14 @@ Two independent checks every run:
      that left 3 workflows dead with 0 runs).
 
 On a problem it (optionally, --heal) DISPATCHES the corrective workflow
-(cooldown-guarded so it never storms), then alerts Discord. Signal hygiene: the
-run stays GREEN on stale DATA (it alerts/heals); it only exits non-zero if the
-WATCHDOG ITSELF broke (DB unreachable) — so a RED watchdog unambiguously means
-"the watchdog is down", which the paired data-freshness-monitor cross-checks.
+(cooldown-guarded so it never storms), then alerts Discord. Signal hygiene: it
+ALWAYS writes the heartbeat, sends Discord and fires every heal FIRST, then exits
+non-zero iff a problem was left UNHEALED (no corrective, --heal off, dispatch
+skipped/failed, or a human-only issue) so the GitHub UI is honestly RED and can't
+false-green; a problem we dispatched-for-heal keeps it GREEN (the heal IS the
+response), and a healthy run is GREEN. A RED run with a written heartbeat means
+"real problem outstanding"; a MISSING heartbeat (DB unreachable / watchdog dead)
+is what the paired data-freshness-monitor cross-checks.
 
 It writes a heartbeat to `pipeline_heartbeat` so a second, independent workflow
 can confirm the watchdog itself is alive ("who watches the watchman", for free).
@@ -226,12 +230,34 @@ def _workflow_overdue(file, kind, max_silence_h, now):
         return None
     if kind == "daily" and not _is_trading_day(_last_completed_session_date(now)):
         return None
+    # A run still queued/in_progress is NOT proof of liveness: if the single
+    # self-hosted runner is down, GitHub keeps enqueuing runs that never start,
+    # so the latest run looks "recent" yet nothing actually executed. Treat a
+    # non-terminal run that has been pending LONGER than its window as overdue
+    # (the single-runner-down case) rather than silently "already running/live".
+    if status in ("queued", "in_progress") and age_h > max_silence_h:
+        return f"stuck {status} {age_h:.1f}h (max {max_silence_h}h — runner down? never started)"
     if age_h > max_silence_h:
         return f"overdue {age_h:.1f}h (max {max_silence_h}h, last status={status})"
     return None
 
 
 def _post_discord(title, lines, color):
+    # Prefer the verified-delivery path (scripts/notify.py): it POSTs to Discord,
+    # CHECKS the HTTP status, and falls back to EMAIL (SMTP) when Discord is missing
+    # / non-2xx / dead — closing the "Discord is the only alert channel, silent on a
+    # 403'd webhook" gap (audit H3). If that module can't be imported (older checkout
+    # or odd run context), fall through to the original raw Discord POST below, so
+    # alerting NEVER hard-depends on the new module.
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from notify import send_alert
+        st = send_alert(title, "\n".join(lines))
+        print(f"alert delivery: {st}", file=sys.stderr)
+        return
+    except Exception as e:
+        print(f"notify.send_alert unavailable, using raw Discord: {e}", file=sys.stderr)
+
     if not DISCORD:
         return
     try:
@@ -283,7 +309,12 @@ async def main(heal: bool, check_watchdog_min: int):
                 print(f"watchdog heartbeat OK ({(now-hb).total_seconds()/60:.0f}m ago)")
             return
 
-        problems, heals = [], []
+        # `unhealed` counts problems that were NOT successfully dispatched-for-heal
+        # (no corrective, --heal off, or dispatch skipped/failed). It drives an
+        # HONEST exit code at the end so the GitHub UI goes RED only when a real
+        # problem is left unaddressed — while a problem we kicked a heal for keeps
+        # the run GREEN (the heal IS the response).
+        problems, heals, unhealed = [], [], 0
 
         # 1) DATA FRESHNESS
         for label, table, col, kind, thr, corrective, filt in DATASETS:
@@ -291,6 +322,7 @@ async def main(heal: bool, check_watchdog_min: int):
                 val = await _max_ts(conn, table, col, filt)
             except Exception as e:
                 problems.append(f"❓ {label}: check failed — {type(e).__name__}")
+                unhealed += 1
                 continue
             state, detail = _classify(kind, thr, val, now)
             mark = {"OK": "✅", "STALE": "🟠", "EMPTY": "🔴"}[state]
@@ -300,6 +332,10 @@ async def main(heal: bool, check_watchdog_min: int):
                 if heal and corrective:
                     res = _dispatch(*corrective)
                     heals.append(f"↻ {label} → {corrective[0]}: {res}")
+                    if res != "DISPATCHED":
+                        unhealed += 1
+                else:
+                    unhealed += 1
 
         # 2) SCHEDULE LIVENESS (did each cron actually fire?)
         print("  --- schedule liveness ---")
@@ -311,6 +347,10 @@ async def main(heal: bool, check_watchdog_min: int):
                 if heal and file != "pipeline-watchdog.yml":
                     res = _dispatch(file, {})
                     heals.append(f"↻ {file}: {res}")
+                    if res != "DISPATCHED":
+                        unhealed += 1
+                else:
+                    unhealed += 1
 
         # 3) RUNNER DISK CHECK (self-hosted only — checks actual Hetzner VPS disk)
         #    Warn at 85%, critical at 92%. Standard-library shutil; no pip needed.
@@ -330,12 +370,14 @@ async def main(heal: bool, check_watchdog_min: int):
                     f"🔴 **runner disk CRITICAL: {_disk_pct}% full** — only {_disk_free_gb:.1f}G free on Hetzner VPS."
                     f" Runner will crash if disk fills. Clear: `docker system prune -f` or expand volume."
                 )
+                unhealed += 1  # disk needs a human to free space — no auto-heal
             elif _disk_pct >= DISK_WARN_PCT:
                 mark = "🟠"
                 problems.append(
                     f"🟠 **runner disk {_disk_pct}% full** — {_disk_free_gb:.1f}G remaining on Hetzner VPS."
                     f" Free space soon: `docker system prune -f` or clear /tmp, logs."
                 )
+                unhealed += 1  # disk needs a human to free space — no auto-heal
             else:
                 mark = "✅"
             print(f"  {mark} runner disk:    {_disk_pct}% used, {_disk_free_gb:.1f}G free")
@@ -360,6 +402,14 @@ async def main(heal: bool, check_watchdog_min: int):
             print("\nWATCHDOG: all datasets fresh, all schedules live, runner disk OK ✅")
     finally:
         await conn.close()
+
+    # HONEST exit code (run AFTER heartbeat, Discord alert and heal dispatch above,
+    # so none of those are skipped): if any problem was left UNHEALED — no corrective,
+    # --heal off, dispatch skipped/failed, or a human-only issue like disk/check-failed
+    # — exit non-zero so the GitHub UI goes RED and the run can't be a false green. A
+    # healthy run, or one where every problem was dispatched-for-heal, stays exit 0.
+    if unhealed:
+        sys.exit(f"WATCHDOG: {unhealed} unhealed problem(s) — see Discord/log above")
 
 
 if __name__ == "__main__":

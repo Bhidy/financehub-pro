@@ -22,7 +22,7 @@ verified to match ohlc-computed MAs.
   python refresh_stock_statistics.py --view-only  # only (re)create the view
 Reads DATABASE_URL from env/.env.
 """
-import argparse, asyncio, os, re, sys
+import argparse, asyncio, glob, os, re, sys
 import asyncpg
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
@@ -38,30 +38,9 @@ def load_db_url():
                 if m: return m.group(1).strip()
     raise SystemExit("no DATABASE_URL")
 
-# DEPRECATED — DO NOT EXECUTE (kept for reference only). This inline view reads
-# income_statements WITHOUT the x1e6 scale; running it would REVERT migration 0007
-# and re-corrupt net_income_ttm for ~73 symbols every time this workflow runs.
-# main() now applies backend-core/migrations/0007_*.sql instead (single source of truth).
-VIEW = """
-DROP VIEW IF EXISTS stock_stats_view;
-CREATE VIEW stock_stats_view AS
-SELECT mt.symbol, mt.market_code, mt.name_en, mt.name_ar, mt.sector_name, mt.currency,
-       mt.last_price, mt.pe_ratio, mt.pb_ratio, mt.dividend_yield, mt.market_cap,
-       mt.beta AS beta_5y, t.rsi AS rsi_14, t.sma50 AS ma_50d, t.sma200 AS ma_200d,
-       i.gross_margin, i.operating_margin, i.net_margin AS profit_margin,
-       i.revenue_growth, i.net_income_growth AS profit_growth, i.eps_growth,
-       i.eps AS eps_ttm, i.net_income AS net_income_ttm,
-       CASE WHEN b.total_equity>0 THEN ROUND((i.net_income/b.total_equity*100)::numeric,2) END AS roe,
-       CASE WHEN b.total_assets>0 THEN ROUND((i.net_income/b.total_assets*100)::numeric,2) END AS roa,
-       b.total_debt, b.total_equity AS book_value,
-       'tradingview+yahoo' AS source
-FROM market_tickers mt
-LEFT JOIN LATERAL (SELECT rsi,sma50,sma200,updated_at FROM egx_technicals
-                   WHERE symbol=mt.symbol AND timeframe='1D' ORDER BY updated_at DESC LIMIT 1) t ON true
-LEFT JOIN LATERAL (SELECT * FROM income_statements WHERE symbol=mt.symbol AND period_type='annual' ORDER BY fiscal_year DESC LIMIT 1) i ON true
-LEFT JOIN LATERAL (SELECT total_equity,total_assets,total_debt FROM balance_sheets WHERE symbol=mt.symbol AND period_type='annual' ORDER BY fiscal_year DESC LIMIT 1) b ON true
-WHERE mt.market_code='EGX';
-"""
+# The old inline VIEW copy was DELETED (June-2026): every embedded copy of the
+# view eventually forks from the canonical migration and silently reverts it on
+# the next scheduled run. The ONLY view source is the latest migration file.
 
 # Unit-identical refresh: raw technicals (1D) + raw valuation + % yield. NOTHING
 # with a fraction/percentage ambiguity is touched.
@@ -84,15 +63,21 @@ WHERE ss.symbol = mt.symbol AND mt.market_code = 'EGX';
 async def main(view_only):
     c = await connect_resilient(load_db_url())
     try:
-        # Apply the CANONICAL view from the migration (TV-native, absolute EGP, 1D
-        # technicals) — never the deprecated inline income_statements view above,
-        # which would silently revert the 0007 scale fix and re-corrupt net_income.
-        _vm = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                           "migrations", "0007_stock_stats_view_basics_ef_first.sql")
+        # Apply the LATEST canonical view migration (single source of truth).
+        # NEVER pin a specific file: the old hardcoded 0007 pin silently REVERTED
+        # migration 0009 (honest-TTM view) twice a day until the TV reconcile
+        # gate caught it (June-2026). Glob + take the highest-numbered so future
+        # view migrations are picked up automatically; fail LOUD if none found.
+        _mig_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                "migrations")
+        _cands = sorted(glob.glob(os.path.join(_mig_dir, "0*stock_stats_view*.sql")))
+        if not _cands:
+            raise SystemExit("FAIL: no stock_stats_view migration file found — "
+                             "refusing to apply any inline/stale view definition")
+        _vm = _cands[-1]
         with open(_vm) as _f:
             await c.execute(_f.read())
-        print(f"[stock_stats_view] applied from {os.path.basename(_vm)} "
-              "(TV-native, absolute EGP — NOT the old unscaled income_statements view)")
+        print(f"[stock_stats_view] applied LATEST migration {os.path.basename(_vm)}")
         if not view_only:
             res = await c.execute(REFRESH)
             print(f"[stock_statistics] refreshed: {res}")

@@ -79,6 +79,12 @@ CHECKS = [
 WEEKLY_FIELDS = {"eps_ttm", "revenue_ttm", "net_income_ttm", "eps_fy", "revenue_fy",
                  "net_income_fy", "total_debt", "bvps", "shares_out", "forward_pe"}
 WEEKLY_TOL = float(os.environ.get("RECONCILE_WEEKLY_TOL", "0.05"))  # 5%
+# FY fields are legitimately backed by TradingView's `_fy_h` HISTORY ARRAYS for
+# ~70 symbols whose current-year scalar is null (egx_financials latest annual row
+# — still 100% TV data; it feeds the Financials tab). A prod value where only the
+# TV *scalar* is null is therefore NOT a ghost for these fields; the mismatch
+# check (both sides present) still applies and stays strict.
+HISTORY_BACKED = {"eps_fy", "revenue_fy", "net_income_fy", "total_debt", "bvps"}
 
 
 def http_json(url: str, data=None):
@@ -161,8 +167,9 @@ def main() -> int:
             if p is None:
                 continue                      # prod hides it — never a lie
             if t is None:
-                ghosts.append(sym)            # prod shows what TV doesn't have
-                continue
+                if label not in HISTORY_BACKED:
+                    ghosts.append(sym)        # prod shows what TV doesn't have
+                continue                      # history-backed: scalar-null is uncheckable here
             if t == 0:
                 ok += 1 if abs(p) < 1e-9 else 0
                 continue

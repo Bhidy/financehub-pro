@@ -922,7 +922,7 @@ export default function SymbolDetailPage() {
                                 {/* Chart — TradingView's own embedded Advanced Chart (100% TV data). */}
                                 <div className="premium-glass rounded-3xl p-4 relative">
                                     <div className="flex items-center justify-between mb-3 px-2">
-                                        <span className="text-xs text-slate-400 font-bold">{t.price_chart} · TradingView</span>
+                                        <span className="text-xs text-slate-400 font-bold">{t.price_chart}</span>
                                         <button type="button" onClick={() => setChartFullscreen(true)}
                                             title={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"} aria-label="Enlarge chart"
                                             className="p-1.5 rounded-lg text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors">
@@ -1034,7 +1034,6 @@ export default function SymbolDetailPage() {
                                                 </h3>
                                                 <p className="text-xs text-slate-400 font-bold uppercase mt-1">{lang === "ar" ? "سنوي · " : "Annual · "}{currency}</p>
                                             </div>
-                                            <span className="text-[11px] font-bold text-slate-400">{lang === "ar" ? "مصدر: TradingView" : "Source: TradingView"}</span>
                                         </div>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm">
@@ -1124,7 +1123,7 @@ export default function SymbolDetailPage() {
                                             <p className="text-[11px] text-slate-400 text-center mt-4 font-medium">
                                                 {lang === "ar" ? "آخر تحديث" : "Last updated"}{" "}
                                                 {new Date(tf.updated_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-GB", { dateStyle: "short", timeStyle: "short" })}
-                                                {" · TradingView · 15min delayed"}
+                                                {lang === "ar" ? " · بيانات مؤجلة ١٥ دقيقة" : " · 15min delayed"}
                                             </p>
                                         )}
                                     </div>
@@ -1258,7 +1257,7 @@ export default function SymbolDetailPage() {
                                     const dv = tvDividends;
                                     return (
                                         <div className="premium-glass rounded-3xl p-6 md:p-8">
-                                            <SectionHeader icon={Calendar} title={lang === "ar" ? "التوزيعات (TradingView)" : "Dividends (TradingView)"} color="text-[#14b8a6]" />
+                                            <SectionHeader icon={Calendar} title={lang === "ar" ? "التوزيعات" : "Dividends"} color="text-[#14b8a6]" />
                                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                                 <MetricCard label={lang === "ar" ? "عائد التوزيع" : "Dividend Yield"} value={dv.div_yield != null ? `${Number(dv.div_yield).toFixed(2)}%` : "-"} icon={TrendingUp} color="text-[#14b8a6]" />
                                                 <MetricCard label={lang === "ar" ? "آخر توزيع" : "Last Dividend"} value={dv.amount_recent != null ? `${currency} ${Number(dv.amount_recent).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" subtitle={lang === "ar" ? `تاريخ الاستحقاق ${fmtD(dv.ex_date_recent)}` : `Ex-date ${fmtD(dv.ex_date_recent)}`} />
@@ -1320,7 +1319,7 @@ export default function SymbolDetailPage() {
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <p className="text-[11px] text-slate-400">{lang === "ar" ? "المصدر: TradingView · توزيعات لكل سنة مالية" : "Source: TradingView · dividends per fiscal year"}</p>
+                                            <p className="text-[11px] text-slate-400">{lang === "ar" ? "توزيعات لكل سنة مالية" : "Dividends per fiscal year"}</p>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center py-16 text-slate-400">
@@ -1384,7 +1383,9 @@ export default function SymbolDetailPage() {
                                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${sentimentClass}`}>{sentimentLabel}</span>
                                                                 {article.source && (
                                                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
-                                                                        {article.origin === "tradingview" ? "TradingView" : article.source}
+                                                                        {article.origin === "tradingview"
+                                                    ? (article.source && !/tradingview/i.test(String(article.source)) ? article.source : (lang === "ar" ? "أخبار السوق" : "Market Wire"))
+                                                    : article.source}
                                                                     </span>
                                                                 )}
                                                                 <span className="text-xs text-slate-400 font-semibold tracking-wide">
@@ -1471,7 +1472,6 @@ export default function SymbolDetailPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    <p className="text-[11px] text-slate-400 mt-4">{lang === "ar" ? "المصدر: TradingView" : "Source: TradingView"}</p>
                                 </div>
                             </div>
                         )}

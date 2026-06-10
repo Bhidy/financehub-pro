@@ -5,10 +5,8 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
-    fetchTickers, fetchOHLC, fetchFinancials,
-    fetchCorporateActions, fetchIntraday,
-    fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
-    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxSeasonals, fetchEgxNewsTV
+    fetchTickers, fetchLocalCompanyProfile, fetchNews, Ticker,
+    fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxNewsTV
 } from "@/lib/api";
 import {
     sanitizeNewsText,
@@ -26,6 +24,7 @@ import {
     ExternalLink, BookOpen, Gauge, Crosshair, Minus, Maximize2
 } from "lucide-react";
 import { TradingViewChartModal } from "@/components/TradingViewChartModal";
+import { TradingViewInlineChart } from "@/components/TradingViewInlineChart";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -546,12 +545,9 @@ export default function SymbolDetailPage() {
         }
     }, [theme]);
 
-    type TabId = "overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ratios" | "dividends" | "news" | "profile";
+    type TabId = "overview" | "financials" | "technicals" | "ratios" | "dividends" | "news" | "profile";
     const [activeTab, setActiveTab] = useState<TabId>("overview");
-    const [chartPeriod, setChartPeriod] = useState("3m");
     const [chartFullscreen, setChartFullscreen] = useState(false);
-    const [financialPeriod, setFinancialPeriod] = useState<"annual" | "quarterly">("annual");
-    const [financialSubTab, setFinancialSubTab] = useState<"income" | "balance" | "cashflow">("income");
     const [expandedNews, setExpandedNews] = useState<Set<number>>(new Set());
 
     // ─── QUERY PARAMETER TAB INITIALIZATION ──────────────────────────────
@@ -587,26 +583,10 @@ export default function SymbolDetailPage() {
         enabled: !!symbol
     });
 
-    const { data: yahooProfile } = useQuery({
-        queryKey: ["yahoo-profile", symbol],
-        queryFn: () => fetchYahooProfile(symbol),
-        enabled: !!symbol
-    });
-
-    const { data: ohlcData = [], isLoading: chartLoading } = useQuery({
-        queryKey: ["ohlc", symbol, chartPeriod],
-        queryFn: () => chartPeriod === "1D" ? fetchIntraday(symbol, "5m", 300) : fetchOHLC(symbol, chartPeriod),
-        enabled: !!symbol
-    });
-
-    const { data: financials = [] } = useQuery({
-        queryKey: ["financials", symbol], queryFn: () => fetchFinancials(symbol), enabled: !!symbol
-    });
-
-    const { data: corporateActions = [] } = useQuery({
-        queryKey: ["corporate-actions", symbol], queryFn: () => fetchCorporateActions(symbol), enabled: !!symbol
-    });
-
+    // TV-ONLY MANDATE (June-2026): the audited-financials, corporate-actions,
+    // OHLC/intraday and Yahoo-profile fetches were removed — every number on this
+    // page now comes from TradingView feeds. The price chart is TradingView's own
+    // embedded Advanced Chart (100% TV candles, not our ohlc_data).
     const { data: newsData = [] } = useQuery({
         queryKey: ["news-tv", symbol, lang],
         queryFn: () => fetchEgxNewsTV(symbol, lang),
@@ -629,11 +609,8 @@ export default function SymbolDetailPage() {
         queryFn: () => fetchEgxEstimates(symbol),
         enabled: !!symbol && isEgx, staleTime: 300000
     });
-    const { data: tvSeasonals } = useQuery({
-        queryKey: ["egx-seasonals", symbol],
-        queryFn: () => fetchEgxSeasonals(symbol),
-        enabled: !!symbol && isEgx, staleTime: 3600000
-    });
+    // Seasonals tab removed — it was computed from our own price history,
+    // not TradingView data (TV exposes no seasonals via API).
     const { data: tvFinancials } = useQuery({
         queryKey: ["egx-financials-tv", symbol],
         queryFn: () => fetchEgxFinancialsTV(symbol),
@@ -646,15 +623,15 @@ export default function SymbolDetailPage() {
     });
     const [techTf, setTechTf] = useState<"60" | "240" | "1D" | "1W">("1D");
 
-    const dividendActions = useMemo(() => {
-        const arr = Array.isArray(corporateActions) ? corporateActions : [];
-        return arr.filter((a: any) => a.action_type === "Dividend");
-    }, [corporateActions]);
-
-    const otherActions = useMemo(() => {
-        const arr = Array.isArray(corporateActions) ? corporateActions : [];
-        return arr.filter((a: any) => a.action_type !== "Dividend");
-    }, [corporateActions]);
+    // Dividend history is TradingView's per-year DPS (egx_financials.dps) — the
+    // legacy corporate_actions list (stockanalysis-era rows) is no longer shown.
+    const dpsHistory = useMemo(() => {
+        const yrs = Array.isArray(tvFinancials?.years) ? tvFinancials.years : [];
+        return yrs
+            .filter((y: any) => y.dps != null && Number(y.dps) > 0)
+            .sort((a: any, b: any) => b.fiscal_year - a.fiscal_year)
+            .slice(0, 15);
+    }, [tvFinancials]);
 
     const stats = useMemo(() => parseNumericFields(localProfile?.statistics), [localProfile]);
 
@@ -663,78 +640,8 @@ export default function SymbolDetailPage() {
         return sec.includes("bank") || sec.includes("financial services");
     }, [localProfile, stockData]);
 
-    const officers = useMemo(() => {
-        const raw = localProfile?.profile?.officers;
-        if (!raw) return [];
-        try { return typeof raw === "string" ? JSON.parse(raw) : raw; }
-        catch { return []; }
-    }, [localProfile]);
-
-    const parsedFinancials = useMemo(() => {
-        const arr = Array.isArray(financials) ? financials : [];
-        return arr.map((f: any) => {
-            const rp = parseFinancialsRawData(f.raw_data);
-            return {
-                ...f,
-                net_income: f.net_income || rp.net_income,
-                total_assets: f.total_assets || rp.total_assets,
-                total_equity: f.total_equity || rp.total_equity,
-                gross_profit: f.gross_profit || rp.gross_profit,
-                total_liabilities: f.total_liabilities || rp.total_liabilities,
-                operating_cashflow: f.operating_cashflow || rp.operating_cashflow,
-            };
-        });
-    }, [financials]);
-
-    const filteredFinancials = useMemo(() => {
-        const arr = Array.isArray(parsedFinancials) ? parsedFinancials : [];
-        return arr.filter((f: any) => f.period_type === financialPeriod);
-    }, [parsedFinancials, financialPeriod]);
-
-    const chartData = useMemo(() => {
-        const arr = Array.isArray(ohlcData) ? ohlcData : [];
-        if (arr.length === 0) return [];
-        return [...arr].sort((a: any, b: any) =>
-            new Date(a.time || a.date || a.timestamp).getTime() -
-            new Date(b.time || b.date || b.timestamp).getTime()
-        ).map((item: any) => {
-            const dateValue = item.time || item.date || item.timestamp;
-            const timeValue = chartPeriod === "1D"
-                ? new Date(dateValue).toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-US", { hour: '2-digit', minute: '2-digit', hour12: false })
-                : new Date(dateValue).toISOString().split('T')[0];
-            return { time: timeValue, open: Number(item.open), high: Number(item.high), low: Number(item.low), close: Number(item.close), volume: Number(item.volume) };
-        });
-    }, [ohlcData, chartPeriod, lang]);
-
-    const chartStats = useMemo(() => {
-        if (chartData.length < 2) return null;
-        const current = chartData[chartData.length - 1];
-        const previous = chartData[chartData.length - 2];
-        const first = chartData[0];
-        const highs = chartData.map((d: any) => d.high).filter((h: number) => h > 0);
-        const lows = chartData.map((d: any) => d.low).filter((l: number) => l > 0);
-        
-        const change = current.close - previous.close;
-        const changePercent = previous.close > 0 ? (change / previous.close) * 100 : 0;
-        
-        return {
-            high52: highs.length > 0 ? Math.max(...highs) : current.close,
-            low52: lows.length > 0 ? Math.min(...lows) : current.close,
-            periodReturn: ((current.close - first.close) / first.close) * 100,
-            current,
-            change,
-            changePercent
-        };
-    }, [chartData]);
-
-    const latestAnnualStatement = useMemo(() => {
-        if (!parsedFinancials || parsedFinancials.length === 0) return null;
-        return parsedFinancials.find((f: any) => f.period_type === "annual") || parsedFinancials[0];
-    }, [parsedFinancials]);
-
-    // Summary mini-chart series — TradingView-native (egx_financials), the same
-    // source as the Financials summary table, so cards & table always agree and
-    // stay fresh forever. Falls back to audited annual only if TV is unavailable.
+    // Summary mini-chart series — TradingView-native (egx_financials) ONLY.
+    // The audited-statements fallback was removed under the TV-only mandate.
     const cardSeries = useMemo(() => {
         if (Array.isArray(tvFinancials?.years) && tvFinancials.years.length >= 2) {
             return {
@@ -742,36 +649,16 @@ export default function SymbolDetailPage() {
                 rows: [...tvFinancials.years].sort((a: any, b: any) => a.fiscal_year - b.fiscal_year),
             };
         }
-        const annual = (Array.isArray(parsedFinancials) ? parsedFinancials : [])
-            .filter((f: any) => f.period_type === "annual")
-            .slice()
-            .sort((a: any, b: any) => a.fiscal_year - b.fiscal_year);
-        if (annual.length >= 2) {
-            return {
-                source: "audited",
-                rows: annual.map((f: any) => ({
-                    fiscal_year: f.fiscal_year, revenue: f.revenue,
-                    net_income: f.net_income, total_assets: f.total_assets,
-                })),
-            };
-        }
         return null;
-    }, [parsedFinancials, tvFinancials]);
+    }, [tvFinancials]);
 
-    const profileData = useMemo(() => localProfile?.profile || yahooProfile?.profile || {}, [localProfile, yahooProfile]);
-    // Yahoo numeric "fundamentals" intentionally NOT consumed — Yahoo data is wrong
-    // for EGX (audit evidence: MASR mcap/price/float all incorrect). Yahoo profile
-    // text (description/officers/HQ) remains as the only Yahoo usage.
-
-    const longBusinessSummary = useMemo(() => profileData.description || profileData.longBusinessSummary || (stockData as any)?.name_en || "", [profileData, stockData]);
-    const website = useMemo(() => profileData.website || "", [profileData]);
-    const industry = useMemo(() => profileData.industry || (stockData as any)?.sector_name || "", [profileData, stockData]);
-    const employees = useMemo(() => profileData.employees || null, [profileData]);
-    const city = useMemo(() => profileData.headquarters_city || profileData.city || profileData.headquarters || "", [profileData]);
-    const country = useMemo(() => profileData.country || "", [profileData]);
-    const phone = useMemo(() => profileData.phone || "-", [profileData]);
-    const address = useMemo(() => profileData.address || "-", [profileData]);
-    const founded = useMemo(() => profileData.founded || null, [profileData]);
+    // TV-only identity: company name / sector / market / currency / ISIN / logo all
+    // come from the TradingView feeds (market_tickers + symbol_map). The old
+    // description / officers / HQ / employees / founded / website / phone fields
+    // (stale stockanalysis snapshot + Yahoo proxy) were removed — TradingView does
+    // not provide them for EGX, so they are not shown.
+    const sectorName = useMemo(() => (stockData as any)?.sector_name || localProfile?.profile?.sector || "", [stockData, localProfile]);
+    const isinCode = useMemo(() => (stockData as any)?.isin || "", [stockData]);
 
     // ─── DISPLAYED METRICS — TradingView-sourced ONLY (June-2026 audit) ─────
     // Every number below reads our TradingView-fed view (stats) or the TV tickers
@@ -821,110 +708,9 @@ export default function SymbolDetailPage() {
     const shareholdersCount = useMemo(() => Number(stats.shareholders_count || 0), [stats]);
     const forwardPe = useMemo(() => Number(stats.forward_pe || 0), [stats]);
 
-    // tooltip
-    useEffect(() => {
-        let tooltipDiv = document.getElementById("chartTooltip");
-        if (!tooltipDiv) {
-            tooltipDiv = document.createElement("div");
-            tooltipDiv.id = "chartTooltip";
-            tooltipDiv.className = "chart-tooltip";
-            document.body.appendChild(tooltipDiv);
-        }
-        (window as any).showChartTooltip = (event: any, title: string, value: string) => {
-            if (!tooltipDiv) return;
-            tooltipDiv.style.display = "block";
-            tooltipDiv.innerHTML = `<span>${title}</span><strong>${value}</strong>`;
-            (window as any).moveChartTooltip(event);
-        };
-        (window as any).moveChartTooltip = (event: any) => {
-            if (!tooltipDiv) return;
-            tooltipDiv.style.left = `${event.pageX + 15}px`;
-            tooltipDiv.style.top = `${event.pageY - 40}px`;
-        };
-        (window as any).hideChartTooltip = () => {
-            if (!tooltipDiv) return;
-            tooltipDiv.style.display = "none";
-        };
-        return () => {
-            delete (window as any).showChartTooltip;
-            delete (window as any).moveChartTooltip;
-            delete (window as any).hideChartTooltip;
-        };
-    }, []);
-
-    // SVG Chart Drawing
-    useEffect(() => {
-        if (activeTab !== "overview" || chartData.length === 0 || !svgElement) return;
-        const width = 760, height = 350, pad = { top: 18, right: 48, bottom: 25, left: 8 };
-        const plotWidth = width - pad.left - pad.right;
-        const maxCandles = 96;
-        const cleanRows = chartData.filter((item: any) => {
-            const o = Number(item.open), h = Number(item.high), l = Number(item.low), c = Number(item.close);
-            return o >= 0 && h >= 0 && l >= 0 && c >= 0;
-        });
-        if (cleanRows.length < 2) return;
-        const groupSize = Math.max(1, Math.ceil(cleanRows.length / maxCandles));
-        const candles: any[] = [];
-        for (let index = 0; index < cleanRows.length; index += groupSize) {
-            const group = cleanRows.slice(index, index + groupSize);
-            candles.push({
-                date: group[group.length - 1].time as string,
-                time: group[group.length - 1].time as string,
-                open: Number(group[0].open),
-                high: Math.max(...group.map((item) => Number(item.high))),
-                low: Math.min(...group.map((item) => Number(item.low))),
-                close: Number(group[group.length - 1].close),
-                volume: group.reduce((sum, item) => sum + (Number(item.volume) || 0), 0)
-            });
-        }
-        const hasHistoricalVolume = candles.some((item) => item.volume > 0);
-        const volumeHeight = hasHistoricalVolume ? 54 : 0;
-        const dividerGap = hasHistoricalVolume ? 16 : 0;
-        const priceBottom = height - pad.bottom - volumeHeight - dividerGap;
-        const priceHeight = priceBottom - pad.top;
-        const highs = candles.map((item) => item.high).filter(h => h > 0);
-        const lows = candles.map((item) => item.low).filter(l => l > 0);
-        let maximum = highs.length > 0 ? Math.max(...highs) : 100;
-        let minimum = lows.length > 0 ? Math.min(...lows) : 0;
-        const range = maximum - minimum || 1;
-        maximum += range * .02; minimum -= range * .02;
-        const y = (value: number) => pad.top + ((maximum - value) / (maximum - minimum)) * priceHeight;
-        const slot = plotWidth / candles.length;
-        const candleWidth = Math.max(2, Math.min(8, slot * .58));
-        const maxVolume = Math.max(1, ...candles.map((item) => item.volume));
-        const localeStr = lang === "ar" ? "ar-EG" : "en-US";
-        const grid = [0, .25, .5, .75, 1].map((ratio) => {
-            const axisY = pad.top + ratio * priceHeight;
-            const value = maximum - ratio * (maximum - minimum);
-            return `<path d="M ${pad.left} ${axisY} H ${width - pad.right}" class="gridline"/><text x="${width - pad.right + 7}" y="${axisY + 4}" class="axis">${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}</text>`;
-        }).join("");
-        const marks = candles.map((item, idx) => {
-            const x = pad.left + slot * idx + slot / 2;
-            const rising = item.close >= item.open;
-            const classSuffix = rising ? "up" : "down";
-            const bodyTop = Math.min(y(item.open), y(item.close));
-            const bodyHeight = Math.max(1.5, Math.abs(y(item.close) - y(item.open)));
-            const volumeBarHeight = hasHistoricalVolume ? (item.volume / maxVolume) * volumeHeight : 0;
-            return `<line x1="${x}" x2="${x}" y1="${y(item.high)}" y2="${y(item.low)}" class="candle-${classSuffix} wick"/>
-                <rect x="${x - candleWidth / 2}" y="${bodyTop}" width="${candleWidth}" height="${bodyHeight}" rx="1" class="candle-${classSuffix}"/>
-                ${hasHistoricalVolume ? `<rect x="${x - candleWidth / 2}" y="${height - pad.bottom - volumeBarHeight}" width="${candleWidth}" height="${volumeBarHeight}" rx="1" class="volume-${classSuffix}"/>` : ""}`;
-        }).join("");
-        const dateIndexes = [0, Math.floor((candles.length - 1) / 2), candles.length - 1];
-        const dates = dateIndexes.map((index) => {
-            if (index >= candles.length) return "";
-            const x = pad.left + slot * index + slot / 2;
-            const anchor = index === 0 ? "start" : index === candles.length - 1 ? "end" : "middle";
-            const label = chartPeriod === "1D" ? candles[index].time : new Intl.DateTimeFormat(localeStr, { month: "short", day: "numeric" }).format(new Date(candles[index].date));
-            return `<text x="${x}" y="${height - 7}" text-anchor="${anchor}" class="axis">${label}</text>`;
-        }).join("");
-        const hoverBars = candles.map((item, index) => {
-            const barX = pad.left + slot * index;
-            const title = chartPeriod === "1D" ? item.time : new Intl.DateTimeFormat(localeStr, { day: "numeric", month: "short", year: "numeric" }).format(new Date(item.date));
-            const valueStr = `O: ${item.open.toFixed(2)} | H: ${item.high.toFixed(2)} | L: ${item.low.toFixed(2)} | C: ${item.close.toFixed(2)}`;
-            return `<rect x="${barX.toFixed(2)}" y="0" width="${slot.toFixed(2)}" height="${height}" fill="transparent" class="hover-bar" onmouseover="window.showChartTooltip(event, '${title}', '${valueStr}')" onmousemove="window.moveChartTooltip(event)" onmouseout="window.hideChartTooltip()"/>`;
-        }).join("");
-        svgElement.innerHTML = `${grid}${hasHistoricalVolume ? `<path d="M ${pad.left} ${priceBottom + 9} H ${width - pad.right}" class="chart-divider"/>` : ""}${marks}${dates}${hoverBars}`;
-    }, [chartData, activeTab, theme, lang, svgElement, chartPeriod]);
+    // The native SVG chart (drawn from our ohlc_data — Yahoo-sourced history) was
+    // removed under the TV-only mandate. The Overview chart is now TradingView's
+    // own embedded Advanced Chart (see TradingViewInlineChart).
 
     // ─── LOADING & NOT FOUND STATES ──────────────────────────────────────
     if (tickersLoading) {
@@ -948,23 +734,17 @@ export default function SymbolDetailPage() {
         );
     }
 
-    const rawLastPrice = Number((stockData as any).last_price || 0);
-    const rawChange = Number((stockData as any).change || 0);
-    const rawChangePercent = Number((stockData as any).change_percent || 0);
-
-    // Source-of-truth: show the exchange feed's own price/change; only fall back to chart-derived values when the feed lacks them.
-    const lastPrice = rawLastPrice > 0 ? rawLastPrice : (chartStats?.current?.close || 0);
-    const change = (stockData as any).change != null ? rawChange : (chartStats?.change ?? 0);
-    const changePercent = (stockData as any).change_percent != null ? rawChangePercent : (chartStats?.changePercent ?? 0);
+    // Source-of-truth: the TradingView feed's own price/change — no chart-derived fallbacks.
+    const lastPrice = Number((stockData as any).last_price || 0);
+    const change = Number((stockData as any).change || 0);
+    const changePercent = Number((stockData as any).change_percent || 0);
     const isPositive = change >= 0;
     const volume = Number((stockData as any)?.volume || 0);
-    const loading = chartLoading;
 
     const TABS: { id: TabId; label: string; icon: any }[] = [
         { id: "overview", label: t.tab_overview, icon: Activity },
         { id: "financials", label: t.tab_financials, icon: FileText },
         { id: "technicals", label: lang === "ar" ? "الفني والتوقعات" : "Technicals & Forecasts", icon: Gauge },
-        { id: "seasonals", label: lang === "ar" ? "الموسمية" : "Seasonals", icon: BarChart3 },
         { id: "ratios", label: t.tab_ratios, icon: Target },
         { id: "dividends", label: t.tab_dividends, icon: Calendar },
         { id: "news", label: t.tab_news, icon: Newspaper },
@@ -1139,75 +919,17 @@ export default function SymbolDetailPage() {
                         {/* ═══════════════════════ OVERVIEW TAB ═══════════════════════ */}
                         {activeTab === "overview" && (
                             <>
-                                {/* Chart */}
-                                <div className="premium-glass rounded-3xl p-6 relative">
-                                    <div className="ohlc-metrics mb-4 border-b border-slate-200/10 pb-4">
-                                        {[
-                                            { l: lang === "ar" ? "سعر الفتح" : "Open", v: chartData[chartData.length - 1]?.open },
-                                            { l: lang === "ar" ? "أعلى سعر" : "High", v: chartData[chartData.length - 1]?.high },
-                                            { l: lang === "ar" ? "أدنى سعر" : "Low", v: chartData[chartData.length - 1]?.low },
-                                            { l: lang === "ar" ? "سعر الإغلاق" : "Close", v: chartData[chartData.length - 1]?.close },
-                                            { l: lang === "ar" ? "حجم التداول" : "Volume", v: chartData[chartData.length - 1]?.volume, isVol: true },
-                                        ].map((m, i) => (
-                                            <div key={i}>
-                                                <span>{m.l}</span>
-                                                <strong className="tabular">
-                                                    {m.v ? (m.isVol
-                                                        ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(m.v)
-                                                        : new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(m.v))
-                                                        : "--"}
-                                                </strong>
-                                            </div>
-                                        ))}
+                                {/* Chart — TradingView's own embedded Advanced Chart (100% TV data). */}
+                                <div className="premium-glass rounded-3xl p-4 relative">
+                                    <div className="flex items-center justify-between mb-3 px-2">
+                                        <span className="text-xs text-slate-400 font-bold">{t.price_chart} · TradingView</span>
+                                        <button type="button" onClick={() => setChartFullscreen(true)}
+                                            title={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"} aria-label="Enlarge chart"
+                                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors">
+                                            <Maximize2 className="w-4 h-4" />
+                                        </button>
                                     </div>
-                                    <div className="flex items-center justify-between mb-4 border-b border-slate-200/10 pb-4">
-                                        <div className="flex gap-1 p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-xl">
-                                            {[
-                                                { id: "1d", label: "1D" }, { id: "1m", label: "1M" }, { id: "3m", label: "3M" },
-                                                { id: "6m", label: "6M" }, { id: "1y", label: "1Y" }, { id: "3y", label: "3Y" }, { id: "max", label: "MAX" }
-                                            ].map((tf) => (
-                                                <button key={tf.id} type="button"
-                                                    onClick={() => setChartPeriod(tf.id === "1d" ? "1D" : tf.id)}
-                                                    className={`min-w-[2.65rem] border-0 rounded-lg py-1.5 px-3 font-bold text-xs transition-all ${(chartPeriod === tf.id || (chartPeriod === "1D" && tf.id === "1d")) ? "bg-[#14b8a6]/10 text-[#14b8a6]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}`}>
-                                                    {tf.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {(() => {
-                                                const lc = chartData[chartData.length - 1] as any;
-                                                const f = lc ? dataFreshness(lc.date || lc.time, lang) : null;
-                                                return f ? (
-                                                    <span className={`text-[10px] font-semibold inline-flex items-center gap-1 ${f.cls}`} title={lang === "ar" ? "حداثة بيانات الرسم" : "Chart data freshness"}>
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
-                                                        {f.text}
-                                                    </span>
-                                                ) : null;
-                                            })()}
-                                            <span className="text-xs text-slate-400 font-bold">{t.historical_prices}</span>
-                                            {isEgx && (
-                                                <button type="button" onClick={() => setChartFullscreen(true)}
-                                                    title={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"} aria-label="Enlarge chart"
-                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors">
-                                                    <Maximize2 className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <figure className="price-figure relative w-full h-[350px]">
-                                        {loading && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-white/5 backdrop-blur-sm z-10">
-                                                <div className="w-12 h-12 border-4 border-[#14b8a6]/20 border-t-[#14b8a6] rounded-full animate-spin" />
-                                            </div>
-                                        )}
-                                        {chartData.length === 0 && !loading && (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center py-20 text-slate-400 z-10">
-                                                <AlertCircle className="w-12 h-12 mb-3" />
-                                                <p className="text-sm font-semibold">{t.chart_unavailable}</p>
-                                            </div>
-                                        )}
-                                        <svg ref={setSvgElement} id="stockChart" viewBox="0 0 760 350" preserveAspectRatio="none" className="w-full h-full block overflow-visible" />
-                                    </figure>
+                                    <TradingViewInlineChart tvSymbol={`EGX:${symbol}`} lang={lang} height={480} />
                                 </div>
 
                                 <TradingViewChartModal open={chartFullscreen} onClose={() => setChartFullscreen(false)} tvSymbol={`EGX:${symbol}`} title={symbol} lang={lang} />
@@ -1459,30 +1181,8 @@ export default function SymbolDetailPage() {
                             </div>
                         )}
 
-                        {/* ═══════════════════════ SEASONALS TAB ═══════════════════════ */}
-                        {activeTab === "seasonals" && (
-                            <div className="space-y-6">
-                                {tvSeasonals?.available ? (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-200/10 pb-6 mb-6">
-                                            <div>
-                                                <h3 className="text-xl font-extrabold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#14b8a6]" /> {lang === "ar" ? "الأداء الموسمي الشهري" : "Monthly Seasonality"}</h3>
-                                                <p className="text-xs text-slate-400 font-bold uppercase mt-1">{lang === "ar" ? `متوسط العائد الشهري · ${tvSeasonals.years_covered} سنة` : `Average monthly return · ${tvSeasonals.years_covered}-year history`}</p>
-                                            </div>
-                                            <span className="text-[11px] font-bold text-slate-400">{lang === "ar" ? "محسوب من سجل الأسعار" : "Computed from price history"}</span>
-                                        </div>
-                                        <SeasonalChart months={tvSeasonals.months} />
-                                        {/* Best/Weakest/Most-Consistent ranking removed — those were derived by sorting the source data ourselves. The chart shows the source values as-is. */}
-                                        <p className="text-[11px] text-slate-400 mt-6">{lang === "ar" ? "الأنماط الموسمية السابقة لا تضمن النتائج المستقبلية." : "Past seasonal patterns do not guarantee future results."}</p>
-                                    </div>
-                                ) : (
-                                    <div className="premium-glass rounded-3xl p-12 text-center">
-                                        <BarChart3 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                        <p className="text-slate-400 font-bold">{lang === "ar" ? "لا توجد بيانات تاريخية كافية للموسمية" : "Not enough price history for seasonality"}</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* Seasonals tab removed (TV-only mandate): monthly seasonality was computed
+                            from our own price history — TradingView exposes no seasonals via API. */}
 
                         {/* ═══════════════════════ RATIOS & RISK TAB ═══════════════════════ */}
                         {activeTab === "ratios" && (
@@ -1576,57 +1276,51 @@ export default function SymbolDetailPage() {
                                         </div>
                                     );
                                 })()}
-                                {/* Dividend History */}
+                                {/* Dividend History — TradingView's per-year DPS (egx_financials.dps).
+                                    The legacy corporate_actions list and "Other Corporate Actions"
+                                    (non-TV sources) were removed under the TV-only mandate. */}
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Calendar} title={t.dividend_history} color="text-emerald-500" />
-                                    {dividendActions.length > 0 ? (
+                                    {dpsHistory.length > 0 ? (
                                         <div className="space-y-3">
-                                            {/* Dividend summary strip */}
                                             <div className="grid grid-cols-3 gap-4 mb-6">
                                                 <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 text-center">
                                                     <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">{t.dps}</p>
-                                                    <p className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular">{dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : `${currency} ${Number(dividendActions[0]?.amount || 0).toFixed(2)}`}</p>
+                                                    <p className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular">{dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : "-"}</p>
                                                 </div>
                                                 <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-500/5 border border-teal-200 dark:border-teal-500/20 text-center">
                                                     <p className="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">{t.div_yield}</p>
                                                     <p className="text-xl font-black text-teal-700 dark:text-teal-300 tabular">{dividendYield > 0 ? pct(dividendYield) : "-"}</p>
                                                 </div>
                                                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 text-center">
-                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{lang === "ar" ? "عدد التوزيعات" : "Total Records"}</p>
-                                                    <p className="text-xl font-black tabular">{dividendActions.length}</p>
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{lang === "ar" ? "سنوات التوزيع" : "Paying Years"}</p>
+                                                    <p className="text-xl font-black tabular">{dpsHistory.length}</p>
                                                 </div>
                                             </div>
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm">
                                                     <thead>
                                                         <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                                                            <th className="text-left py-3 px-4">{lang === "ar" ? "تاريخ الاستحقاق" : "Ex-Date"}</th>
-                                                            <th className="text-right py-3 px-4">{lang === "ar" ? "مبلغ التوزيع" : "Amount"}</th>
-                                                            <th className="text-right py-3 px-4">{lang === "ar" ? "تاريخ الدفع" : "Pay Date"}</th>
-                                                            <th className="text-left py-3 px-4">{lang === "ar" ? "الوصف" : "Description"}</th>
+                                                            <th className="text-left py-3 px-4">{lang === "ar" ? "السنة المالية" : "Fiscal Year"}</th>
+                                                            <th className="text-right py-3 px-4">{lang === "ar" ? "التوزيع للسهم (DPS)" : "Dividend / Share (DPS)"}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {dividendActions.map((a: any, i: number) => {
-                                                            return (
-                                                                <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold">
-                                                                    <td className="py-4 px-4 text-left">
-                                                                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 uppercase mr-2">DIV</span>
-                                                                        {a.ex_date ? new Date(a.ex_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" }) : "-"}
-                                                                    </td>
-                                                                    <td className="py-4 px-4 text-right text-emerald-600 dark:text-emerald-400 tabular text-base font-black">
-                                                                        {a.amount ? `${a.currency || currency} ${Number(a.amount).toFixed(4)}` : "-"}
-                                                                    </td>
-                                                                    <td className="py-4 px-4 text-right tabular text-slate-500">
-                                                                        {a.payment_date ? new Date(a.payment_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short" }) : "-"}
-                                                                    </td>
-                                                                    <td className="py-4 px-4 text-left text-slate-500 text-xs font-medium max-w-[200px] truncate">{a.description || "-"}</td>
-                                                                </tr>
-                                                            );
-                                                        })}
+                                                        {dpsHistory.map((y: any) => (
+                                                            <tr key={y.fiscal_year} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold">
+                                                                <td className="py-4 px-4 text-left">
+                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 uppercase mr-2">DIV</span>
+                                                                    FY {y.fiscal_year}
+                                                                </td>
+                                                                <td className="py-4 px-4 text-right text-emerald-600 dark:text-emerald-400 tabular text-base font-black">
+                                                                    {currency} {Number(y.dps).toFixed(4)}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            <p className="text-[11px] text-slate-400">{lang === "ar" ? "المصدر: TradingView · توزيعات لكل سنة مالية" : "Source: TradingView · dividends per fiscal year"}</p>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center py-16 text-slate-400">
@@ -1635,33 +1329,6 @@ export default function SymbolDetailPage() {
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Other Corporate Actions */}
-                                {otherActions.length > 0 && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={Zap} title={t.other_actions} color="text-[#14b8a6]" />
-                                        <div className="space-y-3">
-                                            {otherActions.map((a: any, i: number) => (
-                                                <div key={i} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#14b8a6]/10 text-[#14b8a6] uppercase tracking-wider">{a.action_type}</span>
-                                                            <span className="text-xs text-slate-400 font-bold uppercase">{a.ex_date ? new Date(a.ex_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" }) : "-"}</span>
-                                                        </div>
-                                                        <p className="font-extrabold text-base mt-2">{a.description}</p>
-                                                    </div>
-                                                    {a.amount && (
-                                                        <div className="text-right">
-                                                            <span className="text-lg font-black text-emerald-500 tabular">{formatCurrency(a.amount, a.currency || currency)}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Internal valuation-model table (Fair Value / Current Price / Upside) removed — house-generated price targets are not source data. */}
                             </div>
                         )}
 
@@ -1780,57 +1447,32 @@ export default function SymbolDetailPage() {
                             </div>
                         )}
 
-                        {/* ═══════════════════════ PROFILE TAB ═══════════════════════ */}
+                        {/* ═══════════════════════ PROFILE TAB — TradingView identity ONLY ═══════════
+                            Description / officers / HQ / employees / founded / website / phone were
+                            removed: TradingView provides none of them for EGX (the old values came
+                            from a stale stockanalysis snapshot + the Yahoo proxy). */}
                         {activeTab === "profile" && (
                             <div className="space-y-8">
-                                {/* Company Identity */}
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Building2} title={t.profile} color="text-[#14b8a6]" />
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
                                         {[
-                                            { l: t.website, v: website ? <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[#14b8a6] hover:underline flex items-center gap-1 font-bold">{website.replace("https://", "").replace("http://", "")} <Globe className="w-4 h-4" /></a> : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: t.industry, v: industry || "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: t.employees, v: employees ? employees.toLocaleString() : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: t.location, v: city ? `${city}${country ? `, ${country}` : ""}` : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: lang === "ar" ? "تأسست عام" : "Founded", v: founded ? String(founded) : "-", bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: lang === "ar" ? "الهاتف" : "Phone", v: phone, bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: lang === "ar" ? "الرمز" : "Ticker", v: symbol, bg: "bg-slate-50 dark:bg-slate-900/50" },
-                                            { l: lang === "ar" ? "البورصة" : "Exchange", v: marketName, bg: "bg-slate-50 dark:bg-slate-900/50" },
+                                            { l: lang === "ar" ? "الرمز" : "Ticker", v: symbol },
+                                            { l: lang === "ar" ? "اسم الشركة" : "Company Name", v: (stockData as any)?.name_en || symbol },
+                                            { l: lang === "ar" ? "الاسم بالعربية" : "Arabic Name", v: (stockData as any)?.name_ar || "-" },
+                                            { l: t.sector, v: sectorName || "-" },
+                                            { l: lang === "ar" ? "البورصة" : "Exchange", v: marketName },
+                                            { l: t.currency, v: currency },
+                                            { l: "ISIN", v: isinCode || "-" },
                                         ].map((item, i) => (
-                                            <div key={i} className={`p-4 rounded-2xl ${item.bg} border border-slate-200/50 dark:border-slate-800/50`}>
+                                            <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50">
                                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">{item.l}</p>
                                                 <div className="font-extrabold text-sm truncate">{item.v}</div>
                                             </div>
                                         ))}
                                     </div>
-                                    {/* Business Description */}
-                                    <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50">
-                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">{lang === "ar" ? "نبذة عن الشركة" : "About the Company"}</p>
-                                        <p className="text-slate-600 dark:text-slate-350 text-sm leading-relaxed font-medium">
-                                            {longBusinessSummary || t.desc_not_found}
-                                        </p>
-                                    </div>
+                                    <p className="text-[11px] text-slate-400 mt-4">{lang === "ar" ? "المصدر: TradingView" : "Source: TradingView"}</p>
                                 </div>
-
-                                {/* Management Officers */}
-                                {officers && officers.length > 0 && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={Users} title={t.management_officers} color="text-indigo-500" />
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {officers.map((officer: any, idx: number) => (
-                                                <div key={idx} className="p-5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl flex items-center gap-4 hover:border-[#14b8a6]/40 transition-all duration-300">
-                                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#14b8a6]/20 to-[#0f766e]/20 border border-[#14b8a6]/20 flex items-center justify-center text-[#14b8a6] font-black text-lg flex-shrink-0">
-                                                        {officer.name?.slice(0, 1) || "?"}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-extrabold text-base">{officer.name}</p>
-                                                        <p className="text-xs text-slate-400 font-bold uppercase mt-0.5">{officer.position || t.ex_board}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
                     </div>
@@ -1849,7 +1491,7 @@ export default function SymbolDetailPage() {
                                     { l: lang === "ar" ? "حجم التداول" : "Volume", v: volume.toLocaleString(), c: "text-slate-700 dark:text-slate-350" },
                                     // 52W High/Low removed — these were Math.max/min over the loaded candles (our calc, mislabeled as 52-week) with no source 52-week field to re-point to.
                                     { l: lang === "ar" ? "السوق المالي" : "Exchange", v: marketName.toUpperCase(), c: "text-[#14b8a6]" },
-                                    { l: lang === "ar" ? "القطاع" : "Sector", v: industry || "-", c: "text-slate-600 dark:text-slate-400" },
+                                    { l: lang === "ar" ? "القطاع" : "Sector", v: sectorName || "-", c: "text-slate-600 dark:text-slate-400" },
                                 ].map((item, i) => (
                                     <div key={i} className="flex justify-between items-center py-2.5 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
                                         <span className="text-slate-400 text-xs">{item.l}</span>
@@ -1859,18 +1501,18 @@ export default function SymbolDetailPage() {
                             </div>
                         </div>
 
-                        {/* Dividends Quick Card */}
-                        {(dividendRate > 0 || dividendYield > 0 || dividendActions.length > 0) && (
+                        {/* Dividends Quick Card — TradingView snapshot fields only */}
+                        {(dividendRate > 0 || dividendYield > 0) && (
                             <div className="premium-glass rounded-3xl p-6">
                                 <h4 className="text-lg font-black flex items-center gap-2 mb-5">
                                     <Wallet className="w-5 h-5 text-emerald-500" /> {lang === "ar" ? "التوزيعات النقدية" : "Dividends"}
                                 </h4>
                                 <div className="space-y-3 text-sm font-bold">
                                     {[
-                                        { l: t.dps, v: dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : dividendActions.length > 0 ? `${currency} ${Number(dividendActions[0]?.amount || 0).toFixed(2)}` : "-" },
+                                        { l: t.dps, v: dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : "-" },
                                         { l: t.div_yield, v: dividendYield > 0 ? pct(dividendYield) : "-" },
                                         { l: t.payout_ratio, v: payoutRatio > 0 ? pct(payoutRatio) : "-" },
-                                        { l: lang === "ar" ? "آخر تاريخ استحقاق" : "Last Ex-Date", v: dividendActions.length > 0 && dividendActions[0]?.ex_date ? new Date(dividendActions[0].ex_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" }) : "-" },
+                                        { l: lang === "ar" ? "آخر تاريخ استحقاق" : "Last Ex-Date", v: tvDividends?.ex_date_recent ? new Date(Number(tvDividends.ex_date_recent) * 1000).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" }) : "-" },
                                     ].map((item, i) => (
                                         <div key={i} className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
                                             <span className="text-slate-400 text-xs">{item.l}</span>

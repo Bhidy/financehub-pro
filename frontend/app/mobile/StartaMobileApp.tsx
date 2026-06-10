@@ -213,15 +213,12 @@ type CompanyProfileBundle = {
   profile?: Record<string, unknown>;
   marketData?: Record<string, unknown>;
   statistics?: Record<string, unknown>;
-  financials: Record<string, unknown>[];
   ratios: Record<string, unknown>[];
-  actions: Record<string, unknown>[];
   // TradingView-native parity (mirrors the website /symbol page).
   financialsTv: Record<string, unknown>[];
   technicals: Record<string, unknown>[];
   estimates?: Record<string, unknown>;
-  // Monthly seasonality + per-symbol TradingView news.
-  seasonals?: SeasonalsResponse;
+  // Per-symbol news (Mubasher/Zawya + TradingView union).
   newsTv?: Record<string, unknown>[];
 };
 type SeasonalMonth = {
@@ -723,22 +720,19 @@ function normalizeNews(row: Record<string, unknown>, lang: Lang): NewsItem {
 
 async function loadCompanyProfile(symbol: string, lang: Lang): Promise<CompanyProfileBundle> {
   const clean = encodeURIComponent(symbol);
-  // Shareholders fetch removed (June-2026 audit): the endpoint served fabricated
-  // demo holders to every symbol; ownership now uses TV stats fields only.
-  const [websiteProfile, financials, ratios, actions, egxStats, financialsTv, technicals, estimates, seasonals, newsTv] = await Promise.all([
+  // TV-ONLY MANDATE (June-2026): the audited-financials, corporate-actions and
+  // seasonals fetches were removed — every number on the stock detail comes from
+  // TradingView feeds. (News stays the Mubasher/Zawya + TV union by owner decision.)
+  const [websiteProfile, ratios, egxStats, financialsTv, technicals, estimates, newsTv] = await Promise.all([
     getJson<{ profile?: Record<string, unknown>; market_data?: Record<string, unknown>; statistics?: Record<string, unknown> }>(`/api/v1/company/${clean}/profile`, { ttl: 60_000 }),
-    getJson<Record<string, unknown>[]>(`/api/v1/financials/${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/ratios?symbol=${clean}&limit=6`, { ttl: 60_000 }),
-    getJson<Record<string, unknown>[]>(`/api/v1/corporate-actions?symbol=${clean}`, { ttl: 60_000 }),
-    // Real TradingView-sourced valuation/technical stats (beta, MAs, RSI, P/E, P/B, 52w…).
+    // Real TradingView-sourced valuation/technical stats (beta, MAs, RSI, P/E, P/B…).
     getJson<Record<string, unknown>>(`/api/v1/egx/statistics/${clean}`, { ttl: 60_000 }),
     // TradingView-native parity — same feeds the website /symbol page consumes.
     getJson<{ years?: Record<string, unknown>[] }>(`/api/v1/egx/financials-tv/${clean}`, { ttl: 60_000 }),
     getJson<{ timeframes?: Record<string, unknown>[] }>(`/api/v1/egx/technicals/${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>>(`/api/v1/egx/estimates/${clean}`, { ttl: 60_000 }),
-    // Monthly seasonality (avg return / positive-rate per calendar month).
-    getJson<SeasonalsResponse>(`/api/v1/egx/seasonals/${clean}`, { ttl: 60_000 }),
-    // Per-symbol TradingView news (same feed the website /symbol page consumes).
+    // Per-symbol news (same union feed the website /symbol page consumes).
     getJson<Record<string, unknown>[]>(`/api/v1/egx/news-tv/${clean}?lang=${lang}`, { ttl: 60_000 }),
   ]);
   return {
@@ -746,13 +740,10 @@ async function loadCompanyProfile(symbol: string, lang: Lang): Promise<CompanyPr
     marketData: websiteProfile?.market_data,
     // Merge: egx_statistics fills the snapshot; website statistics (if any) wins.
     statistics: { ...(egxStats ?? {}), ...(websiteProfile?.statistics ?? {}) },
-    financials: Array.isArray(financials) ? financials : [],
     ratios: Array.isArray(ratios) ? ratios : [],
-    actions: Array.isArray(actions) ? actions : [],
     financialsTv: Array.isArray(financialsTv?.years) ? financialsTv.years : [],
     technicals: Array.isArray(technicals?.timeframes) ? technicals.timeframes : [],
     estimates: estimates ?? undefined,
-    seasonals: seasonals ?? undefined,
     newsTv: Array.isArray(newsTv) ? newsTv : [],
   };
 }
@@ -3956,10 +3947,10 @@ function ChartFullscreen({ symbol, lang, onClose }: { symbol: string; lang: Lang
 // "Quote Detail") with full fundamentals (profile, financials, ownership, actions).
 function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
   const wl = useWatchlist();
-  const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], actions: [], financialsTv: [], technicals: [] });
+  const [bundle, setBundle] = useState<CompanyProfileBundle>({ ratios: [], financialsTv: [], technicals: [] });
   const [bars, setBars] = useState<OhlcBar[]>([]);
   const [tf, setTf] = useState<string>("3M");
-  const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ownership" | "actions">("overview");
+  const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "ownership" | "dividends">("overview");
   const [chartFull, setChartFull] = useState(false);
   const symbol = stock?.symbol;
 
@@ -3984,21 +3975,16 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const profile = bundle.profile ?? {};
   const marketData = bundle.marketData ?? {};
   const stats = bundle.statistics ?? {};
-  const latestFinancial = bundle.financials[0] ?? {};
   const latestRatio = bundle.ratios[0] ?? {};
-  const description = firstString(profile, lang === "ar" ? ["description_ar", "business_description_ar", "description", "business_description"] : ["description_en", "business_description_en", "description", "business_description"], "");
+  // TV-only identity: name/sector/exchange/currency from the TradingView feeds.
+  // description/website/address/industry/phone/employees/founded were removed —
+  // not provided by TradingView for EGX.
   const displayName = lang === "ar"
     ? firstCompanyName(profile, ["name_ar", "company_name_ar", "company_name", "name_en"], stockLabel(stock, lang))
-    : firstCompanyName(profile, ["company_name_en", "company_name", "name_en"], companyNameFromDescription(description) || stockLabel(stock, lang));
+    : firstCompanyName(profile, ["company_name_en", "company_name", "name_en"], stockLabel(stock, lang));
   const exchange = String(profile.exchange_code ?? "EGX");
   const currency = String(profile.currency ?? "EGP");
   const asOf = firstString(profile, ["updated_at", "last_updated", "as_of_date", "extracted_at"], firstString(stats, ["updated_at"], ""));
-  const website = firstString(profile, ["website", "url", "company_website"], "");
-  const address = firstString(profile, lang === "ar" ? ["headquarters_ar", "address_ar", "headquarters", "address"] : ["headquarters", "address_en", "address"], "");
-  const industry = firstString(profile, ["industry", "industry_en"], stock.sector);
-  const phone = firstString(profile, ["phone", "telephone"], "");
-  const employees = firstNumber(profile, ["employees", "employee_count", "number_of_employees"]);
-  const yearFounded = firstString(profile, ["founded", "year_founded", "established", "establishment_date"], "");
   const marketCap = firstNumber(profile, ["market_cap"]) ?? stock.marketCap;
   const peRatio = firstNumber(marketData, ["pe_ratio"]) ?? firstNumber(stats, ["pe_ratio"]) ?? stock.pe;
   const pbRatio = firstNumber(marketData, ["pb_ratio"]) ?? firstNumber(stats, ["pb_ratio"]) ?? firstNumber(latestRatio, ["pb_ratio", "price_book", "pb"]);
@@ -4080,13 +4066,11 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const epsNextFy = optionalNumber(estimates.eps_fcst_next_fy);
 
   // ── Monthly seasonality (avg return / positive-rate per calendar month).
-  const seasonals = bundle.seasonals;
-  const seasonalAvailable = seasonals?.available === true;
-  const seasonalMonths = Array.isArray(seasonals?.months) ? seasonals.months : [];
-  const seasonalMax = seasonalMonths.reduce((m, x) => Math.max(m, Math.abs(toNumber(x.avg_return))), 0) || 1;
-  const seasonalBest = seasonalMonths.reduce<SeasonalMonth | undefined>((best, x) => (best === undefined || toNumber(x.avg_return) > toNumber(best.avg_return) ? x : best), undefined);
-  const seasonalWorst = seasonalMonths.reduce<SeasonalMonth | undefined>((worst, x) => (worst === undefined || toNumber(x.avg_return) < toNumber(worst.avg_return) ? x : worst), undefined);
-  const seasonalConsistent = seasonalMonths.reduce<SeasonalMonth | undefined>((top, x) => (top === undefined || toNumber(x.positive_rate) > toNumber(top.positive_rate) ? x : top), undefined);
+  // Per-fiscal-year DPS from the TradingView financials feed (dividends history).
+  const dpsYears = [...bundle.financialsTv]
+    .filter((y) => y.dps != null && toNumber(y.dps) > 0)
+    .sort((a, b) => toNumber(b.fiscal_year) - toNumber(a.fiscal_year))
+    .slice(0, 15);
 
   // ── Overview related news: prefer per-symbol TradingView feed, fall back to global.
   const newsTvItems = (bundle.newsTv ?? []).filter((item) => firstString(item, ["headline"], "")).slice(0, 4);
@@ -4166,9 +4150,8 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
           <Pill active={tab === "overview"} onClick={() => setTab("overview")}>{lang === "ar" ? "نظرة" : "Overview"}</Pill>
           <Pill active={tab === "financials"} onClick={() => setTab("financials")}>{lang === "ar" ? "القوائم" : "Financials"}</Pill>
           <Pill active={tab === "technicals"} onClick={() => setTab("technicals")}>{lang === "ar" ? "الفني والتوقعات" : "Technicals & Forecasts"}</Pill>
-          <Pill active={tab === "seasonals"} onClick={() => setTab("seasonals")}>{lang === "ar" ? "الموسمية" : "Seasonals"}</Pill>
           <Pill active={tab === "ownership"} onClick={() => setTab("ownership")}>{lang === "ar" ? "الملكية" : "Ownership"}</Pill>
-          <Pill active={tab === "actions"} onClick={() => setTab("actions")}>{lang === "ar" ? "الإجراءات" : "Actions"}</Pill>
+          <Pill active={tab === "dividends"} onClick={() => setTab("dividends")}>{lang === "ar" ? "التوزيعات" : "Dividends"}</Pill>
         </div>
         {tab === "overview" && (
           <>
@@ -4184,28 +4167,16 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                 <DataStat label={lang === "ar" ? "نسبة التداول الحر" : "Free Float"} value={floatSharesPercent ? `${floatSharesPercent.toFixed(2)}%` : "—"} />
               </div>
             </div>
+            {/* TV-only identity: sector/exchange/currency come from the TradingView
+                feed. Industry/employees/founded/website/phone/officers were removed —
+                TradingView provides none of them for EGX (old values were a stale
+                stockanalysis snapshot). */}
             <div className={styles.profileFactsGrid}>
               <DataStat label={lang === "ar" ? "القطاع" : "Sector"} value={stock.sector || "—"} />
-              <DataStat label={lang === "ar" ? "الصناعة" : "Industry"} value={industry || "—"} />
-              <DataStat label={lang === "ar" ? "الموظفون" : "Employees"} value={employees === undefined ? "—" : compact(employees, lang)} />
-              <DataStat label={lang === "ar" ? "التأسيس" : "Founded"} value={yearFounded || "—"} />
-              <DataStat label={lang === "ar" ? "الموقع" : "Website"} value={website ? website.replace(/^https?:\/\//, "").replace(/\/$/, "") : "—"} />
-              <DataStat label={lang === "ar" ? "الهاتف" : "Phone"} value={phone || "—"} />
+              <DataStat label={lang === "ar" ? "البورصة" : "Exchange"} value="EGX" />
+              <DataStat label={lang === "ar" ? "العملة" : "Currency"} value={currency} />
             </div>
             <div className={styles.legalStack}>
-              {officers.length ? (
-                <article>
-                  <strong>{lang === "ar" ? "الإدارة والقيادة" : "Management & Leadership"}</strong>
-                  <div className={styles.officerGrid}>
-                    {officers.map((officer, index) => (
-                      <div key={`${String(officer.name ?? "")}-${index}`} className={styles.officerCard}>
-                        <span>{String(officer.name ?? "?").slice(0, 1)}</span>
-                        <div><b>{String(officer.name ?? "—")}</b><small>{String(officer.position ?? "")}</small></div>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ) : null}
               {newsTvItems.length ? (
                 <article>
                   <strong>{lang === "ar" ? "أخبار مرتبطة" : "Related stories"}</strong>
@@ -4232,15 +4203,14 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                   </div>
                 </article>
               ) : null}
-              {address ? <article><strong>{lang === "ar" ? "العنوان" : "Address"}</strong><p>{address}</p></article> : null}
             </div>
           </>
         )}
         {tab === "financials" && (
           <>
             <div className={styles.statGrid}>
-              <DataStat label={revenueTtm ? "Revenue TTM" : "Revenue FY"} value={revenueTtm ? compact(revenueTtm, lang) : revenueFy ? compact(revenueFy, lang) : formatLarge(latestFinancial.revenue, lang)} />
-              <DataStat label={netIncomeTtm ? "Net Income TTM" : "Net Income FY"} value={netIncomeTtm ? compact(netIncomeTtm, lang) : netIncomeFy ? compact(netIncomeFy, lang) : formatLarge(latestFinancial.net_income, lang)} tone="brand" />
+              <DataStat label={revenueTtm ? "Revenue TTM" : "Revenue FY"} value={revenueTtm ? compact(revenueTtm, lang) : revenueFy ? compact(revenueFy, lang) : "—"} />
+              <DataStat label={netIncomeTtm ? "Net Income TTM" : "Net Income FY"} value={netIncomeTtm ? compact(netIncomeTtm, lang) : netIncomeFy ? compact(netIncomeFy, lang) : "—"} tone="brand" />
               <DataStat label={epsTtm ? "EPS TTM" : "EPS FY"} value={epsTtm ? `${currency} ${epsTtm.toFixed(2)}` : epsFy ? `${currency} ${epsFy.toFixed(2)}` : "—"} />
               <DataStat label="BVPS" value={bvps ? `${currency} ${bvps.toFixed(2)}` : "—"} />
               <DataStat label="P/B" value={pbRatio ? `${pbRatio.toFixed(2)}x` : "—"} />
@@ -4336,48 +4306,8 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             ) : <EmptyPanel text={lang === "ar" ? "لا توجد تغطية من المحللين لهذا الرمز." : "No analyst coverage for this symbol."} />}
           </>
         )}
-        {tab === "seasonals" && (
-          <>
-            {seasonalAvailable ? (
-              <>
-                <div className={styles.companyMetricPanel}>
-                  <div className={styles.panelTitle}>
-                    <strong>{lang === "ar" ? "الموسمية الشهرية" : "Monthly Seasonality"}</strong>
-                    <span>{lang === "ar" ? `تاريخ ${toNumber(seasonals?.years_covered)} سنوات` : `${toNumber(seasonals?.years_covered)}-year history`}</span>
-                  </div>
-                  <div className={styles.seasonalChart}>
-                    {seasonalMonths.map((m) => {
-                      const avg = toNumber(m.avg_return);
-                      const up = avg >= 0;
-                      const height = Math.max(6, Math.round((Math.abs(avg) / seasonalMax) * 100));
-                      return (
-                        <div key={m.month} className={styles.seasonalCol} title={`${m.label} ${avg >= 0 ? "+" : ""}${avg.toFixed(1)}%`}>
-                          <b className={cx(styles.seasonalVal, up ? styles.up : styles.down)}>{avg >= 0 ? "+" : ""}{avg.toFixed(1)}</b>
-                          <i className={cx(styles.seasonalBar, up ? styles.up : styles.down)} style={{ height: `${height}%` }} />
-                          <small className={styles.seasonalLabel}>{m.label}</small>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className={styles.tableStack}>
-                  <div className={styles.financialRow}>
-                    <span>{lang === "ar" ? "أفضل شهر" : "Best Month"}</span>
-                    <strong className={styles.up}>{seasonalBest ? `${seasonalBest.label} · ${toNumber(seasonalBest.avg_return) >= 0 ? "+" : ""}${toNumber(seasonalBest.avg_return).toFixed(1)}%` : "—"}</strong>
-                  </div>
-                  <div className={styles.financialRow}>
-                    <span>{lang === "ar" ? "أضعف شهر" : "Weakest Month"}</span>
-                    <strong className={styles.down}>{seasonalWorst ? `${seasonalWorst.label} · ${toNumber(seasonalWorst.avg_return) >= 0 ? "+" : ""}${toNumber(seasonalWorst.avg_return).toFixed(1)}%` : "—"}</strong>
-                  </div>
-                  <div className={styles.financialRow}>
-                    <span>{lang === "ar" ? "الأكثر ثباتاً" : "Most Consistent"}</span>
-                    <strong>{seasonalConsistent ? `${seasonalConsistent.label} · ${toNumber(seasonalConsistent.positive_rate).toFixed(0)}%` : "—"}</strong>
-                  </div>
-                </div>
-              </>
-            ) : <EmptyPanel text={lang === "ar" ? "لا يوجد تاريخ أسعار كافٍ لحساب الموسمية." : "Not enough price history for seasonality"} />}
-          </>
-        )}
+        {/* Seasonals tab removed (TV-only mandate): it was computed from our own
+            price history — TradingView exposes no seasonals via API. */}
         {tab === "ownership" && (
           <>
             {/* TradingView ownership fields ONLY (June-2026 audit: the per-holder
@@ -4391,22 +4321,24 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             </div>
           </>
         )}
-        {tab === "actions" && (
+        {/* Dividends — TradingView only: DPS/yield snapshot + per-fiscal-year DPS
+            history from egx_financials (the legacy corporate_actions list and
+            "Other Actions" were non-TV sources and were removed). */}
+        {tab === "dividends" && (
           <>
             <div className={styles.statGrid}>
               <DataStat label="DPS" value={dps ? `${currency} ${dps.toFixed(2)}` : "—"} tone="up" />
               <DataStat label={lang === "ar" ? "العائد النقدي" : "Dividend Yield"} value={pctRatio(dividendYield)} tone="up" />
-              <DataStat label={lang === "ar" ? "نسبة التوزيع" : "Payout Ratio"} value={pctRatio(firstNumber(stats, ["payout_ratio"]))} />
-              <DataStat label={lang === "ar" ? "إجمالي الإجراءات" : "Actions"} value={String(bundle.actions.length)} />
             </div>
+            <SectionHead title={lang === "ar" ? "التوزيعات لكل سنة مالية" : "Dividends per Fiscal Year"} />
             <div className={styles.tableStack}>
-              {bundle.actions.length ? bundle.actions.slice(0, 10).map((action, i) => (
-                <div key={`${action.id}-${i}`} className={styles.financialRow}>
-                  <span>{String(action.action_type ?? "Action")}</span>
-                  <strong>{action.amount ? `${action.amount} ${action.currency ?? "EGP"}` : String(action.description ?? "—")}</strong>
-                  <small>{formatDate(action.ex_date ?? action.announcement_date, lang)}</small>
+              {dpsYears.length ? dpsYears.map((y, i) => (
+                <div key={`${y.fiscal_year}-${i}`} className={styles.financialRow}>
+                  <span>FY {String(y.fiscal_year)}</span>
+                  <strong>{`${currency} ${toNumber(y.dps).toFixed(4)}`}</strong>
+                  <small>{lang === "ar" ? "توزيع نقدي" : "Cash dividend"}</small>
                 </div>
-              )) : <EmptyPanel text={lang === "ar" ? "لا توجد إجراءات أو توزيعات متاحة لهذا الرمز حالياً." : "No corporate actions or dividends are available for this symbol yet."} />}
+              )) : <EmptyPanel text={lang === "ar" ? "لا توجد توزيعات متاحة لهذا الرمز حالياً." : "No dividends are available for this symbol yet."} />}
             </div>
           </>
         )}

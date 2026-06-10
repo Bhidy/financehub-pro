@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
-    fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
+    fetchTickers, fetchOHLC, fetchFinancials,
     fetchCorporateActions, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
     fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxSeasonals, fetchEgxNewsTV
@@ -613,11 +613,10 @@ export default function SymbolDetailPage() {
         enabled: !!symbol
     });
 
-    const { data: shareholders = [] } = useQuery({
-        queryKey: ["shareholders", symbol],
-        queryFn: () => fetchShareholders(symbol),
-        enabled: !!symbol
-    });
+    // Per-holder shareholders list removed (June-2026 audit): the major_shareholders
+    // table held 6 fabricated demo rows that leaked onto EVERY symbol via a
+    // return-all fallback, and TradingView has no per-holder data for EGX.
+    // Ownership now shows TV-sourced float % / float shares / holders count.
 
     // TradingView technicals (multi-timeframe) + analyst estimates
     const { data: tvTechnicals } = useQuery({
@@ -760,7 +759,9 @@ export default function SymbolDetailPage() {
     }, [parsedFinancials, tvFinancials]);
 
     const profileData = useMemo(() => localProfile?.profile || yahooProfile?.profile || {}, [localProfile, yahooProfile]);
-    const fundamentalsData = useMemo(() => yahooProfile?.fundamentals || {}, [yahooProfile]);
+    // Yahoo numeric "fundamentals" intentionally NOT consumed — Yahoo data is wrong
+    // for EGX (audit evidence: MASR mcap/price/float all incorrect). Yahoo profile
+    // text (description/officers/HQ) remains as the only Yahoo usage.
 
     const longBusinessSummary = useMemo(() => profileData.description || profileData.longBusinessSummary || (stockData as any)?.name_en || "", [profileData, stockData]);
     const website = useMemo(() => profileData.website || "", [profileData]);
@@ -772,89 +773,53 @@ export default function SymbolDetailPage() {
     const address = useMemo(() => profileData.address || "-", [profileData]);
     const founded = useMemo(() => profileData.founded || null, [profileData]);
 
-    // ─── COMPUTED METRICS ──────────────────────────────────────────────────
-    const marketCap = useMemo(() => Number(stats.market_cap || profileData.market_cap || (stockData as any)?.market_cap || 0), [stats, profileData, stockData]);
-    const peRatio = useMemo(() => Number(stats.pe_ratio || fundamentalsData.pe_ratio || (stockData as any)?.pe_ratio || 0), [stats, fundamentalsData, stockData]);
-    const pbRatio = useMemo(() => Number(stats.pb_ratio || fundamentalsData.price_to_book || (stockData as any)?.pb_ratio || 0), [stats, fundamentalsData, stockData]);
-    const dividendYield = useMemo(() => Number(stats.dividend_yield || fundamentalsData.dividend_yield || (stockData as any)?.dividend_yield || 0), [stats, fundamentalsData, stockData]);
-    const betaValue = useMemo(() => Number(stats.beta_5y || fundamentalsData.beta || (stockData as any)?.beta || 0), [stats, fundamentalsData, stockData]);
-    const sharesOutstanding = useMemo(() => Number(stats.shares_outstanding || profileData.shares_outstanding || latestAnnualStatement?.shares_outstanding || 0), [stats, profileData, latestAnnualStatement]);
-    const totalCash = useMemo(() => Number(stats.cash_ttm || fundamentalsData.total_cash || latestAnnualStatement?.cash || 0), [stats, fundamentalsData, latestAnnualStatement]);
-    const totalDebt = useMemo(() => Number(stats.total_debt || fundamentalsData.total_debt || latestAnnualStatement?.long_term_debt || 0), [stats, fundamentalsData, latestAnnualStatement]);
-    const netCash = useMemo(() => Number(stats.net_cash || 0), [stats]);
-    const enterpriseValue = useMemo(() => {
-        const val = Number(stats.enterprise_value || fundamentalsData.enterprise_value || 0);
-        if (val > 0) return val;
-        return marketCap > 0 ? (marketCap + totalDebt - totalCash) : 0;
-    }, [stats, fundamentalsData, marketCap, totalDebt, totalCash]);
-    const fcf = useMemo(() => Number(stats.fcf_ttm || fundamentalsData.free_cash_flow || latestAnnualStatement?.free_cashflow || 0), [stats, fundamentalsData, latestAnnualStatement]);
-    const profitMargin = useMemo(() => {
-        const val = Number(stats.profit_margin || fundamentalsData.profit_margin || 0);
-        if (val > 0) return val;
-        if (latestAnnualStatement?.net_income && latestAnnualStatement?.revenue) {
-            return latestAnnualStatement.net_income / latestAnnualStatement.revenue;
-        }
-        return 0;
-    }, [stats, fundamentalsData, latestAnnualStatement]);
-    const debtEquity = useMemo(() => {
-        const val = Number(stats.debt_equity || fundamentalsData.debt_to_equity || 0);
-        if (val > 0) return val;
-        const equity = latestAnnualStatement?.total_equity || 0;
-        return totalDebt > 0 && equity > 0 ? (totalDebt / equity) : 0;
-    }, [stats, fundamentalsData, totalDebt, latestAnnualStatement]);
-    const roe = useMemo(() => Number(stats.roe || fundamentalsData.return_on_equity || 0), [stats, fundamentalsData]);
-    const roa = useMemo(() => Number(stats.roa || fundamentalsData.return_on_assets || 0), [stats, fundamentalsData]);
-    const pegRatio = useMemo(() => Number(stats.peg_ratio || fundamentalsData.peg_ratio || 0), [stats, fundamentalsData]);
-    const currentRatio = useMemo(() => Number(stats.current_ratio || fundamentalsData.current_ratio || 0), [stats, fundamentalsData]);
-    const quickRatio = useMemo(() => Number(stats.quick_ratio || fundamentalsData.quick_ratio || 0), [stats, fundamentalsData]);
-    const operatingMargin = useMemo(() => Number(stats.operating_margin || fundamentalsData.operating_margin || 0), [stats, fundamentalsData]);
-    const pretaxMargin = useMemo(() => Number(stats.pretax_margin || 0), [stats]);
-    const grossMargin = useMemo(() => {
-        const val = Number(stats.gross_margin || fundamentalsData.gross_margin || 0);
-        if (val > 0) return val;
-        if (latestAnnualStatement?.gross_profit && latestAnnualStatement?.revenue) {
-            return latestAnnualStatement.gross_profit / latestAnnualStatement.revenue;
-        }
-        return 0;
-    }, [stats, fundamentalsData, latestAnnualStatement]);
-    const effectiveTaxRate = useMemo(() => Number(stats.effective_tax_rate || 0), [stats]);
-    const evToRevenue = useMemo(() => {
-        const val = Number(stats.ev_revenue || fundamentalsData.enterprise_to_revenue || 0);
-        if (val > 0) return val;
-        const rev = latestAnnualStatement?.revenue || 0;
-        return enterpriseValue > 0 && rev > 0 ? (enterpriseValue / rev) : 0;
-    }, [stats, fundamentalsData, enterpriseValue, latestAnnualStatement]);
-    const evToEbitda = useMemo(() => Number(stats.ev_ebitda || fundamentalsData.enterprise_to_ebitda || 0), [stats, fundamentalsData]);
-    const trailingEps = useMemo(() => {
-        const val = Number(stats.eps_ttm || fundamentalsData.trailing_eps || 0);
-        if (val !== 0) return val;
-        return latestAnnualStatement?.eps || 0;
-    }, [stats, fundamentalsData, latestAnnualStatement]);
+    // ─── DISPLAYED METRICS — TradingView-sourced ONLY (June-2026 audit) ─────
+    // Every number below reads our TradingView-fed view (stats) or the TV tickers
+    // row. The Yahoo proxy fallbacks were removed (Yahoo is provably wrong for
+    // EGX: MASR mcap 9.07B vs real 14.84B, P/B 0.69 vs 1.17, quoteType "MUTUALFUND")
+    // and house-computed fallbacks (EV, P/S, debt/equity, margins-from-statements)
+    // are gone under the source-only display policy. Yahoo remains ONLY for
+    // qualitative Profile text (description / officers / HQ).
+    const marketCap = useMemo(() => Number(stats.market_cap || (stockData as any)?.market_cap || 0), [stats, stockData]);
+    const peRatio = useMemo(() => Number(stats.pe_ratio || (stockData as any)?.pe_ratio || 0), [stats, stockData]);
+    const pbRatio = useMemo(() => Number(stats.pb_ratio || (stockData as any)?.pb_ratio || 0), [stats, stockData]);
+    const dividendYield = useMemo(() => Number(stats.dividend_yield || (stockData as any)?.dividend_yield || 0), [stats, stockData]);
+    const betaValue = useMemo(() => Number(stats.beta_1y || 0), [stats]);
+    const sharesOutstanding = useMemo(() => Number(stats.shares_outstanding || 0), [stats]);
+    const totalDebt = useMemo(() => Number(stats.total_debt || 0), [stats]);
+    const profitMargin = useMemo(() => Number(stats.profit_margin || 0), [stats]);
+    const roe = useMemo(() => Number(stats.roe || 0), [stats]);
+    const roa = useMemo(() => Number(stats.roa || 0), [stats]);
+    const operatingMargin = useMemo(() => Number(stats.operating_margin || 0), [stats]);
+    const grossMargin = useMemo(() => Number(stats.gross_margin || 0), [stats]);
+    // TTM-first with FY fallback — value and label always agree (the old code
+    // showed FY values under "(TTM)" labels for the whole universe).
+    const epsDisplay = useMemo(() => {
+        const ttm = Number(stats.eps_ttm || 0), fy = Number(stats.eps_fy || 0);
+        return ttm !== 0 ? { v: ttm, basis: "TTM" } : { v: fy, basis: "FY" };
+    }, [stats]);
+    const revenueDisplay = useMemo(() => {
+        const ttm = Number(stats.revenue_ttm || 0), fy = Number(stats.revenue_fy || 0);
+        return ttm > 0 ? { v: ttm, basis: "TTM" } : { v: fy, basis: "FY" };
+    }, [stats]);
+    const netIncomeDisplay = useMemo(() => {
+        const ttm = Number(stats.net_income_ttm || 0), fy = Number(stats.net_income_fy || 0);
+        return ttm !== 0 ? { v: ttm, basis: "TTM" } : { v: fy, basis: "FY" };
+    }, [stats]);
+    const fcfDisplay = useMemo(() => {
+        const ttm = Number(stats.fcf_ttm || 0), fy = Number(stats.fcf_fy || 0);
+        return ttm !== 0 ? { v: ttm, basis: "TTM" } : { v: fy, basis: "FY" };
+    }, [stats]);
+    const trailingEps = epsDisplay.v;
     // stats.bvps is the TRUE per-share book value from the view; stats.book_value is
-    // now ABSOLUTE total equity (not per-share) so it is intentionally NOT a BVPS source.
-    const bookValue = useMemo(() => Number(stats.bvps || fundamentalsData.book_value || latestAnnualStatement?.book_value_per_share || 0), [stats, fundamentalsData, latestAnnualStatement]);
-    const dividendRate = useMemo(() => Number(stats.dps || fundamentalsData.dividend_rate || 0), [stats, fundamentalsData]);
-    const payoutRatio = useMemo(() => Number(stats.payout_ratio || fundamentalsData.payout_ratio || 0), [stats, fundamentalsData]);
-    const floatShares = useMemo(() => Number(stats.float_shares || profileData.float_shares || 0), [stats, profileData]);
-    const priceToSales = useMemo(() => {
-        const val = Number(stats.ps_ratio || fundamentalsData.price_to_sales || 0);
-        if (val > 0) return val;
-        const rev = latestAnnualStatement?.revenue || 0;
-        return marketCap > 0 && rev > 0 ? (marketCap / rev) : 0;
-    }, [stats, fundamentalsData, marketCap, latestAnnualStatement]);
-    const revenueTtm = useMemo(() => Number(stats.revenue_ttm || 0), [stats]);
-    const netIncomeTtm = useMemo(() => Number(stats.net_income_ttm || 0), [stats]);
-    const avgVolume20d = useMemo(() => Number(stats.avg_volume_20d || 0), [stats]);
-    const fcfPerShare = useMemo(() => Number(stats.fcf_per_share || 0), [stats]);
-    const institutionalOwnership = useMemo(() => Number(stats.institutional_ownership || 0), [stats]);
-    const insiderOwnership = useMemo(() => Number(stats.insider_ownership || 0), [stats]);
-    const fcfYield = useMemo(() => Number(stats.fcf_yield || 0), [stats]);
-    const earningsYield = useMemo(() => Number(stats.earnings_yield || 0), [stats]);
-    const debtFcf = useMemo(() => Number(stats.debt_fcf || 0), [stats]);
-    const ocfTtm = useMemo(() => Number(stats.ocf_ttm || 0), [stats]);
+    // ABSOLUTE total equity (not per-share) so it is intentionally NOT a BVPS source.
+    const bookValue = useMemo(() => Number(stats.bvps || 0), [stats]);
+    const dividendRate = useMemo(() => Number(stats.dps || 0), [stats]);
+    const payoutRatio = useMemo(() => Number(tvDividends?.payout_ratio_ttm || 0), [tvDividends]);
+    const floatShares = useMemo(() => Number(stats.float_shares || 0), [stats]);
+    const floatSharesPercent = useMemo(() => Number(stats.float_shares_percent || 0), [stats]);
+    const shareholdersCount = useMemo(() => Number(stats.shareholders_count || 0), [stats]);
     const forwardPe = useMemo(() => Number(stats.forward_pe || 0), [stats]);
-    const pTbv = useMemo(() => Number(stats.p_tbv || 0), [stats]);
-    // Growth metrics were system-computed and have been removed under the source-only display policy.
 
     // tooltip
     useEffect(() => {
@@ -1284,26 +1249,23 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.pe_ratio} value={peRatio > 0 ? peRatio.toFixed(2) : "-"} icon={Target} color="text-amber-500" />
                                         <MetricCard label={t.forward_pe} value={forwardPe > 0 ? forwardPe.toFixed(2) : "-"} icon={Target} color="text-amber-400" />
                                         <MetricCard label={t.pb_ratio} value={pbRatio > 0 ? pbRatio.toFixed(2) : "-"} icon={FileText} color="text-indigo-500" />
-                                        <MetricCard label={t.tangible_book} value={pTbv > 0 ? pTbv.toFixed(2) : "-"} icon={FileText} color="text-blue-500" />
-                                        <MetricCard label={t.peg_ratio} value={pegRatio > 0 ? pegRatio.toFixed(2) : "-"} icon={TrendingUp} color="text-purple-500" />
-                                        <MetricCard label={t.eps_ttm} value={trailingEps !== 0 ? `${currency} ${trailingEps.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${currency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
                                         <MetricCard label={t.bvps} value={bookValue > 0 ? `${currency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
-                                        <MetricCard label={t.revenue_ttm} value={revenueTtm > 0 ? formatCurrency(revenueTtm, currency) : "-"} icon={BarChart3} color="text-teal-500" />
-                                        <MetricCard label={t.net_income_ttm} value={netIncomeTtm > 0 ? formatCurrency(netIncomeTtm, currency) : "-"} icon={Award} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, currency) : "-"} icon={BarChart3} color="text-teal-500" />
+                                        <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, currency) : "-"} icon={Award} color="text-emerald-500" />
                                         <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, currency) : "-"} icon={TrendDown} color="text-rose-500" />
-                                        <MetricCard label={t.net_cash} value={netCash !== 0 ? formatCurrency(netCash, currency) : "-"} icon={Wallet} color="text-cyan-500" />
                                     </div>
                                 </div>
 
-                                {/* Ownership Summary Strip */}
-                                {(institutionalOwnership > 0 || insiderOwnership > 0 || floatShares > 0 || sharesOutstanding > 0) && (
+                                {/* Ownership Summary Strip — TradingView fields only */}
+                                {(floatSharesPercent > 0 || floatShares > 0 || sharesOutstanding > 0) && (
                                     <div className="premium-glass rounded-3xl p-8">
                                         <SectionHeader icon={Users} title={lang === "ar" ? "هيكل الملكية" : "Ownership Structure"} color="text-indigo-500" />
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {sharesOutstanding > 0 && <MetricCard label={t.outstanding} value={formatNumber(sharesOutstanding)} icon={Users} color="text-slate-400" />}
                                             {floatShares > 0 && <MetricCard label={t.float_shares} value={formatNumber(floatShares)} icon={Users} color="text-blue-500" />}
-                                            {institutionalOwnership > 0 && <MetricCard label={t.institutional_ownership} value={`${(institutionalOwnership * 100).toFixed(1)}%`} icon={Briefcase} color="text-indigo-500" />}
-                                            {insiderOwnership > 0 && <MetricCard label={t.insider_ownership} value={`${(insiderOwnership * 100).toFixed(3)}%`} icon={Users} color="text-orange-500" />}
+                                            {floatSharesPercent > 0 && <MetricCard label={lang === "ar" ? "نسبة التداول الحر" : "Free Float"} value={`${floatSharesPercent.toFixed(2)}%`} icon={PieChart} color="text-indigo-500" />}
+                                            {shareholdersCount > 0 && <MetricCard label={lang === "ar" ? "عدد المساهمين" : "Shareholders"} value={formatNumber(shareholdersCount)} icon={Briefcase} color="text-orange-500" />}
                                         </div>
                                     </div>
                                 )}
@@ -1533,13 +1495,7 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.pe_ratio} value={peRatio > 0 ? peRatio.toFixed(2) : "-"} icon={Target} color="text-amber-500" />
                                         <MetricCard label={t.forward_pe} value={forwardPe > 0 ? forwardPe.toFixed(2) : "-"} icon={Target} color="text-amber-400" />
                                         <MetricCard label={t.pb_ratio} value={pbRatio > 0 ? pbRatio.toFixed(2) : "-"} icon={FileText} color="text-indigo-500" />
-                                        <MetricCard label={t.tangible_book} value={pTbv > 0 ? pTbv.toFixed(2) : "-"} icon={FileText} color="text-blue-500" />
-                                        <MetricCard label={lang === "ar" ? "مكرر المبيعات P/S" : "Price / Sales (P/S)"} value={priceToSales > 0 ? priceToSales.toFixed(2) : "-"} icon={BarChart3} color="text-cyan-500" />
-                                        <MetricCard label={t.peg_ratio} value={pegRatio > 0 ? pegRatio.toFixed(2) : "-"} icon={TrendingUp} color="text-purple-500" />
-                                        <MetricCard label={lang === "ar" ? "EV/Revenue" : "EV / Revenue"} value={evToRevenue > 0 ? evToRevenue.toFixed(2) : "-"} icon={Landmark} color="text-orange-500" />
-                                        <MetricCard label={lang === "ar" ? "EV/EBITDA" : "EV / EBITDA"} value={evToEbitda > 0 ? evToEbitda.toFixed(2) : "-"} icon={Landmark} color="text-indigo-600" />
-                                        <MetricCard label={t.earnings_yield} value={earningsYield !== 0 ? pct(earningsYield) : "-"} icon={Target} color="text-emerald-500" />
-                                        <MetricCard label={t.eps_ttm} value={trailingEps !== 0 ? `${currency} ${trailingEps.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${currency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
                                     </div>
                                 </div>
 
@@ -1547,41 +1503,32 @@ export default function SymbolDetailPage() {
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={DollarSign} title={t.per_share} color="text-emerald-500" />
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        <MetricCard label={t.eps_ttm} value={trailingEps !== 0 ? `${currency} ${trailingEps.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${currency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
                                         <MetricCard label={t.bvps} value={bookValue > 0 ? `${currency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
                                         <MetricCard label={t.dps} value={dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : "-"} icon={Wallet} color="text-teal-500" />
-                                        <MetricCard label={t.fcf_per_share} value={fcfPerShare !== 0 ? `${currency} ${fcfPerShare.toFixed(2)}` : "-"} icon={Activity} color="text-orange-500" />
                                     </div>
                                 </div>
 
-                                {/* Profitability */}
+                                {/* Profitability — TradingView margins only */}
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Zap} title={t.profitability_margins} color="text-emerald-500" />
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <MetricCard label={t.profit_margin} value={profitMargin !== 0 ? pct(profitMargin) : "-"} icon={Award} color="text-emerald-500" />
                                         <MetricCard label={t.operating_margin} value={operatingMargin !== 0 ? pct(operatingMargin) : "-"} icon={Activity} color="text-blue-500" />
                                         {!isBank && <MetricCard label={lang === "ar" ? "هامش إجمالي الربح" : "Gross Margin"} value={grossMargin !== 0 ? pct(grossMargin) : "-"} icon={BarChart3} color="text-indigo-500" />}
-                                        <MetricCard label={t.pretax_margin} value={pretaxMargin !== 0 ? pct(pretaxMargin) : "-"} icon={Activity} color="text-purple-500" />
-                                        <MetricCard label={t.effective_tax} value={effectiveTaxRate !== 0 ? pct(effectiveTaxRate) : "-"} icon={FileText} color="text-slate-400" />
                                         <MetricCard label={t.roe} value={roe !== 0 ? pct(roe) : "-"} icon={CheckCircle} color="text-teal-500" />
                                         <MetricCard label={t.roa} value={roa !== 0 ? pct(roa) : "-"} icon={Activity} color="text-purple-500" />
-                                        <MetricCard label={t.revenue_ttm} value={revenueTtm > 0 ? formatCurrency(revenueTtm, currency) : "-"} icon={BarChart3} color="text-teal-500" />
-                                        <MetricCard label={t.net_income_ttm} value={netIncomeTtm > 0 ? formatCurrency(netIncomeTtm, currency) : "-"} icon={Award} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, currency) : "-"} icon={BarChart3} color="text-teal-500" />
+                                        <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, currency) : "-"} icon={Award} color="text-emerald-500" />
                                     </div>
                                 </div>
 
-                                {/* Liquidity & Solvency */}
+                                {/* Debt & Cash Flow — TradingView fields only */}
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Wallet} title={t.liquidity_solvency} color="text-indigo-500" />
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {!isBank && <MetricCard label={t.debt_equity} value={debtEquity > 0 ? debtEquity.toFixed(2) : lang === "ar" ? "ينطبق على البنوك" : "N/A (Bank)"} icon={TrendDown} color="text-rose-500" />}
-                                        {!isBank && <MetricCard label={t.current_ratio} value={currentRatio > 0 ? currentRatio.toFixed(2) : "-"} icon={Wallet} color="text-teal-500" />}
-                                        {!isBank && <MetricCard label={lang === "ar" ? "النسبة السريعة" : "Quick Ratio"} value={quickRatio > 0 ? quickRatio.toFixed(2) : "-"} icon={Wallet} color="text-cyan-500" />}
                                         <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, currency) : "-"} icon={TrendDown} color="text-rose-500" />
-                                        <MetricCard label={t.net_cash} value={netCash !== 0 ? formatCurrency(netCash, currency) : "-"} icon={Wallet} color="text-cyan-500" />
-                                        <MetricCard label={t.fcf} value={fcf !== 0 ? formatCurrency(fcf, currency) : "-"} icon={Activity} color="text-emerald-500" />
-                                        <MetricCard label={lang === "ar" ? "التدفق التشغيلي" : "Operating CF (TTM)"} value={ocfTtm !== 0 ? formatCurrency(ocfTtm, currency) : "-"} icon={Activity} color="text-blue-500" />
-                                        {debtFcf !== 0 && <MetricCard label={lang === "ar" ? "الدين / التدفق النقدي الحر" : "Debt / FCF"} value={debtFcf.toFixed(2)} icon={TrendDown} color="text-orange-500" />}
+                                        <MetricCard label={`${lang === "ar" ? "التدفق النقدي الحر" : "Free Cash Flow"} (${fcfDisplay.basis})`} value={fcfDisplay.v !== 0 ? formatCurrency(fcfDisplay.v, currency) : "-"} icon={Activity} color="text-emerald-500" />
                                     </div>
                                 </div>
 
@@ -1592,13 +1539,11 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.div_yield} value={dividendYield > 0 ? pct(dividendYield) : "-"} icon={Wallet} color="text-emerald-500" />
                                         <MetricCard label={t.dps} value={dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : "-"} icon={Wallet} color="text-teal-500" />
                                         <MetricCard label={t.payout_ratio} value={payoutRatio > 0 ? pct(payoutRatio) : "-"} icon={FileText} color="text-amber-500" />
-                                        <MetricCard label={t.beta} value={betaValue !== 0 ? betaValue.toFixed(2) : "-"} icon={Activity} color="text-rose-500" />
+                                        <MetricCard label={`${t.beta} (1Y)`} value={betaValue !== 0 ? betaValue.toFixed(2) : "-"} icon={Activity} color="text-rose-500" />
                                         <MetricCard label={t.outstanding} value={sharesOutstanding > 0 ? formatNumber(sharesOutstanding) : "-"} icon={Users} color="text-blue-500" />
                                         <MetricCard label={t.float_shares} value={floatShares > 0 ? formatNumber(floatShares) : "-"} icon={Users} color="text-indigo-500" />
-                                        <MetricCard label={t.institutional_ownership} value={institutionalOwnership > 0 ? `${(institutionalOwnership * 100).toFixed(1)}%` : "-"} icon={Briefcase} color="text-indigo-500" />
-                                        <MetricCard label={t.insider_ownership} value={insiderOwnership > 0 ? `${(insiderOwnership * 100).toFixed(3)}%` : "-"} icon={Users} color="text-orange-500" />
-                                        <MetricCard label={t.fcf_yield} value={fcfYield !== 0 ? pct(fcfYield) : "-"} icon={Activity} color="text-orange-500" />
-                                        <MetricCard label={t.earnings_yield} value={earningsYield !== 0 ? pct(earningsYield) : "-"} icon={Target} color="text-emerald-500" />
+                                        <MetricCard label={lang === "ar" ? "نسبة التداول الحر" : "Free Float"} value={floatSharesPercent > 0 ? `${floatSharesPercent.toFixed(2)}%` : "-"} icon={PieChart} color="text-indigo-500" />
+                                        <MetricCard label={lang === "ar" ? "عدد المساهمين" : "Shareholders"} value={shareholdersCount > 0 ? formatNumber(shareholdersCount) : "-"} icon={Briefcase} color="text-orange-500" />
                                     </div>
                                 </div>
                             </div>
@@ -1902,7 +1847,6 @@ export default function SymbolDetailPage() {
                                     { l: lang === "ar" ? "سعر الإغلاق" : "Closing Price", v: formatCurrency(lastPrice, currency), c: "text-slate-800 dark:text-white" },
                                     { l: lang === "ar" ? "التغير اليومي" : "Daily Change", v: Math.abs(change) >= 0.005 ? `${isPositive ? "+" : ""}${change.toFixed(2)} (${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)` : `(${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
                                     { l: lang === "ar" ? "حجم التداول" : "Volume", v: volume.toLocaleString(), c: "text-slate-700 dark:text-slate-350" },
-                                    { l: lang === "ar" ? "متوسط الحجم ٢٠ي" : "Avg Vol 20D", v: avgVolume20d > 0 ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(avgVolume20d) : "-", c: "text-slate-600 dark:text-slate-400" },
                                     // 52W High/Low removed — these were Math.max/min over the loaded candles (our calc, mislabeled as 52-week) with no source 52-week field to re-point to.
                                     { l: lang === "ar" ? "السوق المالي" : "Exchange", v: marketName.toUpperCase(), c: "text-[#14b8a6]" },
                                     { l: lang === "ar" ? "القطاع" : "Sector", v: industry || "-", c: "text-slate-600 dark:text-slate-400" },
@@ -1943,8 +1887,10 @@ export default function SymbolDetailPage() {
 
                         {/* Fair Value quick card removed — internal valuation models are house opinion, not source data. */}
 
-                        {/* Ownership Quick Card */}
-                        {(institutionalOwnership > 0 || insiderOwnership > 0 || (Array.isArray(shareholders) && shareholders.length > 0)) && (
+                        {/* Ownership Quick Card — TradingView fields ONLY (June-2026 audit: the
+                            old per-holder list rendered 6 fabricated demo rows on every symbol;
+                            TradingView has no per-holder data for EGX, so no holder list is shown). */}
+                        {(sharesOutstanding > 0 || floatShares > 0 || floatSharesPercent > 0) && (
                             <div className="premium-glass rounded-3xl p-6">
                                 <h4 className="text-lg font-black flex items-center gap-2 mb-5">
                                     <PieChart className="w-5 h-5 text-indigo-500" /> {lang === "ar" ? "ملاك الأسهم" : "Share Ownership"}
@@ -1962,48 +1908,16 @@ export default function SymbolDetailPage() {
                                             <span className="tabular text-xs font-black text-blue-500">{formatNumber(floatShares)}</span>
                                         </div>
                                     )}
-                                    {institutionalOwnership > 0 && (
+                                    {floatSharesPercent > 0 && (
                                         <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
-                                            <span className="text-slate-400 text-xs">{t.institutional_ownership}</span>
-                                            <span className="tabular text-xs font-black text-indigo-500">{(institutionalOwnership * 100).toFixed(1)}%</span>
+                                            <span className="text-slate-400 text-xs">{lang === "ar" ? "نسبة التداول الحر" : "Free Float"}</span>
+                                            <span className="tabular text-xs font-black text-indigo-500">{floatSharesPercent.toFixed(2)}%</span>
                                         </div>
                                     )}
-                                    {insiderOwnership > 0 && (
+                                    {shareholdersCount > 0 && (
                                         <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-b-0">
-                                            <span className="text-slate-400 text-xs">{t.insider_ownership}</span>
-                                            <span className="tabular text-xs font-black text-orange-500">{(insiderOwnership * 100).toFixed(3)}%</span>
-                                        </div>
-                                    )}
-
-                                    {/* Detailed Ownership Structure (Top Shareholders) */}
-                                    {Array.isArray(shareholders) && shareholders.length > 0 && (
-                                        <div className="mt-5 pt-5 border-t border-slate-200/50 dark:border-slate-800/50">
-                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">
-                                                {lang === "ar" ? "هيكل الملكية (كبار المساهمين)" : "Ownership Structure"}
-                                            </p>
-                                            <div className="space-y-4">
-                                                {shareholders.map((sh: any, i: number) => {
-                                                    const percent = Number(sh.ownership_percent || 0);
-                                                    const shares = Number(sh.shares_held || 0);
-                                                    const name = lang === "ar" && sh.shareholder_name_ar ? sh.shareholder_name_ar : sh.shareholder_name_en;
-                                                    return (
-                                                        <div key={i} className="space-y-1 font-bold">
-                                                            <div className="flex justify-between items-center text-xs font-bold gap-2">
-                                                                <span className="text-slate-700 dark:text-slate-350 truncate text-[11px] leading-tight" title={name}>{name}</span>
-                                                                <span className="tabular text-indigo-600 dark:text-indigo-400 font-black text-[11px] flex-shrink-0">{percent.toFixed(2)}%</span>
-                                                            </div>
-                                                            {shares > 0 && (
-                                                                <p className="text-[10px] text-slate-400 font-medium">
-                                                                    {formatNumber(shares)} {lang === "ar" ? "سهم" : "shares"}
-                                                                </p>
-                                                            )}
-                                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
-                                                                <div className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" style={{ width: `${Math.min(percent, 100)}%` }}></div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
+                                            <span className="text-slate-400 text-xs">{lang === "ar" ? "عدد المساهمين" : "Shareholders"}</span>
+                                            <span className="tabular text-xs font-black text-orange-500">{formatNumber(shareholdersCount)}</span>
                                         </div>
                                     )}
                                 </div>

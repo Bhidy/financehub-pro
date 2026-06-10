@@ -1061,11 +1061,8 @@ export const fetchEarnings = async (symbol?: string, limit: number = 200) => {
     return data;
 };
 
-export const fetchShareholders = async (symbol?: string, limit: number = 200) => {
-    const params = symbol ? { symbol, limit } : { limit };
-    const { data } = await localApi.get("/shareholders", { params });
-    return data;
-};
+// fetchShareholders removed (June-2026 audit): the endpoint leaked fabricated
+// demo holders to every symbol. Ownership UI now uses TradingView stats fields.
 
 export const fetchIntraday = async (symbol: string, interval: string = "1m", limit: number = 300) => {
     const { data } = await localApi.get(`/intraday/${symbol}`, { params: { interval, limit } });

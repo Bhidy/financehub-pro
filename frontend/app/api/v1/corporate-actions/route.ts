@@ -26,36 +26,10 @@ export async function GET(request: Request) {
         }
 
         const result = await db.query(query, params);
-        
-        // Fallback to dividend_history if no corporate actions found for a specific symbol
-        if (symbol && result.rows.length === 0) {
-            const cleanSym = symbol.toUpperCase().replace(".CA", "");
-            const divResult = await db.query(
-                `SELECT id, symbol, ex_date, dividend_amount as amount, currency
-                 FROM dividend_history
-                 WHERE symbol = $1 OR symbol = $2
-                 ORDER BY ex_date DESC
-                 LIMIT 20`,
-                [cleanSym, `${cleanSym}.CA`]
-            );
-            
-            if (divResult.rows.length > 0) {
-                const mappedDividends = divResult.rows.map((d: any) => ({
-                    id: d.id,
-                    symbol: symbol,
-                    action_type: 'Dividend',
-                    announcement_date: null,
-                    ex_date: d.ex_date,
-                    record_date: null,
-                    payment_date: null,
-                    amount: d.amount,
-                    currency: d.currency || 'EGP',
-                    description: `Cash Dividend of ${d.amount} ${d.currency || 'EGP'}`
-                }));
-                return NextResponse.json(mappedDividends);
-            }
-        }
 
+        // dividend_history fallback removed (June-2026 audit): that table froze in
+        // January. corporate_actions is now self-extending — the daily TradingView
+        // dividends cycle upserts every recent/upcoming dividend into it.
         return NextResponse.json(result.rows);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

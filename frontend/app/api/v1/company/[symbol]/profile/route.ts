@@ -41,7 +41,8 @@ export async function GET(
                 sector: ticker.sector_name || profile.sector || stats.sector_name || stats.sector,
                 market_cap: ticker.market_cap || stats.market_cap,
                 website: profile.website,
-                description: profile.description || `Leading company in the ${ticker.sector_name || 'Egyptian'} sector.`
+                // No fabricated fallback text — if we have no description, send none.
+                description: profile.description || null
             },
             market_data: {
                 current_price: ticker.last_price,

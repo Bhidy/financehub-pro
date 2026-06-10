@@ -215,7 +215,6 @@ type CompanyProfileBundle = {
   statistics?: Record<string, unknown>;
   financials: Record<string, unknown>[];
   ratios: Record<string, unknown>[];
-  shareholders: Record<string, unknown>[];
   actions: Record<string, unknown>[];
   // TradingView-native parity (mirrors the website /symbol page).
   financialsTv: Record<string, unknown>[];
@@ -724,11 +723,12 @@ function normalizeNews(row: Record<string, unknown>, lang: Lang): NewsItem {
 
 async function loadCompanyProfile(symbol: string, lang: Lang): Promise<CompanyProfileBundle> {
   const clean = encodeURIComponent(symbol);
-  const [websiteProfile, financials, ratios, shareholders, actions, egxStats, financialsTv, technicals, estimates, seasonals, newsTv] = await Promise.all([
+  // Shareholders fetch removed (June-2026 audit): the endpoint served fabricated
+  // demo holders to every symbol; ownership now uses TV stats fields only.
+  const [websiteProfile, financials, ratios, actions, egxStats, financialsTv, technicals, estimates, seasonals, newsTv] = await Promise.all([
     getJson<{ profile?: Record<string, unknown>; market_data?: Record<string, unknown>; statistics?: Record<string, unknown> }>(`/api/v1/company/${clean}/profile`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/financials/${clean}`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/ratios?symbol=${clean}&limit=6`, { ttl: 60_000 }),
-    getJson<Record<string, unknown>[]>(`/api/v1/shareholders?symbol=${clean}&limit=8`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/corporate-actions?symbol=${clean}`, { ttl: 60_000 }),
     // Real TradingView-sourced valuation/technical stats (beta, MAs, RSI, P/E, P/B, 52w…).
     getJson<Record<string, unknown>>(`/api/v1/egx/statistics/${clean}`, { ttl: 60_000 }),
@@ -748,7 +748,6 @@ async function loadCompanyProfile(symbol: string, lang: Lang): Promise<CompanyPr
     statistics: { ...(egxStats ?? {}), ...(websiteProfile?.statistics ?? {}) },
     financials: Array.isArray(financials) ? financials : [],
     ratios: Array.isArray(ratios) ? ratios : [],
-    shareholders: Array.isArray(shareholders) ? shareholders : [],
     actions: Array.isArray(actions) ? actions : [],
     financialsTv: Array.isArray(financialsTv?.years) ? financialsTv.years : [],
     technicals: Array.isArray(technicals?.timeframes) ? technicals.timeframes : [],
@@ -3957,7 +3956,7 @@ function ChartFullscreen({ symbol, lang, onClose }: { symbol: string; lang: Lang
 // "Quote Detail") with full fundamentals (profile, financials, ownership, actions).
 function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
   const wl = useWatchlist();
-  const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], shareholders: [], actions: [], financialsTv: [], technicals: [] });
+  const [bundle, setBundle] = useState<CompanyProfileBundle>({ financials: [], ratios: [], actions: [], financialsTv: [], technicals: [] });
   const [bars, setBars] = useState<OhlcBar[]>([]);
   const [tf, setTf] = useState<string>("3M");
   const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "seasonals" | "ownership" | "actions">("overview");
@@ -4005,15 +4004,17 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const pbRatio = firstNumber(marketData, ["pb_ratio"]) ?? firstNumber(stats, ["pb_ratio"]) ?? firstNumber(latestRatio, ["pb_ratio", "price_book", "pb"]);
   const forwardPe = firstNumber(stats, ["forward_pe"]);
   const dividendYield = firstNumber(marketData, ["dividend_yield"]) ?? firstNumber(stats, ["dividend_yield"]);
-  const beta = firstNumber(stats, ["beta_5y", "beta"]);
+  const beta = firstNumber(stats, ["beta_1y"]);
   const ma50 = firstNumber(stats, ["ma_50d"]);
   const ma200 = firstNumber(stats, ["ma_200d"]);
   const rsi = firstNumber(stats, ["rsi_14"]);
-  const avgVolume20d = firstNumber(stats, ["avg_volume_20d"]);
-  const price52w = firstNumber(stats, ["price_change_52w"]);
+  // TTM-first with FY fallback (label must always match the basis shown).
   const revenueTtm = firstNumber(stats, ["revenue_ttm"]);
+  const revenueFy = firstNumber(stats, ["revenue_fy"]);
   const netIncomeTtm = firstNumber(stats, ["net_income_ttm"]);
+  const netIncomeFy = firstNumber(stats, ["net_income_fy"]);
   const epsTtm = firstNumber(stats, ["eps_ttm"]);
+  const epsFy = firstNumber(stats, ["eps_fy"]);
   const bvps = firstNumber(stats, ["bvps"]);
   const dps = firstNumber(stats, ["dps"]);
   const roe = firstNumber(stats, ["roe"]);
@@ -4021,11 +4022,10 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const profitMargin = firstNumber(stats, ["profit_margin"]);
   const operatingMargin = firstNumber(stats, ["operating_margin"]);
   const totalDebt = firstNumber(stats, ["total_debt"]);
-  const netCash = firstNumber(stats, ["net_cash"]);
   const sharesOutstanding = firstNumber(stats, ["shares_outstanding"]);
   const floatShares = firstNumber(stats, ["float_shares"]);
-  const institutionalOwnership = firstNumber(stats, ["institutional_ownership"]);
-  const insiderOwnership = firstNumber(stats, ["insider_ownership"]);
+  const floatSharesPercent = firstNumber(stats, ["float_shares_percent"]);
+  const shareholdersCount = firstNumber(stats, ["shareholders_count"]);
   const officers = (() => {
     const seen = new Set<string>();
     const unique: Record<string, unknown>[] = [];
@@ -4181,8 +4181,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                 <DataStat label={lang === "ar" ? "متوسط ٥٠ يوم" : "50D MA"} value={ma50 ? `${ma50.toFixed(2)} ${currency}` : "—"} />
                 <DataStat label={lang === "ar" ? "متوسط ٢٠٠ يوم" : "200D MA"} value={ma200 ? `${ma200.toFixed(2)} ${currency}` : "—"} />
                 <DataStat label="RSI 14" value={rsi ? rsi.toFixed(1) : "—"} tone={rsi && rsi > 70 ? "down" : rsi && rsi < 30 ? "up" : undefined} />
-                <DataStat label={lang === "ar" ? "عائد ٥٢ أسبوع" : "52W Return"} value={pctRatio(price52w)} tone={price52w === undefined ? undefined : price52w >= 0 ? "up" : "down"} />
-                <DataStat label={lang === "ar" ? "متوسط الحجم" : "Avg Vol 20D"} value={avgVolume20d ? compact(avgVolume20d, lang) : "—"} />
+                <DataStat label={lang === "ar" ? "نسبة التداول الحر" : "Free Float"} value={floatSharesPercent ? `${floatSharesPercent.toFixed(2)}%` : "—"} />
               </div>
             </div>
             <div className={styles.profileFactsGrid}>
@@ -4240,9 +4239,9 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
         {tab === "financials" && (
           <>
             <div className={styles.statGrid}>
-              <DataStat label="Revenue TTM" value={revenueTtm ? compact(revenueTtm, lang) : formatLarge(latestFinancial.revenue, lang)} />
-              <DataStat label="Net Income TTM" value={netIncomeTtm ? compact(netIncomeTtm, lang) : formatLarge(latestFinancial.net_income, lang)} tone="brand" />
-              <DataStat label="EPS TTM" value={epsTtm ? `${currency} ${epsTtm.toFixed(2)}` : "—"} />
+              <DataStat label={revenueTtm ? "Revenue TTM" : "Revenue FY"} value={revenueTtm ? compact(revenueTtm, lang) : revenueFy ? compact(revenueFy, lang) : formatLarge(latestFinancial.revenue, lang)} />
+              <DataStat label={netIncomeTtm ? "Net Income TTM" : "Net Income FY"} value={netIncomeTtm ? compact(netIncomeTtm, lang) : netIncomeFy ? compact(netIncomeFy, lang) : formatLarge(latestFinancial.net_income, lang)} tone="brand" />
+              <DataStat label={epsTtm ? "EPS TTM" : "EPS FY"} value={epsTtm ? `${currency} ${epsTtm.toFixed(2)}` : epsFy ? `${currency} ${epsFy.toFixed(2)}` : "—"} />
               <DataStat label="BVPS" value={bvps ? `${currency} ${bvps.toFixed(2)}` : "—"} />
               <DataStat label="P/B" value={pbRatio ? `${pbRatio.toFixed(2)}x` : "—"} />
               <DataStat label="Forward P/E" value={forwardPe ? `${forwardPe.toFixed(2)}x` : "—"} />
@@ -4251,7 +4250,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
               <DataStat label="Profit Margin" value={pctRatio(profitMargin)} />
               <DataStat label="Operating Margin" value={pctRatio(operatingMargin)} />
               <DataStat label="Total Debt" value={totalDebt ? compact(totalDebt, lang) : "—"} />
-              <DataStat label="Net Cash" value={netCash ? compact(netCash, lang) : "—"} tone={netCash && netCash > 0 ? "up" : undefined} />
             </div>
             {/* TradingView-native annual summary (revenue, net income, EPS, assets, debt). */}
             <SectionHead title={lang === "ar" ? "الملخص السنوي" : "Annual Summary"} />
@@ -4382,25 +4380,14 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
         )}
         {tab === "ownership" && (
           <>
+            {/* TradingView ownership fields ONLY (June-2026 audit: the per-holder
+                list rendered fabricated demo rows on every symbol — removed; TV
+                has no per-holder data for EGX). */}
             <div className={styles.statGrid}>
               <DataStat label={lang === "ar" ? "الأسهم القائمة" : "Shares Out"} value={sharesOutstanding ? compact(sharesOutstanding, lang) : "—"} />
               <DataStat label={lang === "ar" ? "الأسهم الحرة" : "Float"} value={floatShares ? compact(floatShares, lang) : "—"} />
-              <DataStat label={lang === "ar" ? "ملكية المؤسسات" : "Institutional"} value={pctRatio(institutionalOwnership)} tone="brand" />
-              <DataStat label={lang === "ar" ? "ملكية المطلعين" : "Insider"} value={pctRatio(insiderOwnership)} />
-            </div>
-            <div className={styles.tableStack}>
-              {bundle.shareholders.length ? bundle.shareholders.map((holder, i) => {
-                const name = lang === "ar" && holder.shareholder_name_ar ? holder.shareholder_name_ar : holder.shareholder_name_en;
-                const percent = toNumber(holder.ownership_percent);
-                const shares = firstNumber(holder, ["shares_held"]);
-                return (
-                  <div key={`${name}-${i}`} className={styles.ownerRow}>
-                    <div><strong>{String(name ?? "—")}</strong><small>{shares ? `${compact(shares, lang)} ${lang === "ar" ? "سهم" : "shares"}` : String(holder.shareholder_type ?? "")}</small></div>
-                    <span>{percent ? `${percent.toFixed(2)}%` : "—"}</span>
-                    <i><b style={{ width: `${Math.min(100, percent)}%` }} /></i>
-                  </div>
-                );
-              }) : <EmptyPanel text={lang === "ar" ? "لا توجد بيانات ملكية متاحة لهذا الرمز حالياً." : "No ownership rows are available for this symbol yet."} />}
+              <DataStat label={lang === "ar" ? "نسبة التداول الحر" : "Free Float"} value={floatSharesPercent ? `${floatSharesPercent.toFixed(2)}%` : "—"} tone="brand" />
+              <DataStat label={lang === "ar" ? "عدد المساهمين" : "Shareholders"} value={shareholdersCount ? compact(shareholdersCount, lang) : "—"} />
             </div>
           </>
         )}

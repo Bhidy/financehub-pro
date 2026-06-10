@@ -1,0 +1,61 @@
+name: TV Field Reconcile Gate
+
+# ============================================================
+# The tripwire for the June-2026 "we differ from the source" class:
+#   * P/B wrong for 108/215 stocks (stale yfinance under source='tradingview')
+#   * dividend yield junk for 152 stocks (wrong TV column harvested)
+#   * stale P/E shown for 102 stocks where TV has none (no NULL-overwrite)
+#   * FY values displayed under "(TTM)" labels (semantic drift)
+# Reconciles EVERY displayed field for EVERY symbol on the LIVE public API
+# against the TradingView scanner (the mandated single source), nightly.
+# Scale/type/internal-consistency checks (symbol-data-quality.yml) cannot
+# see this class — only a source-vs-display diff can.
+# ============================================================
+
+on:
+  schedule:
+    - cron: '0 16 * * 0,1,2,3,4'   # 16:00 UTC Sun-Thu — after close + the 15:00/15:30 estimate/dividend harvests
+  workflow_dispatch:
+
+concurrency:
+  group: tv-field-reconcile
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Reconcile live fields vs TradingView
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Full-universe field reconciliation
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python scripts/tv_field_reconcile_gate.py
+
+  fabricated-data-tripwire:
+    name: Fabricated/mock data ban
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: No hardcoded holder names or mock financial data in frontend
+        run: |
+          # June-2026 audit: fabricated demo holders (BlackRock/Vanguard/Norges/
+          # El Sewedy) reached production. Any reappearance of institutional-holder
+          # names or mock-data markers in shipped frontend source fails CI.
+          set -e
+          PATTERN='BlackRock|Vanguard Group|Norges Bank|El Sewedy 25|Mock list|MOCK_OWNERS|mockShareholders'
+          HITS=$(grep -rInE "$PATTERN" frontend/app frontend/components frontend/lib frontend/public/assets --include='*.ts' --include='*.tsx' --include='*.js' 2>/dev/null || true)
+          if [ -n "$HITS" ]; then
+            echo "::error::Fabricated/mock data markers found in frontend source:"
+            echo "$HITS"
+            exit 1
+          fi
+          echo "OK — no fabricated-data markers in frontend source"

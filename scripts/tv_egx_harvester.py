@@ -76,9 +76,10 @@ TRANSIENT_DB_ERRORS = (
 # backend writer so freshness monitoring sees harvester writes.
 SQL_UPSERT_MARKET_TICKER = """
     INSERT INTO market_tickers (symbol, market_code, name_en, sector_name, last_price,
-        change, change_percent, volume, market_cap, pe_ratio, dividend_yield, source,
+        change, change_percent, volume, market_cap, pe_ratio, dividend_yield, pb_ratio,
+        beta, forward_pe, float_shares_percent, float_shares, shareholders_count, source,
         updated_at, last_updated)
-    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now(), now())
+    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now(), now())
     ON CONFLICT (symbol) DO UPDATE SET
         market_code = EXCLUDED.market_code,
         name_en     = COALESCE(EXCLUDED.name_en,     market_tickers.name_en),
@@ -87,13 +88,25 @@ SQL_UPSERT_MARKET_TICKER = """
         change      = EXCLUDED.change,
         change_percent = EXCLUDED.change_percent,
         volume      = EXCLUDED.volume,
-        market_cap  = COALESCE(EXCLUDED.market_cap, market_tickers.market_cap),
-        pe_ratio    = COALESCE(EXCLUDED.pe_ratio,   market_tickers.pe_ratio),
-        dividend_yield = COALESCE(EXCLUDED.dividend_yield, market_tickers.dividend_yield),
+        market_cap  = EXCLUDED.market_cap,
+        pe_ratio    = EXCLUDED.pe_ratio,
+        dividend_yield = EXCLUDED.dividend_yield,
+        pb_ratio    = EXCLUDED.pb_ratio,
+        beta        = EXCLUDED.beta,
+        forward_pe  = EXCLUDED.forward_pe,
+        float_shares_percent = EXCLUDED.float_shares_percent,
+        float_shares = EXCLUDED.float_shares,
+        shareholders_count = EXCLUDED.shareholders_count,
         source      = EXCLUDED.source,
         updated_at  = now(),
         last_updated = now()
 """
+# ^ OVERWRITE SEMANTICS (June-2026 audit): TradingView OWNS every ratio column
+# above. When TV has no value the column must become NULL — the old
+# COALESCE(EXCLUDED.x, old) kept dead yfinance-era values alive forever under a
+# fresh source='tradingview' stamp (102 stale P/Es, 108 wrong P/Bs in prod).
+# Never reintroduce COALESCE here for TV-owned data columns (name/sector are
+# identity enrichment and stay COALESCE).
 
 SQL_UPSERT_OHLC = """
     INSERT INTO ohlc_data (symbol, date, open, high, low, close, volume, source)
@@ -188,8 +201,11 @@ SQL_UPSERT_FUNDAMENTALS = """
     INSERT INTO egx_fundamentals (symbol, fiscal_year, revenue, gross_profit,
         operating_income, ebitda, net_income, total_assets, total_equity,
         total_liabilities, total_debt, free_cash_flow, eps_diluted, bvps,
-        shares_outstanding, dps, gross_margin, operating_margin, roe, roa, updated_at)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now())
+        shares_outstanding, dps, gross_margin, operating_margin, roe, roa,
+        net_margin, revenue_ttm, net_income_ttm, eps_diluted_ttm, free_cash_flow_ttm,
+        updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
+        $21,$22,$23,$24,$25, now())
     ON CONFLICT (symbol) DO UPDATE SET
         fiscal_year=EXCLUDED.fiscal_year, revenue=EXCLUDED.revenue,
         gross_profit=EXCLUDED.gross_profit, operating_income=EXCLUDED.operating_income,
@@ -200,6 +216,9 @@ SQL_UPSERT_FUNDAMENTALS = """
         bvps=EXCLUDED.bvps, shares_outstanding=EXCLUDED.shares_outstanding,
         dps=EXCLUDED.dps, gross_margin=EXCLUDED.gross_margin,
         operating_margin=EXCLUDED.operating_margin, roe=EXCLUDED.roe, roa=EXCLUDED.roa,
+        net_margin=EXCLUDED.net_margin, revenue_ttm=EXCLUDED.revenue_ttm,
+        net_income_ttm=EXCLUDED.net_income_ttm, eps_diluted_ttm=EXCLUDED.eps_diluted_ttm,
+        free_cash_flow_ttm=EXCLUDED.free_cash_flow_ttm,
         updated_at=now()
 """
 
@@ -217,6 +236,15 @@ SQL_SYNC_FINANCIALS_FROM_FUNDAMENTALS = """
         total_assets=COALESCE(EXCLUDED.total_assets, egx_financials.total_assets),
         total_debt=COALESCE(EXCLUDED.total_debt, egx_financials.total_debt),
         dps=COALESCE(EXCLUDED.dps, egx_financials.dps), updated_at=now()
+"""
+
+SQL_UPSERT_CORPORATE_ACTION = """
+    INSERT INTO corporate_actions (symbol, action_type, ex_date, payment_date, amount,
+        currency, description)
+    VALUES ($1,'Dividend',$2,$3,$4,'EGP',$5)
+    ON CONFLICT (symbol, action_type, ex_date) DO UPDATE SET
+        payment_date=COALESCE(EXCLUDED.payment_date, corporate_actions.payment_date),
+        amount=EXCLUDED.amount, description=EXCLUDED.description
 """
 
 SQL_INSERT_DEADLETTER = (
@@ -239,6 +267,7 @@ ALL_WRITE_SQL = {
     "egx_financials(sync)":      SQL_SYNC_FINANCIALS_FROM_FUNDAMENTALS,
     "egx_dividends":             SQL_UPSERT_DIVIDENDS,
     "egx_fundamentals":          SQL_UPSERT_FUNDAMENTALS,
+    "corporate_actions":         SQL_UPSERT_CORPORATE_ACTION,
     "egx_ingest_deadletter":     SQL_INSERT_DEADLETTER,
 }
 
@@ -279,10 +308,15 @@ async def cycle_prices(conn):
     n = 0
     for s in stocks:
         try:
+            sh_count = s.get("shareholders_count")
             await conn.execute(SQL_UPSERT_MARKET_TICKER,
                 s["symbol"], s.get("name_en"), s.get("sector_name"), s["last_price"],
                 s.get("change"), s.get("change_percent"), s.get("volume"),
-                s.get("market_cap"), s.get("pe_ratio"), s.get("dividend_yield"), s.get("source", src))
+                s.get("market_cap"), s.get("pe_ratio"), s.get("dividend_yield"),
+                s.get("pb_ratio"), s.get("beta"), s.get("forward_pe"),
+                s.get("float_shares_percent"), s.get("float_shares"),
+                int(sh_count) if sh_count is not None else None,
+                s.get("source", src))
 
             # today's forming candle -> ohlc_data (only if we have a full OHLC from the scanner)
             if s.get("open") and s.get("high") and s.get("low") and s.get("bar_time"):
@@ -314,6 +348,7 @@ async def cycle_prices(conn):
                 _finite(ix.get("change")),           # change_percent
                 int(_finite(ix.get("volume")) or 0), # volume
                 None, None, None,                    # market_cap, pe_ratio, dividend_yield
+                None, None, None, None, None, None,  # pb, beta, fwd_pe, float%, float, holders
                 "tradingview")
             logger.info("prices: EGX30 index upserted: %.2f (%.2f%%)",
                         _finite(ix.get("close")) or 0, _finite(ix.get("change")) or 0)
@@ -447,22 +482,42 @@ async def cycle_financials(conn):
 async def cycle_dividends(conn):
     """Dividend snapshot incl. forward ex-date / payment-date calendar into
     egx_dividends. One row per symbol (upsert by PK)."""
+    from datetime import datetime, timezone
     rows = await TradingViewEGXClient().get_dividends()
     n = 0
+    ca = 0
     for d in rows:
         try:
             freq = d.get("dividends_frequency")
             freq = str(freq) if freq is not None else None
             await conn.execute(SQL_UPSERT_DIVIDENDS,
-                d["symbol"], d.get("dividends_yield"), d.get("dividend_amount_recent"),
+                d["symbol"], d.get("dividends_yield_current"), d.get("dividend_amount_recent"),
                 _i(d.get("dividend_ex_date_recent")), _i(d.get("dividend_payment_date_recent")),
                 d.get("dividend_amount_upcoming"), _i(d.get("dividend_ex_date_upcoming")),
                 _i(d.get("dividend_payment_date_upcoming")), freq,
                 d.get("dividend_payout_ratio_ttm"), d.get("continuous_dividend_growth"))
             n += 1
+            # Self-extending dividend HISTORY: mirror the TV snapshot (recent +
+            # upcoming) into corporate_actions so the history list keeps growing
+            # from TradingView and can never freeze again (June-2026 audit: the
+            # table was stale since March; 2026 dividends were missing from the
+            # Dividends & Actions list while the TV panel above showed them).
+            for amt_k, ex_k, pay_k in (
+                    ("dividend_amount_recent", "dividend_ex_date_recent", "dividend_payment_date_recent"),
+                    ("dividend_amount_upcoming", "dividend_ex_date_upcoming", "dividend_payment_date_upcoming")):
+                amt, ex = d.get(amt_k), _i(d.get(ex_k))
+                if amt is None or not ex:
+                    continue
+                ex_date = datetime.fromtimestamp(ex, tz=timezone.utc).date()
+                pay = _i(d.get(pay_k))
+                pay_date = datetime.fromtimestamp(pay, tz=timezone.utc).date() if pay else None
+                await conn.execute(SQL_UPSERT_CORPORATE_ACTION,
+                    d["symbol"], ex_date, pay_date, round(float(amt), 6),
+                    f"Cash Dividend of {float(amt):.6f} EGP")
+                ca += 1
         except Exception as e:
             await _on_write_error(conn, "dividends", d.get("symbol"), d, e)
-    logger.info("dividends: upserted %d symbols", n)
+    logger.info("dividends: upserted %d symbols, %d corporate_actions rows", n, ca)
 
 
 def _i(v):
@@ -488,7 +543,9 @@ async def cycle_fundamentals(conn):
                 d.get("total_assets"), d.get("total_equity"), d.get("total_liabilities"),
                 d.get("total_debt"), d.get("free_cash_flow"), d.get("eps_diluted"),
                 d.get("bvps"), d.get("shares_outstanding"), d.get("dps"),
-                d.get("gross_margin"), d.get("operating_margin"), d.get("roe"), d.get("roa"))
+                d.get("gross_margin"), d.get("operating_margin"), d.get("roe"), d.get("roa"),
+                d.get("net_margin"), d.get("revenue_ttm"), d.get("net_income_ttm"),
+                d.get("eps_diluted_ttm"), d.get("free_cash_flow_ttm"))
             # Sync the LATEST-year egx_financials row from the authoritative _fy
             # scalar. TradingView's net_income_fy_h[0] (history-array latest) is
             # unreliable for some names (e.g. SEIGA: _h[0]=827K but scalar=40.25M,

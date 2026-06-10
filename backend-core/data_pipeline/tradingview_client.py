@@ -54,11 +54,17 @@ MAX_ABS_CHANGE_PCT = 40.0   # |daily change| beyond this is almost surely bad da
 EGX_PREFIX = "EGX:"
 
 # Column set for the price path, mapped 1:1 to the legacy get_egx_stocks() dict.
+# NB: yield MUST be `dividends_yield_current` (the value TradingView displays).
+# The bare `dividends_yield` variant is a different metric (BINV: 165.099 vs the
+# real 2.71%) and poisoned market_tickers until the June-2026 audit.
 _PRICE_COLS = [
     "name", "close", "change", "change_abs", "volume",
     "open", "high", "low", "market_cap_basic",
     "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
-    "dividends_yield", "sector", "time", "last_bar_update_time",
+    "dividends_yield_current", "price_book_ratio", "beta_1_year",
+    "price_earnings_forward_fy", "float_shares_percent_current",
+    "float_shares_outstanding_current", "number_of_shareholders",
+    "sector", "time", "last_bar_update_time",
 ]
 
 
@@ -184,7 +190,13 @@ class TradingViewEGXClient:
                 "revenue": _finite(d.get("total_revenue_fy")),
                 "net_income": _finite(d.get("net_income_fy")),
                 "pe_ratio": _finite(d.get("price_earnings_ttm")),
-                "dividend_yield": _finite(d.get("dividends_yield")),
+                "dividend_yield": _finite(d.get("dividends_yield_current")),
+                "pb_ratio": _finite(d.get("price_book_ratio")),
+                "beta": _finite(d.get("beta_1_year")),
+                "forward_pe": _finite(d.get("price_earnings_forward_fy")),
+                "float_shares_percent": _finite(d.get("float_shares_percent_current")),
+                "float_shares": _finite(d.get("float_shares_outstanding_current")),
+                "shareholders_count": _finite(d.get("number_of_shareholders")),
                 "sector_name": d.get("sector") or "",
                 "market_code": "EGX",
                 "currency": "EGP",
@@ -267,7 +279,12 @@ class TradingViewEGXClient:
                 "earnings_per_share_diluted_fy", "book_value_per_share_fy",
                 "total_shares_outstanding_current", "dps_common_stock_prim_issue_fy",
                 "gross_margin_fy", "operating_margin_fy",
-                "return_on_equity_fy", "return_on_assets_fy"]
+                "return_on_equity_fy", "return_on_assets_fy",
+                # True trailing-twelve-month fields (the UI labels say "TTM" —
+                # they must carry TV's real TTM values, not FY mislabeled as TTM)
+                "total_revenue_ttm", "net_income_ttm",
+                "earnings_per_share_diluted_ttm", "free_cash_flow_ttm",
+                "net_margin_fy"]
         rows = await self._scan(cols, rng=[0, 300])
 
         out: List[Dict[str, Any]] = []
@@ -300,6 +317,12 @@ class TradingViewEGXClient:
                 "operating_margin": _finite(d.get("operating_margin_fy")),
                 "roe": _finite(d.get("return_on_equity_fy")),
                 "roa": _finite(d.get("return_on_assets_fy")),
+                "net_margin": _finite(d.get("net_margin_fy")),
+                # True TTM (same /scan endpoint -> native absolute EGP, no scaling)
+                "revenue_ttm": _finite(d.get("total_revenue_ttm")),
+                "net_income_ttm": _finite(d.get("net_income_ttm")),
+                "eps_diluted_ttm": _finite(d.get("earnings_per_share_diluted_ttm")),
+                "free_cash_flow_ttm": _finite(d.get("free_cash_flow_ttm")),
             })
         return out
 
@@ -307,7 +330,7 @@ class TradingViewEGXClient:
     # E1: DIVIDENDS + FORWARD CALENDAR
     # ------------------------------------------------------------------ #
     async def get_dividends(self) -> List[Dict[str, Any]]:
-        cols = ["name", "dividends_yield", "dividend_amount_recent",
+        cols = ["name", "dividends_yield_current", "dividend_amount_recent",
                 "dividend_ex_date_recent", "dividend_payment_date_recent",
                 "dividend_amount_upcoming", "dividend_ex_date_upcoming",
                 "dividend_payment_date_upcoming", "dividends_frequency",
@@ -388,7 +411,8 @@ _KSA_PRICE_COLS = [
     "name", "close", "change", "change_abs", "volume",
     "open", "high", "low", "market_cap_basic",
     "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
-    "dividends_yield", "sector", "time", "last_bar_update_time",
+    "dividends_yield_current", "price_book_ratio", "beta_1_year",
+    "sector", "time", "last_bar_update_time",
 ]
 
 
@@ -468,7 +492,9 @@ class TradingViewKSAClient:
                 "revenue": _finite(d.get("total_revenue_fy")),
                 "net_income": _finite(d.get("net_income_fy")),
                 "pe_ratio": _finite(d.get("price_earnings_ttm")),
-                "dividend_yield": _finite(d.get("dividends_yield")),
+                "dividend_yield": _finite(d.get("dividends_yield_current")),
+                "pb_ratio": _finite(d.get("price_book_ratio")),
+                "beta": _finite(d.get("beta_1_year")),
                 "sector_name": d.get("sector") or "",
                 "market_code": "KSA",
                 "currency": "SAR",

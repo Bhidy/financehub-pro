@@ -2365,14 +2365,8 @@ function IndexHero({ lang, egxIndex, summary }: { lang: Lang; egxIndex: EgxIndex
   const span = INDEX_TF.find(([k]) => k === tf)?.[1] ?? 66;
   const data = full.slice(-span);
   const value = toNumber(egxIndex.quote?.value, toNumber(summary.index_value));
-  const change = toNumber(egxIndex.quote?.change);
   const changePct = toNumber(egxIndex.quote?.changePercent, toNumber(summary.index_change_percent));
   const up = changePct >= 0;
-  // The headline delta reflects the SELECTED chart range (so the number and the
-  // chart always agree); today's daily move is shown as a separate sub-line.
-  const periodReturn = data.length > 1 && data[0] ? ((data[data.length - 1] - data[0]) / data[0]) * 100 : changePct;
-  const periodAbs = data.length > 1 ? Math.abs(data[data.length - 1] - data[0]) : Math.abs(change);
-  const periodUp = periodReturn >= 0;
   return (
     <div className={styles.heroCard}>
       <div className={styles.heroTopRow}>
@@ -2380,11 +2374,11 @@ function IndexHero({ lang, egxIndex, summary }: { lang: Lang; egxIndex: EgxIndex
         <span className={styles.liveTag}><i />{lang === "ar" ? "مباشر" : "LIVE"}</span>
       </div>
       <div className={styles.bigNum}>{formatNumber(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</div>
-      <div className={cx(styles.deltaRow, periodUp ? styles.up : styles.down)}>
-        {periodUp ? "▲" : "▼"} {periodAbs.toFixed(2)} <span className={periodUp ? styles.up : styles.down}>{pct(periodReturn)}</span>
+      <div className={cx(styles.deltaRow, up ? styles.up : styles.down)}>
+        {up ? "▲" : "▼"} <span className={up ? styles.up : styles.down}>{pct(changePct)}</span>
+        <span className={styles.deltaChip}>{lang === "ar" ? "اليوم" : "Today"}</span>
         <span className={styles.deltaChip}>{tf}</span>
       </div>
-      <div className={styles.lblMono} style={{ marginTop: 2 }}>{lang === "ar" ? "اليوم" : "Today"} {pct(changePct)}</div>
       <div className={cx(styles.chartFull, styles.indexChartFull)}>
         {data.length > 1
           ? <MiniChart data={data} color={up ? "var(--c-brand)" : "var(--c-down)"} height={166} dot />
@@ -2524,13 +2518,9 @@ function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary
   const indexChange = toNumber(egxIndex.quote?.changePercent, toNumber(summary.index_change_percent));
   const indexTrend = (egxIndex.history ?? []).map((point) => toNumber(point.close)).filter((value) => value > 0).slice(-66);
   const trend = isIndex ? indexTrend : picked.trend;
-  const high = trend.length ? Math.max(...trend) : undefined;
-  const low = trend.length ? Math.min(...trend) : undefined;
   const currentPrice = isIndex ? indexValue : picked.price;
   const currentChange = isIndex ? indexChange : picked.changePct;
-  const range = high !== undefined && low !== undefined && high > low ? ((currentPrice - low) / (high - low)) * 100 : undefined;
   const up = currentChange >= 0;
-  const rangeTf = isIndex ? "3M" : "1M";
   useEffect(() => {
     if (searchOpen) workspaceSearchRef.current?.focus();
   }, [searchOpen]);
@@ -2611,39 +2601,15 @@ function EquityWorkspace({ lang, nav, stocks, selectedId, setSelectedId, summary
   );
 }
 
-function WorkspaceDeepDive({ lang, nav, selectedId, stock, stocks, summary, egxIndex, setSelectedId }: { lang: Lang; nav: NavController; selectedId: string; stock?: Stock; stocks: Stock[]; summary: MarketSummary; egxIndex: EgxIndex; setSelectedId: (symbol: string) => void }) {
-  const [bars, setBars] = useState<OhlcBar[]>([]);
+function WorkspaceDeepDive({ lang, nav, selectedId, stock, stocks, summary, setSelectedId }: { lang: Lang; nav: NavController; selectedId: string; stock?: Stock; stocks: Stock[]; summary: MarketSummary; setSelectedId: (symbol: string) => void }) {
   const isIndex = selectedId === INDEX_SELECTION;
-  useEffect(() => {
-    if (isIndex || !stock?.symbol) {
-      setBars([]);
-      return;
-    }
-    let alive = true;
-    loadOhlcRows(stock.symbol, "3M").then((rows) => { if (alive) setBars(rows); });
-    return () => { alive = false; };
-  }, [isIndex, stock?.symbol]);
-  const closes = isIndex ? (egxIndex.history ?? []).map((point) => toNumber(point.close)).filter((value) => value > 0).slice(-66) : (bars.length > 1 ? bars.map((row) => row.close) : stock?.trend ?? []);
-  const high = closes.length ? Math.max(...closes) : undefined;
-  const low = closes.length ? Math.min(...closes) : undefined;
-  const current = isIndex ? toNumber(egxIndex.quote?.value, toNumber(summary.index_value)) : stock?.price ?? 0;
-  const momentum = closes.length > 1 && closes[0] ? ((closes[closes.length - 1] - closes[0]) / closes[0]) * 100 : (isIndex ? toNumber(egxIndex.quote?.changePercent, toNumber(summary.index_change_percent)) : stock?.changePct ?? 0);
-  const rets = closes.slice(1).map((value, index) => ((value - closes[index]) / (closes[index] || 1)) * 100);
-  const vol = rets.length ? Math.sqrt(rets.reduce((sum, value) => sum + value ** 2, 0) / rets.length) : undefined;
-  const rangePos = high !== undefined && low !== undefined && high > low ? ((current - low) / (high - low)) * 100 : undefined;
   const peers = isIndex ? [] : stocks.filter((item) => item.symbol !== stock?.symbol && item.sector === stock?.sector).sort((a, b) => b.volume - a.volume).slice(0, 4);
-  const sectorAvg = peers.length && stock ? [...peers, stock].reduce((sum, item) => sum + item.changePct, 0) / (peers.length + 1) : undefined;
-  const volumeRank = stock ? [...stocks].sort((a, b) => b.volume - a.volume).findIndex((item) => item.symbol === stock.symbol) + 1 : undefined;
-  const changeRank = stock ? [...stocks].sort((a, b) => b.changePct - a.changePct).findIndex((item) => item.symbol === stock.symbol) + 1 : undefined;
   if (isIndex) {
     return (
       <>
         <SectionHead title={lang === "ar" ? "سياق المؤشر" : "Index workspace"} />
         <div className={styles.workspaceCommandGrid}>
-          <DataStat label={lang === "ar" ? "زخم ٣ أشهر" : "3M Momentum"} value={pct(momentum, 1)} tone={momentum >= 0 ? "up" : "down"} />
-          <DataStat label={lang === "ar" ? "تذبذب يومي" : "Daily Volatility"} value={vol === undefined ? "—" : `${vol.toFixed(2)}%`} />
           <DataStat label={lang === "ar" ? "اتساع السوق" : "Breadth"} value={`${toNumber(summary.advancing)} / ${toNumber(summary.declining)}`} tone="brand" />
-          <DataStat label={lang === "ar" ? "موقع النطاق" : "Range Position"} value={rangePos === undefined ? "—" : `${rangePos.toFixed(0)}%`} />
         </div>
         <div className={styles.workspaceFeatureGrid}>
           <button onClick={() => nav.openAI("Explain EGX 30 breadth, turnover, and momentum today")}><Icon name="activity" /><b>{lang === "ar" ? "تحليل المؤشر" : "Index Brief"}</b><span>{lang === "ar" ? "زخم واتساع وقيمة تداول" : "Momentum, breadth, and turnover"}</span></button>
@@ -2655,15 +2621,6 @@ function WorkspaceDeepDive({ lang, nav, selectedId, stock, stocks, summary, egxI
   if (!stock) return <EmptyPanel text={lang === "ar" ? "اختر سهماً لعرض مساحة العمل." : "Choose a stock to populate the workspace."} />;
   return (
     <>
-      <SectionHead title={lang === "ar" ? "لوحة السهم" : "Stock cockpit"} />
-      <div className={styles.workspaceCommandGrid}>
-        <DataStat label={lang === "ar" ? "زخم ٣ أشهر" : "3M Momentum"} value={pct(momentum, 1)} tone={momentum >= 0 ? "up" : "down"} />
-        <DataStat label={lang === "ar" ? "تذبذب يومي" : "Daily Volatility"} value={vol === undefined ? "—" : `${vol.toFixed(2)}%`} />
-        <DataStat label={lang === "ar" ? "ترتيب الحجم" : "Volume Rank"} value={volumeRank ? `#${volumeRank}` : "—"} />
-        <DataStat label={lang === "ar" ? "ترتيب الأداء" : "Change Rank"} value={changeRank ? `#${changeRank}` : "—"} tone="brand" />
-        <DataStat label={lang === "ar" ? "متوسط القطاع" : "Sector Avg"} value={sectorAvg === undefined ? "—" : pct(sectorAvg, 1)} tone={sectorAvg === undefined ? undefined : sectorAvg >= 0 ? "up" : "down"} />
-        <DataStat label={lang === "ar" ? "موقع النطاق" : "Range Position"} value={rangePos === undefined ? "—" : `${rangePos.toFixed(0)}%`} />
-      </div>
       {peers.length ? (
         <>
           <SectionHead title={lang === "ar" ? "أسهم من نفس القطاع" : "Sector peers"} />
@@ -2700,7 +2657,7 @@ function MarketsScreen({ nav, lang, summary, egxIndex, stocks }: { nav: NavContr
       />
       <div className={styles.content}>
         <EquityWorkspace lang={lang} nav={nav} stocks={stocks} selectedId={selectedId} setSelectedId={setSelectedId} summary={summary} egxIndex={egxIndex} />
-        <WorkspaceDeepDive lang={lang} nav={nav} selectedId={selectedId} stock={selectedStock} stocks={stocks} summary={summary} egxIndex={egxIndex} setSelectedId={setSelectedId} />
+        <WorkspaceDeepDive lang={lang} nav={nav} selectedId={selectedId} stock={selectedStock} stocks={stocks} summary={summary} setSelectedId={setSelectedId} />
         <div style={{ height: 16 }} />
       </div>
     </>
@@ -2837,14 +2794,7 @@ function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | n
     loadOhlcRows(stock.symbol, tf).then((rows) => { if (alive) setBars(rows); });
     return () => { alive = false; };
   }, [stock?.symbol, tf]);
-  // Line series = real daily closes for the selected timeframe (falls back to the sparkline).
-  const closes = useMemo(
-    () => (bars.length > 1 ? bars.map((r) => r.close).filter((n) => Number.isFinite(n) && n > 0) : (stock?.trend ?? [])),
-    [bars, stock?.trend],
-  );
-  const periodReturn = closes.length > 1 && closes[0] ? ((closes[closes.length - 1] - closes[0]) / closes[0]) * 100 : (stock?.changePct ?? 0);
-  const periodAbs = closes.length > 1 ? Math.abs(closes[closes.length - 1] - closes[0]) : Math.abs(stock?.change ?? 0);
-  const periodUp = periodReturn >= 0;
+  // Period-return headline removed — it was computed from closes. The chart shows the source price series; the daily change (source) is shown in the quote row above.
   return (
     <AnimatePresence>
       {stock ? (
@@ -2867,11 +2817,10 @@ function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | n
             {/* Premium line chart + period selector — same design as the index/market-pulse cards */}
             <div className={styles.sheetChartCard}>
               <div className={styles.sheetChartTop}>
-                <span className={cx(styles.sheetPeriodReturn, periodUp ? styles.up : styles.down)}>{periodUp ? "▲" : "▼"} {periodAbs.toFixed(2)} · {pct(periodReturn)}</span>
                 <span className={styles.deltaChip}>{tf}</span>
               </div>
               <div className={styles.sheetChartArea}>
-                <PriceLineChart bars={bars} fallback={stock.trend} color={periodUp ? "var(--c-brand)" : "var(--c-down)"} height={172} lang={lang} />
+                <PriceLineChart bars={bars} fallback={stock.trend} color={up ? "var(--c-brand)" : "var(--c-down)"} height={172} lang={lang} />
               </div>
               <div className={styles.tfBar}>{INDEX_TF.map(([k]) => <button key={k} className={tf === k ? styles.on : undefined} onClick={() => setTf(k)}>{k}</button>)}</div>
             </div>
@@ -4061,7 +4010,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const ma200 = firstNumber(stats, ["ma_200d"]);
   const rsi = firstNumber(stats, ["rsi_14"]);
   const avgVolume20d = firstNumber(stats, ["avg_volume_20d"]);
-  const relativeVolume = avgVolume20d && stock.volume ? stock.volume / avgVolume20d : undefined;
   const price52w = firstNumber(stats, ["price_change_52w"]);
   const revenueTtm = firstNumber(stats, ["revenue_ttm"]);
   const netIncomeTtm = firstNumber(stats, ["net_income_ttm"]);
@@ -4090,16 +4038,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
     return unique.slice(0, 4);
   })();
   const related = news.filter((item) => item.symbol === stock.symbol || item.headline.toUpperCase().includes(stock.symbol)).slice(0, 3);
-  const chartCloses = bars.length > 1 ? bars.map((row) => row.close).filter((value) => Number.isFinite(value) && value > 0) : stock.trend;
-  const chartHigh = chartCloses.length ? Math.max(...chartCloses) : undefined;
-  const chartLow = chartCloses.length ? Math.min(...chartCloses) : undefined;
   const latestBar = bars[bars.length - 1];
-  const rangePct = chartHigh !== undefined && chartLow !== undefined && chartHigh > chartLow ? ((stock.price - chartLow) / (chartHigh - chartLow)) * 100 : undefined;
-  // Real price signals derived from the selected-timeframe series (no mock).
-  const tfMomentum = chartCloses.length > 1 && chartCloses[0] ? ((chartCloses[chartCloses.length - 1] - chartCloses[0]) / chartCloses[0]) * 100 : stock.changePct;
-  const tfRets = chartCloses.slice(1).map((v, i) => (v - chartCloses[i]) / (chartCloses[i] || 1));
-  const tfVol = tfRets.length ? Math.sqrt(tfRets.reduce((a, b) => a + b ** 2, 0) / tfRets.length) * 100 : undefined;
-  const tfTrendUp = chartCloses.length > 1 ? chartCloses[chartCloses.length - 1] >= chartCloses[0] : stock.changePct >= 0;
   const on = wl.has(stock.symbol);
   const up = stock.changePct >= 0;
 
@@ -4132,7 +4071,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
   const targetAvg = optionalNumber(estimates.target_average);
   const targetLow = optionalNumber(estimates.target_low);
   const targetHigh = optionalNumber(estimates.target_high);
-  const targetUpside = targetAvg !== undefined && stock.price > 0 ? ((targetAvg - stock.price) / stock.price) * 100 : undefined;
   const recBuySide = toNumber(estimates.rec_buy) + toNumber(estimates.rec_over);
   const recHold = toNumber(estimates.rec_hold);
   const recSellSide = toNumber(estimates.rec_sell) + toNumber(estimates.rec_under);
@@ -4234,23 +4172,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
         </div>
         {tab === "overview" && (
           <>
-            <SectionHead title={lang === "ar" ? "إشارات السعر" : "Price Signals"} />
-            <div className={styles.statGrid}>
-              <DataStat label={lang === "ar" ? `زخم ${tf}` : `${tf} Momentum`} value={`${tfMomentum >= 0 ? "+" : ""}${tfMomentum.toFixed(1)}%`} tone={tfMomentum >= 0 ? "up" : "down"} />
-              <DataStat label={lang === "ar" ? "التذبذب" : "Volatility"} value={tfVol === undefined ? "—" : `${tfVol.toFixed(1)}%`} />
-              <DataStat label={lang === "ar" ? "موقع النطاق" : "Range Position"} value={rangePct === undefined ? "—" : `${rangePct.toFixed(0)}%`} tone="brand" />
-              <DataStat label={lang === "ar" ? "الاتجاه" : "Trend"} value={chartCloses.length > 1 ? (tfTrendUp ? (lang === "ar" ? "صاعد" : "Uptrend") : (lang === "ar" ? "هابط" : "Downtrend")) : "—"} tone={tfTrendUp ? "up" : "down"} />
-            </div>
-            {rangePct !== undefined ? (
-              <div className={styles.rangeBar}>
-                <div className={styles.ends}>
-                  <span>{lang === "ar" ? `أدنى ${tf}` : `${tf} Low`} <b>{chartLow?.toFixed(2)}</b></span>
-                  <span>{lang === "ar" ? `أعلى ${tf}` : `${tf} High`} <b>{chartHigh?.toFixed(2)}</b></span>
-                </div>
-                <div className={styles.rangeTrack}><i style={{ width: `${Math.max(0, Math.min(100, rangePct)).toFixed(0)}%` }} /><b style={{ left: `${Math.max(0, Math.min(100, rangePct)).toFixed(0)}%` }} /></div>
-                <p className={styles.rangeNote}>{lang === "ar" ? `السعر الحالي عند ${rangePct.toFixed(1)}% من نطاق ${tf}.` : `Current price is at ${rangePct.toFixed(1)}% of the ${tf} range.`}</p>
-              </div>
-            ) : null}
             <div className={styles.companyMetricPanel}>
               <div className={styles.panelTitle}>
                 <strong>{lang === "ar" ? "مؤشرات التداول" : "Trading snapshot"}</strong>
@@ -4260,7 +4181,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                 <DataStat label={lang === "ar" ? "متوسط ٥٠ يوم" : "50D MA"} value={ma50 ? `${ma50.toFixed(2)} ${currency}` : "—"} />
                 <DataStat label={lang === "ar" ? "متوسط ٢٠٠ يوم" : "200D MA"} value={ma200 ? `${ma200.toFixed(2)} ${currency}` : "—"} />
                 <DataStat label="RSI 14" value={rsi ? rsi.toFixed(1) : "—"} tone={rsi && rsi > 70 ? "down" : rsi && rsi < 30 ? "up" : undefined} />
-                <DataStat label={lang === "ar" ? "الحجم النسبي" : "Rel. Volume"} value={relativeVolume ? `${relativeVolume.toFixed(2)}x` : "—"} />
                 <DataStat label={lang === "ar" ? "عائد ٥٢ أسبوع" : "52W Return"} value={pctRatio(price52w)} tone={price52w === undefined ? undefined : price52w >= 0 ? "up" : "down"} />
                 <DataStat label={lang === "ar" ? "متوسط الحجم" : "Avg Vol 20D"} value={avgVolume20d ? compact(avgVolume20d, lang) : "—"} />
               </div>
@@ -4394,23 +4314,9 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
               <>
                 <div className={styles.statGrid}>
                   <DataStat label={lang === "ar" ? "متوسط الهدف" : "Avg Target"} value={targetAvg !== undefined ? `${currency} ${targetAvg.toFixed(2)}` : "—"} tone="brand" />
-                  <DataStat label={lang === "ar" ? "الصعود المحتمل" : "Upside"} value={targetUpside === undefined ? "—" : `${targetUpside >= 0 ? "+" : ""}${targetUpside.toFixed(1)}%`} tone={targetUpside === undefined ? undefined : targetUpside >= 0 ? "up" : "down"} />
                   <DataStat label={lang === "ar" ? "أدنى هدف" : "Low Target"} value={targetLow !== undefined ? `${currency} ${targetLow.toFixed(2)}` : "—"} />
                   <DataStat label={lang === "ar" ? "أعلى هدف" : "High Target"} value={targetHigh !== undefined ? `${currency} ${targetHigh.toFixed(2)}` : "—"} />
                 </div>
-                {targetAvg !== undefined && targetHigh !== undefined && targetLow !== undefined && targetHigh > targetLow ? (
-                  <div className={styles.rangeBar}>
-                    <div className={styles.ends}>
-                      <span>{lang === "ar" ? "أدنى" : "Low"} <b>{targetLow.toFixed(2)}</b></span>
-                      <span>{lang === "ar" ? "أعلى" : "High"} <b>{targetHigh.toFixed(2)}</b></span>
-                    </div>
-                    <div className={styles.rangeTrack}>
-                      <i style={{ width: `${Math.max(0, Math.min(100, ((stock.price - targetLow) / (targetHigh - targetLow)) * 100)).toFixed(0)}%` }} />
-                      <b style={{ left: `${Math.max(0, Math.min(100, ((targetAvg - targetLow) / (targetHigh - targetLow)) * 100)).toFixed(0)}%` }} />
-                    </div>
-                    <p className={styles.rangeNote}>{lang === "ar" ? `متوسط هدف المحللين ${targetAvg.toFixed(2)} ${currency} مقابل السعر الحالي ${stock.price.toFixed(2)}.` : `Analyst average target ${targetAvg.toFixed(2)} ${currency} vs current ${stock.price.toFixed(2)}.`}</p>
-                  </div>
-                ) : null}
                 <div className={styles.companyMetricPanel}>
                   <div className={styles.panelTitle}>
                     <strong>{lang === "ar" ? "توصيات المحللين" : "Analyst Ratings"}</strong>

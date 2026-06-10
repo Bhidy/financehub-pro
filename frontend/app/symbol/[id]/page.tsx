@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useRef, useEffect } from "react";
 import {
     fetchTickers, fetchOHLC, fetchFinancials, fetchShareholders,
-    fetchCorporateActions, fetchFairValues, fetchIntraday,
+    fetchCorporateActions, fetchIntraday,
     fetchYahooProfile, fetchLocalCompanyProfile, fetchNews, Ticker,
     fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxSeasonals, fetchEgxNewsTV
 } from "@/lib/api";
@@ -19,11 +19,11 @@ import {
 
 import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
-    FileText, ArrowUpRight, ArrowDownRight, Activity,
+    FileText, Activity,
     Target, Zap, PieChart, AlertCircle, Wallet,
-    Briefcase, Calendar, ArrowUp, ArrowDown, Globe, Award, Landmark, CheckCircle, ShieldAlert,
+    Briefcase, Calendar, ArrowUp, ArrowDown, Globe, Award, Landmark, CheckCircle,
     DollarSign, Newspaper, ChevronRight, TrendingDown as TrendDown, Info,
-    ExternalLink, BookOpen, Star, Gauge, Crosshair, Minus, Maximize2
+    ExternalLink, BookOpen, Gauge, Crosshair, Minus, Maximize2
 } from "lucide-react";
 import { TradingViewChartModal } from "@/components/TradingViewChartModal";
 import { useTheme } from "@/components/ThemeProvider";
@@ -237,12 +237,6 @@ function pct(val: number | null | undefined, decimals = 2): string {
     return `${scaled >= 0 ? "" : ""}${scaled.toFixed(decimals)}%`;
 }
 
-function yoyDelta(curr: number | null, prev: number | null): string {
-    if (!curr || !prev || prev === 0) return "-";
-    const delta = ((curr - prev) / Math.abs(prev)) * 100;
-    return `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}%`;
-}
-
 // ─── METRIC CARD COMPONENT ──────────────────────────────────────────────────
 function MetricCard({ label, value, icon: Icon, color, subtitle }: {
     label: string; value: string; icon: any; color: string; subtitle?: string;
@@ -450,13 +444,11 @@ function MiniBarChart({ title, data, color, currency, lang }: {
         if (a >= 1e6) return `${(v / 1e6).toFixed(0)}M`;
         return v.toFixed(1);
     };
-    const last = pts[pts.length - 1], prev = pts[pts.length - 2];
-    const growth = prev && prev.value !== 0 ? ((last.value - prev.value) / Math.abs(prev.value)) * 100 : null;
+    const last = pts[pts.length - 1];
     return (
         <div className="premium-glass rounded-3xl p-6">
             <div className="flex items-baseline justify-between mb-1">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{title}</p>
-                {growth != null && <span className={`text-xs font-extrabold ${growth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>{growth >= 0 ? "+" : ""}{growth.toFixed(1)}% YoY</span>}
             </div>
             <p className="text-2xl font-extrabold mb-3" style={{ color }}>{currency} {fmt(last.value)}</p>
             <div className="flex items-end gap-[3px] h-24" dir="ltr">
@@ -615,10 +607,6 @@ export default function SymbolDetailPage() {
         queryKey: ["corporate-actions", symbol], queryFn: () => fetchCorporateActions(symbol), enabled: !!symbol
     });
 
-    const { data: allFairValues = [] } = useQuery({
-        queryKey: ["fair-values", symbol], queryFn: () => fetchFairValues(symbol), enabled: !!symbol
-    });
-
     const { data: newsData = [] } = useQuery({
         queryKey: ["news-tv", symbol, lang],
         queryFn: () => fetchEgxNewsTV(symbol, lang),
@@ -658,10 +646,6 @@ export default function SymbolDetailPage() {
         enabled: !!symbol && isEgx, staleTime: 300000
     });
     const [techTf, setTechTf] = useState<"60" | "240" | "1D" | "1W">("1D");
-
-    const fairValues = useMemo(() =>
-        Array.isArray(allFairValues) ? allFairValues.filter((f: any) => f.symbol === symbol) : [],
-        [allFairValues, symbol]);
 
     const dividendActions = useMemo(() => {
         const arr = Array.isArray(corporateActions) ? corporateActions : [];
@@ -870,9 +854,7 @@ export default function SymbolDetailPage() {
     const ocfTtm = useMemo(() => Number(stats.ocf_ttm || 0), [stats]);
     const forwardPe = useMemo(() => Number(stats.forward_pe || 0), [stats]);
     const pTbv = useMemo(() => Number(stats.p_tbv || 0), [stats]);
-    const revenueGrowth = useMemo(() => stats.revenue_growth != null ? Number(stats.revenue_growth) : null, [stats]);
-    const epsGrowth = useMemo(() => stats.eps_growth != null ? Number(stats.eps_growth) : null, [stats]);
-    const profitGrowth = useMemo(() => stats.profit_growth != null ? Number(stats.profit_growth) : null, [stats]);
+    // Growth metrics were system-computed and have been removed under the source-only display policy.
 
     // tooltip
     useEffect(() => {
@@ -1005,13 +987,13 @@ export default function SymbolDetailPage() {
     const rawChange = Number((stockData as any).change || 0);
     const rawChangePercent = Number((stockData as any).change_percent || 0);
 
-    const lastPrice = chartStats?.current?.close && chartStats.current.close > 0 ? chartStats.current.close : rawLastPrice;
-    const change = chartStats ? chartStats.change : rawChange;
-    const changePercent = chartStats ? chartStats.changePercent : rawChangePercent;
+    // Source-of-truth: show the exchange feed's own price/change; only fall back to chart-derived values when the feed lacks them.
+    const lastPrice = rawLastPrice > 0 ? rawLastPrice : (chartStats?.current?.close || 0);
+    const change = (stockData as any).change != null ? rawChange : (chartStats?.change ?? 0);
+    const changePercent = (stockData as any).change_percent != null ? rawChangePercent : (chartStats?.changePercent ?? 0);
     const isPositive = change >= 0;
     const volume = Number((stockData as any)?.volume || 0);
     const loading = chartLoading;
-    const relativeVolume = avgVolume20d > 0 ? volume / avgVolume20d : 0;
 
     const TABS: { id: TabId; label: string; icon: any }[] = [
         { id: "overview", label: t.tab_overview, icon: Activity },
@@ -1272,7 +1254,6 @@ export default function SymbolDetailPage() {
                                     const hasE = tvEstimates?.covered && Number(tvEstimates.target_average) > 0;
                                     if (!hasT && !hasE) return null;
                                     const m = recMeta(dt?.recommend_all);
-                                    const up = hasE && lastPrice > 0 ? ((Number(tvEstimates.target_average) - lastPrice) / lastPrice) * 100 : null;
                                     return (
                                         <div className="premium-glass rounded-3xl p-5 flex flex-wrap items-center gap-x-8 gap-y-3">
                                             {hasT && (
@@ -1286,38 +1267,14 @@ export default function SymbolDetailPage() {
                                                 <button onClick={() => setActiveTab("technicals")} className="flex items-center gap-3 group">
                                                     <Crosshair className="w-5 h-5 text-[#14b8a6]" />
                                                     <div className="text-left rtl:text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{lang === "ar" ? "هدف المحللين" : "Analyst Target"}</p>
-                                                        <p className="font-extrabold group-hover:underline">{currency} {Number(tvEstimates.target_average).toFixed(2)} {up != null && <span className={up >= 0 ? "text-emerald-500" : "text-rose-500"}>({up >= 0 ? "+" : ""}{up.toFixed(1)}%)</span>}</p></div>
+                                                        <p className="font-extrabold group-hover:underline">{currency} {Number(tvEstimates.target_average).toFixed(2)}</p></div>
                                                 </button>
                                             )}
                                         </div>
                                     );
                                 })()}
 
-                                {/* Technical Momentum */}
-                                {stats && (stats.ma_50d || stats.ma_200d || stats.rsi_14) && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={Activity} title={t.technical_momentum} />
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <MetricCard label={t.ma_50d} value={stats.ma_50d ? formatCurrency(stats.ma_50d, currency) : "-"} icon={TrendingUp} color="text-[#14b8a6]" />
-                                            <MetricCard label={t.ma_200d} value={stats.ma_200d ? formatCurrency(stats.ma_200d, currency) : "-"} icon={TrendingUp} color="text-blue-500" />
-                                            <MetricCard label={t.rsi_14}
-                                                value={stats.rsi_14 ? `${Number(stats.rsi_14).toFixed(1)}` : "-"}
-                                                icon={Target}
-                                                color={stats.rsi_14 > 70 ? "text-rose-500" : stats.rsi_14 < 30 ? "text-emerald-500" : "text-amber-500"}
-                                                subtitle={stats.rsi_14 > 70 ? "Overbought" : stats.rsi_14 < 30 ? "Oversold" : "Neutral"} />
-                                            <MetricCard label={lang === "ar" ? "عائد ٥٢ أسبوع" : "52W Return"}
-                                                value={stats.price_change_52w ? `${stats.price_change_52w >= 0 ? "+" : ""}${(stats.price_change_52w * 100).toFixed(1)}%` : "-"}
-                                                icon={Activity}
-                                                color={stats.price_change_52w >= 0 ? "text-emerald-500" : "text-rose-500"} />
-                                        </div>
-                                        {/* Additional Technical Row */}
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                            <MetricCard label={t.avg_vol_20d} value={avgVolume20d > 0 ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(avgVolume20d) : "-"} icon={BarChart3} color="text-slate-400" />
-                                            <MetricCard label={t.rel_vol} value={relativeVolume > 0 ? `${relativeVolume.toFixed(2)}x` : "-"} icon={BarChart3} color={relativeVolume > 1.5 ? "text-amber-500" : "text-slate-400"} subtitle={relativeVolume > 2 ? "High Activity" : relativeVolume > 0 && relativeVolume < 0.5 ? "Low Activity" : undefined} />
-                                            <MetricCard label={lang === "ar" ? "الحجم اليومي" : "Today Volume"} value={volume > 0 ? volume.toLocaleString() : "-"} icon={BarChart3} color="text-[#14b8a6]" />
-                                        </div>
-                                    </div>
-                                )}
+                                {/* Technical Momentum card removed — house-computed MA/RSI/52W-return/relative-volume duplicated the attributed TradingView technicals tab; source-only policy. */}
 
                                 {/* Key Metrics expanded */}
                                 <div className="premium-glass rounded-3xl p-8">
@@ -1351,32 +1308,7 @@ export default function SymbolDetailPage() {
                                     </div>
                                 )}
 
-                                {/* Fair Value Comparison (conditional — only when data exists) */}
-                                {fairValues.length > 0 && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={Star} title={t.fair_value_models} color="text-amber-500" />
-                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-5">
-                                            {lang === "ar" ? "نماذج التقييم الداخلي المستقل" : "Independent internal valuation models"}
-                                            {fairValues[0]?.valuation_date && ` · ${new Date(fairValues[0].valuation_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { month: "short", year: "numeric" })}`}
-                                        </p>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            {fairValues.map((fv: any, i: number) => {
-                                                const upside = Number(fv.upside_percent || 0);
-                                                const isUp = upside >= 0;
-                                                return (
-                                                    <div key={i} className={`p-5 rounded-2xl border ${isUp ? "bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-500/20" : "bg-rose-50/50 dark:bg-rose-500/5 border-rose-500/20"}`}>
-                                                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{fv.valuation_model}</p>
-                                                        <p className="text-2xl font-black tabular">{currency} {Number(fv.fair_value).toFixed(2)}</p>
-                                                        <div className={`flex items-center gap-1 mt-2 text-sm font-bold ${isUp ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                                                            {isUp ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                                                            <span>{isUp ? "+" : ""}{upside.toFixed(1)}% {lang === "ar" ? "من السعر الحالي" : "vs current price"}</span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
+                                {/* Internal valuation models (DCF / DDM / P-E target + "% vs current price") removed — house-generated price targets are model opinion, not source data. */}
                             </>
                         )}
 
@@ -1434,12 +1366,10 @@ export default function SymbolDetailPage() {
                                                         <th className="py-4 px-4 min-w-[120px]">{lang === "ar" ? "إجمالي الأصول" : "Total Assets"}</th>
                                                         <th className="py-4 px-4 min-w-[110px]">{lang === "ar" ? "إجمالي الديون" : "Total Debt"}</th>
                                                         <th className="py-4 px-4 min-w-[80px]">{lang === "ar" ? "التوزيع" : "DPS"}</th>
-                                                        <th className="py-4 px-4 min-w-[80px] text-amber-500">{t.yoy_change}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {yrs.map((f: any, i: number) => {
-                                                        const prevF = yrs[i + 1];
+                                                    {yrs.map((f: any) => {
                                                         return (
                                                             <tr key={f.fiscal_year} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold text-sm text-right">
                                                                 <td className="py-5 px-4 text-left text-slate-850 dark:text-white whitespace-nowrap">FY {f.fiscal_year}</td>
@@ -1452,7 +1382,6 @@ export default function SymbolDetailPage() {
                                                                 <td className="py-5 px-4 tabular text-slate-800 dark:text-slate-200">{col(f.total_assets)}</td>
                                                                 <td className="py-5 px-4 tabular text-rose-500/80">{col(f.total_debt)}</td>
                                                                 <td className="py-5 px-4 tabular text-amber-600 dark:text-amber-400">{ps(f.dps)}</td>
-                                                                <td className={`py-5 px-4 tabular text-xs ${yoyDelta(f.net_income, prevF?.net_income).startsWith("+") ? "text-emerald-500" : "text-rose-500"}`}>{yoyDelta(f.net_income, prevF?.net_income)}</td>
                                                             </tr>
                                                         );
                                                     })}
@@ -1581,21 +1510,7 @@ export default function SymbolDetailPage() {
                                             <span className="text-[11px] font-bold text-slate-400">{lang === "ar" ? "محسوب من سجل الأسعار" : "Computed from price history"}</span>
                                         </div>
                                         <SeasonalChart months={tvSeasonals.months} />
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                                            {(() => {
-                                                const wd = (tvSeasonals.months || []).filter((m: any) => m.avg_return != null);
-                                                if (wd.length === 0) return null;
-                                                const best = [...wd].sort((a: any, b: any) => b.avg_return - a.avg_return)[0];
-                                                const worst = [...wd].sort((a: any, b: any) => a.avg_return - b.avg_return)[0];
-                                                const cons = [...wd].sort((a: any, b: any) => (b.positive_rate ?? 0) - (a.positive_rate ?? 0))[0];
-                                                return (<>
-                                                    <MetricCard label={lang === "ar" ? "أفضل شهر" : "Best Month"} value={`${best.label} +${best.avg_return.toFixed(1)}%`} icon={TrendingUp} color="text-emerald-500" />
-                                                    <MetricCard label={lang === "ar" ? "أضعف شهر" : "Weakest Month"} value={`${worst.label} ${worst.avg_return.toFixed(1)}%`} icon={TrendDown} color="text-rose-500" />
-                                                    <MetricCard label={lang === "ar" ? "الأكثر اتساقًا" : "Most Consistent"} value={`${cons.label} · ${cons.positive_rate}%`} icon={CheckCircle} color="text-[#14b8a6]" subtitle={lang === "ar" ? "نسبة الأشهر الإيجابية" : "positive rate"} />
-                                                    <MetricCard label={lang === "ar" ? "سنوات البيانات" : "Years of Data"} value={`${tvSeasonals.years_covered}`} icon={Calendar} color="text-slate-400" />
-                                                </>);
-                                            })()}
-                                        </div>
+                                        {/* Best/Weakest/Most-Consistent ranking removed — those were derived by sorting the source data ourselves. The chart shows the source values as-is. */}
                                         <p className="text-[11px] text-slate-400 mt-6">{lang === "ar" ? "الأنماط الموسمية السابقة لا تضمن النتائج المستقبلية." : "Past seasonal patterns do not guarantee future results."}</p>
                                     </div>
                                 ) : (
@@ -1625,7 +1540,6 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={lang === "ar" ? "EV/EBITDA" : "EV / EBITDA"} value={evToEbitda > 0 ? evToEbitda.toFixed(2) : "-"} icon={Landmark} color="text-indigo-600" />
                                         <MetricCard label={t.earnings_yield} value={earningsYield !== 0 ? pct(earningsYield) : "-"} icon={Target} color="text-emerald-500" />
                                         <MetricCard label={t.eps_ttm} value={trailingEps !== 0 ? `${currency} ${trailingEps.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
-                                        <MetricCard label={t.forward_eps} value={forwardPe > 0 && lastPrice > 0 ? `${currency} ${(lastPrice / forwardPe).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-400" />
                                     </div>
                                 </div>
 
@@ -1651,7 +1565,6 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.effective_tax} value={effectiveTaxRate !== 0 ? pct(effectiveTaxRate) : "-"} icon={FileText} color="text-slate-400" />
                                         <MetricCard label={t.roe} value={roe !== 0 ? pct(roe) : "-"} icon={CheckCircle} color="text-teal-500" />
                                         <MetricCard label={t.roa} value={roa !== 0 ? pct(roa) : "-"} icon={Activity} color="text-purple-500" />
-                                        {isBank && <MetricCard label={lang === "ar" ? "صافي هامش الفائدة" : "Net Interest Margin"} value={latestAnnualStatement?.net_interest_income && latestAnnualStatement?.revenue ? pct(latestAnnualStatement.net_interest_income / latestAnnualStatement.revenue) : "-"} icon={BarChart3} color="text-cyan-500" />}
                                         <MetricCard label={t.revenue_ttm} value={revenueTtm > 0 ? formatCurrency(revenueTtm, currency) : "-"} icon={BarChart3} color="text-teal-500" />
                                         <MetricCard label={t.net_income_ttm} value={netIncomeTtm > 0 ? formatCurrency(netIncomeTtm, currency) : "-"} icon={Award} color="text-emerald-500" />
                                     </div>
@@ -1679,7 +1592,7 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.div_yield} value={dividendYield > 0 ? pct(dividendYield) : "-"} icon={Wallet} color="text-emerald-500" />
                                         <MetricCard label={t.dps} value={dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : "-"} icon={Wallet} color="text-teal-500" />
                                         <MetricCard label={t.payout_ratio} value={payoutRatio > 0 ? pct(payoutRatio) : "-"} icon={FileText} color="text-amber-500" />
-                                        <MetricCard label={t.beta} value={betaValue !== 0 ? betaValue.toFixed(2) : "-"} icon={Activity} color="text-rose-500" subtitle={betaValue > 1 ? "Higher than market" : betaValue > 0 ? "Lower than market" : undefined} />
+                                        <MetricCard label={t.beta} value={betaValue !== 0 ? betaValue.toFixed(2) : "-"} icon={Activity} color="text-rose-500" />
                                         <MetricCard label={t.outstanding} value={sharesOutstanding > 0 ? formatNumber(sharesOutstanding) : "-"} icon={Users} color="text-blue-500" />
                                         <MetricCard label={t.float_shares} value={floatShares > 0 ? formatNumber(floatShares) : "-"} icon={Users} color="text-indigo-500" />
                                         <MetricCard label={t.institutional_ownership} value={institutionalOwnership > 0 ? `${(institutionalOwnership * 100).toFixed(1)}%` : "-"} icon={Briefcase} color="text-indigo-500" />
@@ -1731,7 +1644,7 @@ export default function SymbolDetailPage() {
                                                 </div>
                                                 <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-500/5 border border-teal-200 dark:border-teal-500/20 text-center">
                                                     <p className="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1">{t.div_yield}</p>
-                                                    <p className="text-xl font-black text-teal-700 dark:text-teal-300 tabular">{dividendYield > 0 ? pct(dividendYield) : lastPrice > 0 && dividendRate > 0 ? pct(dividendRate / lastPrice) : "-"}</p>
+                                                    <p className="text-xl font-black text-teal-700 dark:text-teal-300 tabular">{dividendYield > 0 ? pct(dividendYield) : "-"}</p>
                                                 </div>
                                                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 text-center">
                                                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{lang === "ar" ? "عدد التوزيعات" : "Total Records"}</p>
@@ -1744,14 +1657,12 @@ export default function SymbolDetailPage() {
                                                         <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider">
                                                             <th className="text-left py-3 px-4">{lang === "ar" ? "تاريخ الاستحقاق" : "Ex-Date"}</th>
                                                             <th className="text-right py-3 px-4">{lang === "ar" ? "مبلغ التوزيع" : "Amount"}</th>
-                                                            <th className="text-right py-3 px-4">{lang === "ar" ? "العائد التقريبي" : "Approx. Yield"}</th>
                                                             <th className="text-right py-3 px-4">{lang === "ar" ? "تاريخ الدفع" : "Pay Date"}</th>
                                                             <th className="text-left py-3 px-4">{lang === "ar" ? "الوصف" : "Description"}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {dividendActions.map((a: any, i: number) => {
-                                                            const approxYield = lastPrice > 0 && a.amount ? ((Number(a.amount) / lastPrice) * 100).toFixed(2) : null;
                                                             return (
                                                                 <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold">
                                                                     <td className="py-4 px-4 text-left">
@@ -1760,9 +1671,6 @@ export default function SymbolDetailPage() {
                                                                     </td>
                                                                     <td className="py-4 px-4 text-right text-emerald-600 dark:text-emerald-400 tabular text-base font-black">
                                                                         {a.amount ? `${a.currency || currency} ${Number(a.amount).toFixed(4)}` : "-"}
-                                                                    </td>
-                                                                    <td className="py-4 px-4 text-right tabular text-slate-500">
-                                                                        {approxYield ? `${approxYield}%` : "-"}
                                                                     </td>
                                                                     <td className="py-4 px-4 text-right tabular text-slate-500">
                                                                         {a.payment_date ? new Date(a.payment_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { day: "numeric", month: "short" }) : "-"}
@@ -1808,47 +1716,7 @@ export default function SymbolDetailPage() {
                                     </div>
                                 )}
 
-                                {/* Fair Value Models (conditional) */}
-                                {fairValues.length > 0 && (
-                                    <div className="premium-glass rounded-3xl p-8">
-                                        <SectionHeader icon={Star} title={t.fair_value_models} color="text-amber-500" />
-                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider -mt-3 mb-6">
-                                            {lang === "ar" ? "نماذج التقييم الداخلي" : "Internal independent valuation models"}
-                                            {fairValues[0]?.valuation_date && ` · ${new Date(fairValues[0].valuation_date).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { month: "long", year: "numeric" })}`}
-                                        </p>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                                                        <th className="text-left py-3 px-4">{lang === "ar" ? "نموذج التقييم" : "Valuation Model"}</th>
-                                                        <th className="text-right py-3 px-4">{lang === "ar" ? "القيمة العادلة" : "Fair Value"}</th>
-                                                        <th className="text-right py-3 px-4">{lang === "ar" ? "السعر الحالي" : "Current Price"}</th>
-                                                        <th className="text-right py-3 px-4">{lang === "ar" ? "الصعود المحتمل" : "Upside / Downside"}</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {fairValues.map((fv: any, i: number) => {
-                                                        const upside = Number(fv.upside_percent || 0);
-                                                        const isUp = upside >= 0;
-                                                        return (
-                                                            <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all font-bold">
-                                                                <td className="py-4 px-4 text-left font-extrabold">{fv.valuation_model}</td>
-                                                                <td className="py-4 px-4 text-right tabular text-lg font-black text-[#14b8a6]">{currency} {Number(fv.fair_value).toFixed(2)}</td>
-                                                                <td className="py-4 px-4 text-right tabular text-slate-500">{currency} {Number(fv.current_price || lastPrice).toFixed(2)}</td>
-                                                                <td className={`py-4 px-4 text-right tabular font-black ${isUp ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                                                                    <span className={`flex items-center justify-end gap-1 ${isUp ? "" : ""}`}>
-                                                                        {isUp ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                                                                        {isUp ? "+" : ""}{upside.toFixed(1)}%
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                )}
+                                {/* Internal valuation-model table (Fair Value / Current Price / Upside) removed — house-generated price targets are not source data. */}
                             </div>
                         )}
 
@@ -2035,8 +1903,7 @@ export default function SymbolDetailPage() {
                                     { l: lang === "ar" ? "التغير اليومي" : "Daily Change", v: Math.abs(change) >= 0.005 ? `${isPositive ? "+" : ""}${change.toFixed(2)} (${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)` : `(${isPositive ? "+" : ""}${changePercent.toFixed(2)}%)`, c: isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
                                     { l: lang === "ar" ? "حجم التداول" : "Volume", v: volume.toLocaleString(), c: "text-slate-700 dark:text-slate-350" },
                                     { l: lang === "ar" ? "متوسط الحجم ٢٠ي" : "Avg Vol 20D", v: avgVolume20d > 0 ? new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(avgVolume20d) : "-", c: "text-slate-600 dark:text-slate-400" },
-                                    { l: lang === "ar" ? "أعلى ٥٢ أسبوع" : "52W High", v: chartStats?.high52 ? `${currency} ${chartStats.high52.toFixed(2)}` : "-", c: "text-emerald-600 dark:text-emerald-400" },
-                                    { l: lang === "ar" ? "أدنى ٥٢ أسبوع" : "52W Low", v: chartStats?.low52 ? `${currency} ${chartStats.low52.toFixed(2)}` : "-", c: "text-rose-600 dark:text-rose-400" },
+                                    // 52W High/Low removed — these were Math.max/min over the loaded candles (our calc, mislabeled as 52-week) with no source 52-week field to re-point to.
                                     { l: lang === "ar" ? "السوق المالي" : "Exchange", v: marketName.toUpperCase(), c: "text-[#14b8a6]" },
                                     { l: lang === "ar" ? "القطاع" : "Sector", v: industry || "-", c: "text-slate-600 dark:text-slate-400" },
                                 ].map((item, i) => (
@@ -2074,28 +1941,7 @@ export default function SymbolDetailPage() {
                             </div>
                         )}
 
-                        {/* Fair Value Quick Card */}
-                        {fairValues.length > 0 && (
-                            <div className="premium-glass rounded-3xl p-6">
-                                <h4 className="text-lg font-black flex items-center gap-2 mb-4">
-                                    <Star className="w-5 h-5 text-amber-500" /> {t.fair_value}
-                                </h4>
-                                <div className="space-y-3">
-                                    {fairValues.map((fv: any, i: number) => {
-                                        const upside = Number(fv.upside_percent || 0);
-                                        return (
-                                            <div key={i} className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
-                                                <span className="text-slate-400 text-xs font-bold truncate">{fv.valuation_model}</span>
-                                                <span className={`tabular text-xs font-black ${upside >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                    {currency} {Number(fv.fair_value).toFixed(0)} ({upside >= 0 ? "+" : ""}{upside.toFixed(0)}%)
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <p className="text-[10px] text-slate-400 font-medium mt-3">{lang === "ar" ? "نماذج تقييم داخلية. ليست توصية." : "Internal models only. Not investment advice."}</p>
-                            </div>
-                        )}
+                        {/* Fair Value quick card removed — internal valuation models are house opinion, not source data. */}
 
                         {/* Ownership Quick Card */}
                         {(institutionalOwnership > 0 || insiderOwnership > 0 || (Array.isArray(shareholders) && shareholders.length > 0)) && (
@@ -2163,85 +2009,7 @@ export default function SymbolDetailPage() {
                                 </div>
                             </div>
                         )}
-                        {/* Financial Quality Scores & Growth Metrics (shown only on Ratios & Risk tab) */}
-                        {activeTab === "ratios" && (
-                            <>
-                                {/* Financial Quality Scores Card */}
-                                {stats && (stats.piotroski_f_score !== undefined || stats.altman_z_score !== null) && (
-                                    <div className="premium-glass rounded-3xl p-6">
-                                        <h4 className="text-lg font-black flex items-center gap-2 mb-4">
-                                            <ShieldAlert className="w-5 h-5 text-teal-500" /> {lang === "ar" ? "مؤشرات الجودة المالية" : "Financial Quality Scores"}
-                                        </h4>
-                                        <div className="space-y-3 font-bold text-sm">
-                                            {stats.piotroski_f_score !== undefined && (
-                                                <div className="py-2.5 border-b border-slate-200/50 dark:border-slate-800/50">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="text-slate-400 text-xs">{t.piotroski_score}</span>
-                                                        <span className={`tabular text-xs font-black px-2 py-0.5 rounded-md ${stats.piotroski_f_score >= 6 ? "bg-emerald-500/10 text-emerald-400" : stats.piotroski_f_score <= 3 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
-                                                            {stats.piotroski_f_score} / 9
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-[10px] text-slate-400 font-medium">
-                                                        {stats.piotroski_f_score >= 6 ? "Strong" : stats.piotroski_f_score <= 3 ? "Weak" : "Moderate"} • {lang === "ar" ? "جودة المحاسبة الإجمالية" : "Overall accounting quality"}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {stats.altman_z_score !== undefined && stats.altman_z_score !== null && (
-                                                <div className="py-2.5 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="text-slate-400 text-xs">{t.altman_z_score}</span>
-                                                        <span className={`tabular text-xs font-black px-2 py-0.5 rounded-md ${stats.altman_z_score > 2.9 ? "bg-emerald-500/10 text-emerald-400" : stats.altman_z_score < 1.1 ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
-                                                            {Number(stats.altman_z_score).toFixed(2)}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-[10px] text-slate-400 font-medium">
-                                                        {stats.altman_z_score > 2.9 ? "Safe Zone" : stats.altman_z_score < 1.1 ? "Distress Zone" : "Grey Zone"} • {lang === "ar" ? "احتمالية الضائقة المالية" : "Distress probability"}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Growth Metrics Card */}
-                                {(revenueGrowth !== null || epsGrowth !== null || profitGrowth !== null) && (
-                                    <div className="premium-glass rounded-3xl p-6">
-                                        <h4 className="text-lg font-black flex items-center gap-2 mb-4">
-                                            <TrendingUp className="w-5 h-5 text-teal-500" /> {t.growth_metrics}
-                                        </h4>
-                                        <div className="p-3 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-xl mb-4 text-[10px] font-bold text-amber-750 dark:text-amber-400">
-                                            {lang === "ar" ? "بيانات النمو محتسبة برمجياً." : "Figures system-computed. Verify with filings."}
-                                        </div>
-                                        <div className="space-y-3 font-bold text-sm">
-                                            {revenueGrowth !== null && (
-                                                <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
-                                                    <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو الإيرادات (سنوي)" : "Revenue Growth (YoY)"}</span>
-                                                    <span className={`tabular text-xs font-black ${revenueGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                        {revenueGrowth >= 0 ? "+" : ""}{revenueGrowth.toFixed(1)}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {epsGrowth !== null && (
-                                                <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50">
-                                                    <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو ربحية السهم" : "EPS Growth (YoY)"}</span>
-                                                    <span className={`tabular text-xs font-black ${epsGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                        {epsGrowth >= 0 ? "+" : ""}{epsGrowth.toFixed(1)}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {profitGrowth !== null && (
-                                                <div className="flex justify-between items-center py-2 border-b border-slate-200/50 dark:border-slate-800/50 last:border-0">
-                                                    <span className="text-slate-400 text-xs">{lang === "ar" ? "نمو الأرباح" : "Profit Growth (YoY)"}</span>
-                                                    <span className={`tabular text-xs font-black ${profitGrowth >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
-                                                        {profitGrowth >= 0 ? "+" : ""}{profitGrowth.toFixed(1)}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
+                        {/* Financial Quality Scores (Piotroski F / Altman Z) and Growth Metrics removed — both were house-computed scores/figures with their own threshold verdicts, not source data. */}
                     </div>
                 </div>
             </div>

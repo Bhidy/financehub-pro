@@ -4257,7 +4257,7 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
                 <div className={styles.companyMetricPanel}>
                   <div className={styles.panelTitle}>
                     <strong>{lang === "ar" ? "التوصية الفنية" : "Technical Rating"}</strong>
-                    <span>{lang === "ar" ? "إطار يومي · TradingView" : "1D · TradingView"}</span>
+                    <span>{lang === "ar" ? "إطار يومي" : "1D"}</span>
                   </div>
                   <div className={cx(styles.tvRating, techRec.tone === "up" ? styles.up : techRec.tone === "down" ? styles.down : undefined)}>
                     {lang === "ar" ? techRec.ar : techRec.en}

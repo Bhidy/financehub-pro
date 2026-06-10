@@ -1302,14 +1302,13 @@ async def handle_financials_package(
             return f"{v:,.2f}{suffix}"
         
         def fmt_pct(val):
+            # stock_stats_view emits PERCENT units for every field below (Codex
+            # finding, PR#79): format directly — the old <=1 "decimal form"
+            # heuristic would turn a legitimate 0.8% into 80.00%.
             if val is None:
                 return None
-            v = float(val)
-            # Handle decimal form (0.43) vs percentage form (43.0)
-            if abs(v) <= 1:
-                return f"{v * 100:.2f}%"
-            return f"{v:.2f}%"
-            
+            return f"{float(val):.2f}%"
+
         # Build comprehensive KPI summary for CFA analysis
         kpi_summary = {
             # Profitability

@@ -168,24 +168,19 @@ async def handle_universal_screener(
         operator_key = f.get('operator')
         value = f.get('value')
         
-        # PERCENTAGE SCALING FIX (Enterprise)
-        # If user says "10% margin", Claude sends 10. DB likely stores 0.10.
-        # We auto-scale if value is > 1.0 for percentage fields.
-        # Columns stored as FRACTIONS (0.20 = 20%): a user threshold like "20" must be
-        # scaled to 0.20. dividend_yield / change_percent / change are stored as PERCENT
-        # in the DB, so they are intentionally EXCLUDED (scaling them broke yield/change
-        # screens — e.g. "yield > 5" became 0.05 and matched everything).
+        # UNITS (June-2026 chat realignment, Codex finding on PR#79):
+        # stock_stats_view stores ROE/margins/growth as PERCENT values (28.2),
+        # exactly matching user thresholds like "ROE above 20" — so the old
+        # fraction scaling (value/100, for the retired stock_statistics table)
+        # was REMOVED. Thresholds now pass through unchanged for every metric.
         PERCENTAGE_METRICS = {
             "revenue_growth", "profit_growth", "eps_growth", "sales_growth",
             "gross_margin", "operating_margin", "net_margin", "profit_margin",
-            "roe", "roa", "roce", "roic"
+            "roe", "roa", "dividend_yield"
         }
-        
+
         display_value = value  # human-readable value for the criteria summary
-        is_pct_metric = metric_key in PERCENTAGE_METRICS
-        if is_pct_metric and isinstance(value, (int, float)) and abs(value) > 1.0:
-            value = value / 100.0  # scale user "20" -> 0.20 to match the fraction column
-            # display_value keeps the original "20" (shown as 20%)
+        is_pct_metric = metric_key in PERCENTAGE_METRICS  # used for "%"-suffixed display only
 
         db_col = METRIC_MAP.get(metric_key)
         sql_op = OPERATOR_MAP.get(operator_key)

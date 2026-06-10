@@ -184,10 +184,8 @@
         const activeTotal = Math.max(1, (number(summary.advancing) || 0) + (number(summary.declining) || 0));
         byId("upBreadth").style.width = `${((number(summary.advancing) || 0) / activeTotal) * 100}%`;
         byId("downBreadth").style.width = `${((number(summary.declining) || 0) / activeTotal) * 100}%`;
-        const advancers = number(summary.advancing);
-        const decliners = number(summary.declining);
-        const reading = advancers == null || decliners == null ? "" : advancers > decliners ? labels().positive_reading : advancers < decliners ? labels().negative_reading : labels().balanced_reading;
-        setText("marketReading", reading);
+        // Market "reading" sentence removed — it was a house verdict derived from the advance/decline counts, not source data.
+        setText("marketReading", "");
     }
 
     function sortedStocks(mode) {
@@ -316,19 +314,12 @@
         if (!item) return;
         setText("selectedSymbol", item.symbol);
         setText("selectedName", stockName(item));
-        let priceVal = item.last_price;
-        let changePct = item.change_percent;
+        // Source-of-truth: show the feed's own last price / change %, not a value recomputed from candle history.
+        const priceVal = item.last_price;
+        const changePct = item.change_percent;
 
-        const hist = getHistoricalCloseData();
-        if (hist) {
-            priceVal = hist.close;
-        } else if (state.historyLoading) {
-            priceVal = null;
-            changePct = null;
-        }
-
-        setText("selectedPrice", priceVal !== null ? formatNumber(priceVal) : "...");
-        setText("selectedChange", changePct !== null ? percent(changePct) : "...", `tabular ${percentClass(changePct)}`);
+        setText("selectedPrice", priceVal != null ? formatNumber(priceVal) : "...");
+        setText("selectedChange", changePct != null ? percent(changePct) : "...", `tabular ${percentClass(changePct)}`);
         
         // Stock Header Logo Integration
         const logoImg = byId("selectedLogo");
@@ -351,25 +342,7 @@
         renderOverviewTab();
     }
 
-    // ── Real RSI-14 & SMA calculator from OHLC history ──────────────────
-    function calcSMA(closes, period) {
-        if (closes.length < period) return null;
-        const slice = closes.slice(-period);
-        return slice.reduce((a, b) => a + b, 0) / period;
-    }
-    function calcRSI(closes, period) {
-        if (closes.length < period + 1) return null;
-        const changes = closes.slice(1).map((c, i) => c - closes[i]);
-        const last = changes.slice(-period);
-        const gains = last.map(c => c > 0 ? c : 0);
-        const losses = last.map(c => c < 0 ? -c : 0);
-        const avgGain = gains.reduce((a, b) => a + b, 0) / period;
-        const avgLoss = losses.reduce((a, b) => a + b, 0) / period;
-        if (avgLoss === 0) return 100;
-        const rs = avgGain / avgLoss;
-        return 100 - (100 / (1 + rs));
-    }
-    // ────────────────────────────────────────────────────────────────────
+    // Client-side SMA/RSI calculators removed — Market Pulse shows source data only, no house-computed technicals.
 
     function renderOverviewTab() {
         const item = selectedStock();
@@ -408,9 +381,7 @@
                             <div style="position:absolute;left:0;top:0;height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,var(--red),var(--teal-dark));border-radius:8px;"></div>
                             <div style="position:absolute;left:${pct.toFixed(1)}%;top:-4px;width:14px;height:14px;border-radius:50%;background:var(--teal);border:3px solid var(--bg);transform:translateX(-50%);box-shadow:0 0 8px var(--teal);transition: left 0.3s ease;"></div>
                         </div>
-                        <div style="text-align:center;font-size:0.68rem;color:var(--muted);font-weight:600;margin-top:6px;">
-                            ${currentLabel} <strong class="tabular" style="color:var(--teal-dark);font-size:0.75rem;">${pct.toFixed(1)}%</strong> ${rangePctLabel}
-                        </div>
+                        <!-- "Current price is at X% of range" removed — derived positioning %, not a source value. The bar still shows the source price within the source 52W high/low. -->
                     </div>`;
             }
 
@@ -521,14 +492,8 @@
             
             // Extract Values with Robust Fallbacks
             const revenueVal = yp.total_revenue != null ? yp.total_revenue : item.revenue;
-            const profitMargin = yp.profit_margin != null ? yp.profit_margin : null;
-            
-            let netIncomeVal = null;
-            if (revenueVal != null && profitMargin != null) {
-                netIncomeVal = revenueVal * profitMargin;
-            } else {
-                netIncomeVal = item.net_income;
-            }
+            // Source-of-truth: show reported net income only; do not synthesize it from revenue × margin.
+            const netIncomeVal = item.net_income != null ? item.net_income : null;
             
             const peVal = yp.pe_ratio != null ? yp.pe_ratio : item.pe_ratio;
             const pbVal = yp.price_to_book != null ? yp.price_to_book : item.pb_ratio;
@@ -583,48 +548,6 @@
                                 <polyline points="12 5 19 12 12 19"></polyline>
                             </svg>
                         </a>
-                    </div>
-                </div>
-            `;
-        } else if (tab === "technicals") {
-            const isAr = state.lang === "ar";
-            const closes = state.history.map(day => number(day.close)).filter(c => c > 0);
-            
-            // Real computed indicators (no more hardcoded values)
-            const sma50  = calcSMA(closes, 50)  || item.last_price;
-            const sma200 = calcSMA(closes, 200) || item.last_price;
-            const rsi14  = calcRSI(closes, 14);
-            const rsiDisplay = rsi14 != null ? formatNumber(rsi14) : "--";
-            
-            const rsiSignal = rsi14 != null
-                ? (rsi14 >= 70 ? (isAr ? "ذروة الشراء" : "Overbought") : rsi14 <= 30 ? (isAr ? "ذروة البيع" : "Oversold") : (isAr ? "محايد" : "Neutral"))
-                : "--";
-            const rsiColor = rsi14 != null ? (rsi14 >= 70 ? "var(--red)" : rsi14 <= 30 ? "var(--green)" : "var(--ink)") : "var(--muted)";
-            const trend = item.last_price >= sma50 ? (isAr ? "صاعد" : "Bullish") : (isAr ? "هابط" : "Bearish");
-            const trendColor = item.last_price >= sma50 ? "var(--green)" : "var(--red)";
-            const goldenCross = sma50 > sma200;
-            const crossText = goldenCross ? (isAr ? "تقاطع ذهبي" : "Golden Cross") : (isAr ? "تقاطع ميت" : "Death Cross");
-            const crossColor = goldenCross ? "var(--green)" : "var(--red)";
-            const dataQuality = closes.length >= 200 ? (isAr ? "بيانات كاملة" : "Full Data") : closes.length >= 50 ? (isAr ? "بيانات كافية" : "Sufficient") : (isAr ? "بيانات محدودة" : "Limited Data");
-
-            const card = (title, val, color="var(--ink)", sub="") => `
-                <div style="background:rgba(20,184,166,0.05);padding:15px;border-radius:12px;border:1px solid rgba(20,184,166,0.15);">
-                    <div style="color:var(--muted);font-size:0.72rem;font-weight:600;">${title}</div>
-                    <div style="font-size:1.15rem;font-weight:700;color:${color};margin-top:5px;" class="tabular">${val}</div>
-                    ${sub ? `<div style="font-size:0.65rem;color:var(--muted);margin-top:3px;">${sub}</div>` : ""}
-                </div>`;
-
-            contentContainer.innerHTML = `
-                <div style="grid-column:1/-1;width:100%;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.5rem;">
-                        <h2 class="display" style="margin:0;">${isAr ? "التحليل الفني" : "Technical Analysis"}</h2>
-                        <span style="font-size:0.65rem;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:2px 8px;">${isAr?"استناداً إلى":"Based on"} ${closes.length} ${isAr?"يوم من البيانات ·":"days ·"} ${dataQuality}</span>
-                    </div>
-                    <div style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.2rem;display:grid;">
-                        ${card(isAr?"الاتجاه العام":"Trend", trend, trendColor, `vs SMA50: ${formatNumber(sma50)}`)}
-                        ${card("SMA (50)",  formatNumber(sma50)  + " " + labels().currency, "var(--ink)")}
-                        ${card("SMA (200)", formatNumber(sma200) + " " + labels().currency, "var(--ink)", `50/200 ${crossText}`)}
-                        ${card("RSI (14)",  rsiDisplay, rsiColor, rsiSignal)}
                     </div>
                 </div>
             `;
@@ -1274,16 +1197,9 @@
         let curPrice = yp.price || item.last_price;
         let changePct = yp.raw && yp.raw.profile && yp.raw.profile.change_pct != null ? yp.raw.profile.change_pct : item.change_percent;
 
-        const hist = getHistoricalCloseData();
-        if (hist) {
-            curPrice = hist.close;
-        } else if (state.historyLoading) {
-            curPrice = null;
-            changePct = null;
-        }
-
-        setText("drawerPrice", curPrice !== null ? formatNumber(curPrice) : "...");
-        setText("drawerChange", changePct !== null ? percent(changePct) : "...", `tabular drawer-change-value ${percentClass(changePct)}`);
+        // Source-of-truth: show the feed's own last price / change %, not a value recomputed from candle history.
+        setText("drawerPrice", curPrice != null ? formatNumber(curPrice) : "...");
+        setText("drawerChange", changePct != null ? percent(changePct) : "...", `tabular drawer-change-value ${percentClass(changePct)}`);
         
         const yearHigh = number(yp.year_high || item.high_52w);
         const yearLow  = number(yp.year_low  || item.low_52w);

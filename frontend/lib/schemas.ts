@@ -20,6 +20,16 @@ export const TickerSchema = z.object({
     market_cap: safeNumber,
     book_value: safeNumber,
     market_code: z.string().nullable().optional(),
+    // TV-owned identity/ratio fields served by /api/v1/tickers (June-2026).
+    // Zod strips undeclared keys, so every field the page reads MUST be listed
+    // here — omitting one silently renders "-" (Codex review, PR#75).
+    pb_ratio: safeNumber,
+    dividend_yield: safeNumber,
+    currency: z.string().nullable().optional(),
+    isin: z.string().nullable().optional(),
+    logo_url: z.string().nullable().optional(),
+    last_updated: z.string().nullable().optional(),
+    updated_at: z.string().nullable().optional(),
 });
 
 export const TickerResponseSchema = z.array(TickerSchema);

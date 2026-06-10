@@ -58,7 +58,7 @@ EGX_PREFIX = "EGX:"
 # The bare `dividends_yield` variant is a different metric (BINV: 165.099 vs the
 # real 2.71%) and poisoned market_tickers until the June-2026 audit.
 _PRICE_COLS = [
-    "name", "close", "change", "change_abs", "volume",
+    "name", "description", "close", "change", "change_abs", "volume",
     "open", "high", "low", "market_cap_basic",
     "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
     "dividends_yield_current", "price_book_ratio", "beta_1_year",
@@ -178,7 +178,9 @@ class TradingViewEGXClient:
                 continue
             stocks.append({
                 "symbol": symbol,
-                "name_en": d.get("name") or "",
+                # TV "description" = the company's display name ("Madinet Masr for
+                # Housing & Development"); TV "name" is just the ticker ("MASR").
+                "name_en": d.get("description") or d.get("name") or "",
                 "market_cap": _finite(d.get("market_cap_basic")),
                 "last_price": price,
                 "change": _finite(d.get("change_abs")),
@@ -408,7 +410,7 @@ KSA_PREFIX = "TADAWUL:"
 MIN_KSA_UNIVERSE = 50  # active Saudi names; floor well below real ~200 for safety
 
 _KSA_PRICE_COLS = [
-    "name", "close", "change", "change_abs", "volume",
+    "name", "description", "close", "change", "change_abs", "volume",
     "open", "high", "low", "market_cap_basic",
     "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
     "dividends_yield_current", "price_book_ratio", "beta_1_year",
@@ -480,7 +482,7 @@ class TradingViewKSAClient:
                 continue
             stocks.append({
                 "symbol": symbol,
-                "name_en": d.get("name") or "",
+                "name_en": d.get("description") or d.get("name") or "",
                 "market_cap": _finite(d.get("market_cap_basic")),
                 "last_price": price,
                 "change": _finite(d.get("change_abs")),

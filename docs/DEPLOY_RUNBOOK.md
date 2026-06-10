@@ -30,11 +30,18 @@ git add <only-your-files>
 git commit -m "fix: my change"           # author MUST be mohamedbhidy@gmail.com (see below)
 git push -u origin fix/my-change
 
-# 3. Open a PR and merge it. THE MERGE IS THE DEPLOY.
+# 3. Open a PR. THE MERGE (step 4) IS THE DEPLOY.
 gh pr create --base main --fill
+
+# 4. WAIT FOR THE CODEX REVIEW BEFORE MERGING (~1-3 min). The repo has the
+#    ChatGPT Codex reviewer app installed; it reviews every opened PR. Merging
+#    before it finishes means its findings land AFTER the code is live (this
+#    happened on PR#72 and PR#75 — both reviews found real bugs post-deploy).
+#    Poll until the review appears, address findings (or justify), THEN merge:
+#      gh pr view --json reviews   # wait for chatgpt-codex-connector[bot]
 gh pr merge --squash --delete-branch
 
-# 4. Confirm it went live (verify-only — does NOT deploy):
+# 5. Confirm it went live (verify-only — does NOT deploy):
 ./scripts/deploy-web.sh
 ```
 

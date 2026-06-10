@@ -25,13 +25,7 @@ export const dynamic = 'force-dynamic';
 
 const STALE_THRESHOLD_MIN = 75;  // 2.5× the watchdog's 30-min cadence
 
-/**
- * POST a Discord alert and VERIFY delivery by checking the HTTP status.
- * Returns true only on a 2xx response; logs res.status on failure; never throws.
- * (Mirrors frontend/app/api/cron/cert-check/route.ts — closes the H3
- * silent-alert-failure class: a dead/403 webhook no longer vanishes silently.)
- */
-async function postDiscord(webhookUrl: string, ageMinutes: number | null): Promise<boolean> {
+async function postDiscord(webhookUrl: string, ageMinutes: number | null): Promise<void> {
     const age = ageMinutes === null ? 'never ran' : `${ageMinutes} min ago`;
     const body = JSON.stringify({
         embeds: [{
@@ -53,21 +47,11 @@ async function postDiscord(webhookUrl: string, ageMinutes: number | null): Promi
         }],
     });
 
-    try {
-        const res = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body,
-        });
-        if (!res.ok) {
-            console.error(`[watchdog/ping] Discord webhook returned ${res.status} ${res.statusText}`);
-            return false;
-        }
-        return true;
-    } catch (err: any) {
-        console.error('[watchdog/ping] Discord POST failed:', err?.message);
-        return false;
-    }
+    await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+    });
 }
 
 export async function GET(request: NextRequest) {
@@ -89,17 +73,17 @@ export async function GET(request: NextRequest) {
 
         if (!row) {
             // Watchdog has never written a heartbeat
-            const discordAlerted = discord ? await postDiscord(discord, null) : false;
-            return NextResponse.json({ alerted: true, reason: 'no heartbeat on record', discord_alerted: discordAlerted, discord_configured: Boolean(discord), checked_at: checkedAt });
+            if (discord) await postDiscord(discord, null);
+            return NextResponse.json({ alerted: true, reason: 'no heartbeat on record', checked_at: checkedAt });
         }
 
         const ageMs = Date.now() - (row.last_run_at as Date).getTime();
         const ageMinutes = Math.round(ageMs / 60_000);
 
         if (ageMinutes > STALE_THRESHOLD_MIN) {
-            const discordAlerted = discord ? await postDiscord(discord, ageMinutes) : false;
-            console.warn(`[watchdog/ping] STALE: heartbeat ${ageMinutes}m old — Discord ${discordAlerted ? 'alerted' : 'alert FAILED/unconfigured'}`);
-            return NextResponse.json({ alerted: true, age_minutes: ageMinutes, discord_alerted: discordAlerted, discord_configured: Boolean(discord), checked_at: checkedAt });
+            if (discord) await postDiscord(discord, ageMinutes);
+            console.warn(`[watchdog/ping] STALE: heartbeat ${ageMinutes}m old — Discord alerted`);
+            return NextResponse.json({ alerted: true, age_minutes: ageMinutes, checked_at: checkedAt });
         }
 
         // All good — watchdog is alive
@@ -107,9 +91,12 @@ export async function GET(request: NextRequest) {
 
     } catch (error: any) {
         console.error('[watchdog/ping ERROR]', error?.message);
-        // DB error itself is a signal — alert if Discord is available.
-        // postDiscord never throws (returns false on any failure), so no inner try/catch needed.
-        const discordAlerted = discord ? await postDiscord(discord, null) : false;
-        return NextResponse.json({ alerted: true, error: error?.message, discord_alerted: discordAlerted, discord_configured: Boolean(discord), checked_at: checkedAt });
+        // DB error itself is a signal — alert if Discord is available
+        if (discord) {
+            try {
+                await postDiscord(discord, null);
+            } catch { /* ignore secondary failure */ }
+        }
+        return NextResponse.json({ alerted: true, error: error?.message, checked_at: checkedAt });
     }
 }

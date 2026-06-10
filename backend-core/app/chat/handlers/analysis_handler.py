@@ -482,11 +482,23 @@ async def handle_company_profile(conn: asyncpg.Connection, symbol: str, language
     
     msg = top + "\n" + "\n".join([l for l in lines if l])
 
+    # NOTE: 'company_profile' is NOT a valid CardType -> response_composer coerces it
+    # to an 'error' card (so it never rendered). Emit a valid stock_header card; the
+    # factual fields live in the (handler-verbatim) message above.
     return {
         'success': True,
         'message': msg,
         'cards': [
-            {'type': 'company_profile', 'title': 'Company Info', 'data': data}
+            {
+                'type': 'stock_header',
+                'data': {
+                    'symbol': symbol,
+                    'name': name,
+                    'sector': sector,
+                    'market_code': 'EGX',
+                    'currency': get_ticker_currency(ticker),
+                },
+            }
         ],
         'actions': [
              {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},

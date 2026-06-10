@@ -3479,6 +3479,12 @@ class ChatService:
                 Intent.STOCK_PRICE,
                 Intent.STOCK_SNAPSHOT,
                 Intent.FAIR_VALUE,
+                # P0-2: COMPANY_PROFILE returns a factual handler message that only
+                # includes fields we actually have (CEO only if present, never
+                # employees). The LLM narrator was fabricating missing facts ("1,044
+                # employees") over the profile's price/market-cap data, so use the
+                # handler's honest message verbatim instead.
+                Intent.COMPANY_PROFILE,
                 Intent.FIN_EPS,
                 Intent.DIVIDENDS,
                 Intent.EARNINGS_ANALYSIS,

@@ -755,7 +755,7 @@ AR_TERMS = {
     "fcf_yield": "عائد التدفق الحر",
     "piotroski_f_score": "نقاط بيوتروسكي",
     "altman_z_score": "مقياس ألتمان Z",
-    "beta_5y": "بيتا (5 سنوات)",
+    "beta_1y": "بيتا (سنة)",
     "shares_outstanding": "الأسهم القائمة",
     "effective_tax_rate": "معدل الضريبة الفعلي",
 }
@@ -960,9 +960,12 @@ async def handle_financials_package(
         symbol
     )
     
-    # CRITICAL: Get stock_statistics for TTM KPIs (ROE, ROA, margins, OCF, FCF, etc.)
+    # TV-ONLY KPIs (June-2026 chat realignment): stock_stats_view — the same
+    # TradingView-fed view the website reads (real TTM, percent units; fmt_pct
+    # is adaptive). Fields TV lacks come back missing and are dropped from the
+    # KPI summary automatically.
     stock_stats = await conn.fetchrow(
-        "SELECT * FROM stock_statistics WHERE symbol = $1",
+        "SELECT * FROM stock_stats_view WHERE symbol = $1",
         symbol
     )
     
@@ -1347,8 +1350,8 @@ async def handle_financials_package(
             # Quality Scores
             'piotroski_f_score': str(int(ss.get('piotroski_f_score'))) if ss.get('piotroski_f_score') else None,
             'altman_z_score': f"{ss.get('altman_z_score'):.2f}" if ss.get('altman_z_score') else None,
-            # Technical
-            'beta_5y': f"{ss.get('beta_5y'):.2f}" if ss.get('beta_5y') else None,
+            # Technical (TradingView beta is 1Y)
+            'beta_1y': f"{ss.get('beta_1y'):.2f}" if ss.get('beta_1y') else None,
             'shares_outstanding': fmt_num(ss.get('shares_outstanding')),
             'effective_tax_rate': fmt_pct(ss.get('effective_tax_rate')),
         }

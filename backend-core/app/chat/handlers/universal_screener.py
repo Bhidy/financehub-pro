@@ -15,7 +15,14 @@ from ..schemas import ChatResponse, DataCard, CardType
 logger = logging.getLogger(__name__)
 
 # Allowed metrics for dynamic queries (SQL Injection Protection)
-# Maps API metric name -> DB Column
+# Maps API metric name -> DB Column.
+# TV-ONLY (June-2026 chat realignment): `s` is stock_stats_view (the same
+# TradingView-fed view the website reads). Metrics TradingView does not provide
+# for EGX (EV/*, ROCE, turnover, D/E, current/quick, Altman, Piotroski, cash,
+# 3-month avg volume) were REMOVED — .get() returns None and the filter is
+# politely rejected instead of comparing against frozen May-28 values.
+# NB units: view margins/ROE/growth are PERCENT values (e.g. 28.2), which is
+# what user intents like "ROE above 20" naturally mean.
 METRIC_MAP = {
     # Valuation
     "pe": "m.pe_ratio",
@@ -24,49 +31,37 @@ METRIC_MAP = {
     "pb_ratio": "m.pb_ratio",
     "market_cap": "m.market_cap",
     "price": "m.last_price",
-    "ev": "s.enterprise_value",
-    "ev_ebitda": "s.ev_ebitda",
-    "ev_sales": "s.ev_sales",
     "dividend_yield": "m.dividend_yield",
-    
+
     # Efficiency & Profitability
     "roe": "s.roe",
     "roa": "s.roa",
-    "roce": "s.roce",
     "gross_margin": "s.gross_margin",
     "operating_margin": "s.operating_margin",
     "net_margin": "s.profit_margin",
     "profit_margin": "s.profit_margin",
-    "asset_turnover": "s.asset_turnover",
-    
+
     # Growth
     "revenue_growth": "s.revenue_growth",
     "profit_growth": "s.profit_growth",
     "eps_growth": "s.eps_growth",
     "sales_growth": "s.revenue_growth",
-    
+
     # Health/Safety
-    "debt_equity": "s.debt_equity",
     "total_debt": "s.total_debt",
-    "current_ratio": "s.current_ratio",
-    "quick_ratio": "s.quick_ratio",
-    "z_score": "s.altman_z_score",
-    "f_score": "s.piotroski_f_score",
-    
-    # Technical
+
+    # Technical (TradingView beta is 1Y)
     "rsi": "s.rsi_14",
-    "beta": "s.beta_5y",
-    
+    "beta": "s.beta_1y",
+
     # Volume/Liquidity
     "volume": "m.volume",
-    "avg_volume": "m.avg_volume_3m",
     "change": "m.change_percent",
     "change_percent": "m.change_percent",
-    
-    # Raw Fundamentals
-    "revenue": "s.revenue_ttm",
-    "net_income": "s.net_income_ttm",
-    "cash": "s.total_cash",
+
+    # Raw Fundamentals (TTM when TradingView provides it, latest FY otherwise)
+    "revenue": "COALESCE(s.revenue_ttm, s.revenue_fy)",
+    "net_income": "COALESCE(s.net_income_ttm, s.net_income_fy)",
     "debt": "s.total_debt"
 }
 
@@ -128,7 +123,7 @@ async def handle_universal_screener(
     sql = f"""
         SELECT {select_clause}
         FROM market_tickers m
-        LEFT JOIN stock_statistics s ON m.symbol = s.symbol
+        LEFT JOIN stock_stats_view s ON m.symbol = s.symbol
         WHERE m.market_code = $1
     """
     params = [market_code]

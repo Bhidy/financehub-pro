@@ -303,45 +303,44 @@ async def handle_stock_statistics(
     Handle comprehensive stock statistics query.
     Returns valuation ratios, efficiency metrics, margins, etc.
     """
-    # Get statistics from stock_statistics table
-    # CRITICAL: Avoid SELECT * to be resilient to missing columns
-    # UNIFIED TTM DATA SOURCE: All KPIs come from stock_statistics (TTM) — no more annual mix
+    # TV-ONLY SOURCE (June-2026 chat realignment): stock_stats_view — the SAME
+    # TradingView-fed view the website /symbol page reads. The old stock_statistics
+    # table narrated frozen May-28 values for margins/ROE/payout.
+    # UNITS: the view stores percentages; this handler's formatters expect
+    # FRACTIONS (they multiply by 100), so percent fields are divided by 100 here.
+    # Fields TradingView does not provide (P/S, PEG, EV/*, ROIC/ROCE, current/quick,
+    # D/E, interest coverage, Altman/Piotroski, EBITDA-TTM, OCF, payout) are NULL —
+    # the message builder and stats card silently skip nulls.
     sql = """
-        SELECT 
-            -- TTM Valuation (stock_statistics - always current/TTM-based)
-            ss.pe_ratio AS live_pe, ss.pb_ratio AS live_pb, ss.ps_ratio AS live_ps,
-            ss.forward_pe, ss.peg_ratio, ss.ev_ebitda, ss.ev_sales,
-            ss.beta_5y, ss.rsi_14, ss.ma_50d, ss.ma_200d,
-            -- TTM Profitability (stock_statistics - TTM)
-            ss.roe, ss.roa, ss.roic, ss.roce AS live_roce,
-            ss.gross_margin, ss.operating_margin, ss.profit_margin,
-            ss.ebitda_margin AS live_ebitda_margin, ss.fcf_margin,
-            -- TTM Financial Health (stock_statistics)
-            ss.current_ratio, ss.quick_ratio,
-            ss.debt_equity AS debt_equity_ratio,
-            ss.interest_coverage, ss.altman_z_score, ss.piotroski_f_score,
-            -- TTM Absolute Figures
-            ss.revenue_ttm, ss.net_income_ttm, ss.ebitda_ttm, ss.ocf_ttm, ss.fcf_ttm,
+        SELECT
+            ss.pe_ratio AS live_pe, ss.pb_ratio AS live_pb, NULL::numeric AS live_ps,
+            ss.forward_pe, NULL::numeric AS peg_ratio, NULL::numeric AS ev_ebitda, NULL::numeric AS ev_sales,
+            ss.beta_1y, ss.rsi_14, ss.ma_50d, ss.ma_200d,
+            ss.roe / 100 AS roe, ss.roa / 100 AS roa, NULL::numeric AS roic, NULL::numeric AS live_roce,
+            ss.gross_margin / 100 AS gross_margin, ss.operating_margin / 100 AS operating_margin,
+            ss.profit_margin / 100 AS profit_margin,
+            NULL::numeric AS live_ebitda_margin, NULL::numeric AS fcf_margin,
+            NULL::numeric AS current_ratio, NULL::numeric AS quick_ratio,
+            NULL::numeric AS debt_equity_ratio,
+            NULL::numeric AS interest_coverage, NULL::numeric AS altman_z_score, NULL::numeric AS piotroski_f_score,
+            ss.revenue_ttm, ss.net_income_ttm, NULL::numeric AS ebitda_ttm, NULL::numeric AS ocf_ttm, ss.fcf_ttm,
             ss.eps_ttm, ss.book_value, ss.bvps,
-            ss.revenue_growth, ss.eps_growth,
-            ss.payout_ratio,
+            ss.revenue_growth / 100 AS revenue_growth, ss.eps_growth / 100 AS eps_growth,
+            NULL::numeric AS payout_ratio,
             -- Market data (live from market_tickers)
             mt.name_en, mt.name_ar, mt.last_price, mt.market_code, mt.currency, mt.sector_name,
             mt.pe_ratio AS mt_pe, mt.pb_ratio AS mt_pb,
-            -- market_tickers.dividend_yield is PERCENT; stock_statistics is a FRACTION,
-            -- so the fallback must be x100 to avoid a ~100x-too-small yield.
-            COALESCE(mt.dividend_yield, ss.dividend_yield * 100) AS dividend_yield,
+            ss.dividend_yield,
             mt.market_cap AS live_cap, mt.logo_url,
             -- Live sector averages for context (show stock vs sector)
             sa.avg_sector_pe, sa.avg_sector_pb
-        FROM stock_statistics ss
+        FROM stock_stats_view ss
         LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol AND mt.market_code = 'EGX'
         LEFT JOIN LATERAL (
             SELECT
                 AVG(m2.pe_ratio) FILTER (WHERE m2.pe_ratio > 0 AND m2.pe_ratio < 100) AS avg_sector_pe,
-                AVG(COALESCE(m2.pb_ratio, s2.pb_ratio)) FILTER (WHERE COALESCE(m2.pb_ratio, s2.pb_ratio) > 0) AS avg_sector_pb
+                AVG(m2.pb_ratio) FILTER (WHERE m2.pb_ratio > 0) AS avg_sector_pb
             FROM market_tickers m2
-            LEFT JOIN stock_statistics s2 ON m2.symbol = s2.symbol AND m2.market_code = s2.market_code
             WHERE m2.sector_name = mt.sector_name AND m2.market_code = 'EGX'
         ) sa ON true
         WHERE ss.symbol = $1
@@ -503,10 +502,10 @@ async def handle_stock_statistics(
         
     # 5. Market Metrics
     tech_lines = []
-    beta_str = _format_number(stats.get('beta_5y'))
+    beta_str = _format_number(stats.get('beta_1y'))
     rsi_str = _format_number(stats.get('rsi_14'))
-    
-    if beta_str: tech_lines.append(f"• {'Beta' if language == 'en' else 'بيتا'} (5Y): {beta_str}")
+
+    if beta_str: tech_lines.append(f"• {'Beta' if language == 'en' else 'بيتا'} (1Y): {beta_str}")
     if rsi_str: tech_lines.append(f"• RSI (14): {rsi_str}")
     
     if tech_lines:
@@ -558,7 +557,7 @@ async def handle_stock_statistics(
                     'debt_equity': de,
                     
                     # Technical
-                    'beta': safe_float(stats.get('beta_5y')), # Frontend uses 'beta', not 'beta_5y'
+                    'beta': safe_float(stats.get('beta_1y')), # Frontend uses 'beta'; TV beta is 1Y
                     'rsi_14': safe_float(stats.get('rsi_14')),
                     'ma_50d': safe_float(stats.get('ma_50d')),
                     'ma_200d': safe_float(stats.get('ma_200d')),
@@ -585,16 +584,16 @@ async def handle_valuation_query(
 ) -> Dict[str, Any]:
     """Handle specific valuation metric query like 'What is COMI PE ratio?'"""
     
-    # Map common queries to column names
+    # Map common queries to stock_stats_view columns (TradingView-fed).
+    # P/S and Debt/Equity were dropped — TradingView does not provide them for
+    # EGX; unknown metrics fall through to the full-statistics answer.
     metric_map = {
         'pe': ('pe_ratio', 'P/E Ratio', 'مضاعف الربحية'),
         'pb': ('pb_ratio', 'P/B Ratio', 'مضاعف القيمة الدفترية'),
-        'ps': ('ps_ratio', 'P/S Ratio', 'مضاعف المبيعات'),
         'roe': ('roe', 'Return on Equity', 'العائد على حقوق الملكية'),
         'roa': ('roa', 'Return on Assets', 'العائد على الأصول'),
         'margin': ('profit_margin', 'Profit Margin', 'هامش الربح'),
-        'beta': ('beta_5y', 'Beta (5Y)', 'بيتا'),
-        'debt': ('debt_equity', 'Debt/Equity', 'الدين/حقوق الملكية'),
+        'beta': ('beta_1y', 'Beta (1Y)', 'بيتا (سنة)'),
     }
     
     metric_key = metric.lower().replace('ratio', '').replace(' ', '').strip()
@@ -606,10 +605,10 @@ async def handle_valuation_query(
     col_name, label_en, label_ar = metric_map[metric_key]
     label = label_ar if language == 'ar' else label_en
     
-    # Get specific metric
+    # Get specific metric from the TradingView-fed view
     row = await conn.fetchrow(f"""
         SELECT ss.{col_name}, mt.name_en, mt.name_ar
-        FROM stock_statistics ss
+        FROM stock_stats_view ss
         LEFT JOIN market_tickers mt ON ss.symbol = mt.symbol
         WHERE ss.symbol = $1
     """, symbol)
@@ -627,10 +626,11 @@ async def handle_valuation_query(
     
     if value is None:
         formatted = None
-    elif col_name in ['roe', 'roa', 'roic', 'profit_margin', 'gross_margin', 'operating_margin']:
-        formatted = f"{value * 100:.2f}%"
+    elif col_name in ['roe', 'roa', 'profit_margin', 'gross_margin', 'operating_margin']:
+        # stock_stats_view stores these as PERCENT values already (TradingView)
+        formatted = f"{float(value):.2f}%"
     else:
-        formatted = f"{value:.2f}"
+        formatted = f"{float(value):.2f}"
     
     if formatted:
         message = f"📊 **{name}** ({symbol})\n\n{label}: **{formatted}**"

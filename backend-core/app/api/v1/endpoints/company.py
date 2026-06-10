@@ -87,20 +87,13 @@ async def get_company_analysts(symbol: str):
 @router.get("/{symbol}/dividends", response_model=List[dict])
 async def get_company_dividends(symbol: str):
     db_symbol = await resolve_symbol(symbol)
-    # Check if dividend_history table exists or use corporate_actions
-    try:
-        return await db.fetch_all("""
-            SELECT * FROM dividend_history 
-            WHERE symbol = $1 
-            ORDER BY ex_date DESC
-        """, db_symbol)
-    except:
-        # Fallback to corporate actions
-        return await db.fetch_all("""
-            SELECT * FROM corporate_actions 
-            WHERE symbol = $1 AND action_type ILIKE '%Dividend%'
-            ORDER BY ex_date DESC
-        """, db_symbol)
+    # corporate_actions is the TV-self-extending dividend source (June-2026);
+    # the frozen dividend_history read was removed.
+    return await db.fetch_all("""
+        SELECT * FROM corporate_actions
+        WHERE symbol = $1 AND action_type ILIKE '%Dividend%'
+        ORDER BY ex_date DESC
+    """, db_symbol)
 
 @router.get("/{symbol}/ownership")
 async def get_company_ownership(symbol: str):

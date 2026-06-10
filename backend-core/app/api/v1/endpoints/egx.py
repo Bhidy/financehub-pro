@@ -360,8 +360,11 @@ async def get_egx_financials(symbol: str, statement_type: str = "income-statemen
 @router.get("/egx/dividends/{symbol}", response_model=List[dict])
 async def get_egx_dividends(symbol: str):
     """Get dividend history for an EGX stock"""
+    # TV-self-extending source (June-2026): dividend_history froze in January.
     rows = await db.fetch_all(
-        "SELECT * FROM dividend_history WHERE symbol = $1 ORDER BY ex_date DESC",
+        "SELECT id, symbol, ex_date, amount AS dividend_amount, currency "
+        "FROM corporate_actions WHERE symbol = $1 AND action_type = 'Dividend' "
+        "ORDER BY ex_date DESC",
         symbol.upper()
     )
     return [dict(r) for r in rows]

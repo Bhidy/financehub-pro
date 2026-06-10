@@ -54,6 +54,7 @@ import { WorldClassMessage, FollowUpPrompt, FollowUpChips } from "@/components/a
 import { ChatCards, ActionsBar } from "@/components/ai/ChatCards";
 import { FactExplanations } from "@/components/ai/FactExplanations";
 import { sanitizeChatResponse, type ChatResponse } from "@/hooks/useAIChat";
+import { TradingViewInlineChart } from "@/components/TradingViewInlineChart";
 
 type Lang = "en" | "ar";
 type Theme = "light" | "dark";
@@ -2768,23 +2769,11 @@ function HomeScreen({ nav, lang, summary, egxIndex, stocks, funds, news, portfol
 
 function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | null; stocks: Stock[]; lang: Lang; nav: NavController; onClose: () => void }) {
   const wl = useWatchlist();
-  const [bars, setBars] = useState<OhlcBar[]>([]);
-  const [tf, setTf] = useState("3M");
   const stock = symbol ? stocks.find((s) => s.symbol === symbol) : undefined;
   const up = (stock?.changePct ?? 0) >= 0;
   const on = stock ? wl.has(stock.symbol) : false;
-  // Reset the timeframe each time a different stock is opened.
-  useEffect(() => { setTf("3M"); }, [symbol]);
-  useEffect(() => {
-    if (!stock?.symbol) {
-      setBars([]);
-      return;
-    }
-    let alive = true;
-    loadOhlcRows(stock.symbol, tf).then((rows) => { if (alive) setBars(rows); });
-    return () => { alive = false; };
-  }, [stock?.symbol, tf]);
-  // Period-return headline removed — it was computed from closes. The chart shows the source price series; the daily change (source) is shown in the quote row above.
+  // TV-only mandate: the quick-sheet chart is the TradingView mini widget — no
+  // more bars from ohlc_data (Yahoo-sourced history).
   return (
     <AnimatePresence>
       {stock ? (
@@ -2804,15 +2793,11 @@ function StockSheet({ symbol, stocks, lang, nav, onClose }: { symbol: string | n
               <div className={styles.sheetPx}><b>{stock.price.toFixed(2)}</b><span className={styles.unit}>EGP</span></div>
               <span className={cx(styles.sheetDayPill, up ? styles.up : styles.down)}>{up ? "▲" : "▼"} {Math.abs(stock.change).toFixed(2)} · {pct(stock.changePct)} <em>{lang === "ar" ? "اليوم" : "Today"}</em></span>
             </div>
-            {/* Premium line chart + period selector — same design as the index/market-pulse cards */}
+            {/* TradingView mini chart — the widget's own data and timeframes. */}
             <div className={styles.sheetChartCard}>
-              <div className={styles.sheetChartTop}>
-                <span className={styles.deltaChip}>{tf}</span>
-              </div>
               <div className={styles.sheetChartArea}>
-                <PriceLineChart bars={bars} fallback={stock.trend} color={up ? "var(--c-brand)" : "var(--c-down)"} height={172} lang={lang} />
+                <TradingViewInlineChart tvSymbol={`EGX:${stock.symbol}`} lang={lang} variant="mini" height={210} />
               </div>
-              <div className={styles.tfBar}>{INDEX_TF.map(([k]) => <button key={k} className={tf === k ? styles.on : undefined} onClick={() => setTf(k)}>{k}</button>)}</div>
             </div>
             <div className={styles.gridTwo}>
               <div className={styles.statTile}><div className={styles.lblMono}>{lang === "ar" ? "حجم التداول" : "Volume"}</div><div className={styles.tval}>{stock.volume ? compact(stock.volume, lang) : "—"}</div></div>
@@ -3948,8 +3933,6 @@ function ChartFullscreen({ symbol, lang, onClose }: { symbol: string; lang: Lang
 function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: Lang; stock?: Stock; news: NewsItem[] }) {
   const wl = useWatchlist();
   const [bundle, setBundle] = useState<CompanyProfileBundle>({ ratios: [], financialsTv: [], technicals: [] });
-  const [bars, setBars] = useState<OhlcBar[]>([]);
-  const [tf, setTf] = useState<string>("3M");
   const [tab, setTab] = useState<"overview" | "financials" | "technicals" | "forecasts" | "ownership" | "dividends">("overview");
   const [chartFull, setChartFull] = useState(false);
   const symbol = stock?.symbol;
@@ -3963,13 +3946,8 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
     return () => { active = false; };
   }, [symbol, lang]);
 
-  // OHLC reloads per selected timeframe (drives the candle chart + price signals).
-  useEffect(() => {
-    if (!symbol) return;
-    let alive = true;
-    loadOhlcRows(symbol, tf).then((rows) => { if (alive) setBars(rows); });
-    return () => { alive = false; };
-  }, [symbol, tf]);
+  // TV-only mandate: the inline candle chart (drawn from ohlc_data — Yahoo
+  // history) was replaced with the TradingView widget; no OHLC fetch remains.
 
   if (!stock) return null;
   const profile = bundle.profile ?? {};
@@ -4024,7 +4002,6 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
     return unique.slice(0, 4);
   })();
   const related = news.filter((item) => item.symbol === stock.symbol || item.headline.toUpperCase().includes(stock.symbol)).slice(0, 3);
-  const latestBar = bars[bars.length - 1];
   const on = wl.has(stock.symbol);
   const up = stock.changePct >= 0;
 
@@ -4106,20 +4083,10 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
           </div>
         </motion.div>
 
-        {/* Interactive candle chart + timeframe selector */}
+        {/* TradingView chart — the widget's own candles, OHLC header and timeframes. */}
         <div className={styles.crChartCard}>
           <div className={styles.ohlcAndEnlarge}>
-            {latestBar ? (
-              <div className={styles.ohlcMiniGrid}>
-                {[
-                  [lang === "ar" ? "الافتتاح" : "Open", latestBar.open],
-                  [lang === "ar" ? "الأعلى" : "High", latestBar.high],
-                  [lang === "ar" ? "الأدنى" : "Low", latestBar.low],
-                  [lang === "ar" ? "الإغلاق" : "Close", latestBar.close],
-                ].map(([label, value]) => <span key={String(label)}><small>{label}</small><b>{Number(value).toFixed(2)}</b></span>)}
-              </div>
-            ) : null}
-            {symbol && bars.length > 1 ? (
+            {symbol ? (
               <button
                 type="button"
                 className={styles.crEnlargeBtn}
@@ -4134,11 +4101,10 @@ function CompanyProfile({ nav, lang, stock, news }: { nav: NavController; lang: 
             ) : null}
           </div>
           <div className={styles.crChartArea}>
-            {bars.length > 1
-              ? <CandleChart rows={bars} height={192} lang={lang} />
+            {symbol
+              ? <TradingViewInlineChart tvSymbol={`EGX:${symbol}`} lang={lang} height={300} />
               : <div className={styles.navHistoryEmpty}>{lang === "ar" ? "لا توجد بيانات تاريخية كافية" : "Not enough historical data"}</div>}
           </div>
-          <div className={styles.tfBar}>{["1M", "3M", "6M", "1Y", "3Y", "MAX"].map((x) => <button key={x} className={tf === x ? styles.on : undefined} onClick={() => setTf(x)}>{x}</button>)}</div>
         </div>
         <div className={styles.statGrid}>
           <DataStat label={lang === "ar" ? "القيمة السوقية" : "Market Cap"} value={marketCap ? compact(marketCap, lang) : "—"} tone="brand" />

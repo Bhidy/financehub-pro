@@ -497,10 +497,14 @@ async def handle_deep_screener(
     language: str = 'en'
 ) -> Dict[str, Any]:
     """
-    Handle deep statistics screening (ROE, Margins, EV, etc.)
-    Joins market_tickers with stock_statistics.
+    Handle deep statistics screening (ROE, Margins, growth, etc.)
+    Joins market_tickers with stock_stats_view (TradingView-fed — June-2026
+    chat realignment). Metrics TradingView does not provide for EGX (EV/*,
+    D/E, Altman, Piotroski, turnover, yields, P/OCF) were removed: .get()
+    returns None and the request is rejected instead of ranking on frozen
+    May-28 values. View margins/ROE/growth are PERCENT values.
     """
-    
+
     # Whitelist metrics to prevent injection
     VALID_METRICS = {
         'roe': 's.roe',
@@ -508,44 +512,31 @@ async def handle_deep_screener(
         'gross_margin': 's.gross_margin',
         'operating_margin': 's.operating_margin',
         'profit_margin': 's.profit_margin',
-        'ev_ebitda': 's.ev_ebitda',
-        'enterprise_value': 's.enterprise_value',
         'total_debt': 's.total_debt',
-        'debt_equity': 's.debt_equity',
-        'beta_5y': 's.beta_5y',
+        # TradingView beta is 1Y; 'beta_5y' kept as a legacy intent alias.
+        'beta_1y': 's.beta_1y',
+        'beta_5y': 's.beta_1y',
         'rsi_14': 's.rsi_14',
-        'revenue_ttm': 's.revenue_ttm',
-        'net_income_ttm': 's.net_income_ttm',
+        'revenue_ttm': "COALESCE(s.revenue_ttm, s.revenue_fy)",
+        'net_income_ttm': "COALESCE(s.net_income_ttm, s.net_income_fy)",
         'pe_ratio': 'm.pe_ratio',
-        # Phase 5 Metrics
-        'altman_z_score': 's.altman_z_score',
-        'piotroski_f_score': 's.piotroski_f_score',
-        'ev_ebit': 's.ev_ebit',
-        'debt_ebitda': 's.debt_ebitda',
-        # Phase 6 Metrics
-        'p_ocf': 's.p_ocf',
-        'roce': 's.roce',
-        'asset_turnover': 's.asset_turnover',
-        'inventory_turnover': 's.inventory_turnover',
-        'earnings_yield': 's.earnings_yield',
-        'fcf_yield': 's.fcf_yield',
         # Growth Metrics
         'revenue_growth': 's.revenue_growth',
         'profit_growth': 's.profit_growth',
         'eps_growth': 's.eps_growth'
     }
-    
+
     db_col = VALID_METRICS.get(metric)
     if not db_col:
         return {'success': False, 'message': 'Invalid metric'}
 
     order_sql = "DESC" if direction.lower() == 'desc' else "ASC"
-    
+
     sql = f"""
         SELECT m.symbol, m.name_en, m.name_ar, m.last_price, {db_col} as value, m.market_code
         FROM market_tickers m
-        LEFT JOIN stock_statistics s ON m.symbol = s.symbol
-        WHERE {db_col} IS NOT NULL 
+        LEFT JOIN stock_stats_view s ON m.symbol = s.symbol
+        WHERE {db_col} IS NOT NULL
     """
     params = []
     

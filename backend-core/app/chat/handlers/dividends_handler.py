@@ -78,14 +78,26 @@ async def handle_dividends(
     upcoming_ex = _ts_to_date(tv['ex_date_upcoming']) if tv else None
     upcoming_amount = float(tv['amount_upcoming']) if tv and tv['amount_upcoming'] is not None else None
 
-    # Historical series (legacy table) — still useful for the multi-year table.
+    # Historical series — corporate_actions is SELF-EXTENDING from the daily
+    # TradingView dividends cycle (June-2026; the old dividend_history table
+    # froze in January and was narrating stale history).
     rows = await conn.fetch("""
-        SELECT ex_date, dividend_amount
-        FROM dividend_history
-        WHERE symbol = $1
+        SELECT ex_date, amount AS dividend_amount
+        FROM corporate_actions
+        WHERE symbol = $1 AND action_type = 'Dividend' AND amount IS NOT NULL
         ORDER BY ex_date DESC
         LIMIT $2
     """, symbol, limit)
+
+    # Deep per-fiscal-year DPS history from TradingView (egx_financials) — the
+    # same multi-year series the website Dividends tab shows (up to ~20 years).
+    dps_rows = await conn.fetch("""
+        SELECT fiscal_year, dps
+        FROM egx_financials
+        WHERE symbol = $1 AND period_type = 'annual' AND dps IS NOT NULL AND dps > 0
+        ORDER BY fiscal_year DESC
+        LIMIT 15
+    """, symbol)
 
     # Build cards based on available data
     cards = [
@@ -161,6 +173,11 @@ async def handle_dividends(
                  lines.append(f"• 🔜 التوزيع القادم: {_format_number(upcoming_amount)} {currency} (تاريخ الاستحقاق {upcoming_ex.isoformat()})")
              lines.append(f"• عدد التوزيعات المسجلة: {len(dividends)}")
              if price_str: lines.append(f"• السعر الحالي: {price_str} {currency}")
+             if dps_rows:
+                 lines.append("")
+                 lines.append("🗓️ **التوزيعات لكل سنة مالية:**")
+                 for r in dps_rows:
+                     lines.append(f"• {int(r['fiscal_year'])}: {float(r['dps']):.4f} {currency}/سهم")
              message = "\n".join(lines)
         else:
              lines = [f"💵 **Dividend History for {name}** ({symbol})\n"]
@@ -177,6 +194,11 @@ async def handle_dividends(
                  lines.append(f"• 🔜 Upcoming: {_format_number(upcoming_amount)} {currency} (ex-date {upcoming_ex.isoformat()})")
              lines.append(f"• Number of Distributions: {len(dividends)}")
              if price_str: lines.append(f"• Current Price: {price_str} {currency}")
+             if dps_rows:
+                 lines.append("")
+                 lines.append("🗓️ **Dividends per fiscal year:**")
+                 for r in dps_rows:
+                     lines.append(f"• FY{int(r['fiscal_year'])}: {float(r['dps']):.4f} {currency}/share")
              message = "\n".join(lines)
         
         # Add dividends table card
@@ -192,6 +214,7 @@ async def handle_dividends(
                 'upcoming_ex_date': upcoming_ex.isoformat() if upcoming_ex else None,
                 'payout_ratio_ttm': payout_ratio_ttm,
                 'frequency': frequency,
+                'dps_per_year': [{'fiscal_year': int(r['fiscal_year']), 'dps': float(r['dps'])} for r in dps_rows],
                 'source': 'tradingview'
             }
         })

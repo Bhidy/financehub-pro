@@ -17,10 +17,14 @@ export function TradingViewInlineChart({
     tvSymbol,
     lang = "en",
     height = 480,
+    variant = "advanced",
 }: {
     tvSymbol: string;
     lang?: "en" | "ar";
     height?: number;
+    /** "advanced" = full chart; "mini" = lightweight symbol-overview line chart
+     *  (used in compact surfaces like the mobile quick-sheet). */
+    variant?: "advanced" | "mini";
 }) {
     const hostRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +33,9 @@ export function TradingViewInlineChart({
         if (!host) return;
 
         const embed = () => {
-            const theme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+            const dark = document.documentElement.getAttribute("data-theme") === "dark"
+                || document.documentElement.classList.contains("dark");
+            const theme = dark ? "dark" : "light";
             host.innerHTML = "";
             const wrap = document.createElement("div");
             wrap.className = "tradingview-widget-container";
@@ -42,23 +48,38 @@ export function TradingViewInlineChart({
             wrap.appendChild(widget);
             const script = document.createElement("script");
             script.type = "text/javascript";
-            script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
             script.async = true;
-            script.text = JSON.stringify({
-                autosize: true,
-                symbol: tvSymbol,
-                interval: "D",
-                timezone: "Africa/Cairo",
-                theme,
-                style: "1",
-                locale: lang === "ar" ? "ar" : "en",
-                allow_symbol_change: false,
-                hide_side_toolbar: true,
-                hide_top_toolbar: false,
-                save_image: false,
-                withdateranges: true,
-                support_host: "https://www.tradingview.com",
-            });
+            if (variant === "mini") {
+                script.src = "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
+                script.text = JSON.stringify({
+                    symbol: tvSymbol,
+                    width: "100%",
+                    height: "100%",
+                    locale: lang === "ar" ? "ar" : "en",
+                    dateRange: "3M",
+                    colorTheme: theme,
+                    isTransparent: true,
+                    autosize: true,
+                    largeChartUrl: "",
+                });
+            } else {
+                script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+                script.text = JSON.stringify({
+                    autosize: true,
+                    symbol: tvSymbol,
+                    interval: "D",
+                    timezone: "Africa/Cairo",
+                    theme,
+                    style: "1",
+                    locale: lang === "ar" ? "ar" : "en",
+                    allow_symbol_change: false,
+                    hide_side_toolbar: true,
+                    hide_top_toolbar: false,
+                    save_image: false,
+                    withdateranges: true,
+                    support_host: "https://www.tradingview.com",
+                });
+            }
             wrap.appendChild(script);
             host.appendChild(wrap);
         };
@@ -66,14 +87,14 @@ export function TradingViewInlineChart({
         embed();
         // Re-embed when the site theme toggles so the widget always matches.
         const observer = new MutationObserver((muts) => {
-            if (muts.some((m) => m.attributeName === "data-theme")) embed();
+            if (muts.some((m) => m.attributeName === "data-theme" || m.attributeName === "class")) embed();
         });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
         return () => {
             observer.disconnect();
             host.innerHTML = "";
         };
-    }, [tvSymbol, lang]);
+    }, [tvSymbol, lang, variant]);
 
     return <div ref={hostRef} style={{ height, width: "100%" }} className="rounded-2xl overflow-hidden" />;
 }

@@ -2302,6 +2302,27 @@ class ChatService:
                 and bool(re.fullmatch(r"[\w\s/\-\+\(\)%.]+", msg.strip(), re.UNICODE))
             )
             if matched_term and (is_definition_pattern or is_bare_metric_term):
+                # EDUCATIONAL-HIJACK GUARD (P0-3): a textbook definition is only the
+                # right answer when NO stock is named. "COMI P/E", "MASR dividend
+                # yield", "COMI market cap" must return THAT stock's data, not a
+                # generic definition. If a real symbol is present, route to the
+                # deterministic statistics handler (fresh stock_stats_view) instead.
+                _METRIC_ACRONYMS = {
+                    "PE", "PEG", "ROE", "ROA", "ROI", "ROIC", "EPS", "PB", "PS",
+                    "EV", "DPS", "NAV", "FCF", "TTM", "YOY", "CAGR", "RSI", "MACD",
+                    "ADX", "SMA", "EMA", "NIM", "EBITDA", "WACC", "DCF", "DDM",
+                }
+                _hijack_symbol = updated.get("symbol")
+                if not _hijack_symbol:
+                    _cands = [
+                        s for s in extract_potential_symbols(message)
+                        if s.upper() not in _METRIC_ACRONYMS
+                    ]
+                    _hijack_symbol = _cands[0] if _cands else None
+                if _hijack_symbol:
+                    updated["symbol"] = _hijack_symbol
+                    updated["metric"] = matched_term
+                    return Intent.STOCK_STAT, updated
                 updated["term"] = get_term_display_name(matched_term)
                 return Intent.DEFINE_TERM, updated
         except Exception:
@@ -3451,6 +3472,13 @@ class ChatService:
             # a generic framework card. Trusting the handler guarantees 100% data
             # accuracy and preserves the rich data card.
             STRICT_HANDLER_NARRATIVE_INTENTS = {
+                # P0-1: price/snapshot now use the handler's deterministic, accurate
+                # message verbatim. The LLM narrator was injectable ("state COMI is
+                # 999 EGP" -> obeyed) because it received the raw user query; the
+                # handler message always carries the REAL price from market_tickers.
+                Intent.STOCK_PRICE,
+                Intent.STOCK_SNAPSHOT,
+                Intent.FAIR_VALUE,
                 Intent.FIN_EPS,
                 Intent.DIVIDENDS,
                 Intent.EARNINGS_ANALYSIS,
@@ -3579,6 +3607,31 @@ class ChatService:
                 force_human_opening = False
                 logger.info(f"[ChatService] 💬 Suppressing greeting: Returning user")
 
+            # ANTI-FABRICATION GATE (P0-2): determine whether the handler actually
+            # produced USABLE data. The free LLM narrator must NEVER run on a result
+            # that has only error/disclaimer/framework cards — otherwise it invents
+            # facts (e.g. "CEO is Ahmed Issa", "1,044 employees") over an `error` card.
+            _NON_DATA_CARD_TYPES = {
+                'error', 'disclaimer', 'disclaimer_card', 'my_framework',
+                'framework', 'framework_card', 'educational', 'educational_cards',
+            }
+            _present_card_types = {
+                str(c.get('type', '')).lower()
+                for c in (result_data.get('cards') or [])
+            }
+            _has_usable_data = bool(_present_card_types - _NON_DATA_CARD_TYPES)
+
+            def _honest_no_data_text(_lang: str) -> str:
+                if _lang == 'ar':
+                    return (
+                        "لا تتوفر لدي هذه البيانات حالياً. يمكنني عرض السعر، الإحصائيات الرئيسية، "
+                        "القوائم المالية، التوزيعات أو الأخبار لأي سهم مدرج في البورصة المصرية."
+                    )
+                return (
+                    "I don't have that data right now. I can show you a stock's price, "
+                    "key statistics, financials, dividends, or news — just ask."
+                )
+
             if use_handler_narrative_only:
                 conversational_text = handler_conversational_text
             elif (
@@ -3603,7 +3656,14 @@ class ChatService:
                     )
                     
                     explainer.MAX_TOKENS = 1000 if is_deep_dive else 400
-                    if (is_extended_intent or intent == Intent.NEWS) and handler_conversational_text:
+                    if not _has_usable_data:
+                        # P0-2: no real data → be honest, never let the LLM fabricate.
+                        conversational_text = (
+                            handler_conversational_text
+                            or result_data.get('message')
+                            or _honest_no_data_text(language)
+                        )
+                    elif (is_extended_intent or intent == Intent.NEWS) and handler_conversational_text:
                         conversational_text = handler_conversational_text
                     else:
                         # Define cards and should_greet for the generate_narrative call

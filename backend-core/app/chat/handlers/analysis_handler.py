@@ -347,91 +347,75 @@ async def handle_financial_health(conn: asyncpg.Connection, symbol: str, languag
     }
 
 async def handle_fair_value(conn: asyncpg.Connection, symbol: str, language: str = 'en') -> Dict[str, Any]:
-    """Handle fair value / valuation requests."""
-    ticker = await conn.fetchrow("SELECT name_en, name_ar, currency, last_price FROM market_tickers WHERE symbol = $1", symbol)
-    if not ticker: return {'success': False, 'message': "Not found"}
-    
+    """Valuation request → vendor-sourced ratios ONLY (SOURCE-ONLY MANDATE / C-4 fix).
+
+    The previous implementation surfaced internally-generated DCF / DDM / P-E fair-value
+    MODELS plus an 'upside %' computed against a STALE price stored in the fair_values
+    table. That is a house opinion (Tier-1 REMOVE) and the upside was mislabeled/stale
+    (e.g. "+19.7%" while the live delta was -21.9%). We now return only vendor-sourced
+    valuation ratios from the LIVE stock_stats_view and state plainly that we do not
+    publish a house price target or fair-value model.
+    """
+    ticker = await conn.fetchrow(
+        "SELECT name_en, name_ar, currency, last_price FROM market_tickers WHERE symbol = $1",
+        symbol,
+    )
+    if not ticker:
+        return {'success': False, 'message': "Not found"}
+
     name = ticker['name_ar'] if language == 'ar' else ticker['name_en']
+    currency = get_ticker_currency(ticker)
 
-    rows = await conn.fetch("""
-        SELECT valuation_model, fair_value, upside_percent
-        FROM fair_values
-        WHERE symbol = $1
-        ORDER BY valuation_date DESC
-    """, symbol)
-
-    if not rows:
-         return {
-            'success': True,
-            'message': (
-                f"No fair value models available for {name} ({symbol})."
-                if language == 'en'
-                else f"لا توجد نماذج قيمة عادلة متاحة لـ {name} ({symbol})."
-            ),
-            'cards': [
-                {
-                    'type': 'stock_header',
-                    'data': {
-                        'symbol': symbol,
-                        'name': name,
-                        'currency': get_ticker_currency(ticker),
-                        'market_code': 'EGX'
-                    }
-                }
-            ]
-        }
-    
-    models = []
-    for r in rows:
-        models.append({
-            'model': r['valuation_model'],
-            'value': float(r['fair_value']) if r['fair_value'] is not None else 0.0,
-            'upside': float(r['upside_percent']) if r['upside_percent'] is not None else 0.0
-        })
-    
-    # Also fetch standard valuation ratios from live sources (TTM)
     ratios = await conn.fetchrow("""
-        SELECT mt.pe_ratio, COALESCE(mt.pb_ratio, ss.pb_ratio) as pb_ratio,
-               ss.ev_ebitda
+        SELECT mt.pe_ratio,
+               COALESCE(mt.pb_ratio, ss.pb_ratio) AS pb_ratio,
+               ss.forward_pe, ss.dividend_yield, ss.eps_ttm, ss.roe
         FROM market_tickers mt
-        LEFT JOIN stock_statistics ss ON mt.symbol = ss.symbol AND mt.market_code = ss.market_code
+        LEFT JOIN stock_stats_view ss ON mt.symbol = ss.symbol AND mt.market_code = ss.market_code
         WHERE mt.symbol = $1
     """, symbol)
 
-    val_data = {
-        'symbol': symbol,
-        'name': name,
-        'current_price': float(ticker['last_price']) if ticker['last_price'] else 0,
-        'currency': ticker['currency'],
-        'models': models,
-        'pe': float(ratios['pe_ratio']) if ratios and ratios['pe_ratio'] else None,
-        'pb': float(ratios['pb_ratio']) if ratios and ratios['pb_ratio'] else None
-    }
+    stats_data = {}
+    if ratios:
+        if ratios['pe_ratio'] is not None: stats_data['pe_ratio'] = float(ratios['pe_ratio'])
+        if ratios['pb_ratio'] is not None: stats_data['pb_ratio'] = float(ratios['pb_ratio'])
+        if ratios['forward_pe'] is not None: stats_data['forward_pe'] = float(ratios['forward_pe'])
+        if ratios['dividend_yield'] is not None: stats_data['dividend_yield'] = float(ratios['dividend_yield'])
+        if ratios['eps_ttm'] is not None: stats_data['eps_ttm'] = float(ratios['eps_ttm'])
+        if ratios['roe'] is not None: stats_data['roe'] = float(ratios['roe'])
 
-    msg = (
-        f"💎 **Valuation Analysis: {name} ({symbol})**"
-        if language == 'en'
-        else f"💎 **تحليل التقييم: {name} ({symbol})**"
-    )
+    if language == 'ar':
+        msg = (
+            f"💎 **نسب تقييم {name} ({symbol})**\n\n"
+            f"هذه نسب التقييم كما وردت من مزود البيانات. لا نُصدر هدفاً سعرياً أو نموذج قيمة عادلة داخلياً."
+        )
+    else:
+        msg = (
+            f"💎 **Valuation ratios — {name} ({symbol})**\n\n"
+            f"These are vendor-sourced valuation ratios. We don't publish a house price "
+            f"target or fair-value model."
+        )
+
+    cards = [
+        {
+            'type': 'stock_header',
+            'data': {'symbol': symbol, 'name': name, 'currency': currency, 'market_code': 'EGX'}
+        }
+    ]
+    if stats_data:
+        cards.append({
+            'type': 'stats',
+            'title': 'Valuation Ratios' if language == 'en' else 'نسب التقييم',
+            'data': stats_data,
+        })
 
     return {
         'success': True,
         'message': msg,
-        'cards': [
-            {
-                'type': 'stock_header',
-                'data': {
-                    'symbol': symbol,
-                    'name': name,
-                    'currency': get_ticker_currency(ticker),
-                    'market_code': 'EGX'
-                }
-            },
-            {'type': 'fair_value', 'title': 'Fair Value & Valuation', 'data': val_data}
-        ],
+        'cards': cards,
         'actions': [
-            {'label': '📈 Chart', 'label_ar': '📈 الرسم البياني', 'action_type': 'query', 'payload': f'Chart {symbol}'},
-            {'label': '💰 Financials', 'label_ar': '💰 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+            {'label': '📊 Financials', 'label_ar': '📊 القوائم المالية', 'action_type': 'query', 'payload': f'{symbol} financials'},
+            {'label': '📈 Analyst Targets', 'label_ar': '📈 أهداف المحللين', 'action_type': 'query', 'payload': f'{symbol} analyst price target'},
         ]
     }
 

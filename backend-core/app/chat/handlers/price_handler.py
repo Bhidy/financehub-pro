@@ -52,7 +52,7 @@ async def handle_stock_price(
     Handle STOCK_PRICE intent - premium quote with real OHLC data.
     Joins market_tickers with ohlc_data for complete data.
     """
-    # Premium query: Join market_tickers with latest ohlc_data AND stock_statistics for full deep stats
+    # Premium query: Join market_tickers with latest ohlc_data AND the FRESH stock_stats_view for deep stats
     row = await conn.fetchrow("""
         SELECT 
             m.symbol, m.name_en, m.name_ar, m.market_code, m.currency,
@@ -63,25 +63,29 @@ async def handle_stock_price(
             COALESCE(m.prev_close, LAG(o.close) OVER (ORDER BY o.date), o.close) as prev_close,
             m.pe_ratio,
             COALESCE(m.pb_ratio, ss.pb_ratio) AS pb_ratio,
-            -- market_tickers.dividend_yield is PERCENT; stock_statistics is a FRACTION,
-            -- so the fallback must be x100 to avoid a ~100x-too-small yield.
-            COALESCE(m.dividend_yield, ss.dividend_yield * 100) AS dividend_yield,
+            -- P0-4: both market_tickers.dividend_yield and stock_stats_view.dividend_yield
+            -- are PERCENT (the view replaced the legacy stock_statistics FRACTION source),
+            -- so the COALESCE fallback must NOT be x100 anymore.
+            COALESCE(m.dividend_yield, ss.dividend_yield) AS dividend_yield,
             m.market_cap, m.high_52w, m.low_52w, m.sector_name,
             m.last_updated, m.logo_url,
             o.date as ohlc_date,
-            ss.roe, ss.debt_equity, ss.profit_margin, ss.gross_margin, ss.operating_margin, ss.revenue_growth,
+            -- P0-4: ROE/margins/growth now come from the FRESH stock_stats_view (PERCENT
+            -- units) instead of the stale stock_statistics table (frozen May-2026, FRACTION).
+            -- debt_equity is not a view column → compute from total_debt / book_value.
+            ss.roe, ss.total_debt, ss.book_value, ss.profit_margin, ss.gross_margin, ss.operating_margin, ss.revenue_growth,
             -- Live sector avg PE/PB for scoring context
             sa.avg_sector_pe, sa.avg_sector_pb
         FROM market_tickers m
-        LEFT JOIN ohlc_data o ON m.symbol = o.symbol 
+        LEFT JOIN ohlc_data o ON m.symbol = o.symbol
             AND o.date = (SELECT MAX(date) FROM ohlc_data WHERE symbol = m.symbol)
-        LEFT JOIN stock_statistics ss ON m.symbol = ss.symbol AND m.market_code = ss.market_code
+        LEFT JOIN stock_stats_view ss ON m.symbol = ss.symbol AND m.market_code = ss.market_code
         LEFT JOIN LATERAL (
             SELECT
                 AVG(m2.pe_ratio) FILTER (WHERE m2.pe_ratio > 0 AND m2.pe_ratio < 100) AS avg_sector_pe,
                 AVG(COALESCE(m2.pb_ratio, s2.pb_ratio)) FILTER (WHERE COALESCE(m2.pb_ratio, s2.pb_ratio) > 0) AS avg_sector_pb
             FROM market_tickers m2
-            LEFT JOIN stock_statistics s2 ON m2.symbol = s2.symbol AND m2.market_code = s2.market_code
+            LEFT JOIN stock_stats_view s2 ON m2.symbol = s2.symbol AND m2.market_code = s2.market_code
             WHERE m2.sector_name = m.sector_name AND m2.market_code = 'EGX'
         ) sa ON true
         WHERE m.symbol = $1
@@ -120,13 +124,21 @@ async def handle_stock_price(
     high_52w = float(data['high_52w']) if data['high_52w'] else None
     low_52w = float(data['low_52w']) if data['low_52w'] else None
     
-    # TTM Stats from stock_statistics (unified TTM source)
-    roe = float(data['roe'] * 100) if data.get('roe') else None   # decimal to %
-    debt_equity = float(data['debt_equity']) if data.get('debt_equity') else None
-    profit_margin = float(data['profit_margin'] * 100) if data.get('profit_margin') else None  # decimal to %
-    gross_margin = float(data['gross_margin'] * 100) if data.get('gross_margin') else None
-    operating_margin = float(data['operating_margin'] * 100) if data.get('operating_margin') else None
-    revenue_growth = float(data['revenue_growth'] * 100) if data.get('revenue_growth') else None
+    # P0-4: stats now come from stock_stats_view which is ALREADY in PERCENT units
+    # (the legacy stock_statistics FRACTION source is gone) — so NO x100 here.
+    roe = float(data['roe']) if data.get('roe') is not None else None
+    profit_margin = float(data['profit_margin']) if data.get('profit_margin') is not None else None
+    gross_margin = float(data['gross_margin']) if data.get('gross_margin') is not None else None
+    operating_margin = float(data['operating_margin']) if data.get('operating_margin') is not None else None
+    revenue_growth = float(data['revenue_growth']) if data.get('revenue_growth') is not None else None
+    # debt_equity is not a view column — derive it from total_debt / book_value (equity).
+    _total_debt = data.get('total_debt')
+    _book_value = data.get('book_value')
+    debt_equity = (
+        float(_total_debt) / float(_book_value)
+        if _total_debt is not None and _book_value not in (None, 0)
+        else None
+    )
     # Live sector avgs for scoring
     sector_avg_pe = float(data['avg_sector_pe']) if data.get('avg_sector_pe') else None
     sector_avg_pb = float(data['avg_sector_pb']) if data.get('avg_sector_pb') else None
@@ -323,46 +335,12 @@ async def handle_stock_price(
     }
 
     # ------------------------------------------------------------------
-    # NEW: Starta Logic Engine Integration
-    # ------------------------------------------------------------------
-    try:
-        # 1. Calculate Valuation Score (Sector-Specific 5-Component)
-        metrics = stock_data_for_analysis.copy()
-        metrics['sector_name'] = sector_raw  # ensure sector_name key for scoring_engine
-        metrics['revenue_growth'] = revenue_growth
-        metrics['gross_margin'] = gross_margin
-        # Pass live sector peer avg so scoring engine gives meaningful peer-relative scores.
-        # NOTE: These are LIVE sector averages, not 5-year historical — labels are updated
-        # in scoring_engine to reflect 'vs Sector Avg' rather than 'vs 5yr avg'.
-        peer_avg = {}
-        if sector_avg_pe: peer_avg['pe_5yr_avg'] = sector_avg_pe
-        if sector_avg_pb: peer_avg['pb_5yr_avg'] = sector_avg_pb
-        score_res = calculate_score(metrics, peer_avg)
-        
-        cards.append({
-            'type': 'valuation_score', # Recognized by LLM Context
-            'title': 'Starta Valuation Score' if language == 'en' else 'نتيجة تقييم ستارتا',
-            'data': {
-                'total_score': score_res.total,
-                'valuation_score': score_res.valuation,
-                'quality_score': score_res.earnings_quality,
-                'momentum_score': score_res.momentum,
-                'profitability_score': score_res.profitability,
-                'health_score': score_res.financial_health,
-                'assessment': score_res.category,
-                'signal': score_res.signal,
-                'grade': score_res.grade,
-                'sector': sector
-            }
-        })
-        
-        # Issue 7 Fix: Macro context card REMOVED from STOCK_PRICE responses.
-        # Macro environment is irrelevant for a simple price/snapshot query.
-        # It is now placed in SCREENER and MARKET_OVERVIEW responses where
-        # market-wide context is actually relevant.
-
-    except Exception as logic_err:
-        print(f"Logic Engine Error: {logic_err}")
+    # P0-5 (SOURCE-ONLY MANDATE): the house-generated "Starta Valuation Score"
+    # card (total_score / grade / signal / assessment verdict) has been REMOVED
+    # from price & snapshot responses. It is an internally-computed opinion/verdict
+    # (Tier-1 REMOVE) and a simple price query should return facts only — vendor
+    # ratios (P/E, P/B, ROE, margin, dividend yield) and the live snapshot.
+    # Macro-context card was already removed (irrelevant to a price query).
     # ------------------------------------------------------------------
 
     

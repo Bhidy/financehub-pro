@@ -306,8 +306,9 @@ async def handle_stock_statistics(
     # TV-ONLY SOURCE (June-2026 chat realignment): stock_stats_view — the SAME
     # TradingView-fed view the website /symbol page reads. The old stock_statistics
     # table narrated frozen May-28 values for margins/ROE/payout.
-    # UNITS: the view stores percentages; this handler's formatters expect
-    # FRACTIONS (they multiply by 100), so percent fields are divided by 100 here.
+    # UNITS (Codex finding, PR#79): everything stays in the view's PERCENT units —
+    # the frontend stats card appends '%' directly; only the prose formatter
+    # below renders percents explicitly (no x100, no /100 anywhere).
     # Fields TradingView does not provide (P/S, PEG, EV/*, ROIC/ROCE, current/quick,
     # D/E, interest coverage, Altman/Piotroski, EBITDA-TTM, OCF, payout) are NULL —
     # the message builder and stats card silently skip nulls.
@@ -316,16 +317,16 @@ async def handle_stock_statistics(
             ss.pe_ratio AS live_pe, ss.pb_ratio AS live_pb, NULL::numeric AS live_ps,
             ss.forward_pe, NULL::numeric AS peg_ratio, NULL::numeric AS ev_ebitda, NULL::numeric AS ev_sales,
             ss.beta_1y, ss.rsi_14, ss.ma_50d, ss.ma_200d,
-            ss.roe / 100 AS roe, ss.roa / 100 AS roa, NULL::numeric AS roic, NULL::numeric AS live_roce,
-            ss.gross_margin / 100 AS gross_margin, ss.operating_margin / 100 AS operating_margin,
-            ss.profit_margin / 100 AS profit_margin,
+            ss.roe, ss.roa, NULL::numeric AS roic, NULL::numeric AS live_roce,
+            ss.gross_margin, ss.operating_margin,
+            ss.profit_margin,
             NULL::numeric AS live_ebitda_margin, NULL::numeric AS fcf_margin,
             NULL::numeric AS current_ratio, NULL::numeric AS quick_ratio,
             NULL::numeric AS debt_equity_ratio,
             NULL::numeric AS interest_coverage, NULL::numeric AS altman_z_score, NULL::numeric AS piotroski_f_score,
             ss.revenue_ttm, ss.net_income_ttm, NULL::numeric AS ebitda_ttm, NULL::numeric AS ocf_ttm, ss.fcf_ttm,
             ss.eps_ttm, ss.book_value, ss.bvps,
-            ss.revenue_growth / 100 AS revenue_growth, ss.eps_growth / 100 AS eps_growth,
+            ss.revenue_growth, ss.eps_growth,
             NULL::numeric AS payout_ratio,
             -- Market data (live from market_tickers)
             mt.name_en, mt.name_ar, mt.last_price, mt.market_code, mt.currency, mt.sector_name,
@@ -456,27 +457,32 @@ async def handle_stock_statistics(
         lines.extend(val_lines)
         lines.append("")
 
-    # 2. Efficiency
+    # 2. Efficiency — the view stores PERCENT values already; format directly
+    # (never via _format_percent, which multiplies fractions by 100).
+    def _pct_direct(v):
+        f_val = safe_float(v)
+        return f"{f_val:.2f}%" if f_val is not None else None
+
     eff_lines = []
-    roe_str = _format_percent(roe)
-    roa_str = _format_percent(roa)
-    roic_str = _format_percent(roic)
-    
+    roe_str = _pct_direct(roe)
+    roa_str = _pct_direct(roa)
+    roic_str = _pct_direct(roic)
+
     if roe_str: eff_lines.append(f"• {'ROE' if language == 'en' else 'العائد على حقوق الملكية'}: {roe_str}")
     if roa_str: eff_lines.append(f"• {'ROA' if language == 'en' else 'العائد على الأصول'}: {roa_str}")
     if roic_str: eff_lines.append(f"• {'ROIC' if language == 'en' else 'ROIC'}: {roic_str}")
-    if _format_percent(roce): eff_lines.append(f"• {'ROCE' if language == 'en' else 'العائد على رأس المال'}: {_format_percent(roce)}")
-    
+    if _pct_direct(roce): eff_lines.append(f"• {'ROCE' if language == 'en' else 'العائد على رأس المال'}: {_pct_direct(roce)}")
+
     if eff_lines:
         lines.append(f"📈 **{'الكفاءة المالية' if language == 'ar' else 'Financial Efficiency'}:**")
         lines.extend(eff_lines)
         lines.append("")
 
-    # 3. Margins
+    # 3. Margins (percent units, direct formatting)
     marg_lines = []
-    gm_str = _format_percent(gm)
-    om_str = _format_percent(om)
-    nm_str = _format_percent(nm)
+    gm_str = _pct_direct(gm)
+    om_str = _pct_direct(om)
+    nm_str = _pct_direct(nm)
     
     if gm_str: marg_lines.append(f"• {'Gross Margin' if language == 'en' else 'هامش الربح الإجمالي'}: {gm_str}")
     if om_str: marg_lines.append(f"• {'Operating Margin' if language == 'en' else 'هامش التشغيل'}: {om_str}")

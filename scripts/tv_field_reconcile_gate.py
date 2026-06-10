@@ -84,7 +84,10 @@ WEEKLY_TOL = float(os.environ.get("RECONCILE_WEEKLY_TOL", "0.05"))  # 5%
 # — still 100% TV data; it feeds the Financials tab). A prod value where only the
 # TV *scalar* is null is therefore NOT a ghost for these fields; the mismatch
 # check (both sides present) still applies and stays strict.
-HISTORY_BACKED = {"eps_fy", "revenue_fy", "net_income_fy", "total_debt", "bvps"}
+# NB: bvps is deliberately NOT here (Codex review, PR#72): the view's bvps comes
+# ONLY from the fundamentals scalar (no _fy_h fallback), so scalar-null with a
+# prod value would be a genuine ghost the gate must catch.
+HISTORY_BACKED = {"eps_fy", "revenue_fy", "net_income_fy", "total_debt"}
 
 
 def http_json(url: str, data=None):

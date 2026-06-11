@@ -1,8 +1,10 @@
-# Environment files
+# Environment files — broad on purpose; secrets must never be committed.
 backend/.env
 .env
-.env.backup_critical
+.env.*
 .env*.local
+!.env.example
+!*/.env.example
 
 # Vercel
 # Ignore ALL .vercel directories. The canonical project link lives at
@@ -19,10 +21,14 @@ debug_*.html
 debug_*.png
 
 # Temporary files
+# ⚠️ This global *.json ignore is a known foot-gun: any NEW json file the code
+# needs (configs, data maps, locales) is silently kept out of git until it gets
+# a `!` exception below. If you add a needed .json, add its exception HERE.
 *.json
 !package.json
 !package-lock.json
 !tsconfig.json
+!yahoo_master_map.json
 system_backup_*
 
 # --- repo hygiene (2026-06 cleanup) ---
@@ -41,8 +47,14 @@ __pycache__/
 /Issues/
 /launchingfinaltouches/
 /implementation_plans/
-# Local DB dumps (source of truth is the cloud database)
-*.sql
+# Local DB dumps only (source of truth is the cloud database).
+# ⚠️ NEVER reinstate a global `*.sql` rule: it silently kept the FOUNDATIONAL
+# schema migrations (0001_tradingview_egx & friends — the files that create
+# market_tickers itself) out of git (audit Critical C2, 2026-06-11). Schema
+# lives in backend-core/migrations/ and must ALWAYS be trackable by default.
+*.dump.sql
+backup_*.sql
+db_backup_*.sql
 # Agent tooling / skill caches — never belong in the product repo
 /.agent/
 /.shared/

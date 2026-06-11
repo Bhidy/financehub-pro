@@ -3,16 +3,26 @@ name: Database Backup (off-site)
 # Free, off-site, retained, integrity-checked DB backup — fixes the DR gap where
 # the only backup was a single pg_dump file on the Hetzner box itself
 # (/app/backups/financehub_weekly.sql.gz), overwritten weekly, with no off-site
-# copy, no history, and no restore verification: if that disk died, so did the
-# backup. This runs pg_dump from GitHub (off the prod host), verifies the dump,
-# and keeps each run as a versioned artifact — $0.
+# copy, no history, and no restore verification. This dumps from the self-hosted
+# runner, verifies the dump, and keeps each run as a versioned artifact — $0.
 #
-# SECRET REQUIRED: SUPABASE_DIRECT_URL — the DIRECT (session-mode, port 5432)
-# connection string from Supabase → Project Settings → Database → Connection
-# string → "Direct connection". pg_dump needs a session connection; the pooled
-# DATABASE_URL (port 6543, transaction mode) does NOT work for pg_dump. If the
-# secret is missing the run fails LOUD (a visible failure beats a silent fake
-# backup).
+# SECRET REQUIRED: SUPABASE_DIRECT_URL — holds the SESSION-POOLER connection
+# string (aws-1-eu-central-1.pooler.supabase.com:5432, user postgres.<ref>).
+# pg_dump needs a session-mode connection. Verified 2026-06-11 from this runner:
+#   - pooled :6543 (transaction mode)  → works for queries, NOT for pg_dump
+#   - direct db.<ref>.supabase.co:5432 → IPv6-only AND rejects the postgres
+#     user's password on this project — do not use
+#   - session pooler :5432             → WORKS (server_version 17.6) ← this one
+#
+# CLIENT VERSION: the server is PostgreSQL 17.x, so pg_dump must be v17+.
+# Ubuntu 24.04 ships client-16 only, and the runner user has no sudo — so the
+# workflow self-installs postgresql-client-17 from the official PGDG apt repo
+# (deb extracted to a persistent cache; no root needed; one-time download).
+#
+# SCOPE: --schema=public — all business data (market_tickers, ohlc_data,
+# egx_*, mutual_funds, ...) lives in public. Supabase-managed schemas (auth,
+# storage, realtime) are excluded: the postgres role cannot fully read them
+# and they are not this platform's DR target.
 
 on:
   schedule:
@@ -32,33 +42,38 @@ jobs:
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 30
     steps:
-      - name: Ensure pg_dump is available (auto-install if needed)
+      - name: Ensure pg_dump 17 (PGDG, no sudo, cached)
         run: |
           set -euo pipefail
-          if command -v pg_dump >/dev/null 2>&1; then
-            echo "pg_dump already installed: $(pg_dump --version)"
-            exit 0
+          CACHE="$HOME/.cache/financehub-pg17"
+          PGBIN="$CACHE/usr/lib/postgresql/17/bin/pg_dump"
+          LDP="$CACHE/usr/lib/x86_64-linux-gnu"
+          if [ -x "$PGBIN" ] && LD_LIBRARY_PATH="$LDP" "$PGBIN" --version >/dev/null 2>&1; then
+            echo "cached: $(LD_LIBRARY_PATH="$LDP" "$PGBIN" --version)"
+          else
+            echo "cache miss — fetching postgresql-client-17 from PGDG"
+            rm -rf "$CACHE"
+            mkdir -p "$CACHE"
+            PGDG="https://apt.postgresql.org/pub/repos/apt"
+            IDX="$CACHE/Packages"
+            curl -fsSL --retry 3 "$PGDG/dists/noble-pgdg/main/binary-amd64/Packages.gz" | gzip -dc > "$IDX"
+            CLIENT_PATH=$(awk '/^Package: postgresql-client-17$/{f=1} f && /^Filename:/{print $2; exit}' "$IDX")
+            LIBPQ_PATH=$(awk '/^Package: libpq5$/{f=1} f && /^Filename:/{print $2; exit}' "$IDX")
+            if [ -z "$CLIENT_PATH" ] || [ -z "$LIBPQ_PATH" ]; then
+              echo "::error::could not resolve postgresql-client-17/libpq5 in the PGDG index"
+              exit 1
+            fi
+            curl -fsSL --retry 3 -o "$CACHE/client.deb" "$PGDG/$CLIENT_PATH"
+            curl -fsSL --retry 3 -o "$CACHE/libpq.deb" "$PGDG/$LIBPQ_PATH"
+            dpkg -x "$CACHE/client.deb" "$CACHE"
+            dpkg -x "$CACHE/libpq.deb" "$CACHE"
+            rm -f "$CACHE/client.deb" "$CACHE/libpq.deb" "$IDX"
+            LD_LIBRARY_PATH="$LDP" "$PGBIN" --version
           fi
-          # No passwordless sudo on this runner — self-install via apt-get download
-          # (downloads the .deb without root, then dpkg -x extracts the binary).
-          # libpq5 is already on the system (psycopg2-binary depends on it), so we
-          # only need the client package itself.
-          echo "pg_dump not found — self-installing via apt-get download (no sudo)"
-          PGDIR=$(mktemp -d /tmp/pgclient.XXXXXX)
-          (cd "$PGDIR" && apt-get download postgresql-client-16 libpq5 2>/dev/null) || {
-            echo "::error::apt-get download failed — check internet access or apt index on runner"
-            exit 1
-          }
-          for deb in "$PGDIR"/*.deb; do dpkg -x "$deb" "$PGDIR"; done
-          PG_BIN_DIR=$(find "$PGDIR" -name "pg_dump" -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)
-          if [ -z "$PG_BIN_DIR" ]; then
-            echo "::error::pg_dump binary not found after deb extraction"
-            exit 1
-          fi
-          PG_LIB_DIR=$(find "$PGDIR/usr" -maxdepth 6 -name "libpq.so*" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)
-          echo "$PG_BIN_DIR" >> "$GITHUB_PATH"
-          [ -n "$PG_LIB_DIR" ] && echo "LD_LIBRARY_PATH=${PG_LIB_DIR}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> "$GITHUB_ENV"
-          echo "✓ pg_dump self-installed: $("$PG_BIN_DIR/pg_dump" --version)"
+          {
+            echo "PG17_BIN=$PGBIN"
+            echo "PG17_LIB=$LDP"
+          } >> "$GITHUB_ENV"
 
       - name: Dump + verify
         env:
@@ -73,19 +88,24 @@ jobs:
           OUT="financehub-${STAMP}.sql.gz"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
           # --no-owner/--no-privileges keep the dump portable for restore into any DB.
-          pg_dump --no-owner --no-privileges --format=plain "$DIRECT_URL" | gzip -9 > "$OUT"
+          # LD_LIBRARY_PATH is scoped to this command only — it must not leak into
+          # later steps (upload-artifact runs on node and a stray lib path can break it).
+          LD_LIBRARY_PATH="$PG17_LIB" "$PG17_BIN" --schema=public --no-owner --no-privileges --format=plain "$DIRECT_URL" | gzip -9 > "$OUT"
           # Integrity: gzip must be valid AND the dump must be plausibly large (a
           # failed/empty dump is a few bytes — never let that masquerade as a backup).
           gzip -t "$OUT"
-          SIZE=$(stat -f%z "$OUT" 2>/dev/null || stat -c%s "$OUT")
+          SIZE=$(stat -c%s "$OUT")
           echo "backup size: ${SIZE} bytes"
           if [ "$SIZE" -lt 102400 ]; then
             echo "::error::backup is only ${SIZE} bytes (<100KB) — almost certainly a failed/empty dump."
             exit 1
           fi
-          # Sanity: the decompressed dump must contain core tables.
+          # Sanity: core tables must appear in the dump. Single zcat pass with a
+          # full-stream grep — grep -q on the pipe would SIGPIPE zcat under
+          # pipefail and turn a successful match into exit 141.
+          FOUND=$(zcat "$OUT" | grep -oE 'market_tickers|ohlc_data|mutual_funds' | sort -u || true)
           for t in market_tickers ohlc_data mutual_funds; do
-            if ! zcat "$OUT" | grep -q "CREATE TABLE.*\b${t}\b\|COPY .*\b${t}\b"; then
+            if ! printf '%s\n' "$FOUND" | grep -qx "$t"; then
               echo "::warning::table '${t}' not found in dump (verify schema)."
             fi
           done

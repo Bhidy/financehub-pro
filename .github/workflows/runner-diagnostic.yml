@@ -141,3 +141,16 @@ jobs:
           }
           try_dump DIRECT "${DIRECT_URL:-}"
           try_dump SESSION "$SESSION_URL"
+
+      - name: SSH path probe (read-only — diagnose external root-ssh block)
+        run: |
+          echo "== listeners on :22 =="
+          ss -tln 2>/dev/null | grep ':22 ' || echo "none visible"
+          echo "== sshd-ish processes =="
+          ps -eo comm,args | grep -E '[s]shd|[e]ndlessh|[t]ailscaled|[f]rps' || echo "none visible"
+          echo "== ufw status (may need root) =="
+          ufw status 2>/dev/null || echo "ufw status unreadable as non-root"
+          echo "== local root key-auth behavior (expect publickey denial, NOT a custom block) =="
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@localhost 'echo LOCAL_ROOT_OK' 2>&1 | tail -3 || true
+          echo "== public-ip root key-auth behavior =="
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@46.224.223.172 'echo PUBLIC_OK' 2>&1 | tail -3 || true

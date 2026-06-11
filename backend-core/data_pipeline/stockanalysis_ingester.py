@@ -326,7 +326,7 @@ class StockAnalysisScraper:
             # Wait for table to appear (Svelte hydration)
             try:
                 await page.wait_for_selector('table.financials-table', timeout=10000)
-            except:
+            except Exception:
                 logger.warning(f"Timeout waiting for table on {url}")
             
             content = await page.content()

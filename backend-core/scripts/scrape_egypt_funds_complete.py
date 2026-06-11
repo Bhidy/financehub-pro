@@ -57,7 +57,7 @@ def parse_decimal(text):
         return None
     try:
         return float(clean)
-    except:
+    except Exception:
         return None
 
 
@@ -71,7 +71,7 @@ def parse_date(text):
     for fmt in ['%d-%b-%Y', '%d %b %Y', '%Y-%m-%d', '%d-%B-%Y']:
         try:
             return datetime.strptime(clean, fmt).date()
-        except:
+        except Exception:
             continue
     return None
 
@@ -240,7 +240,7 @@ async def scrape_performance_tab(session, symbol):
             if json_match:
                 try:
                     nav_history = json.loads(json_match.group())
-                except:
+                except Exception:
                     pass
             
             # Alternative: Look for data arrays

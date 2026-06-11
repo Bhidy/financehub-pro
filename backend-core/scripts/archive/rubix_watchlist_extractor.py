@@ -67,14 +67,14 @@ def parse_decimal(value: str) -> Optional[Decimal]:
     try:
         clean = str(value).replace(',', '').replace('%', '').strip()
         return Decimal(clean) if clean else None
-    except: return None
+    except Exception: return None
 
 def parse_int(value: str) -> Optional[int]:
     if not value or value in ['-', '--', 'N/A', '']: return None
     try:
         clean = str(value).replace(',', '').strip()
         return int(float(clean)) if clean else None
-    except: return None
+    except Exception: return None
 
 async def send_discord_notification(message: str, is_error: bool = False):
     if not DISCORD_WEBHOOK_URL: return
@@ -86,7 +86,7 @@ async def send_discord_notification(message: str, is_error: bool = False):
                 json={"content": f"{emoji} **EGX Batch**: {message}"},
                 timeout=10
             )
-    except: pass
+    except Exception: pass
 
 async def get_db_connection():
     if not DATABASE_URL: raise ValueError("DATABASE_URL environment variable not set")
@@ -112,7 +112,7 @@ async def login(page: Page) -> bool:
         
         try:
             await page.wait_for_url("**/secure/**", timeout=20000)
-        except:
+        except Exception:
             if "login" in page.url.lower(): raise Exception("Stuck on login page")
 
         logger.info("🧭 Navigating to Watchlist...")
@@ -143,7 +143,7 @@ async def login(page: Page) -> bool:
                     await page.click('text=EGX')
             await page.wait_for_timeout(3000)
             return True
-        except: return True 
+        except Exception: return True 
     except Exception as e:
         logger.error(f"❌ Login error: {e}")
         return False

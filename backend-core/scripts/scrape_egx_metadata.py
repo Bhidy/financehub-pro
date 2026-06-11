@@ -102,7 +102,7 @@ async def fetch_metadata(client: httpx.AsyncClient, symbol: str):
                 # Remove suffix char if present
                 clean = s.strip('TBMK%')
                 return float(clean) * multiplier
-            except:
+            except Exception:
                 return None
 
         pe_ratio = convert_si(pe_str)

@@ -1,26 +1,34 @@
 name: CI Guard
 
 # ============================================================
-# Prevention layer (added after the June 2026 freeze).
-# - actionlint validates EVERY workflow. It catches the exact bug that broke
-#   morning_brief.yml (a `secrets.*` reference inside a step-level `if:`),
-#   which failed silently at 0s on every push for days.
-# - py_compile validates the ingestion + backend code so a syntax error can
-#   never reach main and break the data pipeline.
+# Prevention layer (created after the June 2026 freeze; upgraded 2026-06-11).
+#
+# Runs on GitHub-HOSTED ubuntu runners ON PURPOSE:
+#   - pull_request code must NEVER execute on the production Hetzner runner
+#     (it hosts the live backend + data pipelines and holds prod secrets);
+#   - the prod runner stays free for the data crons (no queueing behind CI).
+#   Cost: a few min/run inside the private-repo free tier.
+#
+# Gates (every one verified locally-green before being added here):
+#   1. actionlint     — every workflow file (caught the morning_brief.yml bug
+#                       where a `secrets.*` ref in a step-level `if:` failed
+#                       silently at 0s on every push for days)
+#   2. compileall     — syntax across ingestion + backend + harvester scripts
+#                       (no import, no network)
+#   3. ruff E722      — bare `except:` ban (the swallowed-SystemExit class
+#                       behind the silent ingestion failures); see ruff.toml
+#   4. write-registry — every harvester write SQL must be registered in
+#                       ALL_WRITE_SQL so the QA write-contract gate covers it
+#                       (scripts/check_write_registry.py)
+#   5. pytest         — offline data-layer tests (feed dedup / price validation
+#                       / router fallback); network is monkeypatched
+#   6. tsc --noEmit   — frontend type integrity (strict TS, lockfile-exact)
 # ============================================================
 
 on:
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/**'
-      - 'ingestion/**'
-      - 'backend-core/**'
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - 'ingestion/**'
-      - 'backend-core/**'
   workflow_dispatch:
 
 permissions:
@@ -33,10 +41,10 @@ concurrency:
 jobs:
   validate-workflows:
     name: Validate workflows (actionlint)
-    runs-on: [self-hosted, linux, x64, hetzner]
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run actionlint
         env:
           # Keep CI focused on real problems: report shellcheck warnings+errors
@@ -48,20 +56,54 @@ jobs:
           bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
           ./actionlint -color
 
-  python-smoke:
-    name: Python syntax check
-    runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 8
+  python-gates:
+    name: Python gates (syntax · lint · write-registry · tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Compile ingestion + backend (no import/network — syntax only)
+      - name: Compile backend + ingestion + harvester scripts (syntax only)
         run: |
           python -m compileall -q \
-            -x '(chat_backup|__pycache__|\.venv)' \
+            -x '(__pycache__|\.venv)' \
             ingestion \
+            scripts \
             backend-core/app \
-            backend-core/data_pipeline
+            backend-core/data_pipeline \
+            backend-core/scripts
           echo "✅ Python sources compile cleanly"
+      - name: Install gate dependencies
+        run: pip install --quiet ruff pytest httpx
+      - name: Ruff — bare `except:` ban (E722, see ruff.toml)
+        run: ruff check .
+      - name: Write-registry gate (harvester SQL must be QA-covered)
+        run: python scripts/check_write_registry.py
+      - name: Offline data-layer tests
+        env:
+          # config.py fail-fasts on a missing SECRET_KEY by design; give tests a
+          # dummy so importing app.* in future tests never breaks CI mysteriously.
+          SECRET_KEY: ci-only-dummy-not-used-in-prod
+        run: |
+          cd backend-core
+          python -m pytest tests/ -q
+
+  frontend-typecheck:
+    name: Frontend type integrity (tsc)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies (lockfile-exact)
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Type check
+        working-directory: frontend
+        run: npx tsc --noEmit

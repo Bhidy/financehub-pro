@@ -586,7 +586,7 @@ async def get_session_messages(
             if item.get('meta') and isinstance(item['meta'], str):
                  try:
                      item['meta'] = json.loads(item['meta'])
-                 except:
+                 except Exception:
                      pass
             result.append(item)
             
@@ -626,7 +626,7 @@ async def get_shared_session_messages(session_id: str):
             if item.get('meta') and isinstance(item['meta'], str):
                  try:
                      item['meta'] = json.loads(item['meta'])
-                 except:
+                 except Exception:
                      pass
             result.append(item)
             
@@ -680,7 +680,7 @@ async def get_shared_single_message(message_id: int):
             if item.get('meta') and isinstance(item['meta'], str):
                  try:
                      item['meta'] = json.loads(item['meta'])
-                 except:
+                 except Exception:
                      pass
             result.append(item)
             

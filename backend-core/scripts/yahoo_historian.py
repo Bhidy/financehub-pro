@@ -54,7 +54,7 @@ async def upsert_history(conn, isin, result):
                 float(closes[i] or 0),
                 int(volumes[i] or 0)
             ))
-        except:
+        except Exception:
             continue
 
     if not records:

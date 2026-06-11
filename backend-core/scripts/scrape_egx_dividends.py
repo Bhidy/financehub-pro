@@ -43,7 +43,7 @@ async def fetch_dividends(client: httpx.AsyncClient, symbol: str):
             try:
                 # Format: "Jan 01, 2024" or "2024-01-01"
                 ex_date = datetime.strptime(date_str, "%b %d, %Y")
-            except:
+            except Exception:
                 continue
                 
             if ex_date < cutoff_date: break # Stop if too old
@@ -51,7 +51,7 @@ async def fetch_dividends(client: httpx.AsyncClient, symbol: str):
             # Parse Amount
             try:
                 amount = float(amount_str.replace('EGP', '').strip())
-            except:
+            except Exception:
                 amount = 0.0
                 
             dividends.append({

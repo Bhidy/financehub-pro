@@ -42,7 +42,7 @@ def parse_val(s):
         if s.endswith('%'): val = val * 0.01
         else: val = val * multiplier
         return val
-    except:
+    except Exception:
         return None
 
 async def fetch_sa_data(client, symbol):

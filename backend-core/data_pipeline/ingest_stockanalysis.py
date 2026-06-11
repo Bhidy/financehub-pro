@@ -424,7 +424,7 @@ def parse_date(date_str: str) -> Optional[date]:
     if match_iso:
          try:
             return datetime.strptime(match_iso.group(1), "%Y-%m-%d").date()
-         except: pass
+         except Exception: pass
 
     # Standard date search
     match = re.search(r'([A-Za-z]{3}\.\s*\d{1,2},?\s+\d{4}|[A-Za-z]{3}\s+\d{1,2},?\s+\d{4})', date_str)
@@ -877,12 +877,12 @@ async def fetch_price_snapshot(client: httpx.AsyncClient, symbol: str) -> Option
             if len(parts) >= 1:
                 try:
                     change = float(parts[0].replace('+', '').strip())
-                except: pass
+                except Exception: pass
             if len(parts) >= 2:
                 try:
                     pct_str = parts[1].replace(')', '').replace('%', '').replace('+', '').strip()
                     change_pct = float(pct_str)
-                except: pass
+                except Exception: pass
         
         return {
             "symbol": symbol,
@@ -977,10 +977,10 @@ async def fetch_historical_data(pool: asyncpg.Pool, client: httpx.AsyncClient, s
                 date_str = cols[0].get_text(strip=True)
                 try:
                     dt = datetime.strptime(date_str, "%b %d, %Y").date()
-                except:
+                except Exception:
                     try:
                         dt = datetime.strptime(date_str, "%Y-%m-%d").date()
-                    except:
+                    except Exception:
                         continue
                         
                 op = float(cols[1].get_text(strip=True).replace(',', ''))

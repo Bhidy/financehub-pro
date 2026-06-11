@@ -155,7 +155,7 @@ async def main():
                         ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav
                     """, best_match['fund_id'], today, nav)
                     nav_history_count += 1
-                except:
+                except Exception:
                     pass
                 
                 print(f"  ✅ [{best_score*100:.0f}%] Matched: {name[:40]} → {best_match['fund_name_en'][:25] if best_match['fund_name_en'] else 'N/A'}")
@@ -189,7 +189,7 @@ async def main():
                                 ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav
                             """, new_fund_id, today, nav)
                             nav_history_count += 1
-                        except:
+                        except Exception:
                             pass
                     
                     print(f"  ➕ INSERTED NEW: {name[:50]} | NAV: {nav:.2f}")

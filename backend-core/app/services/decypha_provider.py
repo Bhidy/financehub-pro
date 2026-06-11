@@ -117,7 +117,7 @@ class DecyphaProvider:
         try:
              # Try standard Excel
              return pd.read_excel(io.BytesIO(content))
-        except:
+        except Exception:
              try:
                  # Try HTML Table (sometimes they export HTML tables as .xls)
                  dfs = pd.read_html(io.BytesIO(content))
@@ -134,7 +134,7 @@ class DecyphaProvider:
             if pd.isna(val) or val == '' or val == '-': return None
             s = str(val).replace('%', '').strip()
             try: return float(s) / 100.0 
-            except: return None
+            except Exception: return None
             
         await db.connect() # Ensure connection
         
@@ -176,7 +176,7 @@ class DecyphaProvider:
             try:
                 if not pd.isna(aum_raw) and str(aum_raw).strip() not in ['-', '']:
                     aum = float(str(aum_raw).replace(',', ''))
-            except: pass
+            except Exception: pass
             
             shariah_raw = str(row.get('Shariah', 'No')).lower()
             is_shariah = 'yes' in shariah_raw or 'true' in shariah_raw
@@ -208,7 +208,7 @@ class DecyphaProvider:
                      max_id_row = await db.fetch_one("SELECT MAX(CAST(fund_id AS INTEGER)) as m FROM mutual_funds WHERE fund_id ~ '^\\d+$'")
                      max_id = (max_id_row['m'] if max_id_row and max_id_row['m'] else 1000) + 1
                      fid = str(max_id)
-                except:
+                except Exception:
                      fid = str(int(datetime.now().timestamp()))
 
                 await db.execute("""

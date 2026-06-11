@@ -94,7 +94,7 @@ def setup_styles(wb):
         wb.add_named_style(percent_style)
         wb.add_named_style(currency_style)
         wb.add_named_style(info_style)
-    except:
+    except Exception:
         pass  # Styles may already exist
     
     return wb
@@ -112,7 +112,7 @@ def format_number(value, is_percent=False):
                 return val  # Already in decimal, Excel will format as %
             return val / 100  # Convert to decimal for Excel percent format
         return val
-    except:
+    except Exception:
         return value
 
 
@@ -316,7 +316,7 @@ async def export_financials(
                     try:
                         row_obj['values'][period] = float(val)
                         has_any_data = True
-                    except:
+                    except Exception:
                         row_obj['values'][period] = None
                 else:
                     row_obj['values'][period] = None

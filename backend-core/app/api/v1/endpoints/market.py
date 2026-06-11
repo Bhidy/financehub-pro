@@ -447,7 +447,7 @@ async def get_fund_statistics():
     def to_float(val):
         try:
             return float(val) if val is not None else -999999
-        except:
+        except Exception:
             return -999999
 
     # Fetch all EGX funds
@@ -803,7 +803,7 @@ async def get_data_health():
             try:
                 result = await db.fetch_one(f"SELECT COUNT(*) as count FROM {table}")
                 count = result['count'] if result else 0
-            except:
+            except Exception:
                 count = 0
             counts[table] = {"rows": count, "points": count * mult}
             total_rows += count

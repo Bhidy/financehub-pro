@@ -213,7 +213,7 @@ class SchedulerService:
             try:
                 from app.services.notification_service import notification_service
                 notification_service.send_discord(f"🔥 **CRITICAL FAILURE**\nScheduler crashed on startup!\nError: {e}", is_error=True)
-            except:
+            except Exception:
                 pass
 
     async def _startup_ohlc_catchup(self):

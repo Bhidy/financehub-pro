@@ -1361,7 +1361,7 @@ async def chat_with_analyst(message: str, history: List[Dict], max_retries: int 
                     fn_name = tool_call.function.name
                     try:
                         args = json.loads(tool_call.function.arguments)
-                    except:
+                    except Exception:
                         args = {}
                     symbol = args.get("symbol")
                     

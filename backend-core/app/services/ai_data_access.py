@@ -97,7 +97,7 @@ async def ai_get_price_summary(symbol: str) -> Optional[Dict]:
                     'from': str(row['min_date']),
                     'to': str(row['max_date'])
                 }
-        except:
+        except Exception:
             pass
     
     return summary
@@ -153,7 +153,7 @@ async def ai_get_income_statement(symbol: str, periods: int = 5) -> Optional[Dic
     try:
         rows = await db.fetch_all(query, symbol, periods)
         return {'symbol': symbol, 'income_data': [dict(r) for r in rows]} if rows else None
-    except:
+    except Exception:
         return None
 
 
@@ -171,7 +171,7 @@ async def ai_get_balance_sheet(symbol: str, periods: int = 5) -> Optional[Dict]:
     try:
         rows = await db.fetch_all(query, symbol, periods)
         return {'symbol': symbol, 'balance_data': [dict(r) for r in rows]} if rows else None
-    except:
+    except Exception:
         return None
 
 
@@ -224,7 +224,7 @@ async def ai_compare_valuations(symbols: List[str]) -> Optional[Dict]:
             row = await db.fetch_one(query, symbol)
             if row:
                 results[symbol] = dict(row)
-        except:
+        except Exception:
             pass
     
     return {'comparison': results} if results else None
@@ -247,7 +247,7 @@ async def ai_get_corporate_events(symbol: str, limit: int = 20) -> Optional[Dict
     try:
         rows = await db.fetch_all(query, symbol, limit)
         return {'symbol': symbol, 'events': [dict(r) for r in rows]} if rows else None
-    except:
+    except Exception:
         return None
 
 
@@ -277,7 +277,7 @@ async def ai_get_dividend_history(symbol: str) -> Optional[Dict]:
             'total_paid': float(total_divs),
             'history': [dict(r) for r in rows]
         }
-    except:
+    except Exception:
         return None
 
 
@@ -293,7 +293,7 @@ async def ai_get_split_history(symbol: str) -> Optional[Dict]:
     try:
         rows = await db.fetch_all(query, symbol)
         return {'symbol': symbol, 'splits': [dict(r) for r in rows]} if rows else None
-    except:
+    except Exception:
         return None
 
 
@@ -326,7 +326,7 @@ async def ai_get_earnings_history(symbol: str, limit: int = 10) -> Optional[Dict
             'beat_rate': f"{beat_rate:.0f}%",
             'history': [dict(r) for r in rows]
         }
-    except:
+    except Exception:
         return None
 
 
@@ -363,7 +363,7 @@ async def ai_get_data_statistics() -> Dict:
             count = row['cnt'] if row else 0
             stats['tables'][table] = {'description': desc, 'records': count}
             stats['total_datapoints'] += count
-        except:
+        except Exception:
             stats['tables'][table] = {'description': desc, 'records': 0}
     
     stats['total_million'] = f"{stats['total_datapoints'] / 1_000_000:.2f}M"
@@ -402,7 +402,7 @@ async def ai_can_answer(question: str) -> Dict:
                 row = await db.fetch_one(query)
                 if row and row['cnt'] > 0:
                     symbol_data['available'].append(f"{desc} ({row['cnt']} records)")
-            except:
+            except Exception:
                 pass
         
         available_data[symbol] = symbol_data

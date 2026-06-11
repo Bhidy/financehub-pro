@@ -787,7 +787,7 @@ def _parse_raw_data(raw_data: Any) -> Dict[str, Any]:
     if isinstance(raw_data, str):
         try:
             return json.loads(raw_data)
-        except:
+        except Exception:
             return {}
     return {}
 
@@ -1490,7 +1490,7 @@ def _process_rows(rows: List[asyncpg.Record], display_map: Dict[str, str], order
                     val_str = datetime.strptime(str(raw_date), "%Y-%m-%d").strftime("%b %d, %Y")
                 period_ending_row['values'][y] = val_str
                 has_period = True
-            except:
+            except Exception:
                 period_ending_row['values'][y] = None
         else:
             period_ending_row['values'][y] = None
@@ -1614,7 +1614,7 @@ def _process_rows_quarterly(rows: List[asyncpg.Record], display_map: Dict[str, s
                     val_str = datetime.strptime(str(raw_date), "%Y-%m-%d").strftime("%b %d, %Y")
                 period_ending_row['values'][period] = val_str
                 has_period = True
-            except:
+            except Exception:
                 period_ending_row['values'][period] = None
         else:
              period_ending_row['values'][period] = None

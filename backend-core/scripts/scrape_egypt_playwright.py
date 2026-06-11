@@ -44,7 +44,7 @@ def parse_decimal(text):
         return None
     try:
         return float(clean)
-    except:
+    except Exception:
         return None
 
 
@@ -57,7 +57,7 @@ def parse_date(text):
     for fmt in ['%d-%b-%Y', '%d %b %Y', '%Y-%m-%d', '%d-%B-%Y']:
         try:
             return datetime.strptime(clean, fmt).date()
-        except:
+        except Exception:
             continue
     return None
 
@@ -80,7 +80,7 @@ async def login_to_decypha(page, context):
             if 'Bhidy.mubasher' in page_content:
                 print("✅ Already logged in (Sign In hidden, Username found)")
                 return True
-    except:
+    except Exception:
         pass # proceed to login attempts
 
     print("   Starting login flow...")

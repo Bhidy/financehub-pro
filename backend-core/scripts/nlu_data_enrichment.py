@@ -241,7 +241,7 @@ async def populate_arabic_names(conn: asyncpg.Connection):
             if 'UPDATE 1' in result:
                 print(f"✓ {symbol}: {best_name}")
                 nickname_updates += 1
-        except:
+        except Exception:
             pass
     
     print(f"Updated {nickname_updates} additional stocks from nickname dictionary")
@@ -310,7 +310,7 @@ async def inject_nickname_aliases(conn: asyncpg.Connection):
                 DO UPDATE SET priority = 10, alias_type = 'nickname', popularity_score = EXCLUDED.popularity_score
             """, nickname, normalize_arabic(nickname), symbol, POPULARITY_SCORES.get(symbol, 50))
             injected += 1
-        except:
+        except Exception:
             pass
     
     # English nicknames
@@ -324,7 +324,7 @@ async def inject_nickname_aliases(conn: asyncpg.Connection):
                 DO UPDATE SET priority = 10, alias_type = 'nickname', popularity_score = EXCLUDED.popularity_score
             """, nickname, nickname.lower(), symbol, POPULARITY_SCORES.get(symbol, 50))
             injected += 1
-        except:
+        except Exception:
             pass
     
     print(f"Injected {injected} curated nicknames")

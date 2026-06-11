@@ -410,7 +410,7 @@ class EnterpriseBackfill:
                             float(amount)
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             return count
@@ -442,7 +442,7 @@ class EnterpriseBackfill:
                             float(ratio)
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             return count
@@ -492,7 +492,7 @@ class EnterpriseBackfill:
                             int(row.get('EnterpriseValue')) if row.get('EnterpriseValue') else None
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             points = count * 10  # 10 metrics per record
@@ -563,7 +563,7 @@ class EnterpriseBackfill:
                             json.dumps(dict(row), default=str)
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             points = count * 20  # ~20 metrics per record
@@ -608,7 +608,7 @@ class EnterpriseBackfill:
                             str(row.get('significance', 'medium'))[:20] if row.get('significance') else 'medium'
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             points = count * 5  # 5 fields per event
@@ -648,7 +648,7 @@ class EnterpriseBackfill:
                             float(row.get('Surprise(%)')) if row.get('Surprise(%)') else None
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             return count * 3

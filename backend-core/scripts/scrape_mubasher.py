@@ -38,7 +38,7 @@ def parse_decimal(text):
     if not clean or clean == '-' or clean == '--': return None
     try:
         return float(clean)
-    except:
+    except Exception:
         return None
 
 def parse_date(text):
@@ -47,7 +47,7 @@ def parse_date(text):
     for fmt in ['%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d']:
         try:
             return datetime.strptime(clean, fmt).date()
-        except:
+        except Exception:
             continue
     return None
 
@@ -82,7 +82,7 @@ async def scrape_census(page):
     
     try:
         await page.wait_for_selector('tr.mi-table__tbody-tr', timeout=20000)
-    except:
+    except Exception:
         print("   ⚠️ Timeout waiting for table rows. Checking for spinner...")
         
     await page.wait_for_timeout(2000)
@@ -181,7 +181,7 @@ async def extract_highcharts_history(page):
                 print("   Clicking Max button...")
                 await max_btn.click()
                 await page.wait_for_timeout(2000) 
-        except:
+        except Exception:
             pass 
 
         data = await page.evaluate('''() => {
@@ -214,7 +214,7 @@ async def extract_highcharts_history(page):
                      try:
                         dt = datetime.fromtimestamp(ts / 1000.0).date()
                         history.append({'date': dt, 'nav': float(val)})
-                     except: pass
+                     except Exception: pass
         return history
     except Exception as e:
         print(f"   ⚠️ Chart Extraction Error: {e}")

@@ -128,9 +128,30 @@ jobs:
           echo "✓ backup verified: $OUT (${SIZE} bytes)"
 
       - name: Upload off-site artifact (retained, versioned)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.OUT }}
           path: ${{ env.OUT }}
           retention-days: 30
           if-no-files-found: error
+
+      # Retention prune — ON PURPOSE the last step of the BACKUP workflow:
+      # rows are only ever deleted right after a verified, uploaded backup, so
+      # anything pruned is always recoverable from today's artifact (audit M1:
+      # egx_news and egx_ingest_deadletter grew unboundedly with no policy).
+      - name: Retention prune (deadletter 30d, news 180d)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          PSQL="${PG17_BIN%pg_dump}psql"
+          run_sql() { LD_LIBRARY_PATH="$PG17_LIB" "$PSQL" "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "$1"; }
+          DL=$(run_sql "WITH d AS (DELETE FROM egx_ingest_deadletter WHERE created_at < now() - interval '30 days' RETURNING 1) SELECT count(*) FROM d;")
+          NEWS=$(run_sql "WITH d AS (DELETE FROM egx_news WHERE created_at < now() - interval '180 days' RETURNING 1) SELECT count(*) FROM d;")
+          LEFT=$(run_sql "SELECT count(*) FROM egx_ingest_deadletter;")
+          echo "pruned: deadletter=${DL} rows, news=${NEWS} rows | deadletter remaining=${LEFT}"
+          # A big backlog AFTER pruning means a cycle is SYSTEMATICALLY dead-lettering
+          # current rows — that's a live defect (taxonomy class), not history. Amber it.
+          if [ "${LEFT}" -gt 5000 ]; then
+            echo "::warning::egx_ingest_deadletter still has ${LEFT} rows after pruning — investigate which cycle is dead-lettering."
+          fi

@@ -35,7 +35,7 @@ api_router.include_router(egx.router, tags=["egx"])  # EGX endpoints at root (/e
 
 from app.api.v1.endpoints import company
 api_router.include_router(company.router, prefix="/company", tags=["company"])
-api_router.include_router(egx.router, tags=["egx"])  # EGX endpoints at root (/egx/...)
+# (duplicate egx.router mount removed 2026-06-11 — it was registered twice)
 
 from app.api.v1.endpoints import yahoo
 api_router.include_router(yahoo.router, prefix="/yahoo", tags=["yahoo"])

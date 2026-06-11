@@ -36,13 +36,15 @@ export async function GET(request: Request) {
   const expanded = Array.from(new Set(symbols.flatMap((s) => [s, `${s}.CA`])));
 
   try {
+    // `days` comes from a fixed switch above, but keep SQL fully parametrized so
+    // a future edit can never turn this into string-built SQL (audit 2026-06-11).
     const result = await db.query(
       `SELECT symbol, date, close
          FROM ohlc_data
         WHERE symbol = ANY($1)
-          AND date >= NOW() - INTERVAL '${days} days'
+          AND date >= CURRENT_DATE - $2::int
         ORDER BY date ASC`,
-      [expanded],
+      [expanded, days],
     );
 
     const out: Record<string, number[]> = {};

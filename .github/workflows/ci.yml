@@ -106,6 +106,13 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      - name: Pin npm 11 (lockfile dialect)
+        # Node 22 bundles npm 10, which resolves the optional @emnapi/* subtree
+        # differently from npm 11 and rejects the lockfile as "out of sync"
+        # (proved live on this job, 2026-06-11). The lockfile is generated and
+        # validated with npm 11 — pin the same major here so the two can never
+        # disagree. If you bump this, regenerate package-lock.json with it.
+        run: npm install -g npm@11 && npm --version
       - name: Install dependencies (lockfile-exact)
         working-directory: frontend
         run: npm ci --no-audit --no-fund

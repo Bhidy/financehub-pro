@@ -3,11 +3,13 @@ name: CI Guard
 # ============================================================
 # Prevention layer (created after the June 2026 freeze; upgraded 2026-06-11).
 #
-# Runs on GitHub-HOSTED ubuntu runners ON PURPOSE:
-#   - pull_request code must NEVER execute on the production Hetzner runner
-#     (it hosts the live backend + data pipelines and holds prod secrets);
-#   - the prod runner stays free for the data crons (no queueing behind CI).
-#   Cost: a few min/run inside the private-repo free tier.
+# RUNNER REALITY (verified 2026-06-11): GitHub-hosted runners are blocked on
+# this account — jobs die in 2s with "recent account payments have failed or
+# your spending limit needs to be increased". So CI runs on the self-hosted
+# Hetzner runner. Residual risk accepted & documented: pull_request code
+# executes on the prod box, which is tolerable ONLY while the repo is private
+# with a single trusted collaborator. If billing is fixed or collaborators are
+# added, flip every runs-on back to ubuntu-latest (that is the whole change).
 #
 # Gates (every one verified locally-green before being added here):
 #   1. actionlint     — every workflow file (caught the morning_brief.yml bug
@@ -41,7 +43,7 @@ concurrency:
 jobs:
   validate-workflows:
     name: Validate workflows (actionlint)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -58,7 +60,7 @@ jobs:
 
   python-gates:
     name: Python gates (syntax · lint · write-registry · tests)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
@@ -92,7 +94,7 @@ jobs:
 
   frontend-typecheck:
     name: Frontend type integrity (tsc)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5

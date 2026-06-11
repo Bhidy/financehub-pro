@@ -113,9 +113,15 @@ jobs:
         # validated with npm 11 — pin the same major here so the two can never
         # disagree. If you bump this, regenerate package-lock.json with it.
         run: npm install -g npm@11 && npm --version
-      - name: Install dependencies (lockfile-exact)
+      - name: Install dependencies (lockfile-exact, optionals omitted)
         working-directory: frontend
-        run: npm ci --no-audit --no-fund
+        # --omit=optional: the optional tree is sharp's per-platform native/wasm
+        # binaries (+ their @emnapi/* children). A macOS-generated lockfile does
+        # not enumerate the linux side of that subtree identically, which made
+        # `npm ci` reject the lock as out-of-sync ON LINUX ONLY (proved live,
+        # 2026-06-11 — three times). Type-checking needs no native binaries, so
+        # omit the whole class instead of chasing cross-platform lockfile drift.
+        run: npm ci --omit=optional --no-audit --no-fund
       - name: Type check
         working-directory: frontend
         run: npx tsc --noEmit

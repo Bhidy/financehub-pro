@@ -5,8 +5,10 @@ name: Stocks Freshness Monitor
 # every ticker has a price AND that the EOD ohlc_data charts are fresh + complete,
 # reading Supabase directly (no backend dependency).
 #
-# Signal hygiene (like the funds/price monitors): stale DATA pages Discord but the
-# run stays GREEN; a RED run means the MONITOR itself broke. Requires DATABASE_URL.
+# Signal contract (2026-06-11): stale/incomplete DATA FAILS the run (exit 2) — the
+# red run's GitHub mobile push IS the page (Discord no longer exists). Thresholds
+# are day-scale (24h price age, 5d ohlc age, completeness ratios) — weekend-safe.
+# Requires DATABASE_URL.
 
 on:
   schedule:

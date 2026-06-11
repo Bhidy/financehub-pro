@@ -86,12 +86,15 @@ async def main(strict: bool, monitor: bool):
             with open(gho, "a") as fh:
                 fh.write("\n".join(lines) + "\n")
         if stale:
-            print(f"::warning::STOCKS DATA ISSUE — {reason}")
-        else:
-            print(f"✅ Stocks fresh — {total} tickers, prices {price_age_min}m old, "
-                  f"ohlc newest {ohlc_newest}")
+            # Red run = GitHub mobile page. The old stay-green-and-"page Discord"
+            # contract was dead air: the webhook no longer exists.
+            print(f"::error::STOCKS DATA ISSUE — {reason}")
+            await conn.close()
+            return 2
+        print(f"✅ Stocks fresh — {total} tickers, prices {price_age_min}m old, "
+              f"ohlc newest {ohlc_newest}")
         await conn.close()
-        return 0  # monitor stays green; pages Discord via the workflow
+        return 0
 
     # full report
     print("=== STOCKS SINGLE-SOURCE RECONCILIATION GATE ===\n")
@@ -116,4 +119,6 @@ if __name__ == "__main__":
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--monitor", action="store_true")
     a = ap.parse_args()
-    asyncio.run(main(a.strict, a.monitor))
+    # main() returns 2 on stale (monitor mode) / None on the report path — the
+    # bare asyncio.run() used to DISCARD that, so --monitor could never fail.
+    sys.exit(asyncio.run(main(a.strict, a.monitor)) or 0)

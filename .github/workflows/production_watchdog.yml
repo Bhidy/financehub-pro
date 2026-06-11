@@ -22,10 +22,12 @@ jobs:
         # CRITICAL: Push to GitHub to update the URL in GitHub Actions
         id: health_check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://starta.46-224-223-172.sslip.io/health)
+          # --max-time bounds a hung TLS/socket (was unbounded — a wedged backend
+          # could stall the step); --retry separates a blip from a real outage.
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 --retry 3 --retry-delay 15 --retry-all-errors https://starta.46-224-223-172.sslip.io/health || echo "000")
           echo "Status: $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "::error::API is DOWN (Status: $STATUS)"
             exit 1
           fi
-            echo "API is Healthy ✅"
+          echo "API is Healthy ✅"

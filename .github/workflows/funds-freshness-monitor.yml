@@ -11,9 +11,10 @@ name: Funds Freshness Monitor
 #   * a healthy baseline keeps ~80-110 funds fresh within 10 days — alert if it
 #     collapses below 30
 #
-# Signal hygiene (mirrors the price monitor): stale DATA pages Discord but the run
-# stays GREEN. A RED run here means the MONITOR itself broke (DB unreachable).
-# Requires repo secret DATABASE_URL.
+# Signal contract (2026-06-11): stale DATA FAILS the run (exit 2) — the red run's
+# GitHub mobile push IS the page (Discord no longer exists). Thresholds are
+# wall-day scale (5d NAV age / fresh-cohort collapse), so weekends and holidays
+# cannot false-page. Requires repo secret DATABASE_URL.
 # ============================================================
 
 on:

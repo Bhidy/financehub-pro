@@ -7,10 +7,12 @@ on:
     
     # DAILY SYNC: 6 PM Saudi (15:00 UTC)
     - cron: '0 15 * * 0-4'
-    
-    # EGYPT FUNDS: 7 PM Saudi (16:00 UTC)
-    - cron: '0 16 * * 0-4'
-    
+
+    # (EGYPT FUNDS cron removed 2026-06-11: it drove a SECOND daily writer to the
+    # funds tables via the deprecated backend tls_client scrape, duplicating the
+    # live Mubasher static-CSV path in funds-nav-update.yml at the same 16:00 slot
+    # — the same "second writer" class that kept reverting stock_stats_view.)
+
     # AI INGESTION: 8 PM Saudi (17:00 UTC)
     - cron: '0 17 * * 0-4'
     
@@ -24,7 +26,6 @@ on:
         options:
           - prices
           - daily
-          - egypt-funds
           - ingestion
           - backfill
 
@@ -46,7 +47,9 @@ jobs:
   watchdog:
     name: 🐕 Enterprise Watchdog
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 60
+    # 75 not 60: the AI-ingestion/backfill polls run up to 3500s (58m) — a 60m cap
+    # left <2m of headroom and could deadline-kill a still-healthy run.
+    timeout-minutes: 75
     
     steps:
       - name: 🚀 Start Watchdog
@@ -161,41 +164,9 @@ jobs:
           done
 
       # ============================================================
-      # JOB 3: EGYPT FUNDS (7 PM Saudi)
-      # ============================================================
-      - name: 💰 Egypt Funds Sync
-        if: |
-          (github.event_name == 'schedule' && contains(github.event.schedule, '0 16')) ||
-          (github.event.inputs.job_type == 'egypt-funds')
-        run: |
-          ENDPOINT="/refresh/egypt-funds"
-          echo "🚀 Triggering Egypt Funds..."
-          curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" --max-time 30
-          
-          # Poll
-          START_TIME=$(date +%s)
-          while true; do
-            STATUS_JSON=$(curl -s "${{ env.FINHUB_API_BASE }}/refresh/status")
-            IS_RUNNING=$(echo "$STATUS_JSON" | jq -r '.is_running')
-            LAST_STATUS=$(echo "$STATUS_JSON" | jq -r '.last_status')
-            echo "Running: $IS_RUNNING | Status: $LAST_STATUS"
-            if [ "$IS_RUNNING" == "false" ]; then
-              case "$LAST_STATUS" in
-                *error*|*FAILED*|*failed*) echo "::error::Egypt Funds errored: $LAST_STATUS"; exit 1;;
-                *) echo "✅ Egypt Funds Done ($LAST_STATUS)"; break;;
-              esac
-            fi
-            sleep 10
-            # tls_client NAV scrape can be slow/Cloudflare-throttled; if still running
-            # at the cap the backend finishes on its own — don't false-fail.
-            if [ $(($(date +%s) - START_TIME)) -gt 600 ]; then
-              echo "::warning::Egypt Funds still running after 600s ($LAST_STATUS). Backend continues; not failing the run."
-              break
-            fi
-          done
-
-      # ============================================================
       # JOB 4: AI INGESTION (8 PM Saudi)
+      # (JOB 3 EGYPT FUNDS removed 2026-06-11 — see the schedule comment above;
+      # mutual-fund NAVs have exactly ONE writer now: funds-nav-update.yml.)
       # ============================================================
       - name: 🤖 AI Knowledge Ingestion
         if: |

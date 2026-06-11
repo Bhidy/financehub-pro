@@ -14,7 +14,7 @@ name: TV Field Reconcile Gate
 
 on:
   schedule:
-    - cron: '0 16 * * 0,1,2,3,4'   # 16:00 UTC Sun-Thu — after close + the 15:00/15:30 estimate/dividend harvests
+    - cron: '20 16 * * 0,1,2,3,4'  # 16:20 UTC Sun-Thu — after close + the 15:00/15:30 harvests AND the 15:50 stats / 16:00 funds slots (staggered off the old 4-way 16:00 pile-up)
   workflow_dispatch:
 
 concurrency:

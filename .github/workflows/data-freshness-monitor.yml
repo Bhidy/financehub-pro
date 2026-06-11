@@ -52,8 +52,10 @@ jobs:
       - name: Probe price freshness
         id: check
         run: |
-          FR=$(curl -s --max-time 20 "$API/api/v1/admin/data/freshness" || echo '{}')
-          ST=$(curl -s --max-time 20 "$API/api/v1/admin/refresh/status" || echo '{}')
+          # --retry kills the blip-page class: a transient network/TLS hiccup must
+          # not page; a backend that stays unreachable across retries must.
+          FR=$(curl -s --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "$API/api/v1/admin/data/freshness" || echo '{}')
+          ST=$(curl -s --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "$API/api/v1/admin/refresh/status" || echo '{}')
           echo "Freshness: $FR"
           echo "Status:    $ST"
 
@@ -83,10 +85,11 @@ jobs:
             fi
           fi
 
-          # Backend self-reported failure (with the yfinance fallback in place, a
-          # healthy run is "success"; partial_failure/error means real trouble).
+          # Backend self-reported failure is a COMPONENT signal, not a data-age
+          # signal — the Pipeline Watchdog owns component health (with self-heal).
+          # Surface it as a warning; only genuine DATA staleness goes red below.
           case "$LAST_STATUS" in
-            *error*|*partial_failure*) STALE=1; REASON="${REASON:+$REASON; }backend status=$LAST_STATUS";;
+            *error*|*partial_failure*) echo "::warning::backend refresh status=$LAST_STATUS (component signal — watchdog owns healing)";;
           esac
 
           # ---- CHART DATA (ohlc_data) freshness check --------------------------------
@@ -96,7 +99,7 @@ jobs:
           # We probe via the public frontend API so we test the full stack (DB -> Vercel).
           # Threshold: ohlc_data max date must not be more than 2 trading days behind
           # today (handles weekends + the 4h write window after market close).
-          OHLC_DATE=$(curl -s --max-time 20 "https://startamarkets.com/api/v1/egx/history/COMI" \
+          OHLC_DATE=$(curl -s --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "https://startamarkets.com/api/v1/egx/history/COMI" \
             | jq -r 'if type=="array" and length>0 then last | .date else empty end' 2>/dev/null || echo "")
           TODAY_EPOCH=$(date -u +%s)
           OHLC_STALE=0
@@ -125,11 +128,14 @@ jobs:
             echo "stale=$STALE"
           } >> "$GITHUB_OUTPUT"
 
-          # Signal hygiene: stale DATA is paged via Discord below, but the run stays
-          # GREEN — a RED run on this monitor now unambiguously means the MONITOR
-          # itself broke (API unreachable, jq error), not merely stale prices.
+          # Signal contract (2026-06-11): stale DATA FAILS this run — the red run's
+          # GitHub mobile push IS the page (Discord no longer exists; the old text
+          # claiming "paging Discord" was a lie that silenced this alarm). This
+          # monitor only runs during market hours, ages use the server's own clock,
+          # and every probe retries — a red here means genuinely stale data or a
+          # freshness API that stayed down across retries. Both deserve the page.
           if [ "$STALE" = "1" ]; then
-            echo "::warning::DATA STALE — $REASON (age=${AGE_MIN}m, last_status=$LAST_STATUS) — paging Discord"
-          else
-            echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS | chart bar: $OHLC_DATE"
+            echo "::error::DATA STALE — $REASON (age=${AGE_MIN}m, last_status=$LAST_STATUS)"
+            exit 1
           fi
+          echo "✅ Prices fresh — age=${AGE_MIN}m, last_status=$LAST_STATUS | chart bar: $OHLC_DATE"

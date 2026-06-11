@@ -10,7 +10,7 @@ name: Stock Statistics Refresh (TV+Yahoo)
 on:
   schedule:
     - cron: '0 9 * * 0-4'    # ~12:00 Cairo (after TV intraday)
-    - cron: '0 16 * * 0-4'   # ~19:00 Cairo (post-close)
+    - cron: '50 15 * * 0-4'  # ~18:50 Cairo — after the 15:00/15:30 TV estimate/dividend harvests, BEFORE the 16:00 funds slot (de-stacks the old 4-way 16:00 pile-up on the single runner)
   workflow_dispatch:
 
 concurrency:

@@ -323,9 +323,10 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
 async def monitor(stale_days: int = 5, min_fresh_10d: int = 30):
     """READ-ONLY freshness probe for the funds-freshness-monitor workflow.
 
-    Emits GitHub `key=value` lines + a human summary. Never writes. Returns 0
-    even when data is stale (the workflow pages Discord on stale=1 but stays
-    GREEN, so a RED run means the monitor itself broke — DB unreachable, etc.).
+    Emits GitHub `key=value` lines + a human summary. Never writes. Returns 2
+    when fund data is stale — the red run's GitHub mobile push IS the page
+    (Discord no longer exists; the old stay-green contract silenced the alarm).
+    Returns 0 only when data is verifiably fresh.
     """
     db_url = load_db_url()
     conn = await connect_resilient(db_url)
@@ -355,9 +356,9 @@ async def monitor(stale_days: int = 5, min_fresh_10d: int = 30):
             {"newest": str(newest), "age_days": age_days, "fresh_within_10d": fresh10,
              "stale": stale, "reason": reason}))
         if stale:
-            print(f"::warning::FUNDS DATA STALE — {reason} — paging Discord")
-        else:
-            print(f"✅ Funds fresh — newest={newest} ({age_days}d), {fresh10} fresh within 10d")
+            print(f"::error::FUNDS DATA STALE — {reason}")
+            return 2
+        print(f"✅ Funds fresh — newest={newest} ({age_days}d), {fresh10} fresh within 10d")
         return 0
     finally:
         await conn.close()

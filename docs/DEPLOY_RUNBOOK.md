@@ -91,13 +91,28 @@ backend change needed to ship the app.
 
 ## ✅ Backend (Hetzner)
 
+**Primary path (works even when SSH is blocked): the "Backend Deploy" GitHub
+Action.** SSH from the Mac to the VPS is blocked pre-auth at the network edge
+(verified 2026-06), but the GitHub Actions runner lives ON the VPS itself — so
+the workflow does the same git-sync + compose rebuild locally, no SSH at all.
+
+```bash
+gh workflow run backend-deploy.yml -f reason="why you are deploying"
+gh run watch          # preflight → env provisioning → build → health gate
+```
+
+It provisions required env (SECRET_KEY, ADMIN_API_TOKEN) into `/opt/starta/.env`
+before restarting, health-checks after, and **auto-rolls-back to the previous
+commit if the health gate fails** (plus files a GitHub-issue alert).
+
+Fallback when SSH works (e.g. from another network):
+
 ```bash
 ./scripts/deploy_backend_key.sh        # SSH-key deploy to root@…/opt/starta
 ```
 
 `scripts/deploy_production.sh` is legacy; its **frontend** path has been removed
-(it used to run `vercel --prod` and was part of the deploy mess). Use
-`deploy_backend_key.sh` for the backend.
+(it used to run `vercel --prod` and was part of the deploy mess).
 
 ---
 

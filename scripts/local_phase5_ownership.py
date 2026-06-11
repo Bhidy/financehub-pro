@@ -114,7 +114,7 @@ def main():
                           extract_raw(inst.get("value")),
                           inst.get("reportDate")))
                     stats["institutions"] += 1
-                except:
+                except Exception:
                     pass
             
             # 2. Fund Ownership (same table)
@@ -138,7 +138,7 @@ def main():
                           extract_raw(fund.get("value")),
                           fund.get("reportDate")))
                     stats["funds"] += 1
-                except:
+                except Exception:
                     pass
             
             # 3. Major Holders Breakdown
@@ -160,7 +160,7 @@ def main():
                           extract_raw(mhb.get("institutionsFloatPercentHeld")),
                           extract_raw(mhb.get("institutionsCount"))))
                     stats["breakdowns"] += 1
-                except:
+                except Exception:
                     pass
             
             print(f"✅ Inst:{stats['institutions']} Funds:{stats['funds']} Brkdn:{stats['breakdowns']}", flush=True)

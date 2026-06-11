@@ -35,5 +35,5 @@ is the authoritative deploy reference. Read it once, follow it always.
    changing public pages, theme, or language.
 3. Source for branded public URLs: `frontend/public/` + `frontend/next.config.ts`.
 4. Do not edit `~/Documents/_Info-Site-QUARANTINE/` — it is a quarantined old copy.
-5. Surgical `git add` only: never `git add -A` — the tree always has unrelated WIP
-   (`calculators/`, `Dockerfile.coolify`, etc.).
+5. Surgical `git add` only: never `git add -A` — the tree can carry unrelated WIP
+   (scratch scripts, local experiments, etc.).

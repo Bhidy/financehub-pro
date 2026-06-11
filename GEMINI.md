@@ -18,10 +18,10 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 - **State:** TanStack Query (React Query)
 - **Language:** TypeScript 5
 
-### Backend (`hf-space/` - Dockerized on Hetzner)
+### Backend (`backend-core/` - Dockerized on Hetzner)
 - **Framework:** FastAPI (Python 3.10+)
 - **Database:** PostgreSQL via Supabase
-- **Deployment:** Hetzner VPS (Docker via Coolify)
+- **Deployment:** Hetzner VPS (Docker Compose; deploy via the "Backend Deploy" GitHub Action or scripts/deploy_backend_key.sh)
 - **Server IP:** `46.224.223.172` — SSH is **key-only** (password auth disabled 2026-06).
 - **SSH auth:** key `~/.ssh/starta_deploy` (NO password). Backend deploy: `./scripts/deploy_backend_key.sh`.
 - **Secrets:** never commit credentials. Server/DB secrets live in the server `.env` and your local gitignored `.env` only — never in tracked files.

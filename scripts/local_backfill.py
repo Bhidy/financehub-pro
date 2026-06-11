@@ -43,7 +43,7 @@ def connect_db():
     try:
         if conn:
             conn.close()
-    except: pass
+    except Exception: pass
     
     attempts = 0
     while attempts < 10:

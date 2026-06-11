@@ -133,7 +133,7 @@ def main():
                           extract_raw(rec.get("strongSell")),
                           json.dumps(rec)))
                     stats["recs"] += 1
-                except:
+                except Exception:
                     pass
             
             # 2. Earnings Trend (Estimates)
@@ -158,7 +158,7 @@ def main():
                           extract_raw(eps_est.get("growth")),
                           json.dumps(est)))
                     stats["estimates"] += 1
-                except:
+                except Exception:
                     pass
             
             # 3. Earnings History
@@ -179,7 +179,7 @@ def main():
                           extract_raw(eh.get("epsDifference")),
                           extract_raw(eh.get("surprisePercent"))))
                     stats["history"] += 1
-                except:
+                except Exception:
                     pass
             
             print(f"✅ Recs:{stats['recs']} Ests:{stats['estimates']} Hist:{stats['history']}", flush=True)

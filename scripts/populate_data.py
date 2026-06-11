@@ -262,7 +262,7 @@ class DataPopulationEngine:
                 try:
                     result = await conn.fetchval(f'SELECT COUNT(*) FROM {table}')
                     counts[table] = result
-                except:
+                except Exception:
                     counts[table] = 0
             
             return counts

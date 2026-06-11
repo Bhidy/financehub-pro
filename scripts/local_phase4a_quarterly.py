@@ -83,7 +83,7 @@ def main():
                 
                 try:
                     f_year = int(end_date.split("-")[0])
-                except:
+                except Exception:
                     f_year = 0
                 
                 total_assets = extract_raw(stmt.get("totalAssets"))
@@ -113,7 +113,7 @@ def main():
                 
                 try:
                     f_year = int(end_date.split("-")[0])
-                except:
+                except Exception:
                     f_year = 0
                     
                 rev = extract_raw(stmt.get("totalRevenue"))
@@ -130,7 +130,7 @@ def main():
                         ON CONFLICT (symbol, end_date, period_type) DO NOTHING
                     """, (sym, f_year, end_date, rev, net_inc, op_inc, gross, json.dumps(stmt)))
                     stats["income"] += 1
-                except:
+                except Exception:
                     pass
             
             # 3. Cash Flow Quarterly
@@ -141,7 +141,7 @@ def main():
                 
                 try:
                     f_year = int(end_date.split("-")[0])
-                except:
+                except Exception:
                     f_year = 0
                     
                 op_cf = extract_raw(stmt.get("totalCashFromOperatingActivities"))
@@ -157,7 +157,7 @@ def main():
                         ON CONFLICT (symbol, end_date, period_type) DO NOTHING
                     """, (sym, f_year, end_date, op_cf, inv_cf, fin_cf, json.dumps(stmt)))
                     stats["cashflow"] += 1
-                except:
+                except Exception:
                     pass
             
             total = stats["balance"] + stats["income"] + stats["cashflow"]

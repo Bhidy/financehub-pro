@@ -24,7 +24,7 @@ Real-time market data, mutual-fund NAV & performance, market news, an educationa
 |---|---|
 | Orientation + governance rules | [`START_HERE.md`](START_HERE.md) |
 | Architecture, data flow, AI chatbot, DB schema | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
-| Deploy procedure (incl. **mandatory alias step**) | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Deploy procedure (web = merge to `main`; no manual alias step) | [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md) |
 | Secret management + rotation runbook | [`docs/SECURITY.md`](docs/SECURITY.md) |
 | Public website source tree & routing | [`docs/STARTAMARKETS_PUBLIC_SITE.md`](docs/STARTAMARKETS_PUBLIC_SITE.md) |
 | What changed in the 2026-06 restructure | [`docs/archive/2026-06-RESTRUCTURE.md`](docs/archive/2026-06-RESTRUCTURE.md) |
@@ -48,7 +48,7 @@ startamarkets/
 ├── docs/                  # canonical documentation (+ docs/archive/ for history)
 ├── index.html             # duplicate of frontend/public/home.html (must stay identical)
 ├── Dockerfile             # backend image
-└── start_all.sh / stop_all.sh
+└── stop_all.sh            # kill local dev processes (ports 3000/8000)
 ```
 
 ---
@@ -73,8 +73,9 @@ python3 -m uvicorn app.main:app --host 0.0.0.0 --port 7860
 
 ## Deploying
 
-- **Frontend:** `git push origin main` → Vercel builds → **then run the mandatory alias step** (`vercel alias set <new-deploy-url> startamarkets.com` + `www`). Without the alias, the live domain keeps serving the old build. Full procedure: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
-- **Backend:** rebuild/redeploy the Docker image on Hetzner (see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
+- **Frontend:** merge to `main` → Vercel Git Integration builds **and auto-aliases** `startamarkets.com` (the old manual `vercel alias` step is obsolete). Verify after merge with `./scripts/deploy-web.sh`. Full procedure: [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md).
+- **Backend:** run the **"Backend Deploy"** GitHub Action (`workflow_dispatch`) — it executes on the Hetzner runner itself, so it works even when SSH from a laptop is blocked. Fallback when SSH works: `./scripts/deploy_backend_key.sh`.
+- **iOS:** `./scripts/ship-ios.sh` (manual, needs this Mac's Xcode + App Store Connect key).
 - **Never run `vercel` from inside `frontend/`** — always from the repo root (Vercel Root Directory is `frontend`).
 
 ---

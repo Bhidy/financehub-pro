@@ -38,7 +38,7 @@ def parse_ar_date(d_str):
             year = int(parts[2])
             month = AR_MONTHS.get(month_ar, 1)
             return datetime(year, month, day).date()
-    except:
+    except Exception:
         pass
     return None
 
@@ -105,7 +105,7 @@ def main():
                               parse_ar_date(r.get('announcedAt')),
                               parse_ar_date(r.get('effectiveFrom'))))
                         total_actions += 1
-                    except: pass
+                    except Exception: pass
                 
                 print(f"  Fetched {len(rows)} actions (Total: {total_actions})...")
                 if len(rows) < size: break

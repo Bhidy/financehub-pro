@@ -45,7 +45,7 @@ async def purge_non_egx():
              # Delete from price_history (if exists)
             try:
                 await conn.execute("DELETE FROM price_history WHERE symbol IN (SELECT symbol FROM market_tickers WHERE market_code <> 'EGX')")
-            except:
+            except Exception:
                 pass
             print("✅ Deleted dependent data.")
 

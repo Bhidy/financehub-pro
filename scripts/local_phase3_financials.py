@@ -82,7 +82,7 @@ def main():
                 # Extract Fiscal Year (YYYY)
                 try:
                     f_year = int(end_date.split("-")[0])
-                except:
+                except Exception:
                     f_year = 0
 
                 raw_json = json.dumps(stmt)
@@ -117,7 +117,7 @@ def main():
                             ON CONFLICT DO NOTHING
                         """, (sym, name, relation, shares, date_held))
                         count_insiders += 1
-                    except: pass
+                    except Exception: pass
             
             print(f"✅ Saved {count_stmts} Stmts, {count_insiders} Insiders", flush=True)
             

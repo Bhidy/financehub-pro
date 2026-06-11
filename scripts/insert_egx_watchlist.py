@@ -63,7 +63,7 @@ def parse_decimal(val):
         return None
     try:
         return Decimal(str(val).replace(',', '').strip())
-    except:
+    except Exception:
         return None
 
 
@@ -72,7 +72,7 @@ def parse_int(val):
         return None
     try:
         return int(float(str(val).replace(',', '').strip()))
-    except:
+    except Exception:
         return None
 
 

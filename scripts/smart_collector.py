@@ -148,7 +148,7 @@ def main():
         futures = {executor.submit(process_stock_safe, sym): sym for sym in symbols}
         for future in concurrent.futures.as_completed(futures):
             try: future.result()
-            except: pass
+            except Exception: pass
 
 if __name__ == "__main__":
     main()

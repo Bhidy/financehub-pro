@@ -22,10 +22,10 @@ async def main():
     # Connect with PgBouncer-compatible settings
     try:
         pool = await asyncpg.create_pool(DATABASE_URL, ssl=get_ssl_context(), min_size=1, max_size=1, statement_cache_size=0)
-    except:
+    except Exception:
         try:
             pool = await asyncpg.create_pool(DATABASE_URL, ssl='require', min_size=1, max_size=1, statement_cache_size=0)
-        except:
+        except Exception:
              print("❌ CRITICAL: Could not connect to database to verify status.")
              return
 

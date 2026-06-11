@@ -13,7 +13,7 @@ There are **three surfaces**, deployed independently:
 |---|---|---|
 | **Web** | `startamarkets.com` (Next.js on Vercel, project `finhub`) | **Merge to `main`.** That's the whole deploy. |
 | **iOS** | The Capacitor app (TestFlight) | `./scripts/ship-ios.sh` |
-| **Backend** | FastAPI on Hetzner | `./scripts/deploy_backend_key.sh` |
+| **Backend** | FastAPI on Hetzner | `gh workflow run backend-deploy.yml` (fallback: `./scripts/deploy_backend_key.sh`) |
 
 ---
 

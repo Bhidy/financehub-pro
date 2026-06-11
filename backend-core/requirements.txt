@@ -4,8 +4,10 @@
 # =========================================================================
 # Hygiene (audit 2026-06-11): file deduplicated (fastapi/uvicorn/aiohttp/
 # requests/beautifulsoup4/python-dotenv/pydantic each appeared TWICE) and the
-# previously version-less packages now carry an upper MAJOR bound so a surprise
-# major release can never change what a rebuild installs. Exact pins are
+# previously version-less packages now carry an upper MAJOR bound (except
+# torch/stripe/lxml/yfinance-family, deliberately floor-only — their major
+# cadence is unpredictable and over-tight caps break rebuilds) so a surprise
+# major release can never silently change what a rebuild installs. Exact pins are
 # unchanged from what production runs. When bumping: change the bound here,
 # deploy via the "Backend Deploy" workflow, watch the health check.
 # =========================================================================
@@ -42,21 +44,21 @@ cffi==1.16.0
 
 # --- LLM providers ---
 openai>=1.0,<3
-groq>=0.9
+groq>=0.9,<2
 
 # --- Data / scheduling ---
 pandas>=2.0,<3
 numpy>=1.26,<3
 yfinance>=0.2.50
 yahooquery>=2.3.0
-openpyxl>=3.1
+openpyxl>=3.1,<5
 APScheduler>=3.10,<4
 schedule==1.2.1
-cachetools>=5.3
+cachetools>=5.3,<7
 
 # --- Payments / email / misc ---
 stripe>=7
-aiosmtplib>=2.0
+aiosmtplib>=2.0,<5
 python-dotenv>=1.0,<2
 colorama==0.4.6
 pyyaml>=6.0

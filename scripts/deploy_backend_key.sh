@@ -30,6 +30,16 @@ ssh -i "$KEY" -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTim
     "root@${HOST}" bash -s <<REMOTE
 set -e
 cd "${APP_DIR}"
+echo '--- ENV GUARD (config.py fail-fasts without SECRET_KEY; /refresh/* are fail-closed without ADMIN_API_TOKEN) ---'
+if ! grep -q '^SECRET_KEY=..*' .env || grep -q '^SECRET_KEY=placeholder' .env; then
+  KEY=\$(python3 -c "import secrets;print(secrets.token_urlsafe(64))")
+  grep -v '^SECRET_KEY=' .env > .env.tmp || true; printf 'SECRET_KEY=%s\n' "\$KEY" >> .env.tmp; mv .env.tmp .env
+  echo 'SECRET_KEY: generated (missing/placeholder before)'
+fi
+if ! grep -q '^ADMIN_API_TOKEN=..*' .env; then
+  echo 'WARNING: ADMIN_API_TOKEN missing from .env — /refresh/* will be 503 (fail-closed) and every data cron will go red.'
+  echo '         Sync it from the GitHub secret (the Backend Deploy workflow does this automatically).'
+fi
 echo '--- PULL ---'
 git fetch origin
 git reset --hard origin/main

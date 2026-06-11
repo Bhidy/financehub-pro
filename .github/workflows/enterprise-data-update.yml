@@ -86,8 +86,12 @@ jobs:
         run: |
           ENDPOINT="/refresh/prices"
           echo "🚀 Triggering Price Refresh..."
-          RESPONSE=$(curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}" --max-time 30)
-          echo "Trigger Response: $RESPONSE"
+          HTTP_CODE=$(curl -s -o /tmp/starta_trigger.json -w '%{http_code}' -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}" --max-time 30)
+          echo "Trigger Response ($HTTP_CODE): $(cat /tmp/starta_trigger.json 2>/dev/null)"
+          case "$HTTP_CODE" in 2*) : ;; *)
+            echo "::error::Trigger POST returned HTTP $HTTP_CODE (403=token mismatch, 503=ADMIN_API_TOKEN unset on server) — failing loudly instead of false-green polling."
+            exit 1 ;;
+          esac
 
           # Start Polling
           echo "⏳ Polling for completion..."
@@ -142,7 +146,12 @@ jobs:
         run: |
           ENDPOINT="/refresh/daily"
           echo "🚀 Triggering Daily Sync..."
-          curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}" --max-time 30
+          HTTP_CODE=$(curl -s -o /tmp/starta_trigger.json -w '%{http_code}' -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}" --max-time 30)
+          echo "Trigger Response ($HTTP_CODE): $(cat /tmp/starta_trigger.json 2>/dev/null)"
+          case "$HTTP_CODE" in 2*) : ;; *)
+            echo "::error::Trigger POST returned HTTP $HTTP_CODE (403=token mismatch, 503=ADMIN_API_TOKEN unset on server) — failing loudly instead of false-green polling."
+            exit 1 ;;
+          esac
           
           # Start Polling
           echo "⏳ Polling for completion..."
@@ -181,7 +190,12 @@ jobs:
         run: |
           ENDPOINT="/refresh/ingestion"
           echo "🚀 Triggering AI Ingestion..."
-          curl -s -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}" --max-time 30
+          HTTP_CODE=$(curl -s -o /tmp/starta_trigger.json -w '%{http_code}' -X POST "${{ env.FINHUB_API_BASE }}$ENDPOINT" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}" --max-time 30)
+          echo "Trigger Response ($HTTP_CODE): $(cat /tmp/starta_trigger.json 2>/dev/null)"
+          case "$HTTP_CODE" in 2*) : ;; *)
+            echo "::error::Trigger POST returned HTTP $HTTP_CODE (403=token mismatch, 503=ADMIN_API_TOKEN unset on server) — failing loudly instead of false-green polling."
+            exit 1 ;;
+          esac
           
           # Poll - This is the long one!
           echo "⏳ Polling for completion (May take 30 mins)..."
@@ -213,7 +227,12 @@ jobs:
         if: github.event.inputs.job_type == 'backfill'
         run: |
           echo "Triggering Backfill..."
-          curl -s -X POST "${{ env.FINHUB_API_BASE }}/refresh/backfill" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}"
+          HTTP_CODE=$(curl -s -o /tmp/starta_trigger.json -w '%{http_code}' -X POST "${{ env.FINHUB_API_BASE }}/refresh/backfill" -H "Content-Type: application/json" -H "X-Admin-Token: ${{ secrets.ADMIN_API_TOKEN }}")
+          echo "Trigger Response ($HTTP_CODE): $(cat /tmp/starta_trigger.json 2>/dev/null)"
+          case "$HTTP_CODE" in 2*) : ;; *)
+            echo "::error::Trigger POST returned HTTP $HTTP_CODE (403=token mismatch, 503=ADMIN_API_TOKEN unset on server) — failing loudly instead of false-green polling."
+            exit 1 ;;
+          esac
           echo "Polling..."
           START_TIME=$(date +%s)
           while true; do

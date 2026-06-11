@@ -23,12 +23,14 @@ Channels & env (reuses the EXISTING repo contract — see below, nothing invente
             Optional overrides (same names backend-core's notification_service.py
             already honors): SMTP_HOST (default smtp.gmail.com), SMTP_PORT (587),
             ALERT_EMAIL (recipient, if it must differ from NOTIFICATION_EMAIL).
-  GitHub:   GH_TOKEN or GITHUB_TOKEN + GITHUB_REPOSITORY (both auto-present in
-            Actions) — creates/updates a GitHub ISSUE titled like the alert. This is
-            the guaranteed last-resort channel: it needs ZERO external credentials,
-            and an issue triggers GitHub mobile/email notifications natively. The
-            calling workflow must grant `permissions: issues: write`. Repeated alerts
-            with the same title COMMENT on the existing open issue (no issue spam).
+  GitHub:   GH_TOKEN or GITHUB_TOKEN + GITHUB_REPOSITORY. NOTE: the calling
+            workflow must BOTH grant `permissions: issues: write` AND pass the
+            token env explicitly (GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}) — only
+            GITHUB_REPOSITORY is truly auto-present. Creates/updates a GitHub
+            ISSUE titled like the alert — the guaranteed last-resort channel
+            (no external credentials; GitHub pushes mobile/email natively).
+            Repeated alerts with the same title COMMENT on the existing open
+            issue (no issue spam).
 
 Provenance of the SMTP convention (so the fallback matches what the owner set up):
   - activate_data_updates.sh documents the two GitHub secrets verbatim:
@@ -175,9 +177,13 @@ def _send_github_issue(title: str, message: str) -> str:
     the zero-external-dependency channel: GitHub itself then pushes mobile/email
     notifications to the owner. NEVER raises.
     """
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    # Try BOTH tokens: GH_TOKEN may be a fine-grained PAT scoped to actions:write
+    # only (the watchdog dispatch token), which CANNOT create issues — fall back
+    # to the workflow GITHUB_TOKEN in that case.
+    tokens = [t for t in (os.environ.get("GH_TOKEN"), os.environ.get("GITHUB_TOKEN")) if t]
+    tokens = list(dict.fromkeys(tokens))  # dedupe, keep order
     repo = os.environ.get("GH_REPO") or os.environ.get("GITHUB_REPOSITORY")
-    if not token or not repo:
+    if not tokens or not repo:
         return "skip(no token/repo)"
     issue_title = f"🔴 Pipeline alert: {title}"
     run_url = ""
@@ -185,28 +191,39 @@ def _send_github_issue(title: str, message: str) -> str:
         run_url = (f"\n\nRun: {os.environ['GITHUB_SERVER_URL']}/{repo}"
                    f"/actions/runs/{os.environ['GITHUB_RUN_ID']}")
     body = f"{message}{run_url}\n\n_Auto-filed by scripts/notify.py — close after resolving._"
-    try:
-        # Re-use the open issue with the same title so a repeating condition
-        # threads into ONE issue instead of spamming a new issue per run.
-        code, issues = _gh_api("GET", f"/repos/{repo}/issues?state=open&per_page=100", token)
-        existing = None
-        if code == 200 and isinstance(issues, list):
-            existing = next((i for i in issues
-                             if i.get("title") == issue_title and "pull_request" not in i), None)
-        if existing:
-            code, _ = _gh_api("POST", f"/repos/{repo}/issues/{existing['number']}/comments",
-                              token, {"body": body})
-            return f"ok(comment on #{existing['number']})" if 200 <= code < 300 else f"http {code}"
-        code, created = _gh_api("POST", f"/repos/{repo}/issues", token,
-                                {"title": issue_title, "body": body})
-        if 200 <= code < 300 and isinstance(created, dict):
-            return f"ok(issue #{created.get('number')})"
-        return f"http {code}"
-    except urllib.error.HTTPError as e:
-        # 403 here usually means the workflow lacks `permissions: issues: write`.
-        return f"http {e.code}"
-    except Exception as e:  # noqa: BLE001 — best-effort by contract
-        return f"error: {type(e).__name__}: {e}"
+    last = "error: no token attempted"
+    for token in tokens:
+        try:
+            # Re-use the open issue with the same title so a repeating condition
+            # threads into ONE issue instead of spamming a new issue per run.
+            code, issues = _gh_api("GET", f"/repos/{repo}/issues?state=open&per_page=100", token)
+            existing = None
+            if code == 200 and isinstance(issues, list):
+                existing = next((i for i in issues
+                                 if i.get("title") == issue_title and "pull_request" not in i), None)
+            if existing:
+                code, _ = _gh_api("POST", f"/repos/{repo}/issues/{existing['number']}/comments",
+                                  token, {"body": body})
+                result = (f"ok(comment on #{existing['number']})"
+                          if 200 <= code < 300 else f"http {code}")
+            else:
+                code, created = _gh_api("POST", f"/repos/{repo}/issues", token,
+                                        {"title": issue_title, "body": body})
+                if 200 <= code < 300 and isinstance(created, dict):
+                    result = f"ok(issue #{created.get('number')})"
+                else:
+                    result = f"http {code}"
+        except urllib.error.HTTPError as e:
+            # 401/403 = this token lacks Issues scope (e.g. a dispatch-only PAT in
+            # GH_TOKEN) or the workflow lacks `permissions: issues: write` — the
+            # loop retries with the next token (the workflow GITHUB_TOKEN).
+            result = f"http {e.code}"
+        except Exception as e:  # noqa: BLE001 — best-effort by contract
+            result = f"error: {type(e).__name__}: {e}"
+        if result.startswith("ok"):
+            return result
+        last = result
+    return last
 
 
 def _send_webhook(title: str, message: str, timeout: int = 15) -> str:

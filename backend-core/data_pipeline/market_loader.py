@@ -9,15 +9,10 @@ Features:
 - Safe for concurrent execution
 - pgbouncer compatible
 
-Usage:
-    # Full refresh (initial load or re-sync)
-    python scripts/egx_production_loader.py --full
-    
-    # Daily update (prices only, fast)
-    python scripts/egx_production_loader.py --daily
-    
-    # Single symbol update
-    python scripts/egx_production_loader.py --symbol COMI
+Usage (this module is imported by app/services/scheduler.py — run_daily_market_job;
+the old scripts/egx_production_loader.py CLI was deleted 2026-06-11 as a dead
+laptop-era relic):
+    python -c "import asyncio; from data_pipeline.market_loader import run_daily_market_job; asyncio.run(run_daily_market_job())"
 """
 
 import asyncio

@@ -23,8 +23,11 @@ name: Pipeline Watchdog
 # Self-heal dispatch needs a token with actions:write. The default GITHUB_TOKEN
 # can READ runs and the DB (so detection + alerting always work), but GitHub's
 # recursion guard may stop it from STARTING other workflows. For guaranteed
-# auto-heal, add a free fine-grained PAT (actions:write) as secret
-# WATCHDOG_DISPATCH_TOKEN — the workflow uses it automatically if present.
+# auto-heal, add a free fine-grained PAT as secret WATCHDOG_DISPATCH_TOKEN —
+# the workflow uses it automatically if present. SCOPE IT actions:write AND
+# Issues:write — notify.py's last-resort channel files a GitHub ISSUE, and an
+# actions-only PAT cannot. (Defense in depth: GITHUB_TOKEN is also passed below
+# so the issue channel still works even with a mis-scoped PAT.)
 
 on:
   schedule:
@@ -70,4 +73,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GH_TOKEN: ${{ secrets.WATCHDOG_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+          # notify.py tries GH_TOKEN then GITHUB_TOKEN for the issue channel, so a
+          # dispatch-only PAT above can never silence the last-resort alerts.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/pipeline_watchdog.py --heal

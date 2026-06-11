@@ -138,7 +138,12 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for extrac
 
 ### Start Local Development
 ```bash
-./start_all.sh
+# Frontend (http://localhost:3000)
+cd frontend && npm install && npm run dev
+
+# Backend (http://localhost:8000 — API docs at /docs)
+cd backend-core && pip install -r requirements.txt
+python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Deploy Frontend to Production

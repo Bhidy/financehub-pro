@@ -21,7 +21,7 @@ This document outlines the **enterprise-grade** data integration system for Egyp
 |-----------|--------|---------------|
 | **Data Extraction Client** | ✅ Complete | `backend/extractors/stockanalysis/client.py` |
 | **Enterprise Extractor** | ✅ Complete | `scripts/egx_enterprise_extractor.py` |
-| **Production Loader** | ✅ Complete | `scripts/egx_production_loader.py` |
+| **Production Loader** | 🗑 Superseded (deleted 2026-06-11) | TradingView harvester: `scripts/tv_egx_harvester.py` |
 | **Database Schema** | ✅ Complete | 6 tables with indexes |
 | **Backend API** | ✅ Complete | 15 endpoints in `backend/api.py` |
 | **Auto-Scheduler** | ✅ Complete | `backend/engine/scheduler.py` |
@@ -218,7 +218,7 @@ backend/venv/bin/python scripts/egx_enterprise_extractor.py
 
 ### Run Daily Update
 ```bash
-backend/venv/bin/python scripts/egx_production_loader.py --daily
+# (historical — egx_production_loader.py deleted 2026-06-11; the TV harvester cron replaced it)
 ```
 
 ### Check Data Status

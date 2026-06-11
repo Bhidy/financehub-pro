@@ -125,30 +125,59 @@ async def handle_market_summary(
             ORDER BY volume DESC
             LIMIT 5
         """, market_code)
-        
+
+        # P1 (H-3): EGX30 index level — cycle_prices upserts symbol='EGX30' into
+        # market_tickers. Surfaces the real index level so "EGX30 level" is answered
+        # with the actual value instead of "not available".
+        index_row = None
+        if market_code == "EGX":
+            index_row = await conn.fetchrow("""
+                SELECT last_price, change, change_percent
+                FROM market_tickers
+                WHERE symbol = 'EGX30'
+                LIMIT 1
+            """)
+        index_level = float(index_row['last_price']) if index_row and index_row['last_price'] is not None else None
+        index_chg_pct = float(index_row['change_percent']) if index_row and index_row['change_percent'] is not None else None
+
         # Build response
         market_name = "Egyptian Exchange (EGX)" if market_code == "EGX" else f"{market_code} Market"
-        
+
+        def _fmt_idx(v):
+            return f"{v:,.2f}" if v is not None else None
+
         if language == "ar":
             message = f"📊 ملخص السوق المصري:\n"
+            if index_level is not None:
+                _chg = f" ({index_chg_pct:+.2f}%)" if index_chg_pct is not None else ""
+                message += f"📈 مؤشر EGX30: {_fmt_idx(index_level)}{_chg}\n"
             message += f"📈 الاسهم الرابحه: {breadth['advances']} | 📉 الخاسرة: {breadth['declines']} | ⏸️ دون تغيير: {breadth['unchanged']}"
         else:
             message = f"📊 {market_name} Summary:\n"
+            if index_level is not None:
+                _chg = f" ({index_chg_pct:+.2f}%)" if index_chg_pct is not None else ""
+                message += f"📈 EGX30 Index: {_fmt_idx(index_level)}{_chg}\n"
             message += f"📈 Advances: {breadth['advances']} | 📉 Declines: {breadth['declines']} | ⏸️ Unchanged: {breadth['unchanged']}"
         
         # Build cards
         cards = []
         
-        # Market breadth card
+        # Market breadth card (+ EGX30 index level when available)
+        _breadth_data = {
+            "advances": breadth['advances'],
+            "declines": breadth['declines'],
+            "unchanged": breadth['unchanged'],
+            "total": breadth['total']
+        }
+        if index_level is not None:
+            _breadth_data["index_value"] = index_level
+            _breadth_data["index_name"] = "EGX30"
+            if index_chg_pct is not None:
+                _breadth_data["index_change_percent"] = index_chg_pct
         cards.append({
             "type": "stats",
             "title": "Market Breadth" if language == "en" else "اتساع السوق",
-            "data": {
-                "advances": breadth['advances'],
-                "declines": breadth['declines'],
-                "unchanged": breadth['unchanged'],
-                "total": breadth['total']
-            }
+            "data": _breadth_data
         })
         
         # Top gainers card

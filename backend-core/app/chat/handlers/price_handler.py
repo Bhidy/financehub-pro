@@ -115,6 +115,17 @@ async def handle_stock_price(
     high = float(data['high']) if data['high'] is not None else None
     low = float(data['low']) if data['low'] is not None else None
     prev_close = float(data['prev_close']) if data['prev_close'] is not None else None
+    # P1 (H-2): keep the snapshot self-consistent. The SQL COALESCE can fall back to
+    # TODAY's close when the feed lacks a prev_close, yielding the impossible
+    # "change != 0 but prev_close == last_price". prev_close is, by definition,
+    # last_price - change (both from market_tickers), so derive it when the stored
+    # value is missing or inconsistent with the change.
+    if price is not None and change is not None:
+        _inconsistent_prev = (prev_close is None) or (
+            abs(prev_close - price) < 1e-9 and abs(change) > 1e-9
+        )
+        if _inconsistent_prev:
+            prev_close = round(price - change, 4)
     
     # Ratios — explicit is not None and > 0 checks to prevent hiding real values
     pe_ratio = float(data['pe_ratio']) if data['pe_ratio'] is not None and data['pe_ratio'] > 0 else None

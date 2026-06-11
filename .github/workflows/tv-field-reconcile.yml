@@ -35,8 +35,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Full-universe field reconciliation
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python scripts/tv_field_reconcile_gate.py
 
   fabricated-data-tripwire:

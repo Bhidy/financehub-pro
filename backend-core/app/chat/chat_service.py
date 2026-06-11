@@ -2264,6 +2264,16 @@ class ChatService:
         if is_index_composition:
             return Intent.INDEX_COMPOSITION, updated
 
+        # P1: "most active / most traded" must hit the volume-leaders handler, not
+        # drift to market summary (which was pivoting to the losers list).
+        is_most_active = (
+            bool(re.search(r"\bmost\s+(active|traded|actively\s+traded)\b", msg_lower))
+            or bool(re.search(r"\b(highest|top)\s+(volume|turnover)\b", msg_lower))
+            or any(tok in msg for tok in ["الأكثر تداولا", "الأكثر تداولاً", "الأكثر نشاطا", "الأكثر نشاطاً", "الاكثر تداول"])
+        )
+        if is_most_active:
+            return Intent.MARKET_MOST_ACTIVE, updated
+
         is_good_time = (
             bool(re.search(r"\b(good\s+time\s+to\s+buy|is\s+this\s+a\s+good\s+time\s+to\s+buy|market\s+timing)\b", msg_lower))
             or any(tok in msg for tok in ["وقت جيد للشراء", "توقيت السوق", "هل الوقت مناسب للشراء", "هل هذا وقت جيد للشراء"])

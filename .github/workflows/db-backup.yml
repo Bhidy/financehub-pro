@@ -85,7 +85,9 @@ jobs:
             exit 1
           fi
           STAMP="$(date -u +%Y%m%d-%H%M)"
-          OUT="financehub-${STAMP}.sql.gz"
+          # run_attempt suffix: a re-run in the same minute must not collide with
+          # the failed attempt's artifact name (upload-artifact@v4 409s on dupes).
+          OUT="financehub-${STAMP}-a${GITHUB_RUN_ATTEMPT:-1}.sql.gz"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
           # --no-owner/--no-privileges keep the dump portable for restore into any DB.
           # LD_LIBRARY_PATH is scoped to this command only — it must not leak into
@@ -100,15 +102,20 @@ jobs:
             echo "::error::backup is only ${SIZE} bytes (<100KB) — almost certainly a failed/empty dump."
             exit 1
           fi
-          # Sanity: core tables must appear in the dump. Single zcat pass with a
-          # full-stream grep — grep -q on the pipe would SIGPIPE zcat under
-          # pipefail and turn a successful match into exit 141.
-          FOUND=$(zcat "$OUT" | grep -oE 'market_tickers|ohlc_data|mutual_funds' | sort -u || true)
+          # Sanity: core tables MUST appear as real objects (CREATE TABLE / COPY),
+          # not mere mentions — and a missing core table is a FAILED backup, not a
+          # warning (a backup without market data is a fake backup). Decompress
+          # once to a file: grep -q on a zcat pipe SIGPIPEs zcat under pipefail.
+          PLAIN="${RUNNER_TEMP:-/tmp}/financehub-dump-verify.sql"
+          zcat "$OUT" > "$PLAIN"
           for t in market_tickers ohlc_data mutual_funds; do
-            if ! printf '%s\n' "$FOUND" | grep -qx "$t"; then
-              echo "::warning::table '${t}' not found in dump (verify schema)."
+            if ! grep -Eq "CREATE TABLE [^[:space:]]*\b${t}\b|^COPY [^[:space:]]*\b${t}\b" "$PLAIN"; then
+              echo "::error::core table '${t}' missing from dump — backup is not valid."
+              rm -f "$PLAIN"
+              exit 1
             fi
           done
+          rm -f "$PLAIN"
           echo "✓ backup verified: $OUT (${SIZE} bytes)"
 
       - name: Upload off-site artifact (retained, versioned)

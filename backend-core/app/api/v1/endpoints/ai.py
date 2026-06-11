@@ -224,6 +224,24 @@ async def ai_chat_endpoint(
     session_id = req.session_id or f"sess_{int(time.time()*1000)}" # Fallback session ID
     response_language = _resolve_response_language(req.message, x_language)
 
+    # M-1: graceful handling of empty / whitespace-only / punctuation-only input.
+    # Previously an empty message returned HTTP 400; now we return a friendly prompt.
+    if not (req.message or "").strip():
+        return {
+            "success": True,
+            "response_status": "pass",
+            "message_text": (
+                "Ask me about any EGX stock — price, statistics, financials, dividends, "
+                "or market news. For example: \"COMI price\" or \"top dividend stocks\"."
+                if response_language == "en" else
+                "اسألني عن أي سهم في البورصة المصرية — السعر، الإحصائيات، القوائم المالية، "
+                "التوزيعات أو أخبار السوق. مثال: \"سعر COMI\" أو \"أعلى أسهم التوزيعات\"."
+            ),
+            "language": response_language,
+            "cards": [], "chart": None, "actions": [], "disclaimer": None,
+            "meta": {"intent": "EMPTY", "confidence": 0, "entities": {}, "latency_ms": 0, "error": None},
+        }
+
     try:
         if not db._pool:
             return {

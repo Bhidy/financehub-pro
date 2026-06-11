@@ -38,8 +38,8 @@ jobs:
           python ingestion/populate_yahoo_reservoir.py
 
       # Watch the watchman: independently verify the Pipeline Watchdog itself is
-      # still running (alerts Discord if its heartbeat is stale). This + the
-      # watchdog watching data_sync = mutual dead-man's-switch, no single blind spot.
+      # still running — a stale heartbeat FAILS this step (red run = GitHub mobile
+      # page). This + the watchdog watching data_sync = mutual dead-man's-switch.
       - name: Watch the watchdog
         if: always()
         env:

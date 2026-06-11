@@ -305,8 +305,10 @@ async def main(heal: bool, check_watchdog_min: int):
                               [f"pipeline_watchdog last heartbeat: {age} (expected ≤ {check_watchdog_min}m).",
                                "The data-platform safety net is not running — investigate GitHub Actions."], 0xE74C3C)
                 print(f"WATCHDOG STALE: {age}")
-            else:
-                print(f"watchdog heartbeat OK ({(now-hb).total_seconds()/60:.0f}m ago)")
+                # RED run = GitHub mobile push — the only live alert channel.
+                # Exiting 0 here would leave the dead-man's-switch itself dead.
+                raise SystemExit(1)
+            print(f"watchdog heartbeat OK ({(now-hb).total_seconds()/60:.0f}m ago)")
             return
 
         # `unhealed` counts problems that were NOT successfully dispatched-for-heal

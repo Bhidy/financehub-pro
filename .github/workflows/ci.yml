@@ -78,7 +78,10 @@ jobs:
             backend-core/scripts
           echo "✅ Python sources compile cleanly"
       - name: Install gate dependencies
-        run: pip install --quiet ruff pytest httpx
+        # pytest-asyncio: the data-layer tests carry explicit @pytest.mark.asyncio
+        # markers — without the plugin every async test fails as "not natively
+        # supported" (first live CI run proved it).
+        run: pip install --quiet ruff pytest pytest-asyncio httpx
       - name: Ruff — bare `except:` ban (E722, see ruff.toml)
         run: ruff check .
       - name: Write-registry gate (harvester SQL must be QA-covered)

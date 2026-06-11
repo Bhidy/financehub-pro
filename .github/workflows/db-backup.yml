@@ -32,14 +32,33 @@ jobs:
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 30
     steps:
-      - name: Verify pg_dump is present (pre-installed on runner host)
+      - name: Ensure pg_dump is available (auto-install if needed)
         run: |
           set -euo pipefail
-          # The self-hosted runner has NO passwordless sudo — postgresql-client-16
-          # is pre-installed on the host by a human as root. Fail LOUD if it is
-          # missing so a broken host can never silently skip the backup.
-          command -v pg_dump >/dev/null 2>&1 || { echo "::error::pg_dump (postgresql-client) missing on runner host — pre-install postgresql-client-16 as root"; exit 1; }
-          pg_dump --version
+          if command -v pg_dump >/dev/null 2>&1; then
+            echo "pg_dump already installed: $(pg_dump --version)"
+            exit 0
+          fi
+          # No passwordless sudo on this runner — self-install via apt-get download
+          # (downloads the .deb without root, then dpkg -x extracts the binary).
+          # libpq5 is already on the system (psycopg2-binary depends on it), so we
+          # only need the client package itself.
+          echo "pg_dump not found — self-installing via apt-get download (no sudo)"
+          PGDIR=$(mktemp -d /tmp/pgclient.XXXXXX)
+          (cd "$PGDIR" && apt-get download postgresql-client-16 libpq5 2>/dev/null) || {
+            echo "::error::apt-get download failed — check internet access or apt index on runner"
+            exit 1
+          }
+          for deb in "$PGDIR"/*.deb; do dpkg -x "$deb" "$PGDIR"; done
+          PG_BIN_DIR=$(find "$PGDIR" -name "pg_dump" -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)
+          if [ -z "$PG_BIN_DIR" ]; then
+            echo "::error::pg_dump binary not found after deb extraction"
+            exit 1
+          fi
+          PG_LIB_DIR=$(find "$PGDIR/usr" -maxdepth 6 -name "libpq.so*" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)
+          echo "$PG_BIN_DIR" >> "$GITHUB_PATH"
+          [ -n "$PG_LIB_DIR" ] && echo "LD_LIBRARY_PATH=${PG_LIB_DIR}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> "$GITHUB_ENV"
+          echo "✓ pg_dump self-installed: $("$PG_BIN_DIR/pg_dump" --version)"
 
       - name: Dump + verify
         env:

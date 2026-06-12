@@ -80,4 +80,9 @@ jobs:
           # notify.py tries GH_TOKEN then GITHUB_TOKEN for the issue channel, so a
           # dispatch-only PAT above can never silence the last-resort alerts.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Email channel (notify.py primary). Verified live 2026-06-12 — the
+          # working account is mohamedbhidy@gmail.com; an earlier NOTIFICATION_EMAIL
+          # mismatch (not a dead password) was the real cause of every SMTP 535.
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: python scripts/pipeline_watchdog.py --heal

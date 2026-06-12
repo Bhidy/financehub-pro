@@ -45,18 +45,31 @@ jobs:
           python ingestion/populate_yahoo_reservoir.py
 
       # Watch the watchman: independently verify the Pipeline Watchdog itself is
-      # still running — a stale heartbeat FAILS this step (red run = GitHub mobile
-      # page). This + the watchdog watching data_sync = mutual dead-man's-switch.
+      # still running — a stale heartbeat FAILS this step (red run = GitHub page).
+      # This + the watchdog watching data_sync = mutual dead-man's-switch.
       #
-      # THRESHOLD CONTRACT (do not lower without changing the watchdog crons):
-      # the watchdog's designed max schedule gap is 2h (see pipeline-watchdog.yml);
-      # 150 = 120 min design gap + 30 min GitHub cron-drift grace. The old value
-      # (75) was tighter than the schedule itself and produced guaranteed false
-      # REDs at the 01:30/05:30 runs and on Fri/Sat (the 2026-06-11 failures).
+      # THRESHOLD = 480 min (8h), grounded in MEASURED reality, not cron theory.
+      # ---------------------------------------------------------------------------
+      # Earlier values (75, then 150) assumed the watchdog's cron schedule (~24
+      # runs/day, max 2h gap) is honored. IT IS NOT. Measured over 2026-06-08→12,
+      # the watchdog actually fired 8.4×/day with a MAX real gap of 301 min and a
+      # MEDIAN of 186 min — because GitHub drops the majority of `schedule` events
+      # when all ~16 workflows queue on the single self-hosted runner (and hosted
+      # runners are billing-blocked, so there is no second runner). 20 of 29 real
+      # gaps exceeded 150, so a 150 threshold would false-RED on MOST runs — that
+      # was the recurring "WATCHDOG STALE" pager.
+      #
+      # 480 cleanly separates NORMAL drop-gaps (observed worst 301 min, ~60% margin)
+      # from a GENUINELY dead watchdog (disabled / runner offline = 12h+ of silence,
+      # still caught). Detecting monitor-death at 8h instead of 2h is fine: this is a
+      # BACKSTOP. Real data-freshness is guaranteed independently and within minutes
+      # by the EXTERNAL UptimeRobot probe of /api/v1/health/freshness (Vercel→
+      # Supabase), which does not depend on GitHub Actions at all. Do NOT lower this
+      # to "tighten" monitoring — that just reintroduces alarm-fatigue false REDs.
       - name: Watch the watchdog
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/pipeline_watchdog.py --check-watchdog 150
+        run: python scripts/pipeline_watchdog.py --check-watchdog 480
 

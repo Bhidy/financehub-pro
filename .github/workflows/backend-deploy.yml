@@ -51,27 +51,50 @@ jobs:
     steps:
       - uses: actions/checkout@v5   # for scripts/notify.py (alerting on failure)
 
+      # Preflight is a SETUP GATE, not a runtime emergency. If the one-time
+      # runner provisioning was never done, this fails the run RED (honest: "not
+      # deployed") and writes the exact fix to the run Summary — but it does NOT
+      # page, because the "Alert on failure" step below is gated on a rollback
+      # SHA that only exists once preflight has passed. So a not-yet-provisioned
+      # runner is informational, while a real deploy/health failure still alerts.
       - name: Preflight (docker + app dir access)
         run: |
-          fail=0
+          miss=0
+          {
+            echo "## Backend Deploy — preflight"
+          } >> "$GITHUB_STEP_SUMMARY"
           if ! docker ps >/dev/null 2>&1; then
-            echo "::error::Runner user cannot talk to docker."
-            echo "One-time fix (Hetzner web console as root):"
-            echo "  usermod -aG docker github-runner && systemctl restart actions.runner.*"
-            fail=1
+            echo "::warning::Runner user not in the docker group (one-time setup pending)."
+            {
+              echo "- ❌ runner cannot talk to docker"
+              echo "  - one-time fix (Hetzner web console, as root):"
+              echo '    ```'
+              echo "    usermod -aG docker github-runner && systemctl restart 'actions.runner.*'"
+              echo '    ```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            miss=1
           fi
           if [ ! -d "$APP_DIR/.git" ]; then
             echo "::error::$APP_DIR is not a git checkout."
-            fail=1
+            echo "- ❌ $APP_DIR is not a git checkout" >> "$GITHUB_STEP_SUMMARY"
+            miss=1
           fi
           if [ ! -w "$APP_DIR" ]; then
-            echo "::error::Runner user cannot write $APP_DIR."
-            echo "One-time fix (Hetzner web console as root):"
-            echo "  chown -R github-runner:github-runner $APP_DIR"
-            fail=1
+            echo "::warning::Runner user cannot write $APP_DIR (one-time setup pending)."
+            {
+              echo "- ❌ runner cannot write $APP_DIR"
+              echo "  - one-time fix (Hetzner web console, as root):"
+              echo '    ```'
+              echo "    chown -R github-runner:github-runner $APP_DIR"
+              echo '    ```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            miss=1
           fi
-          [ "$fail" -eq 0 ] && echo "✅ preflight OK"
-          exit "$fail"
+          if [ "$miss" -ne 0 ]; then
+            echo "::error::Backend deploy NOT STARTED — one-time runner provisioning required (see job Summary). The running backend was NOT touched. No alert filed (setup gate, not an outage)."
+            exit 1
+          fi
+          echo "✅ preflight OK" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Provision required env (SECRET_KEY, ADMIN_API_TOKEN)
         env:
@@ -155,8 +178,12 @@ jobs:
             docker logs starta-backend-1 --tail 60 || true
           fi
 
+      # Alert ONLY when a deploy was actually ATTEMPTED (build/health failed after
+      # we got past preflight + recorded a rollback SHA). A preflight setup-gate
+      # failure has no rollback SHA, so it never reaches here — no pager for "the
+      # runner isn't provisioned yet" (that filed a noise issue on the first run).
       - name: Alert on failure (GitHub issue via notify.py)
-        if: failure()
+        if: failure() && steps.rollback.outputs.prev_sha != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

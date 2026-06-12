@@ -87,11 +87,14 @@
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : null;
     };
-    const percentClass = (value) => number(value) == null ? "" : number(value) >= 0 ? "positive" : "negative";
+    const percentClass = (value) => number(value) == null ? "" : number(value) > 0 ? "positive" : number(value) < 0 ? "negative" : "";
     const formatNumber = (value, digits = 2) => number(value) == null ? "--" : new Intl.NumberFormat("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(number(value));
     const compact = (value) => number(value) == null ? "--" : new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(number(value));
-    const percent = (value) => number(value) == null ? "--" : `${number(value) >= 0 ? "+" : ""}${formatNumber(value, 2)}%`;
+    const percent = (value) => number(value) == null ? "--" : `${number(value) > 0 ? "+" : ""}${formatNumber(value, 2)}%`;
     const formatDate = (value) => value ? new Intl.DateTimeFormat(locale(), { day: "numeric", month: "short", year: "numeric" }).format(new Date(value)) : "--";
+    // Candle dates are bare "YYYY-MM-DD" strings (UTC midnight per ECMAScript) —
+    // format them in UTC so viewers west of UTC don't see sessions a day early.
+    const formatSessionDate = (value) => new Intl.DateTimeFormat(locale(), { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(value));
     const stockName = (stock) => state.lang === "ar" && /[\u0600-\u06FF]/.test(safe(stock.name_ar)) ? stock.name_ar : stock.name_en;
     const sectorTranslations = {
         Banks: "البنوك",
@@ -179,11 +182,17 @@
         setText("totalStocks", formatNumber(summary.total_stocks, 0));
         setText("totalTurnover", `${compact(summary.total_turnover)} ${labels().currency}`);
         setText("totalVolume", compact(summary.total_volume));
-        setText("breadthCount", `${formatNumber(summary.advancing, 0)} / ${formatNumber(summary.declining, 0)}`, "tabular positive");
+        const adv = number(summary.advancing) || 0;
+        const dec = number(summary.declining) || 0;
+        const unch = number(summary.unchanged) || 0;
+        // Color follows the actual balance; unchanged securities stay in the
+        // denominator so the bar doesn't pretend every listed stock moved.
+        const breadthClass = adv > dec ? "positive" : (dec > adv ? "negative" : "");
+        setText("breadthCount", `${formatNumber(adv, 0)} / ${formatNumber(dec, 0)}`, `tabular ${breadthClass}`);
         setText("footerStatus", marketOpen ? labels().open_status : labels().closed_status, "tape-status");
-        const activeTotal = Math.max(1, (number(summary.advancing) || 0) + (number(summary.declining) || 0));
-        byId("upBreadth").style.width = `${((number(summary.advancing) || 0) / activeTotal) * 100}%`;
-        byId("downBreadth").style.width = `${((number(summary.declining) || 0) / activeTotal) * 100}%`;
+        const breadthTotal = Math.max(1, adv + dec + unch);
+        byId("upBreadth").style.width = `${(adv / breadthTotal) * 100}%`;
+        byId("downBreadth").style.width = `${(dec / breadthTotal) * 100}%`;
         // Market "reading" sentence removed — it was a house verdict derived from the advance/decline counts, not source data.
         setText("marketReading", "");
     }
@@ -643,7 +652,7 @@
             return `<path d="M ${pad.left} ${y} H ${width - pad.right}" class="gridline"/><text x="${width - pad.right + 7}" y="${y + 4}" class="axis">${formatNumber(value)}</text>`;
         }).join("");
         const labelsToShow = [0, Math.floor((points.length - 1) / 2), points.length - 1];
-        const dates = labelsToShow.map((index) => `<text x="${coords[index].x}" y="${height - 7}" text-anchor="${index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"}" class="axis">${escapeHtml(new Intl.DateTimeFormat(locale(), { month: "short", day: "numeric" }).format(new Date(points[index].date)))}</text>`).join("");
+        const dates = labelsToShow.map((index) => `<text x="${coords[index].x}" y="${height - 7}" text-anchor="${index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"}" class="axis">${escapeHtml(formatSessionDate(points[index].date))}</text>`).join("");
         const last = coords[coords.length - 1];
         const slot = plotWidth / coords.length;
         const hoverBars = coords.map((point) => {
@@ -719,7 +728,7 @@
         const dates = dateIndexes.map((index) => {
             const x = pad.left + slot * index + slot / 2;
             const anchor = index === 0 ? "start" : index === candles.length - 1 ? "end" : "middle";
-            const label = new Intl.DateTimeFormat(locale(), { month: "short", day: "numeric" }).format(new Date(candles[index].date));
+            const label = formatSessionDate(candles[index].date);
             return `<text x="${x}" y="${height - 7}" text-anchor="${anchor}" class="axis">${escapeHtml(label)}</text>`;
         }).join("");
         const hoverBars = candles.map((item, index) => {
@@ -750,7 +759,7 @@
         });
         const cutoff = Date.now() - state.days * 86400000;
         const periodRows = cleanRows.filter((item) => new Date(item.date).getTime() >= cutoff);
-        const rows = periodRows.length >= 2 ? periodRows : cleanRows.slice(-Math.min(cleanRows.length, 90));
+        const rows = periodRows.length >= 2 ? periodRows : []; // no silent all-time fallback under a selected period
         if (!rows.length) {
             message.textContent = labels().chart_unavailable;
             message.classList.remove("hidden");
@@ -825,7 +834,7 @@
     }
 
     function renderTape() {
-        const items = sortedStocks("active").slice(0, 9);
+        const items = sortedStocks("active").filter((item) => !/^EG[A-Z0-9]{10}$/.test(safe(item.symbol))).slice(0, 9);
         byId("tickerTape").innerHTML = items.map((item) => `<span class="tape-entry"><strong>${escapeHtml(item.symbol)}</strong>${formatNumber(item.last_price)} <span class="${percentClass(item.change_percent)}">${percent(item.change_percent)}</span></span>`).join("");
     }
 
@@ -1357,7 +1366,7 @@
         const days = state.drawerDays || 90;
         const cutoff = Date.now() - days * 86400000;
         const periodRows = cleanRows.filter((item) => new Date(item.date).getTime() >= cutoff);
-        const rows = periodRows.length >= 2 ? periodRows : cleanRows.slice(-Math.min(cleanRows.length, 90));
+        const rows = periodRows.length >= 2 ? periodRows : []; // no silent all-time fallback under a selected period
         
         if (!rows.length) {
             message.textContent = labels().chart_unavailable;

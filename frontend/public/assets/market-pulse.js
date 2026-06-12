@@ -49,9 +49,9 @@
         query: "",
         marketLoading: true,
         historyLoading: true,
-        // Yahoo Finance enrichment cache: keyed by symbol
-        yahooProfiles: {},
-        yahooProfileLoading: false
+        // TradingView enrichment cache (statistics + per-symbol snapshot): keyed by symbol
+        profiles: {},
+        profileLoading: false
     };
     const byId = (id) => document.getElementById(id);
 
@@ -351,22 +351,17 @@
         if (!contentContainer) return;
         
         const tab = state.overviewTab || "overview";
-        const yp = state.yahooProfiles[state.selected] || {};
-        
+        const yp = state.profiles[state.selected] || {};
+
         if (tab === "overview") {
             const sector = sectorName(item.sector_name);
-            // Use Yahoo description if available, otherwise fall back to template
-            const description = yp.description
-                ? yp.description
-                : labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
+            const description = labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
 
-            // 52-Week Range bar - revamped with ultra-premium styling
-            const yearHigh = number(yp.year_high || item.high_52w);
-            const yearLow  = number(yp.year_low  || item.low_52w);
-            const curPrice = number(yp.price     || item.last_price);
+            // 52-Week Range bar — TradingView range, marker at the feed's own fresh last price
+            const range = resolve52wRange(item, yp);
             let rangeBar = "";
-            if (yearHigh && yearLow && yearHigh > yearLow) {
-                const pct = Math.min(100, Math.max(0, ((curPrice - yearLow) / (yearHigh - yearLow)) * 100));
+            if (range) {
+                const { yearLow, yearHigh, pct } = range;
                 const rangeLabelLow = state.lang === "ar" ? "أدنى ٥٢ أسبوع" : "52W Low";
                 const rangeLabelHigh = state.lang === "ar" ? "أعلى ٥٢ أسبوع" : "52W High";
                 const currentLabel = state.lang === "ar" ? "السعر الحالي عند" : "Current price is at";
@@ -383,13 +378,15 @@
                         </div>
                         <!-- "Current price is at X% of range" removed — derived positioning %, not a source value. The bar still shows the source price within the source 52W high/low. -->
                     </div>`;
+            } else {
+                const unavailable = state.lang === "ar" ? "نطاق ٥٢ أسبوع غير متاح حالياً" : "52W range unavailable";
+                rangeBar = `<div style="margin:1.4rem 0 1.2rem;padding:12px 20px;border-radius:16px;border:1px dashed rgba(20,184,166,0.18);font-size:0.75rem;color:var(--muted);">${unavailable}</div>`;
             }
 
-            // Website & extra meta badges
-            const websiteHtml = yp.website ? `<a href="${escapeHtml(yp.website)}" target="_blank" rel="noopener" style="color:var(--teal-dark);font-size:0.72rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-top:0.5rem;opacity:0.85;"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='width:0.8rem;height:0.8rem'><circle cx='12' cy='12' r='10'/><path d='M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/></svg>${escapeHtml(yp.website.replace(/https?:\/\/(www\.)?/, ""))}</a>` : "";
+            const websiteHtml = "";
             const industryBadge = yp.industry ? `<span style="background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.2);border-radius:20px;padding:2px 10px;font-size:0.68rem;font-weight:600;color:var(--teal-dark);display:inline-block;margin-top:0.35rem;">${escapeHtml(yp.industry)}</span>` : "";
 
-            // Stats to display — prefer Yahoo, fall back to DB
+            // Stats to display — TradingView (stock_stats_view / TV snapshot), fall back to the DB feed
             const mcap     = yp.market_cap    || item.market_cap;
             const pe       = yp.pe_ratio      || item.pe_ratio;
             const pb       = yp.price_to_book || item.pb_ratio;
@@ -475,7 +472,7 @@
             const viewMoreLabel = isAr ? "عرض المزيد من البيانات المالية" : "View More Financials";
             
             // Check if loading and cache is empty
-            const isLoading = state.yahooProfileLoading && !yp.total_revenue;
+            const isLoading = state.profileLoading && !yp.total_revenue;
             
             if (isLoading) {
                 // Return beautiful pulsing shimmer cards
@@ -490,26 +487,17 @@
                 return;
             }
             
-            // Extract Values with Robust Fallbacks
-            const revenueVal = yp.total_revenue != null ? yp.total_revenue : item.revenue;
+            // Values from TradingView (stock_stats_view) — already in EGP / percent units
+            const revenueVal = yp.total_revenue != null ? yp.total_revenue : null;
             // Source-of-truth: show reported net income only; do not synthesize it from revenue × margin.
-            const netIncomeVal = item.net_income != null ? item.net_income : null;
-            
+            const netIncomeVal = yp.net_income != null ? yp.net_income : null;
+
             const peVal = yp.pe_ratio != null ? yp.pe_ratio : item.pe_ratio;
             const pbVal = yp.price_to_book != null ? yp.price_to_book : item.pb_ratio;
             const opMarginVal = yp.operating_margin != null ? yp.operating_margin : null;
-            
-            // Format Dividend Yield
-            let divYieldVal = "--";
-            if (yp.dividend_yield != null) {
-                let dy = yp.dividend_yield;
-                if (dy > 0 && dy < 1) dy = dy * 100;
-                divYieldVal = formatNumber(dy, 2) + "%";
-            } else if (item.dividend_yield != null) {
-                let dy = item.dividend_yield;
-                if (dy > 0 && dy < 1) dy = dy * 100;
-                divYieldVal = formatNumber(dy, 2) + "%";
-            }
+
+            // Dividend yield arrives as a percent value (e.g. 4.58) — render as-is
+            const divYieldVal = yp.dividend_yield != null ? formatNumber(yp.dividend_yield, 2) + "%" : "--";
             
             const formattedRevenue = revenueVal != null ? `${compact(revenueVal)} ${labels().currency}` : "--";
             const formattedNetIncome = netIncomeVal != null ? `${compact(netIncomeVal)} ${labels().currency}` : "--";
@@ -517,7 +505,7 @@
             
             const formattedPe = peVal != null ? formatNumber(peVal, 2) : "--";
             const formattedPb = pbVal != null ? formatNumber(pbVal, 2) : "--";
-            const formattedOpMargin = opMarginVal != null ? `${formatNumber(opMarginVal * 100, 2)}%` : "--";
+            const formattedOpMargin = opMarginVal != null ? `${formatNumber(opMarginVal, 2)}%` : "--";
             
             const cards = [
                 { title: revLabel, value: formattedRevenue, color: "var(--ink)" },
@@ -916,56 +904,87 @@
         }
     }
 
-    async function loadYahooProfile(symbol) {
+    // ── 52W range: TradingView bounds (or own candle history), marker at the
+    //    feed's own fresh last price. Bounds are widened to include the current
+    //    price so a stock is never falsely pinned AT an extreme it isn't at.
+    function history52w() {
+        const rows = state.history || [];
+        if (rows.length < 30) return null;
+        const cutoff = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
+        let lo = Infinity, hi = -Infinity;
+        for (const r of rows) {
+            if (!r.date || String(r.date).slice(0, 10) < cutoff) continue;
+            const l = number(r.low != null ? r.low : r.close);
+            const h = number(r.high != null ? r.high : r.close);
+            if (l) lo = Math.min(lo, l);
+            if (h) hi = Math.max(hi, h);
+        }
+        return (isFinite(lo) && isFinite(hi) && hi > lo) ? { lo, hi } : null;
+    }
+
+    function resolve52wRange(item, yp) {
+        let yearLow = number(yp.year_low);
+        let yearHigh = number(yp.year_high);
+        if (!yearLow || !yearHigh || yearHigh <= yearLow) {
+            const hist = history52w();
+            if (!hist) return null;
+            yearLow = hist.lo;
+            yearHigh = hist.hi;
+        }
+        const curPrice = number(item.last_price);
+        if (!curPrice) return null;
+        yearLow = Math.min(yearLow, curPrice);
+        yearHigh = Math.max(yearHigh, curPrice);
+        if (yearHigh <= yearLow) return null;
+        const pct = ((curPrice - yearLow) / (yearHigh - yearLow)) * 100;
+        return { yearLow, yearHigh, pct };
+    }
+
+    async function loadProfile(symbol) {
         // Cache check — avoid refetching on every tab switch
-        if (state.yahooProfiles[symbol]) return;
-        state.yahooProfileLoading = true;
-        
+        if (state.profiles[symbol]) return;
+        state.profileLoading = true;
+
         // Render skeletons immediately if we are looking at this stock and on the financials tab
         if (state.selected === symbol && state.overviewTab === "financials") {
             renderOverviewTab();
         }
-        
-        try {
-            const raw = await request(`/api/v1/yahoo/stock/${encodeURIComponent(symbol)}`);
-            if (raw && (raw.profile || raw.fundamentals)) {
-                const p = raw.profile   || {};
-                const f = raw.fundamentals || {};
-                state.yahooProfiles[symbol] = {
-                    description:    p.description,
-                    website:        p.website,
-                    industry:       p.industry,
-                    employees:      p.employees,
-                    headquarters:   p.headquarters_city,
-                    // Prices & ranges — prefer Yahoo live, fall back to what DB had
-                    price:          p.price,
-                    year_high:      p.year_high,
-                    year_low:       p.year_low,
-                    market_cap:     p.market_cap,
-                    avg_vol_10d:    p.avg_vol_10d,
-                    // Fundamentals
-                    pe_ratio:       f.pe_ratio,
-                    price_to_book:  f.price_to_book,
-                    dividend_yield: f.dividend_yield,
-                    beta:           f.beta,
-                    // Extra metrics for the Drawer
-                    eps:            f.trailing_eps,
-                    roe:            f.return_on_equity,
-                    // Add standard financial metrics for the 6 cards
-                    total_revenue:  f.total_revenue,
-                    profit_margin:  f.profit_margin,
-                    operating_margin: f.operating_margin,
-                    total_cash:     f.total_cash,
-                    total_debt:     f.total_debt,
-                    raw:            raw
-                };
-                // Re-render Overview if currently viewing this stock
-                if (state.selected === symbol) renderOverviewTab();
-            }
-        } catch (_) {
-            // Non-critical — silently fail; DB data still shows
+
+        // Two TradingView-backed sources, fetched in parallel:
+        //  - /egx/statistics: stock_stats_view (EGP fundamentals, percent ratios)
+        //  - /tv/snapshot: price-denominated + unitless per-symbol fields only
+        //    (the TV per-symbol endpoint returns monetary fundamentals in USD —
+        //     never take market cap / revenue from it)
+        const [stats, snap] = await Promise.all([
+            request(`/api/v1/egx/statistics/${encodeURIComponent(symbol)}`).catch(() => null),
+            request(`/api/v1/tv/snapshot/${encodeURIComponent(symbol)}`).catch(() => null),
+        ]);
+        if (stats || snap) {
+            const s = stats || {};
+            const t = snap || {};
+            state.profiles[symbol] = {
+                industry:       t.industry,
+                employees:      t.number_of_employees,
+                year_high:      number(t.price_52_week_high),
+                year_low:       number(t.price_52_week_low),
+                avg_vol_10d:    t.average_volume_10d_calc,
+                market_cap:     s.market_cap,
+                pe_ratio:       s.pe_ratio,
+                price_to_book:  s.pb_ratio,
+                dividend_yield: s.dividend_yield,
+                beta:           s.beta_1y,
+                eps:            s.eps_ttm,
+                roe:            s.roe,
+                total_revenue:  s.revenue_ttm != null ? s.revenue_ttm : s.revenue_fy,
+                net_income:     s.net_income_ttm != null ? s.net_income_ttm : s.net_income_fy,
+                profit_margin:  s.profit_margin,
+                operating_margin: s.operating_margin,
+                total_debt:     s.total_debt,
+            };
+            // Re-render Overview if currently viewing this stock
+            if (state.selected === symbol) renderOverviewTab();
         }
-        state.yahooProfileLoading = false;
+        state.profileLoading = false;
         // Final fallback update in case loading finished
         if (state.selected === symbol && state.overviewTab === "financials") {
             renderOverviewTab();
@@ -980,7 +999,7 @@
         await Promise.all([
             loadStockHistory(),
             loadSelectedSymbolNews(),
-            loadYahooProfile(symbol)
+            loadProfile(symbol)
         ]);
     }
 
@@ -1042,7 +1061,7 @@
         // ── Phase 6: Non-critical enrichment in background ────────────────
         Promise.all([
             loadSelectedSymbolNews(),
-            loadYahooProfile(state.selected)
+            loadProfile(state.selected)
         ]);
     }
 
@@ -1180,8 +1199,8 @@
         const item = selectedStock();
         if (!item) return;
         
-        const yp = state.yahooProfiles[state.selected] || {};
-        
+        const yp = state.profiles[state.selected] || {};
+
         setText("drawerTitle", item.symbol);
         setText("drawerSubtitle", stockName(item));
         
@@ -1194,19 +1213,17 @@
             fallback.textContent = item.symbol.substring(0, 2);
         }
         
-        let curPrice = yp.price || item.last_price;
-        let changePct = yp.raw && yp.raw.profile && yp.raw.profile.change_pct != null ? yp.raw.profile.change_pct : item.change_percent;
-
         // Source-of-truth: show the feed's own last price / change %, not a value recomputed from candle history.
+        const curPrice = item.last_price;
+        const changePct = item.change_percent;
         setText("drawerPrice", curPrice != null ? formatNumber(curPrice) : "...");
         setText("drawerChange", changePct != null ? percent(changePct) : "...", `tabular drawer-change-value ${percentClass(changePct)}`);
-        
-        const yearHigh = number(yp.year_high || item.high_52w);
-        const yearLow  = number(yp.year_low  || item.low_52w);
+
+        const range = resolve52wRange(item, yp);
         const rangeContainer = byId("drawerRangeBarContainer");
         if (rangeContainer) {
-            if (yearHigh && yearLow && yearHigh > yearLow) {
-                const pct = Math.min(100, Math.max(0, ((number(curPrice) - yearLow) / (yearHigh - yearLow)) * 100));
+            if (range) {
+                const { yearLow, yearHigh, pct } = range;
                 rangeContainer.innerHTML = `
                     <div style="margin: 0.8rem 0 0;">
                         <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-bottom:4px;">
@@ -1224,18 +1241,12 @@
         }
         
         const sector = sectorName(item.sector_name);
-        const desc = yp.description || labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
+        const desc = labels().company_text.replace("{name}", stockName(item)).replace("{sector}", sector);
         setText("drawerDescription", desc);
-        
+
         const websiteLink = byId("drawerWebsiteLink");
         if (websiteLink) {
-            if (yp.website) {
-                websiteLink.href = yp.website;
-                websiteLink.style.display = "inline-flex";
-                websiteLink.querySelector("span").textContent = yp.website.replace(/https?:\/\/(www\.)?/, "");
-            } else {
-                websiteLink.style.display = "none";
-            }
+            websiteLink.style.display = "none";
         }
         
         const profileLink = byId("drawerFullProfileLink");
@@ -1283,11 +1294,11 @@
                 [isAr ? "مضاعف الربحية (P/E)" : "P/E Ratio", formatNumber(pe)],
                 [isAr ? "مضاعف القيمة الدفترية (P/B)" : "P/B Ratio", formatNumber(pb)],
                 [isAr ? "ربحية السهم (EPS)" : "Earnings Per Share (EPS)", formatNumber(eps)],
-                [isAr ? "العائد على حقوق المساهمين (ROE)" : "Return on Equity (ROE)", roe != null ? `${formatNumber(roe * 100)}%` : "--"],
+                [isAr ? "العائد على حقوق المساهمين (ROE)" : "Return on Equity (ROE)", roe != null ? `${formatNumber(roe)}%` : "--"],
                 [isAr ? "عائد التوزيعات" : "Dividend Yield", divYield != null ? `${formatNumber(divYield)}%` : "--"],
                 [isAr ? "معامل بيتا (التقلب)" : "Beta Value", formatNumber(beta)],
-                [isAr ? "الإيرادات" : "Revenue", `${compact(item.revenue)} EGP`],
-                [isAr ? "صافي الدخل" : "Net Income", `${compact(item.net_income)} EGP`]
+                [isAr ? "الإيرادات" : "Revenue", yp.total_revenue != null ? `${compact(yp.total_revenue)} EGP` : "--"],
+                [isAr ? "صافي الدخل" : "Net Income", yp.net_income != null ? `${compact(yp.net_income)} EGP` : "--"]
             ];
             
             metricsGrid.innerHTML = metrics.map(([title, val]) => `

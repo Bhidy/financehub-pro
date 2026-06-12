@@ -95,6 +95,27 @@ jobs:
           cd backend-core
           python -m pytest tests/ -q
 
+  qa-write-contract:
+    name: QA write-contract (live schema dry-run)
+    # Dry-runs every registered write SQL against the LIVE schema inside a
+    # rolled-back transaction (qa/egx_audit.py suite_write_contract). This is
+    # the gate that caught PR #86's 17-vs-19-argument drift — but only AFTER
+    # merge, inside the harvester run. Running it per-PR means contract drift
+    # can never reach main. Same-repo PRs only (private repo, single
+    # collaborator) — the DATABASE_URL secret is not exposed to forks.
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet asyncpg httpx
+      - name: Write-contract dry-run against live schema
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python qa/egx_audit.py --suite contract
+
   frontend-build:
     name: Frontend production build (mirrors Vercel exactly)
     runs-on: [self-hosted, linux, x64, hetzner]

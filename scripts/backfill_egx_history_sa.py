@@ -28,7 +28,9 @@ import sys
 import asyncpg
 import httpx
 
-SA_URL = "https://stockanalysis.com/api/symbol/q/egx-{sym}/history?range=max&period=daily"
+# NB: range=max silently falls back to 1Y on this endpoint; 10Y is the deepest
+# supported window (verified 2026-06-12: ORAS max->243 bars, 10Y->2417 bars).
+SA_URL = "https://stockanalysis.com/api/symbol/q/egx-{sym}/history?range=10Y&period=daily"
 UA = {"User-Agent": "Mozilla/5.0 (StartaMarkets data service)"}
 SOURCE_TAG = "stockanalysis"
 
@@ -54,6 +56,14 @@ def to_rows(symbol: str, data: list[dict]) -> list[tuple]:
             continue
         if c <= 0:
             continue
+        # SA's EGX "open" is the PRIOR session's close (verified: o == prev c on
+        # every violating row — root cause of audit H-05's impossible candles).
+        # True opens aren't published. Trust hierarchy: close > high/low > open —
+        # widen the range to contain the official close, then clamp the
+        # prev-close 'open' into the session range (gap opens land on the edge).
+        h = max(h, c)
+        l = min(l, c)
+        o = min(max(o, l), h)
         rows.append((symbol, d, o, h, l, c, adj, v, SOURCE_TAG))
     rows.sort(key=lambda r: r[1])
     return rows
@@ -113,7 +123,8 @@ async def main() -> int:
         return 2
 
     symbols = [s.strip().upper() for s in args.symbols.split(",") if s.strip()]
-    conn = await asyncpg.connect(db_url)
+    # Supabase transaction-mode pooler (6543) breaks prepared statements
+    conn = await asyncpg.connect(db_url, statement_cache_size=0, command_timeout=60)
     ok, bad = [], []
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:

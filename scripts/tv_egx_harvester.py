@@ -33,7 +33,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend-core"))
 
 import asyncpg  # noqa: E402
-from data_pipeline.tradingview_client import TradingViewEGXClient, _sane_dividend_yield  # noqa: E402
+from data_pipeline.tradingview_client import TradingViewEGXClient, _finite, _sane_dividend_yield  # noqa: E402
 from data_pipeline.egx_feed_router import EGXFeedRouter  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")

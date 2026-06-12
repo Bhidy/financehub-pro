@@ -17,8 +17,10 @@ name: Pipeline Watchdog
 # is healthy or every problem was successfully dispatched-for-heal (the heal IS
 # the response). So a RED run WITH a heartbeat = a real problem outstanding; a
 # MISSING heartbeat (watchdog itself dead / DB unreachable) is the separate signal
-# that data_sync.yml's `--check-watchdog 150` independently cross-checks (150 =
-# the 2h max designed schedule gap + 30 min cron-drift grace — see below).
+# that data_sync.yml's `--check-watchdog 480` independently cross-checks. The 480
+# (8h) is grounded in MEASURED run history, NOT the cron schedule below — GitHub
+# drops ~2/3 of the scheduled triggers (single saturated runner), so the watchdog
+# really fires ~8×/day with gaps up to ~300 min. See the long note in data_sync.yml.
 #
 # Self-heal dispatch needs a token with actions:write. The default GITHUB_TOKEN
 # can READ runs and the DB (so detection + alerting always work), but GitHub's
@@ -39,14 +41,16 @@ on:
     - cron: '*/30 6-14 * * 0-4'   # every 30 min during EGX session (tight freshness SLA)
     - cron: '0 15,17,19,21,23 * * *'  # every 2 h post-close / evening (wall-days + schedule-liveness)
     - cron: '0 0,2,4 * * *'       # every 2 h overnight (0,2,4 UTC — quiet hours)
-    - cron: '0 6,8,10,12,14 * * 5,6'  # every 2 h Fri/Sat daytime — closes the 04:00→15:00
-    #   weekend hole that left the heartbeat legitimately ~11h old, and (with the 2h
-    #   evening cadence vs a 75-min probe) made data_sync's --check-watchdog liveness
-    #   probe a guaranteed false RED (the 2026-06-11 failures).
-    #   DESIGN CONTRACT: max gap between any two scheduled watchdog runs is 2h
-    #   everywhere; data_sync probes with 150 min (= 2h gap + 30 min GitHub
-    #   cron-drift grace). If you change one side, change the other.
-    # Net: ~24 runs/day vs 48 before → still saves ≈330 min/month vs flat 30-min.
+    - cron: '0 6,8,10,12,14 * * 5,6'  # every 2 h Fri/Sat daytime (fills the weekend gap)
+    # REALITY CHECK (measured 2026-06-08→12): this schedule REQUESTS ~24 runs/day at
+    # ≤2h spacing, but GitHub actually delivers only ~8/day with real gaps up to
+    # ~300 min — `schedule` events are dropped when the single self-hosted runner is
+    # busy with the other ~15 workflows (hosted runners are billing-blocked, so there
+    # is no spare capacity). These extra cron lines still HELP (more requests → more
+    # delivered runs) but do NOT guarantee tight spacing. That is why data_sync's
+    # liveness probe uses 480 min (8h), sized to the MEASURED worst gap, not to this
+    # theoretical schedule. Tight data-freshness is enforced separately by the
+    # external UptimeRobot probe of /api/v1/health/freshness, independent of Actions.
   workflow_dispatch:
 
 concurrency:

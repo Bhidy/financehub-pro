@@ -54,14 +54,17 @@ MAX_ABS_CHANGE_PCT = 40.0   # |daily change| beyond this is almost surely bad da
 EGX_PREFIX = "EGX:"
 
 # Column set for the price path, mapped 1:1 to the legacy get_egx_stocks() dict.
-# NB: yield MUST be `dividends_yield_current` (the value TradingView displays).
-# The bare `dividends_yield` variant is a different metric (BINV: 165.099 vs the
-# real 2.71%) and poisoned market_tickers until the June-2026 audit.
+# NB: NEITHER TradingView yield variant is trustworthy on its own:
+#   * bare `dividends_yield` was garbage for BINV (165.099 vs real 2.83%)
+#   * `dividends_yield_current` is garbage for ORAS (45.50% vs real ~1.65-3.16%)
+# Both are scanned and cross-validated against dividend_amount_recent/close in
+# _sane_dividend_yield() — see the June-2026 audit (C-03/C-05 follow-up).
 _PRICE_COLS = [
     "name", "description", "close", "change", "change_abs", "volume",
     "open", "high", "low", "market_cap_basic",
     "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
-    "dividends_yield_current", "price_book_ratio", "beta_1_year",
+    "dividends_yield_current", "dividends_yield", "dividend_amount_recent",
+    "price_book_ratio", "beta_1_year",
     "price_earnings_forward_fy", "float_shares_percent_current",
     "float_shares_outstanding_current", "number_of_shareholders",
     "sector", "time", "last_bar_update_time",
@@ -93,6 +96,35 @@ def _finite(x: Any) -> Optional[float]:
 def _to_internal_symbol(tv_symbol: str) -> str:
     """'EGX:COMI' -> 'COMI'. Tolerant of already-bare symbols."""
     return tv_symbol.split(":", 1)[1] if ":" in tv_symbol else tv_symbol
+
+
+# Cross-validation bounds for the two TV dividend-yield variants.
+# implied = most-recent dividend amount / price. An annual total can be a few
+# payments (EGX names pay 1-4x/yr) and the recent payment can itself be a
+# special, so any yield outside [implied/3, implied*4.5] is treated as corrupt.
+# Survey 2026-06-12 over all 289 EGX symbols: 4 wild disagreements —
+#   BINV ttm=173.14 (bad) / current=2.83  (good, == implied)
+#   ORAS current=45.50 (bad) / ttm=3.16   (good; implied 1.65)
+#   MBSC ttm=7.35   (bad) / current=2.21  (good, == implied)
+#   EGS385S1C012 ttm=0 (bad) / current=7.78 (good, == implied)
+_DY_LOW_FACTOR = 1.0 / 3.0
+_DY_HIGH_FACTOR = 4.5
+
+
+def _sane_dividend_yield(current: Any, ttm: Any, amount: Any, close: Any) -> Optional[float]:
+    """Pick a dividend yield (%) that survives cross-validation against the
+    most-recent dividend amount. Falls back to the directly computed
+    recent-payment yield when both TV variants fail; keeps the legacy
+    preference (current, then ttm) when no amount exists to validate with."""
+    current, ttm = _finite(current), _finite(ttm)
+    amount, close = _finite(amount), _finite(close)
+    if amount is None or amount <= 0 or close is None or close <= 0:
+        return current if current is not None else ttm
+    implied = amount / close * 100.0
+    for cand in (current, ttm):
+        if cand is not None and implied * _DY_LOW_FACTOR <= cand <= implied * _DY_HIGH_FACTOR:
+            return cand
+    return round(implied, 4)
 
 
 def _valid_price_row(symbol: str, price: Optional[float], change_pct: Optional[float]) -> bool:
@@ -192,7 +224,9 @@ class TradingViewEGXClient:
                 "revenue": _finite(d.get("total_revenue_fy")),
                 "net_income": _finite(d.get("net_income_fy")),
                 "pe_ratio": _finite(d.get("price_earnings_ttm")),
-                "dividend_yield": _finite(d.get("dividends_yield_current")),
+                "dividend_yield": _sane_dividend_yield(
+                    d.get("dividends_yield_current"), d.get("dividends_yield"),
+                    d.get("dividend_amount_recent"), price),
                 "pb_ratio": _finite(d.get("price_book_ratio")),
                 "beta": _finite(d.get("beta_1_year")),
                 "forward_pe": _finite(d.get("price_earnings_forward_fy")),
@@ -332,7 +366,8 @@ class TradingViewEGXClient:
     # E1: DIVIDENDS + FORWARD CALENDAR
     # ------------------------------------------------------------------ #
     async def get_dividends(self) -> List[Dict[str, Any]]:
-        cols = ["name", "dividends_yield_current", "dividend_amount_recent",
+        cols = ["name", "close", "dividends_yield_current", "dividends_yield",
+                "dividend_amount_recent",
                 "dividend_ex_date_recent", "dividend_payment_date_recent",
                 "dividend_amount_upcoming", "dividend_ex_date_upcoming",
                 "dividend_payment_date_upcoming", "dividends_frequency",
@@ -413,7 +448,8 @@ _KSA_PRICE_COLS = [
     "name", "description", "close", "change", "change_abs", "volume",
     "open", "high", "low", "market_cap_basic",
     "total_revenue_fy", "net_income_fy", "price_earnings_ttm",
-    "dividends_yield_current", "price_book_ratio", "beta_1_year",
+    "dividends_yield_current", "dividends_yield", "dividend_amount_recent",
+    "price_book_ratio", "beta_1_year",
     "sector", "time", "last_bar_update_time",
 ]
 
@@ -494,7 +530,9 @@ class TradingViewKSAClient:
                 "revenue": _finite(d.get("total_revenue_fy")),
                 "net_income": _finite(d.get("net_income_fy")),
                 "pe_ratio": _finite(d.get("price_earnings_ttm")),
-                "dividend_yield": _finite(d.get("dividends_yield_current")),
+                "dividend_yield": _sane_dividend_yield(
+                    d.get("dividends_yield_current"), d.get("dividends_yield"),
+                    d.get("dividend_amount_recent"), price),
                 "pb_ratio": _finite(d.get("price_book_ratio")),
                 "beta": _finite(d.get("beta_1_year")),
                 "sector_name": d.get("sector") or "",

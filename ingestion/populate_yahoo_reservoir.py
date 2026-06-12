@@ -89,10 +89,48 @@ def _hist_to_ohlc_rows(symbol, hist):
             if None in (o, h, l, c) or c <= 0:
                 continue
             v = int(_num(b.get("volume")) or 0)
+            # Synthetic placeholder bar: Yahoo keeps emitting flat zero-volume
+            # bars after a feed freezes or a symbol stops trading (ORAS was
+            # frozen at 71.05 with vol=0 for 2 years — audit C-03). A no-trade
+            # bar carries no price information; never let it become a candle.
+            if v == 0 and o == h == l == c:
+                continue
             rows.append((symbol, d, o, h, l, c, c, v))
         except Exception:
             continue
     return rows
+
+
+# ── Frozen/wrong-listing feed gate (audit C-03 / C-07) ───────────────────────
+# Yahoo silently re-assigns or freezes EGX symbols (ORAS.CA became a MUTUALFUND
+# stub frozen at 2024-07-23 yet kept emitting daily synthetic bars). A frozen
+# feed must never write candles the public chart serves.
+STALE_QUOTE_MAX_AGE_DAYS = 7      # regularMarketTime older than this => frozen
+WRONG_LISTING_MAX_RATIO = 1.5     # Yahoo close vs TV live price beyond this => wrong listing
+
+
+def _yahoo_feed_rejection(prof, hist, live_price):
+    """Return a human-readable reason to reject this symbol's Yahoo candles,
+    or None if the feed looks live. prof is the raw yfinance info dump."""
+    qt = (prof or {}).get("quoteType")
+    if qt and str(qt).upper() not in ("EQUITY", "ETF"):
+        return f"quoteType={qt} (symbol re-assigned by Yahoo)"
+    rmt = _num((prof or {}).get("regularMarketTime"))
+    if rmt:
+        age_days = (time.time() - rmt) / 86400.0
+        if age_days > STALE_QUOTE_MAX_AGE_DAYS:
+            return f"regularMarketTime {age_days:.0f}d old (frozen feed)"
+    last_close = None
+    for b in reversed(hist or []):
+        last_close = _num(b.get("close"))
+        if last_close:
+            break
+    if last_close and live_price and live_price > 0:
+        ratio = max(last_close / live_price, live_price / last_close)
+        if ratio > WRONG_LISTING_MAX_RATIO:
+            return (f"close {last_close:.2f} vs live {live_price:.2f} "
+                    f"({ratio:.1f}x apart — wrong listing)")
+    return None
 
 # Robust Session Factory (Chrome Impersonation)
 def get_yahoo_session():
@@ -207,6 +245,13 @@ async def main():
     # Get symbols
     rows = await conn.fetch("SELECT symbol FROM market_tickers WHERE market_code='EGX' OR symbol LIKE '%.CA' OR symbol LIKE '%.SR'")
     symbols = [r['symbol'] for r in rows]
+    # Live (TradingView-sourced) prices: the cross-check that catches a Yahoo
+    # symbol serving a different/old listing even when its timestamps look fresh.
+    live_prices = {
+        r['symbol'].replace(".CA", ""): float(r['last_price'])
+        for r in await conn.fetch(
+            "SELECT symbol, last_price FROM market_tickers WHERE last_price IS NOT NULL AND last_price > 0")
+    }
     # Fallback
     if not symbols:
         symbols = ["COMI", "SWDY", "ETEL", "EAST", "HRHO", "MNHD", "TMGH", "EKHO", "ADIB", "HDBK"]
@@ -217,6 +262,7 @@ async def main():
     saved = 0
     ohlc_written = 0   # symbols where ohlc_data was actually updated
     ohlc_attempted = 0 # symbols that had bars to write
+    ohlc_skipped = []  # frozen/wrong-listing feeds (gate C-03) — cache saved, candles NOT
     no_data = []       # Yahoo returned nothing
     failed = []        # raised an exception (isolated, does not abort the run)
 
@@ -270,6 +316,14 @@ async def main():
             """, clean_sym, _safe_dumps(final_prof), _safe_dumps(final_fund), _safe_dumps(final_hist))
 
             # Keep ohlc_data (the table the public chart reads) in sync with the cache.
+            # GATE (audit C-03): a frozen / re-assigned / wrong-listing Yahoo feed
+            # must never overwrite the chart's candles with synthetic garbage.
+            rejection = _yahoo_feed_rejection(final_prof, final_hist, live_prices.get(clean_sym))
+            if rejection:
+                ohlc_skipped.append(clean_sym)
+                logger.warning(f"[{idx}/{total}] OHLC SKIP {clean_sym}: {rejection}")
+                saved += 1
+                continue
             ohlc_rows = _hist_to_ohlc_rows(clean_sym, final_hist)
             if ohlc_rows:
                 ohlc_attempted += 1
@@ -295,8 +349,11 @@ async def main():
 
     await conn.close()
     logger.info(
-        f"Ingestion Complete. saved={saved}/{total} | ohlc_written={ohlc_written}/{ohlc_attempted} | no_data={len(no_data)} | errors={len(failed)}"
+        f"Ingestion Complete. saved={saved}/{total} | ohlc_written={ohlc_written}/{ohlc_attempted} | "
+        f"ohlc_skipped(frozen/wrong-listing)={len(ohlc_skipped)} | no_data={len(no_data)} | errors={len(failed)}"
     )
+    if ohlc_skipped:
+        logger.warning(f"Frozen/wrong-listing Yahoo feeds (candles NOT written): {', '.join(ohlc_skipped[:50])}")
     if failed:
         logger.warning(f"Symbols with errors: {', '.join(failed[:50])}")
 

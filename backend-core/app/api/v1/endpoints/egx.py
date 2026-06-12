@@ -192,6 +192,11 @@ async def get_egx_yahoo_history(
                 # Skip clearly invalid rows (Yahoo sometimes returns zeros)
                 if close_v <= 0:
                     continue
+                # Skip synthetic placeholder bars — Yahoo emits flat zero-volume
+                # bars forever after a feed freezes (ORAS: 2 years of 71.05/vol=0,
+                # audit C-03). They are not real sessions; never chart them.
+                if vol_v == 0 and open_v == high_v == low_v == close_v:
+                    continue
 
                 rows.append({
                     "date":   date_str,

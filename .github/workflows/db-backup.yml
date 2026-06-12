@@ -47,6 +47,15 @@ jobs:
       - name: Ensure pg_dump 17 (PGDG, no sudo, cached)
         run: |
           set -euo pipefail
+          # Prefer a system pg_dump if it's v17+ (installed on the host 2026-06-12).
+          # The cache/PGDG-download path below stays as a self-healing fallback for
+          # any runner where the system package is absent.
+          SYS_PG="$(command -v pg_dump || true)"
+          if [ -n "$SYS_PG" ] && "$SYS_PG" --version | grep -qE ' 1[7-9]| [2-9][0-9]'; then
+            echo "system: $("$SYS_PG" --version)"
+            { echo "PG17_BIN=$SYS_PG"; echo "PG17_LIB="; } >> "$GITHUB_ENV"
+            exit 0
+          fi
           CACHE="$HOME/.cache/financehub-pg17"
           PGBIN="$CACHE/usr/lib/postgresql/17/bin/pg_dump"
           LDP="$CACHE/usr/lib/x86_64-linux-gnu"

@@ -67,6 +67,7 @@ _PRICE_COLS = [
     "price_book_ratio", "beta_1_year",
     "price_earnings_forward_fy", "float_shares_percent_current",
     "float_shares_outstanding_current", "number_of_shareholders",
+    "price_52_week_high", "price_52_week_low",
     "sector", "time", "last_bar_update_time",
 ]
 
@@ -93,9 +94,19 @@ def _finite(x: Any) -> Optional[float]:
     return f
 
 
+# TradingView lists a few EGX companies only under their ISIN, not the exchange
+# ticker, which split their identity into two market_tickers rows (live ISIN row
+# + frozen legacy-ticker row — the PHGC defect). Map them back to the canonical
+# internal symbol the rest of the platform (candles, logos, news) keys on.
+_TV_SYMBOL_ALIASES = {
+    "EGS72XL1C014": "PHGC",  # Premium Healthcare Group
+}
+
+
 def _to_internal_symbol(tv_symbol: str) -> str:
     """'EGX:COMI' -> 'COMI'. Tolerant of already-bare symbols."""
-    return tv_symbol.split(":", 1)[1] if ":" in tv_symbol else tv_symbol
+    bare = tv_symbol.split(":", 1)[1] if ":" in tv_symbol else tv_symbol
+    return _TV_SYMBOL_ALIASES.get(bare, bare)
 
 
 # Cross-validation bounds for the two TV dividend-yield variants.
@@ -233,6 +244,8 @@ class TradingViewEGXClient:
                 "float_shares_percent": _finite(d.get("float_shares_percent_current")),
                 "float_shares": _finite(d.get("float_shares_outstanding_current")),
                 "shareholders_count": _finite(d.get("number_of_shareholders")),
+                "high_52w": _finite(d.get("price_52_week_high")),
+                "low_52w": _finite(d.get("price_52_week_low")),
                 "sector_name": d.get("sector") or "",
                 "market_code": "EGX",
                 "currency": "EGP",

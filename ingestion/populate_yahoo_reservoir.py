@@ -95,6 +95,12 @@ def _hist_to_ohlc_rows(symbol, hist):
             # bar carries no price information; never let it become a candle.
             if v == 0 and o == h == l == c:
                 continue
+            # OHLC invariant normalization (audit H-05): close is authoritative —
+            # widen the range to include it; Yahoo synthesizes open as the previous
+            # close, so clamp it into the (corrected) session range.
+            h = max(h, c)
+            l = min(l, c)
+            o = min(max(o, l), h)
             rows.append((symbol, d, o, h, l, c, c, v))
         except Exception:
             continue
@@ -327,12 +333,16 @@ async def main():
             ohlc_rows = _hist_to_ohlc_rows(clean_sym, final_hist)
             if ohlc_rows:
                 ohlc_attempted += 1
+                # Bar ownership: never downgrade a TradingView-written bar — TV has
+                # the real session open; Yahoo's trailing-window overwrite was how
+                # synthetic bars re-poisoned repaired symbols (audit C-03 follow-up).
                 await conn.executemany("""
                     INSERT INTO ohlc_data (symbol, date, open, high, low, close, adj_close, volume)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     ON CONFLICT (symbol, date) DO UPDATE SET
                         open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
                         close=EXCLUDED.close, adj_close=EXCLUDED.adj_close, volume=EXCLUDED.volume
+                    WHERE ohlc_data.source IS DISTINCT FROM 'tradingview'
                 """, ohlc_rows)
                 ohlc_written += 1
 

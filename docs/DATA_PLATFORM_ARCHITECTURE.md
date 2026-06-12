@@ -198,11 +198,17 @@ false-green).
 - **Stocks:** ALL reads on Supabase — `egx/stocks`, `egx/statistics`, `egx/dividends`,
   `egx/financials-data`, `egx/stats`, `egx/history` rewired from backend-proxy to direct
   Supabase; stocks reconciliation gate + freshness monitor live (227/227 PASS).
-- **Only remaining backend dependencies (by design):** `yahoo/stock` (`fetchYahooProfile`)
-  fetches LIVE external yfinance company profiles — external enrichment, not our canonical
-  data, so it legitimately stays on the backend. `app/api/egx/[...path]` catch-all is
-  UNUSED/legacy (no frontend caller) and can be deleted. Everything that reads OUR
-  prices/charts/NAVs/metadata now reads Supabase.
+- **`yahoo/stock` (backend) — CORRECTED description (2026-06-12 audit):** it is NOT a
+  live yfinance fetch. It serves the `yahoo_cache` reservoir first (re-ingested every 4h
+  by `data_sync.yml`) and only falls through to live yfinance on a cache miss. Yahoo's
+  EGX quote coverage froze on 2024-07-23, so the reservoir's quote-derived numeric fields
+  (price, market cap, P/E, 52W) are permanently stale for EGX — the June-2026 audit found
+  Market Pulse rendering them. **Market Pulse no longer calls it at all** (PR #84): the
+  page reads `egx/statistics` (stock_stats_view, TradingView) + `tv/snapshot` (TV
+  per-symbol). `yahoo_cache` remains only as input to income_statements/balance_sheets
+  and the symbol page; never source quote-derived numbers from it for EGX.
+  `app/api/egx/[...path]` catch-all is UNUSED/legacy (no frontend caller) and can be
+  deleted. Everything that reads OUR prices/charts/NAVs/metadata now reads Supabase.
 - **Transition rule:** keep ALL legacy sources running. Retire a legacy writer/endpoint
   ONLY after: (a) reconciliation gate green, (b) Web+App verified, (c) owner sign-off.
 

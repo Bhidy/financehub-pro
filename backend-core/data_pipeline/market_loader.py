@@ -324,7 +324,20 @@ class EGXProductionLoader:
                         "SELECT 1 FROM ohlc_data WHERE symbol = $1 AND date = $2",
                         symbol, record_date
                     )
-                    
+
+                    # OHLC invariant normalization (audit H-05): close is
+                    # authoritative — widen the range to include it; upstream
+                    # opens are often synthesized as the previous close, so
+                    # clamp into the (corrected) session range.
+                    o, h, l, c = (record.get('open'), record.get('high'),
+                                  record.get('low'), record.get('close'))
+                    if None not in (o, h, l, c):
+                        h = max(h, c)
+                        l = min(l, c)
+                        o = min(max(o, l), h)
+
+                    # Bar ownership: never downgrade a TradingView-written bar
+                    # (audit C-03 follow-up — last-writer-wins re-poisoned bars).
                     await self.conn.execute("""
                         INSERT INTO ohlc_data (symbol, date, open, high, low, close, adj_close, volume, change_percent)
                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -336,13 +349,14 @@ class EGXProductionLoader:
                             adj_close = EXCLUDED.adj_close,
                             volume = EXCLUDED.volume,
                             change_percent = EXCLUDED.change_percent
+                        WHERE ohlc_data.source IS DISTINCT FROM 'tradingview'
                     """,
                         symbol,
                         record_date,
-                        record.get('open'),
-                        record.get('high'),
-                        record.get('low'),
-                        record.get('close'),
+                        o,
+                        h,
+                        l,
+                        c,
                         record.get('adj_close'),
                         record.get('volume'),
                         record.get('change_percent')

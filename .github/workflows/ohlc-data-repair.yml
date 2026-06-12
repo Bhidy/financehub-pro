@@ -1,0 +1,111 @@
+name: OHLC Data Repair (one-shot)
+
+# One-shot repair of the candle store, from the June-2026 Market Pulse audit
+# (qa/MARKET_PULSE_AUDIT_2026-06-12.md):
+#   H-05  17-24% of rows violate the OHLC invariant (open outside [low, high] —
+#         upstream feeds synthesize open as the previous close)
+#   C-03  flat zero-volume placeholder bars (frozen/suspended listings)
+#   PHGC  identity split: TradingView lists Premium Healthcare only under ISIN
+#         EGS72XL1C014, forking it from the legacy PHGC row
+# Ingestion-side prevention ships in the same PR (all writers normalize bars and
+# never downgrade TradingView-written bars), so this repair cannot regress.
+# Manual dispatch only; every step prints before/after counts for the audit log.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true = report counts only, write nothing'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: ohlc-data-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Before — measure defects
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          SELECT 'invariant_violations' AS defect, count(*) FROM ohlc_data
+            WHERE open > high OR open < low OR close > high OR close < low;
+          SELECT 'flat_zero_volume_bars' AS defect, count(*) FROM ohlc_data
+            WHERE volume = 0 AND open = high AND high = low AND low = close;
+          SELECT 'isin_keyed_tickers' AS defect, count(*) FROM market_tickers
+            WHERE symbol ~ '^EGS[0-9A-Z]{9,}$';
+          SELECT symbol, count(*) AS bars FROM ohlc_data
+            WHERE symbol IN ('PHGC','EGS72XL1C014') GROUP BY symbol;
+          SQL
+
+      - name: Repair — OHLC invariants (close authoritative, then clamp open)
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          BEGIN;
+          -- 1) close is the official value: widen the range to include it
+          UPDATE ohlc_data
+          SET high = GREATEST(high, close), low = LEAST(low, close)
+          WHERE close > high OR close < low;
+          -- 2) open is synthetic (prev close): clamp into the corrected range
+          UPDATE ohlc_data
+          SET open = LEAST(GREATEST(open, low), high)
+          WHERE open > high OR open < low;
+          COMMIT;
+          SQL
+
+      - name: Repair — delete flat zero-volume placeholder bars
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            DELETE FROM ohlc_data
+            WHERE volume = 0 AND open = high AND high = low AND low = close;"
+
+      - name: Repair — merge PHGC identity (ISIN row -> canonical ticker)
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          BEGIN;
+          -- candles: ISIN-keyed bars are the live TV ones — they win on conflict
+          INSERT INTO ohlc_data (symbol, date, open, high, low, close, adj_close, volume, source)
+          SELECT 'PHGC', date, open, high, low, close, adj_close, volume, source
+          FROM ohlc_data WHERE symbol = 'EGS72XL1C014'
+          ON CONFLICT (symbol, date) DO UPDATE SET
+            open = EXCLUDED.open, high = EXCLUDED.high, low = EXCLUDED.low,
+            close = EXCLUDED.close, adj_close = EXCLUDED.adj_close,
+            volume = EXCLUDED.volume, source = EXCLUDED.source;
+          DELETE FROM ohlc_data WHERE symbol = 'EGS72XL1C014';
+          -- ticker row: copy the live TV quote onto the canonical PHGC row
+          -- (keeps PHGC's identity fields like name_ar), then drop the ISIN row
+          UPDATE market_tickers p SET
+            last_price = i.last_price, change = i.change,
+            change_percent = i.change_percent, volume = i.volume,
+            market_cap = i.market_cap, pe_ratio = i.pe_ratio,
+            dividend_yield = i.dividend_yield, pb_ratio = i.pb_ratio,
+            beta = i.beta, high_52w = i.high_52w, low_52w = i.low_52w,
+            source = i.source, updated_at = now(), last_updated = now()
+          FROM market_tickers i
+          WHERE p.symbol = 'PHGC' AND i.symbol = 'EGS72XL1C014';
+          DELETE FROM market_tickers WHERE symbol = 'EGS72XL1C014';
+          COMMIT;
+          SQL
+
+      - name: After — verify defects are gone
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          SELECT 'invariant_violations' AS defect, count(*) FROM ohlc_data
+            WHERE open > high OR open < low OR close > high OR close < low;
+          SELECT 'flat_zero_volume_bars' AS defect, count(*) FROM ohlc_data
+            WHERE volume = 0 AND open = high AND high = low AND low = close;
+          SELECT 'remaining_isin_tickers' AS defect, symbol FROM market_tickers
+            WHERE symbol ~ '^EGS[0-9A-Z]{9,}$' LIMIT 20;
+          SELECT 'frozen_all_flat_symbols' AS defect, symbol FROM ohlc_data
+            GROUP BY symbol HAVING bool_and(volume = 0) LIMIT 20;
+          SQL

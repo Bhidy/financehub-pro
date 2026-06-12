@@ -77,9 +77,10 @@ TRANSIENT_DB_ERRORS = (
 SQL_UPSERT_MARKET_TICKER = """
     INSERT INTO market_tickers (symbol, market_code, name_en, sector_name, last_price,
         change, change_percent, volume, market_cap, pe_ratio, dividend_yield, pb_ratio,
-        beta, forward_pe, float_shares_percent, float_shares, shareholders_count, source,
+        beta, forward_pe, float_shares_percent, float_shares, shareholders_count,
+        high_52w, low_52w, source,
         updated_at, last_updated)
-    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now(), now())
+    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, now(), now())
     ON CONFLICT (symbol) DO UPDATE SET
         market_code = EXCLUDED.market_code,
         name_en     = COALESCE(EXCLUDED.name_en,     market_tickers.name_en),
@@ -97,6 +98,8 @@ SQL_UPSERT_MARKET_TICKER = """
         float_shares_percent = EXCLUDED.float_shares_percent,
         float_shares = EXCLUDED.float_shares,
         shareholders_count = EXCLUDED.shareholders_count,
+        high_52w    = COALESCE(EXCLUDED.high_52w, market_tickers.high_52w),
+        low_52w     = COALESCE(EXCLUDED.low_52w,  market_tickers.low_52w),
         source      = EXCLUDED.source,
         updated_at  = now(),
         last_updated = now()
@@ -107,6 +110,10 @@ SQL_UPSERT_MARKET_TICKER = """
 # fresh source='tradingview' stamp (102 stale P/Es, 108 wrong P/Bs in prod).
 # Never reintroduce COALESCE here for TV-owned data columns (name/sector are
 # identity enrichment and stay COALESCE).
+# EXCEPTION — high_52w/low_52w stay COALESCE: TV supplies them 289/289, but the
+# yfinance fallback source does not; overwrite semantics would NULL the 52W
+# bounds on every fallback cycle. Slow-moving bounds a few days old are
+# harmless; a NULL kills the DB fallback for the Market Pulse 52W bar.
 
 SQL_UPSERT_OHLC = """
     INSERT INTO ohlc_data (symbol, date, open, high, low, close, volume, source)
@@ -316,14 +323,25 @@ async def cycle_prices(conn):
                 s.get("pb_ratio"), s.get("beta"), s.get("forward_pe"),
                 s.get("float_shares_percent"), s.get("float_shares"),
                 int(sh_count) if sh_count is not None else None,
+                s.get("high_52w"), s.get("low_52w"),
                 s.get("source", src))
 
             # today's forming candle -> ohlc_data (only if we have a full OHLC from the scanner)
             if s.get("open") and s.get("high") and s.get("low") and s.get("bar_time"):
                 from datetime import datetime, timezone
                 d = datetime.fromtimestamp(s["bar_time"], tz=timezone.utc).date()
+                o, h, l, c = s["open"], s["high"], s["low"], s["last_price"]
+                # No-trade placeholder (suspended symbols scan as a flat zero-volume
+                # bar — the KORA defect): no trade = no candle.
+                if (not s.get("volume")) and o == h == l == c:
+                    n += 1
+                    continue
+                # last_price can drift outside the scanned high/low mid-session —
+                # widen so the stored bar never violates the OHLC invariant.
+                h = max(h, c, o)
+                l = min(l, c, o)
                 await conn.execute(SQL_UPSERT_OHLC,
-                    s["symbol"], d, s["open"], s["high"], s["low"], s["last_price"],
+                    s["symbol"], d, o, h, l, c,
                     s.get("volume"), s.get("source", src))
             n += 1
         except Exception as e:  # per-symbol isolation (L4) + error taxonomy
@@ -349,6 +367,7 @@ async def cycle_prices(conn):
                 int(_finite(ix.get("volume")) or 0), # volume
                 None, None, None,                    # market_cap, pe_ratio, dividend_yield
                 None, None, None, None, None, None,  # pb, beta, fwd_pe, float%, float, holders
+                None, None,                          # high_52w, low_52w (n/a for the index row)
                 "tradingview")
             logger.info("prices: EGX30 index upserted: %.2f (%.2f%%)",
                         _finite(ix.get("close")) or 0, _finite(ix.get("change")) or 0)

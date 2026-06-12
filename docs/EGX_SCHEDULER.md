@@ -1,4 +1,13 @@
-# EGX Daily Data Scheduler
+# EGX Daily Data Scheduler — ⛔ RETIRED (historical reference only)
+
+> **Status (2026-06-12): RETIRED.** This document describes a LOCAL-laptop cron
+> job that never worked ("Operation not permitted" on every run) and points to
+> a script path that no longer exists. It also contradicts START_HERE.md's
+> cloud-only automation rule. The live schedules are: GitHub Actions
+> (`.github/workflows/data_sync.yml` — yahoo reservoir 4h;
+> `tv-egx-harvester.yml` — TV technicals/news/estimates/financials) and the
+> backend APScheduler on Hetzner (prices). Do NOT install the cron below.
+> Kept only as a record of the pre-cloud setup.
 
 ## Cron Job Setup
 

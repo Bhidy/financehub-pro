@@ -589,9 +589,10 @@ async def update_market_tickers(data: Dict):
     for symbol, values in data.items():
         if values.get('last_price'):
             await db.execute("""
-                INSERT INTO market_tickers (symbol, name_en, sector_name, last_price, 
-                    change, change_percent, volume, open_price, high, low, prev_close, last_updated)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+                INSERT INTO market_tickers (symbol, name_en, sector_name, last_price,
+                    change, change_percent, volume, open_price, high, low, prev_close,
+                    high_52w, low_52w, last_updated)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
                 ON CONFLICT (symbol) DO UPDATE SET
                     name_en = COALESCE(EXCLUDED.name_en, market_tickers.name_en),
                     sector_name = COALESCE(market_tickers.sector_name, EXCLUDED.sector_name),
@@ -603,11 +604,16 @@ async def update_market_tickers(data: Dict):
                     high = EXCLUDED.high,
                     low = EXCLUDED.low,
                     prev_close = EXCLUDED.prev_close,
+                    -- COALESCE: this upsert is shared with KSA and the yfinance
+                    -- fallback, neither of which supplies 52W — never NULL them out
+                    high_52w = COALESCE(EXCLUDED.high_52w, market_tickers.high_52w),
+                    low_52w  = COALESCE(EXCLUDED.low_52w,  market_tickers.low_52w),
                     last_updated = NOW()
             """, symbol, values.get('name_en'), values.get('sector'),
                 values.get('last_price'), values.get('change'), values.get('change_percent'),
                 values.get('volume'), values.get('open_price'), values.get('high'),
-                values.get('low'), values.get('prev_close'))
+                values.get('low'), values.get('prev_close'),
+                values.get('high_52w'), values.get('low_52w'))
 
 
 async def save_ohlc_no_overwrite(records: List[Dict]):
@@ -767,6 +773,8 @@ async def refresh_all_prices():
                         'change': float(stock.get('change') or 0.0),
                         'change_percent': float(stock.get('change_percent') or 0.0),
                         'volume': int(stock.get('volume') or 0),
+                        'high_52w': stock.get('high_52w'),
+                        'low_52w': stock.get('low_52w'),
                     }
                 if egx_updates:
                     await update_market_tickers(egx_updates)

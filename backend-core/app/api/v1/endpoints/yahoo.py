@@ -147,7 +147,6 @@ async def get_watchlist():
     return {"data": [dict(r) for r in rows]}
 
 @router.get("/stock/{symbol_or_isin}")
-@router.get("/stock/{symbol_or_isin}")
 async def get_stock_profile(symbol_or_isin: str):
     """
     ENTERPRISE STOCK PROFILE ENDPOINT (Fail-Safe Arch)

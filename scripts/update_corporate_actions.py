@@ -102,11 +102,11 @@ async def main():
     try:
         pool = await asyncpg.create_pool(DATABASE_URL, ssl=get_ssl_context(), min_size=1, max_size=3, statement_cache_size=0)
         logger.info("✅ Connected to Database")
-    except:
+    except Exception:
         try:
             pool = await asyncpg.create_pool(DATABASE_URL, ssl='require', min_size=1, max_size=3, statement_cache_size=0)
             logger.info("✅ Connected to Database (fallback)")
-        except:
+        except Exception:
             logger.error("❌ Failed to connect to DB")
             sys.exit(1)
 

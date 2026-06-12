@@ -7,8 +7,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "FinanceHub Pro"
     API_V1_STR: str = "/api/v1"
     
-    # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY") or "placeholder-secret-key-must-be-replaced-in-production"
+    # Security — REQUIRED, validated below after Settings() is built (so values
+    # from backend-core/.env still count). The old fallback silently signed every
+    # JWT with a publicly-known placeholder string when the env var was missing.
+    SECRET_KEY: str = os.getenv("SECRET_KEY") or ""
 
     ALGORITHM: str = "HS256"
     # CRITICAL: Shortened access token for security (e.g. 15 mins), extended refresh token
@@ -53,3 +55,14 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 settings = Settings()
+
+# Fail-fast: refuse to boot without a real signing key (audit 2026-06-11).
+# The backend-deploy workflow guarantees the server env has one; for local dev,
+# add SECRET_KEY to backend-core/.env. Generate with:
+#   python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+if not settings.SECRET_KEY or settings.SECRET_KEY == "placeholder-secret-key-must-be-replaced-in-production":
+    raise RuntimeError(
+        "SECRET_KEY is not configured — refusing to start (JWTs would be signed "
+        "with a known placeholder). Set SECRET_KEY in the environment or "
+        "backend-core/.env."
+    )

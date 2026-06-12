@@ -628,7 +628,7 @@ class SymbolResolver:
                     alias_type="common",
                     base_score=70 + (float(row['sim_score']) * 25)
                 )
-        except:
+        except Exception:
             pass
         
         return None

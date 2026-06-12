@@ -67,7 +67,11 @@ export function PortfolioForecastChart({ currentValue, annualGrowthRate }: Portf
                     />
                     <Tooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', background: '#0f172a', color: '#fff', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                        formatter={(value: number | undefined) => [value ? `$${(value).toLocaleString()}` : '', "Est. Value"]}
+                        formatter={(value) => {
+                            // recharts ValueType is string|number|array — coerce defensively (typing tightened in newer recharts).
+                            const n = Number(value);
+                            return [Number.isFinite(n) && n !== 0 ? `$${n.toLocaleString()}` : '', 'Est. Value'];
+                        }}
                     />
                     <CartesianGrid vertical={false} stroke="#f1f5f9" opacity={0.5} />
                     <Area

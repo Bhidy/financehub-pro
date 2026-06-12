@@ -128,7 +128,7 @@ export default function HealthCheck() {
                                 ⚠️ Backend API is offline. Run:
                             </p>
                             <code className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded mt-1 block">
-                                ./start_all.sh
+                                cd backend-core && python3 -m uvicorn app.main:app --port 8000
                             </code>
                         </div>
                     )}

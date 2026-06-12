@@ -806,8 +806,11 @@ async def refresh_all_prices():
         
     except Exception as e:
         logger.error(f"Global Refresh Failed: {e}")
-        refresh_status["last_status"] = f"error: {str(e)}"
-        refresh_status["errors"].append(str(e))
+        # Public-facing (GET /refresh/status is open for cron polling): keep the
+        # 'error:' keyword the workflows match on, but never echo raw exception
+        # text to the internet — full detail goes to the server log only.
+        refresh_status["last_status"] = f"error: {type(e).__name__}"
+        refresh_status["errors"].append(f"refresh error: {type(e).__name__}")
     finally:
         refresh_status["is_running"] = False
     
@@ -870,12 +873,13 @@ async def refresh_daily_data():
                 stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
                 if proc.returncode != 0:
                     err_tail = (stderr or b'').decode(errors='ignore')[-300:]
-                    refresh_status["errors"].append(f"Egypt TV financials exit {proc.returncode}: {err_tail}")
+                    refresh_status["errors"].append(f"Egypt TV financials failed (exit {proc.returncode})")
                     logger.error(f"Egypt TV financials failed (exit {proc.returncode}): {err_tail}")
                 else:
                     logger.info("Egypt TV financials cycle completed successfully")
             except Exception as e:
-                refresh_status["errors"].append(f"Egypt financials: {str(e)[:80]}")
+                logger.error(f"Egypt financials error: {e}")
+                refresh_status["errors"].append(f"Egypt financials error: {type(e).__name__}")
                 logger.error(f"Egypt financials trigger failed: {e}")
 
         # Also update prices (covers both markets via split logic)
@@ -886,7 +890,10 @@ async def refresh_daily_data():
         
     except Exception as e:
         logger.error(f"Daily sync failed: {e}")
-        refresh_status["last_status"] = f"error: {str(e)}"
+        # Public-facing (GET /refresh/status is open for cron polling): keep the
+        # 'error:' keyword the workflows match on, but never echo raw exception
+        # text to the internet — full detail goes to the server log only.
+        refresh_status["last_status"] = f"error: {type(e).__name__}"
     
     finally:
         refresh_status["is_running"] = False
@@ -1058,9 +1065,11 @@ async def backfill_historical_data(symbol: str = None):
                     stats["egypt_ingested"] = len(egypt_symbols)
                 else:
                     err_tail = (stderr or b'').decode(errors='ignore')[-200:]
-                    refresh_status["errors"].append(f"Egypt TV backfill exit {proc.returncode}: {err_tail}")
+                    logger.error(f"Egypt TV backfill failed (exit {proc.returncode}): {err_tail}")
+                    refresh_status["errors"].append(f"Egypt TV backfill failed (exit {proc.returncode})")
             except Exception as e:
-                refresh_status["errors"].append(f"Egypt backfill error: {str(e)[:80]}")
+                logger.error(f"Egypt backfill error: {e}")
+                refresh_status["errors"].append(f"Egypt backfill error: {type(e).__name__}")
         
         total = sum(v for k, v in stats.items() if k != 'stocks_done')
         refresh_status["last_status"] = f"success: {total} records. Saudi:{stats['stocks_done']}, Egypt:{stats['egypt_ingested']}"
@@ -1071,7 +1080,10 @@ async def backfill_historical_data(symbol: str = None):
         
     except Exception as e:
         logger.error(f"Backfill failed: {e}")
-        refresh_status["last_status"] = f"error: {str(e)}"
+        # Public-facing (GET /refresh/status is open for cron polling): keep the
+        # 'error:' keyword the workflows match on, but never echo raw exception
+        # text to the internet — full detail goes to the server log only.
+        refresh_status["last_status"] = f"error: {type(e).__name__}"
     
     finally:
         refresh_status["is_running"] = False
@@ -1088,7 +1100,7 @@ async def backfill_historical_data(symbol: str = None):
 # API ENDPOINTS
 # ============================================================
 
-@router.post("/refresh/prices")
+@router.post("/refresh/prices", dependencies=[Depends(require_admin_token)])
 async def trigger_price_refresh(background_tasks: BackgroundTasks):
     """
     5-MINUTE REFRESH: Quick price update using yfinance
@@ -1107,7 +1119,7 @@ async def trigger_price_refresh(background_tasks: BackgroundTasks):
     }
 
 
-@router.post("/refresh/sync")
+@router.post("/refresh/sync", dependencies=[Depends(require_admin_token)])
 async def sync_data_now():
     """
     SYNCHRONOUS PRICE REFRESH: For scheduled tasks
@@ -1127,7 +1139,7 @@ async def sync_data_now():
     }
 
 
-@router.post("/refresh/daily")
+@router.post("/refresh/daily", dependencies=[Depends(require_admin_token)])
 async def trigger_daily_sync(background_tasks: BackgroundTasks):
     """
     DAILY EOD SYNC: Full data refresh after market close
@@ -1145,7 +1157,7 @@ async def trigger_daily_sync(background_tasks: BackgroundTasks):
     }
 
 
-@router.post("/refresh/backfill")
+@router.post("/refresh/backfill", dependencies=[Depends(require_admin_token)])
 async def trigger_backfill(symbol: Optional[str] = None):
     """
     HISTORICAL BACKFILL: Collect 6+ years of data
@@ -1225,7 +1237,7 @@ async def get_data_freshness():
 # EGYPT SPECIFIC ENDPOINTS
 # ============================================================
 
-@router.post("/refresh/egypt-funds")
+@router.post("/refresh/egypt-funds", dependencies=[Depends(require_admin_token)])
 async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
     """
     EGYPT FUNDS SYNC: Update NAVs for all funds
@@ -1254,7 +1266,8 @@ async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
                     f"egypt_funds_success: {updated} funds, {points} points")
         except Exception as e:
             logger.error(f"Egypt Funds Sync failed: {e}")
-            refresh_status["last_status"] = f"egypt_funds_error: {e}"
+            logger.error(f"egypt funds refresh error: {e}")
+            refresh_status["last_status"] = f"egypt_funds_error: {type(e).__name__}"
         finally:
             refresh_status["is_running"] = False
     
@@ -1268,7 +1281,7 @@ async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
     }
 
 
-@router.post("/refresh/nav-charts")
+@router.post("/refresh/nav-charts", dependencies=[Depends(require_admin_token)])
 async def trigger_nav_charts_sync(background_tasks: BackgroundTasks):
     """
     NAV CHARTS SYNC: Same as Egypt funds sync for now
@@ -1276,7 +1289,7 @@ async def trigger_nav_charts_sync(background_tasks: BackgroundTasks):
     return await trigger_egypt_funds_sync(background_tasks)
 
 
-@router.post("/refresh/indices")
+@router.post("/refresh/indices", dependencies=[Depends(require_admin_token)])
 async def trigger_indices_refresh(background_tasks: BackgroundTasks):
     """
     INDICES REFRESH: Update TASI and EGX30
@@ -1293,7 +1306,8 @@ async def trigger_indices_refresh(background_tasks: BackgroundTasks):
             refresh_status["last_status"] = "indices_success"
         except Exception as e:
             logger.error(f"Indices failed: {e}")
-            refresh_status["last_status"] = f"indices_error: {e}"
+            logger.error(f"indices refresh error: {e}")
+            refresh_status["last_status"] = f"indices_error: {type(e).__name__}"
         finally:
             refresh_status["is_running"] = False
             
@@ -1306,7 +1320,7 @@ async def trigger_indices_refresh(background_tasks: BackgroundTasks):
     }
 
 
-@router.post("/refresh/ingestion")
+@router.post("/refresh/ingestion", dependencies=[Depends(require_admin_token)])
 async def trigger_ingestion_job(background_tasks: BackgroundTasks):
     """
     DATA INGESTION: Trigger TradingView financials + estimates harvest for Egypt.
@@ -1332,7 +1346,8 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
             refresh_status["last_status"] = "ingestion_success"
         except Exception as e:
             logger.error(f"Ingestion failed: {e}")
-            refresh_status["last_status"] = f"ingestion_error: {e}"
+            logger.error(f"ingestion refresh error: {e}")
+            refresh_status["last_status"] = f"ingestion_error: {type(e).__name__}"
         finally:
             refresh_status["is_running"] = False
 
@@ -1452,7 +1467,7 @@ async def run_robust_backfill(symbol: str = None):
                                     float(row['Close']) if row['Close'] else None,
                                     int(row['Volume']) if row['Volume'] else 0
                                 )
-                            except:
+                            except Exception:
                                 pass
                         stats["intraday_1h"] += len(hist_1h)
                         stock_records += len(hist_1h)
@@ -1480,7 +1495,7 @@ async def run_robust_backfill(symbol: str = None):
                                     float(row['Close']) if row['Close'] else None,
                                     int(row['Volume']) if row['Volume'] else 0
                                 )
-                            except:
+                            except Exception:
                                 pass
                         stats["intraday_5m"] += len(hist_5m)
                         stock_records += len(hist_5m)
@@ -1501,7 +1516,7 @@ async def run_robust_backfill(symbol: str = None):
                                     VALUES ($1, $2, $3)
                                     ON CONFLICT (symbol, ex_date) DO NOTHING
                                 """, sym, date.date() if hasattr(date, 'date') else date, float(amount))
-                            except:
+                            except Exception:
                                 pass
                         stats["dividends"] += len(divs)
                 except Exception as e:
@@ -1556,8 +1571,8 @@ async def run_robust_backfill(symbol: str = None):
         
     except Exception as e:
         logger.error(f"BACKFILL FATAL ERROR: {e}")
-        refresh_status["last_status"] = f"FAILED: {str(e)}"
-        refresh_status["errors"].append(f"FATAL: {str(e)}")
+        refresh_status["last_status"] = f"FAILED: {type(e).__name__}"
+        refresh_status["errors"].append(f"FATAL: {type(e).__name__}")
     
     finally:
         refresh_status["is_running"] = False
@@ -1567,7 +1582,7 @@ async def run_robust_backfill(symbol: str = None):
 
 
 
-@router.post("/refresh/tickers")
+@router.post("/refresh/tickers", dependencies=[Depends(require_admin_token)])
 async def trigger_ticker_refresh(background_tasks: BackgroundTasks):
     """Legacy endpoint - redirects to price refresh"""
     return await trigger_price_refresh(background_tasks)
@@ -1579,111 +1594,10 @@ async def get_refresh_status():
     return refresh_status
 
 
-@router.get("/data/freshness")
-async def check_data_freshness():
-    """Check when data was last updated"""
-    
-    result = await db.fetch_one("""
-        SELECT 
-            MAX(last_updated) as latest_update,
-            COUNT(*) as ticker_count,
-            NOW() - MAX(last_updated) as age
-        FROM market_tickers
-        WHERE last_updated IS NOT NULL
-    """)
-    
-    # OHLC stats
-    ohlc_stats = await db.fetch_one("""
-        SELECT 
-            COUNT(*) as total_records,
-            COUNT(DISTINCT symbol) as symbols,
-            MIN(date) as oldest_date,
-            MAX(date) as newest_date
-        FROM ohlc_data
-    """)
-    
-    age_hours = None
-    if result and result.get("age"):
-        total_seconds = result["age"].total_seconds()
-        age_hours = round(total_seconds / 3600, 1)
-    
-    return {
-        "latest_update": result.get("latest_update").isoformat() if result and result.get("latest_update") else None,
-        "ticker_count": result.get("ticker_count", 0) if result else 0,
-        "age_hours": age_hours,
-        "is_stale": age_hours > 24 if age_hours else True,
-        "refresh_recommended": age_hours > 0.25 if age_hours else True,  # 15 min
-        "data_source": "yfinance + yahooquery",
-        "ohlc_stats": {
-            "total_records": ohlc_stats.get("total_records", 0) if ohlc_stats else 0,
-            "symbols": ohlc_stats.get("symbols", 0) if ohlc_stats else 0,
-            "oldest_date": str(ohlc_stats.get("oldest_date")) if ohlc_stats and ohlc_stats.get("oldest_date") else None,
-            "newest_date": str(ohlc_stats.get("newest_date")) if ohlc_stats and ohlc_stats.get("newest_date") else None,
-        }
-    }
-
-
-@router.get("/data/stats")
-async def get_data_stats():
-    """
-    Get comprehensive data statistics for AI analyst
-    Covers ALL 19.2 MILLION datapoints across all tables
-    """
-    stats = {
-        "total_datapoints": 0,
-        "tables": {}
-    }
-    
-    # Define all tables to check
-    tables_to_check = [
-        ("market_tickers", "Stock tickers", "SELECT COUNT(*) as cnt FROM market_tickers"),
-        ("ohlc_data", "Daily OHLCV", "SELECT COUNT(*) as cnt FROM ohlc_data"),
-        ("intraday_1m", "1-minute data", "SELECT COUNT(*) as cnt FROM intraday_1m"),
-        ("intraday_5m", "5-minute data", "SELECT COUNT(*) as cnt FROM intraday_5m"),
-        ("intraday_15m", "15-minute data", "SELECT COUNT(*) as cnt FROM intraday_15m"),
-        ("intraday_30m", "30-minute data", "SELECT COUNT(*) as cnt FROM intraday_30m"),
-        ("intraday_1h", "1-hour data", "SELECT COUNT(*) as cnt FROM intraday_1h"),
-        ("weekly_ohlc", "Weekly OHLCV", "SELECT COUNT(*) as cnt FROM weekly_ohlc"),
-        ("monthly_ohlc", "Monthly OHLCV", "SELECT COUNT(*) as cnt FROM monthly_ohlc"),
-        ("financial_history", "Financial statements", "SELECT COUNT(*) as cnt FROM financial_history"),
-        ("valuation_history", "Valuation metrics", "SELECT COUNT(*) as cnt FROM valuation_history"),
-        ("corporate_events", "Corporate events", "SELECT COUNT(*) as cnt FROM corporate_events"),
-        ("dividend_history", "Dividend history", "SELECT COUNT(*) as cnt FROM dividend_history"),
-        ("split_history", "Stock splits", "SELECT COUNT(*) as cnt FROM split_history"),
-        ("earnings_history", "Earnings history", "SELECT COUNT(*) as cnt FROM earnings_history"),
-        ("company_profiles", "Company profiles", "SELECT COUNT(*) as cnt FROM company_profiles"),
-        ("analyst_ratings", "Analyst ratings", "SELECT COUNT(*) as cnt FROM analyst_ratings"),
-    ]
-    
-    for table_name, description, query in tables_to_check:
-        try:
-            result = await db.fetch_one(query)
-            count = result.get("cnt", 0) if result else 0
-            stats["tables"][table_name] = {
-                "description": description,
-                "records": count
-            }
-            stats["total_datapoints"] += count
-        except Exception as e:
-            stats["tables"][table_name] = {
-                "description": description,
-                "records": 0,
-                "note": "Table may not exist yet"
-            }
-    
-    # Calculate totals
-    stats["total_million"] = f"{stats['total_datapoints'] / 1_000_000:.2f}M"
-    stats["target"] = "19.2M"
-    stats["progress_percent"] = round((stats['total_datapoints'] / 19_200_000) * 100, 1)
-    
-    return {
-        "status": "success",
-        "data_source": "yfinance + yahooquery",
-        "stats": stats,
-        "ai_accessible": True,
-        "data_protection": "NO_OVERWRITE - All data preserved forever"
-    }
-
+# (Removed 2026-06-11: duplicate later definitions of GET /data/freshness and
+# GET /data/stats. FastAPI serves the FIRST registered route, so these twins
+# were unreachable dead code that silently shadowed nothing — but kept future
+# editors changing the wrong copy.)
 
 @router.get("/data/available/{symbol}")
 async def get_available_data_for_symbol(symbol: str):
@@ -1691,6 +1605,11 @@ async def get_available_data_for_symbol(symbol: str):
     Check what data is available for a specific symbol.
     Useful for AI to know what it can query.
     """
+    # SECURITY (2026-06-11): symbol is interpolated into the check queries
+    # below — reject anything that is not a plain ticker BEFORE it reaches SQL.
+    import re as _re
+    if not _re.fullmatch(r"[A-Za-z0-9._-]{1,20}", symbol or ""):
+        raise HTTPException(status_code=400, detail="Invalid symbol")
     available = {}
     
     checks = [
@@ -1711,7 +1630,7 @@ async def get_available_data_for_symbol(symbol: str):
                     "records": result.get("cnt"),
                     "date_range": f"{result.get('min_d')} to {result.get('max_d')}" if result.get('min_d') else None
                 }
-        except:
+        except Exception:
             pass
     
     return {

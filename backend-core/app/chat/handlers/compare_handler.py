@@ -49,7 +49,7 @@ def safe_float(val: Any) -> Any:
         f = float(val)
         if math.isnan(f) or math.isinf(f): return None
         return f
-    except: return None
+    except Exception: return None
 
 
 def _format_compact_number(value: Optional[float]) -> str:

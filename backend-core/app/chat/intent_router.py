@@ -635,7 +635,7 @@ class IntentRouter:
         try:
             from .nlu.engine import NLUEngine
             self.nlu = NLUEngine()
-        except:
+        except Exception:
             self.nlu = None
     
     def route(self, message: str, context: Optional[dict] = None) -> IntentResult:

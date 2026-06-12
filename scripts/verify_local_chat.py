@@ -55,7 +55,7 @@ def test_chat(message, expected_layers=None):
         print(f"❌ Connection Failed: {e}")
         try:
             print(response.text)
-        except:
+        except Exception:
             pass
         return False, None
 
@@ -66,7 +66,7 @@ def wait_for_server():
             requests.get(f"{BASE_URL.replace('/api/v1', '')}/health", timeout=1)
             print("✅ Server is UP!")
             return True
-        except:
+        except Exception:
             time.sleep(1)
             print(".", end="", flush=True)
     print("\n❌ Server timed out.")

@@ -6,8 +6,17 @@ import os
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Maintenance script, never serves traffic or signs JWTs: load .env for the DB
+# DSN and give SECRET_KEY a harmless local default so app.core.config's
+# fail-fast (a server-boot protection) doesn't block ad-hoc runs.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+except ImportError:
+    pass
+os.environ.setdefault("SECRET_KEY", "maintenance-script-local-only-never-server")
+
 from app.db.session import db
-from app.core.config import settings
 
 async def migrate():
     print("🚀 Starting Starta Kit Schema Migration...")

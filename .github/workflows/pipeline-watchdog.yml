@@ -17,13 +17,17 @@ name: Pipeline Watchdog
 # is healthy or every problem was successfully dispatched-for-heal (the heal IS
 # the response). So a RED run WITH a heartbeat = a real problem outstanding; a
 # MISSING heartbeat (watchdog itself dead / DB unreachable) is the separate signal
-# that data_sync.yml's `--check-watchdog 75` independently cross-checks.
+# that data_sync.yml's `--check-watchdog 150` independently cross-checks (150 =
+# the 2h max designed schedule gap + 30 min cron-drift grace — see below).
 #
 # Self-heal dispatch needs a token with actions:write. The default GITHUB_TOKEN
 # can READ runs and the DB (so detection + alerting always work), but GitHub's
 # recursion guard may stop it from STARTING other workflows. For guaranteed
-# auto-heal, add a free fine-grained PAT (actions:write) as secret
-# WATCHDOG_DISPATCH_TOKEN — the workflow uses it automatically if present.
+# auto-heal, add a free fine-grained PAT as secret WATCHDOG_DISPATCH_TOKEN —
+# the workflow uses it automatically if present. SCOPE IT actions:write AND
+# Issues:write — notify.py's last-resort channel files a GitHub ISSUE, and an
+# actions-only PAT cannot. (Defense in depth: GITHUB_TOKEN is also passed below
+# so the issue channel still works even with a mis-scoped PAT.)
 
 on:
   schedule:
@@ -35,7 +39,14 @@ on:
     - cron: '*/30 6-14 * * 0-4'   # every 30 min during EGX session (tight freshness SLA)
     - cron: '0 15,17,19,21,23 * * *'  # every 2 h post-close / evening (wall-days + schedule-liveness)
     - cron: '0 0,2,4 * * *'       # every 2 h overnight (0,2,4 UTC — quiet hours)
-    # Net: ~22 runs/day vs 48 before → saves ≈350 min/month from watchdog alone.
+    - cron: '0 6,8,10,12,14 * * 5,6'  # every 2 h Fri/Sat daytime — closes the 04:00→15:00
+    #   weekend hole that left the heartbeat legitimately ~11h old, and (with the 2h
+    #   evening cadence vs a 75-min probe) made data_sync's --check-watchdog liveness
+    #   probe a guaranteed false RED (the 2026-06-11 failures).
+    #   DESIGN CONTRACT: max gap between any two scheduled watchdog runs is 2h
+    #   everywhere; data_sync probes with 150 min (= 2h gap + 30 min GitHub
+    #   cron-drift grace). If you change one side, change the other.
+    # Net: ~24 runs/day vs 48 before → still saves ≈330 min/month vs flat 30-min.
   workflow_dispatch:
 
 concurrency:
@@ -45,6 +56,7 @@ concurrency:
 permissions:
   contents: read
   actions: write              # dispatch corrective workflows (self-heal)
+  issues: write               # notify.py last-resort channel: alert → GitHub issue
 
 jobs:
   watchdog:
@@ -52,8 +64,8 @@ jobs:
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - run: pip install asyncpg
@@ -61,4 +73,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GH_TOKEN: ${{ secrets.WATCHDOG_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+          # notify.py tries GH_TOKEN then GITHUB_TOKEN for the issue channel, so a
+          # dispatch-only PAT above can never silence the last-resort alerts.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/pipeline_watchdog.py --heal

@@ -30,7 +30,7 @@ def get_count(cur, table, distinct_col=None):
         else:
             cur.execute(f"SELECT COUNT(*) FROM {table}")
         return cur.fetchone()[0]
-    except:
+    except Exception:
         return 0
 
 def get_metrics():

@@ -4814,12 +4814,12 @@ class ChatService:
             if user_id and '@' in str(user_id):
                 try:
                     resolved_user_id = await self.conn.fetchval("SELECT id FROM users WHERE email = $1", str(user_id))
-                except:
+                except Exception:
                     pass
             elif user_id:
                 try:
                     resolved_user_id = int(str(user_id))
-                except:
+                except Exception:
                     resolved_user_id = None
 
             # Insert into chat_interactions with integer id

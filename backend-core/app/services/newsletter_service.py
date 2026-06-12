@@ -114,7 +114,7 @@ class NewsletterService:
             if rows:
                 avg_change = sum(float(r['change_percent'] or 0) for r in rows) / len(rows)
                 return {"value": 0, "change_pct": round(avg_change, 2)}
-        except:
+        except Exception:
             pass
         return {"value": 0, "change_pct": 0}
 

@@ -69,7 +69,7 @@ async def main():
         try:
             from app.services.notification_service import notification_service
             notification_service.send_discord(f"🔥 **Test Crashed**: {e}", is_error=True)
-        except:
+        except Exception:
             pass
 
 if __name__ == "__main__":

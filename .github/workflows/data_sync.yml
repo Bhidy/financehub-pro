@@ -12,18 +12,22 @@ concurrency:
   group: data-reservoir-sync
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  issues: write               # notify.py last-resort channel: alert → GitHub issue
+
 jobs:
   fill-reservoir:
     name: "Ingest Deep Financial Data"
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 60
-    
+
     steps:
       - name: Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.10'
           
@@ -43,9 +47,16 @@ jobs:
       # Watch the watchman: independently verify the Pipeline Watchdog itself is
       # still running — a stale heartbeat FAILS this step (red run = GitHub mobile
       # page). This + the watchdog watching data_sync = mutual dead-man's-switch.
+      #
+      # THRESHOLD CONTRACT (do not lower without changing the watchdog crons):
+      # the watchdog's designed max schedule gap is 2h (see pipeline-watchdog.yml);
+      # 150 = 120 min design gap + 30 min GitHub cron-drift grace. The old value
+      # (75) was tighter than the schedule itself and produced guaranteed false
+      # REDs at the 01:30/05:30 runs and on Fri/Sat (the 2026-06-11 failures).
       - name: Watch the watchdog
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python scripts/pipeline_watchdog.py --check-watchdog 75
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/pipeline_watchdog.py --check-watchdog 150
 

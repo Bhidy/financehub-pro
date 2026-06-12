@@ -69,21 +69,44 @@ async def lifespan(app: FastAPI):
                         FOREIGN KEY (converted_user_id) REFERENCES users(id) ON DELETE SET NULL
                     )
                 """)
-                # Create default admin if not exists
+                # SECURITY (2026-06-11): startup used to SEED a default admin
+                # ('admin@finhub.pro') whose bcrypt hash was copied from public
+                # tutorials — a guessable role=admin account on a live system.
+                # Seeding is removed. The statement below additionally DISABLES
+                # the previously-seeded row, but ONLY if it still carries that
+                # exact tutorial hash (idempotent; never touches a row whose
+                # password a human has since changed). To create a real admin,
+                # run scripts/create_admin.py with ADMIN_EMAIL/ADMIN_PASSWORD.
                 try:
                     await conn.execute("""
-                        INSERT INTO users (email, hashed_password, full_name, role, is_active, created_at)
-                        VALUES (
-                            'admin@finhub.pro',
-                            '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4FVl.F1eHwE7LPnq',
-                            'System Admin',
-                            'admin',
-                            TRUE,
-                            NOW()
-                        ) ON CONFLICT (email) DO NOTHING
+                        UPDATE users
+                           SET is_active = FALSE,
+                               hashed_password = '!disabled-default-admin-2026-06-11'
+                         WHERE email = 'admin@finhub.pro'
+                           AND hashed_password = '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4FVl.F1eHwE7LPnq'
                     """)
                 except Exception as e:
-                    print(f"Admin creation check failed/skipped: {e}")
+                    print(f"Default-admin disable check failed/skipped: {e}")
+                # Same class, second account: the old force_reset_admin.py script
+                # (deleted 2026-06-11) used to CREATE 'admin@financehub.com' with
+                # the literal password "admin". If that row exists and still has
+                # that trivial password, disable it. Verified-then-disabled only —
+                # a row whose password a human changed is never touched.
+                try:
+                    row = await conn.fetchrow(
+                        "SELECT id, hashed_password FROM users "
+                        "WHERE email = 'admin@financehub.com' AND is_active = TRUE"
+                    )
+                    if row:
+                        from app.core.security import verify_password as _vp
+                        if _vp("admin", row["hashed_password"]):
+                            await conn.execute(
+                                "UPDATE users SET is_active = FALSE, "
+                                "hashed_password = '!disabled-trivial-admin-2026-06-11' "
+                                "WHERE id = $1", row["id"])
+                            print("SECURITY: disabled admin@financehub.com (trivial 'admin' password)")
+                except Exception as e:
+                    print(f"Trivial-admin disable check failed/skipped: {e}")
 
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS fund_aliases (
@@ -514,8 +537,11 @@ app.add_middleware(
         "http://localhost:3001",
     ],
     allow_credentials=True, # Critical for Auth Headers
-    allow_methods=["*"],
-    allow_headers=["*", "X-Market-Context", "X-Device-Fingerprint", "Authorization"],
+    # Explicit lists (audit 2026-06-11): wildcard methods/headers were broader
+    # than anything the API uses. Add here when a new method/header is needed.
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Admin-Token",
+                   "X-Market-Context", "X-Device-Fingerprint", "X-Requested-With"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

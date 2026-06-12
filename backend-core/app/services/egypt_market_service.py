@@ -85,7 +85,7 @@ class EgyptMarketService:
                         # Validate it looks like NAV data [[timestamp, value], ...]
                         if isinstance(data[0], list) and len(data[0]) == 2:
                             return data
-                except:
+                except Exception:
                     continue
         
         # Fallback: Parse script tags via BeautifulSoup
@@ -100,7 +100,7 @@ class EgyptMarketService:
                             data = json.loads(match)
                             if len(data) > 10:
                                 return data
-                        except:
+                        except Exception:
                             continue
         except Exception as e:
             logger.error(f"Error parsing HTML for fund {fund_id}: {e}")
@@ -124,7 +124,7 @@ class EgyptMarketService:
                     data = resp.json()
                     if isinstance(data, list) and len(data) > 2:
                         return data
-            except:
+            except Exception:
                 pass
         return None
 
@@ -212,7 +212,7 @@ class EgyptMarketService:
             try:
                 self.session.get("https://english.mubasher.info/countries/eg/funds", headers=self.get_headers())
                 await asyncio.sleep(1)
-            except:
+            except Exception:
                 pass
 
         chart_data = None
@@ -246,7 +246,7 @@ class EgyptMarketService:
                 else:
                     dt = datetime.fromtimestamp(ts)
                 records.append((fund_id, dt.date(), float(nav)))
-            except:
+            except Exception:
                 continue
 
         if records:

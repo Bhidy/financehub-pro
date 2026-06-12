@@ -29,7 +29,7 @@ def probe_yfinance(symbol):
     # 3. Actions
     try:
         data['actions'] = json.loads(stock.actions.to_json(orient='index', date_format='iso'))
-    except: pass
+    except Exception: pass
     
     return data
 
@@ -58,7 +58,7 @@ def probe_yahooquery(symbol):
     # Valuation Info
     try:
         data['valuation'] = t.valuation_measures
-    except: pass
+    except Exception: pass
     
     return data
 

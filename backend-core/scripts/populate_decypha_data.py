@@ -101,7 +101,7 @@ def parse_html_and_insert():
                 # Remove commas, %
                 clean = s.replace(',', '').replace('%', '').strip()
                 return float(clean)
-            except:
+            except Exception:
                 return None
 
         # Headers mapping indices (0-based from vals)

@@ -228,7 +228,7 @@ async def handle_fund_movers(conn: asyncpg.Connection, range_val: str = "YTD", l
             val = f.get('returns_ytd') or f.get('ytd_return')
         try:
             return float(val) if val else -9999
-        except:
+        except Exception:
             return -9999
     
     sorted_funds = sorted(fund_list, key=get_return, reverse=True)

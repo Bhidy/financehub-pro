@@ -127,7 +127,7 @@ async def main():
                             VALUES ($1, $2, $3)
                             ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav
                         """, best_match['fund_id'], today, nav)
-                    except:
+                    except Exception:
                         pass
                 
                 pct = f"{best_score*100:.0f}%"

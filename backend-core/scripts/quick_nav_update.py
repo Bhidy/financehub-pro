@@ -28,7 +28,7 @@ def parse_decimal(text):
     if not clean or clean == '-' or clean == '--': return None
     try:
         return float(clean)
-    except:
+    except Exception:
         return None
 
 def clean_text(text):
@@ -56,7 +56,7 @@ async def scrape_mubasher_nav():
         
         try:
             await page.wait_for_selector('tr.mi-table__tbody-tr', timeout=15000)
-        except:
+        except Exception:
             print("   ⚠️ Timeout waiting for table. Trying alternate selector...")
         
         page_num = 1

@@ -1,0 +1,172 @@
+name: Backend Deploy
+
+# ============================================================
+# Deploys the FastAPI backend ON the production box itself.
+#
+# WHY THIS EXISTS (2026-06-11): SSH from the owner's Mac to the Hetzner VPS is
+# blocked PRE-AUTH at the network edge, so scripts/deploy_backend_key.sh cannot
+# run from the laptop. But the GitHub Actions runner LIVES ON the same VPS —
+# so a workflow_dispatch job can do the exact same git-sync + compose rebuild
+# locally, with zero SSH involved. This is the primary backend deploy path;
+# deploy_backend_key.sh remains as a fallback for when SSH works again.
+#
+# Safety design:
+#   - preflight verifies docker + /opt/starta access and prints the exact
+#     one-time remediation commands if the runner user lacks rights;
+#   - required env (SECRET_KEY, ADMIN_API_TOKEN) is provisioned into the
+#     server .env BEFORE restart — config.py fail-fasts without SECRET_KEY,
+#     and the secured /refresh/* endpoints are fail-closed without
+#     ADMIN_API_TOKEN, so skipping this would brick the crons;
+#   - health gate after restart; on failure: AUTOMATIC ROLLBACK to the
+#     previous commit, rebuild, re-check, and a GitHub-issue alert. A deploy
+#     can fail; it cannot silently leave the backend down.
+# ============================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why this deploy (shown in the run list)'
+        required: false
+        default: 'manual deploy'
+
+permissions:
+  contents: read
+  issues: write               # notify.py last-resort channel: alert → GitHub issue
+
+concurrency:
+  group: backend-deploy
+  cancel-in-progress: false   # never kill a half-finished deploy
+
+env:
+  APP_DIR: /opt/starta
+  COMPOSE: docker-compose.prod.yml
+  HEALTH_URL: http://localhost:8000/health
+
+jobs:
+  deploy:
+    name: "Deploy backend (${{ inputs.reason }})"
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5   # for scripts/notify.py (alerting on failure)
+
+      - name: Preflight (docker + app dir access)
+        run: |
+          fail=0
+          if ! docker ps >/dev/null 2>&1; then
+            echo "::error::Runner user cannot talk to docker."
+            echo "One-time fix (Hetzner web console as root):"
+            echo "  usermod -aG docker github-runner && systemctl restart actions.runner.*"
+            fail=1
+          fi
+          if [ ! -d "$APP_DIR/.git" ]; then
+            echo "::error::$APP_DIR is not a git checkout."
+            fail=1
+          fi
+          if [ ! -w "$APP_DIR" ]; then
+            echo "::error::Runner user cannot write $APP_DIR."
+            echo "One-time fix (Hetzner web console as root):"
+            echo "  chown -R github-runner:github-runner $APP_DIR"
+            fail=1
+          fi
+          [ "$fail" -eq 0 ] && echo "✅ preflight OK"
+          exit "$fail"
+
+      - name: Provision required env (SECRET_KEY, ADMIN_API_TOKEN)
+        env:
+          ADMIN_API_TOKEN: ${{ secrets.ADMIN_API_TOKEN }}
+        run: |
+          ENVF="$APP_DIR/.env"
+          touch "$ENVF"
+          # SECRET_KEY: generate once if missing/placeholder (config.py refuses to
+          # boot without it). NOTE: generating a new key invalidates existing JWTs
+          # (15-min access / 7-day refresh) — acceptable one-time cost.
+          if ! grep -q '^SECRET_KEY=..*' "$ENVF" || grep -q '^SECRET_KEY=placeholder' "$ENVF"; then
+            KEY=$(python3 -c "import secrets;print(secrets.token_urlsafe(64))")
+            grep -v '^SECRET_KEY=' "$ENVF" > "$ENVF.tmp" || true
+            printf 'SECRET_KEY=%s\n' "$KEY" >> "$ENVF.tmp"
+            mv "$ENVF.tmp" "$ENVF"
+            echo "SECRET_KEY: generated"
+          else
+            echo "SECRET_KEY: present"
+          fi
+          # ADMIN_API_TOKEN: ALWAYS synced from the GitHub secret so the token the
+          # cron workflows send is the token the server checks (single source of truth).
+          if [ -z "$ADMIN_API_TOKEN" ]; then
+            echo "::error::GitHub secret ADMIN_API_TOKEN is empty — the secured /refresh/* endpoints would be disabled and every data cron would 403."
+            exit 1
+          fi
+          grep -v '^ADMIN_API_TOKEN=' "$ENVF" > "$ENVF.tmp" || true
+          printf 'ADMIN_API_TOKEN=%s\n' "$ADMIN_API_TOKEN" >> "$ENVF.tmp"
+          mv "$ENVF.tmp" "$ENVF"
+          chmod 600 "$ENVF"
+          echo "ADMIN_API_TOKEN: synced from GitHub secret"
+
+      - name: Record rollback point
+        id: rollback
+        run: |
+          cd "$APP_DIR"
+          echo "prev_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Rollback point: $(git rev-parse --short HEAD) — $(git log -1 --format=%s)"
+
+      - name: Sync code to origin/main
+        run: |
+          cd "$APP_DIR"
+          git fetch origin
+          git reset --hard origin/main
+          echo "Now at: $(git rev-parse --short HEAD) — $(git log -1 --format=%s)"
+
+      - name: Build + restart backend
+        run: |
+          cd "$APP_DIR"
+          docker compose -f "$COMPOSE" build --build-arg CACHEBUST="$(date +%s)" backend
+          docker compose -f "$COMPOSE" up -d --force-recreate backend
+
+      - name: Health gate (90s)
+        id: health
+        run: |
+          for i in $(seq 1 18); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$HEALTH_URL" || echo 000)
+            if [ "$code" = "200" ]; then
+              echo "✅ healthy after $((i*5))s"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Backend not healthy 90s after deploy (last code: $code)"
+          docker logs starta-backend-1 --tail 60 || true
+          exit 1
+
+      - name: AUTO-ROLLBACK to previous commit
+        if: failure() && steps.rollback.outputs.prev_sha != ''
+        run: |
+          echo "::warning::Deploy unhealthy — rolling back to ${{ steps.rollback.outputs.prev_sha }}"
+          cd "$APP_DIR"
+          git reset --hard "${{ steps.rollback.outputs.prev_sha }}"
+          docker compose -f "$COMPOSE" build --build-arg CACHEBUST="$(date +%s)" backend
+          docker compose -f "$COMPOSE" up -d --force-recreate backend
+          sleep 15
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$HEALTH_URL" || echo 000)
+          if [ "$code" = "200" ]; then
+            echo "✅ rollback healthy — production restored on the previous commit"
+          else
+            echo "::error::ROLLBACK ALSO UNHEALTHY (code $code) — manual action required NOW"
+            docker logs starta-backend-1 --tail 60 || true
+          fi
+
+      - name: Alert on failure (GitHub issue via notify.py)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/notify.py "Backend deploy FAILED" \
+            "Deploy of origin/main failed its health gate. Auto-rollback to ${{ steps.rollback.outputs.prev_sha || 'n/a' }} was attempted — check the run log to confirm production state." || true
+
+      - name: Summary
+        if: success()
+        run: |
+          cd "$APP_DIR"
+          echo "## ✅ Backend deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: $(git rev-parse --short HEAD) — $(git log -1 --format=%s)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Health: 200 on $HEALTH_URL" >> "$GITHUB_STEP_SUMMARY"

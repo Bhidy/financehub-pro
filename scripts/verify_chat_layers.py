@@ -9,16 +9,18 @@ sys.path.append(PROJECT_ROOT)
 
 # Adjust import to match the actual folder structure on disk
 # Try importing from backend-core if possible, or fall back
+# Maintenance/dev script, never serves traffic or signs JWTs: ChatService
+# transitively imports app.core.config, whose SECRET_KEY fail-fast is a
+# server-boot protection — give it a harmless local default for ad-hoc runs.
+os.environ.setdefault("SECRET_KEY", "maintenance-script-local-only-never-server")
 try:
     from backend_core.app.chat.chat_service import ChatService
-    from backend_core.app.core.config import settings
 except ImportError:
     # If running from root, it might be just 'app' if backend_core is a package
     # But usually creating a symlink or adjusting path is better.
     # Let's try appending backend-core specifically
     sys.path.append(os.path.join(PROJECT_ROOT, "backend-core"))
     from app.chat.chat_service import ChatService
-    from app.core.config import settings
 
 # Mock LLM response with new structural tags
 MOCK_LLM_RESPONSE = """

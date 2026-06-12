@@ -118,7 +118,7 @@ class HistoricalBackfill:
                             ON CONFLICT (symbol, ex_date) DO NOTHING
                         """, symbol, date.date() if hasattr(date, 'date') else date, float(amount))
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             self.stats["dividend_records"] += count
@@ -149,7 +149,7 @@ class HistoricalBackfill:
                             ON CONFLICT (symbol, split_date) DO NOTHING
                         """, symbol, date.date() if hasattr(date, 'date') else date, float(ratio))
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             self.stats["split_records"] += count
@@ -193,7 +193,7 @@ class HistoricalBackfill:
                             float(row.get('ForwardPeRatio')) if row.get('ForwardPeRatio') else None
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             self.stats["valuation_records"] += count
@@ -249,7 +249,7 @@ class HistoricalBackfill:
                             json.dumps(row.to_dict(), default=str)
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             self.stats["financial_records"] += count
@@ -285,7 +285,7 @@ class HistoricalBackfill:
                             float(row.get('Surprise(%)')) if row.get('Surprise(%)') else None
                         )
                         count += 1
-                    except:
+                    except Exception:
                         pass
             
             self.stats["earnings_records"] += count

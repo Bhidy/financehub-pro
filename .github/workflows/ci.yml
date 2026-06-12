@@ -1,26 +1,36 @@
 name: CI Guard
 
 # ============================================================
-# Prevention layer (added after the June 2026 freeze).
-# - actionlint validates EVERY workflow. It catches the exact bug that broke
-#   morning_brief.yml (a `secrets.*` reference inside a step-level `if:`),
-#   which failed silently at 0s on every push for days.
-# - py_compile validates the ingestion + backend code so a syntax error can
-#   never reach main and break the data pipeline.
+# Prevention layer (created after the June 2026 freeze; upgraded 2026-06-11).
+#
+# RUNNER REALITY (verified 2026-06-11): GitHub-hosted runners are blocked on
+# this account — jobs die in 2s with "recent account payments have failed or
+# your spending limit needs to be increased". So CI runs on the self-hosted
+# Hetzner runner. Residual risk accepted & documented: pull_request code
+# executes on the prod box, which is tolerable ONLY while the repo is private
+# with a single trusted collaborator. If billing is fixed or collaborators are
+# added, flip every runs-on back to ubuntu-latest (that is the whole change).
+#
+# Gates (every one verified locally-green before being added here):
+#   1. actionlint     — every workflow file (caught the morning_brief.yml bug
+#                       where a `secrets.*` ref in a step-level `if:` failed
+#                       silently at 0s on every push for days)
+#   2. compileall     — syntax across ingestion + backend + harvester scripts
+#                       (no import, no network)
+#   3. ruff E722      — bare `except:` ban (the swallowed-SystemExit class
+#                       behind the silent ingestion failures); see ruff.toml
+#   4. write-registry — every harvester write SQL must be registered in
+#                       ALL_WRITE_SQL so the QA write-contract gate covers it
+#                       (scripts/check_write_registry.py)
+#   5. pytest         — offline data-layer tests (feed dedup / price validation
+#                       / router fallback); network is monkeypatched
+#   6. tsc --noEmit   — frontend type integrity (strict TS, lockfile-exact)
 # ============================================================
 
 on:
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/**'
-      - 'ingestion/**'
-      - 'backend-core/**'
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - 'ingestion/**'
-      - 'backend-core/**'
   workflow_dispatch:
 
 permissions:
@@ -36,7 +46,7 @@ jobs:
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run actionlint
         env:
           # Keep CI focused on real problems: report shellcheck warnings+errors
@@ -48,20 +58,64 @@ jobs:
           bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
           ./actionlint -color
 
-  python-smoke:
-    name: Python syntax check
+  python-gates:
+    name: Python gates (syntax · lint · write-registry · tests)
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Compile ingestion + backend (no import/network — syntax only)
+      - name: Compile backend + ingestion + harvester scripts (syntax only)
         run: |
           python -m compileall -q \
-            -x '(chat_backup|__pycache__|\.venv)' \
+            -x '(__pycache__|\.venv)' \
             ingestion \
+            scripts \
             backend-core/app \
-            backend-core/data_pipeline
+            backend-core/data_pipeline \
+            backend-core/scripts
           echo "✅ Python sources compile cleanly"
+      - name: Install gate dependencies
+        # pytest-asyncio: the data-layer tests carry explicit @pytest.mark.asyncio
+        # markers — without the plugin every async test fails as "not natively
+        # supported" (first live CI run proved it).
+        run: pip install --quiet ruff pytest pytest-asyncio httpx
+      - name: Ruff — bare `except:` ban (E722, see ruff.toml)
+        run: ruff check .
+      - name: Write-registry gate (harvester SQL must be QA-covered)
+        run: python scripts/check_write_registry.py
+      - name: Offline data-layer tests
+        env:
+          # config.py fail-fasts on a missing SECRET_KEY by design; give tests a
+          # dummy so importing app.* in future tests never breaks CI mysteriously.
+          SECRET_KEY: ci-only-dummy-not-used-in-prod
+        run: |
+          cd backend-core
+          python -m pytest tests/ -q
+
+  frontend-build:
+    name: Frontend production build (mirrors Vercel exactly)
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install dependencies — VERCEL'S EXACT COMMAND
+        working-directory: frontend
+        # CRITICAL (2026-06-12): this job used to run `tsc --noEmit` only, which is
+        # WHY a green CI coexisted with a FAILED Vercel build — tsc cannot catch a
+        # build-time module-resolution error. recharts declares react-is as a PEER
+        # dep; Vercel installs with `npm install --legacy-peer-deps` (which SKIPS
+        # peers), so react-is was absent and the Turbopack build failed with
+        # "Can't resolve 'react-is'". `npm ci` (what CI used) auto-installs peers,
+        # hiding the failure. The ONLY way to guarantee CI green ⇒ Vercel green is
+        # to install AND build with Vercel's exact commands. Do not "optimize" this
+        # back to npm ci or tsc-only — that reintroduces the false-confidence gap.
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Production build (next build — type-checks AND resolves every module)
+        working-directory: frontend
+        run: npm run build

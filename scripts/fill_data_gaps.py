@@ -39,7 +39,7 @@ def safe_float(val):
         return None
     try:
         return float(val)
-    except:
+    except Exception:
         return None
 
 def main():

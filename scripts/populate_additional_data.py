@@ -76,7 +76,7 @@ async def populate_company_profiles(pool):
                 market_cap = info.get('marketCap', 0)
                 industry = info.get('industry', row['sector_name'])
                 
-            except:
+            except Exception:
                 description = f"A leading company in the {row['sector_name'] or 'Saudi'} sector listed on Tadawul (Saudi Stock Exchange)."
                 employees = random.randint(100, 5000)
                 market_cap = 0

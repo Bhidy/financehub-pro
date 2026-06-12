@@ -16,11 +16,21 @@ runner, Supabase-cron containers, a bare `python` shell) with nothing to install
 
 Channels & env (reuses the EXISTING repo contract — see below, nothing invented):
   Discord:  DISCORD_WEBHOOK_URL                      (already used everywhere)
+  Webhook:  ALERT_WEBHOOK_URL   — generic JSON POST ({"text": ...}); Slack-incoming-
+            webhook compatible. Set the secret and the channel is live, no code change.
   Email:    NOTIFICATION_EMAIL  — Gmail address; used as SMTP login, From AND To.
             SMTP_PASSWORD       — Gmail App Password (myaccount.google.com/apppasswords).
             Optional overrides (same names backend-core's notification_service.py
             already honors): SMTP_HOST (default smtp.gmail.com), SMTP_PORT (587),
             ALERT_EMAIL (recipient, if it must differ from NOTIFICATION_EMAIL).
+  GitHub:   GH_TOKEN or GITHUB_TOKEN + GITHUB_REPOSITORY. NOTE: the calling
+            workflow must BOTH grant `permissions: issues: write` AND pass the
+            token env explicitly (GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}) — only
+            GITHUB_REPOSITORY is truly auto-present. Creates/updates a GitHub
+            ISSUE titled like the alert — the guaranteed last-resort channel
+            (no external credentials; GitHub pushes mobile/email natively).
+            Repeated alerts with the same title COMMENT on the existing open
+            issue (no issue spam).
 
 Provenance of the SMTP convention (so the fallback matches what the owner set up):
   - activate_data_updates.sh documents the two GitHub secrets verbatim:
@@ -145,42 +155,130 @@ def _send_email(title: str, message: str, timeout: int = 20) -> str:
         return f"error: {type(e).__name__}: {e}"
 
 
-def send_alert(title: str, message: str) -> dict:
-    """Deliver an alert with VERIFIED Discord, falling back to email on failure.
+def _gh_api(method: str, path: str, token: str, payload=None, timeout: int = 20):
+    """Minimal stdlib GitHub REST call. Returns (status_code, parsed_json|None)."""
+    url = f"https://api.github.com{path}"
+    data = json.dumps(payload).encode() if payload is not None else None
+    req = urllib.request.Request(url, data=data, method=method, headers={
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+    })
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        body = resp.read()
+        return resp.getcode(), (json.loads(body) if body else None)
 
-    Order: try Discord and check its HTTP status. If Discord did NOT confirm
-    delivery (missing / non-2xx / error), send email instead. Email is also sent
-    if Discord is simply not configured. This is best-effort: it NEVER raises.
+
+def _send_github_issue(title: str, message: str) -> str:
+    """File the alert as a GitHub issue (or comment on the open issue of the same
+    title). Needs GH_TOKEN/GITHUB_TOKEN + GITHUB_REPOSITORY — both present in any
+    Actions run — and `issues: write` permission in the calling workflow. This is
+    the zero-external-dependency channel: GitHub itself then pushes mobile/email
+    notifications to the owner. NEVER raises.
+    """
+    # Try BOTH tokens: GH_TOKEN may be a fine-grained PAT scoped to actions:write
+    # only (the watchdog dispatch token), which CANNOT create issues — fall back
+    # to the workflow GITHUB_TOKEN in that case.
+    tokens = [t for t in (os.environ.get("GH_TOKEN"), os.environ.get("GITHUB_TOKEN")) if t]
+    tokens = list(dict.fromkeys(tokens))  # dedupe, keep order
+    repo = os.environ.get("GH_REPO") or os.environ.get("GITHUB_REPOSITORY")
+    if not tokens or not repo:
+        return "skip(no token/repo)"
+    issue_title = f"🔴 Pipeline alert: {title}"
+    run_url = ""
+    if os.environ.get("GITHUB_SERVER_URL") and os.environ.get("GITHUB_RUN_ID"):
+        run_url = (f"\n\nRun: {os.environ['GITHUB_SERVER_URL']}/{repo}"
+                   f"/actions/runs/{os.environ['GITHUB_RUN_ID']}")
+    body = f"{message}{run_url}\n\n_Auto-filed by scripts/notify.py — close after resolving._"
+    last = "error: no token attempted"
+    for token in tokens:
+        try:
+            # Re-use the open issue with the same title so a repeating condition
+            # threads into ONE issue instead of spamming a new issue per run.
+            code, issues = _gh_api("GET", f"/repos/{repo}/issues?state=open&per_page=100", token)
+            existing = None
+            if code == 200 and isinstance(issues, list):
+                existing = next((i for i in issues
+                                 if i.get("title") == issue_title and "pull_request" not in i), None)
+            if existing:
+                code, _ = _gh_api("POST", f"/repos/{repo}/issues/{existing['number']}/comments",
+                                  token, {"body": body})
+                result = (f"ok(comment on #{existing['number']})"
+                          if 200 <= code < 300 else f"http {code}")
+            else:
+                code, created = _gh_api("POST", f"/repos/{repo}/issues", token,
+                                        {"title": issue_title, "body": body})
+                if 200 <= code < 300 and isinstance(created, dict):
+                    result = f"ok(issue #{created.get('number')})"
+                else:
+                    result = f"http {code}"
+        except urllib.error.HTTPError as e:
+            # 401/403 = this token lacks Issues scope (e.g. a dispatch-only PAT in
+            # GH_TOKEN) or the workflow lacks `permissions: issues: write` — the
+            # loop retries with the next token (the workflow GITHUB_TOKEN).
+            result = f"http {e.code}"
+        except Exception as e:  # noqa: BLE001 — best-effort by contract
+            result = f"error: {type(e).__name__}: {e}"
+        if result.startswith("ok"):
+            return result
+        last = result
+    return last
+
+
+def _send_webhook(title: str, message: str, timeout: int = 15) -> str:
+    """Generic JSON webhook ({"text": ...}) — Slack incoming-webhook compatible.
+    Configured via ALERT_WEBHOOK_URL; absent means skip. NEVER raises."""
+    url = os.environ.get("ALERT_WEBHOOK_URL")
+    if not url:
+        return "skip(no url)"
+    try:
+        body = json.dumps({"text": f"🚨 {title}\n{message}"[:3900]}).encode()
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            code = resp.getcode()
+        return "ok" if (code is not None and 200 <= code < 300) else f"http {code}"
+    except urllib.error.HTTPError as e:
+        return f"http {e.code}"
+    except Exception as e:  # noqa: BLE001 — best-effort by contract
+        return f"error: {type(e).__name__}: {e}"
+
+
+def send_alert(title: str, message: str) -> dict:
+    """Deliver an alert through the first channel that CONFIRMS delivery.
+
+    Chain (each step verified, each skipped if unconfigured):
+        Discord → generic webhook (ALERT_WEBHOOK_URL) → email (SMTP) → GitHub issue.
+
+    The GitHub-issue channel is the designed last resort: inside any Actions run it
+    needs no external credentials at all, so "ALERT NOT DELIVERED via any channel"
+    should now be impossible in CI as long as the workflow grants
+    `permissions: issues: write`. Best-effort by contract: NEVER raises.
 
     Returns a status dict, e.g.::
 
-        {"discord": "ok",        "email": "not_attempted", "delivered": True}
-        {"discord": "http 403",  "email": "ok",            "delivered": True}
-        {"discord": "skip(no url)", "email": "error: ...", "delivered": False}
+        {"discord": "skip(no url)", "webhook": "skip(no url)",
+         "email": "skip(...)", "github_issue": "ok(issue #12)", "delivered": True}
 
-    `delivered` is True iff AT LEAST ONE channel confirmed delivery — callers can
-    log/inspect it, but should treat the very act of calling send_alert as the
-    last line of defense, not assume success.
+    `delivered` is True iff AT LEAST ONE channel confirmed delivery.
     """
-    status = {"discord": "not_attempted", "email": "not_attempted", "delivered": False}
+    status = {"discord": "not_attempted", "webhook": "not_attempted",
+              "email": "not_attempted", "github_issue": "not_attempted",
+              "delivered": False}
 
-    discord_status = _send_discord(title, message)
-    status["discord"] = discord_status
-    discord_ok = discord_status == "ok"
-
-    if discord_ok:
-        status["delivered"] = True
-    else:
-        # Discord failed or wasn't configured — fall back to the independent channel.
-        _log(f"Discord not confirmed ({discord_status}); attempting email fallback.")
-        email_status = _send_email(title, message)
-        status["email"] = email_status
-        if email_status == "ok":
+    chain = (("discord", _send_discord), ("webhook", _send_webhook),
+             ("email", _send_email), ("github_issue", _send_github_issue))
+    for name, sender in chain:
+        result = sender(title, message)
+        status[name] = result
+        if result.startswith("ok"):
             status["delivered"] = True
+            break
+        _log(f"{name} not confirmed ({result}); trying next channel.")
 
     if not status["delivered"]:
         # Loud on stderr so even a total-delivery failure leaves a forensic trail in
-        # the job log (the one place that is captured even when both channels die).
+        # the job log (the one place that is captured even when all channels die).
         _log(f"ALERT NOT DELIVERED via any channel: {status} | title={title!r}")
 
     return status

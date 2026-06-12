@@ -68,7 +68,7 @@ async def newsletter_status():
     try:
         count = await db.fetch_one("SELECT COUNT(*) as cnt FROM newsletter_preferences WHERE unsubscribed = FALSE")
         status["subscriber_count"] = count['cnt'] if count else 0
-    except:
+    except Exception:
         status["subscriber_count"] = "unknown"
     
     return status

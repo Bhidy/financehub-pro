@@ -63,7 +63,7 @@ def main():
                     
                     # Wait for redirects to settle
                     try: page.wait_for_load_state("networkidle", timeout=10000) 
-                    except: pass
+                    except Exception: pass
 
                     # Validation: Check if we are actually on the Quote page
                     title = page.title()
@@ -76,13 +76,13 @@ def main():
                         
                         # Debug: See what the Summary page looks like in Mobile
                         try: page.screenshot(path=f"debug_mobile_summary_{sym}.png")
-                        except: pass
+                        except Exception: pass
 
                         # Yahoo Mobile often puts Financials in a scrollable tab list
                         # Search for the link with href ending in /financials
                         try:
                             page.locator("a[href*='/financials']").first.click(timeout=5000)
-                        except:
+                        except Exception:
                             print(f"⚠️ 'Financials' link not found via Selector. Trying Menu...", end=" ", flush=True)
                             # Sometimes it's under QuoteNav
                             page.locator("section[data-test='quote-nav'] >> text=Financials").click()
@@ -129,7 +129,7 @@ def main():
                         print(f"PAGE TITLE: {page.title()}")
                         print(f"PAGE BODY: {page.content()[:500]}")
                         page.screenshot(path=f"debug_yahoo_{sym}_error.png")
-                    except: pass
+                    except Exception: pass
 
                 print("", flush=True)
 

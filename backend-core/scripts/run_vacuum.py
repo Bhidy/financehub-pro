@@ -6,13 +6,27 @@ import asyncpg
 # Add parent directory to path to import app modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.config import settings
+def _database_url():
+    """Read DATABASE_URL from env or backend-core/.env — deliberately NOT via
+    app.core.config: settings now fail-fasts without SECRET_KEY (server-only
+    concern), and this ad-hoc maintenance script only needs the DB DSN."""
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+            url = os.getenv("DATABASE_URL")
+        except ImportError:
+            pass
+    return url
+
 
 async def run_vacuum():
     print("🚀 Starting VACUUM FULL to reclaim disk space...")
     print("⚠️  This might take a minute and will lock the intraday tables temporarily.")
     
-    if not settings.DATABASE_URL:
+    database_url = _database_url()
+    if not database_url:
         print("❌ Error: DATABASE_URL is not set.")
         return
 
@@ -20,7 +34,7 @@ async def run_vacuum():
         # Connect directly with asyncpg to ensure no implicit transaction wrappers
         # VACUUM cannot run inside a transaction block
         conn = await asyncpg.connect(
-            dsn=settings.DATABASE_URL,
+            dsn=database_url,
             ssl='require',
             timeout=300  # 5 minute timeout for vacuum
         )

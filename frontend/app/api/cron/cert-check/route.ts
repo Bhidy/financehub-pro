@@ -85,11 +85,15 @@ function fetchPeerCert(): Promise<CertResult> {
                 const daysRemaining = Math.floor(
                     (validTo.getTime() - Date.now()) / 86_400_000,
                 );
+                // Newer @types/node types DN fields as string | string[] (RDNs can
+                // repeat) — normalize to the first value.
+                const dn = (v: string | string[] | undefined): string | null =>
+                    Array.isArray(v) ? (v[0] ?? null) : (v ?? null);
                 finish(() => resolve({
                     valid_to: validTo.toISOString(),
                     days_remaining: daysRemaining,
-                    issuer: cert.issuer?.O ?? cert.issuer?.CN ?? null,
-                    subject: cert.subject?.CN ?? null,
+                    issuer: dn(cert.issuer?.O) ?? dn(cert.issuer?.CN),
+                    subject: dn(cert.subject?.CN),
                 }));
             },
         );

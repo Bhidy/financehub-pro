@@ -1,0 +1,18 @@
+# Ruff — Python lint gate (audit 2026-06-11).
+# Scope is INTENTIONALLY tight: E722 (bare `except:`) is the rule whose
+# violations produced the silent-failure incidents (swallowed SystemExit /
+# KeyboardInterrupt in ingestion paths). All 138 pre-existing violations were
+# fixed in the same change that introduced this config, so CI red on E722
+# always means a fresh regression. Broaden the select list only together with
+# fixing what it flags — a permanently-red linter trains people to ignore CI.
+target-version = "py310"
+
+extend-exclude = [
+    "frontend",            # TS/JS tree (eslint owns it); avoids node_modules sweeps
+    "logs",
+    "backend-core/testsprite_tests",
+    "frontend/testsprite_tests",
+]
+
+[lint]
+select = ["E722"]

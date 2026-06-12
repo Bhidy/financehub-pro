@@ -50,7 +50,7 @@ async def seed_table(conn, table, json_file, conflict_cols):
             if isinstance(v, str) and len(v) == 10 and v.count('-') == 2:
                  try:
                      v = datetime.strptime(v, "%Y-%m-%d").date()
-                 except: pass
+                 except Exception: pass
             vals.append(v)
         records.append(tuple(vals))
         

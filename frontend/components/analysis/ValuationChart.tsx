@@ -63,7 +63,12 @@ export function ValuationChart({ currentPrice, fairValue, currency = "SAR" }: Va
                     <Tooltip
                         cursor={{ fill: 'transparent' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', background: '#0f172a', color: '#fff' }}
-                        formatter={(value: number | undefined) => [value ? `${currency} ${value.toFixed(2)}` : '', 'Price']}
+                        formatter={(value) => {
+                            // recharts ValueType can be string | number | array —
+                            // coerce defensively so newer recharts typings stay green.
+                            const n = Number(value);
+                            return [Number.isFinite(n) && n !== 0 ? `${currency} ${n.toFixed(2)}` : '', 'Price'];
+                        }}
                     />
                     <Bar dataKey="value" radius={[0, 10, 10, 0]}>
                         {data.map((entry, index) => (

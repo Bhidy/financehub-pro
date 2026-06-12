@@ -1040,7 +1040,7 @@ function RadarCompareChart({ data, lang = 'en' }: { data: any, lang?: Language }
                                 fontSize: '12px',
                                 color: '#F8FAFC'
                             }}
-                            formatter={(value: number | undefined) => [`${value ?? 0}/100`, '']}
+                            formatter={(value) => [`${Number(value) || 0}/100`, '']}
                         />
                     </RadarChart>
                 </ResponsiveContainer>

@@ -64,7 +64,11 @@ export function FutureGrowthChart({ data }: FutureGrowthChartProps) {
                     <Tooltip
                         cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', background: '#0f172a', color: '#fff', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                        formatter={(value: number | undefined) => [value ? `${(value / 1e6).toFixed(1)}M` : '', ""]}
+                        formatter={(value) => {
+                            // recharts ValueType is string|number|array — coerce defensively (typing tightened in newer recharts).
+                            const n = Number(value);
+                            return [Number.isFinite(n) && n !== 0 ? `${(n / 1e6).toFixed(1)}M` : '', ''];
+                        }}
                     />
 
                     {/* Revenue Bars */}

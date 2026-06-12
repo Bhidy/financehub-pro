@@ -59,7 +59,11 @@ export function OwnershipDonut({ data }: OwnershipDonutProps) {
                     </Pie>
                     <Tooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', background: '#0f172a', color: '#fff', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                        formatter={(value: number | undefined) => [value ? `${value.toFixed(1)}%` : '', 'Ownership']}
+                        formatter={(value) => {
+                            // recharts ValueType is string|number|array — coerce defensively (typing tightened in newer recharts).
+                            const n = Number(value);
+                            return [Number.isFinite(n) && n !== 0 ? `${n.toFixed(1)}%` : '', 'Ownership'];
+                        }}
                     />
                     <Legend
                         layout="vertical"

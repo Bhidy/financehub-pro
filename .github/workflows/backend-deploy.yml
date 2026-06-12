@@ -134,8 +134,14 @@ jobs:
           echo "Rollback point: $(git rev-parse --short HEAD) — $(git log -1 --format=%s)"
 
       - name: Sync code to origin/main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd "$APP_DIR"
+          # The runner user has no GitHub SSH key; authenticate the fetch with
+          # the workflow's own token over HTTPS (repo is private). The URL is
+          # re-set every run, so the embedded token never outlives the job.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git fetch origin
           git reset --hard origin/main
           echo "Now at: $(git rev-parse --short HEAD) — $(git log -1 --format=%s)"

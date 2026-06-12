@@ -95,38 +95,27 @@ jobs:
           cd backend-core
           python -m pytest tests/ -q
 
-  frontend-typecheck:
-    name: Frontend type integrity (tsc)
+  frontend-build:
+    name: Frontend production build (mirrors Vercel exactly)
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Pin npm 11 (lockfile dialect)
-        # Node 22 bundles npm 10, which resolves the optional @emnapi/* subtree
-        # differently from npm 11 and rejects the lockfile as "out of sync"
-        # (proved live on this job, 2026-06-11). The lockfile is generated and
-        # validated with npm 11 — pin the same major here so the two can never
-        # disagree. If you bump this, regenerate package-lock.json with it.
-        run: npm install -g npm@11 && npm --version
-      - name: Install dependencies (lockfile-exact, loud fallback)
+      - name: Install dependencies — VERCEL'S EXACT COMMAND
         working-directory: frontend
-        # History (2026-06-11): the OLD lockfile carried ~2,000 lines of orphaned
-        # optional-subtree entries (@emnapi/* etc.) and npm ci rejected it as
-        # out-of-sync ON LINUX ONLY — three red runs. The lockfile was regenerated
-        # from scratch (validated: real `npm ci` + tsc green locally). Defense in
-        # depth: if any platform ever rejects the lock again, fall back to a fresh
-        # `npm install` with a LOUD warning instead of hard-failing the typecheck —
-        # same resolution strategy Vercel uses for the production build itself.
-        run: |
-          npm ci --no-audit --no-fund || {
-            echo "::warning::npm ci rejected the lockfile on this platform — falling back to npm install (typecheck still meaningful). Regenerate package-lock.json from scratch to restore exactness."
-            npm install --no-audit --no-fund
-          }
-      - name: Type check
+        # CRITICAL (2026-06-12): this job used to run `tsc --noEmit` only, which is
+        # WHY a green CI coexisted with a FAILED Vercel build — tsc cannot catch a
+        # build-time module-resolution error. recharts declares react-is as a PEER
+        # dep; Vercel installs with `npm install --legacy-peer-deps` (which SKIPS
+        # peers), so react-is was absent and the Turbopack build failed with
+        # "Can't resolve 'react-is'". `npm ci` (what CI used) auto-installs peers,
+        # hiding the failure. The ONLY way to guarantee CI green ⇒ Vercel green is
+        # to install AND build with Vercel's exact commands. Do not "optimize" this
+        # back to npm ci or tsc-only — that reintroduces the false-confidence gap.
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Production build (next build — type-checks AND resolves every module)
         working-directory: frontend
-        run: npx tsc --noEmit
+        run: npm run build

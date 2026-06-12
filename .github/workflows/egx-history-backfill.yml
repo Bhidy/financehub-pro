@@ -1,0 +1,33 @@
+name: EGX History Backfill (StockAnalysis)
+
+# One-shot purge-and-backfill of ohlc_data for symbols whose candle history was
+# poisoned by a frozen/re-assigned Yahoo feed (audit C-03: ORAS served 2 years
+# of synthetic 71.05/vol=0 bars). Manual dispatch only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Comma-separated EGX symbols to purge & backfill'
+        required: true
+        default: 'ORAS'
+
+concurrency:
+  group: egx-history-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install httpx asyncpg
+      - name: Purge & backfill from StockAnalysis
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SYMBOLS: ${{ inputs.symbols }}
+        run: python scripts/backfill_egx_history_sa.py --symbols "$SYMBOLS"

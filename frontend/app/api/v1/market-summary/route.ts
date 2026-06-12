@@ -80,7 +80,8 @@ export async function GET() {
                     SUM(CASE WHEN change_percent < 0 THEN 1 ELSE 0 END) as declining,
                     SUM(CASE WHEN change_percent = 0 THEN 1 ELSE 0 END) as unchanged,
                     ROUND(SUM(volume)::numeric, 0) as total_volume,
-                    ROUND(SUM(last_price * volume)::numeric, 0) as total_turnover
+                    ROUND(SUM(last_price * volume)::numeric, 0) as total_turnover,
+                    MAX(updated_at) as data_as_of
                 FROM market_tickers
                 WHERE last_price IS NOT NULL
                   AND market_code = 'EGX'
@@ -138,13 +139,18 @@ export async function GET() {
 
             total_volume: toNumber(stats.total_volume),
             total_turnover: toNumber(stats.total_turnover),
+            // Σ(volume × last close) — an approximation, not exchange-reported traded value
+            turnover_basis: "close_price_approximation",
 
             new_highs: toNumber(breadth.new_highs),
             new_lows: toNumber(breadth.new_lows),
             advance_volume: toNumber(breadth.advance_volume),
             decline_volume: toNumber(breadth.decline_volume),
 
-            last_updated: new Date().toISOString(),
+            // The data's own as-of time (newest market_tickers write), NOT the
+            // request time — turnover/volume describe that session, not "now".
+            data_as_of: stats.data_as_of ?? null,
+            last_updated: stats.data_as_of ?? new Date().toISOString(),
             timezone: EGX_TIME_ZONE,
             session: {
                 opens_at: "10:00",

@@ -33,7 +33,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend-core"))
 
 import asyncpg  # noqa: E402
-from data_pipeline.tradingview_client import TradingViewEGXClient  # noqa: E402
+from data_pipeline.tradingview_client import TradingViewEGXClient, _sane_dividend_yield  # noqa: E402
 from data_pipeline.egx_feed_router import EGXFeedRouter  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -491,7 +491,12 @@ async def cycle_dividends(conn):
             freq = d.get("dividends_frequency")
             freq = str(freq) if freq is not None else None
             await conn.execute(SQL_UPSERT_DIVIDENDS,
-                d["symbol"], d.get("dividends_yield_current"), d.get("dividend_amount_recent"),
+                d["symbol"],
+                # Cross-validated yield — raw dividends_yield_current was corrupt
+                # for ORAS (45.5% vs real ~1.65%); see _sane_dividend_yield().
+                _sane_dividend_yield(d.get("dividends_yield_current"), d.get("dividends_yield"),
+                                     d.get("dividend_amount_recent"), d.get("close")),
+                d.get("dividend_amount_recent"),
                 _i(d.get("dividend_ex_date_recent")), _i(d.get("dividend_payment_date_recent")),
                 d.get("dividend_amount_upcoming"), _i(d.get("dividend_ex_date_upcoming")),
                 _i(d.get("dividend_payment_date_upcoming")), freq,

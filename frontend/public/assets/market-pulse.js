@@ -932,8 +932,9 @@
     }
 
     function resolve52wRange(item, yp) {
-        let yearLow = number(yp.year_low);
-        let yearHigh = number(yp.year_high);
+        // TV snapshot → DB feed (TV-harvested high_52w/low_52w) → own candle history
+        let yearLow = number(yp.year_low) || number(item.low_52w);
+        let yearHigh = number(yp.year_high) || number(item.high_52w);
         if (!yearLow || !yearHigh || yearHigh <= yearLow) {
             const hist = history52w();
             if (!hist) return null;

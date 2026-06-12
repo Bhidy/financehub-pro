@@ -115,3 +115,27 @@ DATABASE_URL=... python qa/egx_audit.py            # all suites; non-zero exit =
 - Migrations are additive/idempotent; run on Supabase only with explicit approval.
 - Rotate the two pre-existing leaked secrets (see `docs/SECURITY.md`) — unrelated
   to this work but required for a clean posture.
+
+## Market Pulse cutover (2026-06-12 — PR #84/#85/#86)
+
+The public `/Market-Pulse` page (frontend/public/assets/market-pulse.js) is now
+100% TradingView — zero Yahoo:
+- Fundamentals tiles + Financials tab + drawer: `/api/v1/egx/statistics`
+  (stock_stats_view, EGP-verified).
+- 52W bar / avg vol / employees / industry: `/api/v1/tv/snapshot/[symbol]`
+  (TV per-symbol). **That endpoint converts monetary fields to USD — only
+  price-denominated/unitless fields may be read from it.**
+- 52W DB fallback: `market_tickers.high_52w/low_52w`, written by BOTH price
+  writers (admin `process_egx` + harvester `cycle_prices`) from TV
+  `price_52_week_high/low`, COALESCE-guarded so the yfinance fallback never
+  NULLs them.
+- Candle hygiene: every ohlc writer normalizes bars (close authoritative →
+  widen; synthetic open → clamp), skips flat zero-volume no-trade bars, and
+  never downgrades a `source='tradingview'` bar (last-writer-wins was how
+  frozen Yahoo data re-poisoned repaired symbols nightly).
+- Content monitoring: `/api/v1/watchdog/52w` cross-checks TV 52W bounds vs
+  candle-derived bounds (7% tolerance, keyword `FIFTYTWOW_MISMATCH`);
+  `/api/v1/health/freshness` gained the `egx_fundamentals` row.
+- One-shot repair: `.github/workflows/ohlc-data-repair.yml` (invariants, flat
+  bars, PHGC ISIN-identity merge). ISIN aliases live in
+  `tradingview_client._TV_SYMBOL_ALIASES`.

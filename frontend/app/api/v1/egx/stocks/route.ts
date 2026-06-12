@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
-import { db } from '@/lib/db-server';
+import { db, numerify } from '@/lib/db-server';
 
 // Single source of truth: read EGX stocks straight from Supabase (market_tickers,
 // the live TradingView-updated quote table) — same as every other stock/fund read.
@@ -26,15 +26,19 @@ export async function GET(request: Request) {
 
         const query = `
             SELECT symbol, name_en, name_ar, sector_name, last_price, change, change_percent,
-                   volume, market_cap, pe_ratio, pb_ratio, high, low, open_price, prev_close
+                   volume, market_cap, pe_ratio, pb_ratio, high, low, open_price, prev_close,
+                   high_52w, low_52w
             FROM market_tickers
             ${whereClause}
             ORDER BY ${sortBy} ${order} NULLS LAST
             LIMIT ${limit}
         `;
 
+        const NUM = ['last_price', 'change', 'change_percent', 'volume', 'market_cap',
+            'pe_ratio', 'pb_ratio', 'high', 'low', 'open_price', 'prev_close',
+            'high_52w', 'low_52w'];
         const result = await db.query(query, params);
-        return NextResponse.json(result.rows, {
+        return NextResponse.json(result.rows.map((r: Record<string, unknown>) => numerify(r, NUM)), {
             headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=120' },
         });
     } catch (error: any) {

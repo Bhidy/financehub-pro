@@ -166,6 +166,10 @@ const DATASETS: DatasetDef[] = [
     { name: 'technicals', table: 'egx_technicals',  col: 'updated_at',                                  kind: 'trading_daily', threshold: 2,  critical: false, sla: '< 2 trading sessions missed' },
     { name: 'news',       table: 'egx_news',        col: 'created_at',                                  kind: 'wall_days',     threshold: 7 * 24, critical: false, sla: '7 days' },
     { name: 'funds',      table: 'mutual_funds',    col: 'updated_at',                                  kind: 'wall_days',     threshold: 5 * 24, critical: false, sla: '5 days' },
+    // stock_stats_view (the /egx/statistics feed behind Market Pulse) is a VIEW
+    // over market_tickers + egx_fundamentals — this row covers the only base
+    // table not already monitored above. Matches pipeline_watchdog.py's row.
+    { name: 'fundamentals', table: 'egx_fundamentals', col: 'updated_at',                                kind: 'wall_days',     threshold: 9 * 24, critical: false, sla: '9 days (stock_stats_view base table)' },
 ];
 
 interface DatasetResult {

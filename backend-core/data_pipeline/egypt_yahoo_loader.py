@@ -136,16 +136,29 @@ class EgyptYahooLoader:
             for date_idx, row in df.iterrows():
                 try:
                     record_date = date_idx.date() if hasattr(date_idx, 'date') else date_idx
-                    
+
                     o = float(row['Open'])
                     h = float(row['High'])
                     l = float(row['Low'])
                     c = float(row['Close'])
                     v = int(row['Volume'])
-                    
+
                     if o <= 0 or h <= 0 or l <= 0 or c <= 0:
                         continue # Skip invalid quotes
-                        
+
+                    # Synthetic no-trade bar (Yahoo emits flat zero-volume rows daily
+                    # even for dead/re-assigned listings — the ORAS 71.05 poisoning).
+                    # No trade = no candle.
+                    if v == 0 and o == h == l == c:
+                        continue
+
+                    # OHLC invariant normalization: the close is the authoritative
+                    # official value (widen the range to include it); Yahoo's open is
+                    # often synthesized as the previous close (clamp it into range).
+                    h = max(h, c)
+                    l = min(l, c)
+                    o = min(max(o, l), h)
+
                     records.append((
                         symbol_upper,
                         record_date,
@@ -163,7 +176,11 @@ class EgyptYahooLoader:
                 logger.warning(f"⚠️  No valid price records found for {symbol_upper}")
                 return True
 
-            # 2. Write to Supabase database
+            # 2. Write to Supabase database.
+            # Bar ownership: never downgrade a TradingView-written bar — TV has the
+            # real session open and post-close price; Yahoo's trailing-window
+            # overwrite was how stale/synthetic bars re-poisoned repaired symbols
+            # nightly (audit C-03 follow-up).
             async with self.pool.acquire() as conn:
                 await conn.executemany("""
                     INSERT INTO ohlc_data (symbol, date, open, high, low, close, adj_close, volume)
@@ -175,6 +192,7 @@ class EgyptYahooLoader:
                         close = EXCLUDED.close,
                         adj_close = EXCLUDED.adj_close,
                         volume = EXCLUDED.volume
+                    WHERE ohlc_data.source IS DISTINCT FROM 'tradingview'
                 """, records)
 
             logger.info(f"✅ {symbol_upper}: Successfully upserted {len(records)} daily candles.")

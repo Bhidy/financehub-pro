@@ -87,6 +87,26 @@ async def lifespan(app: FastAPI):
                     """)
                 except Exception as e:
                     print(f"Default-admin disable check failed/skipped: {e}")
+                # Same class, second account: the old force_reset_admin.py script
+                # (deleted 2026-06-11) used to CREATE 'admin@financehub.com' with
+                # the literal password "admin". If that row exists and still has
+                # that trivial password, disable it. Verified-then-disabled only —
+                # a row whose password a human changed is never touched.
+                try:
+                    row = await conn.fetchrow(
+                        "SELECT id, hashed_password FROM users "
+                        "WHERE email = 'admin@financehub.com' AND is_active = TRUE"
+                    )
+                    if row:
+                        from app.core.security import verify_password as _vp
+                        if _vp("admin", row["hashed_password"]):
+                            await conn.execute(
+                                "UPDATE users SET is_active = FALSE, "
+                                "hashed_password = '!disabled-trivial-admin-2026-06-11' "
+                                "WHERE id = $1", row["id"])
+                            print("SECURITY: disabled admin@financehub.com (trivial 'admin' password)")
+                except Exception as e:
+                    print(f"Trivial-admin disable check failed/skipped: {e}")
 
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS fund_aliases (

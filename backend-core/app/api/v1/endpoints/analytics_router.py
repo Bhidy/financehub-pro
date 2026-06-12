@@ -5,10 +5,14 @@ Admin-only endpoints for monitoring chatbot performance.
 Added: 2026-01-13
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Header
 from typing import Optional, List
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+import hmac
+import os
+from jose import jwt, JWTError
+from app.core.config import settings
 from app.db.session import db
 
 router = APIRouter()
@@ -186,16 +190,41 @@ class NewsletterAnalytics(BaseModel):
 # ADMIN AUTH DEPENDENCY
 # ============================================================
 
-async def require_admin(authorization: str = None):
-    """Verify admin access - placeholder for auth check"""
-    # TODO: Integrate with actual auth system
-    # For now, we'll check if admin endpoints are being accessed
-    # In production, this would verify JWT token and role
-    if not authorization:
-        # Allow access for now during development
-        # In production: raise HTTPException(status_code=401, detail="Not authenticated")
-        pass
-    return True
+async def require_admin(
+    authorization: Optional[str] = Header(default=None),
+    x_admin_token: Optional[str] = Header(default=None),
+):
+    """Admin gate for the analytics surface. Until 2026-06-11 this was a
+    documented NO-OP ("Allow access for now during development"), leaving all
+    17 routes — including two mutating POSTs and endpoints that expose raw
+    user-typed chat queries — publicly reachable. It now accepts EITHER:
+
+      1. X-Admin-Token — the machine credential the crons/agents use (same
+         fail-closed hmac.compare_digest pattern as admin.py's
+         require_admin_token), OR
+      2. a Bearer JWT belonging to an ACTIVE user with role='admin' — what the
+         admin dashboard (frontend/app/admin/analytics) already sends. The
+         role is re-checked against the users table on every call; neither the
+         client-side check nor the JWT claim is trusted on its own.
+    """
+    expected = os.getenv("ADMIN_API_TOKEN")
+    if expected and x_admin_token and hmac.compare_digest(str(x_admin_token), str(expected)):
+        return True
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+        email = None
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            email = payload.get("sub")
+        except JWTError:
+            email = None
+        if email:
+            row = await db.fetch_one(
+                "SELECT role, is_active FROM users WHERE email = $1", email
+            )
+            if row and row["role"] == "admin" and row["is_active"]:
+                return True
+    raise HTTPException(status_code=401, detail="Admin authentication required")
 
 
 # ============================================================

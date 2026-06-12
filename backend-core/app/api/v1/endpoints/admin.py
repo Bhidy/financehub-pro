@@ -806,8 +806,11 @@ async def refresh_all_prices():
         
     except Exception as e:
         logger.error(f"Global Refresh Failed: {e}")
-        refresh_status["last_status"] = f"error: {str(e)}"
-        refresh_status["errors"].append(str(e))
+        # Public-facing (GET /refresh/status is open for cron polling): keep the
+        # 'error:' keyword the workflows match on, but never echo raw exception
+        # text to the internet — full detail goes to the server log only.
+        refresh_status["last_status"] = f"error: {type(e).__name__}"
+        refresh_status["errors"].append(f"refresh error: {type(e).__name__}")
     finally:
         refresh_status["is_running"] = False
     
@@ -870,12 +873,13 @@ async def refresh_daily_data():
                 stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
                 if proc.returncode != 0:
                     err_tail = (stderr or b'').decode(errors='ignore')[-300:]
-                    refresh_status["errors"].append(f"Egypt TV financials exit {proc.returncode}: {err_tail}")
+                    refresh_status["errors"].append(f"Egypt TV financials failed (exit {proc.returncode})")
                     logger.error(f"Egypt TV financials failed (exit {proc.returncode}): {err_tail}")
                 else:
                     logger.info("Egypt TV financials cycle completed successfully")
             except Exception as e:
-                refresh_status["errors"].append(f"Egypt financials: {str(e)[:80]}")
+                logger.error(f"Egypt financials error: {e}")
+                refresh_status["errors"].append(f"Egypt financials error: {type(e).__name__}")
                 logger.error(f"Egypt financials trigger failed: {e}")
 
         # Also update prices (covers both markets via split logic)
@@ -886,7 +890,10 @@ async def refresh_daily_data():
         
     except Exception as e:
         logger.error(f"Daily sync failed: {e}")
-        refresh_status["last_status"] = f"error: {str(e)}"
+        # Public-facing (GET /refresh/status is open for cron polling): keep the
+        # 'error:' keyword the workflows match on, but never echo raw exception
+        # text to the internet — full detail goes to the server log only.
+        refresh_status["last_status"] = f"error: {type(e).__name__}"
     
     finally:
         refresh_status["is_running"] = False
@@ -1058,9 +1065,11 @@ async def backfill_historical_data(symbol: str = None):
                     stats["egypt_ingested"] = len(egypt_symbols)
                 else:
                     err_tail = (stderr or b'').decode(errors='ignore')[-200:]
-                    refresh_status["errors"].append(f"Egypt TV backfill exit {proc.returncode}: {err_tail}")
+                    logger.error(f"Egypt TV backfill failed (exit {proc.returncode}): {err_tail}")
+                    refresh_status["errors"].append(f"Egypt TV backfill failed (exit {proc.returncode})")
             except Exception as e:
-                refresh_status["errors"].append(f"Egypt backfill error: {str(e)[:80]}")
+                logger.error(f"Egypt backfill error: {e}")
+                refresh_status["errors"].append(f"Egypt backfill error: {type(e).__name__}")
         
         total = sum(v for k, v in stats.items() if k != 'stocks_done')
         refresh_status["last_status"] = f"success: {total} records. Saudi:{stats['stocks_done']}, Egypt:{stats['egypt_ingested']}"
@@ -1071,7 +1080,10 @@ async def backfill_historical_data(symbol: str = None):
         
     except Exception as e:
         logger.error(f"Backfill failed: {e}")
-        refresh_status["last_status"] = f"error: {str(e)}"
+        # Public-facing (GET /refresh/status is open for cron polling): keep the
+        # 'error:' keyword the workflows match on, but never echo raw exception
+        # text to the internet — full detail goes to the server log only.
+        refresh_status["last_status"] = f"error: {type(e).__name__}"
     
     finally:
         refresh_status["is_running"] = False
@@ -1254,7 +1266,8 @@ async def trigger_egypt_funds_sync(background_tasks: BackgroundTasks):
                     f"egypt_funds_success: {updated} funds, {points} points")
         except Exception as e:
             logger.error(f"Egypt Funds Sync failed: {e}")
-            refresh_status["last_status"] = f"egypt_funds_error: {e}"
+            logger.error(f"egypt funds refresh error: {e}")
+            refresh_status["last_status"] = f"egypt_funds_error: {type(e).__name__}"
         finally:
             refresh_status["is_running"] = False
     
@@ -1293,7 +1306,8 @@ async def trigger_indices_refresh(background_tasks: BackgroundTasks):
             refresh_status["last_status"] = "indices_success"
         except Exception as e:
             logger.error(f"Indices failed: {e}")
-            refresh_status["last_status"] = f"indices_error: {e}"
+            logger.error(f"indices refresh error: {e}")
+            refresh_status["last_status"] = f"indices_error: {type(e).__name__}"
         finally:
             refresh_status["is_running"] = False
             
@@ -1332,7 +1346,8 @@ async def trigger_ingestion_job(background_tasks: BackgroundTasks):
             refresh_status["last_status"] = "ingestion_success"
         except Exception as e:
             logger.error(f"Ingestion failed: {e}")
-            refresh_status["last_status"] = f"ingestion_error: {e}"
+            logger.error(f"ingestion refresh error: {e}")
+            refresh_status["last_status"] = f"ingestion_error: {type(e).__name__}"
         finally:
             refresh_status["is_running"] = False
 
@@ -1556,8 +1571,8 @@ async def run_robust_backfill(symbol: str = None):
         
     except Exception as e:
         logger.error(f"BACKFILL FATAL ERROR: {e}")
-        refresh_status["last_status"] = f"FAILED: {str(e)}"
-        refresh_status["errors"].append(f"FATAL: {str(e)}")
+        refresh_status["last_status"] = f"FAILED: {type(e).__name__}"
+        refresh_status["errors"].append(f"FATAL: {type(e).__name__}")
     
     finally:
         refresh_status["is_running"] = False

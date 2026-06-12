@@ -152,3 +152,28 @@ For each of the 12 reconciliation symbols after fix: assert |marker% − history
 **Senior Expert Verdict: No-Go** (Market Pulse company-overview surface).
 
 The platform's display layer prefers a vendor feed that died 23 months ago over its own fresh data, then re-stamps it fresh every 4 hours so no monitor can see it. A retail user reading CIB today is told the stock sits at its 52-week low at 6% of range with a 267.9B cap and a 4.41 P/E; the truth — from this platform's own candle store — is 81.5% of range, 442.7B, 6.96. Four stocks are shown *at* their 52-week low that aren't; one (EFIH) *at* a high it isn't at; ORAS is priced off the wrong listing entirely. This is precisely the class of misleading financial display an institutional platform cannot ship. The fix is cheap: the correct numbers are already in the payloads and the candle store — invert the fallback order, compute 52W from own history, gate Yahoo on its own quote timestamp, and put `yahoo_cache` under content monitoring.
+
+---
+
+## 21. Addendum — C-03 / C-05(ORAS) / H-05 Resolution (2026-06-12, PR #87)
+
+**Scope executed:** ORAS frozen candles (C-03), ORAS dividend yield (45.32%), impossible candles (H-05 root cause), ingestion gating.
+
+**Root cause (verified with evidence):** Yahoo re-assigned `ORAS.CA` — `quoteType=MUTUALFUND`, shortName carries Morningstar id `0P0001N2JF`, `regularMarketTime` frozen at 2024-07-23 — yet it emits a synthetic flat 71.05/vol=0 bar daily. `populate_yahoo_reservoir.py` upserted these into `ohlc_data` ungated every 4h (1,133 of 1,178 ORAS bars were synthetic). `yahoo_master_map.json` is a probe dump, not a mapping; the only "mapping" is the hard-coded `{symbol}.CA`, which cannot be fixed Yahoo-side — the equity no longer exists there.
+
+**Dividend yield 45.32% = data error (confirmed):** TV's `dividends_yield_current` is corrupt for ORAS (implied DPS 336 EGP vs actual 12.23; StockAnalysis shows 1.65%, TV TTM variant 3.16%). Survey over all 289 EGX symbols found 4 corrupt cases split across BOTH TV variants (BINV/MBSC/EGS385S1C012/ORAS); `dividend_amount_recent/close` arbitrates all 4 correctly. Cross-validation now applied in `tradingview_client.py` (EGX + KSA + dividends cycle).
+
+**Fixes shipped (PR #87, branch `fix/oras-frozen-candles-c03`):**
+1. Reservoir gate: reject candles when quoteType ≠ equity/ETF, regularMarketTime > 7d, or Yahoo close >1.5× apart from live TV price; drop flat zero-volume bars. Implements D7 for the candle store.
+2. Same synthetic-bar filter on backend `/egx/history` yfinance path.
+3. `scripts/backfill_egx_history_sa.py` + `egx-history-backfill.yml` (dispatch): purge-and-backfill from StockAnalysis 10Y daily (EGP), live-price-gated (>20% deviation refuses), transactional. Repairs SA's prev-close "open" (H-05's root cause: SA "open" = prior session close, verified row-by-row).
+4. `_finite` import fix in harvester — EGX30 index upsert had silently failed every prices cycle.
+
+**Production state after execution (verified):**
+- `/api/v1/egx/history/ORAS?period=max`: 2,417 bars (2016-06-13 → 2026-06-11), last close 741.25 == live, 0 zero-vol placeholder bars, **0 OHLC invariant violations** (was 730/2417 pre-repair, 1,133 synthetic pre-purge).
+- `/api/v1/egx/statistics/ORAS`: `dividend_yield` 3.1612 (was 45.3234).
+- Market Pulse page (headless browser, production): ORAS chart renders 165 candle elements, header 741.25, no "71.05" anywhere on the page, no stuck loading state. Screenshot: `oras_market_pulse.png`.
+
+**Residual risk:** scheduled `data_sync` runs the un-gated reservoir from `main` every 4h — ORAS is re-poisoned at the next run unless PR #87 is merged first. C-07 (yahoo_cache re-stamping) and the remaining 52W/monitoring items are NOT addressed by this PR.
+
+**C-03 status: RESOLVED (pending PR #87 merge to keep it resolved).**

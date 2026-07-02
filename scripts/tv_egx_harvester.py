@@ -154,10 +154,16 @@ SQL_UPSERT_ESTIMATES = """
         eps_fcst_next_fy=EXCLUDED.eps_fcst_next_fy, updated_at=now()
 """
 
+# created_at is bumped on conflict so max(created_at) tracks "harvest last saw the
+# feed", not "first time this story id was ingested". TradingView's EGX headline feed
+# can return the same story ids for many days; without this bump created_at froze and
+# pipeline_watchdog read the news feed as STALE (perpetual false-RED) even though the
+# news cycle was running fine every 30 min. Nothing reads egx_news.created_at for
+# display (news is ordered by published_at), so this is a monitoring signal only.
 SQL_UPSERT_NEWS = """
     INSERT INTO egx_news (id,content_hash,title,provider,source,published_at,story_path,related_symbols)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-    ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, story_path=EXCLUDED.story_path
+    ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, story_path=EXCLUDED.story_path, created_at=now()
 """
 
 SQL_UPSERT_SYMBOL_MAP = """

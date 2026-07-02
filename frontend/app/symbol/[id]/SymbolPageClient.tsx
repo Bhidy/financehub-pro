@@ -974,15 +974,15 @@ export default function SymbolDetailPage() {
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Target} title={t.metrics} color="text-amber-500" />
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <MetricCard label={t.market_cap} value={marketCap > 0 ? formatCurrency(marketCap, currency) : "-"} icon={Landmark} color="text-[#14b8a6]" />
+                                        <MetricCard label={t.market_cap} value={marketCap > 0 ? formatCurrency(marketCap, fundamentalsCurrency) : "-"} icon={Landmark} color="text-[#14b8a6]" />
                                         <MetricCard label={t.pe_ratio} value={peRatio > 0 ? peRatio.toFixed(2) : "-"} icon={Target} color="text-amber-500" />
                                         <MetricCard label={t.forward_pe} value={forwardPe > 0 ? forwardPe.toFixed(2) : "-"} icon={Target} color="text-amber-400" />
                                         <MetricCard label={t.pb_ratio} value={pbRatio > 0 ? pbRatio.toFixed(2) : "-"} icon={FileText} color="text-indigo-500" />
                                         <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${fundamentalsCurrency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
                                         <MetricCard label={t.bvps} value={bookValue > 0 ? `${fundamentalsCurrency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
-                                        <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, currency) : "-"} icon={BarChart3} color="text-teal-500" />
-                                        <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, currency) : "-"} icon={Award} color="text-emerald-500" />
-                                        <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, currency) : "-"} icon={TrendDown} color="text-rose-500" />
+                                        <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, fundamentalsCurrency) : "-"} icon={BarChart3} color="text-teal-500" />
+                                        <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, fundamentalsCurrency) : "-"} icon={Award} color="text-emerald-500" />
+                                        <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, fundamentalsCurrency) : "-"} icon={TrendDown} color="text-rose-500" />
                                     </div>
                                 </div>
 
@@ -1030,7 +1030,7 @@ export default function SymbolDetailPage() {
                                         </div>
                                     );
                                 }
-                                const col = (v: any) => (v != null ? formatCurrency(v, currency) : "-");
+                                const col = (v: any) => (v != null ? formatCurrency(v, fundamentalsCurrency) : "-");
                                 const ps = (v: any) => (v != null ? `${fundamentalsCurrency} ${Number(v).toFixed(2)}` : "-");
                                 return (
                                     <div className="premium-glass rounded-3xl p-8 space-y-6">
@@ -1178,7 +1178,7 @@ export default function SymbolDetailPage() {
                                             <SectionHeader icon={TrendingUp} title={lang === "ar" ? "توقعات الأرباح" : "Earnings Forecasts"} color="text-emerald-500" />
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <MetricCard label={t.fc_eps_next} value={tvEstimates.eps_fcst_next_fq ? `${fundamentalsCurrency} ${Number(tvEstimates.eps_fcst_next_fq).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
-                                                <MetricCard label={t.fc_rev_next} value={tvEstimates.rev_fcst_next_fq ? formatCurrency(Number(tvEstimates.rev_fcst_next_fq), currency) : "-"} icon={BarChart3} color="text-[#14b8a6]" />
+                                                <MetricCard label={t.fc_rev_next} value={tvEstimates.rev_fcst_next_fq ? formatCurrency(Number(tvEstimates.rev_fcst_next_fq), fundamentalsCurrency) : "-"} icon={BarChart3} color="text-[#14b8a6]" />
                                                 <MetricCard label={t.fc_eps_y} value={tvEstimates.eps_fcst_next_fy ? `${fundamentalsCurrency} ${Number(tvEstimates.eps_fcst_next_fy).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-400" />
                                             </div>
                                         </div>
@@ -1197,7 +1197,7 @@ export default function SymbolDetailPage() {
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Award} title={t.valuation_multiples} color="text-amber-500" />
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <MetricCard label={t.market_cap} value={marketCap > 0 ? formatCurrency(marketCap, currency) : "-"} icon={Landmark} color="text-[#14b8a6]" />
+                                        <MetricCard label={t.market_cap} value={marketCap > 0 ? formatCurrency(marketCap, fundamentalsCurrency) : "-"} icon={Landmark} color="text-[#14b8a6]" />
                                         <MetricCard label={t.pe_ratio} value={peRatio > 0 ? peRatio.toFixed(2) : "-"} icon={Target} color="text-amber-500" />
                                         <MetricCard label={t.forward_pe} value={forwardPe > 0 ? forwardPe.toFixed(2) : "-"} icon={Target} color="text-amber-400" />
                                         <MetricCard label={t.pb_ratio} value={pbRatio > 0 ? pbRatio.toFixed(2) : "-"} icon={FileText} color="text-indigo-500" />
@@ -1224,8 +1224,8 @@ export default function SymbolDetailPage() {
                                         {!isBank && <MetricCard label={lang === "ar" ? "هامش إجمالي الربح" : "Gross Margin"} value={grossMargin !== 0 ? pct(grossMargin) : "-"} icon={BarChart3} color="text-indigo-500" />}
                                         <MetricCard label={t.roe} value={roe !== 0 ? pct(roe) : "-"} icon={CheckCircle} color="text-teal-500" />
                                         <MetricCard label={t.roa} value={roa !== 0 ? pct(roa) : "-"} icon={Activity} color="text-purple-500" />
-                                        <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, currency) : "-"} icon={BarChart3} color="text-teal-500" />
-                                        <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, currency) : "-"} icon={Award} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, fundamentalsCurrency) : "-"} icon={BarChart3} color="text-teal-500" />
+                                        <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, fundamentalsCurrency) : "-"} icon={Award} color="text-emerald-500" />
                                     </div>
                                 </div>
 
@@ -1233,8 +1233,8 @@ export default function SymbolDetailPage() {
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={Wallet} title={t.liquidity_solvency} color="text-indigo-500" />
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, currency) : "-"} icon={TrendDown} color="text-rose-500" />
-                                        <MetricCard label={`${lang === "ar" ? "التدفق النقدي الحر" : "Free Cash Flow"} (${fcfDisplay.basis})`} value={fcfDisplay.v !== 0 ? formatCurrency(fcfDisplay.v, currency) : "-"} icon={Activity} color="text-emerald-500" />
+                                        <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, fundamentalsCurrency) : "-"} icon={TrendDown} color="text-rose-500" />
+                                        <MetricCard label={`${lang === "ar" ? "التدفق النقدي الحر" : "Free Cash Flow"} (${fcfDisplay.basis})`} value={fcfDisplay.v !== 0 ? formatCurrency(fcfDisplay.v, fundamentalsCurrency) : "-"} icon={Activity} color="text-emerald-500" />
                                     </div>
                                 </div>
 

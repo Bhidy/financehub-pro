@@ -152,11 +152,20 @@ HEAL_COOLDOWN_MIN = 45  # never re-dispatch a corrective workflow within this wi
 
 
 def _gh(args, timeout=30):
-    """Best-effort gh CLI call -> stdout (str) or None. Never raises."""
+    """Best-effort gh CLI call -> stdout (str) or None. Never raises.
+    On failure it LOGS the gh error to stderr: a swallowed error meant a
+    dispatch-failed heal was undiagnosable (was it a 403 token-scope issue, a
+    transient GitHub 5xx, or a bad workflow name?). Now the reason is in the log."""
     try:
         r = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=timeout)
-        return r.stdout if r.returncode == 0 else None
-    except Exception:
+        if r.returncode == 0:
+            return r.stdout
+        err = (r.stderr or r.stdout or "").strip()
+        tail = err.splitlines()[-1] if err else "no output"
+        print(f"gh {' '.join(args[:2])} failed (rc={r.returncode}): {tail}", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"gh {' '.join(args[:2])} error: {type(e).__name__}: {e}", file=sys.stderr)
         return None
 
 

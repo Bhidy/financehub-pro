@@ -42,6 +42,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Run data-quality gate
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           # Push deploys can lag a few seconds behind the workflow trigger.
           if [ "${{ github.event_name }}" = "push" ]; then sleep 60; fi

@@ -28,7 +28,7 @@ export default function PublicPageShell({
         <div dir={dir} className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
             <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
                 <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
-                    <Link href="/" className="flex items-center gap-2.5 text-[17px] font-extrabold tracking-tight text-[#0F172A]">
+                    <Link href="/" prefetch={false} className="flex items-center gap-2.5 text-[17px] font-extrabold tracking-tight text-[#0F172A]">
                         <span className="relative flex h-2.5 w-2.5" aria-hidden>
                             <span className="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60" />
                             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#14B8A6]" />

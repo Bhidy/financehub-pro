@@ -3,6 +3,34 @@ import { NextRequest, NextResponse } from "next/server";
 // API Base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://starta.46-224-223-172.sslip.io";
 
+// ── OAuth redirect hardening ──────────────────────────────────────────────
+// The OAuth success redirect carries the access/refresh tokens. `returnOrigin`
+// comes from the client-supplied `state`, so it MUST be allowlisted before it
+// is used as a redirect target — otherwise an attacker who crafts the initial
+// OAuth link (state.returnTo = https://evil.com) could bounce a victim's tokens
+// to a domain they control (account takeover). We only ever redirect tokens to:
+//   • the exact origin that served this callback (always trusted), or
+//   • *.startamarkets.com / startamarkets.com (production), or
+//   • localhost (local dev).
+// Mobile deep-links are restricted to the one known Capacitor app scheme.
+const APP_SCHEME = "com.mubasher.startamarkets://";
+
+function isAllowedWebOrigin(candidate: string, requestOrigin: string): boolean {
+    try {
+        const u = new URL(candidate);
+        if (u.origin === requestOrigin) return true;              // same origin as the callback
+        if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return true; // dev
+        if (u.protocol !== "https:") return false;                // no downgrade / non-web schemes
+        return (
+            u.hostname === "startamarkets.com" ||
+            u.hostname === "www.startamarkets.com" ||
+            u.hostname.endsWith(".startamarkets.com")
+        );
+    } catch {
+        return false;
+    }
+}
+
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get("code");
@@ -87,7 +115,9 @@ export async function GET(request: NextRequest) {
         // custom URL scheme deep link. Safari reliably opens the app from an HTML
         // location redirect (a plain Location header to a custom scheme is flaky).
         if (isMobile) {
-            const schemeBase = returnOrigin && returnOrigin.includes("://") ? returnOrigin : "com.mubasher.startamarkets://oauth";
+            // Only honour a returnOrigin that is the known app scheme; otherwise
+            // fall back to the default. Blocks scheme-injection (e.g. https://evil).
+            const schemeBase = returnOrigin && returnOrigin.startsWith(APP_SCHEME) ? returnOrigin : "com.mubasher.startamarkets://oauth";
             const sep = schemeBase.includes("?") ? "&" : "?";
             const deepLink =
                 `${schemeBase}${sep}token=${encodeURIComponent(data.access_token)}` +
@@ -102,11 +132,14 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Create a response that will set cookies/localStorage on client side
-        // We'll use a redirect with token in query params (temporary, handled by client)
-
-        // CRITICAL FIX: Redirect back to the original domain if provided (e.g. startamarkets.com)
-        const baseUrl = returnOrigin || request.nextUrl.origin;
+        // Redirect back to the original domain if provided (e.g. startamarkets.com),
+        // but ONLY if it passes the allowlist — the redirect carries tokens, so an
+        // untrusted returnOrigin would be a token-exfiltration vector. Untrusted or
+        // malformed values fall back to the callback's own origin.
+        const baseUrl =
+            returnOrigin && isAllowedWebOrigin(returnOrigin, request.nextUrl.origin)
+                ? returnOrigin
+                : request.nextUrl.origin;
         const redirectUrl = new URL(successRedirect, baseUrl);
 
         redirectUrl.searchParams.set("token", data.access_token);

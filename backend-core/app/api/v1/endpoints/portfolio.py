@@ -287,7 +287,7 @@ async def get_full_portfolio(current_user: dict = Depends(get_current_active_use
         print(f"CRITICAL ERROR in get_full_portfolio: {e}", flush=True)
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/portfolio/analytics")
@@ -338,7 +338,7 @@ async def get_portfolio_analytics(current_user: dict = Depends(get_current_activ
         
     except Exception as e:
         print(f"Error in analytics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 async def calculate_sharpe_ratio(portfolio_id: int) -> float:
     """Calculate annualized Sharpe Ratio based on daily snapshot returns"""
@@ -461,7 +461,7 @@ async def import_portfolio(
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/portfolio/holdings")
@@ -521,7 +521,7 @@ async def add_holding(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/portfolio/holdings/{holding_id}")
@@ -579,7 +579,7 @@ async def update_holding(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/portfolio/holdings/{holding_id}")
@@ -629,7 +629,7 @@ async def delete_holding(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/portfolio/upload-csv")
@@ -662,4 +662,4 @@ async def get_portfolio_history(current_user: dict = Depends(get_current_active_
         )
         return [dict(h) for h in history]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -131,7 +131,7 @@ async def get_stats():
         count = await db.fetch_one("SELECT count(*) as total FROM market_tickers")
         return count
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/news", response_model=List[dict])
 async def get_news(

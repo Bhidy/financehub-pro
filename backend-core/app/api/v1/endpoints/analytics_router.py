@@ -804,7 +804,7 @@ async def resolve_query(
             """, status, notes, query_id)
             return {"success": True, "id": query_id, "status": status}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/intents", response_model=List[IntentPerformance])

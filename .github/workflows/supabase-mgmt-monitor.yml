@@ -1,0 +1,42 @@
+name: Supabase Mgmt Monitor
+
+# Project-LEVEL control plane (Supabase Management API) — beyond the raw DB
+# connection. Validates the Personal Access Token, reports project health, and
+# runs the Security + Performance Advisors (Supabase auditing itself: RLS gaps,
+# exposed tables, missing/unused indexes, slow queries). Alerts once on
+# ERROR-level Security Advisor findings. Always exits 0.
+#
+# Auth: SUPABASE_ACCESS_TOKEN <- secret SUPABASETOKENKEY (a Supabase PAT).
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # daily advisor sweep
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-mgmt-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write        # notify.py last-resort alert channel
+
+jobs:
+  probe:
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Validate PAT + project health + Advisors
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASETOKENKEY }}
+          SUPABASE_PROJECT_REF: kgjpkphfjmmiyjsgsaup
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/supabase_mgmt.py

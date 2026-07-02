@@ -22,7 +22,7 @@ on:
         required: true
         default: 'technicals'
         type: choice
-        options: [prices, technicals, news, estimates, dividends, symbolmap, financials, fundamentals, financials_and_fundamentals, all]
+        options: [prices, technicals, news, estimates, dividends, symbolmap, financials, fundamentals, prices_and_technicals, financials_and_fundamentals, all]
 
 concurrency:
   group: tv-egx-harvester

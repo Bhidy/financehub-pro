@@ -120,22 +120,37 @@ def _to_internal_symbol(tv_symbol: str) -> str:
 #   EGS385S1C012 ttm=0 (bad) / current=7.78 (good, == implied)
 _DY_LOW_FACTOR = 1.0 / 3.0
 _DY_HIGH_FACTOR = 4.5
+# A real dividend yield is never above ~40% (the highest-yielding EGX names sit
+# well under 20%). Anything higher is corrupt TV data — usually a bad
+# dividend_amount_recent on a low-priced stock (e.g. EGBE amount≈0.60 on a 0.455
+# share → implied 131.8%). Such an `amount` MUST NOT be used to validate or as a
+# fallback, and no absurd yield may ever be published.  (audit 2026-07-02)
+_DY_SANE_MAX = 40.0
+
+
+def _plausible_dy(y: Optional[float]) -> bool:
+    return y is not None and 0.0 <= y <= _DY_SANE_MAX
 
 
 def _sane_dividend_yield(current: Any, ttm: Any, amount: Any, close: Any) -> Optional[float]:
     """Pick a dividend yield (%) that survives cross-validation against the
     most-recent dividend amount. Falls back to the directly computed
     recent-payment yield when both TV variants fail; keeps the legacy
-    preference (current, then ttm) when no amount exists to validate with."""
+    preference (current, then ttm) when no amount exists to validate with.
+    A corrupt `amount` (absurd implied yield) is distrusted for BOTH validation
+    and fallback; an implausible (>40%) result is never published."""
     current, ttm = _finite(current), _finite(ttm)
     amount, close = _finite(amount), _finite(close)
     if amount is None or amount <= 0 or close is None or close <= 0:
-        return current if current is not None else ttm
+        return current if _plausible_dy(current) else (ttm if _plausible_dy(ttm) else None)
     implied = amount / close * 100.0
+    if implied > _DY_SANE_MAX:
+        # `amount` is corrupt — don't let it validate away the good TV variant.
+        return current if _plausible_dy(current) else (ttm if _plausible_dy(ttm) else None)
     for cand in (current, ttm):
         if cand is not None and implied * _DY_LOW_FACTOR <= cand <= implied * _DY_HIGH_FACTOR:
             return cand
-    return round(implied, 4)
+    return round(implied, 4) if _plausible_dy(implied) else (current if _plausible_dy(current) else None)
 
 
 def _valid_price_row(symbol: str, price: Optional[float], change_pct: Optional[float]) -> bool:

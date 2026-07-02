@@ -75,7 +75,7 @@ function isTradingDay(d: Date): boolean {
 
 /**
  * Is `now` inside the PRICE-INGESTION window — a trading day AND within the wide
- * fixed UTC band [06:00, 13:15] that the price harvester cron (`*/15 6-13`) runs in?
+ * fixed UTC band [06:00, 13:15] that the price harvester cron (every 15 min, hours 6-13 UTC) runs in?
  * NOTE: this is deliberately NOT the DST-aware Cairo market session (10:00–14:30
  * local). It gates the intraday price-freshness SLA against the *harvester*, not
  * the exchange clock, so it must stay a fixed UTC band. For the true, DST-correct

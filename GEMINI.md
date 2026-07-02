@@ -50,7 +50,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for the **
   ## 🔒 SECURITY & SECRETS MANAGEMENT (ENTERPRISE STANDARDS)
   > [!IMPORTANT]
   > **SECRETS ARCHITECTURE:**
-  > - **NO HARDCODED SECRETS:** All credentials, database URLs, API keys (Groq, Resend, Google, Anthropic, Mistral, Cerebras), and JWT `SECRET_KEY` MUST be loaded from environment variables (`.env`).
+  > - **NO HARDCODED SECRETS:** All credentials, database URLs, API keys (Groq, Resend, Google, Anthropic, Mistral), and JWT `SECRET_KEY` MUST be loaded from environment variables (`.env`).
   > - **NO FALLBACK SECRETS IN CODE:** Do not implement string concatenations or logical ORs for enterprise secrets in the codebase. Strict reliance on `.env` or `os.getenv` is mandatory for the v5.0.0-SECURE architecture.
   > - **CORS POLICY:** FastAPI CORS origins are strictly controlled to explicit production and local development origins in `main.py`.
 
@@ -294,14 +294,13 @@ ssh root@46.224.223.172 "cd /opt/starta && docker system prune -af --volumes && 
 | Priority | Provider | Daily Limit | Base URL |
 |----------|----------|-------------|----------|
 | 1 | **Groq** | 100K tokens/day | `api.groq.com` |
-| 2 | **Cerebras** | 14,400 requests/day | `api.cerebras.ai` |
-| 3 | **Mistral** | 1B tokens/month | `api.mistral.ai` |
+| 2 | **Mistral** | 1B tokens/month | `api.mistral.ai` |
+| 3 | **Anthropic (Claude)** | paid | `api.anthropic.com` |
 
 ### API Keys Location
 **Server:** `/opt/starta/.env`
 ```bash
 GROQ_API_KEY=<REDACTED-ROTATE-ME>              # Primary (configured)
-CEREBRAS_API_KEY=<REDACTED-ROTATE-ME>
 MISTRAL_API_KEY=<REDACTED-ROTATE-ME>
 ```
 
@@ -309,7 +308,6 @@ MISTRAL_API_KEY=<REDACTED-ROTATE-ME>
 | Provider | Renewal Time | How to Check |
 |----------|--------------|--------------|
 | Groq | Midnight UTC | [console.groq.com](https://console.groq.com) |
-| Cerebras | Midnight UTC | [cloud.cerebras.ai](https://cloud.cerebras.ai) |
 | Mistral | Monthly | [console.mistral.ai](https://console.mistral.ai) |
 
 ### Implementation Files

@@ -2,14 +2,13 @@
 Multi-Provider LLM Client (Restored)
 =====================================
 Provides resilient LLM access with automatic failover between providers.
-Priority: Groq → Cerebras → Mistral → Anthropic (Claude)
+Priority: Groq → Mistral → Anthropic (Claude)
 
 Strategy:
 1. Try primary provider (Groq - fastest, free tier)
-2. If rate limited or failed, try Cerebras
-3. If Cerebras fails, try Mistral
-4. Final fallback to Anthropic Claude (paid)
-5. Only give up after ALL providers exhausted
+2. If rate limited or failed, try Mistral
+3. Final fallback to Anthropic Claude (paid)
+4. Only give up after ALL providers exhausted
 """
 
 import os
@@ -39,9 +38,8 @@ def get_providers() -> List[LLMProvider]:
     
     Priority:
     1. Groq (fastest inference, 100K tokens/day free)
-    2. Cerebras (fast, 14400 requests/day)
-    3. Mistral (reliable, 1B tokens/month)
-    4. Anthropic Claude (paid unlimited, highest quality but currently 400 errors)
+    2. Mistral (reliable, 1B tokens/month)
+    3. Anthropic Claude (paid unlimited, highest quality but currently 400 errors)
     """
     providers = []
     
@@ -55,17 +53,7 @@ def get_providers() -> List[LLMProvider]:
             timeout=8.0
         ))
     
-    # FALLBACK 1: Cerebras (fast inference)
-    if cerebras_key := settings.CEREBRAS_API_KEY:
-        providers.append(LLMProvider(
-            name="cerebras",
-            base_url="https://api.cerebras.ai/v1",
-            api_key=cerebras_key,
-            models=["llama3.1-8b"],
-            timeout=8.0
-        ))
-    
-    # FALLBACK 2: Mistral (reliable)
+    # FALLBACK 1: Mistral (reliable)
     if mistral_key := settings.MISTRAL_API_KEY:
         providers.append(LLMProvider(
             name="mistral",
@@ -75,7 +63,7 @@ def get_providers() -> List[LLMProvider]:
             timeout=10.0
         ))
     
-    # FALLBACK 3: Anthropic Claude (paid, highest quality)
+    # FALLBACK 2: Anthropic Claude (paid, highest quality)
     if anthropic_key := settings.ANTHROPIC_API_KEY:
         providers.append(LLMProvider(
             name="anthropic",

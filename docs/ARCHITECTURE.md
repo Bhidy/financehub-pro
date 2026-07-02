@@ -82,7 +82,7 @@ USER MESSAGE
   → response builder (greeting → data cards → learning → follow-up)
 ```
 
-**LLM providers (env-keyed, fallback order):** `GROQ_API_KEY` (primary) → `CEREBRAS_API_KEY` → `MISTRAL_API_KEY`, with `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` available. All read via `os.getenv` — **never hardcoded**. Keys live in the Hetzner backend `.env` (not Vercel). See [`SECURITY.md`](SECURITY.md).
+**LLM providers (env-keyed, fallback order):** `GROQ_API_KEY` (primary) → `MISTRAL_API_KEY`, with `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` available. All read via `os.getenv` — **never hardcoded**. Keys live in the Hetzner backend `.env` (not Vercel). See [`SECURITY.md`](SECURITY.md).
 
 ---
 

@@ -50,7 +50,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for the **
   ## 🔒 SECURITY & SECRETS MANAGEMENT (ENTERPRISE STANDARDS)
   > [!IMPORTANT]
   > **SECRETS ARCHITECTURE:**
-  > - **NO HARDCODED SECRETS:** All credentials, database URLs, API keys (Groq, Resend, Google, Anthropic, Mistral), and JWT `SECRET_KEY` MUST be loaded from environment variables (`.env`).
+  > - **NO HARDCODED SECRETS:** All credentials, database URLs, API keys (Groq, OpenAI-embeddings, Resend, Google), and JWT `SECRET_KEY` MUST be loaded from environment variables (`.env`).
   > - **NO FALLBACK SECRETS IN CODE:** Do not implement string concatenations or logical ORs for enterprise secrets in the codebase. Strict reliance on `.env` or `os.getenv` is mandatory for the v5.0.0-SECURE architecture.
   > - **CORS POLICY:** FastAPI CORS origins are strictly controlled to explicit production and local development origins in `main.py`.
 
@@ -293,22 +293,22 @@ ssh root@46.224.223.172 "cd /opt/starta && docker system prune -af --volumes && 
 ### Provider Priority Order
 | Priority | Provider | Daily Limit | Base URL |
 |----------|----------|-------------|----------|
-| 1 | **Groq** | 100K tokens/day | `api.groq.com` |
-| 2 | **Mistral** | 1B tokens/month | `api.mistral.ai` |
-| 3 | **Anthropic (Claude)** | paid | `api.anthropic.com` |
+| 1 (only) | **Groq** | 100K tokens/day | `api.groq.com` |
+
+> Groq is the **sole** AI provider. If Groq is unavailable, the chatbot degrades
+> gracefully (data cards still render; only the LLM narrative is skipped).
+> `OPENAI_API_KEY` is used **only** for chat-memory embeddings, not chat.
 
 ### API Keys Location
 **Server:** `/opt/starta/.env`
 ```bash
-GROQ_API_KEY=<REDACTED-ROTATE-ME>              # Primary (configured)
-MISTRAL_API_KEY=<REDACTED-ROTATE-ME>
+GROQ_API_KEY=<REDACTED-ROTATE-ME>              # Primary + only chat provider
 ```
 
 ### Quota Renewal Schedule
 | Provider | Renewal Time | How to Check |
 |----------|--------------|--------------|
 | Groq | Midnight UTC | [console.groq.com](https://console.groq.com) |
-| Mistral | Monthly | [console.mistral.ai](https://console.mistral.ai) |
 
 ### Implementation Files
 | File | Purpose |

@@ -21,12 +21,11 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
     
     # External Services
-    OPENAI_API_KEY: Optional[str] = None
-    ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")  # Claude API - set in .env or server env
+    # Groq is the sole chat/LLM provider. OPENAI_API_KEY is retained only for
+    # chat-memory embeddings (memory_manager.py); it is NOT a chat provider.
     GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY")
-    MISTRAL_API_KEY: Optional[str] = os.getenv("MISTRAL_API_KEY")
-    OPENROUTER_API_KEY: Optional[str] = None  # Backup provider
-    
+    OPENAI_API_KEY: Optional[str] = None  # embeddings only (memory_manager); optional, degrades to dummy
+
     # Email (Resend)
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY")
     FROM_EMAIL: str = os.getenv("FROM_EMAIL", "onboarding@resend.dev")

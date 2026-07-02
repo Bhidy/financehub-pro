@@ -82,7 +82,7 @@ USER MESSAGE
   → response builder (greeting → data cards → learning → follow-up)
 ```
 
-**LLM providers (env-keyed, fallback order):** `GROQ_API_KEY` (primary) → `MISTRAL_API_KEY`, with `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` available. All read via `os.getenv` — **never hardcoded**. Keys live in the Hetzner backend `.env` (not Vercel). See [`SECURITY.md`](SECURITY.md).
+**LLM provider:** `GROQ_API_KEY` is the **sole** chat/LLM provider (llama-3.3-70b-versatile → llama-3.1-8b-instant). If Groq is unavailable the response degrades gracefully (data cards render; LLM narrative skipped). `OPENAI_API_KEY` is used **only** for chat-memory embeddings (optional; dummy fallback), not chat. All read via `os.getenv` — **never hardcoded**. Keys live in the Hetzner backend `.env` (not Vercel). See [`SECURITY.md`](SECURITY.md).
 
 ---
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import threading
@@ -8,6 +8,7 @@ import os
 from app.core.config import settings
 from app.db.session import db
 from app.api.v1.router import api_router
+from app.api.v1.endpoints.admin import require_admin_token  # gate root-level /debug/* endpoints
 from app.services.scheduler import scheduler_service  # CRITICAL: Added missing import
 
 import asyncio
@@ -546,7 +547,7 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-@app.get("/debug/auth-check")
+@app.get("/debug/auth-check", dependencies=[Depends(require_admin_token)])
 async def debug_auth_check():
     import traceback
     result = {"log": []}
@@ -612,7 +613,7 @@ async def root():
         "db": "connected" if db._pool else "disconnected"
     }
 
-@app.get("/debug/routes")
+@app.get("/debug/routes", dependencies=[Depends(require_admin_token)])
 async def debug_routes():
     """List all registered routes for debugging deployment issues."""
     import logging
@@ -626,7 +627,7 @@ async def debug_routes():
             })
     return {"count": len(routes), "routes": routes}
 
-@app.get("/debug/funds")
+@app.get("/debug/funds", dependencies=[Depends(require_admin_token)])
 async def debug_funds_endpoint():
     import traceback
     result = {"log": []}
@@ -653,7 +654,7 @@ async def debug_funds_endpoint():
         
     return result
 
-@app.get("/debug/nlu")
+@app.get("/debug/nlu", dependencies=[Depends(require_admin_token)])
 async def debug_nlu_endpoint(text: str = "Hello"):
     import traceback
     result = {"text": text, "log": [], "prediction": None}

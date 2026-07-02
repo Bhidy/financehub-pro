@@ -660,14 +660,6 @@ export default function SymbolDetailPage() {
     const sectorName = useMemo(() => (stockData as any)?.sector_name || localProfile?.profile?.sector || "", [stockData, localProfile]);
     const isinCode = useMemo(() => (stockData as any)?.isin || "", [stockData]);
 
-    // L-2: per-symbol document title (was the generic "Starta" for every symbol,
-    // hurting SEO and tab identification). Upgrades to include the company name
-    // once the profile loads.
-    const companyName = (stockData as any)?.name || (stockData as any)?.company_name || localProfile?.profile?.name || "";
-    useEffect(() => {
-        document.title = companyName ? `${symbol} · ${companyName} · Starta` : `${symbol} · Starta`;
-    }, [symbol, companyName]);
-
     // ─── DISPLAYED METRICS — TradingView-sourced ONLY (June-2026 audit) ─────
     // Every number below reads our TradingView-fed view (stats) or the TV tickers
     // row. The Yahoo proxy fallbacks were removed (Yahoo is provably wrong for

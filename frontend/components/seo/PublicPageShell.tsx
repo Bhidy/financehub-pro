@@ -9,6 +9,7 @@ import Link from 'next/link';
 const NAV = [
     { href: '/', label: 'Home' },
     { href: '/Market-Pulse', label: 'Market Pulse' },
+    { href: '/companies', label: 'Companies' },
     { href: '/News', label: 'News' },
     { href: '/Funds', label: 'Funds' },
     { href: '/Learn', label: 'Learn' },

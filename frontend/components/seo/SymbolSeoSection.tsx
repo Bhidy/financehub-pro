@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SITE_URL, symbolPath } from '@/lib/seo';
+import { SITE_URL, symbolPath, slugify } from '@/lib/seo';
 import type { Ticker, CompanyProfile } from '@/lib/public-data';
 import JsonLd from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -148,6 +148,24 @@ export default function SymbolSeoSection({
                 )}
             />
             <div className="mx-auto max-w-6xl px-4 py-10">
+                <nav aria-label={`${symbol} data pages`} className="mb-8 flex flex-wrap gap-2 text-sm font-semibold">
+                    {(
+                        [
+                            [`${symbolPath(symbol)}/financials`, 'Financial Statements'],
+                            [`${symbolPath(symbol)}/dividends`, 'Dividends'],
+                            [`${symbolPath(symbol)}/technicals`, 'Technical Analysis'],
+                            [`${symbolPath(symbol)}/history`, 'Price History'],
+                        ] as Array<[string, string]>
+                    ).map(([href, label]) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className="rounded-full border border-slate-200/60 bg-white px-4 py-2 text-slate-700 hover:border-teal-400 hover:text-teal-600 dark:border-slate-800/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-teal-400"
+                        >
+                            {symbol} {label}
+                        </Link>
+                    ))}
+                </nav>
                 {profile?.description && (
                     <div className="mb-8">
                         <h2 className="text-xl font-bold">About {name}</h2>
@@ -198,7 +216,13 @@ export default function SymbolSeoSection({
 
                 {peers.length > 0 && ticker.sector_name && (
                     <div className="mb-8">
-                        <h2 className="text-xl font-bold">Compare with other {ticker.sector_name} stocks</h2>
+                        <h2 className="text-xl font-bold">
+                            Compare with other{' '}
+                            <Link href={`/sectors/${slugify(ticker.sector_name)}`} className="text-teal-600 hover:underline dark:text-teal-400">
+                                {ticker.sector_name}
+                            </Link>{' '}
+                            stocks
+                        </h2>
                         <ul className="mt-3 flex flex-wrap gap-2">
                             {peers.map((p) => (
                                 <li key={p.symbol}>

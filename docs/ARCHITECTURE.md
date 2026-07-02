@@ -55,7 +55,7 @@ Two coexisting surfaces under `frontend/`:
 
 ## 3. Backend (`backend-core/app`)
 
-Deployed via `Dockerfile` (copies `app`, `scripts`, `data_pipeline`; base image `starta-base:latest`). Entry: `app.main:app`, started by `run.sh`, port 7860.
+Deployed via **`backend-core/Dockerfile`** (`FROM python:3.11-slim`); `docker-compose.prod.yml` builds `context: ./backend-core`. Entry: `app.main:app`, port 7860. (The old root `Dockerfile` / `Dockerfile.base` / `starta-base` image were unused and removed 2026-07.)
 
 Key areas:
 - `app/api/v1/endpoints/` — REST endpoints: `auth`, `otp_auth`, `google_auth`, `ai` (chat), `market`, `portfolio`, `yahoo`, `company`, `egx`, `admin`, `analytics_router`, `user`, `trading`.
@@ -120,6 +120,5 @@ Email/password + OTP + Google OAuth. JWTs signed with `SECRET_KEY` (backend env)
 ---
 
 ## 8. Known issues (see audit report)
-- `Dockerfile` `COPY backend-core/engine` disabled (engine not in repo). ✅ handled.
 - 43 npm vulnerabilities in `frontend/` — address with `npm audit fix` after committing in-flight work.
 - Exposed secrets (historical) — **rotate**; see [`SECURITY.md`](SECURITY.md).

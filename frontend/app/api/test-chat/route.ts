@@ -24,12 +24,13 @@ export async function GET(request: Request) {
             error: result.error || null,
         });
     } catch (error: any) {
+        // Log the full error server-side; never leak stack traces to the client (L-3).
+        console.error("test-chat error:", error);
         return NextResponse.json({
             query,
             success: false,
             latencyMs: Date.now() - startTime,
-            error: error.message,
-            stack: error.stack?.substring(0, 500),
+            error: "chat request failed",
         }, { status: 500 });
     }
 }

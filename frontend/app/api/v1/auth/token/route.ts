@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
 
         const response = await fetch(`${HF_API_URL}/token`, {
             method: 'POST',
+            signal: AbortSignal.timeout(15000), // don't hang on a slow/sleeping backend (L-4)
             headers: {
                 'Content-Type': contentType || 'application/x-www-form-urlencoded'
             },

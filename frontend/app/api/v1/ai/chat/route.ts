@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         // Proxy to Hetzner deterministic backend
         const response = await fetch(BACKEND_AI_URL, {
             method: 'POST',
+            signal: AbortSignal.timeout(30000), // LLM can be slow; cap so the route never hangs (L-4)
             headers: {
                 'Content-Type': 'application/json',
                 ...(resolvedLanguage ? { 'X-Language': resolvedLanguage } : {})

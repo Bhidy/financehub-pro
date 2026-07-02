@@ -73,8 +73,15 @@ function isTradingDay(d: Date): boolean {
     return !WEEKEND_UTC_DAYS.has(d.getUTCDay()) && !EGX_HOLIDAYS.has(isoDate(d));
 }
 
-/** Is the market open right now (trading day AND within the UTC session window)? */
-function isMarketOpen(now: Date): boolean {
+/**
+ * Is `now` inside the PRICE-INGESTION window — a trading day AND within the wide
+ * fixed UTC band [06:00, 13:15] that the price harvester cron (every 15 min, hours 6-13 UTC) runs in?
+ * NOTE: this is deliberately NOT the DST-aware Cairo market session (10:00–14:30
+ * local). It gates the intraday price-freshness SLA against the *harvester*, not
+ * the exchange clock, so it must stay a fixed UTC band. For the true, DST-correct
+ * market-open/closed state shown to users, see market-summary's resolveEgxMarketStatus().
+ */
+function isPriceIngestionWindow(now: Date): boolean {
     if (!isTradingDay(now)) return false;
     const minOfDay = now.getUTCHours() * 60 + now.getUTCMinutes();
     return minOfDay >= SESSION_OPEN_MIN && minOfDay <= SESSION_CLOSE_MIN;
@@ -137,7 +144,7 @@ function tradingDaysMissed(dataDateIso: string | null, now: Date): number {
 //   funds       mutual_funds.updated_at
 //   technicals  egx_technicals.updated_at
 //
-//   kind 'intraday'      → only stale when market open AND age_min > thresholdMin
+//   kind 'intraday'      → only stale when inside the price-ingestion window AND age_min > thresholdMin
 //   kind 'session_date'  → stale if max(date) < last completed session date
 //   kind 'trading_daily' → stale if >= thresholdSessions trading sessions missed
 //   kind 'wall_days'     → stale if age_hours > thresholdHours (spans weekends)
@@ -228,13 +235,13 @@ function classify(def: DatasetDef, raw: any, now: Date): DatasetResult {
     const newestIso = ts.toISOString();
 
     if (def.kind === 'intraday') {
-        if (!isMarketOpen(now)) {
+        if (!isPriceIngestionWindow(now)) {
             return { ...base, newest: newestIso, age_minutes: ageMin, stale: false,
-                detail: `market closed (age ${ageH.toFixed(1)}h, not expected fresh)` };
+                detail: `outside ingestion window (age ${ageH.toFixed(1)}h, not expected fresh)` };
         }
         const stale = ageMin > (def.threshold as number);
         return { ...base, newest: newestIso, age_minutes: ageMin, stale,
-            detail: `age ${ageMin}m (SLA ${def.threshold}m, market open)` };
+            detail: `age ${ageMin}m (SLA ${def.threshold}m, ingestion window)` };
     }
 
     if (def.kind === 'trading_daily') {

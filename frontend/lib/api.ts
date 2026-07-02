@@ -1189,18 +1189,6 @@ export const fetchCompanyInsiderTransactions = async (symbol: string) => {
 };
 
 // ============================================================================
-// DIRECT BACKEND ACCESS (Enterprise Fix)
-// ============================================================================
-
-export const fetchYahooProfile = async (symbol: string) => {
-    // Direct call to verified Python endpoint (Hetzner VPS)
-    // This bypasses the faulty Next.js Proxy layer
-    // Endpoint: /api/v1/yahoo/stock/{symbol}
-    const { data } = await api.get(`/yahoo/stock/${symbol}`);
-    return data;
-};
-
-// ============================================================================
 // STRIPE SUBSCRIPTIONS
 // ============================================================================
 

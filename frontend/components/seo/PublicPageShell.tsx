@@ -37,12 +37,15 @@ export default function PublicPageShell({
                     </Link>
                     <nav aria-label="Main" className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
                         {NAV.map((item) => (
-                            <Link key={item.href} href={item.href} className="transition-colors hover:text-[#14B8A6]">
+                            // prefetch=false: these routes rewrite to static HTML
+                            // (no RSC payload) — prefetching 404s in the console.
+                            <Link key={item.href} href={item.href} prefetch={false} className="transition-colors hover:text-[#14B8A6]">
                                 {item.label}
                             </Link>
                         ))}
                         <Link
                             href="/AiChat"
+                            prefetch={false}
                             className="rounded-full bg-[#0F172A] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#14B8A6]"
                         >
                             AI Analyst
@@ -63,15 +66,15 @@ export default function PublicPageShell({
                         </p>
                     </div>
                     <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        <Link href="/companies" className="hover:text-[#2DD4BF]">EGX Companies</Link>
-                        <Link href="/sectors" className="hover:text-[#2DD4BF]">Sectors</Link>
-                        <Link href="/News" className="hover:text-[#2DD4BF]">News</Link>
-                        <Link href="/Funds" className="hover:text-[#2DD4BF]">Funds</Link>
-                        <Link href="/Learn" className="hover:text-[#2DD4BF]">Learn</Link>
-                        <Link href="/about" className="hover:text-[#2DD4BF]">About</Link>
-                        <Link href="/contact" className="hover:text-[#2DD4BF]">Contact</Link>
-                        <Link href="/privacy" className="hover:text-[#2DD4BF]">Privacy</Link>
-                        <Link href="/terms" className="hover:text-[#2DD4BF]">Terms</Link>
+                        <Link href="/companies" prefetch={false} className="hover:text-[#2DD4BF]">EGX Companies</Link>
+                        <Link href="/sectors" prefetch={false} className="hover:text-[#2DD4BF]">Sectors</Link>
+                        <Link href="/News" prefetch={false} className="hover:text-[#2DD4BF]">News</Link>
+                        <Link href="/Funds" prefetch={false} className="hover:text-[#2DD4BF]">Funds</Link>
+                        <Link href="/Learn" prefetch={false} className="hover:text-[#2DD4BF]">Learn</Link>
+                        <Link href="/about" prefetch={false} className="hover:text-[#2DD4BF]">About</Link>
+                        <Link href="/contact" prefetch={false} className="hover:text-[#2DD4BF]">Contact</Link>
+                        <Link href="/privacy" prefetch={false} className="hover:text-[#2DD4BF]">Privacy</Link>
+                        <Link href="/terms" prefetch={false} className="hover:text-[#2DD4BF]">Terms</Link>
                     </nav>
                 </div>
                 <div className="border-t border-white/10">
@@ -93,7 +96,7 @@ export function Breadcrumbs({ items }: { items: Array<{ href?: string; label: st
                     <li key={i} className="flex items-center gap-1.5">
                         {i > 0 && <span aria-hidden className="text-slate-300">/</span>}
                         {item.href ? (
-                            <Link href={item.href} className="transition-colors hover:text-[#14B8A6]">
+                            <Link href={item.href} prefetch={false} className="transition-colors hover:text-[#14B8A6]">
                                 {item.label}
                             </Link>
                         ) : (

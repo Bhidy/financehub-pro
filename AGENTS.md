@@ -1,5 +1,19 @@
 # Starta Markets — Agent Instructions
 
+## 🚨 SOMETHING BROKEN / FAILURE ALERTS / "why is this happening"? → READ THIS FIRST
+**[`docs/OPERATIONS_RUNBOOK.md`](docs/OPERATIONS_RUNBOOK.md)** is the single entry point for
+diagnosing ANY production incident (failed workflows, Discord/GitHub failure pushes, stale
+data, DB read-only, backend down). It has a 60-second triage, symptom→cause→fix playbooks for
+every recurring incident, the full access/credentials inventory, and the monitoring topology.
+**Match the symptom to a playbook before theorizing — read the failure log first, never guess.**
+(This file exists because incident diagnosis once took 15 hours; it should take minutes.)
+
+Fast triage: `gh run list --repo Bhidy/financehub-pro` → `gh run view <id> --log-failed` →
+check `https://status.supabase.com/api/v2/summary.json` (eu-central-1) → dispatch
+`db-health-monitor.yml` / `supabase-mgmt-monitor.yml` / `pipeline-watchdog.yml`.
+
+---
+
 For any request involving `https://startamarkets.com`, its public pages, light/dark theme,
 Arabic/English content, Learn, Funds, News, Market Pulse, mobile app, or **production deployment**:
 

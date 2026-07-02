@@ -63,9 +63,13 @@ async function companyEntries(): Promise<Entry[]> {
 }
 
 async function fundEntries(): Promise<Entry[]> {
+    // Numeric fund_ids only: the /Funds/[id] route resolves numeric ids, but
+    // funds_view also carries legacy string ids (EGY_NEW_*, EGYAAIB*, ...)
+    // whose URLs 404 — the post-deploy audit caught 152 dead URLs here.
     const result = await db.query(
         `SELECT fund_id, fund_name, fund_name_en, last_nav_date
          FROM funds_view
+         WHERE fund_id::text ~ '^[0-9]+$'
          ORDER BY fund_id`
     );
     return result.rows.map((r: any) => ({

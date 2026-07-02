@@ -47,15 +47,11 @@ export async function generateMetadata(
     const price = ticker.last_price !== null
         ? `EGP ${ticker.last_price.toLocaleString("en-EG", { maximumFractionDigits: 2 })}`
         : null;
-    const description = [
-        `${name} (EGX: ${symbol}) live share price`,
-        price ? `${price}` : null,
-        ticker.sector_name ? `${ticker.sector_name} sector` : null,
-        "key statistics, financials, dividends, technicals and news — updated every 15 minutes during EGX trading hours.",
-    ]
-        .filter(Boolean)
-        .join(" · ");
-    const title = `${name} (${symbol}) Stock Price, Financials & News`;
+    // Compact SERP-friendly copy (audit flagged 105/222-char overruns on long
+    // legal names): title ends at "Stock Price", description hard-capped ~160.
+    let description = `${name} (EGX: ${symbol}): live price${price ? ` ${price}` : ""}, key stats, financials, dividends, technicals & news. Updated every 15 min in EGX hours.`;
+    if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
+    const title = `${name} (${symbol}) Stock Price`;
     return {
         title,
         description,
@@ -65,8 +61,14 @@ export async function generateMetadata(
             title: `${title} | Starta Markets`,
             description,
             url: symbolPath(symbol),
+            images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "Starta Markets" }],
         },
-        twitter: { card: "summary_large_image", title: `${title} | Starta Markets`, description },
+        twitter: {
+            card: "summary_large_image",
+            title: `${title} | Starta Markets`,
+            description,
+            images: ["/og-default.png"],
+        },
     };
 }
 

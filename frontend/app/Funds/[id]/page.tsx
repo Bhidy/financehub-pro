@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getFund, getFundPeers, type Fund } from '@/lib/public-data';
-import { SITE_URL, fundPath, idFromParam } from '@/lib/seo';
+import { SITE_URL, fundPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -126,12 +126,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
         title,
         description,
-        alternates: { canonical: canonicalPath },
+        alternates: { canonical: encodeURI(canonicalPath) },
         openGraph: {
             type: 'website',
             title,
             description,
-            url: canonicalPath,
+            url: encodeURI(canonicalPath),
         },
     };
 }
@@ -142,8 +142,11 @@ export default async function FundPage({ params }: Props) {
     const { nameEn, nameAr, name, canonicalPath, nav, navDateIso, manager } = fundBasics(fund);
 
     // 308 any non-canonical form (bare id, stale/wrong slug) to the canonical.
-    if (`/Funds/${idParam}` !== canonicalPath) {
-        permanentRedirect(canonicalPath);
+    // Encoding-aware: params arrive percent-encoded (Arabic-named funds), and
+    // the Location header must be encoded — raw unicode there 500s.
+    const redirectTarget = canonicalRedirectTarget(`/Funds/${idParam}`, canonicalPath);
+    if (redirectTarget) {
+        permanentRedirect(redirectTarget);
     }
 
     const navHigh = num(fund, 'nav_52w_high');
@@ -236,7 +239,7 @@ export default async function FundPage({ params }: Props) {
         '@type': 'InvestmentFund',
         name,
         ...(nameAr && nameAr !== name ? { alternateName: nameAr } : {}),
-        url: SITE_URL + canonicalPath,
+        url: absUrl(canonicalPath),
         ...(str(fund, 'issuer_en') ? { provider: { '@type': 'Organization', name: str(fund, 'issuer_en') } } : {}),
         ...(currency ? { currency } : {}),
     };

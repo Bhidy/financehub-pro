@@ -36,9 +36,11 @@ const nextConfig = {
     NEXT_PUBLIC_GIT_COMMIT: process.env.VERCEL_GIT_COMMIT_SHA || 'local-dev',
   },
 
-  // Environment variables are handled automatically by Next.js (NEXT_PUBLIC_*)
+  // Type errors FAIL the build (guardrail 3.7 of the SEO plan). The tree has
+  // been tsc-clean since 2026-07-03; CI runs tsc separately, and this aligns
+  // the Vercel build with it so a type regression can never deploy.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // Image optimization for external sources

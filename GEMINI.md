@@ -1,8 +1,10 @@
 # FinanceHub Pro - Gemini CLI Context
 
+> ⚠️ **PARTIALLY STALE — corrected 2026-07-02.** Read [`docs/CANONICAL_STATE.md`](docs/CANONICAL_STATE.md) first; it overrides anything here. Corrections to claims below: the market is **Egypt/EGX only** (not Saudi/GCC); backend dev port is **7860** (not 8000); primary data is **TradingView** (not Mubasher — Mubasher is funds/news only); the backend deploys **only** via `gh workflow run backend-deploy.yml` — the `deploy_production.sh` / `deploy_smart.sh` / direct-SSH instructions further down are **retired and unsafe** (laptop→server SSH is edge-blocked). The repo is **public**.
+
 ## Project Overview
 
-FinanceHub Pro is an enterprise-grade financial intelligence platform for extracting, processing, and visualizing stock market data from Middle Eastern and North African markets (primarily Saudi Arabia, Egypt, and GCC).
+FinanceHub Pro is an enterprise-grade financial intelligence platform for the **Egyptian Exchange (EGX only)**. (Historical note: earlier versions targeted Saudi Arabia / GCC; that support was dropped — see [`docs/CANONICAL_STATE.md`](docs/CANONICAL_STATE.md).)
 
 **Author:** Bhidy
 **Status:** Production (Hetzner)

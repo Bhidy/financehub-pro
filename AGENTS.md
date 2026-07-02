@@ -9,13 +9,20 @@ Arabic/English content, Learn, Funds, News, Market Pulse, mobile app, or **produ
 encode the only correct, verified flow and prevent every past failure mode:
 
 ```bash
-# Web (startamarkets.com):
-./scripts/deploy-web.sh            # deploy → alias → verify live
-./scripts/deploy-web.sh verify     # health-check only (no deploy)
+# Web (startamarkets.com): deploy = merge a PR to `main` (Vercel auto-builds, domain auto-follows).
+# ⚠️ deploy-web.sh is VERIFY-ONLY — it does NOT deploy or alias. Never run `vercel`/`vercel alias` by hand.
+./scripts/deploy-web.sh            # health-check the LIVE site after a merge (no deploy, no alias)
 
 # iOS (TestFlight):
 ./scripts/ship-ios.sh              # build bundle → archive → upload
+
+# Backend (Hetzner): the ONLY path — health-gated, auto-rollback. Not SSH from a laptop.
+gh workflow run backend-deploy.yml -f reason="…"
 ```
+
+> **Read [`docs/CANONICAL_STATE.md`](docs/CANONICAL_STATE.md) first** — it is the verified source
+> of truth for architecture, live-vs-legacy data sources, and what must not be touched. Any older
+> doc that disagrees (Saudi market, Railway, Yahoo-as-primary, "repo is private") is stale.
 
 Full rules and troubleshooting: **[`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md)** — this
 is the authoritative deploy reference. Read it once, follow it always.

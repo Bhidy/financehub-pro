@@ -12,7 +12,7 @@ Real-time market data, mutual-fund NAV & performance, market news, an educationa
 | **Frontend** | Next.js (App Router) — hosted on **Vercel** |
 | **Backend** | FastAPI (Python 3.11, Docker) — hosted on **Hetzner VPS** |
 | **Database** | PostgreSQL — **Supabase** (cloud, source of truth) |
-| **Repo** | `github.com/Bhidy/financehub-pro` (private) |
+| **Repo** | `github.com/Bhidy/financehub-pro` (**public** — treat all committed history as compromised; see [`docs/CANONICAL_STATE.md`](docs/CANONICAL_STATE.md)) |
 
 > "Starta Markets", "FinanceHub Pro", and the Vercel project "finhub" are **three names for one product**. There is no separate finhub app.
 
@@ -22,6 +22,7 @@ Real-time market data, mutual-fund NAV & performance, market news, an educationa
 
 | Topic | Doc |
 |---|---|
+| **Verified system state + legacy map (read first)** | [`docs/CANONICAL_STATE.md`](docs/CANONICAL_STATE.md) |
 | Orientation + governance rules | [`START_HERE.md`](START_HERE.md) |
 | Architecture, data flow, AI chatbot, DB schema | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
 | Deploy procedure (web = merge to `main`; no manual alias step) | [`docs/DEPLOY_RUNBOOK.md`](docs/DEPLOY_RUNBOOK.md) |

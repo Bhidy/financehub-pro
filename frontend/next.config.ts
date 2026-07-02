@@ -99,10 +99,8 @@ const nextConfig = {
           source: '/Learn',
           destination: '/learn.html',
         },
-        {
-          source: '/News',
-          destination: '/news.html',
-        },
+        // '/News' rewrite removed: the hub is now a server-rendered App Router
+        // page (app/News/page.tsx) with crawlable pagination.
         {
           source: '/Market-Pulse',
           destination: '/market-pulse.html',

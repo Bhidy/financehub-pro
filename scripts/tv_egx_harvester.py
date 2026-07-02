@@ -79,9 +79,9 @@ SQL_UPSERT_MARKET_TICKER = """
     INSERT INTO market_tickers (symbol, market_code, name_en, sector_name, last_price,
         change, change_percent, volume, market_cap, pe_ratio, dividend_yield, pb_ratio,
         beta, forward_pe, float_shares_percent, float_shares, shareholders_count,
-        high_52w, low_52w, source,
+        high_52w, low_52w, source, currency,
         updated_at, last_updated)
-    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, now(), now())
+    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'EGP', now(), now())
     ON CONFLICT (symbol) DO UPDATE SET
         market_code = EXCLUDED.market_code,
         name_en     = COALESCE(EXCLUDED.name_en,     market_tickers.name_en),
@@ -102,6 +102,10 @@ SQL_UPSERT_MARKET_TICKER = """
         high_52w    = COALESCE(EXCLUDED.high_52w, market_tickers.high_52w),
         low_52w     = COALESCE(EXCLUDED.low_52w,  market_tickers.low_52w),
         source      = EXCLUDED.source,
+        -- Everything this harvester writes is EGX and therefore EGP. The table
+        -- default is a legacy 'SAR' (Tadawul era), which the EGX30 index row
+        -- inherited on insert — pin it here so rows self-heal every cycle.
+        currency    = 'EGP',
         updated_at  = now(),
         last_updated = now()
 """

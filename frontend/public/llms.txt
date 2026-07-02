@@ -10,7 +10,9 @@
 
 ## Companies
 - [EGX companies directory](https://startamarkets.com/companies): all Egyptian Exchange listed companies with price, sector and market cap, updated daily
-- [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER})
+- [EGX sectors](https://startamarkets.com/sectors): companies grouped by sector with counts and market caps (per-sector pages: /sectors/{sector})
+- [EGX movers](https://startamarkets.com/markets/movers): today's top gainers, losers and most active stocks
+- [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER}; data pages: /symbol/{TICKER}/financials, /dividends, /technicals, /history)
 
 ## Mutual funds
 - [Funds marketplace](https://startamarkets.com/Funds): Egyptian mutual funds with NAV, returns and fees, in Arabic and English

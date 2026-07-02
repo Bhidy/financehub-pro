@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
  * Search Console reports indexation per content type (companies vs funds vs
  * news vs learn) instead of one opaque number.
  */
-const SEGMENTS = ['core', 'companies', 'funds', 'learn', 'news'];
+const SEGMENTS = ['core', 'companies', 'sectors', 'funds', 'learn', 'news'];
 
 export async function GET() {
     const now = new Date().toISOString();

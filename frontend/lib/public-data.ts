@@ -62,6 +62,8 @@ export type Ticker = {
 
 const TICKER_NUM = ['last_price', 'change_percent', 'volume', 'market_cap', 'pe_ratio', 'pb_ratio', 'dividend_yield'];
 
+function toNum(row: Record<string, unknown>, fields: string[]): Record<string, unknown>;
+function toNum(row: Record<string, unknown> | null, fields: string[]): Record<string, unknown> | null;
 function toNum(row: Record<string, unknown> | null, fields: string[]) {
     if (!row) return row;
     for (const f of fields) {
@@ -170,6 +172,139 @@ export const getFundPeers = cache(async (fundId: number): Promise<Array<Record<s
     }
 });
 
+/** Annual financial statements (egx_financials via TradingView, up to 20y). */
+export type FinancialYear = {
+    fiscal_year: number;
+    revenue: number | null;
+    gross_profit: number | null;
+    ebitda: number | null;
+    net_income: number | null;
+    eps_diluted: number | null;
+    free_cash_flow: number | null;
+    total_assets: number | null;
+    total_debt: number | null;
+    dps: number | null;
+};
+
+export const getFinancialYears = cache(async (symbol: string): Promise<FinancialYear[]> => {
+    const result = await db.query(
+        `SELECT fiscal_year, revenue, gross_profit, ebitda, net_income,
+                eps_diluted, free_cash_flow, total_assets, total_debt, dps
+         FROM egx_financials WHERE UPPER(symbol) = $1 ORDER BY fiscal_year DESC`,
+        [symbol.toUpperCase()]
+    );
+    return result.rows.map((r: Record<string, unknown>) =>
+        toNum(r, ['fiscal_year', 'revenue', 'gross_profit', 'ebitda', 'net_income', 'eps_diluted', 'free_cash_flow', 'total_assets', 'total_debt', 'dps'])
+    ) as FinancialYear[];
+});
+
+/** Historical dividend payments (dividend_history). */
+export const getDividendHistory = cache(async (symbol: string): Promise<Array<Record<string, unknown>>> => {
+    const result = await db.query(
+        `SELECT ex_date, dividend_amount, record_date, pay_date, currency
+         FROM dividend_history WHERE UPPER(symbol) = $1 ORDER BY ex_date DESC LIMIT 50`,
+        [symbol.toUpperCase()]
+    );
+    return result.rows.map((r: Record<string, unknown>) => toNum(r, ['dividend_amount']));
+});
+
+/** Dividend summary (egx_dividends via TradingView; unix-second dates). */
+export const getDividendSummary = cache(async (symbol: string): Promise<Record<string, unknown> | null> => {
+    const result = await db.query(
+        `SELECT symbol, div_yield, amount_recent, ex_date_recent, payment_date_recent,
+                amount_upcoming, ex_date_upcoming, payment_date_upcoming,
+                frequency, payout_ratio_ttm, continuous_growth
+         FROM egx_dividends WHERE UPPER(symbol) = $1`,
+        [symbol.toUpperCase()]
+    );
+    const row = result.rows[0] || null;
+    return row ? toNum(row, ['div_yield', 'amount_recent', 'ex_date_recent', 'payment_date_recent', 'amount_upcoming', 'payout_ratio_ttm', 'continuous_growth']) : null;
+});
+
+/** Multi-timeframe technicals (egx_technicals — same columns as the API route). */
+export const getTechnicals = cache(async (symbol: string): Promise<Array<Record<string, unknown>>> => {
+    const result = await db.query(
+        `SELECT timeframe, rsi, macd_macd, macd_signal, stoch_k, stoch_d,
+                cci20, adx, mom, recommend_all, recommend_ma, recommend_other,
+                ema50, ema200, sma50, sma200, updated_at
+         FROM egx_technicals
+         WHERE UPPER(symbol) = $1
+         ORDER BY CASE timeframe
+             WHEN '60' THEN 1 WHEN '240' THEN 2 WHEN '1D' THEN 3 WHEN '1W' THEN 4 ELSE 5 END`,
+        [symbol.toUpperCase()]
+    );
+    return result.rows.map((r: Record<string, unknown>) =>
+        toNum(r, ['rsi', 'macd_macd', 'macd_signal', 'stoch_k', 'stoch_d', 'cci20', 'adx', 'mom', 'recommend_all', 'recommend_ma', 'recommend_other', 'ema50', 'ema200', 'sma50', 'sma200'])
+    );
+});
+
+/** Recent daily OHLC rows (ohlc_data), newest first. */
+export const getRecentHistory = cache(async (symbol: string, limit = 60): Promise<Array<Record<string, unknown>>> => {
+    const result = await db.query(
+        `SELECT date, open, high, low, close, volume
+         FROM ohlc_data WHERE UPPER(symbol) = $1 ORDER BY date DESC LIMIT $2`,
+        [symbol.toUpperCase(), limit]
+    );
+    return result.rows.map((r: Record<string, unknown>) => toNum(r, ['open', 'high', 'low', 'close', 'volume']));
+});
+
+/** All-time price range + row count for the history page summary. */
+export const getHistoryStats = cache(async (symbol: string): Promise<Record<string, unknown> | null> => {
+    const result = await db.query(
+        `SELECT COUNT(*)::int AS rows, MIN(date) AS first_date, MAX(date) AS last_date,
+                MIN(low) AS all_time_low, MAX(high) AS all_time_high
+         FROM ohlc_data WHERE UPPER(symbol) = $1`,
+        [symbol.toUpperCase()]
+    );
+    const row = result.rows[0] || null;
+    if (!row || !row.rows) return null;
+    return toNum(row, ['rows', 'all_time_low', 'all_time_high']);
+});
+
+/** Sector list with counts + aggregate market cap (for /sectors hubs). */
+export const getSectors = cache(async (): Promise<Array<{ sector_name: string; companies: number; market_cap: number | null }>> => {
+    const result = await db.query(
+        `SELECT sector_name, COUNT(*)::int AS companies, SUM(market_cap::numeric) AS market_cap
+         FROM market_tickers
+         WHERE last_price IS NOT NULL AND sector_name IS NOT NULL AND sector_name <> ''
+           AND sector_name <> 'Index' -- the EGX30 index row is not a company sector
+         GROUP BY sector_name
+         ORDER BY SUM(market_cap::numeric) DESC NULLS LAST`
+    );
+    return result.rows.map((r: Record<string, unknown>) => toNum(r, ['companies', 'market_cap'])) as Array<{
+        sector_name: string; companies: number; market_cap: number | null;
+    }>;
+});
+
+/** Movers straight from market_tickers (no dedicated endpoint exists). */
+export const getMovers = cache(async (limit = 10): Promise<{ gainers: Ticker[]; losers: Ticker[]; active: Ticker[] }> => {
+    const cols = `symbol, name_en, name_ar, last_price, change_percent, volume,
+                  sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
+                  currency, isin, logo_url, last_updated`;
+    const [gainers, losers, active] = await Promise.all([
+        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric DESC LIMIT $1`, [limit]),
+        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric ASC LIMIT $1`, [limit]),
+        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY volume::numeric DESC NULLS LAST LIMIT $1`, [limit]),
+    ]);
+    const numify = (rows: Array<Record<string, unknown>>) => rows.map((r) => toNum(r, TICKER_NUM)) as Ticker[];
+    return { gainers: numify(gainers.rows), losers: numify(losers.rows), active: numify(active.rows) };
+});
+
+/** Paged news for the server-rendered /News hub. */
+export const getNewsPage = cache(async (page: number, perPage = 24): Promise<{ articles: NewsArticle[]; total: number }> => {
+    const offset = (Math.max(page, 1) - 1) * perPage;
+    const [rows, count] = await Promise.all([
+        db.query(
+            `SELECT id, symbol, headline, url, published_at, article_body,
+                    image_url, source_section, source_country
+             FROM market_news ORDER BY published_at DESC LIMIT $1 OFFSET $2`,
+            [perPage, offset]
+        ),
+        db.query(`SELECT COUNT(*)::int AS n FROM market_news`),
+    ]);
+    return { articles: rows.rows as NewsArticle[], total: (count.rows[0]?.n as number) || 0 };
+});
+
 /** All companies for the /companies directory hub. */
 export const getAllTickers = cache(async (): Promise<Ticker[]> => {
     const result = await db.query(
@@ -178,6 +313,7 @@ export const getAllTickers = cache(async (): Promise<Ticker[]> => {
                 currency, isin, logo_url, last_updated
          FROM market_tickers
          WHERE last_price IS NOT NULL
+           AND COALESCE(sector_name,'') <> 'Index' -- EGX30 is an index, not a listed company
          ORDER BY market_cap::numeric DESC NULLS LAST`
     );
     return result.rows.map((r: Record<string, unknown>) => toNum(r, TICKER_NUM)) as Ticker[];

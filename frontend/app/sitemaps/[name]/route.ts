@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { SITE_URL, absUrl, newsPath, fundPath, symbolPath } from '@/lib/seo';
+import { SITE_URL, absUrl, newsPath, fundPath, symbolPath, slugify } from '@/lib/seo';
 import learnTopics from '@/content/learn-topics.generated';
 
 export const dynamic = 'force-dynamic';
@@ -35,6 +35,8 @@ async function coreEntries(): Promise<Entry[]> {
         ['/Market-Pulse', 'hourly', '0.9'],
         ['/Learn', 'weekly', '0.8'],
         ['/companies', 'daily', '0.9'],
+        ['/sectors', 'daily', '0.7'],
+        ['/markets/movers', 'hourly', '0.7'],
         ['/about', 'monthly', '0.5'],
         ['/contact', 'monthly', '0.4'],
         ['/AiChat', 'weekly', '0.6'],
@@ -45,20 +47,52 @@ async function coreEntries(): Promise<Entry[]> {
 }
 
 async function companyEntries(): Promise<Entry[]> {
+    // Sub-tab URLs are DATA-GATED: each sub-tab page notFound()s when its
+    // dataset is empty, so the sitemap must only advertise URLs that resolve
+    // (the post-deploy audit caught exactly this class of dead-URL defect
+    // in the funds segment).
     const result = await db.query(
-        `SELECT symbol, GREATEST(
-             COALESCE(last_updated, 'epoch'::timestamptz),
-             COALESCE(updated_at, 'epoch'::timestamptz)
-         ) AS lastmod
+        `SELECT t.symbol,
+                GREATEST(
+                    COALESCE(t.last_updated, 'epoch'::timestamptz),
+                    COALESCE(t.updated_at, 'epoch'::timestamptz)
+                ) AS lastmod,
+                EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol) AS has_fin,
+                (EXISTS(SELECT 1 FROM dividend_history d WHERE UPPER(d.symbol) = t.symbol)
+                 OR EXISTS(SELECT 1 FROM egx_dividends e WHERE UPPER(e.symbol) = t.symbol AND e.div_yield IS NOT NULL)) AS has_div,
+                EXISTS(SELECT 1 FROM egx_technicals x WHERE UPPER(x.symbol) = t.symbol) AS has_tech,
+                EXISTS(SELECT 1 FROM ohlc_data o WHERE UPPER(o.symbol) = t.symbol) AS has_hist
+         FROM market_tickers t
+         WHERE t.last_price IS NOT NULL
+           AND COALESCE(t.sector_name,'') <> 'Index' -- EGX30 index row is not a company page
+         ORDER BY t.symbol`
+    );
+    return result.rows.flatMap((r: any) => {
+        const base = symbolPath(r.symbol);
+        const entries: Entry[] = [
+            { loc: absUrl(base), lastmod: r.lastmod, changefreq: 'daily', priority: '0.8' },
+        ];
+        if (r.has_fin) entries.push({ loc: absUrl(`${base}/financials`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
+        if (r.has_div) entries.push({ loc: absUrl(`${base}/dividends`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
+        if (r.has_tech) entries.push({ loc: absUrl(`${base}/technicals`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
+        if (r.has_hist) entries.push({ loc: absUrl(`${base}/history`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
+        return entries;
+    });
+}
+
+async function sectorEntries(): Promise<Entry[]> {
+    const result = await db.query(
+        `SELECT sector_name
          FROM market_tickers
-         WHERE last_price IS NOT NULL
-         ORDER BY symbol`
+         WHERE last_price IS NOT NULL AND sector_name IS NOT NULL AND sector_name <> ''
+           AND sector_name <> 'Index'
+         GROUP BY sector_name
+         ORDER BY sector_name`
     );
     return result.rows.map((r: any) => ({
-        loc: absUrl(symbolPath(r.symbol)),
-        lastmod: r.lastmod,
+        loc: absUrl(`/sectors/${slugify(r.sector_name)}`),
         changefreq: 'daily',
-        priority: '0.8',
+        priority: '0.7',
     }));
 }
 
@@ -107,6 +141,7 @@ async function newsEntries(): Promise<Entry[]> {
 const BUILDERS: Record<string, () => Promise<Entry[]>> = {
     core: coreEntries,
     companies: companyEntries,
+    sectors: sectorEntries,
     funds: fundEntries,
     learn: learnEntries,
     news: newsEntries,

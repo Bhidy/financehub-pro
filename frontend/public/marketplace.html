@@ -1621,7 +1621,7 @@
                                     <div class="mt-2 text-sm font-semibold text-main">${updated}</div>
                                 </div>
                                 <div class="${state.lang === 'ar' ? 'sm:text-left' : 'sm:text-right'}">
-                                    <button class="btn-primary rounded-full px-5 py-3 text-sm font-semibold" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.fund_id)}'">${escapeHtml(getLabels().invest_now)}</button>
+                                    <a class="btn-primary inline-block rounded-full px-5 py-3 text-sm font-semibold" href="/Funds/${encodeURIComponent(fund.fund_id)}">${escapeHtml(getLabels().invest_now)}</a>
                                 </div>
                             </div>
                         </div>
@@ -1638,9 +1638,9 @@
                 const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
                 const isSelected = state.compareIds.includes(String(fund.fund_id));
                 return `
-                    <tr class="table-row cursor-pointer border-t border-slate-100 text-main" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.fund_id)}'">
+                    <tr class="table-row cursor-pointer border-t border-slate-100 text-main" onclick="window.location.href='/Funds/${encodeURIComponent(fund.fund_id)}'">
                         <td class="px-5 py-4">
-                            <div class="font-semibold">${escapeHtml(getFundName(fund))}</div>
+                            <div class="font-semibold"><a href="/Funds/${encodeURIComponent(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(getFundName(fund))}</a></div>
                             <div class="mt-1 text-xs text-muted">${escapeHtml(fund.symbol || fund.fund_id)}</div>
                             <button type="button" class="compare-btn mt-3 rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(isSelected ? getLabels().compare_added : getLabels().compare_add)}</button>
                         </td>

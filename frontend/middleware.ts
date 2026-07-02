@@ -58,7 +58,18 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(url, 308);
     }
 
-    // 3) Case canonicalization. Only for known public segments; never touches
+    // 3) Legacy query-param fund URL -> path URL (query stripped; the page
+    // then 308s on to the slugged canonical /Funds/{id}-{slug}).
+    if (url.pathname === '/Fund') {
+        const fid = url.searchParams.get('id');
+        if (fid && /^\d+$/.test(fid)) {
+            url.pathname = `/Funds/${fid}`;
+            url.search = '';
+            return NextResponse.redirect(url, 308);
+        }
+    }
+
+    // 4) Case canonicalization. Only for known public segments; never touches
     // /api, /_next (excluded by matcher), file paths, or unknown routes.
     const segments = url.pathname.split('/');
     const first = segments[1] || '';
@@ -76,6 +87,11 @@ export function middleware(request: NextRequest) {
                 segments[2] = upper;
                 changed = true;
             }
+        }
+        // /Funds/compare -> /Funds/Compare (the compare tool's canonical case).
+        if (canonicalFirst === 'Funds' && segments[2] && segments[2].toLowerCase() === 'compare' && segments[2] !== 'Compare') {
+            segments[2] = 'Compare';
+            changed = true;
         }
         if (changed) {
             url.pathname = segments.join('/');

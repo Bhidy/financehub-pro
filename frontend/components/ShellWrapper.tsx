@@ -22,7 +22,12 @@ interface ShellWrapperProps {
 // would otherwise leak the legacy sidebar and squish the page. Keying on the
 // route makes dev/preview faithfully match production. (cf. /AiChat below, which
 // was already exact-listed for this same reason.)
-const ISOLATED_ROUTE_PREFIXES: string[] = ["/mobile", "/symbol", "/shared"];
+// The SEO/public server-rendered routes (news articles, fund pages, learn
+// topics, directory/authority pages) carry their own PublicPageShell chrome.
+const ISOLATED_ROUTE_PREFIXES: string[] = [
+    "/mobile", "/symbol", "/shared",
+    "/News", "/Funds", "/Learn", "/ar", "/companies", "/about", "/contact",
+];
 
 // Exact paths that are isolated (including root for mobile domains)
 const ISOLATED_EXACT_PATHS = ["/", "/login", "/register", "/forgot-password", "/setting", "/settings", "/Home", "/home", "/AiChat"];
